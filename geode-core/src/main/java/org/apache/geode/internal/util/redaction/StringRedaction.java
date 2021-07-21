@@ -12,19 +12,46 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.util.redaction;
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.geode.internal.util.redaction.RedactionDefaults.REDACTED;
+import static org.apache.geode.internal.util.redaction.RedactionDefaults.SENSITIVE_PREFIXES;
+import static org.apache.geode.internal.util.redaction.RedactionDefaults.SENSITIVE_SUBSTRINGS;
 
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.geode.internal.util.redaction.StringRedaction;
+import org.apache.geode.annotations.VisibleForTesting;
 
-public class ArgumentRedactor {
+/**
+ * Redacts value strings for keys that are identified as sensitive data.
+ */
+public class StringRedaction implements SensitiveDataDictionary {
 
-  private static final StringRedaction DELEGATE = new StringRedaction();
+  private final String redacted;
+  private final SensitiveDataDictionary sensitiveDataDictionary;
+  private final RedactionStrategy redactionStrategy;
 
-  private ArgumentRedactor() {
-    // do not instantiate
+  public StringRedaction() {
+    this(REDACTED,
+        new CombinedSensitiveDictionary(
+            new SensitivePrefixDictionary(SENSITIVE_PREFIXES),
+            new SensitiveSubstringDictionary(SENSITIVE_SUBSTRINGS)));
+  }
+
+  private StringRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary) {
+    this(redacted,
+        sensitiveDataDictionary,
+        new RegexRedactionStrategy(sensitiveDataDictionary::isSensitive, redacted));
+  }
+
+  @VisibleForTesting
+  StringRedaction(String redacted, SensitiveDataDictionary sensitiveDataDictionary,
+      RedactionStrategy redactionStrategy) {
+    this.redacted = redacted;
+    this.sensitiveDataDictionary = sensitiveDataDictionary;
+    this.redactionStrategy = redactionStrategy;
   }
 
   /**
@@ -54,12 +81,12 @@ public class ArgumentRedactor {
    *
    * @return A string that has sensitive data redacted.
    */
-  public static String redact(String string) {
-    return DELEGATE.redact(string);
+  public String redact(String string) {
+    return redactionStrategy.redact(string);
   }
 
-  public static String redact(Iterable<String> strings) {
-    return DELEGATE.redact(strings);
+  public String redact(Iterable<String> strings) {
+    return redact(String.join(" ", strings));
   }
 
   /**
@@ -72,27 +99,25 @@ public class ArgumentRedactor {
    * @return The redacted string if the key is identified as sensitive, otherwise the original
    *         value.
    */
-  public static String redactArgumentIfNecessary(String key, String value) {
-    return DELEGATE.redactArgumentIfNecessary(key, value);
+  public String redactArgumentIfNecessary(String key, String value) {
+    if (isSensitive(key)) {
+      return redacted;
+    }
+    return value;
   }
 
-  public static List<String> redactEachInList(Collection<String> strings) {
-    return DELEGATE.redactEachInList(strings);
+  public List<String> redactEachInList(Collection<String> strings) {
+    return strings.stream()
+        .map(this::redact)
+        .collect(toList());
   }
 
-  /**
-   * Returns true if a string identifies sensitive data. For example, a string containing
-   * the word "password" identifies data that is sensitive and should be secured.
-   *
-   * @param key The string to be evaluated.
-   *
-   * @return true if the string identifies sensitive data.
-   */
-  public static boolean isSensitive(String key) {
-    return DELEGATE.isSensitive(key);
+  @Override
+  public boolean isSensitive(String key) {
+    return sensitiveDataDictionary.isSensitive(key);
   }
 
-  public static String getRedacted() {
-    return DELEGATE.getRedacted();
+  public String getRedacted() {
+    return redacted;
   }
 }

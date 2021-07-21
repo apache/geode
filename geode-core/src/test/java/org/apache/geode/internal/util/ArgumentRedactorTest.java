@@ -14,14 +14,8 @@
  */
 package org.apache.geode.internal.util;
 
-import static java.util.Arrays.asList;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
-import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.internal.util.ArgumentRedactor.REDACTED;
-import static org.apache.geode.internal.util.ArgumentRedactor.isTaboo;
+import static org.apache.geode.internal.util.ArgumentRedactor.getRedacted;
+import static org.apache.geode.internal.util.ArgumentRedactor.isSensitive;
 import static org.apache.geode.internal.util.ArgumentRedactor.redact;
 import static org.apache.geode.internal.util.ArgumentRedactor.redactEachInList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,261 +24,652 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-
-import org.apache.geode.internal.logging.Banner;
 
 public class ArgumentRedactorTest {
 
-  private static final String someProperty = "redactorTest.someProperty";
-  private static final String somePasswordProperty = "redactorTest.aPassword";
-  private static final String someOtherPasswordProperty =
-      "redactorTest.aPassword-withCharactersAfterward";
-
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
   @Test
-  public void theseLinesShouldRedact() {
-    String argumentThatShouldBeRedacted = "__this_should_be_redacted__";
-    List<String> someTabooOptions =
-        asList("-Dgemfire.password=" + argumentThatShouldBeRedacted,
-            "--password=" + argumentThatShouldBeRedacted,
-            "--J=-Dgemfire.some.very.qualified.item.password=" + argumentThatShouldBeRedacted,
-            "--J=-Dsysprop-secret.information=" + argumentThatShouldBeRedacted);
+  public void isSensitive_isTrueForGemfireSecurityPassword() {
+    String input = "gemfire.security-password";
 
-    List<String> fullyRedacted = redactEachInList(someTabooOptions);
+    boolean output = isSensitive(input);
 
-    assertThat(fullyRedacted)
-        .doesNotContainAnyElementsOf(someTabooOptions);
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void redactorWillIdentifySampleTabooProperties() {
-    List<String> shouldBeRedacted = asList("gemfire.security-password", "password",
-        "other-password-option", CLUSTER_SSL_TRUSTSTORE_PASSWORD, GATEWAY_SSL_TRUSTSTORE_PASSWORD,
-        SERVER_SSL_KEYSTORE_PASSWORD, "security-username", "security-manager",
-        "security-important-property", "javax.net.ssl.keyStorePassword",
-        "javax.net.ssl.some.security.item", "javax.net.ssl.keyStoreType", "sysprop-secret-prop");
+  public void isSensitive_isTrueForPassword() {
+    String input = "password";
 
-    for (String option : shouldBeRedacted) {
-      assertThat(isTaboo(option))
-          .describedAs("This option should be identified as taboo: " + option)
-          .isTrue();
-    }
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void redactorWillAllowSampleMiscProperties() {
-    List<String> shouldNotBeRedacted = asList("gemfire.security-manager",
-        CLUSTER_SSL_ENABLED, CONSERVE_SOCKETS, "username", "just-an-option");
+  public void isSensitive_isTrueForOptionContainingPassword() {
+    String input = "other-password-option";
 
-    for (String option : shouldNotBeRedacted) {
-      assertThat(isTaboo(option))
-          .describedAs("This option should not be identified as taboo: " + option)
-          .isFalse();
-    }
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void argListOfPasswordsAllRedact() {
-    Collection<String> args = new ArrayList<>();
-    args.add("--gemfire.security-password=secret");
-    args.add("--login-password=secret");
-    args.add("--gemfire-password = super-secret");
-    args.add("--geode-password= confidential");
-    args.add("--some-other-password =shhhh");
-    args.add("--justapassword =failed");
+  public void isSensitive_isTrueForClusterSslTruststorePassword() {
+    String input = "cluster-ssl-truststore-password";
 
-    String redacted = redact(args);
+    boolean output = isSensitive(input);
 
-    assertThat(redacted).contains("--gemfire.security-password=********");
-    assertThat(redacted).contains("--login-password=********");
-    assertThat(redacted).contains("--gemfire-password = ********");
-    assertThat(redacted).contains("--geode-password= ********");
-    assertThat(redacted).contains("--some-other-password =********");
-    assertThat(redacted).contains("--justapassword =********");
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void argListOfPasswordsAllRedactViaRedactEachInList() {
-    Collection<String> args = new ArrayList<>();
-    args.add("--gemfire.security-password=secret");
-    args.add("--login-password=secret");
-    args.add("--gemfire-password = super-secret");
-    args.add("--geode-password= confidential");
-    args.add("--some-other-password =shhhh");
-    args.add("--justapassword =failed");
+  public void isSensitive_isTrueForGatewaySslTruststorePassword() {
+    String input = "gateway-ssl-truststore-password";
 
-    List<String> redacted = redactEachInList(args);
+    boolean output = isSensitive(input);
 
-    assertThat(redacted).contains("--gemfire.security-password=********");
-    assertThat(redacted).contains("--login-password=********");
-    assertThat(redacted).contains("--gemfire-password = ********");
-    assertThat(redacted).contains("--geode-password= ********");
-    assertThat(redacted).contains("--some-other-password =********");
-    assertThat(redacted).contains("--justapassword =********");
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void argListOfMiscOptionsDoNotRedact() {
-    Collection<String> args = new ArrayList<>();
-    args.add("--gemfire.security-properties=./security.properties");
-    args.add("--gemfire.sys.security-option=someArg");
-    args.add("--gemfire.use-cluster-configuration=true");
-    args.add("--someotherstringoption");
-    args.add("--login-name=admin");
-    args.add("--myArg --myArg2 --myArg3=-arg4");
-    args.add("--myArg --myArg2 --myArg3=\"-arg4\"");
+  public void isSensitive_isTrueForServerSslKeystorePassword() {
+    String input = "server-ssl-keystore-password";
 
-    String redacted = redact(args);
+    boolean output = isSensitive(input);
 
-    assertThat(redacted).contains("--gemfire.security-properties=./security.properties");
-    assertThat(redacted).contains("--gemfire.sys.security-option=someArg");
-    assertThat(redacted).contains("--gemfire.use-cluster-configuration=true");
-    assertThat(redacted).contains("--someotherstringoption");
-    assertThat(redacted).contains("--login-name=admin");
-    assertThat(redacted).contains("--myArg --myArg2 --myArg3=-arg4");
-    assertThat(redacted).contains("--myArg --myArg2 --myArg3=\"-arg4\"");
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void protectedIndividualOptionsRedact() {
-    String arg1 = "-Dgemfire.security-password=secret";
-    assertThat(redact(arg1)).endsWith("password=********");
+  public void isSensitive_isTrueForSecurityUsername() {
+    String input = "security-username";
 
-    String arg2 = "--J=-Dsome.highly.qualified.password=secret";
-    assertThat(redact(arg2)).endsWith("password=********");
+    boolean output = isSensitive(input);
 
-    String arg3 = "--password=foo";
-    assertThat(redact(arg3)).isEqualToIgnoringWhitespace("--password=********");
-
-    String arg4 = "-Dgemfire.security-properties=\"c:\\Program Files (x86)\\My Folder\"";
-    assertThat(redact(arg4)).isEqualTo(arg4);
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void miscIndividualOptionsDoNotRedact() {
-    String arg1 = "-Dgemfire.security-properties=./security-properties";
-    assertThat(redact(arg1)).isEqualTo(arg1);
+  public void isSensitive_isTrueForSecurityManager() {
+    String input = "security-manager";
 
-    String arg2 = "-J-Dgemfire.sys.security-option=someArg";
-    assertThat(redact(arg2)).isEqualTo(arg2);
+    boolean output = isSensitive(input);
 
-    String arg3 = "-Dgemfire.sys.option=printable";
-    assertThat(redact(arg3)).isEqualTo(arg3);
-
-    String arg4 = "-Dgemfire.use-cluster-configuration=true";
-    assertThat(redact(arg4)).isEqualTo(arg4);
-
-    String arg5 = "someotherstringoption";
-    assertThat(redact(arg5)).isEqualTo(arg5);
-
-    String arg6 = "--classpath=.";
-    assertThat(redact(arg6)).isEqualTo(arg6);
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void oneOfManyArgumentsIsRedacted() {
-    String arg = "-DmyArg -Duser-password=foo --classpath=.";
+  public void isSensitive_isTrueForOptionStartingWithSecurityHyphen() {
+    String input = "security-important-property";
 
-    assertThat(redact(arg)).isEqualTo("-DmyArg -Duser-password=******** --classpath=.");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void twoOfManyArgumentsAreRedacted() {
-    String arg = "-DmyArg -Duser-password=foo -DOtherArg -Dsystem-password=bar";
+  public void isSensitive_isTrueForJavaxNetSslKeyStorePassword() {
+    String input = "javax.net.ssl.keyStorePassword";
 
-    assertThat(redact(arg))
-        .isEqualTo("-DmyArg -Duser-password=******** -DOtherArg -Dsystem-password=********");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void multipleOfManyArgumentsAreRedacted() {
-    String arg =
-        "-Dlogin-password=secret -Dlogin-name=admin -Dgemfire-password = super-secret --geode-password= confidential -J-Dsome-other-password =shhhh";
-    String redacted = redact(arg);
+  public void isSensitive_isTrueForOptionStartingWithJavaxNetSsl() {
+    String input = "javax.net.ssl.some.security.item";
 
-    assertThat(redacted).contains("login-password=********");
-    assertThat(redacted).contains("login-name=admin");
-    assertThat(redacted).contains("gemfire-password = ********");
-    assertThat(redacted).contains("geode-password= ********");
-    assertThat(redacted).contains("some-other-password =********");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void redactScriptLine() {
-    assertThat(redact("connect --password=test --user=test"))
-        .isEqualTo("connect --password=******** --user=test");
+  public void isSensitive_isTrueForJavaxNetSslKeyStoreType() {
+    String input = "javax.net.ssl.keyStoreType";
+
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void redactMultipleScriptLines() {
-    assertThat(redact("connect --test-password=test --product-password=test1"))
-        .isEqualTo("connect --test-password=******** --product-password=********");
+  public void isSensitive_isTrueForOptionStartingWithSyspropHyphen() {
+    String input = "sysprop-secret-prop";
+
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isTrue();
   }
 
   @Test
-  public void systemPropertiesGetRedactedInBanner() {
-    System.setProperty(someProperty, "isNotRedacted");
-    System.setProperty(somePasswordProperty, "isRedacted");
-    System.setProperty(someOtherPasswordProperty, "isRedacted");
-    List<String> args = asList("--user=me", "--password=isRedacted",
-        "--another-password-for-some-reason =isRedacted", "--yet-another-password = isRedacted");
-    String banner = new Banner().getString(args.toArray(new String[0]));
+  public void isSensitive_isFalseForGemfireSecurityManager() {
+    String input = "gemfire.security-manager";
 
-    assertThat(banner).doesNotContain("isRedacted");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isFalse();
   }
 
   @Test
-  public void redactsArgumentForSslTruststorePassword() {
-    String prefix = "-Dgemfire.ssl-truststore-password=";
-    String password = "gibberish";
-    String value = redact(prefix + password);
+  public void isSensitive_isFalseForClusterSslEnabled() {
+    String input = "cluster-ssl-enabled";
 
-    assertThat(value).isEqualTo(prefix + REDACTED);
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isFalse();
   }
 
   @Test
-  public void redactsArgumentForSslKeystorePassword() {
-    String prefix = "-Dgemfire.ssl-keystore-password=";
-    String password = "gibberish";
-    String value = redact(prefix + password);
+  public void isSensitive_isFalseForConserveSockets() {
+    String input = "conserve-sockets";
 
-    assertThat(value).isEqualTo(prefix + REDACTED);
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isFalse();
   }
 
   @Test
-  public void redactsArgumentEndingWithHyphen() {
-    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=supersecret-";
-    String redacted = redact(argBeginningWithMinus);
+  public void isSensitive_isFalseForUsername() {
+    String input = "username";
 
-    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isFalse();
   }
 
   @Test
-  public void redactsArgumentContainingHyphen() {
-    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=super-secret";
-    String redacted = redact(argBeginningWithMinus);
+  public void isSensitive_isFalseForNonMatchingStringContainingHyphens() {
+    String input = "just-an-option";
 
-    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+    boolean output = isSensitive(input);
+
+    assertThat(output)
+        .as("output of isSensitive(" + input + ")")
+        .isFalse();
   }
 
   @Test
-  public void redactsArgumentContainingMultipleHyphen() {
-    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=this-is-super-secret";
-    String redacted = redact(argBeginningWithMinus);
+  public void redactString_redactsGemfirePasswordWithHyphenD() {
+    String string = "-Dgemfire.password=%s";
+    String sensitive = "__this_should_be_redacted__";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
 
-    assertThat(redacted).isEqualTo("-Dgemfire.ssl-keystore-password=********");
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
   }
 
   @Test
-  public void doesNotRedactUnquotedArgumentBeginningWithHyphen() {
-    String argBeginningWithMinus = "-Dgemfire.ssl-keystore-password=-supersecret";
-    String redacted = redact(argBeginningWithMinus);
+  public void redactString_redactsPasswordWithHyphens() {
+    String string = "--password=%s";
+    String sensitive = "__this_should_be_redacted__";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
 
-    assertThat(redacted).isEqualTo(argBeginningWithMinus);
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsOptionEndingWithPasswordWithHyphensJDd() {
+    String string = "--J=-Dgemfire.some.very.qualified.item.password=%s";
+    String sensitive = "__this_should_be_redacted__";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsOptionStartingWithSyspropHyphenWithHyphensJD() {
+    String string = "--J=-Dsysprop-secret.information=%s";
+    String sensitive = "__this_should_be_redacted__";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsGemfireSecurityPasswordWithHyphenD() {
+    String string = "-Dgemfire.security-password=%s";
+    String sensitive = "secret";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_doesNotRedactOptionEndingWithSecurityPropertiesWithHyphenD1() {
+    String input = "-Dgemfire.security-properties=argument-value";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_doesNotRedactOptionEndingWithSecurityPropertiesWithHyphenD2() {
+    String input = "-Dgemfire.security-properties=\"c:\\Program Files (x86)\\My Folder\"";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_doesNotRedactOptionEndingWithSecurityPropertiesWithHyphenD3() {
+    String input = "-Dgemfire.security-properties=./security-properties";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_doesNotRedactOptionContainingSecurityHyphenWithHyphensJD() {
+    String input = "--J=-Dgemfire.sys.security-option=someArg";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_doesNotRedactNonMatchingGemfireOptionWithHyphenD() {
+    String input = "-Dgemfire.sys.option=printable";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_redactsGemfireUseClusterConfigurationWithHyphenD() {
+    String input = "-Dgemfire.use-cluster-configuration=true";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_returnsNonMatchingString() {
+    String input = "someotherstringoption";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_doesNotRedactClasspathWithHyphens() {
+    String input = "--classpath=.";
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .isEqualTo(input);
+  }
+
+  @Test
+  public void redactString_redactsMatchingOptionWithNonMatchingOptionAndFlagAndMultiplePrefixes() {
+    String string = "--J=-Dflag -Duser-password=%s --classpath=.";
+    String sensitive = "foo";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsMultipleMatchingOptionsWithFlags() {
+    String string = "-DmyArg -Duser-password=%s -DOtherArg -Dsystem-password=%s";
+    String sensitive1 = "foo";
+    String sensitive2 = "bar";
+    String input = String.format(string, sensitive1, sensitive2);
+    String expected = String.format(string, getRedacted(), getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive1)
+        .doesNotContain(sensitive2)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsMultipleMatchingOptionsWithMultipleNonMatchingOptionsAndMultiplePrefixes() {
+    String string =
+        "-Dlogin-password=%s -Dlogin-name=%s -Dgemfire-password = %s --geode-password= %s --J=-Dsome-other-password =%s";
+    String sensitive1 = "secret";
+    String nonSensitive = "admin";
+    String sensitive2 = "super-secret";
+    String sensitive3 = "confidential";
+    String sensitive4 = "shhhh";
+    String input = String.format(
+        string, sensitive1, nonSensitive, sensitive2, sensitive3, sensitive4);
+    String expected = String.format(
+        string, getRedacted(), nonSensitive, getRedacted(), getRedacted(), getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive1)
+        .contains(nonSensitive)
+        .doesNotContain(sensitive2)
+        .doesNotContain(sensitive3)
+        .doesNotContain(sensitive4)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsMatchingOptionWithNonMatchingOptionAfterCommand() {
+    String string = "connect --password=%s --user=%s";
+    String reusedSensitive = "test";
+    String input = String.format(string, reusedSensitive, reusedSensitive);
+    String expected = String.format(string, getRedacted(), reusedSensitive);
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .contains(reusedSensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsMultipleMatchingOptionsButNotKeyUsingSameStringAsValue() {
+    String string = "connect --%s-password=%s --product-password=%s";
+    String reusedSensitive = "test";
+    String sensitive = "test1";
+    String input = String.format(string, reusedSensitive, reusedSensitive, sensitive);
+    String expected = String.format(string, reusedSensitive, getRedacted(), getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .contains(reusedSensitive)
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactRedactsGemfireSslTruststorePassword() {
+    String string = "-Dgemfire.ssl-truststore-password=%s";
+    String sensitive = "gibberish";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsGemfireSslKeystorePassword() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "gibberish";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsValueEndingWithHyphen() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "supersecret-";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsValueContainingHyphen() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "super-secret";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsValueContainingManyHyphens() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "this-is-super-secret";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsValueStartingWithHyphen() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "-supersecret";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactString_redactsQuotedValueStartingWithHyphen() {
+    String string = "-Dgemfire.ssl-keystore-password=%s";
+    String sensitive = "\"-supersecret\"";
+    String input = String.format(string, sensitive);
+    String expected = String.format(string, getRedacted());
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive)
+        .isEqualTo(expected);
+  }
+
+  @Test
+  public void redactIterable_redactsMultipleMatchingOptions() {
+    String sensitive1 = "secret";
+    String sensitive2 = "super-secret";
+    String sensitive3 = "confidential";
+    String sensitive4 = "shhhh";
+    String sensitive5 = "failed";
+
+    Collection<String> input = new ArrayList<>();
+    input.add("--gemfire.security-password=" + sensitive1);
+    input.add("--login-password=" + sensitive1);
+    input.add("--gemfire-password = " + sensitive2);
+    input.add("--geode-password= " + sensitive3);
+    input.add("--some-other-password =" + sensitive4);
+    input.add("--justapassword =" + sensitive5);
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .doesNotContain(sensitive1)
+        .doesNotContain(sensitive2)
+        .doesNotContain(sensitive3)
+        .doesNotContain(sensitive4)
+        .doesNotContain(sensitive5)
+        .contains("--gemfire.security-password=" + getRedacted())
+        .contains("--login-password=" + getRedacted())
+        .contains("--gemfire-password = " + getRedacted())
+        .contains("--geode-password= " + getRedacted())
+        .contains("--some-other-password =" + getRedacted())
+        .contains("--justapassword =" + getRedacted());
+  }
+
+  @Test
+  public void redactIterable_doesNotRedactMultipleNonMatchingOptions() {
+    Collection<String> input = new ArrayList<>();
+    input.add("--gemfire.security-properties=./security.properties");
+    input.add("--gemfire.sys.security-option=someArg");
+    input.add("--gemfire.use-cluster-configuration=true");
+    input.add("--someotherstringoption");
+    input.add("--login-name=admin");
+    input.add("--myArg --myArg2 --myArg3=-arg4");
+    input.add("--myArg --myArg2 --myArg3=\"-arg4\"");
+
+    String output = redact(input);
+
+    assertThat(output)
+        .as("output of redact(" + input + ")")
+        .contains("--gemfire.security-properties=./security.properties")
+        .contains("--gemfire.sys.security-option=someArg")
+        .contains("--gemfire.use-cluster-configuration=true")
+        .contains("--someotherstringoption")
+        .contains("--login-name=admin")
+        .contains("--myArg --myArg2 --myArg3=-arg4")
+        .contains("--myArg --myArg2 --myArg3=\"-arg4\"");
+  }
+
+  @Test
+  public void redactEachInList_redactsCollectionOfMatchingOptions() {
+    String sensitive1 = "secret";
+    String sensitive2 = "super-secret";
+    String sensitive3 = "confidential";
+    String sensitive4 = "shhhh";
+    String sensitive5 = "failed";
+
+    Collection<String> input = new ArrayList<>();
+    input.add("--gemfire.security-password=" + sensitive1);
+    input.add("--login-password=" + sensitive1);
+    input.add("--gemfire-password = " + sensitive2);
+    input.add("--geode-password= " + sensitive3);
+    input.add("--some-other-password =" + sensitive4);
+    input.add("--justapassword =" + sensitive5);
+
+    List<String> output = redactEachInList(input);
+
+    assertThat(output)
+        .as("output of redactEachInList(" + input + ")")
+        .doesNotContain(sensitive1)
+        .doesNotContain(sensitive2)
+        .doesNotContain(sensitive3)
+        .doesNotContain(sensitive4)
+        .doesNotContain(sensitive5)
+        .contains("--gemfire.security-password=" + getRedacted())
+        .contains("--login-password=" + getRedacted())
+        .contains("--gemfire-password = " + getRedacted())
+        .contains("--geode-password= " + getRedacted())
+        .contains("--some-other-password =" + getRedacted())
+        .contains("--justapassword =" + getRedacted());
   }
 }

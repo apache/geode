@@ -12,20 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.util.redaction;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.geode.internal.util.redaction.StringRedaction;
-
-public class ArgumentRedactor {
-
-  private static final StringRedaction DELEGATE = new StringRedaction();
-
-  private ArgumentRedactor() {
-    // do not instantiate
-  }
+/**
+ * Defines the algorithm for scanning input strings for redaction of sensitive strings.
+ */
+@FunctionalInterface
+interface RedactionStrategy {
 
   /**
    * Parse a string to find key/value pairs and redact the values if identified as sensitive.
@@ -54,45 +47,5 @@ public class ArgumentRedactor {
    *
    * @return A string that has sensitive data redacted.
    */
-  public static String redact(String string) {
-    return DELEGATE.redact(string);
-  }
-
-  public static String redact(Iterable<String> strings) {
-    return DELEGATE.redact(strings);
-  }
-
-  /**
-   * Return the redacted value string if the provided key is identified as sensitive, otherwise
-   * return the original value.
-   *
-   * @param key A string such as a system property, java option, or command-line key.
-   * @param value The string value for the key.
-   *
-   * @return The redacted string if the key is identified as sensitive, otherwise the original
-   *         value.
-   */
-  public static String redactArgumentIfNecessary(String key, String value) {
-    return DELEGATE.redactArgumentIfNecessary(key, value);
-  }
-
-  public static List<String> redactEachInList(Collection<String> strings) {
-    return DELEGATE.redactEachInList(strings);
-  }
-
-  /**
-   * Returns true if a string identifies sensitive data. For example, a string containing
-   * the word "password" identifies data that is sensitive and should be secured.
-   *
-   * @param key The string to be evaluated.
-   *
-   * @return true if the string identifies sensitive data.
-   */
-  public static boolean isSensitive(String key) {
-    return DELEGATE.isSensitive(key);
-  }
-
-  public static String getRedacted() {
-    return DELEGATE.getRedacted();
-  }
+  String redact(String string);
 }
