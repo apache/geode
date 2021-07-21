@@ -19,6 +19,10 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+compileJava {
+  options.compilerArgs << '-Xlint:-sunapi'
+  options.compilerArgs << '-XDenableSunApiLintControl'
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -51,7 +55,6 @@ dependencies {
   api('org.apache.logging.log4j:log4j-api')
   
   api('org.awaitility:awaitility')
-  api('org.bouncycastle:bcpkix-jdk15on')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
   

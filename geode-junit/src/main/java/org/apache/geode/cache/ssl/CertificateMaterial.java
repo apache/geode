@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.ssl;
 
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -29,15 +30,15 @@ import java.util.Optional;
  * @see CertificateBuilder
  * @see CertStores
  */
-public class CertificateMaterial {
+public class CertificateMaterial implements Serializable {
   private final X509Certificate certificate;
   private final KeyPair keyPair;
-  private final Optional<X509Certificate> issuer;
+  private final X509Certificate issuer;
 
   public CertificateMaterial(X509Certificate certificate, KeyPair keyPair, X509Certificate issuer) {
     this.certificate = certificate;
     this.keyPair = keyPair;
-    this.issuer = Optional.ofNullable(issuer);
+    this.issuer = issuer;
   }
 
   public X509Certificate getCertificate() {
@@ -53,6 +54,6 @@ public class CertificateMaterial {
   }
 
   public Optional<X509Certificate> getIssuer() {
-    return issuer;
+    return Optional.ofNullable(issuer);
   }
 }
