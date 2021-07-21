@@ -281,7 +281,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     String str = config.getBindAddress();
     // JGroups UDP protocol requires a bind address
-    if (str == null || str.length() == 0) {
+    if (str == null || str.length() == 0 || LocalHostUtil.isWildcardAddress(str)) {
       try {
         str = LocalHostUtil.getLocalHost().getHostAddress();
       } catch (UnknownHostException e) {
@@ -532,7 +532,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     logicalAddress = logicalAddress.copy();
 
     IpAddress ipaddr = (IpAddress) myChannel.down(new Event(Event.GET_PHYSICAL_ADDRESS));
-
     if (ipaddr != null) {
       this.jgAddress = new JGAddress(logicalAddress, ipaddr);
     } else {

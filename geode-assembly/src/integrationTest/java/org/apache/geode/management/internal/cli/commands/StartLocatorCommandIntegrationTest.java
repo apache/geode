@@ -92,7 +92,7 @@ public class StartLocatorCommandIntegrationTest {
     verify(spy).getProcess(any(), commandLines.capture());
 
     String[] lines = commandLines.getValue();
-    assertThat(lines[12]).isEqualTo("--bind-address=127.0.0.1");
+    assertThat(lines).containsOnlyOnce("--bind-address=127.0.0.1");
   }
 
   @Test
