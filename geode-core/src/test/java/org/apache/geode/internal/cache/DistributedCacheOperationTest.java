@@ -41,13 +41,14 @@ public class DistributedCacheOperationTest {
   @Test
   public void shouldBeMockable() throws Exception {
     DistributedCacheOperation mockDistributedCacheOperation = mock(DistributedCacheOperation.class);
+    @SuppressWarnings("unused") // forces CacheOperationMessage to be mockable
     CacheOperationMessage mockCacheOperationMessage = mock(CacheOperationMessage.class);
     Map<InternalDistributedMember, PersistentMemberID> persistentIds = new HashMap<>();
     when(mockDistributedCacheOperation.supportsDirectAck()).thenReturn(false);
 
-    mockDistributedCacheOperation.waitForAckIfNeeded(mockCacheOperationMessage, persistentIds);
+    mockDistributedCacheOperation.waitForAckIfNeeded(persistentIds);
 
-    verify(mockDistributedCacheOperation, times(1)).waitForAckIfNeeded(mockCacheOperationMessage,
+    verify(mockDistributedCacheOperation, times(1)).waitForAckIfNeeded(
         persistentIds);
 
     assertThat(mockDistributedCacheOperation.supportsDirectAck()).isFalse();
@@ -80,7 +81,7 @@ public class DistributedCacheOperationTest {
     boolean endOperationInvoked;
     DistributedRegion region;
 
-    public TestOperation(CacheEvent event) {
+    public TestOperation(CacheEvent<?, ?> event) {
       super(event);
     }
 
@@ -114,7 +115,7 @@ public class DistributedCacheOperationTest {
   @Test
   public void testDoRemoveDestroyTokensFromCqResultKeys() {
     Object key = new Object();
-    HashMap hashMap = new HashMap();
+    HashMap<Long, Integer> hashMap = new HashMap<>();
     hashMap.put(1L, MessageType.LOCAL_DESTROY);
     EntryEventImpl baseEvent = mock(EntryEventImpl.class);
     ServerCQ serverCQ = mock(ServerCQ.class);
@@ -123,7 +124,7 @@ public class DistributedCacheOperationTest {
         new DestroyOperation(baseEvent);
     when(baseEvent.getKey()).thenReturn(key);
     when(filterInfo.getCQs()).thenReturn(hashMap);
-    when(serverCQ.getFilterID()).thenReturn(new Long(1L));
+    when(serverCQ.getFilterID()).thenReturn(1L);
     doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
 
     distributedCacheOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);

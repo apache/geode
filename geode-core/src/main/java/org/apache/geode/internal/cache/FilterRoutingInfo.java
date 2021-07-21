@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +30,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -45,12 +43,8 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
 
-  private static final boolean OLD_MEMBERS_OPTIMIZED =
-      Boolean.getBoolean("optimized-cq-serialization");
-
   @Immutable
-  private static final KnownVersion[] serializationVersions =
-      new KnownVersion[] {KnownVersion.GFE_71};
+  private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
   /** Set to true if any peer members has any filters. */
   private boolean memberWithFilterInfoExists = false;
@@ -58,26 +52,22 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   /** Holds filter local filter information. */
   private transient FilterInfo localFilterInfo;
 
-  /** whether local interest has been computed (not CQs - just interest) */
-  private transient boolean hasLocalInterestBeenComputed;
-
   /**
    * Map containing peer-server to filter message.
    */
-  private HashMap<InternalDistributedMember, FilterInfo> serverFilterInfo =
-      new HashMap<InternalDistributedMember, FilterInfo>();
+  private final HashMap<InternalDistributedMember, FilterInfo> serverFilterInfo = new HashMap<>();
 
   /**
    * Sets the local CQ filter information.
    *
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
-  public void setLocalCqInfo(HashMap cqInfo) {
-    if (this.localFilterInfo == null) {
-      this.localFilterInfo = new FilterInfo();
+  public void setLocalCqInfo(HashMap<Long, Integer> cqInfo) {
+    if (localFilterInfo == null) {
+      localFilterInfo = new FilterInfo();
     }
-    this.localFilterInfo.cqs = cqInfo;
-    this.localFilterInfo.filterProcessedLocally = true;
+    localFilterInfo.cqs = cqInfo;
+    localFilterInfo.filterProcessedLocally = true;
   }
 
   /**
@@ -86,21 +76,13 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @param clients interested clients with receiveValues=true.
    * @param clientsInv interested clients with receiveValues=false;
    */
-  public void setLocalInterestedClients(Set clients, Set clientsInv) {
-    if (this.localFilterInfo == null) {
-      this.localFilterInfo = new FilterInfo();
+  public void setLocalInterestedClients(Set<Long> clients, Set<Long> clientsInv) {
+    if (localFilterInfo == null) {
+      localFilterInfo = new FilterInfo();
     }
-    this.localFilterInfo.setInterestedClients(clients);
-    this.localFilterInfo.setInterestedClientsInv(clientsInv);
-    this.localFilterInfo.filterProcessedLocally = true;
-    this.hasLocalInterestBeenComputed = true;
-  }
-
-  /**
-   * returns true if local interest has been computed
-   */
-  public boolean hasLocalInterestBeenComputed() {
-    return this.hasLocalInterestBeenComputed;
+    localFilterInfo.setInterestedClients(clients);
+    localFilterInfo.setInterestedClientsInv(clientsInv);
+    localFilterInfo.filterProcessedLocally = true;
   }
 
   /**
@@ -109,7 +91,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @return FilterInfo local filter info having CQs and interested client info.
    */
   public FilterInfo getLocalFilterInfo() {
-    return this.localFilterInfo;
+    return localFilterInfo;
   }
 
   /**
@@ -118,12 +100,12 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @param member for which CQs are satisfied.
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
-  public void setCqRoutingInfo(InternalDistributedMember member, HashMap cqInfo) {
+  public void setCqRoutingInfo(InternalDistributedMember member, HashMap<Long, Integer> cqInfo) {
     FilterInfo fInfo = new FilterInfo();
     fInfo.setCQs(cqInfo);
-    this.serverFilterInfo.put(member, fInfo);
+    serverFilterInfo.put(member, fInfo);
     if (cqInfo.size() > 0) {
-      this.memberWithFilterInfoExists = true;
+      memberWithFilterInfoExists = true;
     }
   }
 
@@ -135,13 +117,14 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @param clientsInv Set containing interested clients with receiveValues=false
    * @param longIDs whether the client IDs may be long integers
    */
-  public void addInterestedClients(InternalDistributedMember member, Set clients, Set clientsInv,
+  public void addInterestedClients(InternalDistributedMember member, Set<Long> clients,
+      Set<Long> clientsInv,
       boolean longIDs) {
-    this.memberWithFilterInfoExists = true;
-    FilterInfo fInfo = this.serverFilterInfo.get(member);
+    memberWithFilterInfoExists = true;
+    FilterInfo fInfo = serverFilterInfo.get(member);
     if (fInfo == null) {
       fInfo = new FilterInfo();
-      this.serverFilterInfo.put(member, fInfo);
+      serverFilterInfo.put(member, fInfo);
     }
     if (clients != null && clients.size() > 0) {
       fInfo.setInterestedClients(clients);
@@ -150,7 +133,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       fInfo.setInterestedClientsInv(clientsInv);
     }
     if (longIDs) {
-      fInfo.longIDs = longIDs;
+      fInfo.longIDs = true;
     }
   }
 
@@ -160,16 +143,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @return the members who have filter routing information
    */
   public Set<InternalDistributedMember> getMembers() {
-    return this.serverFilterInfo.keySet();
-  }
-
-  /**
-   * Returns true if the local filter information is set.
-   *
-   * @return whether there is local routing information in this object
-   */
-  public boolean hasLocalFilterInfo() {
-    return this.localFilterInfo != null;
+    return serverFilterInfo.keySet();
   }
 
   /**
@@ -178,7 +152,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @return true if we have any filter information in this object
    */
   public boolean hasMemberWithFilterInfo() {
-    return this.memberWithFilterInfoExists;
+    return memberWithFilterInfoExists;
   }
 
   /**
@@ -188,7 +162,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
    * @return the filter information for the given member
    */
   public FilterInfo getFilterInfo(InternalDistributedMember member) {
-    return this.serverFilterInfo.get(member);
+    return serverFilterInfo.get(member);
   }
 
   /**
@@ -200,20 +174,20 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   public void addFilterInfo(FilterRoutingInfo eventRouting) {
     for (Map.Entry<InternalDistributedMember, FilterInfo> entry : eventRouting.serverFilterInfo
         .entrySet()) {
-      FilterInfo existing = this.serverFilterInfo.get(entry.getKey());
+      FilterInfo existing = serverFilterInfo.get(entry.getKey());
       if (existing == null) {
         existing = new FilterInfo();
-        this.serverFilterInfo.put(entry.getKey(), existing);
+        serverFilterInfo.put(entry.getKey(), existing);
       }
       existing.addFilterInfo(entry.getValue());
     }
     if (eventRouting.localFilterInfo != null) {
-      if (this.localFilterInfo == null) {
-        this.localFilterInfo = new FilterInfo();
+      if (localFilterInfo == null) {
+        localFilterInfo = new FilterInfo();
       }
-      this.localFilterInfo.addFilterInfo(eventRouting.localFilterInfo);
+      localFilterInfo.addFilterInfo(eventRouting.localFilterInfo);
     }
-    this.memberWithFilterInfoExists |= eventRouting.memberWithFilterInfoExists;
+    memberWithFilterInfoExists |= eventRouting.memberWithFilterInfoExists;
   }
 
   /** DataSerializable methods */
@@ -231,16 +205,16 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       InternalDataSerializer.invokeFromData(fInfo, in);
       // we only need to retain the recipient's entry
       if (myID == null || myID.equals(member)) {
-        this.serverFilterInfo.put(member, fInfo);
+        serverFilterInfo.put(member, fInfo);
       }
     }
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    int size = this.serverFilterInfo.size();
+    int size = serverFilterInfo.size();
     out.writeInt(size);
-    for (Map.Entry<InternalDistributedMember, FilterInfo> e : this.serverFilterInfo.entrySet()) {
+    for (Map.Entry<InternalDistributedMember, FilterInfo> e : serverFilterInfo.entrySet()) {
       InternalDistributedMember member = e.getKey();
       member.writeEssentialData(out);
       FilterInfo fInfo = e.getValue();
@@ -253,50 +227,16 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     return serializationVersions;
   }
 
-  public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    DistributedMember myID = null;
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      myID = cache.getMyId();
-    }
-    int size = in.readInt();
-    for (int i = 0; i < size; i++) {
-      InternalDistributedMember member = new InternalDistributedMember();
-      InternalDataSerializer.invokeFromData(member, in);
-      FilterInfo fInfo = new FilterInfo();
-      InternalDataSerializer.invokeFromData(fInfo, in);
-      // we only need to retain the recipient's entry
-      if (myID == null || myID.equals(member)) {
-        this.serverFilterInfo.put(member, fInfo);
-      }
-    }
-  }
-
-  public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
-    int size = this.serverFilterInfo.size();
-    out.writeInt(size);
-    for (Map.Entry<InternalDistributedMember, FilterInfo> e : this.serverFilterInfo.entrySet()) {
-      InternalDistributedMember member = e.getKey();
-      InternalDataSerializer.invokeToData(member, out);
-      FilterInfo fInfo = e.getValue();
-      InternalDataSerializer.invokeToData(fInfo, out);
-    }
-  }
-
   @Override
   public String toString() {
     String result = "FilterRoutingInfo(";
-    if (this.localFilterInfo != null) {
+    if (localFilterInfo != null) {
       result += "local=";
-      result += this.localFilterInfo;
-      if (this.serverFilterInfo != null) {
-        result += ", ";
-      }
+      result += localFilterInfo;
+      result += ", ";
     }
-    if (this.serverFilterInfo != null) {
-      result += "remote=";
-      result += this.serverFilterInfo;
-    }
+    result += "remote=";
+    result += serverFilterInfo;
     return result + ")";
   }
 
@@ -315,19 +255,16 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
     /**
      * serialized routing data. This is only deserialized when requested so that routing information
-     * for other members included in a cach op message stays serialized, reducing the cost of having
-     * to send all routing info to all members
+     * for other members included in a cache op message stays serialized, reducing the cost of
+     * having to send all routing info to all members
      */
     private transient byte[] myData;
 
-    /** version of creator of myData, needed for deserialization */
-    private transient KnownVersion myDataVersion;
-
     /** Clients that are interested in the event and want values */
-    private Set interestedClients;
+    private Set<Long> interestedClients;
 
     /** Clients that are interested in the event and want invalidations */
-    private Set interestedClientsInv;
+    private Set<Long> interestedClientsInv;
 
     /** To identify where the filter is processed, locally or in remote node */
     public boolean filterProcessedLocally = false;
@@ -335,35 +272,34 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     /** adds the content from another FilterInfo object. */
     public void addFilterInfo(FilterInfo other) {
       if (other.cqs != null) {
-        if (this.cqs == null) {
-          this.cqs = new HashMap();
+        if (cqs == null) {
+          cqs = new HashMap<>();
         }
         for (Map.Entry<Long, Integer> entry : other.cqs.entrySet()) {
-          this.cqs.put(entry.getKey(), entry.getValue());
+          cqs.put(entry.getKey(), entry.getValue());
         }
       }
       if (other.interestedClients != null) {
-        if (this.interestedClients == null) {
-          this.interestedClients = new HashSet();
+        if (interestedClients == null) {
+          interestedClients = new HashSet<>();
         }
-        this.interestedClients.addAll(other.interestedClients);
+        interestedClients.addAll(other.interestedClients);
       }
       if (other.interestedClientsInv != null) {
-        if (this.interestedClientsInv == null) {
-          this.interestedClientsInv = new HashSet();
+        if (interestedClientsInv == null) {
+          interestedClientsInv = new HashSet<>();
         }
-        this.interestedClientsInv.addAll(other.interestedClientsInv);
+        interestedClientsInv.addAll(other.interestedClientsInv);
       }
     }
 
     /** clears CQ routing information */
     public void clearCQRouting() {
-      this.cqs = null;
+      cqs = null;
     }
 
     @Immutable
-    private static final KnownVersion[] serializationVersions =
-        new KnownVersion[] {KnownVersion.GFE_80};
+    private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
     @Override
     public KnownVersion[] getSerializationVersions() {
@@ -373,7 +309,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     /** DataSerializable methods */
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.myData = DataSerializer.readByteArray(in);
+      myData = DataSerializer.readByteArray(in);
     }
 
     @Override
@@ -386,121 +322,77 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       byte[] myData = StaticSerialization.getThreadLocalByteArray(size);
       hdos = new HeapDataOutputStream(myData);
       hdos.disallowExpansion();
-      if (this.cqs == null) {
+      if (cqs == null) {
         hdos.writeBoolean(false);
       } else {
         hdos.writeBoolean(true);
         InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
-        for (Iterator it = this.cqs.entrySet().iterator(); it.hasNext();) {
-          Map.Entry e = (Map.Entry) it.next();
+        for (final Map.Entry<Long, Integer> longIntegerEntry : cqs.entrySet()) {
           // most cq IDs and all event types are small ints, so we use an optimized
           // write that serializes 7 bits at a time in a compact form
-          InternalDataSerializer.writeUnsignedVL((Long) e.getKey(), hdos);
-          InternalDataSerializer.writeUnsignedVL((Integer) e.getValue(), hdos);
+          InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getKey(), hdos);
+          InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getValue(), hdos);
         }
       }
-      InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
-      InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
+      InternalDataSerializer.writeSetOfLongs(interestedClients, longIDs, hdos);
+      InternalDataSerializer.writeSetOfLongs(interestedClientsInv, longIDs, hdos);
       hdos.finishWriting();
       DataSerializer.writeByteArray(myData, hdos.size(), out);
     }
 
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-      if (OLD_MEMBERS_OPTIMIZED) {
-        this.myDataVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
-        this.myData = DataSerializer.readByteArray(in);
-      } else {
-        this.cqs = DataSerializer.readHashMap(in);
-        this.interestedClients = InternalDataSerializer.readSetOfLongs(in);
-        this.interestedClientsInv = InternalDataSerializer.readSetOfLongs(in);
-      }
-    }
-
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-      if (OLD_MEMBERS_OPTIMIZED) {
-        HeapDataOutputStream hdos =
-            new HeapDataOutputStream(1000, StaticSerialization.getVersionForDataStream(out));
-        if (this.cqs == null) {
-          hdos.writeBoolean(false);
-        } else {
-          hdos.writeBoolean(true);
-          InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
-          for (Iterator it = this.cqs.entrySet().iterator(); it.hasNext();) {
-            Map.Entry e = (Map.Entry) it.next();
-            // most cq IDs and all event types are small ints, so we use an optimized
-            // write that serializes 7 bits at a time in a compact form
-            InternalDataSerializer.writeUnsignedVL((Long) e.getKey(), hdos);
-            InternalDataSerializer.writeUnsignedVL((Integer) e.getValue(), hdos);
-          }
-        }
-        InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
-        InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
-        if (out instanceof HeapDataOutputStream) {
-          ((ObjToByteArraySerializer) out).writeAsSerializedByteArray(hdos);
-        } else {
-          byte[] myData = hdos.toByteArray();
-          DataSerializer.writeByteArray(myData, out);
-        }
-      } else {
-        DataSerializer.writeHashMap(this.cqs, out);
-        InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, out);
-        InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, out);
-      }
-    }
-
     public HashMap<Long, Integer> getCQs() {
-      if (this.cqs == null && this.myData != null) {
+      if (cqs == null && myData != null) {
         deserialize();
       }
-      return this.cqs;
+      return cqs;
     }
 
     public void setCQs(HashMap<Long, Integer> cqs) {
       this.cqs = cqs;
     }
 
-    public Set getInterestedClients() {
-      if (this.interestedClients == null && this.myData != null) {
+    public Set<Long> getInterestedClients() {
+      if (interestedClients == null && myData != null) {
         deserialize();
       }
-      return this.interestedClients;
+      return interestedClients;
     }
 
-    public void setInterestedClients(Set clients) {
-      this.interestedClients = clients;
+    public void setInterestedClients(Set<Long> clients) {
+      interestedClients = clients;
     }
 
-    public Set getInterestedClientsInv() {
-      if (this.interestedClientsInv == null && this.myData != null) {
+    public Set<Long> getInterestedClientsInv() {
+      if (interestedClientsInv == null && myData != null) {
         deserialize();
       }
-      return this.interestedClientsInv;
+      return interestedClientsInv;
     }
 
-    public void setInterestedClientsInv(Set clients) {
-      this.interestedClientsInv = clients;
+    public void setInterestedClientsInv(Set<Long> clients) {
+      interestedClientsInv = clients;
     }
 
     /**
      * FilterInfo fields are only deserialized if they are needed. We send all FilterInfo routings
-     * to all members that receive a cach op message but each member is only interested in its own
+     * to all members that receive a cache op message but each member is only interested in its own
      * routing, so there is no need to deserialize the routings for other members
      */
     private void deserialize() {
-      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData, myDataVersion)) {
+      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData)) {
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);
-          this.cqs = new HashMap(numEntries);
+          cqs = new HashMap<>(numEntries);
           for (int i = 0; i < numEntries; i++) {
             Long key = InternalDataSerializer.readUnsignedVL(dis);
             Integer value = (int) InternalDataSerializer.readUnsignedVL(dis);
-            this.cqs.put(key, value);
+            cqs.put(key, value);
           }
         }
-        this.interestedClients = InternalDataSerializer.readSetOfLongs(dis);
-        this.interestedClientsInv = InternalDataSerializer.readSetOfLongs(dis);
-        this.myData = null; // prevent future deserializations by setting this to null
+        interestedClients = InternalDataSerializer.readSetOfLongs(dis);
+        interestedClientsInv = InternalDataSerializer.readSetOfLongs(dis);
+        myData = null; // prevent future deserializations by setting this to null
       } catch (IOException e) {
         throw new InternalGemFireError(e);
       }
@@ -509,22 +401,22 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      if (this.interestedClients != null && this.interestedClients.size() > 0) {
+      if (interestedClients != null && interestedClients.size() > 0) {
         sb.append("interestedClients:");
-        sb.append(this.interestedClients);
+        sb.append(interestedClients);
       }
-      if (this.interestedClientsInv != null && this.interestedClientsInv.size() > 0) {
+      if (interestedClientsInv != null && interestedClientsInv.size() > 0) {
         sb.append(", interestedClientsInv:");
-        sb.append(this.interestedClientsInv);
+        sb.append(interestedClientsInv);
       }
       if (InternalDistributedSystem.getLogger().finerEnabled()) {
-        if (this.cqs != null) {
+        if (cqs != null) {
           sb.append(", cqs=");
-          sb.append(this.cqs.keySet());
+          sb.append(cqs.keySet());
         }
       } else {
-        if (this.cqs != null) {
-          sb.append(", ").append(this.cqs.size()).append(" cqs");
+        if (cqs != null) {
+          sb.append(", ").append(cqs.size()).append(" cqs");
         }
       }
       return sb.toString();

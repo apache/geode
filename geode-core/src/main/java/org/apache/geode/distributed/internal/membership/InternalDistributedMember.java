@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.InternalGemFireError;
@@ -256,8 +257,6 @@ public class InternalDistributedMember
    */
   @Override
   public DurableClientAttributes getDurableClientAttributes() {
-    assert !this.isPartial();
-
     if (durableClientAttributes == null) {
       String durableId = memberIdentifier.getDurableId();
 
@@ -272,10 +271,8 @@ public class InternalDistributedMember
     return durableClientAttributes;
   }
 
-  /**
-   * Returns an unmodifiable Set of this member's Roles.
-   */
   @Override
+  @Deprecated
   public Set<Role> getRoles() {
 
     if (getGroups() == null) {
@@ -285,7 +282,7 @@ public class InternalDistributedMember
   }
 
   @Override
-  public int compareTo(DistributedMember o) {
+  public int compareTo(@NotNull DistributedMember o) {
     return compareTo(o, false, true);
   }
 
@@ -305,7 +302,8 @@ public class InternalDistributedMember
 
   @Override
   public int compareTo(
-      MemberIdentifier memberIdentifier, boolean compareMemberData, boolean compareViewIds) {
+      @NotNull MemberIdentifier memberIdentifier, boolean compareMemberData,
+      boolean compareViewIds) {
     return this.memberIdentifier.compareTo(memberIdentifier, compareMemberData, compareViewIds);
   }
 
@@ -470,12 +468,6 @@ public class InternalDistributedMember
     memberIdentifier.toDataPre_GFE_9_0_0_0(out, context);
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out,
-      SerializationContext context)
-      throws IOException {
-    memberIdentifier.toDataPre_GFE_7_1_0_0(out, context);
-  }
-
   @Override
   public void fromData(DataInput in,
       DeserializationContext context)
@@ -489,14 +481,6 @@ public class InternalDistributedMember
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_9_0_0_0(in, context);
-    durableClientAttributes = null;
-  }
-
-  @Override
-  public void fromDataPre_GFE_7_1_0_0(DataInput in,
-      DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    memberIdentifier.fromDataPre_GFE_7_1_0_0(in, context);
     durableClientAttributes = null;
   }
 
@@ -639,8 +623,4 @@ public class InternalDistributedMember
     return memberIdentifier.getUUID();
   }
 
-  @FunctionalInterface
-  public interface HostnameResolver {
-    InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
-  }
 }

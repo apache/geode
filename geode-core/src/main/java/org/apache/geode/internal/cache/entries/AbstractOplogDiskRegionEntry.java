@@ -66,13 +66,13 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   @Override
   public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
       DistributionManager mgr, final KnownVersion version) {
-    return Helper.fillInValue(this, entry, region.getDiskRegion(), mgr, in, region, version);
+    return Helper.fillInValue(this, entry, region.getDiskRegion(), region, version);
   }
 
   @Override
   public boolean isOverflowedToDisk(InternalRegion region,
       DistributedRegion.DiskPosition diskPosition) {
-    return Helper.isOverflowedToDisk(this, region.getDiskRegion(), diskPosition, region);
+    return Helper.isOverflowedToDisk(this, region.getDiskRegion(), diskPosition);
   }
 
   @Override

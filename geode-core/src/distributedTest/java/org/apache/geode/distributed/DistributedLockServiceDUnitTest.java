@@ -2502,7 +2502,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       public void run() {
         logger.info("[testGrantTokenCleanup] vmGrantor creates grantor");
         connectDistributedSystem();
-        DistributedLockService dls = DLockService.create(dlsName, getSystem(), true, true, true);
+        DistributedLockService dls = DLockService.create(dlsName, getSystem(), true, true);
         assertThat(dls.lock(key1, -1, -1)).isTrue();
         assertThat(dls.isLockGrantor()).isTrue();
         DLockGrantor grantor = ((DLockService) dls).getGrantor();
@@ -2522,7 +2522,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         logger.info("[testTokenCleanup] vm1 locks key1");
         connectDistributedSystem();
         DLockService dls =
-            (DLockService) DLockService.create(dlsName, getSystem(), true, true, false);
+            (DLockService) DLockService.create(dlsName, getSystem(), true, false);
         assertThat(dls.lock(key1, -1, -1)).isTrue();
 
         logger.info("[testTokenCleanup] vm1 frees key1");

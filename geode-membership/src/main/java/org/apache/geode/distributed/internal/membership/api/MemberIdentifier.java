@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -167,12 +168,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context) throws IOException;
 
-  void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context) throws IOException;
-
   void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException;
-
-  void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException;
 
   void _readEssentialData(DataInput in, Function<InetAddress, String> hostnameResolver)
@@ -194,7 +190,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
 
   void setUniqueTag(String tag);
 
-  int compareTo(MemberIdentifier memberIdentifier, boolean compareMemberData,
+  int compareTo(@NotNull MemberIdentifier memberIdentifier, boolean compareMemberData,
       boolean compareViewIds);
 
   String getUniqueTag();
