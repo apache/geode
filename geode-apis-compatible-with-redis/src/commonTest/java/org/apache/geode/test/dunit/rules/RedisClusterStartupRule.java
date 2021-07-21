@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -28,12 +29,18 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.ClusterNode;
 import org.apache.geode.redis.ClusterNodes;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -154,4 +161,58 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
       FastLogger.setDelegating(true);
     });
   }
+
+  /**
+   * Assuming a redundancy of 1, and at least 3 members, move the given key's primary bucket to a
+   * non-hosting member.
+   */
+  public DistributedMember moveBucketForKey(String key) {
+    return getMember(1).invoke("moveBucketForKey: " + key, () -> {
+      Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+          .getRegion(RegionProvider.REDIS_DATA_REGION);
+
+      RedisKey redisKey = new RedisKey(key.getBytes());
+      DistributedMember primaryMember = PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
+      Set<DistributedMember> allHosting = PartitionRegionHelper.getAllMembersForKey(r, redisKey);
+
+      // Returns all members, except the one calling.
+      Set<DistributedMember> allMembers = getCache().getMembers(r);
+      allMembers.add(getCache().getDistributedSystem().getDistributedMember());
+
+      allMembers.removeAll(allHosting);
+      DistributedMember targetMember = allMembers.stream().findFirst().orElseThrow(
+          () -> new IllegalStateException("No non-hosting member found for key: " + key));
+
+      PartitionRegionHelper.moveBucketByKey(r, primaryMember, targetMember, redisKey);
+
+      // Who is the primary now?
+      return PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
+    });
+  }
+
+  /**
+   * Return some key of the form {@code prefix<N>}, (where {@code N} is an integer), for which the
+   * given VM is the primary bucket holder. This is useful in tests where one needs to ensure that
+   * a given key would be hosted on a given server.
+   */
+  public String getKeyOnServer(String keyPrefix, int vmId) {
+    return getMember(1).invoke("getKeyOnServer", () -> {
+      Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+          .getRegion(RegionProvider.REDIS_DATA_REGION);
+
+      String server = "server-" + vmId;
+      String key;
+      int i = 0;
+      while (true) {
+        key = keyPrefix + i;
+        DistributedMember primaryMember =
+            PartitionRegionHelper.getPrimaryMemberForKey(r, new RedisKey(key.getBytes()));
+        if (primaryMember.getName().equals(server)) {
+          return key;
+        }
+        i++;
+      }
+    });
+  }
+
 }

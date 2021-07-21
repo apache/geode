@@ -16,7 +16,6 @@
 package org.apache.geode.redis.session;
 
 
-
 import java.net.HttpCookie;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -29,15 +28,13 @@ import java.util.Map;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+import io.lettuce.core.RedisConnectionException;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +51,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -103,7 +99,8 @@ public abstract class SessionDUnitTest {
   protected static void setupRetry() {
     RetryConfig config = RetryConfig.custom()
         .maxAttempts(20)
-        .retryExceptions(HttpServerErrorException.InternalServerError.class)
+        .retryExceptions(HttpServerErrorException.InternalServerError.class,
+            RedisConnectionException.class)
         .build();
     RetryRegistry registry = RetryRegistry.of(config);
     retry = registry.retry("sessions");
@@ -140,7 +137,7 @@ public abstract class SessionDUnitTest {
 
     redisClient.setOptions(ClusterClientOptions.builder()
         .topologyRefreshOptions(refreshOptions)
-        .autoReconnect(true)
+        .validateClusterNodeMembership(false)
         .build());
     connection = redisClient.connect();
     commands = connection.sync();
@@ -167,6 +164,7 @@ public abstract class SessionDUnitTest {
     try {
       redisClient.shutdown();
     } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
     }
   }
 
@@ -177,12 +175,7 @@ public abstract class SessionDUnitTest {
 
   protected static void startRedisServer(int server) {
     cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
-
-    cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
-      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
-      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
-      FastLogger.setDelegating(true);
-    });
+    cluster.enableDebugLogging(server);
   }
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {

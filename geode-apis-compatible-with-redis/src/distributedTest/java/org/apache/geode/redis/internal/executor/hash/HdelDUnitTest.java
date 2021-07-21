@@ -22,13 +22,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.lettuce.core.RedisException;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
@@ -36,7 +37,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("GEODE-9368")
 public class HdelDUnitTest {
 
   @ClassRule
@@ -47,8 +47,6 @@ public class HdelDUnitTest {
 
   private static final int HASH_SIZE = 50000;
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
   private static RedisAdvancedClusterCommands<String, String> lettuce;
   private static RedisClusterClient clusterClient;
 
@@ -56,18 +54,33 @@ public class HdelDUnitTest {
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
 
-    server1 = cluster.startRedisVM(1, locator.getPort());
-    server2 = cluster.startRedisVM(2, locator.getPort());
+    cluster.startRedisVM(1, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
     int redisServerPort1 = cluster.getRedisPort(1);
     clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
+
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .refreshTriggersReconnectAttempts(1)
+            .build();
+
+    clusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
+        .build());
 
     lettuce = clusterClient.connect().sync();
   }
 
   @AfterClass
   public static void cleanup() {
-    clusterClient.shutdown();
+    try {
+      clusterClient.shutdown();
+    } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
   }
 
   @Before
@@ -119,7 +132,7 @@ public class HdelDUnitTest {
             .start();
 
     cluster.crashVM(2);
-    server2 = cluster.startRedisVM(2, locator.getPort());
+    cluster.startRedisVM(2, locator.getPort());
 
     loopingThreads.await();
     assertThat(lettuce.hgetall(key).size())

@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -50,16 +51,12 @@ public class HScanExecutor extends AbstractScanExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
 
     String cursorString = bytesToString(commandElems.get(2));
     int cursor;
-    Pattern matchPattern;
-    String globPattern = null;
-    int count = DEFAULT_COUNT;
 
     try {
       cursor = Integer.parseInt(cursorString);
@@ -68,54 +65,67 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
 
     RedisKey key = command.getKey();
-    if (!getDataRegion(context).containsKey(key)) {
-      context.getRedisStats().incKeyspaceMisses();
-      return RedisResponse.emptyScan();
-    }
 
-    if (getDataRegion(context).get(key).getType() != REDIS_HASH) {
-      throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
-    }
+    // Because we're trying to preserve the same semantics of error conditions, with native redis,
+    // the ordering of input validation is reflected here. To that end the first check ends up
+    // being an existence check of the key. That causes a race since the data value needs to be
+    // accessed again when the actual command does its work. If the relevant bucket doesn't get
+    // locked throughout the call, the bucket may move producing inconsistent results.
+    return context.getRegionProvider().execute(key, () -> {
+      String globPattern = null;
+      int count = DEFAULT_COUNT;
+      Pattern matchPattern;
 
-    command.getCommandType().checkDeferredParameters(command, context);
+      RedisData value = context.getRegionProvider().getRedisData(key);
+      if (value.isNull()) {
+        context.getRedisStats().incKeyspaceMisses();
+        return RedisResponse.emptyScan();
+      }
 
-    for (int i = 3; i < commandElems.size(); i = i + 2) {
-      byte[] commandElemBytes = commandElems.get(i);
-      if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
-        commandElemBytes = commandElems.get(i + 1);
-        globPattern = bytesToString(commandElemBytes);
+      if (value.getType() != REDIS_HASH) {
+        throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
+      }
 
-      } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
-        commandElemBytes = commandElems.get(i + 1);
-        try {
-          count = narrowLongToInt(bytesToLong(commandElemBytes));
-        } catch (NumberFormatException e) {
-          return RedisResponse.error(ERROR_NOT_INTEGER);
-        }
+      command.getCommandType().checkDeferredParameters(command, context);
 
-        if (count < 1) {
+      for (int i = 3; i < commandElems.size(); i = i + 2) {
+        byte[] commandElemBytes = commandElems.get(i);
+        if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
+          commandElemBytes = commandElems.get(i + 1);
+          globPattern = bytesToString(commandElemBytes);
+
+        } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
+          commandElemBytes = commandElems.get(i + 1);
+          try {
+            count = narrowLongToInt(bytesToLong(commandElemBytes));
+          } catch (NumberFormatException e) {
+            return RedisResponse.error(ERROR_NOT_INTEGER);
+          }
+
+          if (count < 1) {
+            return RedisResponse.error(ERROR_SYNTAX);
+          }
+
+        } else {
           return RedisResponse.error(ERROR_SYNTAX);
         }
-
-      } else {
-        return RedisResponse.error(ERROR_SYNTAX);
       }
-    }
-    try {
-      matchPattern = convertGlobToRegex(globPattern);
-    } catch (PatternSyntaxException e) {
-      logger.warn(
-          "Could not compile the pattern: '{}' due to the following exception: '{}'. HSCAN will return an empty list.",
-          globPattern, e.getMessage());
+      try {
+        matchPattern = convertGlobToRegex(globPattern);
+      } catch (PatternSyntaxException e) {
+        logger.warn(
+            "Could not compile the pattern: '{}' due to the following exception: '{}'. HSCAN will return an empty list.",
+            globPattern, e.getMessage());
 
-      return RedisResponse.emptyScan();
-    }
-    RedisHashCommands redisHashCommands = context.getHashCommands();
+        return RedisResponse.emptyScan();
+      }
+      RedisHashCommands redisHashCommands = context.getHashCommands();
 
-    Pair<Integer, List<byte[]>> scanResult =
-        redisHashCommands.hscan(key, matchPattern, count, cursor);
+      Pair<Integer, List<byte[]>> scanResult =
+          redisHashCommands.hscan(key, matchPattern, count, cursor);
 
-    return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
-        scanResult.getRight());
+      return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
+          scanResult.getRight());
+    });
   }
 }

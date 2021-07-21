@@ -49,6 +49,12 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cache = cacheFactory.create();
     server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
     server.setAllowUnsupportedCommands(enableUnsupportedCommands);
+
+    // Ensure that buckets are created up front
+    try {
+      server.getRegionProvider().getSlotAdvisor().getBucketSlots();
+    } catch (InterruptedException ignored) {
+    }
   }
 
   public GeodeRedisServerRule withProperty(String property, String value) {

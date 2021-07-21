@@ -35,7 +35,15 @@ export JAVA_HOME=${JAVA_TEST_PATH}
   --name=server1 \
   --compatible-with-redis-port=6380 \
   --compatible-with-redis-bind-address=127.0.0.1 \
-  --compatible-with-redis-password=foobar
+  --compatible-with-redis-password=foobar \
+  --server-port=0 \
+  --J=-Dgemfire.jmx-manager=true \
+  --J=-Dgemfire.jmx-manager-start=true \
+  --J=-Dgemfire.jmx-manager-port=1099
+
+# This will cause all buckets to be created
+../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \
+  -e "query --query='select count(*) from /REDIS_DATA'"
 
 failCount=0
 
@@ -43,13 +51,21 @@ failCount=0
 
 ((failCount += $?))
 
+../geode-assembly/build/install/apache-geode/bin/gfsh stop server --dir=server1
 
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-unsupported-commands=true \
   --name=server2 \
   --server-port=0 \
   --compatible-with-redis-port=6379 \
-  --compatible-with-redis-bind-address=127.0.0.1
+  --compatible-with-redis-bind-address=127.0.0.1 \
+  --J=-Dgemfire.jmx-manager=true \
+  --J=-Dgemfire.jmx-manager-start=true \
+  --J=-Dgemfire.jmx-manager-port=1099
+
+# This will cause all buckets to be created
+../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \
+  -e "query --query='select count(*) from /REDIS_DATA'"
 
 ./runtest --host 127.0.0.1 --port 6379 \
 --single unit/type/set \

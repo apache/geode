@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("GEODE-9341")
+@Ignore("GEODE-9437")
 public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @Rule

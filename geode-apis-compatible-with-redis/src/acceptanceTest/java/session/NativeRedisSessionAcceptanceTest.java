@@ -16,13 +16,11 @@ package session;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.redis.NativeRedisClusterTestRule;
 import org.apache.geode.redis.session.RedisSessionDUnitTest;
 
-@Ignore("GEODE-9341")
 public class NativeRedisSessionAcceptanceTest extends RedisSessionDUnitTest {
 
   @ClassRule

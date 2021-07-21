@@ -92,7 +92,11 @@ public class HashesAndCrashesDUnitTest {
 
   @AfterClass
   public static void cleanup() {
-    clusterClient.shutdown();
+    try {
+      clusterClient.shutdown();
+    } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
   }
 
   @Test
