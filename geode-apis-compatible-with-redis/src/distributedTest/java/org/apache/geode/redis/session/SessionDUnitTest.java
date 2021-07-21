@@ -35,7 +35,6 @@ import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
@@ -179,7 +178,7 @@ public abstract class SessionDUnitTest {
     cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
 
     cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
-      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
+      Logger logger = LogService.getLogger("org.apache.geode.redis.internal");
       Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
       FastLogger.setDelegating(true);
     });
@@ -187,7 +186,7 @@ public abstract class SessionDUnitTest {
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
     int httpPort = ports.get(sessionApp);
-    VM host = cluster.getVM(sessionApp);
+    VM host = cluster.getVM(sessionApp).initializeAsClientVM();
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");

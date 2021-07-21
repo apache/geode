@@ -116,12 +116,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    *
    * @see #getRegionAttributes
    */
-  protected <K, V> Region<K, V> createRegion(String name) throws CacheException {
+  public <K, V> Region<K, V> createRegion(String name) throws CacheException {
     RegionFactory<K, V> regionFactory = getCache().createRegionFactory(getRegionAttributes());
     return createRegion(name, regionFactory);
   }
 
-  protected <K, V> Region<K, V> createRootRegion() throws CacheException {
+  public <K, V> Region<K, V> createRootRegion() throws CacheException {
     return createRootRegion(getRegionAttributes());
   }
 
@@ -129,7 +129,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    * Returns the attributes of a region to be tested by this test. Note that the decision as to
    * which attributes are used is left up to the concrete subclass.
    */
-  protected abstract <K, V> RegionAttributes<K, V> getRegionAttributes();
+  public abstract <K, V> RegionAttributes<K, V> getRegionAttributes();
 
   /** pauses only if no ack */
   protected void pauseIfNecessary() {}

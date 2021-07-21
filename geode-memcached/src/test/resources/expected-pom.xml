@@ -56,10 +56,5 @@
       <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
   </dependencies>
 </project>

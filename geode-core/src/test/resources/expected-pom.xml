@@ -78,6 +78,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
+      <artifactId>geode-logging</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
       <artifactId>geode-management</artifactId>
       <scope>compile</scope>
     </dependency>
@@ -186,11 +191,6 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
       <scope>runtime</scope>
@@ -210,11 +210,6 @@
     <dependency>
       <groupId>com.healthmarketscience.rmiio</groupId>
       <artifactId>rmiio</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-logging</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -250,14 +245,14 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-deployment-legacy</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
       <artifactId>geode-http-service</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-deployment-legacy</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

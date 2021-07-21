@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,6 +65,8 @@ public class DeployFunction implements InternalFunction<Object[]> {
       final List<String> jarFilenames = (List<String>) args[0];
       @SuppressWarnings("unchecked")
       final List<RemoteInputStream> jarStreams = (List<RemoteInputStream>) args[1];
+      List<String> dependencies =
+          args[2] == null ? Collections.emptyList() : Arrays.asList((String[]) args[2]);
 
       InternalCache cache = (InternalCache) context.getCache();
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
@@ -76,7 +79,8 @@ public class DeployFunction implements InternalFunction<Object[]> {
       List<Deployment> deployments;
 
       deployments = jarFilenames.stream().map(jarFileName -> new Deployment(jarFileName,
-          getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
+          getDeployedBy(cache), Instant.now().toString(), dependencies))
+          .collect(Collectors.toList());
 
       for (int i = 0; i < deployments.size(); i++) {
         Deployment deployment = deployments.get(i);

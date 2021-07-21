@@ -223,6 +223,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
     VM locatorVM = getVM(index, version);
+    locatorVM.initializeAsLocatorVM();
     LocatorStarterRule locatorStarter = new LocatorStarterRule();
     Locator server = locatorVM.invoke("start locator in vm" + index, () -> {
       memberStarter = locatorStarter;
@@ -287,6 +288,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   public ClientVM startClientVM(int index, String clientVersion,
       SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
     VM client = getVM(index, clientVersion);
+    client.initializeAsClientVM();
     Exception error = client.invoke(() -> {
       clientCacheRule = new ClientCacheRule();
       try {

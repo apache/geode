@@ -33,7 +33,7 @@ public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedT
   @Before
   public void before() throws Exception {
     final Host host = Host.getHost(0);
-    this.locator = host.getVM(0);
+    this.locator = host.getVM(0).initializeAsLocatorVM();
   }
 
   @Test

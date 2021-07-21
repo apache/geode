@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -83,7 +82,7 @@ public class ChangeLogLevelFunctionIntegrationTest {
     setupInternalLogWriter();
 
     geodeLogger = LogService.getLogger();
-    applicationLogger = LogManager.getLogger(APPLICATION_LOGGER_NAME);
+    applicationLogger = LogService.getLogger(APPLICATION_LOGGER_NAME);
 
     logConfig = system.getLogConfig();
     assertThat(logConfig.getLogLevel()).isEqualTo(INFO.intLevel());

@@ -39,10 +39,10 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.services.result.ServiceResult;

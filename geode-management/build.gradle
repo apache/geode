@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -30,13 +30,10 @@ dependencies {
   implementation('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
 
-  compileOnly(project(':geode-common')) {
+  implementation(project(':geode-common')) {
     exclude module: 'junit'
   }
-  compileOnly('io.springfox:springfox-swagger2') {
-    exclude module: 'slf4j-api'
-    exclude module: "jackson-annotations"
-  }
+  implementation('io.swagger:swagger-annotations')
 
   testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit')) {

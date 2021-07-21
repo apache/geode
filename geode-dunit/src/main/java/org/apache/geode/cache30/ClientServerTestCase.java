@@ -89,7 +89,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
    * Defaults to 0 which means no selector in server. Subclasses can override setting this to a
    * value > 0 to enable selector.
    */
-  protected int getMaxThreads() {
+  public int getMaxThreads() {
     return 0;
   }
 
@@ -285,7 +285,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
 
 
 
-  protected static DistributedMember getMemberId() {
+  public static DistributedMember getMemberId() {
     await("Waiting for client to connect " + getSystemStatic().getMemberId())
         .until(() -> getSystemStatic().getDistributedMember().getMembershipPort() > 0);
     return getSystemStatic().getDistributedMember();

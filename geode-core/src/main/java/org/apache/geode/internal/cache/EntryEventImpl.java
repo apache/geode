@@ -535,6 +535,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.distributedMember;
   }
 
+  public void setDistributedMember(DistributedMember distributedMember) {
+    this.distributedMember = distributedMember;
+  }
+
   /////////////////////// INTERNAL BOOLEAN SETTERS
   public void setOriginRemote(boolean b) {
     setEventFlag(EventFlags.FLAG_ORIGIN_REMOTE, b);

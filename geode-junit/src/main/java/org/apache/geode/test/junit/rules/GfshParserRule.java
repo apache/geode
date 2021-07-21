@@ -24,7 +24,7 @@ import org.junit.rules.ExternalResource;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;

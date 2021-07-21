@@ -121,7 +121,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private static final int WAIT_DEFAULT = (20 * 1000);
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
+  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
 
   public final String[] cqs = new String[] {
       // 0 - Test for ">"

@@ -93,7 +93,8 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
   private VM vm3;
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
+  // classloader isolation is turned off because Mockito does not work well across classloaders.
+  public DistributedRule distributedRule = new DistributedRule(false);
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   @Rule

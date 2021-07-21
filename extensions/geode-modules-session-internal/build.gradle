@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-distributedTest.gradle"
 dependencies {
   // main
   implementation(platform(project(':boms:geode-all-bom')))

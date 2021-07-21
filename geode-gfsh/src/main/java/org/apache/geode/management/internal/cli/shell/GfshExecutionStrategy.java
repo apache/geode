@@ -25,8 +25,8 @@ import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;

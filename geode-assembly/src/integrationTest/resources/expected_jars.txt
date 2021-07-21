@@ -22,9 +22,9 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
+fastutil
 fastutil-core
 fastutil-extra
-fastutil
 findbugs-annotations
 geo
 gfsh-dependencies.jar
@@ -43,6 +43,7 @@ javax.servlet-api
 javax.transaction-api
 jaxb-api
 jaxb-impl
+jboss-modules
 jcip-annotations
 jetty-http
 jetty-io

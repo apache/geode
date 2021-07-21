@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
 
@@ -49,30 +50,34 @@ public class FunctionScannerTest {
 
   @Test
   public void implementsFunction() throws Exception {
-    File sourceFileOne = loadTestResource("ImplementsFunction.java");
+    File sourceFileOne = loadTestResource(
+        "example/org/apache/geode/management/internal/deployment/ImplementsFunction.java");
 
     jarBuilder.buildJar(outputJar, sourceFileOne);
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .contains("org.apache.geode.management.internal.deployment.ImplementsFunction");
+        .contains("example.org.apache.geode.management.internal.deployment.ImplementsFunction");
   }
 
   @Test
   public void extendsFunctionAdapter() throws Exception {
-    File sourceFileOne = loadTestResource("ExtendsFunctionAdapter.java");
+    File sourceFileOne = loadTestResource(
+        "example/org/apache/geode/management/internal/deployment/ExtendsFunctionAdapter.java");
 
     jarBuilder.buildJar(outputJar, sourceFileOne);
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .contains("org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
+        .contains("example.org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
   }
 
   @Test
   public void testConcreteExtendsAbstractExtendsFunctionAdapter() throws Exception {
-    File sourceFileOne = loadTestResource("AbstractExtendsFunctionAdapter.java");
-    File sourceFileTwo = loadTestResource("ConcreteExtendsAbstractExtendsFunctionAdapter.java");
+    File sourceFileOne = loadTestResource(
+        "org/apache/geode/management/internal/deployment/AbstractExtendsFunctionAdapter.java");
+    File sourceFileTwo = loadTestResource(
+        "org/apache/geode/management/internal/deployment/ConcreteExtendsAbstractExtendsFunctionAdapter.java");
 
     jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
 
@@ -84,8 +89,10 @@ public class FunctionScannerTest {
 
   @Test
   public void testConcreteExtendsAbstractImplementsFunction() throws Exception {
-    File sourceFileOne = loadTestResource("AbstractImplementsFunction.java");
-    File sourceFileTwo = loadTestResource("ConcreteExtendsAbstractImplementsFunction.java");
+    File sourceFileOne = loadTestResource(
+        "org/apache/geode/management/internal/deployment/AbstractImplementsFunction.java");
+    File sourceFileTwo = loadTestResource(
+        "org/apache/geode/management/internal/deployment/ConcreteExtendsAbstractImplementsFunction.java");
 
     jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
 
@@ -98,12 +105,14 @@ public class FunctionScannerTest {
   @Test
   @Ignore("Fails due to GEODE-3429")
   public void registerFunctionHierarchySplitAcrossTwoJars() throws Exception {
-    File sourceFileOne = loadTestResource("AbstractImplementsFunction.java");
+    File sourceFileOne = loadTestResource(
+        "org/apache/geode/management/internal/deployment/AbstractImplementsFunction.java");
     File abstractJar = new File(temporaryFolder.getRoot(), "abstract.jar");
     jarBuilder.buildJar(abstractJar, sourceFileOne);
 
     jarBuilder.addToClasspath(abstractJar);
-    File sourceFileTwo = loadTestResource("AnnotatedFunction.java");
+    File sourceFileTwo =
+        loadTestResource("org/apache/geode/management/internal/deployment/AnnotatedFunction.java");
 
     jarBuilder.buildJar(outputJar, sourceFileTwo);
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
@@ -113,7 +122,8 @@ public class FunctionScannerTest {
 
   private File loadTestResource(String fileName) {
     String filePath =
-        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
+        createTempFileFromResource(ClassPathLoader.getLatestAsClassLoader(), fileName)
+            .getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);

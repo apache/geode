@@ -33,12 +33,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Serializable subclass of {@link TemporaryFolder TemporaryFolder}. Instance
@@ -46,7 +47,7 @@ import org.junit.runners.model.Statement;
  */
 @SuppressWarnings("WeakerAccess")
 public class SerializableTemporaryFolder extends TemporaryFolder implements SerializableTestRule {
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private final AtomicBoolean passed = new AtomicBoolean(true);
   private final AtomicBoolean delete = new AtomicBoolean(true);

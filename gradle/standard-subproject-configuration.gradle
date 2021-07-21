@@ -27,10 +27,12 @@ apply plugin: 'com.github.ben-manes.versions'
 // Within the configure block, 'project' refers to the task-owning project, in this case rootProject
 def thisProjectScoped = project
 
+configurations {
+  distributedTestJbossModular
+}
+
 ['clean', 'assemble', 'check', 'test'].each { taskName ->
   rootProject.tasks.named(taskName).configure {
     dependsOn thisProjectScoped.tasks.named(taskName)
   }
 }
-
-

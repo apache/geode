@@ -16,7 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -44,7 +44,7 @@ dependencies {
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
-    
+
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
@@ -62,9 +62,6 @@ dependencies {
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
     implementation('net.sf.jopt-simple:jopt-simple')
-
-    //Log4j is used everywhere
-    implementation('org.apache.logging.log4j:log4j-api')
 
     //Spring core is used by the the gfsh cli
     implementation('org.springframework:spring-core') {

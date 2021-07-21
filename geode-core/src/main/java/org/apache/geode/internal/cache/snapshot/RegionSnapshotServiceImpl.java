@@ -28,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.logging.log4j.LogManager;
-
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -59,6 +57,7 @@ import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -575,7 +574,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             if (f.exists()) {
               local.getSnapshotService().load(f, args.getFormat(), args.getOptions());
             } else {
-              LogManager.getLogger(RegionSnapshotServiceImpl.class)
+              LogService.getLogger(RegionSnapshotServiceImpl.class.getName())
                   .info("Nothing to import as location does not exist: " + f.getAbsolutePath());
             }
           }
