@@ -56,9 +56,8 @@ org/apache/geode/internal/shared/OSType$5
 org/apache/geode/internal/shared/TCPSocketOptions
 org/apache/geode/internal/statistics/platform/LinuxProcFsStatistics$CPU
 org/apache/geode/internal/tcp/VersionedByteBufferInputStream
-org/apache/geode/internal/util/ArgumentRedactorRegex$Boundary
-org/apache/geode/internal/util/ArgumentRedactorRegex$Group
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
+org/apache/geode/internal/util/redaction/ParserRegex$Group
 org/apache/geode/logging/internal/LogMessageRegex$Group
 org/apache/geode/logging/internal/log4j/LogWriterLogger
 org/apache/geode/logging/internal/spi/LogLevelUpdateOccurs
