@@ -17,10 +17,12 @@ package org.apache.geode.internal.util;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.util.redaction.StringRedaction;
 
 public class ArgumentRedactor {
 
+  @Immutable
   private static final StringRedaction DELEGATE = new StringRedaction();
 
   private ArgumentRedactor() {
