@@ -44,6 +44,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
    *
    * @deprecated Roles is scheduled to be removed
    */
+  @Deprecated
   Set<Role> getRoles();
 
   /**
