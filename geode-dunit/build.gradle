@@ -80,6 +80,12 @@ dependencies {
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   distributedTestJbossModular(project(":geode-assembly"))
   distributedTestJbossModular(project(":geode-core"))
+  distributedTestJbossModular(project(":geode-lucene"))
+  distributedTestJbossModular(project(":geode-cq"))
+  distributedTestJbossModular(project(":geode-apis-compatible-with-redis"))
+  distributedTestJbossModular(project(":geode-memcached"))
+  distributedTestJbossModular(project(":geode-wan"))
+  distributedTestJbossModular(project(":geode-connectors"))
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
