@@ -122,11 +122,11 @@ public class HScanExecutor extends AbstractScanExecutor {
       }
       RedisHashCommands redisHashCommands = context.getHashCommands();
 
-    Pair<Integer, List<byte[]>> scanResult =
-        redisHashCommands.hscan(key, matchPattern, count, cursor);
+      Pair<Integer, List<byte[]>> scanResult =
+          redisHashCommands.hscan(key, matchPattern, count, cursor);
 
-        return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
-            scanResult.getRight());
+      return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
+          scanResult.getRight());
     });
   }
 }
