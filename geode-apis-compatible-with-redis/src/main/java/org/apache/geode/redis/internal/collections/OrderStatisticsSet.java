@@ -29,6 +29,8 @@ package org.apache.geode.redis.internal.collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.geode.internal.size.Sizeable;
+
 /**
  * This interface defines the API for an order statistic set. An order statistic
  * set is a sorted set that provides two additional methods:
@@ -42,7 +44,7 @@ import java.util.Set;
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 16, 2016)
  */
-public interface OrderStatisticsSet<T> extends Set<T> {
+public interface OrderStatisticsSet<T> extends Set<T>, Sizeable {
 
   /**
    * Returns the <code>index</code>th smallest element from this set.
