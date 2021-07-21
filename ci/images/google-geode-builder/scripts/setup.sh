@@ -98,3 +98,4 @@ echo "export PATH=/google-cloud-sdk/bin:${PATH}" > /etc/profile.d/google_sdk_pat
 apt-get remove -y unattended-upgrades && apt-get -y autoremove
 apt-get clean
 rm -rf /var/lib/apt/lists/*
+echo "kernel.pid_max=983040" > /etc/sysctl.d/99-geode.conf
