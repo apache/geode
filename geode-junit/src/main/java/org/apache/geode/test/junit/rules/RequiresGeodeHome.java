@@ -16,7 +16,6 @@ package org.apache.geode.test.junit.rules;
 
 import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 
@@ -42,10 +41,14 @@ public class RequiresGeodeHome extends SerializableExternalResource {
 
   public File getGeodeHome() {
     String geodeHomePath = System.getenv("GEODE_HOME");
-    assertNotNull(GEODE_HOME_NOT_SET_MESSAGE, geodeHomePath);
+    assertThat(geodeHomePath)
+        .withFailMessage(GEODE_HOME_NOT_SET_MESSAGE)
+        .isNotNull();
 
     File geodeHome = new File(geodeHomePath);
-    assertThat(geodeHome).exists();
+    assertThat(geodeHome)
+        .exists()
+        .isDirectoryContaining(file -> file.getName().startsWith("bin"));
 
     return geodeHome;
   }
