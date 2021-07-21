@@ -68,13 +68,13 @@ public class PubSubImpl implements PubSub {
 
   private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
     Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
-    @SuppressWarnings("unchecked")
-    ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
+    try {
+      @SuppressWarnings("unchecked")
+      ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
         .onMembers(membersWithDataRegion)
         .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    try {
       subscriberCountCollector.getResult();
     } catch (Exception e) {
       logger.warn("Failed to execute publish function {}", e.getMessage());
