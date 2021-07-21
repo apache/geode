@@ -66,7 +66,7 @@ public class TXFailoverOpTest {
 
       @Override
       protected Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
-          boolean onlyUseExistingCnx) {
+          boolean onlyUseExistingConnection) {
         throw new ServerConnectivityException();
       }
     };
