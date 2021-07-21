@@ -350,13 +350,13 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             }
           }
+        } else {
+          distributionManager.addNewMember(id); // add ourselves
         }
-        distributionManager.addNewMember(id); // add ourselves
       }
 
       // Send out a StartupMessage to the other members.
       StartupOperation op = new StartupOperation(distributionManager, transport);
-
       try {
         if (!distributionManager.sendStartupMessage(op)) {
           // Well we didn't hear back from anyone else. We assume that
@@ -1742,7 +1742,7 @@ public class ClusterDistributionManager implements DistributionManager {
   public void removeUnfinishedStartup(InternalDistributedMember m, boolean departed) {
     synchronized (unfinishedStartupsLock) {
       if (logger.isDebugEnabled()) {
-        logger.debug("removeUnfinishedStartup for {} wtih {}", m, unfinishedStartups);
+        logger.debug("removeUnfinishedStartup for {} with {}", m, unfinishedStartups);
       }
       if (unfinishedStartups == null) {
         return; // not yet done with startup
@@ -1803,9 +1803,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void handleManagerStartup(InternalDistributedMember theId) {
     // Note test is under membersLock
-    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-      stats.incNodes(1);
-    }
+    stats.incNodes(1);
     addMemberEvent(new MemberJoinedEvent(theId));
   }
 
@@ -1891,9 +1889,8 @@ public class ClusterDistributionManager implements DistributionManager {
     removeHostedLocators(theId);
     redundancyZones.remove(theId);
 
-    if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-      stats.incNodes(-1);
-    }
+    stats.incNodes(-1);
+
     String msg;
     if (memberCrashed && !shouldInhibitMembershipWarnings()) {
       msg =

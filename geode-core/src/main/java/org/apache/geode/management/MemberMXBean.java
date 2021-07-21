@@ -848,7 +848,7 @@ public interface MemberMXBean {
   int getReplyWaitsCompleted();
 
   /**
-   * The current number of nodes in this distributed system visible to this member.
+   * The current number of nodes in this distributed system.
    */
   int getVisibleNodes();
 
