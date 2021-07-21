@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -50,6 +51,7 @@ import org.xml.sax.ext.DefaultHandler2;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
@@ -103,6 +105,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.Assert;
@@ -172,6 +175,21 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * @since GemFire 8.2
    */
   protected Locator documentLocator;
+
+  /**
+   * No arg constructor for {@link CacheXmlParser}.
+   */
+  public CacheXmlParser() {}
+
+  /**
+   * Constructor for {@link CacheXmlParser} which is used in test.
+   *
+   * @param cache Cache
+   */
+  @VisibleForTesting
+  CacheXmlParser(CacheCreation cache) {
+    this.cache = cache;
+  }
 
   ////////////////////// Static Methods //////////////////////
   /**
@@ -642,6 +660,21 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setPersistenceEnabled(Boolean.parseBoolean(enablePersistence));
     }
 
+    String id = atts.getValue(ID);
+    // Gateway-sender state
+    String state = atts.getValue(STATE);
+    if (state == null) {
+      gatewaySenderFactory.setState(null);
+    } else if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
+        Objects.equals(state, GatewaySenderState.STOPPED.getState()) ||
+        Objects.equals(state, GatewaySenderState.PAUSED.getState())) {
+      gatewaySenderFactory.setState(GatewaySenderState.valueOf(state.toUpperCase()));
+    } else {
+      throw new InternalGemFireException(
+          String.format("An invalid state value (%s) was configured for gateway sender %s",
+              state, id));
+    }
+
     String diskStoreName = atts.getValue(DISK_STORE_NAME);
     if (diskStoreName == null) {
       gatewaySenderFactory.setDiskStoreName(null);
@@ -679,7 +712,6 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setDispatcherThreads(Integer.parseInt(dispatcherThreads));
     }
 
-    String id = atts.getValue(ID);
     String orderPolicy = atts.getValue(ORDER_POLICY);
     if (orderPolicy != null) {
       try {

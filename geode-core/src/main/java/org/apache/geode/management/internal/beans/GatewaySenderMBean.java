@@ -159,6 +159,11 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public String getState() {
+    return bridge.getGatewaySenderState();
+  }
+
+  @Override
   public boolean isPaused() {
     return bridge.isPaused();
   }

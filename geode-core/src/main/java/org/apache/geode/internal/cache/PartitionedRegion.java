@@ -137,6 +137,7 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderState;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
@@ -1193,10 +1194,14 @@ public class PartitionedRegion extends LocalRegion
            * get the ParallelGatewaySender to create the colocated partitioned region for this
            * region.
            */
+          AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
           if (sender.isRunning()) {
-            AbstractGatewaySender senderImpl = (AbstractGatewaySender) sender;
             ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues()
                 .toArray(new RegionQueue[1])[0]).addShadowPartitionedRegionForUserPR(this);
+          } else if (((AbstractGatewaySender) sender).getEventProcessor() == null) {
+            if (sender.getState() == GatewaySenderState.STOPPED || sender.isManualStart()) {
+              sender.recoverInStoppedState();
+            }
           }
         }
       }

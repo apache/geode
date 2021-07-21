@@ -158,10 +158,18 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     LogWriterUtils.getLogWriter().info("Started the senders");
 
-    vm2.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
-    vm3.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+    AsyncInvocation inv1 = vm2.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+    AsyncInvocation inv2 = vm3.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+    try {
+      inv1.join();
+      inv2.join();
+
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      fail();
+    }
 
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 1000));
 
@@ -972,15 +980,24 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
 
-    // create PR on local site
-    vm4.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
-        100, isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
-        100, isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
-        100, isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPersistentPartitionedRegion(getTestMethodName(), "ln", 1,
-        100, isOffHeap()));
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+
+    try {
+      inv1.join();
+      inv2.join();
+      inv3.join();
+      inv4.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      fail();
+    }
 
     LogWriterUtils.getLogWriter().info("Created back the partitioned regions");
 
@@ -1797,11 +1814,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
   }
 
-
   /**
    * Enable persistence for GatewaySender. Pause the sender and do some puts in local region. Stop
-   * GatewaySender.
-   * Then start GatewaySender. Check if the remote site receives all the events.
+   * GatewaySender. Then start GatewaySender with clean queues. Check that the remote site
+   * only receives events that are queued after the start with clean queue command.
    */
   @Test
   public void testpersistentWanGateway_restartSender_expectAllEventsReceived_scenario2() {
@@ -1892,9 +1908,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     LogWriterUtils.getLogWriter().info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
-
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 3000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 3000));
+    vm7.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 500));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 3000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 500));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 500));
   }
 
   /**

@@ -413,7 +413,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(handler != null);
-
     boolean isClientCache = creation instanceof ClientCacheCreation;
 
     handler.startDocument();
@@ -1433,6 +1432,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     // alert-threshold
     if (generateDefaults() || sender.getAlertThreshold() != GatewaySender.DEFAULT_ALERT_THRESHOLD) {
       atts.addAttribute("", "", ALERT_THRESHOLD, "", String.valueOf(sender.getAlertThreshold()));
+    }
+
+    // gateway-sender state
+    if (sender.getState() != null) {
+      atts.addAttribute("", "", STATE, "", sender.getState().getState());
     }
 
     // dispatcher-threads
