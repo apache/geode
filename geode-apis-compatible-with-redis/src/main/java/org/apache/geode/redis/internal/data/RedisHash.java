@@ -240,12 +240,12 @@ public class RedisHash extends AbstractRedisData {
 
   public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
     // No need to allocate more space than it's possible to use given the size of the hash. We need
-    // to add 1 to hash.size() to ensure that if count > hash.size(), we return a cursor of 0
+    // to add 1 to hlen() to ensure that if count > hash.size(), we return a cursor of 0
     long maximumCapacity = 2L * Math.min(count, hlen() + 1);
     if (maximumCapacity > Integer.MAX_VALUE) {
-      LogService.getLogger().error(
-          "The size of the data to be returned by hscan, {}, exceeds the maximum capacity of an array",
-          maximumCapacity);
+      LogService.getLogger().info(
+          "The size of the data to be returned by hscan, {}, exceeds the maximum capacity of an array. A value for the HSCAN COUNT argument less than {} should be used",
+          maximumCapacity, Integer.MAX_VALUE / 2);
       throw new OutOfMemoryError("Requested array size exceeds VM limit");
     }
     List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
