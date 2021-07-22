@@ -56,7 +56,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
             withScores = true;
           } else {
             rangeOptions.parseLimitArguments(commandElements, index);
-            // If we successfully parse a set of three LIMIT options, decrement the index past them
+            // If we successfully parse a set of three LIMIT options, increment the index past them
             index += 2;
           }
         } catch (NumberFormatException nfex) {
