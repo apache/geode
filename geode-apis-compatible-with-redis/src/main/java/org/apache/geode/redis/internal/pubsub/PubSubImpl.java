@@ -71,9 +71,9 @@ public class PubSubImpl implements PubSub {
     try {
       @SuppressWarnings("unchecked")
       ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
-        .onMembers(membersWithDataRegion)
-        .setArguments(new Object[] {channel, message})
-        .execute(REDIS_PUB_SUB_FUNCTION_ID);
+          .onMembers(membersWithDataRegion)
+          .setArguments(new Object[] {channel, message})
+          .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
       subscriberCountCollector.getResult();
     } catch (Exception e) {
