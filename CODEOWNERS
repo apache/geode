@@ -82,11 +82,11 @@ geode-core/**/org/apache/geode/internal/cache/*                   @nabarunnag @D
 #-----------------------------------------------------------------
 # Region entry management
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
-geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
-geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @sabbey37 @upthewaterspout @kirklund @mhansonp
-geode-core/**/org/apache/geode/compression/**                     @dschneider-pivotal @sabbey37 @kirklund
-geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pivotal @sabbey37 @kirklund
+geode-core/**/org/apache/geode/internal/cache/entries/**          @dschneider-pivotal @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/region/entry/**     @dschneider-pivotal @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/internal/cache/map/**              @dschneider-pivotal @upthewaterspout @kirklund @mhansonp
+geode-core/**/org/apache/geode/compression/**                     @dschneider-pivotal @kirklund
+geode-core/**/org/apache/geode/internal/cache/compression/**      @dschneider-pivotal @kirklund
 
 #-----------------------------------------------------------------
 # Partitioned Regions
@@ -121,8 +121,8 @@ geode-core/**/org/apache/geode/internal/cache/locks/**            @pivotal-eshu 
 #-----------------------------------------------------------------
 # Function Execution
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @sabbey37 @kirklund @nabarunnag
-geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @sabbey37 @kirklund @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @kirklund @nabarunnag
+geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @kirklund @nabarunnag
 
 #-----------------------------------------------------------------
 # Querying
@@ -133,9 +133,9 @@ geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @D
 #-----------------------------------------------------------------
 # Session State:
 #-----------------------------------------------------------------
-extensions/**                                                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
-geode-core/**/org/apache/geode/internal/modules/util/**           @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
-geode-assembly/**/org/apache/geode/session/**                     @sabbey37 @jdeppe-pivotal @BenjaminPerryRoss
+extensions/**                                                     @jdeppe-pivotal @BenjaminPerryRoss
+geode-core/**/org/apache/geode/internal/modules/util/**           @jdeppe-pivotal @BenjaminPerryRoss
+geode-assembly/**/org/apache/geode/session/**                     @jdeppe-pivotal @BenjaminPerryRoss
 
 #-----------------------------------------------------------------
 # DEV rest API
