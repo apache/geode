@@ -34,7 +34,7 @@ public interface PubSub {
    * @param channel to publish to
    * @param message to publish
    */
-  long publish(RegionProvider regionProvider, byte[] channel, byte[] message);
+  long publish(RegionProvider regionProvider, byte[] channel, byte[] message, Client client);
 
   /**
    * Subscribe to a channel

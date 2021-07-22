@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import java.util.concurrent.ExecutorService;
 
+import heinz.StripedExecutorService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -78,8 +79,8 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
-    ExecutorService publishExecutor = LoggingExecutors
-        .newFixedThreadPool(DEFAULT_PUBLISH_THREAD_COUNT, "GeodeRedisServer-Publish-", true);
+    ExecutorService publishExecutor = new StripedExecutorService(DEFAULT_PUBLISH_THREAD_COUNT);
+
     pubSub = new PubSubImpl(new Subscriptions(), publishExecutor);
     redisStats = createStats(cache);
     StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
