@@ -175,12 +175,13 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bABSTTL = stringToBytes("ABSTTL");
 
-  // AbstractZRangeExecutor
+  // Various ZRangeExecutors
   @MakeImmutable
   public static final byte[] bWITHSCORES = stringToBytes("WITHSCORES");
-
   @MakeImmutable
   public static final byte[] bLIMIT = stringToBytes("LIMIT");
+  public static final byte bPLUS = SIMPLE_STRING_ID; // +
+  public static final byte bMINUS = ERROR_ID; // -
 
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
@@ -229,8 +230,9 @@ public class StringBytesGlossary {
 
   public static final byte bLEFT_PAREN = 40; // (
 
-  public static final byte bPERIOD = 46; // .
+  public static final byte bLEFT_SQUARE_BRACKET = 91; // [
 
+  public static final byte bPERIOD = 46; // .
 
   public static final String PING_RESPONSE = "PONG";
 
@@ -245,9 +247,9 @@ public class StringBytesGlossary {
 
   /**
    * These member names will always be evaluated to be "greater than" or "less than" any other when
-   * using the {@link RedisSortedSet.OrderedSetEntry#compareTo(RedisSortedSet.OrderedSetEntry)}
-   * method, so the rank of an entry using these names will be less than or greater than all other
-   * members with the same score.
+   * using the {@link RedisSortedSet#checkDummyMemberNames(byte[], byte[])} method, so the rank of
+   * an entry using these names will be less than or greater than all other members with the same
+   * score.
    * These values should always be compared using {@code ==} rather than {@code Array.equals()} so
    * that we can differentiate between the use of these constants and a value potentially entered by
    * the user, which while equal in content, will not share the same memory address.

@@ -53,7 +53,9 @@ import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCust
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.AbstractSortedSetRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
@@ -269,13 +271,13 @@ public class RedisSortedSet extends AbstractRedisData {
     return members.size();
   }
 
-  long zcount(SortedSetRangeOptions rangeOptions) {
-    AbstractOrderedSetEntry minEntry =
-        new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+  long zcount(SortedSetScoreRangeOptions rangeOptions) {
+    AbstractOrderedSetEntry minEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getMinimum(),
+        rangeOptions.isMinExclusive(), true);
     long minIndex = scoreSet.indexOf(minEntry);
 
-    AbstractOrderedSetEntry maxEntry =
-        new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    AbstractOrderedSetEntry maxEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getMaximum(),
+        rangeOptions.isMaxExclusive(), false);
     long maxIndex = scoreSet.indexOf(maxEntry);
 
     return maxIndex - minIndex;
@@ -311,44 +313,44 @@ public class RedisSortedSet extends AbstractRedisData {
     return getRange(min, max, withScores, false);
   }
 
+  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    // Assume that all members have the same score. Behaviour is unspecified otherwise.
+    double score = scoreSet.get(0).score;
 
-  List<byte[]> zrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
-    List<byte[]> result = new ArrayList<>();
-    AbstractOrderedSetEntry minEntry =
-        new DummyOrderedSetEntry(rangeOptions.getMinDouble(), rangeOptions.isMinExclusive(), true);
+    AbstractOrderedSetEntry minEntry = new MemberDummyOrderedSetEntry(rangeOptions.getMinimum(),
+        score, rangeOptions.isMinExclusive(), true);
     int minIndex = scoreSet.indexOf(minEntry);
     if (minIndex >= scoreSet.size()) {
       return Collections.emptyList();
     }
 
-    AbstractOrderedSetEntry maxEntry =
-        new DummyOrderedSetEntry(rangeOptions.getMaxDouble(), rangeOptions.isMaxExclusive(), false);
+    AbstractOrderedSetEntry maxEntry = new MemberDummyOrderedSetEntry(rangeOptions.getMaximum(),
+        score, rangeOptions.isMaxExclusive(), false);
+    int maxIndex = scoreSet.indexOf(maxEntry);
+    if (minIndex == maxIndex) {
+      return Collections.emptyList();
+    }
+
+    return addLimitToRange(rangeOptions, false, minIndex, maxIndex);
+  }
+
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
+    AbstractOrderedSetEntry minEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getMinimum(),
+        rangeOptions.isMinExclusive(), true);
+    int minIndex = scoreSet.indexOf(minEntry);
+    if (minIndex >= scoreSet.size()) {
+      return Collections.emptyList();
+    }
+
+    AbstractOrderedSetEntry maxEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getMaximum(),
+        rangeOptions.isMaxExclusive(), false);
     int maxIndex = scoreSet.indexOf(maxEntry);
     if (minIndex == maxIndex) {
       return Collections.emptyList();
     }
 
     // Okay, if we make it this far there's a potential range of things to return.
-    int count = Integer.MAX_VALUE;
-    if (rangeOptions.hasLimit()) {
-      count = rangeOptions.getCount();
-      minIndex += rangeOptions.getOffset();
-      if (minIndex > getSortedSetSize()) {
-        return Collections.emptyList();
-      }
-    }
-    Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
-
-    while (entryIterator.hasNext()) {
-      AbstractOrderedSetEntry entry = entryIterator.next();
-
-      result.add(entry.member);
-      if (withScores) {
-        result.add(entry.scoreBytes);
-      }
-    }
-    return result;
+    return addLimitToRange(rangeOptions, withScores, minIndex, maxIndex);
   }
 
   long zrank(byte[] member) {
@@ -443,6 +445,31 @@ public class RedisSortedSet extends AbstractRedisData {
     return result;
   }
 
+  private List<byte[]> addLimitToRange(AbstractSortedSetRangeOptions<?> rangeOptions,
+      boolean withScores, int minIndex, int maxIndex) {
+    int count = Integer.MAX_VALUE;
+    if (rangeOptions.hasLimit()) {
+      count = rangeOptions.getCount();
+      minIndex += rangeOptions.getOffset();
+      if (minIndex > getSortedSetSize()) {
+        return Collections.emptyList();
+      }
+    }
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
+
+    List<byte[]> result = new ArrayList<>();
+    while (entryIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = entryIterator.next();
+
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
+  }
+
   private int getBoundedStartIndex(int index, int size) {
     if (index >= 0) {
       return Math.min(index, size);
@@ -501,7 +528,7 @@ public class RedisSortedSet extends AbstractRedisData {
   // "==" is important as it allows us to differentiate between the constant byte arrays defined
   // in StringBytesGlossary and user-supplied member names which may be equal in content but have
   // a different memory address.
-  private static int checkDummyMemberNames(byte[] array1, byte[] array2) {
+  public static int checkDummyMemberNames(byte[] array1, byte[] array2) {
     if (array2 == bLEAST_MEMBER_NAME || array1 == bGREATEST_MEMBER_NAME) {
       if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
         throw new IllegalStateException(
@@ -611,9 +638,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
   // Dummy entry used to find the rank of an element with the given score for inclusive or
   // exclusive ranges
-  static class DummyOrderedSetEntry extends AbstractOrderedSetEntry {
+  static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
 
-    DummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+    ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
         // For use in (this < other) and (this >= other) comparisons
         this.member = bGREATEST_MEMBER_NAME;
@@ -628,6 +655,50 @@ public class RedisSortedSet extends AbstractRedisData {
     @Override
     public int compareMembers(byte[] array1, byte[] array2) {
       return checkDummyMemberNames(array1, array2);
+    }
+
+    @Override
+    // This object should never be persisted, so its size never needs to be calculated
+    public int getSizeInBytes() {
+      return 0;
+    }
+  }
+
+  // Dummy entry used to find the rank of an element with the given member name for lexically
+  // ordered sets
+  static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
+    boolean isExclusive;
+    boolean isMinimum;
+
+    MemberDummyOrderedSetEntry(byte[] member, double score, boolean isExclusive,
+        boolean isMinimum) {
+      this.member = member;
+      this.scoreBytes = null;
+      this.score = score;
+      this.isExclusive = isExclusive;
+      this.isMinimum = isMinimum;
+    }
+
+    @Override
+    public int compareMembers(byte[] array1, byte[] array2) {
+      int dummyNameComparison = checkDummyMemberNames(array1, array2);
+      if (dummyNameComparison != 0) {
+        return dummyNameComparison;
+      } else {
+        // If not using dummy member names, move on to actual lexical comparison
+        int stringComparison = javaImplementationOfAnsiCMemCmp(array1, array2);
+        if (stringComparison == 0) {
+          if (isMinimum && isExclusive || !isMinimum && !isExclusive) {
+            // If the member names are equal but we are using an exclusive minimum comparison, or an
+            // inclusive maximum comparison then this entry should act as if it is greater than the
+            // entry it's being compared to
+            return 1;
+          } else {
+            return -1;
+          }
+        }
+        return stringComparison;
+      }
     }
 
     @Override

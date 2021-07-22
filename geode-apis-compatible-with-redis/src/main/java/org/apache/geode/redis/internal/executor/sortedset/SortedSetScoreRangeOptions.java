@@ -19,77 +19,46 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEFT_PA
 
 import java.util.Arrays;
 
-public class SortedSetRangeOptions {
-  private final double minDouble;
-  private final boolean minExclusive;
-  private final double maxDouble;
-  private final boolean maxExclusive;
+public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Double> {
 
-  private boolean hasLimit = false;
-  private int offset = 0;
-  private int count = 0;
+  public SortedSetScoreRangeOptions(byte[] minBytes, byte[] maxBytes) {
+    super(minBytes, maxBytes);
+  }
 
-  public SortedSetRangeOptions(byte[] minBytes, byte[] maxBytes) {
+  @Override
+  void parseMinimum(byte[] minBytes) {
     if (minBytes[0] == bLEFT_PAREN) {
       // A value of "(" is equivalent to "(0"
       if (minBytes.length == 1) {
-        minDouble = 0;
+        minimum = 0.0;
       } else {
-        minDouble =
-            bytesToDouble(Arrays.copyOfRange(minBytes, 1, minBytes.length));
+        minimum = bytesToDouble(Arrays.copyOfRange(minBytes, 1, minBytes.length));
       }
-      minExclusive = true;
+      isMinExclusive = true;
     } else {
-      minExclusive = false;
-      minDouble = bytesToDouble(minBytes);
+      isMinExclusive = false;
+      minimum = bytesToDouble(minBytes);
     }
+  }
 
+  @Override
+  void parseMaximum(byte[] maxBytes) {
     if (maxBytes[0] == bLEFT_PAREN) {
       // A value of "(" is equivalent to "(0"
       if (maxBytes.length == 1) {
-        maxDouble = 0;
+        maximum = 0.0;
       } else {
-        maxDouble =
-            bytesToDouble(Arrays.copyOfRange(maxBytes, 1, maxBytes.length));
+        maximum = bytesToDouble(Arrays.copyOfRange(maxBytes, 1, maxBytes.length));
       }
-      maxExclusive = true;
+      isMaxExclusive = true;
     } else {
-      maxExclusive = false;
-      maxDouble = bytesToDouble(maxBytes);
+      isMaxExclusive = false;
+      maximum = bytesToDouble(maxBytes);
     }
   }
 
-  public void setLimitValues(int offset, int count) {
-    hasLimit = true;
-    this.offset = offset;
-    this.count = count;
-  }
-
-  public double getMinDouble() {
-    return minDouble;
-  }
-
-  public boolean isMinExclusive() {
-    return minExclusive;
-  }
-
-  public double getMaxDouble() {
-    return maxDouble;
-  }
-
-  public boolean isMaxExclusive() {
-    return maxExclusive;
-  }
-
-  public boolean hasLimit() {
-    return hasLimit;
-  }
-
-  public int getOffset() {
-    return offset;
-  }
-
-  public int getCount() {
-    return count;
+  @Override
+  int compareMinToMax() {
+    return Double.compare(minimum, maximum);
   }
 }

@@ -314,35 +314,35 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void dummyOrderedSetEntryCompareTo_throws_givenBothArraysAreGreatestOrLeastMemberNameAndScoresAreEqual() {
+  public void scoreDummyOrderedSetEntryCompareTo_throws_givenBothArraysAreGreatestOrLeastMemberNameAndScoresAreEqual() {
     double score = 1.0;
 
     RedisSortedSet.AbstractOrderedSetEntry greatest1 =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, true);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, true);
     RedisSortedSet.AbstractOrderedSetEntry greatest2 =
-        new RedisSortedSet.DummyOrderedSetEntry(score, false, false);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, false, false);
 
     // noinspection ResultOfMethodCallIgnored
     assertThatThrownBy(() -> greatest1.compareTo(greatest2))
         .isInstanceOf(IllegalStateException.class);
 
     RedisSortedSet.AbstractOrderedSetEntry least1 =
-        new RedisSortedSet.DummyOrderedSetEntry(score, false, true);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, false, true);
     RedisSortedSet.AbstractOrderedSetEntry least2 =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, false);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, false);
 
     // noinspection ResultOfMethodCallIgnored
     assertThatThrownBy(() -> least1.compareTo(least2)).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
-  public void dummyOrderedSetEntryCompareTo_handlesDummyMemberNames_givenScoresAreEqual() {
+  public void scoreDummyOrderedSetEntryCompareTo_handlesDummyMemberNames_givenScoresAreEqual() {
     double score = 1.0;
 
     RedisSortedSet.AbstractOrderedSetEntry greatest =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, true);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, true);
     RedisSortedSet.AbstractOrderedSetEntry least =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, false);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, false);
     RedisSortedSet.AbstractOrderedSetEntry middle =
         new RedisSortedSet.OrderedSetEntry(stringToBytes("middle"), doubleToBytes(score));
 
@@ -357,17 +357,17 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void dummyOrderedSetEntryCompareTo_handlesDummyMemberNameEquivalents_givenScoresAreEqual() {
+  public void scoreDummyOrderedSetEntryCompareTo_handlesDummyMemberNameEquivalents_givenScoresAreEqual() {
     double score = 1.0;
     byte[] scoreBytes = doubleToBytes(score);
 
     RedisSortedSet.AbstractOrderedSetEntry greatest =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, true);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, true);
     RedisSortedSet.AbstractOrderedSetEntry greatestEquivalent =
         new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME.clone(), scoreBytes);
 
     RedisSortedSet.AbstractOrderedSetEntry least =
-        new RedisSortedSet.DummyOrderedSetEntry(score, true, false);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, false);
     RedisSortedSet.AbstractOrderedSetEntry leastEquivalent =
         new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME.clone(), scoreBytes);
 
@@ -379,21 +379,101 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void dummyOrderedSetEntryConstructor_setsAppropriateMemberName() {
+  public void scoreDummyOrderedSetEntryConstructor_setsAppropriateMemberName() {
     RedisSortedSet.AbstractOrderedSetEntry entry =
-        new RedisSortedSet.DummyOrderedSetEntry(1, false, false);
+        new RedisSortedSet.ScoreDummyOrderedSetEntry(1, false, false);
     assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
 
-    entry = new RedisSortedSet.DummyOrderedSetEntry(1, true, false);
+    entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, true, false);
     assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
 
-    entry = new RedisSortedSet.DummyOrderedSetEntry(1, false, true);
+    entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, false, true);
     assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
 
-    entry = new RedisSortedSet.DummyOrderedSetEntry(1, true, true);
+    entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, true, true);
     assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
   }
 
+  @Test
+  public void memberDummyOrderedSetEntryCompareTo_handlesDummyMemberNames() {
+    double score = 1.0;
+
+    RedisSortedSet.AbstractOrderedSetEntry greatest =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(bGREATEST_MEMBER_NAME, score, false, false);
+    RedisSortedSet.AbstractOrderedSetEntry least =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(bLEAST_MEMBER_NAME, score, false, false);
+    RedisSortedSet.AbstractOrderedSetEntry middle =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(stringToBytes("middle"), score, false, false);
+
+    // greatest > least
+    assertThat(greatest.compareTo(least)).isEqualTo(1);
+    // greatest > middle
+    assertThat(greatest.compareTo(middle)).isEqualTo(1);
+    // middle < greatest
+    assertThat(middle.compareTo(greatest)).isEqualTo(-1);
+    // middle > least
+    assertThat(middle.compareTo(least)).isEqualTo(1);
+    // least < greatest
+    assertThat(least.compareTo(greatest)).isEqualTo(-1);
+    // least < middle
+    assertThat(least.compareTo(middle)).isEqualTo(-1);
+  }
+
+  @Test
+  public void memberDummyOrderedSetEntryCompareTo_withEqualMemberNamesAndExclusiveMinimum() {
+    byte[] memberName = stringToBytes("member");
+    double score = 1.0;
+    RedisSortedSet.AbstractOrderedSetEntry realEntry =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
+
+    RedisSortedSet.AbstractOrderedSetEntry exclusiveMin =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, true, true);
+
+    // exclusiveMin > realEntry
+    assertThat(exclusiveMin.compareTo(realEntry)).isEqualTo(1);
+  }
+
+  @Test
+  public void memberDummyOrderedSetEntryCompareTo_withEqualMemberNamesAndInclusiveMinimum() {
+    byte[] memberName = stringToBytes("member");
+    double score = 1.0;
+    RedisSortedSet.AbstractOrderedSetEntry realEntry =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
+
+    RedisSortedSet.AbstractOrderedSetEntry inclusiveMin =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, false, true);
+
+    // inclusiveMin < realEntry
+    assertThat(inclusiveMin.compareTo(realEntry)).isEqualTo(-1);
+  }
+
+  @Test
+  public void memberDummyOrderedSetEntryCompareTo_withEqualMemberNamesAndExclusiveMaximum() {
+    byte[] memberName = stringToBytes("member");
+    double score = 1.0;
+    RedisSortedSet.AbstractOrderedSetEntry realEntry =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
+
+    RedisSortedSet.AbstractOrderedSetEntry exclusiveMax =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, true, false);
+
+    // exclusiveMax < realEntry
+    assertThat(exclusiveMax.compareTo(realEntry)).isEqualTo(-1);
+  }
+
+  @Test
+  public void memberDummyOrderedSetEntryCompareTo_withEqualMemberNamesAndInclusiveMaximum() {
+    byte[] memberName = stringToBytes("member");
+    double score = 1.0;
+    RedisSortedSet.AbstractOrderedSetEntry realEntry =
+        new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
+
+    RedisSortedSet.AbstractOrderedSetEntry inclusiveMax =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, false, false);
+
+    // inclusiveMax > realEntry
+    assertThat(inclusiveMax.compareTo(realEntry)).isEqualTo(1);
+  }
 
   /******** constants *******/
   // These tests contain the math that is used to derive the constants in RedisSortedSet and
