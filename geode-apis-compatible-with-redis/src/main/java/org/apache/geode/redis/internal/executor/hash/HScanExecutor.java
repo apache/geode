@@ -122,8 +122,12 @@ public class HScanExecutor extends AbstractScanExecutor {
       }
       RedisHashCommands redisHashCommands = context.getHashCommands();
 
-      Pair<Integer, List<byte[]>> scanResult =
-          redisHashCommands.hscan(key, matchPattern, count, cursor);
+      Pair<Integer, List<byte[]>> scanResult;
+      try {
+        scanResult = redisHashCommands.hscan(key, matchPattern, count, cursor);
+      } catch (IllegalArgumentException ex) {
+        return RedisResponse.error(ERROR_NOT_INTEGER);
+      }
 
       return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
           scanResult.getRight());

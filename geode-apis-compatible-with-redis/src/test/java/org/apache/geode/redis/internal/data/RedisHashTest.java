@@ -212,7 +212,7 @@ public class RedisHashTest {
     doReturn(Integer.MAX_VALUE - 10).when(hash).hlen();
 
     assertThatThrownBy(() -> hash.hscan(null, Integer.MAX_VALUE - 10, 0))
-        .isInstanceOf(OutOfMemoryError.class);
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   /************* Hash Size *************/

@@ -246,7 +246,7 @@ public class RedisHash extends AbstractRedisData {
       LogService.getLogger().info(
           "The size of the data to be returned by hscan, {}, exceeds the maximum capacity of an array. A value for the HSCAN COUNT argument less than {} should be used",
           maximumCapacity, Integer.MAX_VALUE / 2);
-      throw new OutOfMemoryError("Requested array size exceeds VM limit");
+      throw new IllegalArgumentException("Requested array size exceeds VM limit");
     }
     List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
     do {
