@@ -222,8 +222,7 @@ public enum RedisCommandType {
   ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
       .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
-  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
-      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
+  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 

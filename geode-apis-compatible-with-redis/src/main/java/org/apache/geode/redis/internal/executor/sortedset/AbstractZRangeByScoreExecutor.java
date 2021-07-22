@@ -60,10 +60,6 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
             withScores = true;
             currentCommandElement++;
           } else {
-            if (isRev()) {
-              // No "LIMIT" option for ZREVRANGEBYSCORE
-              return RedisResponse.error(ERROR_SYNTAX);
-            }
             parseLimitArguments(rangeOptions, commandElements, currentCommandElement);
             currentCommandElement += 3;
           }
@@ -75,13 +71,16 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
       }
     }
 
-    // If the range is empty (min > max or min == max and both are exclusive), or
-    // limit specified but count is zero, return early
+    // If the range is empty (min == max and both are exclusive,
+    // or limit specified but count is zero), return early
     if ((rangeOptions.hasLimit() && (rangeOptions.getCount() == 0 || rangeOptions.getOffset() < 0))
-        ||
-        rangeOptions.getMinDouble() > rangeOptions.getMaxDouble() ||
-        (rangeOptions.getMinDouble() == rangeOptions.getMaxDouble())
-            && rangeOptions.isMinExclusive() && rangeOptions.isMaxExclusive()) {
+        || (rangeOptions.getStartDouble() == rangeOptions.getEndDouble())
+            && rangeOptions.isStartExclusive() && rangeOptions.isEndExclusive()) {
+      return RedisResponse.emptyArray();
+    }
+    // For ZRANGEBYSCORE, min and max are reversed in order; check if limits are impossible
+    if (isRev() ? (rangeOptions.getStartDouble() < rangeOptions.getEndDouble())
+        : (rangeOptions.getStartDouble() > rangeOptions.getEndDouble())) {
       return RedisResponse.emptyArray();
     }
 

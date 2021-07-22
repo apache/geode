@@ -14,22 +14,25 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,22 +64,24 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   }
 
   @Test
-  public void shouldError_givenNonIntegerRangeValues() {
-    jedis.zadd(KEY, 1.0, MEMBER_BASE_NAME);
-    String tooSmall = Long.MIN_VALUE + "0";
-    String tooBig = Long.MAX_VALUE + "0";
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "NOT_AN_INT", "2"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "1", "NOT_AN_INT"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, tooSmall, "1"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "1", tooBig))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+  public void shouldError_givenWrongNumberOfArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.ZREVRANGEBYSCORE, 3);
+  }
+
+  @Test
+  public void shouldError_givenInvalidMinOrMax() {
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "notANumber", "1"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "1", "notANumber"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "notANumber", "notANumber"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "((", "1"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "1", "(("))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "(a", "(b"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test
@@ -88,113 +93,244 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   }
 
   @Test
-  @Parameters({"1,0", "25,30", "8,-3", "8,8", "-8,-8", "-30,-25"})
-  @TestCaseName("{method}: start:{0}, end:{1}")
-  public void shouldReturnEmptyCollection_givenInvalidRange(long start, long end) {
-    for (int i = 0; i < scores.size(); i++) {
-      String memberName = MEMBER_BASE_NAME + i;
-      Double score = scores.get(i);
-      jedis.zadd(KEY, score, memberName);
-    }
-    assertThat(jedis.zrevrangeByScore(KEY, start, end)).isEmpty();
+  public void shouldReturnEmptyList_givenNonExistentKey() {
+    assertThat(jedis.zrevrangeByScore("fakeKey", "-inf", "inf")).isEmpty();
   }
 
   @Test
-  @Parameters(method = "getValidRanges")
-  @TestCaseName("{method}: start:{0}, end:{1}")
-  public void shouldReturnCorrectRange_GivenValidRanges(long start, long end) {
-    List<String> entries = new ArrayList<>();
-    for (int i = 0; i < scores.size(); i++) {
-      String memberName = MEMBER_BASE_NAME + i;
-      entries.add(memberName);
-      Double score = scores.get(i);
-      jedis.zadd(KEY, score, memberName);
-    }
+  public void shouldReturnEmptyList_givenMaxLessThanMin() {
+    jedis.zadd(KEY, 1, "member");
 
-    validateRevRangeByScore(start, end, entries);
+    // Range -inf >= score >= +inf
+    assertThat(jedis.zrevrangeByScore(KEY, "-inf", "+inf")).isEmpty();
   }
 
   @Test
-  @Parameters(method = "getValidRanges")
-  @TestCaseName("{method}: start:{0}, end:{1}")
-  public void shouldReturnCorrectRangeWithScores_withValidRanges(long start, long end) {
-    List<Tuple> entries = new ArrayList<>();
-    int numOfEntries = scores.size();
-    for (int i = 0; i < numOfEntries; i++) {
-      String memberName = MEMBER_BASE_NAME + i;
-      Double score = scores.get(i);
-      entries.add(new Tuple(memberName, score));
-      jedis.zadd(KEY, score, memberName);
-    }
+  public void shouldReturnElement_givenRangeIncludingScore() {
+    jedis.zadd(KEY, 1, "member");
 
-    int subListStartIndex = getSubListStartIndex(end, numOfEntries);
-    int subListEndIndex = getSubListEndIndex(start, numOfEntries);
-    List<Tuple> expectedRevrange = entries.subList(subListStartIndex, subListEndIndex);
-    Collections.reverse(expectedRevrange);
-
-    Set<Tuple> revrange = jedis.zrevrangeByScoreWithScores(KEY, start, end);
-
-    assertThat(revrange).containsExactlyElementsOf(expectedRevrange);
+    // Range inf >= score >= -inf
+    assertThat(jedis.zrevrangeByScore(KEY, "inf", "-inf"))
+        .containsExactly("member");
   }
 
   @Test
-  @Parameters(method = "getValidRanges")
-  @TestCaseName("{method}: start:{0}, end:{1}")
-  public void zrevrangebyscore_withSameScores_shouldOrderLexically(long start, long end) {
-    List<String> entries = new ArrayList<>();
-    for (int i = 5; i > 0; i--) {
-      String memberName = MEMBER_BASE_NAME + i;
-      entries.add(memberName);
-      jedis.zadd(KEY, 0.1, memberName);
-    }
+  public void shouldReturnEmptyArray_givenRangeExcludingScore() {
+    int score = 1;
+    jedis.zadd(KEY, score, "member");
 
-    // Since entries were added in reverse lexicographical order, reverse the list here
-    Collections.reverse(entries);
-
-    validateRevRangeByScore(start, end, entries);
+    // Range 2 <= score <= 3
+    assertThat(jedis.zrevrangeByScore(KEY, score + 2, score + 1)).isEmpty();
   }
 
-  private int getSubListStartIndex(long end, long numOfEntries) {
-    if (end >= 0) {
-      return (int) Math.max(numOfEntries - end - 1, 0);
-    } else {
-      return (int) Math.min(-end - 1, numOfEntries - 1);
-    }
+  @Test
+  public void shouldReturnRange_givenMinAndMaxEqualToScore() {
+    int score = 1;
+    jedis.zadd(KEY, score, "member");
+
+    // Range 1 <= score <= 1
+    assertThat(jedis.zrevrangeByScore(KEY, score, score))
+        .containsExactly("member");
   }
 
-  private int getSubListEndIndex(long start, long numOfEntries) {
-    if (start >= 0) {
-      return (int) Math.max(numOfEntries - start, 0);
-    } else {
-      return (int) Math.min(-start, numOfEntries);
-    }
+  @Test
+  public void shouldReturnRange_givenMultipleMembersWithDifferentScores() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member1", -10.0);
+    map.put("member2", 1.0);
+    map.put("member3", 10.0);
+
+    jedis.zadd(KEY, map);
+
+    // Range -5 <= score <= 15
+    assertThat(jedis.zrevrangeByScore(KEY, "15", "-5"))
+        .containsExactly("member3", "member2");
   }
 
-  private void validateRevRangeByScore(long start, long end, List<String> entries) {
-    int subListStartIndex = getSubListStartIndex(end, entries.size());
-    int subListEndIndex = getSubListEndIndex(start, entries.size());
-    List<String> expectedRevrange = entries.subList(subListStartIndex, subListEndIndex);
-    Collections.reverse(expectedRevrange);
+  @Test
+  public void shouldReturnRange_givenMultipleMembersWithTheSameScoreAndMinAndMaxEqualToScore() {
+    Map<String, Double> map = new HashMap<>();
+    double score = 1;
+    map.put("member1", score);
+    map.put("member2", score);
+    map.put("member3", score);
 
-    Set<String> revrange = jedis.zrevrangeByScore(KEY, start, end);
+    jedis.zadd(KEY, map);
 
-    assertThat(revrange).containsExactlyElementsOf(expectedRevrange);
+    // Range 1 <= score <= 1
+    assertThat(jedis.zrevrangeByScore(KEY, score, score))
+        .containsExactly("member3", "member2", "member1");
   }
 
-  @SuppressWarnings("unused")
-  private Object[] getValidRanges() {
-    return new Object[] {
-        "0,1",
-        "0,3",
-        "0,6",
-        "2,2",
-        "2,4",
-        "0,-2",
-        "2,-2",
-        "-3,-1",
-        "-6,2",
-        "0," + 2L * Integer.MAX_VALUE,
-        2L * Integer.MIN_VALUE + ",-1"
-    };
+  @Test
+  public void shouldReturnRange_basicExclusivity() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member0", 0.0);
+    map.put("member1", 1.0);
+    map.put("member2", 2.0);
+    map.put("member3", 3.0);
+    map.put("member4", 4.0);
+
+    jedis.zadd(KEY, map);
+
+    assertThat(jedis.zrevrangeByScore(KEY, "(3.0", "(1.0"))
+        .containsExactly("member2");
+    assertThat(jedis.zrevrangeByScore(KEY, "(3.0", "1.0"))
+        .containsExactly("member2", "member1");
+    assertThat(jedis.zrevrangeByScore(KEY, "3.0", "(1.0"))
+        .containsExactly("member3", "member2");
   }
+
+  private Map<String, Double> getExclusiveTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member1", Double.NEGATIVE_INFINITY);
+    map.put("member2", 1.0);
+    map.put("member3", Double.POSITIVE_INFINITY);
+    return map;
+  }
+
+  @Test
+  public void shouldReturnRange_givenExclusiveMin() {
+    Map<String, Double> map = getExclusiveTestMap();
+
+    jedis.zadd(KEY, map);
+
+    // Range +inf >= score > -inf
+    assertThat(jedis.zrevrangeByScore(KEY, "+inf", "(-inf"))
+        .containsExactly("member3", "member2");
+  }
+
+  @Test
+  public void shouldReturnEmptyList_givenExclusiveMinAndMaxEqualToScore() {
+    double score = 1;
+    jedis.zadd(KEY, score, "member");
+
+    String scoreExclusive = "(" + score;
+    assertThat(jedis.zrevrangeByScore(KEY, scoreExclusive, scoreExclusive)).isEmpty();
+  }
+
+  @Test
+  // Using only "(" as either the min or the max is equivalent to "(0"
+  public void shouldReturnRange_givenLeftParenOnlyForMinOrMax() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("slightlyLessThanZero", -0.01);
+    map.put("zero", 0.0);
+    map.put("slightlyMoreThanZero", 0.01);
+
+    jedis.zadd(KEY, map);
+
+    // Range inf >= score > 0
+    assertThat(jedis.zrevrangeByScore(KEY, "inf", "(")).containsExactly("slightlyMoreThanZero");
+
+    // Range 0 >= score > -inf
+    assertThat(jedis.zrevrangeByScore(KEY, "(", "-inf")).containsExactly("slightlyLessThanZero");
+  }
+
+  private void createZSetRangeTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("a", Double.NEGATIVE_INFINITY);
+    map.put("b", 1d);
+    map.put("c", 2d);
+    map.put("d", 3d);
+    map.put("e", 4d);
+    map.put("f", 5d);
+    map.put("g", Double.POSITIVE_INFINITY);
+
+    jedis.zadd(KEY, map);
+  }
+
+  @Test
+  public void shouldReturnRange_boundedByLimit() {
+    createZSetRangeTestMap();
+
+    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 0, 2))
+        .containsExactly("f", "e");
+    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 3))
+        .containsExactly("d", "c", "b");
+    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 10))
+        .containsExactly("d", "c", "b");
+    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 20, 10)).isEmpty();
+  }
+
+  @Test
+  public void shouldReturnRange_withScores_boundedByLimit() {
+    createZSetRangeTestMap();
+
+    Set<Tuple> firstExpected = new LinkedHashSet<>();
+    firstExpected.add(new Tuple("f", 5d));
+    firstExpected.add(new Tuple("e", 4d));
+
+    Set<Tuple> secondExpected = new LinkedHashSet<>();
+    secondExpected.add(new Tuple("d", 3d));
+    secondExpected.add(new Tuple("c", 2d));
+    secondExpected.add(new Tuple("b", 1d));
+
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 0, 0))
+        .isEmpty();
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 0, 2))
+        .containsExactlyElementsOf(firstExpected);
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 2, 3))
+        .containsExactlyElementsOf(secondExpected);
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 2, 10))
+        .containsExactlyElementsOf(secondExpected);
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 2, -1))
+        .containsExactlyElementsOf(secondExpected);
+  }
+
+  @Test
+  public void shouldReturnProperError_givenLimitWithWrongFormat() {
+    createZSetRangeTestMap();
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT"))
+            .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
+            "0"))
+                .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0",
+            "LIMIT", "0", "invalid"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void shouldReturnRange_givenMultipleCopiesOfWithscoresAndOrLimit() {
+    createZSetRangeTestMap();
+
+    List<byte[]> expectedWithScores = new ArrayList<>();
+    expectedWithScores.add("f".getBytes());
+    expectedWithScores.add("5".getBytes());
+    expectedWithScores.add("e".getBytes());
+    expectedWithScores.add("4".getBytes());
+
+    List<byte[]> expectedWithoutScores = new ArrayList<>();
+    expectedWithoutScores.add("f".getBytes());
+    expectedWithoutScores.add("e".getBytes());
+
+    List<byte[]> result =
+        uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY,
+            "10", "0",
+            "LIMIT", "0", "5",
+            "LIMIT", "0", "2"));
+    assertThat(result).containsExactlyElementsOf(expectedWithoutScores);
+    result = uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY,
+        "5", "4",
+        "WITHSCORES",
+        "WITHSCORES"));
+    assertThat(result).containsExactlyElementsOf(expectedWithScores);
+    result = uncheckedCast(jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY,
+        "10", "0",
+        "WITHSCORES",
+        "LIMIT", "0", "5",
+        "LIMIT", "0", "2",
+        "WITHSCORES"));
+    assertThat(result).containsExactlyElementsOf(expectedWithScores);
+  }
+
 }

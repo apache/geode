@@ -314,7 +314,47 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrevrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
-    return null;
+    List<byte[]> result = new ArrayList<>();
+    AbstractOrderedSetEntry maxEntry =
+        new DummyOrderedSetEntry(rangeOptions.getStartDouble(), rangeOptions.isStartExclusive(),
+            false);
+    int maxIndex = scoreSet.indexOf(maxEntry);
+
+    AbstractOrderedSetEntry minEntry =
+        new DummyOrderedSetEntry(rangeOptions.getEndDouble(), rangeOptions.isEndExclusive(), true);
+    int minIndex = scoreSet.indexOf(minEntry);
+    if (minIndex > getSortedSetSize()) {
+      return Collections.emptyList();
+    }
+
+    if (minIndex == maxIndex) {
+      return Collections.emptyList();
+    }
+
+    // Okay, if we make it this far there's a potential range of things to return.
+    int count = Integer.MAX_VALUE;
+    if (rangeOptions.hasLimit()) {
+      count = rangeOptions.getCount();
+      maxIndex -= rangeOptions.getOffset();
+      if (maxIndex < 0) {
+        return Collections.emptyList();
+      }
+    }
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(maxIndex - 1, Math.min(count, maxIndex - minIndex), true);
+
+    while (entryIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = entryIterator.next();
+      if (rangeOptions.isStartExclusive() && entry.score == rangeOptions.getStartDouble()) {
+        continue;
+      }
+
+      result.add(entry.member);
+      if (withScores) {
+        result.add(entry.scoreBytes);
+      }
+    }
+    return result;
   }
   List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
     // Assume that all members have the same score. Behaviour is unspecified otherwise.
