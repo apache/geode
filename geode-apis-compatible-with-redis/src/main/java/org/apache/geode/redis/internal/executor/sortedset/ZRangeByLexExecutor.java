@@ -42,15 +42,14 @@ public class ZRangeByLexExecutor extends AbstractExecutor {
 
     // Native redis allows multiple "limit ? ?" clauses; the last "limit" clause overrides any
     // previous ones
-    // In order to match the error reporting behaviour of native Redis, the argument list must be
-    // parsed in reverse order. Stop parsing at index = 4, since 0 is the command name, 1 is the
-    // key, 2 is the min and 3 is the max
+    // Start parsing at index = 4, since 0 is the command name, 1 is the key, 2 is the min and 3 is
+    // the max
     if (commandElements.size() >= 5) {
-      for (int index = commandElements.size() - 1; index > 3; --index) {
+      for (int index = 4; index < commandElements.size(); ++index) {
         try {
           rangeOptions.parseLimitArguments(commandElements, index);
-          // If we successfully parse a set of three LIMIT options, decrement the index past them
-          index -= 2;
+          // If we successfully parse a set of three LIMIT options, increment the index past them
+          index += 2;
         } catch (NumberFormatException nfex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
         } catch (IllegalArgumentException iex) {
@@ -61,6 +60,10 @@ public class ZRangeByLexExecutor extends AbstractExecutor {
 
     // If the range is empty, return early
     if (rangeOptions.isEmptyRange()) {
+      return RedisResponse.emptyArray();
+    }
+    // If offset is negative
+    if (rangeOptions.offset < 0) {
       return RedisResponse.emptyArray();
     }
 

@@ -300,7 +300,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -328,7 +328,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         "LIMIT", "0",
         "LIMIT", "0", "10",
         "WITHSCORES"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -343,7 +343,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         "LIMIT", "0", "10",
         "LIMIT", "0",
         "WITHSCORES"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test

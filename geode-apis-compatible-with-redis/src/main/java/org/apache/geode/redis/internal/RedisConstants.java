@@ -46,7 +46,7 @@ public class RedisConstants {
   public static final String ERROR_INVALID_EXPIRE_TIME = "invalid expire time in set";
   public static final String ERROR_NOT_A_VALID_FLOAT = "value is not a valid float";
   public static final String ERROR_MIN_MAX_NOT_A_VALID_STRING =
-      "min or max is not a valid string range item";
+      "min or max not valid string range item";
   public static final String ERROR_MIN_MAX_NOT_A_FLOAT = "min or max is not a float";
   public static final String ERROR_OOM_COMMAND_NOT_ALLOWED =
       "command not allowed when used memory > 'maxmemory'";

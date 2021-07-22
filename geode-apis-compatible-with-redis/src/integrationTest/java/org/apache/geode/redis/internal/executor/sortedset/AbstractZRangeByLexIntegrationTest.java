@@ -104,13 +104,10 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldError_givenNegativeLimitOffset() {
+  public void shouldError_givenNegativeZeroLimitOffset() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "-0", "10"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
-
-    assertThatThrownBy(() -> jedis.zrangeByLex(KEY, "-", "+", -1, 10))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -123,7 +120,7 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -376,6 +373,16 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     // Range (v * 4) <= member name <= (v * 6), offset = 0, count = 10
     assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, 0, 10))
         .containsExactlyElementsOf(expected);
+  }
+
+  @Test
+  public void shouldReturnEmptyCollection_givenNonZeroNegativeLimitOffset() {
+    populateSortedSet();
+
+    int offset = -7;
+
+    // Range (v * 1) <= member name <= (v * 3), offset = 7, count = 10
+    assertThat(jedis.zrangeByLex(KEY, "-", "+", offset, 10)).isEmpty();
   }
 
   @Test

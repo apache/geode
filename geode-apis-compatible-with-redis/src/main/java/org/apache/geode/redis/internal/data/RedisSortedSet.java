@@ -451,14 +451,20 @@ public class RedisSortedSet extends AbstractRedisData {
     if (rangeOptions.hasLimit()) {
       count = rangeOptions.getCount();
       minIndex += rangeOptions.getOffset();
-      if (minIndex > getSortedSetSize()) {
+      if (minIndex > getSortedSetSize() || minIndex > maxIndex) {
         return Collections.emptyList();
       }
     }
-    Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(minIndex, Math.min(count, maxIndex - minIndex), false);
+    int maxElements = Math.min(count, maxIndex - minIndex);
 
-    List<byte[]> result = new ArrayList<>();
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(minIndex, maxElements, false);
+
+    if (withScores) {
+      maxElements *= 2;
+    }
+
+    List<byte[]> result = new ArrayList<>(maxElements);
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
 
@@ -641,13 +647,9 @@ public class RedisSortedSet extends AbstractRedisData {
   static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
 
     ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
-      if (isExclusive && isMinimum || !isExclusive && !isMinimum) {
-        // For use in (this < other) and (this >= other) comparisons
-        this.member = bGREATEST_MEMBER_NAME;
-      } else {
-        // For use in (this <= other) and (this > other) comparisons
-        this.member = bLEAST_MEMBER_NAME;
-      }
+      // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
+      // this entry should act as if it is greater than the entry it's being compared to
+      this.member = isExclusive ^ isMinimum ? bLEAST_MEMBER_NAME : bGREATEST_MEMBER_NAME;
       this.scoreBytes = null;
       this.score = score;
     }
@@ -667,8 +669,8 @@ public class RedisSortedSet extends AbstractRedisData {
   // Dummy entry used to find the rank of an element with the given member name for lexically
   // ordered sets
   static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
-    boolean isExclusive;
-    boolean isMinimum;
+    final boolean isExclusive;
+    final boolean isMinimum;
 
     MemberDummyOrderedSetEntry(byte[] member, double score, boolean isExclusive,
         boolean isMinimum) {
@@ -688,14 +690,10 @@ public class RedisSortedSet extends AbstractRedisData {
         // If not using dummy member names, move on to actual lexical comparison
         int stringComparison = javaImplementationOfAnsiCMemCmp(array1, array2);
         if (stringComparison == 0) {
-          if (isMinimum && isExclusive || !isMinimum && !isExclusive) {
-            // If the member names are equal but we are using an exclusive minimum comparison, or an
-            // inclusive maximum comparison then this entry should act as if it is greater than the
-            // entry it's being compared to
-            return 1;
-          } else {
-            return -1;
-          }
+          // If the member names are equal but we are using an exclusive minimum comparison, or an
+          // inclusive maximum comparison then this entry should act as if it is greater than the
+          // entry it's being compared to
+          return isMinimum ^ isExclusive ? -1 : 1;
         }
         return stringComparison;
       }

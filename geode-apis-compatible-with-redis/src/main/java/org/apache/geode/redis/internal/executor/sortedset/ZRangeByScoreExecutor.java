@@ -44,13 +44,12 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
 
     // Native redis allows multiple "withscores" and "limit ? ?" clauses; the last "limit"
     // clause overrides any previous ones
-    // In order to match the error reporting behaviour of native Redis, the argument list must be
-    // parsed in reverse order. Stop parsing at index = 4, since 0 is the command name, 1 is the
-    // key, 2 is the min and 3 is the max
+    // Start parsing at index = 4, since 0 is the command name, 1 is the key, 2 is the min and 3 is
+    // the max
     boolean withScores = false;
 
     if (commandElements.size() >= 5) {
-      for (int index = commandElements.size() - 1; index > 3; --index) {
+      for (int index = 4; index < commandElements.size(); ++index) {
         try {
           byte[] commandBytes = commandElements.get(index);
           if (equalsIgnoreCaseBytes(commandBytes, bWITHSCORES)) {
@@ -58,7 +57,7 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
           } else {
             rangeOptions.parseLimitArguments(commandElements, index);
             // If we successfully parse a set of three LIMIT options, decrement the index past them
-            index -= 2;
+            index += 2;
           }
         } catch (NumberFormatException nfex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);

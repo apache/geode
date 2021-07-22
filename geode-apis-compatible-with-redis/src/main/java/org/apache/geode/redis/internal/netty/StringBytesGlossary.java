@@ -257,4 +257,6 @@ public class StringBytesGlossary {
   public static final byte[] bGREATEST_MEMBER_NAME = new byte[] {-1};
 
   public static final byte[] bLEAST_MEMBER_NAME = new byte[] {-2};
+
+  public static final byte[] bNEGATIVE_ZERO = stringToBytes("-0");
 }

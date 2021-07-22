@@ -15,11 +15,13 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNEGATIVE_ZERO;
 
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractSortedSetRangeOptions<T> {
@@ -37,25 +39,32 @@ public abstract class AbstractSortedSetRangeOptions<T> {
   }
 
   void parseLimitArguments(List<byte[]> commandElements, int commandIndex) {
-    if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex - 2), bLIMIT)) {
+    String element = bytesToString(commandElements.get(commandIndex));
+    if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)) {
+      System.out.println("DONAL: throwing because " + element + " is not LIMIT");
       throw new IllegalArgumentException();
-    } else {
-      byte[] offsetBytes = commandElements.get(commandIndex - 1);
-      if (offsetBytes[0] == bMINUS) {
-        throw new NumberFormatException();
-      }
-      // Only set the values for the first limit we parse
+    }
 
-      int parsedOffset = narrowLongToInt(bytesToLong(offsetBytes));
-      int parsedCount = narrowLongToInt(bytesToLong(commandElements.get(commandIndex)));
-      if (!hasLimit) {
-        hasLimit = true;
-        this.offset = parsedOffset;
-        this.count = parsedCount;
-        if (this.count < 0) {
-          this.count = Integer.MAX_VALUE;
-        }
-      }
+    // Throw if we don't have enough arguments left to correctly specify LIMIT
+    if (commandElements.size() <= commandIndex + 2) {
+      System.out.println("DONAL: throwing because not enough arguments");
+      throw new IllegalArgumentException();
+    }
+
+    byte[] offsetBytes = commandElements.get(commandIndex + 1);
+    if (Arrays.equals(offsetBytes, bNEGATIVE_ZERO)) {
+      throw new NumberFormatException();
+    }
+
+    int parsedOffset = narrowLongToInt(bytesToLong(offsetBytes));
+    int parsedCount = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
+
+    hasLimit = true;
+    this.offset = parsedOffset;
+    if (parsedCount < 0) {
+      this.count = Integer.MAX_VALUE;
+    } else {
+      this.count = parsedCount;
     }
   }
 
