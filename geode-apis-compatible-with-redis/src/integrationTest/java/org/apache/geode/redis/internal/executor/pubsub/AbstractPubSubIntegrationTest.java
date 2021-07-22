@@ -446,7 +446,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void ensureOrderingOfPublishedMessages() throws Exception {
+  public void ensureOrderingOfPublishedMessagesWithTwoSubscriptions() throws Exception {
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Void> future1 =
@@ -504,6 +504,21 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     }
 
     return mockSubscriber.getReceivedEvents();
+  }
+
+  @Test
+  public void ensureOrderingWithOneSubscriberMultiplePublishes() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "salutations"));
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    publisher.publish("salutations", "hello");
+    publisher.publish("salutations", "goodbye");
+
+    mockSubscriber.awaitMessageReceived(2L);
+
+    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye"));
   }
 
   @Test

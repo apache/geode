@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+import heinz.StripedRunnable;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -49,6 +50,27 @@ public class PubSubImpl implements PubSub {
   private final Subscriptions subscriptions;
   private final ExecutorService executor;
 
+  public static class PublishingRunnable implements StripedRunnable {
+
+    private final Runnable runnable;
+    private final Integer hashCode;
+
+    public PublishingRunnable(Runnable runnable, Client client) {
+      this.runnable = runnable;
+      hashCode = client.hashCode();
+    }
+
+    @Override
+    public Object getStripe() {
+      return hashCode;
+    }
+
+    @Override
+    public void run() {
+      runnable.run();
+    }
+  }
+
   public PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
     this.subscriptions = subscriptions;
     executor = executorService;
@@ -61,8 +83,10 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(RegionProvider regionProvider, byte[] channel, byte[] message) {
-    executor.submit(() -> internalPublish(regionProvider, channel, message));
+  public long publish(RegionProvider regionProvider, byte[] channel, byte[] message,
+      Client client) {
+    executor.submit(
+        new PublishingRunnable(() -> internalPublish(regionProvider, channel, message), client));
 
     return subscriptions.findSubscriptions(channel).size();
   }
