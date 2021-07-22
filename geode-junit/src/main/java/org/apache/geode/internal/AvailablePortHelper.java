@@ -28,13 +28,10 @@ import static org.apache.geode.internal.membership.utils.AvailablePort.isPortKee
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Methods for acquiring one or more available ports. Despite "random" in the names, these methods
