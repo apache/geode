@@ -63,7 +63,9 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisInte
     HASH,
     HASH_ENTRY,
     SET,
-    SET_ENTRY
+    SET_ENTRY,
+    SORTED_SET,
+    SORTED_SET_ENTRY
   }
 
   @Before
@@ -160,8 +162,8 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisInte
 
   /**
    * Measure the overhead for each entry that is added to a redis set. This
-   * uses a single sets and adds additional fields to the hash and measures the overhead
-   * of the additional fields.
+   * uses a single set and adds additional members to the set and measures the overhead
+   * of the additional members.
    */
   @Test
   public void measureOverheadPerSetEntry() {
@@ -176,6 +178,41 @@ public abstract class AbstractMemoryOverheadIntegrationTest implements RedisInte
     };
 
     measureAndCheckPerEntryOverhead(addSetEntryFunction, Measurement.SET_ENTRY);
+  }
+
+  /**
+   * Measure the overhead for each redis sorted set that is added to the server.
+   */
+  @Test
+  public void measureOverheadPerSortedSet() {
+    // Function that adds a new redis set to the server
+    final AddEntryFunction addSetFunction = uniqueString -> {
+      Long response = jedis.zadd(uniqueString, 1.0, LARGE_STRING);
+      assertThat(response).isEqualTo(1);
+      return uniqueString.length() + LARGE_STRING.length();
+    };
+
+    measureAndCheckPerEntryOverhead(addSetFunction, Measurement.SORTED_SET);
+  }
+
+  /**
+   * Measure the overhead for each entry that is added to a redis sorted set. This
+   * uses a single sorted set and adds additional members to the set and measures the overhead
+   * of the additional members.
+   */
+  @Test
+  public void measureOverheadPerSortedSetEntry() {
+    // Function that adds a new entry to a single redis set
+    final AddEntryFunction addSetEntryFunction = uniqueString -> {
+
+      String valueString = String.format("%s value-%s", LARGE_STRING, uniqueString);
+      Long response = jedis.zadd("TestSet", 1.0, valueString);
+      assertThat(response).isEqualTo(1);
+
+      return valueString.length();
+    };
+
+    measureAndCheckPerEntryOverhead(addSetEntryFunction, Measurement.SORTED_SET_ENTRY);
   }
 
   /**

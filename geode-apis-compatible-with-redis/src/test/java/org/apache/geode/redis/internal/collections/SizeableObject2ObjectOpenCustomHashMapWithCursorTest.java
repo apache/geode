@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
@@ -313,13 +314,12 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
   }
 
   @Test
-  // Create a map with an initial size, add elements to force a resizing of the backing arrays, then
-  // remove all elements and confirm that the calculated size in bytes is accurate at each step
   public void getSizeInBytesIsAccurateForByteArrays() {
     Map<byte[], byte[]> initialElements = new HashMap<>();
     int initialNumberOfElements = 20;
     int elementsToAdd = 100;
 
+    // Create a map with an initial size
     for (int i = 0; i < initialNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       byte[] value = {(byte) (initialNumberOfElements - i)};
@@ -331,6 +331,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
     assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
+    // Add more elements to force a resizing of the backing arrays and confirm that size changes as
+    // expected
     int totalNumberOfElements = initialNumberOfElements + elementsToAdd;
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
@@ -339,8 +341,70 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
+    // Update values and confirm that size changes as expected
+    for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
+      byte[] key = {(byte) i};
+      byte[] value = {(byte) i};
+      hash.put(key, value);
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    }
+
     assertThat(hash.size()).isEqualTo(totalNumberOfElements);
 
+    // Remove all elements and confirm that size changes as expected
+    for (int i = 0; i < totalNumberOfElements; ++i) {
+      hash.remove(new byte[] {(byte) i});
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    }
+
+    assertThat(hash.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void getSizeInBytesIsAccurateForOrderedSetEntryValues() {
+    Map<byte[], RedisSortedSet.OrderedSetEntry> initialElements = new HashMap<>();
+    int initialNumberOfElements = 20;
+    int elementsToAdd = 100;
+
+    // Create a map with an initial size
+    for (int i = 0; i < initialNumberOfElements; ++i) {
+      byte[] key = {(byte) i};
+      byte[] member = new byte[i];
+      byte[] scoreBytes = String.valueOf(i).getBytes();
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      initialElements.put(key, value);
+    }
+    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], RedisSortedSet.OrderedSetEntry> hash =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(initialElements,
+            ByteArrays.HASH_STRATEGY);
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+
+    // Add more elements to force a resizing of the backing arrays and confirm that size changes as
+    // expected
+    int totalNumberOfElements = initialNumberOfElements + elementsToAdd;
+    for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
+      byte[] key = {(byte) i};
+      byte[] member = new byte[i];
+      byte[] scoreBytes = String.valueOf(totalNumberOfElements - i).getBytes();
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      hash.put(key, value);
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    }
+
+    // Update values and confirm that size changes as expected
+    for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
+      byte[] key = {(byte) i};
+      byte[] member = new byte[i];
+      byte[] scoreBytes = String.valueOf(i).getBytes();
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      hash.put(key, value);
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    }
+
+    assertThat(hash.size()).isEqualTo(totalNumberOfElements);
+
+    // Remove all elements and confirm that size changes as expected
     for (int i = 0; i < totalNumberOfElements; ++i) {
       hash.remove(new byte[] {(byte) i});
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));

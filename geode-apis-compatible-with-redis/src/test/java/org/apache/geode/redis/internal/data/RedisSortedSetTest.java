@@ -16,8 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.lang.Math.round;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.BASE_ORDERED_SET_ENTRY_SIZE;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
@@ -42,9 +42,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.assertj.core.data.Offset;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
@@ -55,12 +54,15 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
+import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
+import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSetTest {
-  private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
+  private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
   private final String member1 = "member1";
   private final String member2 = "member2";
@@ -178,84 +180,6 @@ public class RedisSortedSetTest {
     assertThat(sortedSet2).isEqualTo(sortedSet1);
   }
 
-  /****************** Size ******************/
-  @Test
-  @Ignore("Waiting on GEODE-9304")
-  public void constantBaseRedisSortedSetOverhead_shouldEqualCalculatedOverhead() {
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
-    int baseRedisSortedSetOverhead = reflectionObjectSizer.sizeof(sortedSet);
-
-    assertThat(baseRedisSortedSetOverhead).isEqualTo(BASE_REDIS_SORTED_SET_OVERHEAD);
-    assertThat(sortedSet.getSizeInBytes()).isEqualTo(baseRedisSortedSetOverhead);
-  }
-
-  @Test
-  @Ignore("Waiting on GEODE-9304")
-  public void constantValuePairOverhead_shouldEqualCalculatedOverhead() {
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
-
-    // Used to compute the average per field overhead
-    double totalOverhead = 0;
-    final int totalFields = 1000;
-
-    // Generate pseudo-random data, but use fixed seed so the test is deterministic
-    Random random = new Random(0);
-
-    // Add 1000 fields and compute the per field overhead after each add
-    for (int fieldCount = 1; fieldCount < totalFields; fieldCount++) {
-      // Add a random field
-      byte[] member = new byte[random.nextInt(30)];
-      random.nextBytes(member);
-      byte[] data = Coder.doubleToBytes(random.nextDouble());
-      sortedSet.memberAdd(member, data);
-
-      // Compute the measured size
-      int size = reflectionObjectSizer.sizeof(sortedSet);
-      final int dataSize = member.length + data.length;
-
-      // Compute per field overhead with this number of fields
-      int overHeadPerField = (size - BASE_REDIS_SORTED_SET_OVERHEAD - dataSize) / fieldCount;
-      totalOverhead += overHeadPerField;
-    }
-
-    // Assert that the average overhead matches the constant
-    long averageOverhead = Math.round(totalOverhead / totalFields);
-    assertThat(RedisSortedSet.PER_PAIR_OVERHEAD).isEqualTo(averageOverhead);
-  }
-
-  @Test
-  @Ignore("Waiting on GEODE-9304")
-  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithSingleValue() {
-    List<byte[]> data = new ArrayList<>();
-    data.add(stringToBytes("1.0"));
-    data.add(stringToBytes("membernamethatisverylonggggggggg"));
-
-    RedisSortedSet sortedSet = new RedisSortedSet(data);
-
-    final int expected = reflectionObjectSizer.sizeof(sortedSet);
-    final int actual = sortedSet.getSizeInBytes();
-
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
-  @Test
-  @Ignore("Waiting on GEODE-9304")
-  public void should_calculateSize_closeToROSSize_ofIndividualInstanceWithMultipleValues() {
-    RedisSortedSet sortedSet =
-        createRedisSortedSet("1.0", "memberUnoIsTheFirstMember",
-            "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
-            "4.0", "memberQuatroIsTheThirdMember");
-
-    final int expected = reflectionObjectSizer.sizeof(sortedSet);
-    final int actual = sortedSet.getSizeInBytes();
-
-    final Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
-
-    assertThat(actual).isCloseTo(expected, offset);
-  }
-
   @Test
   public void zremCanRemoveMembersToBeRemoved() {
     String member3 = "member3";
@@ -279,37 +203,11 @@ public class RedisSortedSetTest {
   public void memberRemoveCanRemoveMemberInSortedSet() {
     RedisSortedSet sortedSet = createRedisSortedSet(score1, member1, score2, member2);
     RedisSortedSet sortedSet2 = createRedisSortedSet(score2, member2);
-    int originalSize = sortedSet.getSizeInBytes();
 
     byte[] returnValue = sortedSet.memberRemove(stringToBytes(member1));
-    int removedSize =
-        sortedSet.calculateSizeOfFieldValuePair(stringToBytes(member1), returnValue);
 
     assertThat(sortedSet).isEqualTo(sortedSet2);
     assertThat(returnValue).isEqualTo(stringToBytes(score1));
-    assertThat(sortedSet.getSizeInBytes()).isEqualTo(originalSize - removedSize);
-  }
-
-  @Test
-  @Ignore("Redo when we have a defined Sizable strategy")
-  public void should_calculateSize_closeToROSSize_ofIndividualInstanceAfterZRem() {
-    String member1 = "memberUnoIsTheFirstMember";
-    RedisSortedSet sortedSet =
-        createRedisSortedSet("1.0", member1,
-            "2.0", "memberDueIsTheSecondMember", "3.0", "memberTreIsTheThirdMember",
-            "4.0", "memberQuatroIsTheThirdMember");
-
-    int expected = reflectionObjectSizer.sizeof(sortedSet);
-    int actual = sortedSet.getSizeInBytes();
-
-    Offset<Integer> offset = Offset.offset((int) round(expected * 0.03));
-    assertThat(actual).isCloseTo(expected, offset);
-
-    sortedSet.memberRemove(stringToBytes(member1));
-    expected = reflectionObjectSizer.sizeof(sortedSet);
-    actual = sortedSet.getSizeInBytes();
-    offset = Offset.offset((int) round(expected * 0.03));
-    assertThat(actual).isCloseTo(expected, offset);
   }
 
   @Test
@@ -494,6 +392,94 @@ public class RedisSortedSetTest {
 
     entry = new RedisSortedSet.DummyOrderedSetEntry(1, true, true);
     assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
+  }
+
+
+  /******** constants *******/
+  // These tests contain the math that is used to derive the constants in RedisSortedSet and
+  // OrderedSetEntry. If these tests start failing, it is because the overheads of RedisSortedSet or
+  // OrderedSetEntry have changed. If they have decreased, good job! You can change the constant in
+  // RedisSortedSet or OrderedSetEntry to reflect that. If they have increased, carefully consider
+  // that increase before changing the constant.
+  @Test
+  public void baseRedisSortedSetOverheadConstant_shouldMatchReflectedSize() {
+    RedisSortedSet set = new RedisSortedSet(Collections.emptyList());
+    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], RedisSortedSet.OrderedSetEntry> backingMap =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(0, ByteArrays.HASH_STRATEGY);
+    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> backingTree = new OrderStatisticsTree<>();
+    int baseRedisSetOverhead =
+        sizer.sizeof(set) - sizer.sizeof(backingMap) - sizer.sizeof(backingTree);
+
+    assertThat(BASE_REDIS_SORTED_SET_OVERHEAD).isEqualTo(baseRedisSetOverhead);
+  }
+
+  @Test
+  public void baseOrderedSetEntrySize_shouldMatchReflectedSize() {
+    byte[] scoreBytes = doubleToBytes(1.0);
+    byte[] memberBytes = stringToBytes("member");
+    RedisSortedSet.OrderedSetEntry entry =
+        new RedisSortedSet.OrderedSetEntry(memberBytes, scoreBytes);
+    int expectedSize = sizer.sizeof(entry) - sizer.sizeof(scoreBytes) - sizer.sizeof(memberBytes);
+
+    assertThat(BASE_ORDERED_SET_ENTRY_SIZE).isEqualTo(expectedSize);
+  }
+
+  /****************** Size ******************/
+
+  @Test
+  public void redisSortedSetGetSizeInBytes_isAccurateForAddsUpdatesAndRemoves() {
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    RedisKey mockKey = mock(RedisKey.class);
+    ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
+
+    int actualSize = sizer.sizeof(sortedSet);
+    int calculatedSize = sortedSet.getSizeInBytes();
+    assertThat(calculatedSize).isEqualTo(actualSize);
+
+    // Add members and scores and confirm that the calculated size is accurate after each operation
+    int numberOfEntries = 100;
+    for (int i = 0; i < numberOfEntries; ++i) {
+      List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i), new byte[i]);
+      sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
+      sortedSet.clearDelta();
+      actualSize = sizer.sizeof(sortedSet);
+      calculatedSize = sortedSet.getSizeInBytes();
+      assertThat(calculatedSize).isEqualTo(actualSize);
+    }
+
+    // Update half the scores and confirm that the calculated size is accurate after each operation
+    for (int i = 0; i < numberOfEntries / 2; ++i) {
+      List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i * 2), new byte[i]);
+      sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
+      sortedSet.clearDelta();
+      actualSize = sizer.sizeof(sortedSet);
+      calculatedSize = sortedSet.getSizeInBytes();
+      assertThat(calculatedSize).isEqualTo(actualSize);
+    }
+
+    // Remove all members and confirm that the calculated size is accurate after each operation
+    for (int i = 0; i < numberOfEntries; ++i) {
+      List<byte[]> memberToRemove = Collections.singletonList(new byte[i]);
+      sortedSet.zrem(mockRegion, mockKey, memberToRemove);
+      sortedSet.clearDelta();
+      actualSize = sizer.sizeof(sortedSet);
+      calculatedSize = sortedSet.getSizeInBytes();
+      assertThat(calculatedSize).isEqualTo(actualSize);
+    }
+  }
+
+  @Test
+  public void orderedSetEntryGetSizeInBytes_isAccurate() {
+    Random random = new Random();
+    byte[] member;
+    byte[] scoreBytes;
+    for (int i = 0; i < 100; ++i) {
+      member = new byte[random.nextInt(50_000)];
+      scoreBytes = String.valueOf(random.nextDouble()).getBytes();
+      RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      assertThat(entry.getSizeInBytes()).isEqualTo(sizer.sizeof(entry));
+    }
   }
 
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.collections;
 
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -21,16 +22,15 @@ import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
 public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
     implements Sizeable {
   private static final long serialVersionUID = 9174920505089089517L;
   public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 92;
   public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
+  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
 
   private int memberOverhead;
 
@@ -96,7 +96,7 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   public boolean add(K k) {
     boolean added = super.add(k);
     if (added) {
-      memberOverhead += (int) elementSizer.sizeof(k);
+      memberOverhead += elementSizer.sizeof(k);
     }
     return added;
   }
