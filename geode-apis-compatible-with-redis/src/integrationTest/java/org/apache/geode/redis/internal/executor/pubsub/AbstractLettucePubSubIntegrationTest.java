@@ -144,7 +144,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
     assertThat(publishCount1).isEqualTo(1);
     assertThat(publishCount2).isEqualTo(1);
     GeodeAwaitility.await().untilAsserted(() -> assertThat(messages).hasSize(2));
-    assertThat(messages).containsExactly(expectedMap1, expectedMap2);
+    assertThat(messages).containsExactlyInAnyOrder(expectedMap1, expectedMap2);
 
     subscriber.sync().unsubscribe();
   }

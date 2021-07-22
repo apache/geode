@@ -357,9 +357,10 @@ public class PubSubDUnitTest {
     for (int i = 0; i < CLIENT_COUNT; i++) {
       Jedis publisher = new Jedis("localhost", ports[i % 2]);
 
+      int localI = i;
       Callable<Void> callable = () -> {
         for (int j = 0; j < ITERATIONS; j++) {
-          publisher.publish(CHANNEL_NAME, "hello");
+          publisher.publish(CHANNEL_NAME, String.format("hello-%d-%d", localI, j));
         }
         publisher.close();
         return null;
@@ -371,8 +372,6 @@ public class PubSubDUnitTest {
     for (Future<Void> future : futures) {
       GeodeAwaitility.await().untilAsserted(future::get);
     }
-
-
 
     GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(mockSubscriber1.getReceivedMessages().size())
