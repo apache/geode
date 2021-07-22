@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
@@ -41,9 +42,12 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
     boolean withScores = false;
 
     try {
-      byte[] minBytes = commandElements.get(2);
-      byte[] maxBytes = commandElements.get(3);
-      rangeOptions = new SortedSetRangeOptions(minBytes, maxBytes);
+      byte[] startBytes = commandElements.get(2);
+      byte[] endBytes = commandElements.get(3);
+      if (isNaN(startBytes) || isNaN(endBytes)) {
+        return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
+      }
+      rangeOptions = new SortedSetRangeOptions(startBytes, endBytes);
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }

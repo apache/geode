@@ -82,6 +82,12 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "(a", "(b"))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "str", "1"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "1", "str"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", "1", "NaN"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test

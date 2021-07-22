@@ -75,6 +75,12 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "(a", "(b"))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "str", "1"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "str"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "NaN"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test
