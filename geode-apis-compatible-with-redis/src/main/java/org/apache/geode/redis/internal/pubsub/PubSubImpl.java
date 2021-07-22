@@ -33,6 +33,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
@@ -77,7 +78,8 @@ public class PubSubImpl implements PubSub {
 
       subscriberCountCollector.getResult();
     } catch (Exception e) {
-      logger.warn("Failed to execute publish function {}", e.getMessage());
+      logger.warn("Failed to execute publish function on channel {}",
+          Coder.bytesToString(channel), e);
     }
   }
 
