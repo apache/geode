@@ -51,7 +51,7 @@ public class AuthExpirationDUnitTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
-    // only test the current version and the version before
+    // only test the current version and the latest released version
     return Arrays.asList(CURRENT_VERSION, "1.13.3");
   }
 
@@ -106,6 +106,4 @@ public class AuthExpirationDUnitTest {
     assertThat(region.size()).isEqualTo(100);
   }
 
-  @Test
-  public void client() throws Exception {}
 }

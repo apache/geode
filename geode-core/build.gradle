@@ -387,6 +387,7 @@ dependencies {
 
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     upgradeTestRuntimeOnly(project(':geode-log4j'))
+    upgradeTestRuntimeOnly(project(':geode-old-client-support'))
 
 
     performanceTestImplementation(project(':geode-junit')) {

@@ -30,9 +30,6 @@ import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.ExpirableSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-/**
- * Integration tests for SecurityService using shiro.ini
- */
 @Category({SecurityTest.class})
 public class SecurityWithExpirationIniIntegrationTest {
 
@@ -49,10 +46,12 @@ public class SecurityWithExpirationIniIntegrationTest {
   @After
   public void after() throws Exception {
     this.securityService.logout();
+    ((ExpirableSecurityManager) this.securityService.getSecurityManager()).reset();
   }
 
   @Test
   public void testThrowAuthenticationExpiredException() throws Exception {
+    ExpirableSecurityManager.EXPIRE_AFTER = -1;
     this.securityService.login(loginCredentials("data", "data"));
     assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
         .isInstanceOf(AuthenticationExpiredException.class);

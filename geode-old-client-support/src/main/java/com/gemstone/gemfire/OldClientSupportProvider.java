@@ -27,6 +27,8 @@ import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.security.AuthenticationExpiredException;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
@@ -121,11 +123,21 @@ public class OldClientSupportProvider implements OldClientSupportService {
     if (theThrowable == null) {
       return theThrowable;
     }
+
+    String className = theThrowable.getClass().getName();
+
+    // GEODE-9452, backward compatibility for authentication expiration
+    if (clientVersion.isOlderThan(KnownVersion.GEODE_1_14_0)) {
+      if (className.equals(AuthenticationExpiredException.class.getName())) {
+        return new AuthenticationRequiredException("User authorization attributes not found.");
+      }
+    }
+
     if (clientVersion.isNotOlderThan(KnownVersion.GFE_90)) {
       return theThrowable;
     }
 
-    String className = theThrowable.getClass().getName();
+
 
     // this class has been renamed, so it cannot be automatically translated
     // during java deserialization

@@ -21,7 +21,7 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
     ExpirablePrincipal expirablePrincipal = (ExpirablePrincipal) principal;
     if (expirablePrincipal.expired()) {
       expired = true;
-      throw new AuthenticationExpiredException("Expired");
+      throw new AuthenticationExpiredException("User authorization attributes not found.");
     }
     return super.authorize(expirablePrincipal.getPrincipal(), permission);
   }
