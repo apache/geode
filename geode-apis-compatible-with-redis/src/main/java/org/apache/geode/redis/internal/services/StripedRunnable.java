@@ -13,16 +13,13 @@
  * the License.
  */
 
-package heinz;
+package org.apache.geode.redis.internal.services;
 
 /**
- * Used to indicate which "stripe" this Runnable or Callable belongs to. The
- * stripe is determined by the identity of the object, rather than its hash
- * code and equals.
+ * All of the Runnables in the same "Stripe" will be executed consecutively.
  *
  * @author Dr Heinz M. Kabutz
  * @see StripedExecutorService
  */
-public interface StripedObject {
-  Object getStripe();
+public interface StripedRunnable extends Runnable, StripedObject {
 }

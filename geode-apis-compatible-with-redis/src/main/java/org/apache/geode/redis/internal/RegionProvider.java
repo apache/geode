@@ -60,13 +60,13 @@ import org.apache.geode.redis.internal.data.RedisSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisSortedSetCommandsFunctionExecutor;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.data.RedisStringCommandsFunctionExecutor;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
+import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 import org.apache.geode.util.internal.UncheckedUtils;
 
@@ -95,7 +95,7 @@ public class RegionProvider {
   private final RedisSortedSetCommandsFunctionExecutor sortedSetCommands;
   private final RedisKeyCommandsFunctionExecutor keyCommands;
   private final SlotAdvisor slotAdvisor;
-  private final StripedExecutor stripedExecutor;
+  private final StripedCoordinator stripedCoordinator;
   private final RedisStats redisStats;
 
   static {
@@ -106,11 +106,11 @@ public class RegionProvider {
     NULL_TYPES.put(REDIS_DATA, NULL_REDIS_DATA);
   }
 
-  public RegionProvider(InternalCache cache, StripedExecutor stripedExecutor,
+  public RegionProvider(InternalCache cache, StripedCoordinator stripedCoordinator,
       RedisStats redisStats) {
     validateBucketCount(REDIS_REGION_BUCKETS);
 
-    this.stripedExecutor = stripedExecutor;
+    this.stripedCoordinator = stripedCoordinator;
     this.redisStats = redisStats;
 
     InternalRegionFactory<RedisKey, RedisData> redisDataRegionFactory =
@@ -153,7 +153,7 @@ public class RegionProvider {
   public <T> T execute(Object key, Callable<T> callable) {
     try {
       return partitionedRegion.computeWithPrimaryLocked(key,
-          () -> stripedExecutor.execute(key, callable));
+          () -> stripedCoordinator.execute(key, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
       throw createRedisDataMovedException((RedisKey) key);
     } catch (RedisException bex) {
@@ -305,7 +305,7 @@ public class RegionProvider {
    */
   public List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
     List<RedisKey> orderedKeys = new ArrayList<>();
-    if (stripedExecutor.compareStripes(key1, key2) > 0) {
+    if (stripedCoordinator.compareStripes(key1, key2) > 0) {
       orderedKeys.add(key1);
       orderedKeys.add(key2);
     } else {

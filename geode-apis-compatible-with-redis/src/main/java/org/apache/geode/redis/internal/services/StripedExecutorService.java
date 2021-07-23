@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package heinz;
+package org.apache.geode.redis.internal.services;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

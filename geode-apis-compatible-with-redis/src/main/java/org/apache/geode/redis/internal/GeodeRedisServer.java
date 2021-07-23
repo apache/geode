@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal;
 
 import java.util.concurrent.ExecutorService;
 
-import heinz.StripedExecutorService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -32,13 +31,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.services.StripedCoordinator;
+import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -55,8 +54,6 @@ public class GeodeRedisServer {
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
   public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
-  private static final int DEFAULT_PUBLISH_THREAD_COUNT =
-      Integer.getInteger("redis.publish-thread-count", 100);
   private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
   private final PassiveExpirationManager passiveExpirationManager;
@@ -79,16 +76,13 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
-    ExecutorService innerPublishExecutor = LoggingExecutors
-        .newFixedThreadPool(DEFAULT_PUBLISH_THREAD_COUNT, "GeodeRedisServer-Publish-", true);
-    ExecutorService publishExecutor = new StripedExecutorService(innerPublishExecutor);
 
-    pubSub = new PubSubImpl(new Subscriptions(), publishExecutor);
+    pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
-    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
-    regionProvider = new RegionProvider(cache, stripedExecutor, redisStats);
+    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
