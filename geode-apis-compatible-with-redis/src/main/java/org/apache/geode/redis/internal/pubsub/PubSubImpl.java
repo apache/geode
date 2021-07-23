@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
+import heinz.StripedExecutorService;
 import heinz.StripedRunnable;
 import org.apache.logging.log4j.Logger;
 
@@ -50,19 +51,22 @@ public class PubSubImpl implements PubSub {
   private final Subscriptions subscriptions;
   private final ExecutorService executor;
 
-  public static class PublishingRunnable implements StripedRunnable {
+  /**
+   * Inner class to wrap the publish action and pass it to the {@link StripedExecutorService}.
+   */
+  private static class PublishingRunnable implements StripedRunnable {
 
     private final Runnable runnable;
-    private final Integer hashCode;
+    private final Object stripeIdentity;
 
-    public PublishingRunnable(Runnable runnable, Client client) {
+    public PublishingRunnable(Runnable runnable, Object stripeIdentity) {
       this.runnable = runnable;
-      hashCode = client.hashCode();
+      this.stripeIdentity = stripeIdentity;
     }
 
     @Override
     public Object getStripe() {
-      return hashCode;
+      return stripeIdentity;
     }
 
     @Override
