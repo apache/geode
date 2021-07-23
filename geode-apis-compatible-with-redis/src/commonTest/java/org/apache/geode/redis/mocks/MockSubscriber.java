@@ -199,14 +199,14 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   public void awaitPMessageReceived(long minNumOfReceivedMessages) {
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(4))
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
         .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
         .untilAsserted(() -> assertThat((long) this.getReceivedPMessages().size())
             .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
   }
 
   public void awaitMessageReceived(long minNumOfReceivedMessages) {
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(4))
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
         .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
         .untilAsserted(() -> assertThat((long) this.getReceivedMessages().size())
             .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
