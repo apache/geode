@@ -75,8 +75,7 @@ public class StripedExecutorService extends AbstractExecutorService {
    * SerialExecutor is empty, the entry is removed from the map,
    * in order to avoid a memory leak.
    */
-  private final Map<Object, SerialExecutor> executors =
-      new IdentityHashMap<>();
+  private final Map<Object, SerialExecutor> executors = new IdentityHashMap<>();
 
   /**
    * The default submit() method creates a new FutureTask and
@@ -86,8 +85,7 @@ public class StripedExecutorService extends AbstractExecutorService {
    * thread returns from submitting the runnable, it will always
    * remove the thread local entry.
    */
-  private static final ThreadLocal<Object> stripes =
-      new ThreadLocal<>();
+  private static final ThreadLocal<Object> stripes = new ThreadLocal<>();
 
   /**
    * Valid states are RUNNING and SHUTDOWN. We rely on the
@@ -95,7 +93,7 @@ public class StripedExecutorService extends AbstractExecutorService {
    */
   private State state = State.RUNNING;
 
-  private static enum State {
+  private enum State {
     RUNNING, SHUTDOWN
   }
 
@@ -133,8 +131,8 @@ public class StripedExecutorService extends AbstractExecutorService {
    * stripe object in a thread local, since the actual runnable
    * will be wrapped with a FutureTask.
    */
-  protected <T> RunnableFuture<T> newTaskFor(
-      Runnable runnable, T value) {
+  @Override
+  protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
     saveStripedObject(runnable);
     return super.newTaskFor(runnable, value);
   }
@@ -144,8 +142,8 @@ public class StripedExecutorService extends AbstractExecutorService {
    * stripe object in a thread local, since the actual callable
    * will be wrapped with a FutureTask.
    */
-  protected <T> RunnableFuture<T> newTaskFor(
-      Callable<T> callable) {
+  @Override
+  protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
     saveStripedObject(callable);
     return super.newTaskFor(callable);
   }
@@ -222,8 +220,7 @@ public class StripedExecutorService extends AbstractExecutorService {
   private void checkPoolIsRunning() {
     assert lock.isHeldByCurrentThread();
     if (state != State.RUNNING) {
-      throw new RejectedExecutionException(
-          "executor not running");
+      throw new RejectedExecutionException("executor not running");
     }
   }
 
@@ -246,8 +243,7 @@ public class StripedExecutorService extends AbstractExecutorService {
       if (stripe != null) {
         SerialExecutor ser_exec = executors.get(stripe);
         if (ser_exec == null) {
-          executors.put(stripe, ser_exec =
-              new SerialExecutor(stripe));
+          executors.put(stripe, ser_exec = new SerialExecutor(stripe));
         }
         ser_exec.execute(command);
       } else {
@@ -377,8 +373,7 @@ public class StripedExecutorService extends AbstractExecutorService {
    * more quickly than necessary, but at least we can avoid a
    * memory leak.
    */
-  private void removeEmptySerialExecutor(Object stripe,
-      SerialExecutor ser_ex) {
+  private void removeEmptySerialExecutor(Object stripe, SerialExecutor ser_ex) {
     assert ser_ex == executors.get(stripe);
     assert lock.isHeldByCurrentThread();
     assert ser_ex.isEmpty();
@@ -424,8 +419,7 @@ public class StripedExecutorService extends AbstractExecutorService {
     /**
      * The queue of unexecuted tasks.
      */
-    private final BlockingQueue<Runnable> tasks =
-        new LinkedBlockingQueue<>();
+    private final BlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
     /**
      * The runnable that we are currently busy with.
      */
@@ -469,13 +463,11 @@ public class StripedExecutorService extends AbstractExecutorService {
     public void execute(final Runnable r) {
       lock.lock();
       try {
-        tasks.add(new Runnable() {
-          public void run() {
-            try {
-              r.run();
-            } finally {
-              scheduleNext();
-            }
+        tasks.add(() -> {
+          try {
+            r.run();
+          } finally {
+            scheduleNext();
           }
         });
         if (active == null) {
@@ -520,8 +512,7 @@ public class StripedExecutorService extends AbstractExecutorService {
 
     public String toString() {
       assert lock.isHeldByCurrentThread();
-      return "SerialExecutor: active=" + active + ", " +
-          "tasks=" + tasks;
+      return "SerialExecutor: active=" + active + ", " + "tasks=" + tasks;
     }
   }
 }
