@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import heinz.StripedExecutorService;
-import heinz.StripedRunnable;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -31,12 +29,15 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.services.StripedExecutorService;
+import org.apache.geode.redis.internal.services.StripedRunnable;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions
@@ -45,6 +46,9 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
+
+  private static final int DEFAULT_PUBLISH_THREAD_COUNT =
+      Integer.getInteger("redis.publish-thread-count", 100);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -75,9 +79,12 @@ public class PubSubImpl implements PubSub {
     }
   }
 
-  public PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
+  public PubSubImpl(Subscriptions subscriptions) {
     this.subscriptions = subscriptions;
-    executor = executorService;
+
+    ExecutorService innerPublishExecutor = LoggingExecutors
+        .newFixedThreadPool(DEFAULT_PUBLISH_THREAD_COUNT, "GeodeRedisServer-Publish-", true);
+    executor = new StripedExecutorService(innerPublishExecutor);
 
     registerPublishFunction();
   }

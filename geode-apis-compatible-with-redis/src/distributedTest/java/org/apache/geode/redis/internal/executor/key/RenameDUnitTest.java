@@ -45,8 +45,8 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
+import org.apache.geode.redis.internal.services.StripedCoordinator;
+import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -138,13 +138,13 @@ public class RenameDUnitTest {
     Random random = new Random();
     String key1 = "{rename}keyz" + random.nextInt();
     RedisKey key1RedisKey = new RedisKey(key1.getBytes());
-    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
     do {
       String key2 = "{rename}key" + random.nextInt();
-      if (stripedExecutor.compareStripes(key1RedisKey,
+      if (stripedCoordinator.compareStripes(key1RedisKey,
           new RedisKey(key2.getBytes())) == 0) {
         keys.add(key2);
       }

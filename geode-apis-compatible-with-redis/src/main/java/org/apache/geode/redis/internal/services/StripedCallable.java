@@ -13,13 +13,15 @@
  * the License.
  */
 
-package heinz;
+package org.apache.geode.redis.internal.services;
+
+import java.util.concurrent.Callable;
 
 /**
- * All of the Runnables in the same "Stripe" will be executed consecutively.
+ * All of the Callables in the same "Stripe" will be executed consecutively.
  *
  * @author Dr Heinz M. Kabutz
  * @see StripedExecutorService
  */
-public interface StripedRunnable extends Runnable, StripedObject {
+public interface StripedCallable<V> extends Callable<V>, StripedObject {
 }

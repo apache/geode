@@ -13,15 +13,16 @@
  * the License.
  */
 
-package heinz;
-
-import java.util.concurrent.Callable;
+package org.apache.geode.redis.internal.services;
 
 /**
- * All of the Callables in the same "Stripe" will be executed consecutively.
+ * Used to indicate which "stripe" this Runnable or Callable belongs to. The
+ * stripe is determined by the identity of the object, rather than its hash
+ * code and equals.
  *
  * @author Dr Heinz M. Kabutz
  * @see StripedExecutorService
  */
-public interface StripedCallable<V> extends Callable<V>, StripedObject {
+public interface StripedObject {
+  Object getStripe();
 }

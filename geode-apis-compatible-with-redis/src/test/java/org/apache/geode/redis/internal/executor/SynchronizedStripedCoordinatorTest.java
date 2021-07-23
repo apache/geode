@@ -19,13 +19,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class SynchronizedStripedExecutorTest {
+import org.apache.geode.redis.internal.services.StripedCoordinator;
+import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
+
+public class SynchronizedStripedCoordinatorTest {
 
   @Test
   public void handleMinNegativeHashCode() {
     Hashy hashy = new Hashy(Integer.MIN_VALUE);
 
-    StripedExecutor executor = new SynchronizedStripedExecutor();
+    StripedCoordinator executor = new SynchronizedStripedCoordinator();
     String result = executor.execute(hashy, () -> "OK");
     assertThat(result).isEqualTo("OK");
   }
@@ -34,7 +37,7 @@ public class SynchronizedStripedExecutorTest {
   public void handleMaxPositiveHashCode() {
     Hashy hashy = new Hashy(Integer.MAX_VALUE);
 
-    StripedExecutor executor = new SynchronizedStripedExecutor();
+    StripedCoordinator executor = new SynchronizedStripedCoordinator();
     String result = executor.execute(hashy, () -> "OK");
     assertThat(result).isEqualTo("OK");
   }

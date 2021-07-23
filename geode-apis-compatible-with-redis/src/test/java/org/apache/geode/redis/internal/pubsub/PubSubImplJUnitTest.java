@@ -23,8 +23,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.ExecutorService;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultChannelPromise;
@@ -32,7 +30,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.junit.Test;
 
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -58,9 +55,7 @@ public class PubSubImplJUnitTest {
     subscriptions.add(subscription);
     subscription.readyToPublish();
 
-    ExecutorService executor =
-        LoggingExecutors.newCachedThreadPool("publishThread", true);
-    PubSubImpl subject = new PubSubImpl(subscriptions, executor);
+    PubSubImpl subject = new PubSubImpl(subscriptions);
 
     subject.publishMessageToSubscribers(stringToBytes("sally"), stringToBytes("message"));
 
