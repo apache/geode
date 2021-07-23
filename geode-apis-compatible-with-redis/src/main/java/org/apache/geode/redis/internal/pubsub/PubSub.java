@@ -29,10 +29,19 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public interface PubSub {
 
   /**
-   * Publish a message on a channel
+   * Publish a message on a channel and return a count of (local) clients that received the message.
+   * This command is asynchronous and the caller may receive a response before subscribers
+   * receive the message.
+   * <p/>
+   * The returned value is somewhat arbitrary and mimics what Redis does in a clustered environment.
+   * Since subscribers and publishers can be connected to any member, the publish command is
+   * distributed to all members of the cluster but remote subscribers are not counted in the
+   * returned value.
    *
    * @param channel to publish to
    * @param message to publish
+   * @return the number of subscribers to this channel that are connected to the server on which
+   *         the command is executed.
    */
   long publish(RegionProvider regionProvider, byte[] channel, byte[] message, Client client);
 
