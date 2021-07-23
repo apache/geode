@@ -515,10 +515,14 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     publisher.publish("salutations", "hello");
     publisher.publish("salutations", "goodbye");
+    publisher.publish("salutations", "adieu");
+    publisher.publish("salutations", "totsiens");
+    publisher.publish("salutations", "auf wiedersehen");
 
-    mockSubscriber.awaitMessageReceived(2L);
+    mockSubscriber.awaitMessageReceived(5L);
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye"));
+    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye",
+        "adieu", "totsiens", "auf wiedersehen"));
   }
 
   @Test

@@ -100,14 +100,15 @@ public class StripedExecutorService extends AbstractExecutorService {
   }
 
   /**
-   * The constructor taking executors is private, since we do
-   * not want users to shutdown their executors directly,
-   * otherwise jobs might get stuck in our queues.
+   * Take care using this constructor. The original visibility was private
+   * since users should not shutdown their executors directly,
+   * otherwise jobs might get stuck in our queues. Do not shutdown the executor
+   * passed in.
    *
    * @param executor the executor service that we use to execute
    *        the tasks
    */
-  private StripedExecutorService(ExecutorService executor) {
+  public StripedExecutorService(ExecutorService executor) {
     this.executor = executor;
   }
 
