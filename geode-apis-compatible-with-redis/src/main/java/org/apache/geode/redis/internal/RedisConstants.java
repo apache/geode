@@ -29,8 +29,6 @@ public class RedisConstants {
   public static final String ERROR_CURSOR = "invalid cursor";
   public static final String ERROR_UNKNOWN_COMMAND =
       "unknown command `%s`, with args beginning with: %s";
-  public static final String ERROR_UNSUPPORTED_COMMAND =
-      " is not supported. To enable all unsupported commands use GFSH to execute: 'redis --enable-unsupported-commands'. Unsupported commands have not been fully tested.";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
   public static final String ERROR_NO_PASS = "Client sent AUTH, but no password is set";
   public static final String ERROR_INVALID_PWD = "invalid password";

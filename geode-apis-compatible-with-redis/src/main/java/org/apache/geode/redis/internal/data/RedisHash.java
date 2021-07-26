@@ -43,6 +43,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
@@ -237,15 +238,21 @@ public class RedisHash extends AbstractRedisData {
     return new ArrayList<>(hash.keySet());
   }
 
-  public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern,
-      int count,
-      int cursor) {
-
-    ArrayList<byte[]> resultList = new ArrayList<>(count + 2);
+  public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
+    // No need to allocate more space than it's possible to use given the size of the hash. We need
+    // to add 1 to hlen() to ensure that if count > hash.size(), we return a cursor of 0
+    long maximumCapacity = 2L * Math.min(count, hlen() + 1);
+    if (maximumCapacity > Integer.MAX_VALUE) {
+      LogService.getLogger().info(
+          "The size of the data to be returned by hscan, {}, exceeds the maximum capacity of an array. A value for the HSCAN COUNT argument less than {} should be used",
+          maximumCapacity, Integer.MAX_VALUE / 2);
+      throw new IllegalArgumentException("Requested array size exceeds VM limit");
+    }
+    List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
     do {
       cursor = hash.scan(cursor, 1,
           (list, key, value) -> addIfMatching(matchPattern, list, key, value), resultList);
-    } while (cursor != 0 && resultList.size() < (count * 2));
+    } while (cursor != 0 && resultList.size() < maximumCapacity);
 
     return new ImmutablePair<>(cursor, resultList);
   }
@@ -263,9 +270,8 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
-      byte[] field, long increment)
-      throws NumberFormatException, ArithmeticException {
+  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
+      long increment) throws NumberFormatException, ArithmeticException {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
       byte[] newValue = Coder.longToBytes(increment);
@@ -388,4 +394,5 @@ public class RedisHash extends AbstractRedisData {
   public int getSizeInBytes() {
     return BASE_REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
   }
+
 }

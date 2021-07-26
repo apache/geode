@@ -157,32 +157,21 @@ public class Coder {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(2));
     buffer.writeBytes(bCRLF);
-    buffer.writeByte(BULK_STRING_ID);
     byte[] cursorBytes = stringToBytes(cursor.toString());
-    buffer.writeBytes(intToBytes(cursorBytes.length));
-    buffer.writeBytes(bCRLF);
-    buffer.writeBytes(cursorBytes);
-    buffer.writeBytes(bCRLF);
+    writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(scanResult.size()));
+    buffer.writeBytes(longToBytes(scanResult.size()));
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
-      byte[] bytes;
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        bytes = stringToBytes(next);
+        writeStringResponse(buffer, stringToBytes(next));
       } else if (nextObject instanceof RedisKey) {
-        bytes = ((RedisKey) nextObject).toBytes();
+        writeStringResponse(buffer, ((RedisKey) nextObject).toBytes());
       } else {
-        bytes = (byte[]) nextObject;
+        writeStringResponse(buffer, (byte[]) nextObject);
       }
-
-      buffer.writeByte(BULK_STRING_ID);
-      buffer.writeBytes(intToBytes(bytes.length));
-      buffer.writeBytes(bCRLF);
-      buffer.writeBytes(bytes);
-      buffer.writeBytes(bCRLF);
     }
     return buffer;
   }

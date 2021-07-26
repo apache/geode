@@ -45,8 +45,7 @@ public interface RedisHashCommands {
 
   Collection<byte[]> hkeys(RedisKey key);
 
-  Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count,
-      int cursor);
+  Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count, int cursor);
 
   long hincrby(RedisKey key, byte[] field, long increment);
 

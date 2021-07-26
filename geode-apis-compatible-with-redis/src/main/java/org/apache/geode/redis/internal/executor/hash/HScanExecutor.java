@@ -72,9 +72,6 @@ public class HScanExecutor extends AbstractScanExecutor {
     // accessed again when the actual command does its work. If the relevant bucket doesn't get
     // locked throughout the call, the bucket may move producing inconsistent results.
     return context.getRegionProvider().execute(key, () -> {
-      String globPattern = null;
-      int count = DEFAULT_COUNT;
-      Pattern matchPattern;
 
       RedisData value = context.getRegionProvider().getRedisData(key);
       if (value.isNull()) {
@@ -87,6 +84,8 @@ public class HScanExecutor extends AbstractScanExecutor {
       }
 
       command.getCommandType().checkDeferredParameters(command, context);
+      int count = DEFAULT_COUNT;
+      String globPattern = null;
 
       for (int i = 3; i < commandElems.size(); i = i + 2) {
         byte[] commandElemBytes = commandElems.get(i);
@@ -110,6 +109,8 @@ public class HScanExecutor extends AbstractScanExecutor {
           return RedisResponse.error(ERROR_SYNTAX);
         }
       }
+
+      Pattern matchPattern;
       try {
         matchPattern = convertGlobToRegex(globPattern);
       } catch (PatternSyntaxException e) {
@@ -121,8 +122,12 @@ public class HScanExecutor extends AbstractScanExecutor {
       }
       RedisHashCommands redisHashCommands = context.getHashCommands();
 
-      Pair<Integer, List<byte[]>> scanResult =
-          redisHashCommands.hscan(key, matchPattern, count, cursor);
+      Pair<Integer, List<byte[]>> scanResult;
+      try {
+        scanResult = redisHashCommands.hscan(key, matchPattern, count, cursor);
+      } catch (IllegalArgumentException ex) {
+        return RedisResponse.error(ERROR_NOT_INTEGER);
+      }
 
       return RedisResponse.scan(new BigInteger(String.valueOf(scanResult.getLeft())),
           scanResult.getRight());
