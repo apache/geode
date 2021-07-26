@@ -389,7 +389,6 @@ dependencies {
     upgradeTestRuntimeOnly(project(':geode-log4j'))
     upgradeTestRuntimeOnly(project(':geode-old-client-support'))
 
-
     performanceTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }

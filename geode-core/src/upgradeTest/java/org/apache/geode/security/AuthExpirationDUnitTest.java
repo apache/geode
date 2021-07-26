@@ -14,13 +14,13 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -70,40 +70,40 @@ public class AuthExpirationDUnitTest {
   @After
   public void after() {
     // make sure after each test, the values of the ExpirationManager are reset
-    ExpirableSecurityManager securityManager =
-        (ExpirableSecurityManager) server.getCache().getSecurityService().getSecurityManager();
-    securityManager.reset();
+    ExpirableSecurityManager.reset();
   }
 
   @Test
   public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
       throws Exception {
-    ExpirableSecurityManager.EXPIRE_AFTER = 10;
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
-        c -> c.withCredential("data", "data")
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, NewCredentialAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
-    clientVM.invoke(() -> {
+    String currentUser = clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       ClientRegionFactory clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       Region region = clientRegionFactory.create("region");
-      IntStream.range(0, 100).forEach(i -> {
-        region.put(i, "value" + i);
-      });
+      region.put(0, "value0");
+      return NewCredentialAuthInitialize.getCurrentUser();
     });
 
-    ExpirableSecurityManager securityManager =
-        (ExpirableSecurityManager) server.getCache().getSecurityService().getSecurityManager();
+    // expire the current user
+    ExpirableSecurityManager.addExpiredUser(currentUser);
 
-    // assert that re-authentication happens
-    assertThat(securityManager.isExpired()).isTrue();
+    // do a second put, if this is successful, it means new credentials are provided
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region region = clientCache.getRegion("region");
+      region.put(1, "value1");
+    });
 
     // all put operation succeeded
     Region<Object, Object> region = server.getCache().getRegion("/region");
-    assertThat(region.size()).isEqualTo(100);
+    assertThat(region.size()).isEqualTo(2);
   }
 
 }

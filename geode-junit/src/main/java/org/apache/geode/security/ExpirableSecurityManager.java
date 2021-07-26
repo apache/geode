@@ -15,38 +15,37 @@
 
 package org.apache.geode.security;
 
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.examples.SimpleSecurityManager;
 
-public class ExpirableSecurityManager extends SimpleSecurityManager {
-  // the period in milli-seconds after which the user authentication will expire
-  public static int EXPIRE_AFTER = 1000;
-  private boolean expired = false;
+/**
+ * this is a test security manager that will authenticate credentials when username matches the
+ * password. It will authorize all operations. It keeps a list of expired users, and will throw
+ * AuthenticationExpiredException if the user is in that list. This security manager is usually used
+ * with NewCredentialAuthInitialize.
+ *
+ * make sure to call reset after each test to clean things up.
+ */
 
-  @Override
-  public Object authenticate(Properties credentials) throws AuthenticationFailedException {
-    Object principal = super.authenticate(credentials);
-    // instantly expire
-    return new ExpirablePrincipal(principal, EXPIRE_AFTER);
-  }
+public class ExpirableSecurityManager extends SimpleSecurityManager {
+  private static List<String> EXPIRED_USERS = new ArrayList<>();
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
-    ExpirablePrincipal expirablePrincipal = (ExpirablePrincipal) principal;
-    if (expirablePrincipal.expired()) {
-      expired = true;
+    if (EXPIRED_USERS.contains(principal)) {
       throw new AuthenticationExpiredException("User authentication expired.");
     }
-    return super.authorize(expirablePrincipal.getPrincipal(), permission);
+    // always authorized
+    return true;
   }
 
-  public boolean isExpired() {
-    return expired;
+  public static void addExpiredUser(String user) {
+    ExpirableSecurityManager.EXPIRED_USERS.add(user);
   }
 
-  public void reset() {
-    EXPIRE_AFTER = 1000;
-    expired = false;
+  public static void reset() {
+    EXPIRED_USERS.clear();
   }
 }
