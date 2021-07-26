@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
@@ -39,15 +38,12 @@ public abstract class AbstractSortedSetRangeOptions<T> {
   }
 
   void parseLimitArguments(List<byte[]> commandElements, int commandIndex) {
-    String element = bytesToString(commandElements.get(commandIndex));
     if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)) {
-      System.out.println("DONAL: throwing because " + element + " is not LIMIT");
       throw new IllegalArgumentException();
     }
 
     // Throw if we don't have enough arguments left to correctly specify LIMIT
     if (commandElements.size() <= commandIndex + 2) {
-      System.out.println("DONAL: throwing because not enough arguments");
       throw new IllegalArgumentException();
     }
 
