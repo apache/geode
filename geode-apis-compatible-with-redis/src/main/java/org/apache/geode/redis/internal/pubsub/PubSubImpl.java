@@ -19,6 +19,10 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -29,7 +33,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -47,8 +51,8 @@ import org.apache.geode.redis.internal.services.StripedRunnable;
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
 
-  private static final int DEFAULT_PUBLISH_THREAD_COUNT =
-      Integer.getInteger("redis.publish-thread-count", 100);
+  private static final int MAX_PUBLISH_THREAD_COUNT =
+      Integer.getInteger("redis.max-publish-thread-count", 10);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -82,8 +86,11 @@ public class PubSubImpl implements PubSub {
   public PubSubImpl(Subscriptions subscriptions) {
     this.subscriptions = subscriptions;
 
-    ExecutorService innerPublishExecutor = LoggingExecutors
-        .newFixedThreadPool(DEFAULT_PUBLISH_THREAD_COUNT, "GeodeRedisServer-Publish-", true);
+    ThreadFactory threadFactory = new LoggingThreadFactory("GeodeRedisServer-Publish-", true);
+    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    ExecutorService innerPublishExecutor = new ThreadPoolExecutor(1, MAX_PUBLISH_THREAD_COUNT,
+        60, TimeUnit.SECONDS, workQueue, threadFactory);
+
     executor = new StripedExecutorService(innerPublishExecutor);
 
     registerPublishFunction();
