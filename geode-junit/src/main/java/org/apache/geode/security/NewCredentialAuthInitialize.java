@@ -16,6 +16,7 @@
 package org.apache.geode.security;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.distributed.DistributedMember;
 
@@ -29,23 +30,23 @@ import org.apache.geode.distributed.DistributedMember;
 
 
 public class NewCredentialAuthInitialize implements AuthInitialize {
-  private static int count;
+  private static AtomicInteger count = new AtomicInteger(0);
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
-    count++;
+    int currentCount = count.getAndIncrement();
     Properties credentials = new Properties();
-    credentials.put("security-username", "user" + count);
-    credentials.put("security-password", "user" + count);
+    credentials.put("security-username", "user" + currentCount);
+    credentials.put("security-password", "user" + currentCount);
     return credentials;
   }
 
   public static String getCurrentUser() {
-    return "user" + count;
+    return "user" + count.get();
   }
 
   public static void reset() {
-    count = 0;
+    count = new AtomicInteger(0);
   }
 }

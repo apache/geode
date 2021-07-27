@@ -15,7 +15,10 @@
 
 package org.apache.geode.security;
 
+
 public class AuthenticationExpiredException extends AuthenticationRequiredException {
+  private static final long serialVersionUID = 1771792091260325297L;
+
   public AuthenticationExpiredException(String message) {
     super(message);
   }

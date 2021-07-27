@@ -39,18 +39,18 @@ public class SecurityWithExpirationIniIntegrationTest {
 
   @Before
   public void before() throws Exception {
-    this.props.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
-    this.securityService = SecurityServiceFactory.create(this.props);
+    props.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
+    securityService = SecurityServiceFactory.create(this.props);
   }
 
   @After
   public void after() throws Exception {
-    this.securityService.logout();
+    securityService.logout();
     ExpirableSecurityManager.reset();
   }
 
   @Test
-  public void testThrowAuthenticationExpiredException() throws Exception {
+  public void testThrowAuthenticationExpiredException() {
     ExpirableSecurityManager.addExpiredUser("data");
     this.securityService.login(loginCredentials("data", "data"));
     assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
