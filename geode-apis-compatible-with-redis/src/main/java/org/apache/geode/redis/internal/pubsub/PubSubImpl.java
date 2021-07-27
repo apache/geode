@@ -18,8 +18,9 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +88,7 @@ public class PubSubImpl implements PubSub {
     this.subscriptions = subscriptions;
 
     ThreadFactory threadFactory = new LoggingThreadFactory("GeodeRedisServer-Publish-", true);
-    SynchronousQueue<Runnable> workQueue = new SynchronousQueue<>();
+    BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
     ExecutorService innerPublishExecutor = new ThreadPoolExecutor(1, MAX_PUBLISH_THREAD_COUNT,
         60, TimeUnit.SECONDS, workQueue, threadFactory);
 
