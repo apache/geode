@@ -84,7 +84,7 @@ resources:
   type: git
   source:
     branch: master
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/upthewaterspout/geode-release-check.git
 
 jobs:
   - name: build-geode-from-tag
@@ -320,6 +320,7 @@ jobs:
         - get: geode-native
           trigger: true
         - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -391,7 +392,7 @@ jobs:
             - |
               set -ex
               apt update -q
-              apt install -qq -y --no-install-recommends unzip git gpg
+              apt install -qq -y --no-install-recommends unzip git gpg wget
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')

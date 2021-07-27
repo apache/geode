@@ -88,10 +88,20 @@ else
 fi
 
 
+echo ""
+echo "============================================================"
+echo "Checking docker..."
+echo "============================================================"
+if ! docker images >/dev/null ; then
+  echo "Make sure docker daemon is running and try again."
+  exit 1
+fi
+
+
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 126-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 

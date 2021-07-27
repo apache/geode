@@ -84,15 +84,16 @@ echo ""
 echo "============================================================"
 echo "Checking java..."
 echo "============================================================"
-if ! java -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 1.8' ; then
+[ -z "$JAVA_HOME" ] && JAVA=java || JAVA=$JAVA_HOME/bin/java
+if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 1.8' ; then
   echo "Please set JAVA_HOME to use JDK 8 to compile Geode for release"
   exit 1
 fi
-if java -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
+if $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
   echo "Please set JAVA_HOME to use an Open JDK 8 such as from https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot to compile Geode for release"
   exit 1
 else
-  java -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
+  $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
 fi
 
 
@@ -281,7 +282,7 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 143-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 144-$(( errln - 1 ))) and try again"
   echo "For this script only (prepare_rc.sh), it's also safe to just try again from the top"
 }
 trap 'failMsg2 $LINENO' ERR
