@@ -30,7 +30,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 
 public class NewCredentialAuthInitialize implements AuthInitialize {
-  private static AtomicInteger count = new AtomicInteger(0);
+  private static final AtomicInteger count = new AtomicInteger(0);
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
@@ -47,6 +47,6 @@ public class NewCredentialAuthInitialize implements AuthInitialize {
   }
 
   public static void reset() {
-    count = new AtomicInteger(0);
+    count.set(0);
   }
 }

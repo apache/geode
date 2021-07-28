@@ -75,9 +75,10 @@ public interface SecurityManager {
    * @param permission The permission requested
    * @return true if authorized, false if not
    *
-   *         possibly throw AuthenticationExpiredException
+   * @throw AuthenticationExpiredException
    */
-  default boolean authorize(Object principal, ResourcePermission permission) {
+  default boolean authorize(Object principal, ResourcePermission permission)
+      throws AuthenticationExpiredException {
     return true;
   }
 

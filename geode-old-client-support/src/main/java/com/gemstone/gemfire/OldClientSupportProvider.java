@@ -14,6 +14,8 @@
  */
 package com.gemstone.gemfire;
 
+import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Map;
@@ -126,10 +128,10 @@ public class OldClientSupportProvider implements OldClientSupportService {
 
     String className = theThrowable.getClass().getName();
 
-    // GEODE-9452, backward compatibility for authentication expiration
-    if (clientVersion.isOlderThan(KnownVersion.GEODE_1_14_0)) {
+    // backward compatibility for authentication expiration
+    if (clientVersion.isOlderThan(KnownVersion.GEODE_1_15_0)) {
       if (className.equals(AuthenticationExpiredException.class.getName())) {
-        return new AuthenticationRequiredException("User authorization attributes not found.");
+        return new AuthenticationRequiredException(USER_NOT_FOUND);
       }
     }
 

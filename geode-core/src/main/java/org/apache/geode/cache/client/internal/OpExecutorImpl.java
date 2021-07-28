@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.SocketException;
@@ -741,7 +743,7 @@ public class OpExecutorImpl implements ExecutablePool {
     } catch (final ServerConnectivityException sce) {
       final Throwable cause = sce.getCause();
       if ((cause instanceof AuthenticationRequiredException
-          && "User authorization attributes not found.".equals(cause.getMessage()))
+          && USER_NOT_FOUND.equals(cause.getMessage()))
           || sce.getMessage().contains("Connection error while authenticating user")
           || cause instanceof AuthenticationExpiredException) {
         // 2nd exception-message above is from AbstractOp.sendMessage()

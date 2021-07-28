@@ -17,7 +17,7 @@ package org.apache.geode.security;
 
 /**
  * This exception is thrown by the SecurityManager's authorize method to indicate that the
- * authentication has expired
+ * authentication has expired.
  */
 public class AuthenticationExpiredException extends AuthenticationRequiredException {
   private static final long serialVersionUID = 1771792091260325297L;

@@ -31,7 +31,7 @@ import org.apache.geode.security.ExpirableSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
-public class SecurityWithExpirationIniIntegrationTest {
+public class SecurityWithExpirationIntegrationTest {
 
   protected Properties props = new Properties();
 
