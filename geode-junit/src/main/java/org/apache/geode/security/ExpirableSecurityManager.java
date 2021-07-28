@@ -28,7 +28,6 @@ import org.apache.geode.examples.SimpleSecurityManager;
  *
  * make sure to call reset after each test to clean things up.
  */
-
 public class ExpirableSecurityManager extends SimpleSecurityManager {
   // use static field for ease of testing since there is only one instance of this in each VM
   // we only need ConcurrentHashSet here, but map is only construct available in the library

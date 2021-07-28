@@ -26,8 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
  *
  * make sure reset is called after each test to clean things up.
  */
-
-
 public class UpdatableUserAuthInitialize implements AuthInitialize {
   // use static field for ease of testing since there is only one instance of this in each VM
   private static String user;

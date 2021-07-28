@@ -104,7 +104,8 @@ public class AuthExpirationDUnitTest {
 
     // all put operation succeeded
     Region<Object, Object> region = server.getCache().getRegion("/region");
-    assertThat(ExpirableSecurityManager.getExpiredUsers()).asList().containsExactly("user1");
+    assertThat(ExpirableSecurityManager.getExpiredUsers().size()).isEqualTo(1);
+    assertThat(ExpirableSecurityManager.getExpiredUsers().contains("user1")).isTrue();
     assertThat(region.size()).isEqualTo(2);
   }
 
