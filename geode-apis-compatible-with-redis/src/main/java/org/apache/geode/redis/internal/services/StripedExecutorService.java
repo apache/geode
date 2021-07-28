@@ -36,6 +36,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 /**
  * The StripedExecutorService accepts Runnable/Callable objects
  * that also implement the StripedObject interface. It executes
@@ -55,6 +59,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Dr Heinz M. Kabutz
  */
 public class StripedExecutorService extends AbstractExecutorService {
+
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * The wrapped ExecutorService that will actually execute our
    * tasks.
@@ -359,13 +366,10 @@ public class StripedExecutorService extends AbstractExecutorService {
           && !executors.isEmpty()) {
         terminating.awaitNanos(remainingTime);
       }
-      if (remainingTime <= 0)
+      if (remainingTime <= 0) {
         return false;
-      if (executors.isEmpty()) {
-        return executor.awaitTermination(
-            remainingTime, TimeUnit.NANOSECONDS);
       }
-      return false;
+      return executor.awaitTermination(remainingTime, TimeUnit.NANOSECONDS);
     } finally {
       lock.unlock();
     }
@@ -378,9 +382,16 @@ public class StripedExecutorService extends AbstractExecutorService {
    * memory leak.
    */
   private void removeEmptySerialExecutor(Object stripe, SerialExecutor ser_ex) {
-    assert ser_ex == executors.get(stripe);
-    assert lock.isHeldByCurrentThread();
-    assert ser_ex.isEmpty();
+    if (ser_ex != executors.get(stripe)) {
+      throw new IllegalStateException(
+          "executor to remove is not equal to current executor mapped to stripe " + stripe);
+    }
+    if (!lock.isHeldByCurrentThread()) {
+      throw new IllegalStateException("lock is not held by the current thread");
+    }
+    if (!ser_ex.isEmpty()) {
+      throw new IllegalStateException("executor to remove is not empty");
+    }
 
     executors.remove(stripe);
     terminating.signalAll();
@@ -404,14 +415,6 @@ public class StripedExecutorService extends AbstractExecutorService {
     }
 
   }
-
-  /**
-   * This field is used for conditional compilation. If it is
-   * false, then the finalize method is an empty method, in
-   * which case the SerialExecutor will not be registered with
-   * the Finalizer.
-   */
-  private static boolean DEBUG = false;
 
   /**
    * SerialExecutor is based on the construct with the same name
@@ -440,23 +443,7 @@ public class StripedExecutorService extends AbstractExecutorService {
      */
     private SerialExecutor(Object stripe) {
       this.stripe = stripe;
-      if (DEBUG) {
-        System.out.println("SerialExecutor created " + stripe);
-      }
-    }
-
-    /**
-     * We use finalize() only for debugging purposes. If
-     * DEBUG==false, the body of the method will be compiled
-     * away, thus rendering it a trivial finalize() method,
-     * which means that the object will not incur any overhead
-     * since it won't be registered with the Finalizer.
-     */
-    protected void finalize() throws Throwable {
-      if (DEBUG) {
-        System.out.println("SerialExecutor finalized " + stripe);
-        super.finalize();
-      }
+      logger.debug("SerialExecutor created for stripe {}", stripe);
     }
 
     /**

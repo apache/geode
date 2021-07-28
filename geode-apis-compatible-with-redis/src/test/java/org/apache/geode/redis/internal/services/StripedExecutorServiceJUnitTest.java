@@ -18,8 +18,10 @@
 
 package org.apache.geode.redis.internal.services;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -33,8 +35,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 
+
 /**
  * @author Heinz Kabutz
+ */
+/*
+ * Changes from the original:
+ * - Switch to AssertJ for all assertions
+ *
  */
 public class StripedExecutorServiceJUnitTest {
   @Before
@@ -81,27 +89,20 @@ public class StripedExecutorServiceJUnitTest {
     starter.start();
     starter.join();
 
-    for (int i = 0; i < 100; i++) {
-      if (group.activeCount() == 0) {
-        return;
-      }
-      Thread.sleep(100);
-    }
-
-    assertThat(group.activeCount()).isEqualTo(0);
+    await().untilAsserted(() -> assertThat(group.activeCount()).isEqualTo(0));
   }
 
   @Test
   public void testShutdownNow() throws InterruptedException {
+    int totalRunnables = 100;
     ExecutorService pool = new StripedExecutorService();
     Object stripe = new Object();
     AtomicInteger actual = new AtomicInteger(0);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < totalRunnables; i++) {
       pool.submit(new TestRunnable(stripe, actual, i));
     }
-    Thread.sleep(500);
 
-    assertThat(pool.isTerminated()).isFalse();
+    await().during(Duration.ofMillis(500)).until(() -> !pool.isTerminated());
     Collection<Runnable> unfinishedJobs = pool.shutdownNow();
 
     assertThat(pool.isShutdown()).isTrue();
@@ -110,26 +111,20 @@ public class StripedExecutorServiceJUnitTest {
 
     assertThat(unfinishedJobs.size() > 0).isTrue();
 
-    assertThat(unfinishedJobs.size() + actual.intValue()).isEqualTo(100);
+    assertThat(unfinishedJobs.size() + actual.intValue()).isEqualTo(totalRunnables);
   }
 
   @Test
   public void testSingleStripeCallableWithCompletionService()
       throws InterruptedException, ExecutionException {
     ExecutorService pool = new StripedExecutorService();
-    final CompletionService<Integer> cs = new ExecutorCompletionService<>(
-        pool);
+    final CompletionService<Integer> cs = new ExecutorCompletionService<>(pool);
 
     Thread testSubmitter = new Thread("TestSubmitter") {
       public void run() {
         Object stripe = new Object();
         for (int i = 0; i < 50; i++) {
           cs.submit(new TestCallable(stripe, i));
-        }
-        try {
-          Thread.sleep(2000);
-        } catch (InterruptedException e) {
-          interrupt();
         }
         for (int i = 50; i < 100; i++) {
           cs.submit(new TestCallable(stripe, i));
@@ -139,9 +134,10 @@ public class StripedExecutorServiceJUnitTest {
     testSubmitter.start();
 
     for (int i = 0; i < 100; i++) {
-      int actual = cs.take().get().intValue();
-      System.out.println("Retrieved " + actual);
-      assertThat(actual).isEqualTo(i);
+      int actual = cs.take().get();
+      assertThat(actual)
+          .as("unexpected thread completion order")
+          .isEqualTo(i);
     }
     pool.shutdown();
 
@@ -170,21 +166,17 @@ public class StripedExecutorServiceJUnitTest {
     final ExecutorService pool = new StripedExecutorService();
     ExecutorService producerPool = Executors.newCachedThreadPool();
     for (int i = 0; i < 20; i++) {
-      producerPool.submit(new Runnable() {
-        public void run() {
-          Object stripe = new Object();
-          AtomicInteger actual = new AtomicInteger(0);
-          for (int i = 0; i < 100; i++) {
-            pool.submit(new TestRunnable(stripe, actual, i));
-          }
+      producerPool.submit(() -> {
+        Object stripe = new Object();
+        AtomicInteger actual = new AtomicInteger(0);
+        for (int i1 = 0; i1 < 100; i1++) {
+          pool.submit(new TestRunnable(stripe, actual, i1));
         }
       });
     }
     producerPool.shutdown();
 
-    while (!producerPool.awaitTermination(1, TimeUnit.MINUTES)) {
-      ;
-    }
+    await().until(() -> producerPool.awaitTermination(100, TimeUnit.MILLISECONDS));
 
     pool.shutdown();
 
@@ -194,27 +186,22 @@ public class StripedExecutorServiceJUnitTest {
         .isFalse();
   }
 
-
   @Test
   public void testMultipleFastStripes() throws InterruptedException {
     final ExecutorService pool = new StripedExecutorService();
     ExecutorService producerPool = Executors.newCachedThreadPool();
     for (int i = 0; i < 20; i++) {
-      producerPool.submit(new Runnable() {
-        public void run() {
-          Object stripe = new Object();
-          AtomicInteger actual = new AtomicInteger(0);
-          for (int i = 0; i < 100; i++) {
-            pool.submit(new TestFastRunnable(stripe, actual, i));
-          }
+      producerPool.submit(() -> {
+        Object stripe = new Object();
+        AtomicInteger actual = new AtomicInteger(0);
+        for (int i1 = 0; i1 < 100; i1++) {
+          pool.submit(new TestFastRunnable(stripe, actual, i1));
         }
       });
     }
     producerPool.shutdown();
 
-    while (!producerPool.awaitTermination(1, TimeUnit.MINUTES)) {
-      ;
-    }
+    await().until(() -> producerPool.awaitTermination(100, TimeUnit.MILLISECONDS));
 
     pool.shutdown();
     assertThat(pool.awaitTermination(1, TimeUnit.DAYS)).isTrue();
