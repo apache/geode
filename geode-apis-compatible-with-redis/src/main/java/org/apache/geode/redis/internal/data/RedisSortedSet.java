@@ -397,6 +397,31 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
+  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    Iterator<AbstractOrderedSetEntry> scoresIterator =
+        scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
+    List<byte[]> result = new ArrayList<>();
+
+    if (!scoresIterator.hasNext()) {
+      return result;
+    }
+
+    RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
+    while (scoresIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = scoresIterator.next();
+      scoresIterator.remove();
+      members.remove(entry.member);
+
+      result.add(entry.member);
+      result.add(entry.scoreBytes);
+      deltaInfo.add(entry.member);
+    }
+
+    storeChanges(region, key, deltaInfo);
+
+    return result;
+  }
+
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> membersToAdd, ZAddOptions options) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.

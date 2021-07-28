@@ -45,4 +45,6 @@ public interface RedisSortedSetCommands {
   long zrevrank(RedisKey key, byte[] member);
 
   byte[] zscore(RedisKey key, byte[] member);
+
+  List<byte[]> zpopmax(RedisKey key, int count);
 }
