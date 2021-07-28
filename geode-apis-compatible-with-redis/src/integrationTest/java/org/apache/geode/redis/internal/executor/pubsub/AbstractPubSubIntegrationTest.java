@@ -306,9 +306,9 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Long result = publisher.publish("salutations".getBytes(), expectedMessage);
     assertThat(result).isEqualTo(1);
 
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedMessages()).isNotEmpty());
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(expectedMessage);
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages())
+            .containsExactly(expectedMessage));
 
     mockSubscriber.unsubscribe("salutations".getBytes());
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
@@ -336,13 +336,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     assertThat(result).isEqualTo(1);
 
     GeodeAwaitility.await().untilAsserted(
-        () -> assertThat(mockSubscriber.getReceivedMessages()).isNotEmpty());
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(binaryBlob);
+        () -> assertThat(mockSubscriber.getReceivedMessages()).containsExactly(binaryBlob));
 
     mockSubscriber.unsubscribe(binaryBlob);
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-
   }
 
   @Test
@@ -769,8 +767,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     running.set(false);
 
-    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
-    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
+    assertThat(makeSubscribersFuture1.get()).isGreaterThan(0);
+    assertThat(makeSubscribersFuture2.get()).isGreaterThan(0);
 
     assertThat(publish1.get()).isGreaterThan(0);
     assertThat(publish2.get()).isGreaterThan(0);
