@@ -78,24 +78,25 @@ public class AuthExpirationDUnitTest {
       throws Exception {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
-        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, NewCredentialAuthInitialize.class.getName())
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
-    String currentUser = clientVM.invoke(() -> {
+    clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
+      UpdatableUserAuthInitialize.setUser("user1");
       ClientRegionFactory clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       Region region = clientRegionFactory.create("region");
       region.put(0, "value0");
-      return NewCredentialAuthInitialize.getCurrentUser();
     });
 
     // expire the current user
-    ExpirableSecurityManager.addExpiredUser(currentUser);
+    ExpirableSecurityManager.addExpiredUser("user1");
 
     // do a second put, if this is successful, it means new credentials are provided
     clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user2");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region region = clientCache.getRegion("region");
       region.put(1, "value1");
@@ -103,6 +104,7 @@ public class AuthExpirationDUnitTest {
 
     // all put operation succeeded
     Region<Object, Object> region = server.getCache().getRegion("/region");
+    assertThat(ExpirableSecurityManager.getExpiredUsers()).asList().containsExactly("user1");
     assertThat(region.size()).isEqualTo(2);
   }
 

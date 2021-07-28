@@ -15,6 +15,8 @@
 
 package org.apache.geode.security;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.examples.SimpleSecurityManager;
@@ -29,6 +31,7 @@ import org.apache.geode.examples.SimpleSecurityManager;
  */
 
 public class ExpirableSecurityManager extends SimpleSecurityManager {
+  // use static field for ease of testing since there is only one instance of this in each VM
   // we only need ConcurrentHashSet here, but map is only construct available in the library
   private static final ConcurrentHashMap<String, String> EXPIRED_USERS = new ConcurrentHashMap<>();
 
@@ -43,6 +46,10 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
 
   public static void addExpiredUser(String user) {
     EXPIRED_USERS.put(user, user);
+  }
+
+  public static List<String> getExpiredUsers() {
+    return Collections.list(EXPIRED_USERS.keys());
   }
 
   public static void reset() {
