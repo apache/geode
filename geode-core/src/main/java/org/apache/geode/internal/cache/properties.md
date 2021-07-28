@@ -216,7 +216,7 @@ DistributionConfigImpl constructor prepends `gemfire.` to each valid attribute n
 | stats.name | String | `Thread.currentThread().getName()` | See `org.apache.geode.internal.LocalStatisticsFactory#initName`.|
 | stats.sample-rate | Integer | `1000` | See `org.apache.geode.internal.SimpleStatSampler#sampleRate`.<p>Units are in milliseconds.|
 | tcpServerPort | Integer | tcp-port property in the distribution config | See `org.apache.geode.distributed.internal.direct.DirectChannel#DirectChannel(MembershipManager, DistributedMembershipListener, DistributionConfig, LogWriter, Properties)`.|
-
+| WRITE_BUF_SIZE | Integer | `32768` (disk store `--write-buffer-size` option default value) | Sets the disk store write buffer size. If set, it takes precedence over the disk store `--write-buffer-size` option value.<p>See `org.apache.geode.internal.cache.Oplog#allocateWriteBuf(OplogFile prevOlf)`<br/>See `org.apache.geode.internal.cache.OverflowOplog#allocateWriteBuf(OverflowOplog previous)`<p>Units are in bytes.|
 
 ## Properties used by other Jars
 

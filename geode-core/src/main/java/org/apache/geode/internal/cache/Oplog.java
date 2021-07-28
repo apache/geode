@@ -57,6 +57,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
@@ -118,6 +119,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class Oplog implements CompactableOplog, Flushable {
   private static final Logger logger = LogService.getLogger();
+
+  /* System property to override the disk store write buffer size. */
+  public final String WRITE_BUFFER_SIZE_SYS_PROP_NAME = "WRITE_BUF_SIZE";
 
   /** Extension of the oplog file * */
   public static final String CRF_FILE_EXT = ".crf";
@@ -881,7 +885,7 @@ public class Oplog implements CompactableOplog, Flushable {
     return isRecovering;
   }
 
-  private DiskStoreImpl getParent() {
+  DiskStoreImpl getParent() {
     return parent;
   }
 
@@ -1086,13 +1090,27 @@ public class Oplog implements CompactableOplog, Flushable {
     maxCrfSize += crf.currSize;
   }
 
-  private static ByteBuffer allocateWriteBuf(OplogFile prevOlf) {
+  @VisibleForTesting
+  Integer getWriteBufferSizeProperty() {
+    return Integer.getInteger(WRITE_BUFFER_SIZE_SYS_PROP_NAME);
+  }
+
+  @VisibleForTesting
+  Integer getWriteBufferCapacity() {
+    Integer writeBufferSizeProperty = getWriteBufferSizeProperty();
+    if (writeBufferSizeProperty != null) {
+      return writeBufferSizeProperty;
+    }
+    return getParent().getWriteBufferSize();
+  }
+
+  private ByteBuffer allocateWriteBuf(OplogFile prevOlf) {
     if (prevOlf != null && prevOlf.writeBuf != null) {
       ByteBuffer result = prevOlf.writeBuf;
       prevOlf.writeBuf = null;
       return result;
     } else {
-      return ByteBuffer.allocateDirect(Integer.getInteger("WRITE_BUF_SIZE", 32768));
+      return ByteBuffer.allocateDirect(getWriteBufferCapacity());
     }
   }
 

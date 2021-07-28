@@ -28,56 +28,74 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DiskStoreFactory;
+
 
 public class OplogTest {
   private final DiskStoreImpl.OplogCompactor compactor = mock(DiskStoreImpl.OplogCompactor.class);
   private final PersistentOplogSet parent = mock(PersistentOplogSet.class);
   private final long oplogId = 1;
-  private Oplog oplog;
+  private Oplog oplogSpy;
 
   @Before
   public void setup() {
-    when(parent.getParent()).thenReturn(mock(DiskStoreImpl.class));
-    oplog = spy(new Oplog(oplogId, parent));
-    doReturn(true).when(oplog).needsCompaction();
-    doReturn(true).when(oplog).calledByCompactorThread();
+    DiskStoreImpl parentDiskStore = mock(DiskStoreImpl.class);
+    when(parentDiskStore.getWriteBufferSize())
+        .thenReturn(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
+    when(parent.getParent()).thenReturn(parentDiskStore);
+    oplogSpy = spy(new Oplog(oplogId, parent));
+    doReturn(true).when(oplogSpy).needsCompaction();
+    doReturn(true).when(oplogSpy).calledByCompactorThread();
   }
 
   @Test
   public void noCompactIfDoesNotNeedCompaction() {
-    doReturn(false).when(oplog).needsCompaction();
-    assertThat(oplog.compact(compactor)).isEqualTo(0);
+    doReturn(false).when(oplogSpy).needsCompaction();
+    assertThat(oplogSpy.compact(compactor)).isEqualTo(0);
   }
 
   @Test
   public void noCompactIfNotKeepCompactorRunning() {
     when(compactor.keepCompactorRunning()).thenReturn(false);
-    assertThat(oplog.compact(compactor)).isEqualTo(0);
+    assertThat(oplogSpy.compact(compactor)).isEqualTo(0);
   }
 
   @Test
   public void handlesNoLiveValuesIfNoLiveValueInOplog() {
     when(compactor.keepCompactorRunning()).thenReturn(true);
 
-    doReturn(true).when(oplog).hasNoLiveValues();
-    assertThat(oplog.compact(compactor)).isEqualTo(0);
-    verify(oplog, times(1)).handleNoLiveValues();
+    doReturn(true).when(oplogSpy).hasNoLiveValues();
+    assertThat(oplogSpy.compact(compactor)).isEqualTo(0);
+    verify(oplogSpy, times(1)).handleNoLiveValues();
   }
 
   @Test
   public void invockeCleanupAfterCompaction() {
     when(compactor.keepCompactorRunning()).thenReturn(true);
-    doReturn(mock(DiskStoreStats.class)).when(oplog).getStats();
-    doReturn(false).when(oplog).hasNoLiveValues();
-    oplog.compact(compactor);
-    verify(oplog, times(1)).cleanupAfterCompaction(eq(false));
+    doReturn(mock(DiskStoreStats.class)).when(oplogSpy).getStats();
+    doReturn(false).when(oplogSpy).hasNoLiveValues();
+    oplogSpy.compact(compactor);
+    verify(oplogSpy, times(1)).cleanupAfterCompaction(eq(false));
   }
 
   @Test
   public void handlesNoLiveValuesIfCompactSuccessful() {
-    oplog.getTotalLiveCount().set(5);
-    oplog.cleanupAfterCompaction(false);
-    verify(oplog, times(1)).handleNoLiveValues();
-    assertThat(oplog.getTotalLiveCount().get()).isEqualTo(0);
+    oplogSpy.getTotalLiveCount().set(5);
+    oplogSpy.cleanupAfterCompaction(false);
+    verify(oplogSpy, times(1)).handleNoLiveValues();
+    assertThat(oplogSpy.getTotalLiveCount().get()).isEqualTo(0);
+  }
+
+  @Test
+  public void writeBufferSizeValueIsObtainedFromParentIfSystemPropertyNotDefined() {
+    when(oplogSpy.getWriteBufferSizeProperty()).thenReturn(null);
+    assertThat(oplogSpy.getWriteBufferCapacity())
+        .isEqualTo(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
+  }
+
+  @Test
+  public void writeBufferSizeValueIsObtainedFromSystemPropertyWhenDefined() {
+    when(oplogSpy.getWriteBufferSizeProperty()).thenReturn(12345);
+    assertThat(oplogSpy.getWriteBufferCapacity()).isEqualTo(12345);
   }
 }
