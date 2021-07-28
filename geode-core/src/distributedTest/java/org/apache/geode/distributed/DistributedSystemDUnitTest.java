@@ -36,6 +36,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUD
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -51,8 +52,10 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestRule;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -74,6 +77,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -81,7 +85,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  */
 @Category({MembershipTest.class})
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
-
+  @Rule
+  public TestRule restoreSystemProperties = new DistributedRestoreSystemProperties();
   private int mcastPort;
   private int locatorPort;
   private int tcpPort;
@@ -268,6 +273,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   public void testPortRange() throws Exception {
     Properties config = new Properties();
     config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
+    System.clearProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE);
     config.setProperty(MEMBERSHIP_PORT_RANGE,
         this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
 
@@ -283,6 +289,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, String.valueOf(this.mcastPort));
     config.setProperty(START_LOCATOR, "localhost[" + this.locatorPort + "]");
+    System.clearProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE);
     config.setProperty(MEMBERSHIP_PORT_RANGE,
         this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
 
@@ -290,12 +297,19 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     IgnoredException.addIgnoredException("SystemConnectException", VM.getVM(1));
     VM.getVM(1).invoke(() -> {
+      String oldMembershipPortRange = System.clearProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE);
       String locators = (String) config.remove(START_LOCATOR);
 
       config.put(LOCATORS, locators);
 
-      assertThatThrownBy(() -> DistributedSystem.connect(config))
-          .isInstanceOfAny(GemFireConfigException.class, SystemConnectException.class);
+      try {
+        assertThatThrownBy(() -> DistributedSystem.connect(config))
+            .isInstanceOfAny(GemFireConfigException.class, SystemConnectException.class);
+      } finally {
+        if (oldMembershipPortRange != null) {
+          System.setProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE, oldMembershipPortRange);
+        }
+      }
     });
   }
 
@@ -329,7 +343,6 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
-
 
     // Install a membership listener which will send a message to
     // any new member that joins. The message will fail to deserialize, triggering
@@ -388,10 +401,12 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   private void verifyMembershipPortsInRange(final InternalDistributedMember member,
       final int lowerBound, final int upperBound) {
-    assertThat(member.getMembershipPort()).isGreaterThanOrEqualTo(lowerBound);
-    assertThat(member.getMembershipPort()).isLessThanOrEqualTo(upperBound);
-    assertThat(member.getDirectChannelPort()).isGreaterThanOrEqualTo(lowerBound);
-    assertThat(member.getDirectChannelPort()).isLessThanOrEqualTo(upperBound);
+    assertThat(member.getMembershipPort())
+        .as("membership port")
+        .isBetween(lowerBound, upperBound);
+    assertThat(member.getDirectChannelPort())
+        .as("direct channel port")
+        .isBetween(lowerBound, upperBound);
   }
 
   private InetAddress getLoopback() throws SocketException, UnknownHostException {
