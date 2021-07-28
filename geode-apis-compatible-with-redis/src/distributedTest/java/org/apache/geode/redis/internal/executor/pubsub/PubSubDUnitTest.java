@@ -167,8 +167,9 @@ public class PubSubDUnitTest {
         mockSubscribers.forEach(x -> x.awaitSubscribe(channelName));
 
         Jedis localPublisher = getConnection(random);
+        mockSubscribers.forEach(x -> x.prepareMessagesReceivedLatch(1));
         localPublisher.publish(channelName, "hi");
-        mockSubscribers.forEach((x) -> x.awaitMessageReceived(1L));
+        mockSubscribers.forEach(MockSubscriber::awaitMessagesReceived);
         localPublisher.close();
 
         mockSubscribers.forEach(s -> {
@@ -220,8 +221,9 @@ public class PubSubDUnitTest {
     publisher1.publish(CHANNEL_NAME, "hello");
 
     server1.stop();
+    mockSubscriber2.prepareMessagesReceivedLatch(1);
     publisher1.publish(CHANNEL_NAME, "hello again");
-    mockSubscriber2.awaitMessageReceived(1L);
+    mockSubscriber2.awaitMessagesReceived();
 
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
     GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
@@ -298,9 +300,11 @@ public class PubSubDUnitTest {
 
     server2.stop();
 
+    mockSubscriber1.prepareMessagesReceivedLatch(1);
     publisher1.publish(CHANNEL_NAME, "hello again");
     publisher2.publish(CHANNEL_NAME, "hello again");
-    mockSubscriber1.awaitMessageReceived(1L);
+
+    mockSubscriber1.awaitMessagesReceived();
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
@@ -324,9 +328,12 @@ public class PubSubDUnitTest {
     assertThat(latch.await(30, TimeUnit.SECONDS)).as("channel subscription was not received")
         .isTrue();
 
+    mockSubscriber1.prepareMessagesReceivedLatch(1);
+    mockSubscriber2.prepareMessagesReceivedLatch(1);
     publisher1.publish(CHANNEL_NAME, "hello");
-    mockSubscriber1.awaitMessageReceived(1L);
-    mockSubscriber2.awaitMessageReceived(1L);
+
+    mockSubscriber1.awaitMessagesReceived();
+    mockSubscriber2.awaitMessagesReceived();
 
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
