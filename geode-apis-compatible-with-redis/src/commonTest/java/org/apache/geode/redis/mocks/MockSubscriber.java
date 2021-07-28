@@ -17,7 +17,6 @@ package org.apache.geode.redis.mocks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,6 @@ import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class MockSubscriber extends JedisPubSub {
 
@@ -45,6 +43,8 @@ public class MockSubscriber extends JedisPubSub {
       Collections.synchronizedList(new ArrayList<>());
   public final List<UnsubscribeInfo> punsubscribeInfos =
       Collections.synchronizedList(new ArrayList<>());
+  private CountDownLatch messageReceivedLatch = new CountDownLatch(0);
+  private CountDownLatch pMessageReceivedLatch = new CountDownLatch(0);
   private String localSocketAddress;
   private Client client;
 
@@ -104,6 +104,7 @@ public class MockSubscriber extends JedisPubSub {
     switchThreadName(String.format("MESSAGE %s %s", channel, message));
     receivedMessages.add(message);
     receivedEvents.add("message");
+    messageReceivedLatch.countDown();
   }
 
   @Override
@@ -111,6 +112,7 @@ public class MockSubscriber extends JedisPubSub {
     switchThreadName(String.format("PMESSAGE %s %s %s", pattern, channel, message));
     receivedPMessages.add(message);
     receivedEvents.add("pmessage");
+    pMessageReceivedLatch.countDown();
   }
 
   @Override
@@ -198,18 +200,28 @@ public class MockSubscriber extends JedisPubSub {
     }
   }
 
-  public void awaitPMessageReceived(long minNumOfReceivedMessages) {
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
-        .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
-        .untilAsserted(() -> assertThat((long) this.getReceivedPMessages().size())
-            .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
+  public void preparePMessagesReceivedLatch(int expectedMessages) {
+    pMessageReceivedLatch = new CountDownLatch(expectedMessages);
   }
 
-  public void awaitMessageReceived(long minNumOfReceivedMessages) {
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
-        .pollDelay(Duration.ofMillis(30)).pollInterval(Duration.ofMillis(30))
-        .untilAsserted(() -> assertThat((long) this.getReceivedMessages().size())
-            .isGreaterThanOrEqualTo(minNumOfReceivedMessages));
+  public void awaitPMessagesReceived() {
+    try {
+      assertThat(pMessageReceivedLatch.await(30, TimeUnit.SECONDS)).isTrue();
+    } catch (InterruptedException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public void prepareMessagesReceivedLatch(int expectedMessages) {
+    messageReceivedLatch = new CountDownLatch(expectedMessages);
+  }
+
+  public void awaitMessagesReceived() {
+    try {
+      assertThat(messageReceivedLatch.await(30, TimeUnit.SECONDS)).isTrue();
+    } catch (InterruptedException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   public static class UnsubscribeInfo {
