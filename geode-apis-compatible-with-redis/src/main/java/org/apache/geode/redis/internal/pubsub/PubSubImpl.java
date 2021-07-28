@@ -66,16 +66,16 @@ public class PubSubImpl implements PubSub {
   private static class PublishingRunnable implements StripedRunnable {
 
     private final Runnable runnable;
-    private final Object stripeIdentity;
+    private final Client client;
 
-    public PublishingRunnable(Runnable runnable, Object stripeIdentity) {
+    public PublishingRunnable(Runnable runnable, Client client) {
       this.runnable = runnable;
-      this.stripeIdentity = stripeIdentity;
+      this.client = client;
     }
 
     @Override
     public Object getStripe() {
-      return stripeIdentity;
+      return client;
     }
 
     @Override
