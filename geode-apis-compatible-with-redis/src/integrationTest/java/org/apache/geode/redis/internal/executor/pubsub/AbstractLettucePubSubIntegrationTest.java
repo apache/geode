@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -328,6 +329,8 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
     String quitResponse = subscriber.sync().quit();
     assertThat(quitResponse).isEqualTo("OK");
 
+    // Shutting down the subscriber is asynchronous so we need to wait a moment here
+    GeodeAwaitility.await().during(Duration.ofMillis(100)).until(() -> true);
     long publishCount = publisher.sync().publish(CHANNEL, "hello there");
     assertThat(publishCount).isEqualTo(0L);
   }
