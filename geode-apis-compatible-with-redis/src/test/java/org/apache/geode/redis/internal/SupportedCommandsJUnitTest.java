@@ -91,6 +91,7 @@ public class SupportedCommandsJUnitTest {
       "ZINCRBY",
       "ZCARD",
       "ZCOUNT",
+      "ZPOPMAX",
       "ZRANGE",
       "ZRANGEBYLEX",
       "ZRANGEBYSCORE",
