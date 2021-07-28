@@ -44,8 +44,11 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 
@@ -59,9 +62,11 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
+@RunWith(JUnitParamsRunner.class)
 public class RedisSortedSetTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
@@ -209,57 +214,72 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zrange_ShouldReturnEmptyList_GivenInvalidRanges() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(5, 0, false);
-    assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(13, 15, false);
-    assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(17, -2, false);
-    assertThat(rangeList).isEmpty();
-    rangeList = rangeSortedSet.zrange(12, 12, false);
+  @Parameters({"5,0", "13,15", "17,-2", "12,12"})
+  public void zrange_ShouldReturnEmptyList_GivenInvalidRanges(int start, int end) {
+    SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getStart()).thenReturn(start);
+    when(rangeOptions.getEnd()).thenReturn(end);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).isEmpty();
   }
 
   @Test
   public void zrange_ShouldReturnSimpleRanges() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, false);
+    SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getStart()).thenReturn(0);
+    when(rangeOptions.getEnd()).thenReturn(5);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
+    System.out.println(rangeList.stream().map(Coder::bytesToString).collect(Collectors.toList()));
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
             "member4".getBytes(), "member5".getBytes(), "member6".getBytes());
 
-    rangeList = rangeSortedSet.zrange(5, 10, false);
+    when(rangeOptions.getStart()).thenReturn(5);
+    when(rangeOptions.getEnd()).thenReturn(10);
+    rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
             "member9".getBytes(), "member10".getBytes(), "member11".getBytes());
 
-    rangeList = rangeSortedSet.zrange(10, 13, false);
+    when(rangeOptions.getStart()).thenReturn(10);
+    when(rangeOptions.getEnd()).thenReturn(13);
+    rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
   }
 
   @Test
   public void zrange_ShouldReturnRanges_SpecifiedWithNegativeOffsets() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(-2, 12, false);
+    SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getStart()).thenReturn(-2);
+    when(rangeOptions.getEnd()).thenReturn(12);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
 
-    rangeList = rangeSortedSet.zrange(-6, -1, false);
+    when(rangeOptions.getStart()).thenReturn(6);
+    when(rangeOptions.getEnd()).thenReturn(-1);
+    rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member7".getBytes(), "member8".getBytes(),
             "member9".getBytes(), "member10".getBytes(), "member11".getBytes(),
             "member12".getBytes());
 
-    rangeList = rangeSortedSet.zrange(-11, -5, false);
+    when(rangeOptions.getStart()).thenReturn(-11);
+    when(rangeOptions.getEnd()).thenReturn(-5);
+    rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(7);
     assertThat(rangeList)
         .containsExactly("member2".getBytes(), "member3".getBytes(),
             "member4".getBytes(), "member5".getBytes(), "member6".getBytes(),
             "member7".getBytes(), "member8".getBytes());
 
-    rangeList = rangeSortedSet.zrange(-12, -11, false);
+    when(rangeOptions.getStart()).thenReturn(-12);
+    when(rangeOptions.getEnd()).thenReturn(-11);
+    rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList)
         .containsExactly("member1".getBytes(), "member2".getBytes());
@@ -267,7 +287,11 @@ public class RedisSortedSetTest {
 
   @Test
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 5, true);
+    SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getStart()).thenReturn(0);
+    when(rangeOptions.getEnd()).thenReturn(5);
+    when(rangeOptions.isWithScores()).thenReturn(true);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(12);
     assertThat(rangeList).containsExactly("member1".getBytes(), "1".getBytes(),
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),

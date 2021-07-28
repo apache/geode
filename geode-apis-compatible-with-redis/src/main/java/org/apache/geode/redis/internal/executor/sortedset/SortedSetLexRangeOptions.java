@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_VALID_STRING;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.checkDummyMemberNames;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.javaImplementationOfAnsiCMemCmp;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
@@ -24,76 +26,68 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.apache.geode.redis.internal.RedisException;
 
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
-  public SortedSetLexRangeOptions(byte[] minimumBytes, byte[] maximumBytes) {
-    super(minimumBytes, maximumBytes);
+  SortedSetLexRangeOptions(List<byte[]> commandElements, boolean isRev) {
+    super(commandElements, isRev);
   }
 
   @Override
-  void parseStartRange(byte[] startBytes) {
-    if (startBytes.length == 1) {
-      if (startBytes[0] == bPLUS) {
-        isStartExclusive = false;
-        startRange = bGREATEST_MEMBER_NAME;
-      } else if (startBytes[0] == bMINUS) {
-        isStartExclusive = false;
-        startRange = bLEAST_MEMBER_NAME;
-      } else if (startBytes[0] == bLEFT_PAREN) {
-        isStartExclusive = true;
-        startRange = new byte[0];
-      } else if (startBytes[0] == bLEFT_SQUARE_BRACKET) {
-        isStartExclusive = false;
-        startRange = new byte[0];
+  void parseRangeArguments(List<byte[]> commandElements) {
+    start = parseOneRangeArgument(commandElements.get(2));
+    end = parseOneRangeArgument(commandElements.get(3));
+  }
+
+
+  private RangeLimit<byte[]> parseOneRangeArgument(byte[] bytes) {
+    boolean isExclusive;
+    byte[] value;
+    if (bytes.length == 1) {
+      if (bytes[0] == bPLUS) {
+        isExclusive = false;
+        value = bGREATEST_MEMBER_NAME;
+      } else if (bytes[0] == bMINUS) {
+        isExclusive = false;
+        value = bLEAST_MEMBER_NAME;
+      } else if (bytes[0] == bLEFT_PAREN) {
+        isExclusive = true;
+        value = new byte[0];
+      } else if (bytes[0] == bLEFT_SQUARE_BRACKET) {
+        isExclusive = false;
+        value = new byte[0];
       } else {
-        throw new IllegalArgumentException();
+        throw new RedisException(ERROR_MIN_MAX_NOT_A_VALID_STRING);
       }
-    } else if (startBytes[0] == bLEFT_PAREN) {
-      isStartExclusive = true;
-      startRange = Arrays.copyOfRange(startBytes, 1, startBytes.length);
-    } else if (startBytes[0] == bLEFT_SQUARE_BRACKET) {
-      isStartExclusive = false;
-      startRange = Arrays.copyOfRange(startBytes, 1, startBytes.length);
+    } else if (bytes[0] == bLEFT_PAREN) {
+      isExclusive = true;
+      value = Arrays.copyOfRange(bytes, 1, bytes.length);
+    } else if (bytes[0] == bLEFT_SQUARE_BRACKET) {
+      isExclusive = false;
+      value = Arrays.copyOfRange(bytes, 1, bytes.length);
     } else {
-      throw new IllegalArgumentException();
+      throw new RedisException(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     }
+    return new RangeLimit<>(value, isExclusive);
   }
 
   @Override
-  void parseEndRange(byte[] endBytes) {
-    if (endBytes.length == 1) {
-      if (endBytes[0] == bPLUS) {
-        isEndExclusive = false;
-        endRange = bGREATEST_MEMBER_NAME;
-      } else if (endBytes[0] == bMINUS) {
-        isEndExclusive = false;
-        endRange = bLEAST_MEMBER_NAME;
-      } else if (endBytes[0] == bLEFT_PAREN) {
-        isEndExclusive = true;
-        endRange = new byte[0];
-      } else if (endBytes[0] == bLEFT_SQUARE_BRACKET) {
-        isEndExclusive = false;
-        endRange = new byte[0];
-      } else {
-        throw new IllegalArgumentException();
-      }
-    } else if (endBytes[0] == bLEFT_PAREN) {
-      isEndExclusive = true;
-      endRange = Arrays.copyOfRange(endBytes, 1, endBytes.length);
-    } else if (endBytes[0] == bLEFT_SQUARE_BRACKET) {
-      isEndExclusive = false;
-      endRange = Arrays.copyOfRange(endBytes, 1, endBytes.length);
-    } else {
-      throw new IllegalArgumentException();
-    }
+  void handleWithScoresArgument() {
+    // BYLEX ranges do not support the WITHSCORES argument
+    throw new RedisException(ERROR_SYNTAX);
   }
 
   @Override
   int compareStartToEnd() {
-    int dummyNameComparison = checkDummyMemberNames(startRange, endRange);
+    if (isRev) {
+      // TODO: implement ZREVRANGEBYLEX
+    }
+    int dummyNameComparison = checkDummyMemberNames(start.value, end.value);
     if (dummyNameComparison == 0) {
-      return javaImplementationOfAnsiCMemCmp(startRange, endRange);
+      return javaImplementationOfAnsiCMemCmp(start.value, end.value);
     } else {
       return dummyNameComparison;
     }

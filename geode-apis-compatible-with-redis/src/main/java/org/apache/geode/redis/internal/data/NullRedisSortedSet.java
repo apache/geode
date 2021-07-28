@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
@@ -91,8 +92,7 @@ class NullRedisSortedSet extends RedisSortedSet {
     return Collections.emptyList();
   }
 
-  @Override
-  List<byte[]> zrange(int min, int max, boolean withScores) {
+  List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
@@ -102,17 +102,16 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrevrange(int min, int max, boolean withScores) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
+  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 

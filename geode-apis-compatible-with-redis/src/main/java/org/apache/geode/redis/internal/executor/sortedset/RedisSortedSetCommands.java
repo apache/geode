@@ -35,21 +35,19 @@ public interface RedisSortedSetCommands {
 
   List<byte[]> zpopmin(RedisKey key, int count);
 
-  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
+  List<byte[]> zrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
 
   List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 
-  List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores);
+  List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrank(RedisKey key, byte[] member);
 
   long zrem(RedisKey key, List<byte[]> membersToRemove);
 
-  List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScore);
+  List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
 
-  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores);
+  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrevrank(RedisKey key, byte[] member);
 

@@ -14,18 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRevRangeExecutor extends AbstractZRangeExecutor {
-  @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    return super.executeCommand(command, context);
-  }
+public class ZRevRangeExecutor extends ZRangeExecutor {
 
   @Override
   public boolean isRev() {
     return true;
+  }
+
+  @Override
+  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+      SortedSetRankRangeOptions options) {
+    return RedisResponse.array(commands.zrevrange(key, options));
   }
 }

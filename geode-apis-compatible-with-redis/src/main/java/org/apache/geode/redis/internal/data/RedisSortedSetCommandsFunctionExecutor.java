@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
@@ -74,30 +75,24 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
         () -> getRedisSortedSet(key, false).zpopmin(getRegion(), key, count));
   }
 
-  @Override
-  public List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrange(min, max, withScores));
+  public List<byte[]> zrange(RedisKey key, SortedSetRankRangeOptions rangeOptions) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrange(rangeOptions));
   }
 
   @Override
   public List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrangebylex(rangeOptions));
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrangebylex(rangeOptions));
   }
 
   @Override
-  public List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrangebyscore(rangeOptions, withScores));
+  public List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrangebyscore(rangeOptions));
   }
 
   @Override
-  public List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores) {
+  public List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions) {
     return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrevrangebyscore(rangeOptions, withScores));
+        () -> getRedisSortedSet(key, true).zrevrangebyscore(rangeOptions));
   }
 
   @Override
@@ -112,9 +107,8 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScores) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrevrange(min, max, withScores));
+  public List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zrevrange(rangeOptions));
   }
 
   @Override

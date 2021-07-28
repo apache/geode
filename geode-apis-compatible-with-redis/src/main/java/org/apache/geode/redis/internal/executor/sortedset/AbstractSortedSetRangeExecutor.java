@@ -14,37 +14,38 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
-
 import java.util.List;
 
+import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZCountExecutor extends AbstractExecutor {
+public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSetRangeOptions<?>>
+    extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
 
-    List<byte[]> commandElements = command.getProcessedCommand();
-
-    SortedSetScoreRangeOptions rangeOptions;
-
+    T options;
     try {
-      rangeOptions = new SortedSetScoreRangeOptions(commandElements, false);
-    } catch (NumberFormatException ex) {
-      return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
+      options = createRangeOptions(command.getProcessedCommand());
+    } catch (RedisException ex) {
+      return RedisResponse.error(ex.getMessage());
     }
 
-    // If the range is empty (min > max or min == max and both are exclusive), return early
-    if (rangeOptions.containsNoEntries()) {
-      return RedisResponse.integer(0);
+    if (options.containsNoEntries()) {
+      return RedisResponse.emptyArray();
     }
 
-    long count = redisSortedSetCommands.zcount(command.getKey(), rangeOptions);
-
-    return RedisResponse.integer(count);
+    return executeRangeCommand(context.getSortedSetCommands(), command.getKey(), options);
   }
+
+  public abstract boolean isRev();
+
+  public abstract T createRangeOptions(List<byte[]> commandElements);
+
+  public abstract RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+      T options);
 }

@@ -14,10 +14,27 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-public class ZRangeByScoreExecutor extends AbstractZRangeByScoreExecutor {
+import java.util.List;
+
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+
+public class ZRangeByScoreExecutor
+    extends AbstractSortedSetRangeExecutor<SortedSetScoreRangeOptions> {
 
   @Override
   public boolean isRev() {
     return false;
+  }
+
+  @Override
+  public SortedSetScoreRangeOptions createRangeOptions(List<byte[]> commandElements) {
+    return new SortedSetScoreRangeOptions(commandElements, isRev());
+  }
+
+  @Override
+  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+      SortedSetScoreRangeOptions options) {
+    return RedisResponse.array(commands.zrangebyscore(key, options));
   }
 }
