@@ -302,6 +302,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, (k, v) -> jedis.zscore(k, v));
   }
 
+  @Test
+  public void testZrevrangeByScore() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByScore(k, 1, 0));
+  }
+
   /************* Set related commands *************/
   @Test
   public void testSadd() {

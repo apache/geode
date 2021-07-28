@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,8 +48,6 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   private static final String MEMBER_BASE_NAME = "member";
   private static final String KEY = "key";
   private JedisCluster jedis;
-  private static final List<Double> scores =
-      Arrays.asList(Double.NEGATIVE_INFINITY, -10.5, 0.0, 10.5, Double.POSITIVE_INFINITY);
 
   @Before
   public void setUp() {
