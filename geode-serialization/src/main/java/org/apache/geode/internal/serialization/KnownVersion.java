@@ -205,12 +205,12 @@ public class KnownVersion extends AbstractVersion {
       new KnownVersion("GEODE", "1.13.0", (byte) 1, (byte) 13, (byte) 0, (byte) 0,
           GEODE_1_13_0_ORDINAL, true);
 
-  private static final short GEODE_1_13_1_ORDINAL = 121;
+  private static final short GEODE_1_13_2_ORDINAL = 121;
 
   @Immutable
-  public static final KnownVersion GEODE_1_13_1 =
-      new KnownVersion("GEODE", "1.13.1", (byte) 1, (byte) 13, (byte) 1, (byte) 0,
-          GEODE_1_13_1_ORDINAL, true);
+  public static final KnownVersion GEODE_1_13_2 =
+      new KnownVersion("GEODE", "1.13.2", (byte) 1, (byte) 13, (byte) 1, (byte) 0,
+          GEODE_1_13_2_ORDINAL, true);
 
   private static final short GEODE_1_14_0_ORDINAL = 125;
 
