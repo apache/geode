@@ -16,6 +16,7 @@
 package org.apache.geode.security;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.distributed.DistributedMember;
 
@@ -28,26 +29,26 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class UpdatableUserAuthInitialize implements AuthInitialize {
   // use static field for ease of testing since there is only one instance of this in each VM
-  private static String user;
+  private static final AtomicReference<String> user = new AtomicReference<>();
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
     Properties credentials = new Properties();
-    credentials.put("security-username", user);
-    credentials.put("security-password", user);
+    credentials.put("security-username", user.get());
+    credentials.put("security-password", user.get());
     return credentials;
   }
 
   public static String getUser() {
-    return user;
+    return user.get();
   }
 
-  public static void setUser(String user) {
-    UpdatableUserAuthInitialize.user = user;
+  public static void setUser(String newValue) {
+    user.set(newValue);
   }
 
   public static void reset() {
-    setUser(null);
+    user.set(null);
   }
 }
