@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -398,7 +399,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testPRParallelPropagationWithGroupTransactionEventsWithBatchRedistributionSeveralClientsWithSendsBatchesWithCompleteTransactions_SeveralClients() {
+  public void testPRParallelPropagationWithGroupTransactionEventsWithBatchRedistributionSendsBatchesWithCompleteTransactions_SeveralClients() {
     testPRParallelPropagationWithGroupTransactionEventsSendsBatchesWithCompleteTransactions_SeveralClients(
         true);
   }
@@ -449,12 +450,12 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
       }
     }
 
-    List<AsyncInvocation> asyncInvocations = new ArrayList<>(clients);
+    List<AsyncInvocation<?>> asyncInvocations = new ArrayList<>(clients);
 
     int eventsPerTransaction = shipmentsPerTransaction + 1;
     for (int i = 0; i < clients; i++) {
       final int intCustId = i;
-      AsyncInvocation asyncInvocation =
+      AsyncInvocation<?> asyncInvocation =
           vm4.invokeAsync(() -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(
               customerData.get(intCustId),
               eventsPerTransaction));
@@ -462,14 +463,12 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     }
 
     try {
-      for (AsyncInvocation asyncInvocation : asyncInvocations) {
+      for (AsyncInvocation<?> asyncInvocation : asyncInvocations) {
         asyncInvocation.await();
       }
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      fail("Interrupted");
     }
-
-    int entries = (1 + (transactions * eventsPerTransaction)) * clients;
 
     vm4.invoke(() -> WANTestBase.validateRegionSize(customerRegionName, clients));
     vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, transactions * clients));
@@ -1342,7 +1341,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     try {
       Thread.sleep(maximumTimeBetweenPingsInGatewayReceiver + 2000);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      fail("Interrupted");
     }
 
     assertNotEquals(0, (int) vm4.invoke(() -> getGatewaySenderPoolDisconnects(senderId)));

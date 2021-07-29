@@ -17,6 +17,7 @@ package org.apache.geode.cache.wan;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -180,9 +181,8 @@ public interface GatewaySender {
    * gateway sender queue when group-transaction-events is true.
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
-      Integer.getInteger(
-          GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
-          1);
+      SystemPropertyHelper.getProductIntegerProperty(
+          SystemPropertyHelper.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS).orElse(1);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
@@ -520,8 +520,6 @@ public interface GatewaySender {
    * Set the number of retries to get transaction events
    * for this GatewaySender when GroupTransactionEvents
    * is set.
-   *
-   * @since Geode 1.15
    *
    */
   void setRetriesToGetTransactionEventsFromQueue(int retries);

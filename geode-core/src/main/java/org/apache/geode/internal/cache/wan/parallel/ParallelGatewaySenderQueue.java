@@ -1415,7 +1415,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
-      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms" +
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }

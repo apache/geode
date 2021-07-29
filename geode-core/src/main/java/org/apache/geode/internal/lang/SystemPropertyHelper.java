@@ -88,6 +88,13 @@ public class SystemPropertyHelper {
   public static final String PARALLEL_DISK_STORE_RECOVERY = "parallelDiskStoreRecovery";
 
   /**
+   * Milliseconds to wait before retrying to get events for a transaction from the
+   * gateway sender queue when group-transaction-events is true.
+   */
+  public static final String GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
+      "get-transaction-events-from-queue-wait-time-ms";
+
+  /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *
