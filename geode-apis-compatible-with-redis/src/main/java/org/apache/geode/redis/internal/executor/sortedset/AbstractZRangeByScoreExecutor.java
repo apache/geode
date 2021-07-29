@@ -98,19 +98,17 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
 
   void parseLimitArguments(SortedSetRangeOptions rangeOptions, List<byte[]> commandElements,
       int commandIndex) {
-    int offset;
-    int count;
     if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)
         && commandElements.size() > commandIndex + 2) {
-      offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
-      count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
+      int offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
+      int count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
       if (count < 0) {
         count = Integer.MAX_VALUE;
       }
+      rangeOptions.setLimitValues(offset, count);
     } else {
       throw new IllegalArgumentException();
     }
-    rangeOptions.setLimitValues(offset, count);
   }
 
   public abstract boolean isRev();

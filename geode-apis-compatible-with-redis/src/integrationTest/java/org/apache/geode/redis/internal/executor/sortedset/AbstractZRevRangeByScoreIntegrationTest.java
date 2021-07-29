@@ -232,6 +232,14 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   }
 
   @Test
+  public void shouldReturnEmptyList_givenZeroCount() {
+    createZSetRangeTestMap();
+
+    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 0, 0))
+        .isEmpty();
+  }
+
+  @Test
   public void shouldReturnRange_withScores_boundedByLimit() {
     createZSetRangeTestMap();
 
@@ -244,8 +252,6 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
     secondExpected.add(new Tuple("c", 2d));
     secondExpected.add(new Tuple("b", 1d));
 
-    assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 0, 0))
-        .isEmpty();
     assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 0, 2))
         .containsExactlyElementsOf(firstExpected);
     assertThat(jedis.zrevrangeByScoreWithScores(KEY, "10", "0", 2, 3))

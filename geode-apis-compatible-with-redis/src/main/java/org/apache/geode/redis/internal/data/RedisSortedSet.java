@@ -339,9 +339,12 @@ public class RedisSortedSet extends AbstractRedisData {
         return Collections.emptyList();
       }
     }
+    int startIndex = maxIndex - 1;
+    int endIndex = Math.min(count, maxIndex - minIndex);
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(maxIndex - 1, Math.min(count, maxIndex - minIndex), true);
-    List<byte[]> result = new ArrayList<>();
+        scoreSet.getIndexRange(startIndex, endIndex, true);
+    int initialCapacity = startIndex - endIndex;
+    List<byte[]> result = new ArrayList<>(initialCapacity > 0 ? initialCapacity : 0);
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
 
