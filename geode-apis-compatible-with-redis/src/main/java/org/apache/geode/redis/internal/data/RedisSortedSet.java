@@ -314,7 +314,6 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrevrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
-    List<byte[]> result = new ArrayList<>();
     AbstractOrderedSetEntry maxEntry =
         new DummyOrderedSetEntry(rangeOptions.getStartDouble(), rangeOptions.isStartExclusive(),
             false);
@@ -342,12 +341,9 @@ public class RedisSortedSet extends AbstractRedisData {
     }
     Iterator<AbstractOrderedSetEntry> entryIterator =
         scoreSet.getIndexRange(maxIndex - 1, Math.min(count, maxIndex - minIndex), true);
-
+    List<byte[]> result = new ArrayList<>();
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
-      if (rangeOptions.isStartExclusive() && entry.score == rangeOptions.getStartDouble()) {
-        continue;
-      }
 
       result.add(entry.member);
       if (withScores) {

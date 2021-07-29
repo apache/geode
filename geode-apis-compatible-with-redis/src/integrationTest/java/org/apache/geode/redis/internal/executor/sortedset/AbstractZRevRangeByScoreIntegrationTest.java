@@ -186,15 +186,6 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
         .containsExactly("member3", "member2");
   }
 
-  private Map<String, Double> getExclusiveTestMap() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("member1", Double.NEGATIVE_INFINITY);
-    map.put("member2", 1.0);
-    map.put("member3", Double.POSITIVE_INFINITY);
-    return map;
-  }
-
   @Test
   public void shouldReturnRange_givenExclusiveMin() {
     Map<String, Double> map = getExclusiveTestMap();
@@ -231,20 +222,6 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
 
     // Range 0 >= score > -inf
     assertThat(jedis.zrevrangeByScore(KEY, "(", "-inf")).containsExactly("slightlyLessThanZero");
-  }
-
-  private void createZSetRangeTestMap() {
-    Map<String, Double> map = new HashMap<>();
-
-    map.put("a", Double.NEGATIVE_INFINITY);
-    map.put("b", 1d);
-    map.put("c", 2d);
-    map.put("d", 3d);
-    map.put("e", 4d);
-    map.put("f", 5d);
-    map.put("g", Double.POSITIVE_INFINITY);
-
-    jedis.zadd(KEY, map);
   }
 
   @Test
@@ -300,6 +277,30 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0",
             "LIMIT", "0", "invalid"))
                 .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LOMIT",
+            "0", "1"))
+                .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void shouldReturnProperError_givenMultipleLimitsIncludingWrongFormat() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
+            "0", "1", "LIMIT"))
+                .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
+            "0", "invalid", "LIMIT", "0", "5"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
+            "0", "1", "WITHSCORES", "LIMIT"))
+                .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
+            "0", "invalid", "WITHSCORES", "LIMIT", "0", "5"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -336,4 +337,26 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
     assertThat(result).containsExactlyElementsOf(expectedWithScores);
   }
 
+  private void createZSetRangeTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("a", Double.NEGATIVE_INFINITY);
+    map.put("b", 1d);
+    map.put("c", 2d);
+    map.put("d", 3d);
+    map.put("e", 4d);
+    map.put("f", 5d);
+    map.put("g", Double.POSITIVE_INFINITY);
+
+    jedis.zadd(KEY, map);
+  }
+
+  private Map<String, Double> getExclusiveTestMap() {
+    Map<String, Double> map = new HashMap<>();
+
+    map.put("member1", Double.NEGATIVE_INFINITY);
+    map.put("member2", 1.0);
+    map.put("member3", Double.POSITIVE_INFINITY);
+    return map;
+  }
 }

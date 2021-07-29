@@ -34,12 +34,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
     List<byte[]> commandElements = command.getProcessedCommand();
-
     SortedSetRangeOptions rangeOptions;
-    boolean withScores = false;
 
     try {
       byte[] startBytes = commandElements.get(2);
@@ -54,6 +50,7 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
 
     // Native redis allows multiple "withscores" and "limit ? ?" clauses; the last "limit"
     // clause overrides any previous ones
+    boolean withScores = false;
     if (commandElements.size() >= 5) {
       int currentCommandElement = 4;
 
@@ -88,6 +85,7 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
       return RedisResponse.emptyArray();
     }
 
+    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
     List<byte[]> result;
     if (isRev()) {
       result = redisSortedSetCommands.zrevrangebyscore(command.getKey(), rangeOptions, withScores);
