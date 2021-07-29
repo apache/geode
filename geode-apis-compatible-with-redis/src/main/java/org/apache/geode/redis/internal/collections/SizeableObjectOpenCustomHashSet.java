@@ -15,6 +15,9 @@
 package org.apache.geode.redis.internal.collections;
 
 
+import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.sizeObjectArray;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -23,14 +26,12 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
-import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
-public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
+public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
     implements Sizeable {
   private static final long serialVersionUID = 9174920505089089517L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 92;
-  public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
+  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT =
+      sizeClass(SizeableObjectOpenCustomHashSet.class);
 
   private int memberOverhead;
 
@@ -96,16 +97,17 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   public boolean add(K k) {
     boolean added = super.add(k);
     if (added) {
-      memberOverhead += elementSizer.sizeof(k);
+      memberOverhead += sizeElement(k);
     }
     return added;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean remove(Object k) {
     boolean removed = super.remove(k);
     if (removed) {
-      memberOverhead -= elementSizer.sizeof(k);
+      memberOverhead -= sizeElement((K) k);
     }
     return removed;
   }
@@ -126,8 +128,9 @@ public class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<
   }
 
   @VisibleForTesting
-  int calculateBackingArrayOverhead() {
-    // This formula determined experimentally using tests
-    return BACKING_ARRAY_OVERHEAD_CONSTANT + (BACKING_ARRAY_LENGTH_COEFFICIENT * key.length);
+  public int calculateBackingArrayOverhead() {
+    return BACKING_ARRAY_OVERHEAD_CONSTANT + sizeObjectArray(key);
   }
+
+  protected abstract int sizeElement(K element);
 }

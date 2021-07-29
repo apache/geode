@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.collections;
 import java.util.Iterator;
 import java.util.Random;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
@@ -25,7 +24,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
-public class SizeableObject2ObjectOpenCustomHashmapWithCursorBenchmark {
+import org.apache.geode.redis.internal.data.RedisHash;
+
+public class RedisHashMapBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
@@ -33,15 +34,14 @@ public class SizeableObject2ObjectOpenCustomHashmapWithCursorBenchmark {
     private int numEntries;
     @Param({"32"})
     private int keySize;
-    private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> map;
+    private RedisHash.Hash map;
     private int cursor;
     private Iterator<byte[]> iterator;
 
     @Setup
     public void createMap() {
       Random random = new Random(0);
-      map = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(numEntries,
-          ByteArrays.HASH_STRATEGY);
+      map = new RedisHash.Hash(numEntries);
       for (int i = 0; i < numEntries; i++) {
         byte[] key = new byte[keySize];
         random.nextBytes(key);

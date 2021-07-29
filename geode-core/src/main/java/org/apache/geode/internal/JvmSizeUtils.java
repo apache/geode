@@ -15,6 +15,8 @@
 package org.apache.geode.internal;
 
 
+import static org.apache.geode.internal.size.ReflectionSingleObjectSizer.sizeof;
+
 import org.apache.commons.lang3.JavaVersion;
 
 import org.apache.geode.annotations.Immutable;
@@ -131,5 +133,51 @@ public class JvmSizeUtils {
 
   public static int getObjectHeaderSize() {
     return objectHeaderSize;
+  }
+
+  public static long roundUpSize(long size) {
+    // Round up to the nearest 8 bytes. Experimentally, this
+    // is what we've seen the sun 32 bit VM do with object size.
+    // See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
+    long remainder = size % 8;
+    if (remainder != 0) {
+      size += 8 - remainder;
+    }
+    return size;
+  }
+
+  public static int roundUpSize(int size) {
+    // Round up to the nearest 8 bytes. Experimentally, this
+    // is what we've seen the sun 32 bit VM do with object size.
+    // See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
+    int remainder = size % 8;
+    if (remainder != 0) {
+      size += 8 - remainder;
+    }
+    return size;
+  }
+
+  public static int sizeByteArray(byte[] byteArray) {
+    if (byteArray == null) {
+      return 0;
+    }
+    int result = getObjectHeaderSize();
+    result += 4; // array length field
+    result += byteArray.length;
+    return roundUpSize(result);
+  }
+
+  public static int sizeObjectArray(Object[] objectArray) {
+    if (objectArray == null) {
+      return 0;
+    }
+    int result = getObjectHeaderSize();
+    result += 4; // array length field
+    result += objectArray.length * getReferenceSize();
+    return roundUpSize(result);
+  }
+
+  public static int sizeClass(Class<?> clazz) {
+    return (int) sizeof(clazz);
   }
 }

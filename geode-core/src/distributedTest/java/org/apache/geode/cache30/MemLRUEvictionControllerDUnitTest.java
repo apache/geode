@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.internal.JvmSizeUtils.getObjectHeaderSize;
+import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -100,16 +102,16 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     String sampleKey = new String("10000");
-    int stringSize = JvmSizeUtils.getObjectHeaderSize() // String object
+    int stringSize = getObjectHeaderSize() // String object
         + (2 * 4) + JvmSizeUtils.getReferenceSize(); // 2 ints and a reference on a string
-    stringSize = (int) ReflectionSingleObjectSizer.roundUpSize(stringSize);
+    stringSize = (int) roundUpSize(stringSize);
 
-    int charArraySize = sampleKey.length() * 2 + JvmSizeUtils.getObjectHeaderSize() // char array
-                                                                                    // object
+    int charArraySize = sampleKey.length() * 2 + getObjectHeaderSize() // char array
+                                                                       // object
         + 4; // length of char array
-    charArraySize = (int) ReflectionSingleObjectSizer.roundUpSize(charArraySize);
+    charArraySize = (int) roundUpSize(charArraySize);
     assertEquals(stringSize, ReflectionSingleObjectSizer.sizeof(String.class));
-    assertEquals(ReflectionSingleObjectSizer.roundUpSize(JvmSizeUtils.getObjectHeaderSize() + 4),
+    assertEquals(roundUpSize(getObjectHeaderSize() + 4),
         (new ReflectionSingleObjectSizer()).sizeof(new char[0]));
     assertEquals(charArraySize, (new ReflectionSingleObjectSizer()).sizeof(new char[5]));
 
@@ -119,9 +121,9 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     // now that keys are inlined the keySize is 0
     keySize = 0;
     byte[] sampleValue = new byte[1000];
-    int valueSize = sampleValue.length + JvmSizeUtils.getObjectHeaderSize() // byte array object;
+    int valueSize = sampleValue.length + getObjectHeaderSize() // byte array object;
         + 4; // length of byte array
-    valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+    valueSize = (int) roundUpSize(valueSize);
     int entrySize = keySize + valueSize + getEntryOverhead(region);
     assertEquals(valueSize, ObjectSizer.DEFAULT.sizeof(sampleValue));
 

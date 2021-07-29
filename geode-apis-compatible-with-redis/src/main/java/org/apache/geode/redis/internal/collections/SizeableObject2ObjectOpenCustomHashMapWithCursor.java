@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.collections;
 
 import static it.unimi.dsi.fastutil.HashCommon.mix;
+import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.sizeObjectArray;
 
 import java.util.Map;
 
@@ -23,23 +25,21 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
-import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
 /**
- * An extention of {@link Object2ObjectOpenCustomHashMap} that supports
+ * An extension of {@link Object2ObjectOpenCustomHashMap} that supports
  * a method of iteration where each scan operation returns an integer cursor
  * that allows future scan operations to start from that same point.
  *
  * The scan method provides the same guarantees as Redis's HSCAN, and in fact
  * uses the same algorithm.
  */
-public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
+public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 128;
-  public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
+  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT =
+      sizeClass(SizeableObject2ObjectOpenCustomHashMapWithCursor.class);
 
   private int arrayContentsOverhead;
 
@@ -196,33 +196,57 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      arrayContentsOverhead += elementSizer.sizeof(k) + elementSizer.sizeof(v);
+      arrayContentsOverhead += sizeKey(k) + sizeValue(v);
     } else {
       // An update
-      arrayContentsOverhead += elementSizer.sizeof(v) - elementSizer.sizeof(oldValue);
+      arrayContentsOverhead += sizeValue(v) - sizeValue(oldValue);
     }
     return oldValue;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      arrayContentsOverhead -= elementSizer.sizeof(k) + elementSizer.sizeof(oldValue);
+      arrayContentsOverhead -= sizeKey((K) k) + sizeValue(oldValue);
     }
     return oldValue;
   }
 
   @Override
   public int getSizeInBytes() {
+    // The size of the object referenced by the "strategy" field is not included
+    // here because in most cases it is a static singleton.
+    // TODO: The size of the object referenced by these fields is not included here:
+    // - entries an instance of
+    // it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap.MapEntrySet
+    // - keys an instance of it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap.KeySet
+    // - values an instance of an anonymous subclass of
+    // it.unimi.dsi.fastutil.objects.AbstractObjectCollection
+    // These fields get lazily initialized when their corresponding method is called.
+    // Once they are initialized they stay that way forever. The object they reference is immutable.
+    // Its only field is the implicit objref to their outer class instance.
+    // Currently it looks like we have redis ops that can end up calling all three of these methods
+    // in which case these objects would account for over 100 bytes on a 64-bit jvm,
+    // It is not clear to me why the implementors of Object2ObjectOpenCustomHashMap chose to
+    // cache this immutable object instead of just creating it every time. They have no state
+    // to initialize when constructed so one thing we could do is override the methods that cache it
+    // to either null out the cached field after calling the super method, or have a brand new impl
+    // that just creates and returns an instance without caching. The cache fields themselves would
+    // be
+    // a waste of memory in that case but only 24 bytes (12 with compressed oops).
+    // Another possibility would be for our code that uses the map to only call entrySet(), that way
+    // one
+    // instance would be cached instead of 3. You can always get keys and values from the entrySet.
+
     return arrayContentsOverhead + calculateBackingArraysOverhead();
   }
 
   @VisibleForTesting
-  int calculateBackingArraysOverhead() {
-    // This formula determined experimentally using tests.
+  public int calculateBackingArraysOverhead() {
     return BACKING_ARRAY_OVERHEAD_CONSTANT
-        + BACKING_ARRAY_LENGTH_COEFFICIENT * getTotalBackingArrayLength();
+        + sizeObjectArray(key) + sizeObjectArray(value);
   }
 
   @VisibleForTesting
@@ -238,4 +262,9 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   public interface EntryConsumer<K, V, D> {
     void consume(D privateData, K key, V value);
   }
+
+  protected abstract int sizeKey(K key);
+
+  protected abstract int sizeValue(V value);
+
 }

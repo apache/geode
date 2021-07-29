@@ -48,7 +48,6 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSetTest {
@@ -189,7 +188,7 @@ public class RedisSetTest {
     Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     RedisSet set = new RedisSet(members);
 
-    int expected = sizer.sizeof(set);
+    int expected = expectedSize(set);
     int actual = set.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
@@ -202,7 +201,7 @@ public class RedisSetTest {
     RedisSet set = new RedisSet(members);
 
     int actual = set.getSizeInBytes();
-    int expected = sizer.sizeof(set);
+    int expected = expectedSize(set);
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -212,18 +211,22 @@ public class RedisSetTest {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetOfSpecifiedSize(i);
 
-      int expected = sizer.sizeof(set);
+      int expected = expectedSize(set);
       int actual = set.getSizeInBytes();
 
       assertThat(actual).isEqualTo(expected);
     }
   }
 
+  private int expectedSize(RedisSet set) {
+    return sizer.sizeof(set) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+  }
+
   @Test
   public void should_calculateSize_equalToROS_withVaryingMemberSize() {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetWithMemberOfSpecifiedSize(i * 64);
-      int expected = sizer.sizeof(set);
+      int expected = expectedSize(set);
       int actual = set.getSizeInBytes();
 
       assertThat(actual).isEqualTo(expected);
@@ -248,7 +251,7 @@ public class RedisSetTest {
 
     set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
 
   @Test
@@ -270,7 +273,7 @@ public class RedisSetTest {
       set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
       long actual = set.getSizeInBytes();
-      long expected = sizer.sizeof(set);
+      long expected = expectedSize(set);
 
       assertThat(actual).isEqualTo(expected);
     }
@@ -298,7 +301,7 @@ public class RedisSetTest {
     set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
 
     long finalSize = set.getSizeInBytes();
-    long expectedSize = sizer.sizeof(set);
+    long expectedSize = expectedSize(set);
 
     assertThat(finalSize).isEqualTo(expectedSize);
   }
@@ -318,7 +321,7 @@ public class RedisSetTest {
 
     RedisSet set = new RedisSet(initialMembers);
 
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
 
     int membersToAdd = numOfInitialMembers * 3;
     doAddsAndAssertSize(set, membersToAdd);
@@ -336,8 +339,7 @@ public class RedisSetTest {
   @Test
   public void baseOverheadConstant_shouldMatchReflectedSize() {
     RedisSet set = new RedisSet(Collections.emptyList());
-    SizeableObjectOpenCustomHashSet<byte[]> backingSet =
-        new SizeableObjectOpenCustomHashSet<>(0, ByteArrays.HASH_STRATEGY);
+    RedisSet.MemberSet backingSet = new RedisSet.MemberSet(0);
     int baseRedisSetOverhead = sizer.sizeof(set) - sizer.sizeof(backingSet);
 
     assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
@@ -388,7 +390,7 @@ public class RedisSetTest {
 
       assertThat(calculatedOH).isEqualTo(actualOverhead);
     }
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
 
   void doRemovesAndAssertSize(RedisSet set, int membersToRemove) {
@@ -405,6 +407,6 @@ public class RedisSetTest {
 
       assertThat(calculatedOH).isEqualTo(actualOverhead);
     }
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
 }

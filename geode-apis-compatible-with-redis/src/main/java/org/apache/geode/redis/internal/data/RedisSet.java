@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
+import static org.apache.geode.internal.JvmSizeUtils.sizeByteArray;
+import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
@@ -50,16 +52,12 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
-  private SizeableObjectOpenCustomHashSet<byte[]> members;
+  private MemberSet members;
 
-  // The following constant was calculated using reflection. you can find the test for this value in
-  // RedisSetTest, which shows the way this number was calculated. If our internal implementation
-  // changes, these values may be incorrect. An increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_SET_OVERHEAD = 32;
+  protected static final int BASE_REDIS_SET_OVERHEAD = sizeClass(RedisSet.class);
 
   RedisSet(Collection<byte[]> members) {
-    this.members =
-        new SizeableObjectOpenCustomHashSet<>(members.size(), ByteArrays.HASH_STRATEGY);
+    this.members = new MemberSet(members.size());
     for (byte[] member : members) {
       membersAdd(member);
     }
@@ -218,7 +216,7 @@ public class RedisSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = DataSerializer.readPrimitiveInt(in);
-    members = new SizeableObjectOpenCustomHashSet<>(size, ByteArrays.HASH_STRATEGY);
+    members = new MemberSet(size);
     for (int i = 0; i < size; ++i) {
       members.add(DataSerializer.readByteArray(in));
     }
@@ -334,4 +332,28 @@ public class RedisSet extends AbstractRedisData {
   public int getSizeInBytes() {
     return BASE_REDIS_SET_OVERHEAD + members.getSizeInBytes();
   }
+
+  public static class MemberSet extends SizeableObjectOpenCustomHashSet<byte[]> {
+    public MemberSet() {
+      super(ByteArrays.HASH_STRATEGY);
+    }
+
+    public MemberSet(int size) {
+      super(size, ByteArrays.HASH_STRATEGY);
+    }
+
+    public MemberSet(int expected, float f) {
+      super(expected, f, ByteArrays.HASH_STRATEGY);
+    }
+
+    public MemberSet(Collection<byte[]> initialElements) {
+      super(initialElements, ByteArrays.HASH_STRATEGY);
+    }
+
+    @Override
+    protected int sizeElement(byte[] element) {
+      return sizeByteArray(element);
+    }
+  }
+
 }

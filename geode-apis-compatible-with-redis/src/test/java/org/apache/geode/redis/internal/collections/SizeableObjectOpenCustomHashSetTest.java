@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.BACKING_ARRAY_LENGTH_COEFFICIENT;
-import static org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet.BACKING_ARRAY_OVERHEAD_CONSTANT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.SingleObjectSizer;
+import org.apache.geode.redis.internal.data.RedisSet;
 
 public class SizeableObjectOpenCustomHashSetTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
@@ -42,33 +41,29 @@ public class SizeableObjectOpenCustomHashSetTest {
   // differences, adjust the formula
   @Test
   public void backingArrayOverheadCalculationTest() {
-    SizeableObjectOpenCustomHashSet<byte[]> set =
-        new SizeableObjectOpenCustomHashSet<>(0, ByteArrays.HASH_STRATEGY);
+    RedisSet.MemberSet set = new RedisSet.MemberSet(0);
     int backingArrayOverhead;
+    int memberOverhead = 0;
     SoftAssertions softly = new SoftAssertions();
     for (int i = 0; i < 250; ++i) {
-      set.add(new byte[i]);
-
-      // Calculate the overhead associated only with the backing array
-      backingArrayOverhead = sizer.sizeof(set) - set.getMemberOverhead();
-      int expected = BACKING_ARRAY_OVERHEAD_CONSTANT
-          + BACKING_ARRAY_LENGTH_COEFFICIENT * set.getBackingArrayLength();
-      softly.assertThat(backingArrayOverhead)
-          .as("Expecting backing array overhead to = "
-              + "backing array constant + (backing array length coefficient * backing array length)"
-              + " = " + BACKING_ARRAY_OVERHEAD_CONSTANT + " + (" + BACKING_ARRAY_LENGTH_COEFFICIENT
-              + " * " + set.getBackingArrayLength() + ") but was off by "
-              + (expected - backingArrayOverhead))
-          .isEqualTo(expected);
+      byte[] element = new byte[i];
+      set.add(element);
+      memberOverhead += sizer.sizeof(element);
+      backingArrayOverhead = expectedSize(set) - memberOverhead;
+      int expected = set.calculateBackingArrayOverhead();
+      softly.assertThat(backingArrayOverhead).isEqualTo(expected);
     }
     softly.assertAll();
   }
 
+  private static int getMemberOverhead(SizeableObjectOpenCustomHashSet<byte[]> set) {
+    return set.getMemberOverhead();
+  }
+
   @Test
   public void addIncreasesMemberOverheadByCorrectAmount() {
-    SizeableObjectOpenCustomHashSet<byte[]> set =
-        new SizeableObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-    int initialSize = set.getMemberOverhead();
+    RedisSet.MemberSet set = new RedisSet.MemberSet();
+    int initialSize = getMemberOverhead(set);
     List<byte[]> members = new ArrayList<>();
     for (int i = 0; i < 100; ++i) {
       members.add(new byte[i]);
@@ -82,18 +77,17 @@ public class SizeableObjectOpenCustomHashSetTest {
       boolean added = set.add(bytes);
       if (added) {
         long expectedOverhead = elementSizer.sizeof(bytes);
-        assertThat(expectedOverhead).isEqualTo(set.getMemberOverhead() - initialSize);
-        initialSize = set.getMemberOverhead();
+        assertThat(expectedOverhead).isEqualTo(getMemberOverhead(set) - initialSize);
+        initialSize = getMemberOverhead(set);
       } else {
-        assertThat(set.getMemberOverhead() - initialSize).isZero();
+        assertThat(getMemberOverhead(set) - initialSize).isZero();
       }
     }
   }
 
   @Test
   public void removeDecreasesMemberOverheadByCorrectAmount() {
-    SizeableObjectOpenCustomHashSet<byte[]> set =
-        new SizeableObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+    RedisSet.MemberSet set = new RedisSet.MemberSet();
     List<byte[]> members = new ArrayList<>();
     for (int i = 0; i < 100; ++i) {
       members.add(new byte[i]);
@@ -104,16 +98,16 @@ public class SizeableObjectOpenCustomHashSetTest {
     // decreased when a member isn't actually removed
     members.add(new byte[101]);
 
-    int initialSize = set.getMemberOverhead();
+    int initialSize = getMemberOverhead(set);
 
     for (byte[] bytes : members) {
       boolean removed = set.remove(bytes);
       if (removed) {
         long expectedOverhead = elementSizer.sizeof(bytes);
-        assertThat(expectedOverhead).isEqualTo(initialSize - set.getMemberOverhead());
-        initialSize = set.getMemberOverhead();
+        assertThat(expectedOverhead).isEqualTo(initialSize - getMemberOverhead(set));
+        initialSize = getMemberOverhead(set);
       } else {
-        assertThat(set.getMemberOverhead() - initialSize).isZero();
+        assertThat(getMemberOverhead(set) - initialSize).isZero();
       }
     }
   }
@@ -121,9 +115,8 @@ public class SizeableObjectOpenCustomHashSetTest {
   @Test
   public void calculateBackingArrayOverheadForDifferentInitialSizes() {
     for (int i = 0; i < 1000; ++i) {
-      SizeableObjectOpenCustomHashSet<byte[]> set =
-          new SizeableObjectOpenCustomHashSet<>(i, ByteArrays.HASH_STRATEGY);
-      assertThat(set.calculateBackingArrayOverhead()).isEqualTo(sizer.sizeof(set));
+      RedisSet.MemberSet set = new RedisSet.MemberSet(i);
+      assertThat(set.calculateBackingArrayOverhead()).isEqualTo(expectedSize(set));
     }
   }
 
@@ -133,12 +126,15 @@ public class SizeableObjectOpenCustomHashSetTest {
     for (int i = 0; i < 1000; ++i) {
       float loadFactor = random.nextFloat();
       int initialSize = random.nextInt(1000);
-      SizeableObjectOpenCustomHashSet<byte[]> set =
-          new SizeableObjectOpenCustomHashSet<>(initialSize, loadFactor, ByteArrays.HASH_STRATEGY);
+      RedisSet.MemberSet set = new RedisSet.MemberSet(initialSize, loadFactor);
       assertThat(set.calculateBackingArrayOverhead())
           .as("load factor = " + loadFactor + ", initial size = " + initialSize)
-          .isEqualTo(sizer.sizeof(set));
+          .isEqualTo(expectedSize(set));
     }
+  }
+
+  private int expectedSize(RedisSet.MemberSet set) {
+    return sizer.sizeof(set) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
   }
 
   @Test
@@ -150,21 +146,20 @@ public class SizeableObjectOpenCustomHashSetTest {
       initialElements.add(new byte[] {(byte) i});
     }
     // Create a set with an initial size and confirm that it correctly reports its size
-    SizeableObjectOpenCustomHashSet<byte[]> set =
-        new SizeableObjectOpenCustomHashSet<>(initialElements, ByteArrays.HASH_STRATEGY);
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    RedisSet.MemberSet set = new RedisSet.MemberSet(initialElements);
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
 
     // Add enough members to force a resize and assert that the size is correct after each add
     for (int i = initialNumberOfElements; i < initialNumberOfElements + elementsToAdd; ++i) {
       set.add(new byte[] {(byte) i});
-      assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+      assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
     }
     assertThat(set.size()).isEqualTo(initialNumberOfElements + elementsToAdd);
 
     // Remove all the members and assert that the size is correct after each remove
     for (int i = 0; i < initialNumberOfElements + elementsToAdd; ++i) {
       set.remove(new byte[] {(byte) i});
-      assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+      assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
     }
     assertThat(set.size()).isEqualTo(0);
   }

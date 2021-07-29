@@ -5,6 +5,9 @@ org/apache/geode/redis/internal/collections/IndexibleTreeSet
 org/apache/geode/redis/internal/data/RedisDataMovedException
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException
 org/apache/geode/redis/internal/RedisException
+org/apache/geode/redis/internal/data/RedisHash$Hash
 org/apache/geode/redis/internal/data/RedisRestoreKeyExistsException
+org/apache/geode/redis/internal/data/RedisSet$MemberSet
 org/apache/geode/redis/internal/data/RedisSetCommandsFunctionExecutor$SetOp
+org/apache/geode/redis/internal/data/RedisSortedSet$MemberMap
 org/apache/geode/redis/internal/data/RedisStringCommandsFunctionExecutor$BitOp

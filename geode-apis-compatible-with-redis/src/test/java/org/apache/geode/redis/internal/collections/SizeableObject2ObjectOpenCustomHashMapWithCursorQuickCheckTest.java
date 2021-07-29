@@ -44,14 +44,31 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
     }
   };
 
+  private static class Integer2IntegerMap
+      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, Integer> {
+
+    public Integer2IntegerMap() {
+      super(NATURAL_HASH);
+    }
+
+    @Override
+    protected int sizeKey(Integer key) {
+      return 0;
+    }
+
+    @Override
+    protected int sizeValue(Integer value) {
+      return 0;
+    }
+  }
+
 
   @Property
   public void scanWithConcurrentModifications_ReturnsExpectedElements(
       @Size(min = 2, max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> initialData,
       @Size(max = 500) Set<@InRange(minInt = 0, maxInt = 1000) Integer> dataToAdd,
       @Size(max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> keysToRemove) {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2IntegerMap map = new Integer2IntegerMap();
     initialData.forEach(i -> map.put(i, i));
 
     HashMap<Integer, Integer> scanned = new HashMap<>();
@@ -72,8 +89,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
   @Property
   public void scanWithNoModificationsDoesNotReturnDuplicates(
       @Size(min = 2, max = 500) Set<@InRange(minInt = 0, maxInt = 500) Integer> initialData) {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, Integer> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2IntegerMap map = new Integer2IntegerMap();
     initialData.forEach(i -> map.put(i, i));
 
     List<Integer> scanned = new ArrayList<>();

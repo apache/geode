@@ -15,6 +15,9 @@
 package org.apache.geode.internal.size;
 
 
+
+import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
+
 /**
  * An efficient sizer for some commonly used classes.
  *
@@ -48,7 +51,7 @@ public class WellKnownClassSizer {
       return 0;
     }
 
-    size = (int) ReflectionSingleObjectSizer.roundUpSize(size);
+    size = (int) roundUpSize(size);
     return size;
   }
 
