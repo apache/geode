@@ -35,10 +35,10 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   }
 
   @Override
-  public void afterPrimary(int bucketId) {
+  public void afterPrimary(BucketId bucketId) {
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.computeRepository(BucketId.valueOf(bucketId));
+        lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (PrimaryBucketException e) {
         logger.info("Index repository could not be created because we are no longer primary?", e);
       }
@@ -46,15 +46,15 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   }
 
   @Override
-  public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
+  public void afterBucketRemoved(BucketId bucketId, Iterable<?> keys) {
     afterSecondary(bucketId);
   }
 
   @Override
-  public void afterSecondary(int bucketId) {
+  public void afterSecondary(BucketId bucketId) {
     dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.computeRepository(BucketId.valueOf(bucketId));
+        lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (PrimaryBucketException | AlreadyClosedException e) {
         logger.debug("Exception while cleaning up Lucene Index Repository", e);
       }

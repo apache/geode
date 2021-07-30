@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents the unique integer index of a {@link Bucket} as an object for use in
  * {@link Collection} types or other methods requiring objects. If used properly this class avoids
- * the transient allocations of autoboxed {@code int} and {@link Integer}. The default auotboxed
+ * the transient allocations of autoboxed {@code int} and {@link Integer}. The default autoboxed
  * {@link Integer} cache is -128 to +127. This class is optimized for positive bucket indexes only.
  */
 public final class BucketId implements Comparable<BucketId> {

@@ -16,6 +16,7 @@
 package org.apache.geode.cache.partition;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * <p>
@@ -37,14 +38,41 @@ import org.apache.geode.cache.Region;
 public class PartitionListenerAdapter implements PartitionListener {
 
   @Override
+  @Deprecated
   public void afterPrimary(int bucketId) {}
+
+  @Override
+  @Deprecated
+  public void afterSecondary(final int bucketId) {}
 
   @Override
   public void afterRegionCreate(Region<?, ?> region) {}
 
   @Override
+  @Deprecated
   public void afterBucketRemoved(int bucketId, Iterable<?> keys) {}
 
   @Override
+  @Deprecated
   public void afterBucketCreated(int bucketId, Iterable<?> keys) {}
+
+  @Override
+  public void afterPrimary(final BucketId bucketId) {
+    afterPrimary(bucketId.intValue());
+  }
+
+  @Override
+  public void afterSecondary(final BucketId bucketId) {
+    afterSecondary(bucketId.intValue());
+  }
+
+  @Override
+  public void afterBucketRemoved(final BucketId bucketId, final Iterable<?> keys) {
+    afterBucketRemoved(bucketId.intValue(), keys);
+  }
+
+  @Override
+  public void afterBucketCreated(final BucketId bucketId, final Iterable<?> keys) {
+    afterBucketCreated(bucketId.intValue(), keys);
+  }
 }

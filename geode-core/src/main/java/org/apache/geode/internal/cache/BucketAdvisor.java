@@ -1218,7 +1218,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
     for (PartitionListener listener : listeners) {
       if (listener != null) {
-        listener.afterPrimary(getBucket().getId().intValue());
+        listener.afterPrimary(getBucket().getId());
       }
     }
   }
@@ -1230,7 +1230,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
     for (PartitionListener listener : listeners) {
       if (listener != null) {
-        listener.afterSecondary(getBucket().getId().intValue());
+        listener.afterSecondary(getBucket().getId());
       }
     }
   }

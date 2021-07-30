@@ -2232,7 +2232,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     for (PartitionListener listener : partitionListeners) {
       if (listener != null) {
-        listener.afterBucketRemoved(getId().intValue(), keySet());
+        listener.afterBucketRemoved(getId(), keySet());
       }
     }
   }
@@ -2244,7 +2244,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     for (PartitionListener listener : partitionListeners) {
       if (listener != null) {
-        listener.afterBucketCreated(getId().intValue(), keySet());
+        listener.afterBucketCreated(getId(), keySet());
       }
     }
   }
