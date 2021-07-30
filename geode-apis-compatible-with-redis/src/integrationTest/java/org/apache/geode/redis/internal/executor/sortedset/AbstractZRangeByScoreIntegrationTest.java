@@ -291,6 +291,62 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
   }
 
   @Test
+  public void shouldError_givenMultipleLimits_withFirstLimitIncorrectlySpecified() {
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0", "invalid",
+        "LIMIT", "0", "10"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0",
+        "LIMIT", "0", "10"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void shouldError_givenMultipleLimits_withLastLimitIncorrectlySpecified() {
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0", "10",
+        "LIMIT", "0", "invalid"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0", "10",
+        "LIMIT", "0"))
+            .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void shouldError_givenMultipleLimitsAndWithscores_withFirstLimitIncorrectlySpecified() {
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "WITHSCORES",
+        "LIMIT", "0", "invalid",
+        "LIMIT", "0", "10"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0",
+        "LIMIT", "0", "10",
+        "WITHSCORES"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void shouldError_givenMultipleLimitsAndWithscores_withLastLimitIncorrectlySpecified() {
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "WITHSCORES",
+        "LIMIT", "0", "10",
+        "LIMIT", "0", "invalid"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
+        "LIMIT", "0", "10",
+        "LIMIT", "0",
+        "WITHSCORES"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
   public void shouldReturnRange_givenMultipleCopiesOfWithscoresAndOrLimit() {
     createZSetRangeTestMap();
 

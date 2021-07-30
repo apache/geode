@@ -21,7 +21,8 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
@@ -46,7 +47,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public long zcount(RedisKey key, SortedSetRangeOptions rangeOptions) {
+  public long zcount(RedisKey key, SortedSetScoreRangeOptions rangeOptions) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zcount(rangeOptions));
   }
 
@@ -63,7 +64,13 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public List<byte[]> zrangebyscore(RedisKey key, SortedSetRangeOptions rangeOptions,
+  public List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, true).zrangebylex(rangeOptions));
+  }
+
+  @Override
+  public List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
       boolean withScores) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, true).zrangebyscore(rangeOptions, withScores));

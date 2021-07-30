@@ -23,7 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 class NullRedisSortedSet extends RedisSortedSet {
@@ -58,12 +59,17 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  long zcount(SortedSetRangeOptions rangeOptions) {
+  long zcount(SortedSetScoreRangeOptions rangeOptions) {
     return 0;
   }
 
   @Override
-  List<byte[]> zrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
     return Collections.emptyList();
   }
 

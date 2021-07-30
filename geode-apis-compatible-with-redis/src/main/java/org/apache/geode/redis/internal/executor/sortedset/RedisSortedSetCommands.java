@@ -25,13 +25,16 @@ public interface RedisSortedSetCommands {
 
   long zcard(RedisKey key);
 
-  long zcount(RedisKey key, SortedSetRangeOptions rangeOptions);
+  long zcount(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
 
   List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
 
-  List<byte[]> zrangebyscore(RedisKey key, SortedSetRangeOptions rangeOptions, boolean withScores);
+  List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
+
+  List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
+      boolean withScores);
 
   long zrank(RedisKey key, byte[] member);
 

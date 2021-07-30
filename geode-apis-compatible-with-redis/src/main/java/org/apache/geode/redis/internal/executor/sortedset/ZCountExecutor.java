@@ -30,20 +30,18 @@ public class ZCountExecutor extends AbstractExecutor {
 
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    SortedSetRangeOptions rangeOptions;
+    SortedSetScoreRangeOptions rangeOptions;
 
     try {
       byte[] minBytes = commandElements.get(2);
       byte[] maxBytes = commandElements.get(3);
-      rangeOptions = new SortedSetRangeOptions(minBytes, maxBytes);
+      rangeOptions = new SortedSetScoreRangeOptions(minBytes, maxBytes);
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }
 
     // If the range is empty (min > max or min == max and both are exclusive), return early
-    if (rangeOptions.getMinDouble() > rangeOptions.getMaxDouble() ||
-        (rangeOptions.getMinDouble() == rangeOptions.getMaxDouble())
-            && rangeOptions.isMinExclusive() && rangeOptions.isMaxExclusive()) {
+    if (rangeOptions.isEmptyRange()) {
       return RedisResponse.integer(0);
     }
 

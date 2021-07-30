@@ -14,11 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_VALID_STRING;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.List;
 
@@ -27,38 +25,31 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRangeByScoreExecutor extends AbstractExecutor {
+public class ZRangeByLexExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    SortedSetScoreRangeOptions rangeOptions;
+    SortedSetLexRangeOptions rangeOptions;
 
     try {
       byte[] minBytes = commandElements.get(2);
       byte[] maxBytes = commandElements.get(3);
-      rangeOptions = new SortedSetScoreRangeOptions(minBytes, maxBytes);
-    } catch (NumberFormatException ex) {
-      return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
+      rangeOptions = new SortedSetLexRangeOptions(minBytes, maxBytes);
+    } catch (IllegalArgumentException ex) {
+      return RedisResponse.error(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     }
 
-    // Native redis allows multiple "withscores" and "limit ? ?" clauses; the last "limit"
-    // clause overrides any previous ones
+    // Native redis allows multiple "limit ? ?" clauses; the last "limit" clause overrides any
+    // previous ones
     // Start parsing at index = 4, since 0 is the command name, 1 is the key, 2 is the min and 3 is
     // the max
-    boolean withScores = false;
-
     if (commandElements.size() >= 5) {
       for (int index = 4; index < commandElements.size(); ++index) {
         try {
-          byte[] commandBytes = commandElements.get(index);
-          if (equalsIgnoreCaseBytes(commandBytes, bWITHSCORES)) {
-            withScores = true;
-          } else {
-            rangeOptions.parseLimitArguments(commandElements, index);
-            // If we successfully parse a set of three LIMIT options, increment the index past them
-            index += 2;
-          }
+          rangeOptions.parseLimitArguments(commandElements, index);
+          // If we successfully parse a set of three LIMIT options, increment the index past them
+          index += 2;
         } catch (NumberFormatException nfex) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
         } catch (IllegalArgumentException iex) {
@@ -71,9 +62,13 @@ public class ZRangeByScoreExecutor extends AbstractExecutor {
     if (rangeOptions.isEmptyRange()) {
       return RedisResponse.emptyArray();
     }
+    // If offset is negative
+    if (rangeOptions.offset < 0) {
+      return RedisResponse.emptyArray();
+    }
 
     List<byte[]> result =
-        context.getSortedSetCommands().zrangebyscore(command.getKey(), rangeOptions, withScores);
+        context.getSortedSetCommands().zrangebylex(command.getKey(), rangeOptions);
 
     return RedisResponse.array(result);
   }
