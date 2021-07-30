@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.SocketException;
@@ -59,6 +61,7 @@ import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -740,8 +743,9 @@ public class OpExecutorImpl implements ExecutablePool {
     } catch (final ServerConnectivityException sce) {
       final Throwable cause = sce.getCause();
       if ((cause instanceof AuthenticationRequiredException
-          && "User authorization attributes not found.".equals(cause.getMessage()))
-          || sce.getMessage().contains("Connection error while authenticating user")) {
+          && USER_NOT_FOUND.equals(cause.getMessage()))
+          || sce.getMessage().contains("Connection error while authenticating user")
+          || cause instanceof AuthenticationExpiredException) {
         // 2nd exception-message above is from AbstractOp.sendMessage()
 
         if (pool.getMultiuserAuthentication()) {

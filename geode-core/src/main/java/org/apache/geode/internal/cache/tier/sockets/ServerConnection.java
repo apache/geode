@@ -100,6 +100,8 @@ public class ServerConnection implements Runnable {
   private static final String DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME =
       "geode.disallow-internal-messages-without-credentials";
 
+  public static final String USER_NOT_FOUND = "User authorization attributes not found.";
+
   /**
    * When true requires some formerly credential-less messages to carry credentials. See GEODE-3249
    * and ServerConnection.isInternalMessage()
@@ -1774,7 +1776,7 @@ public class ServerConnection implements Runnable {
       logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
-      throw new AuthenticationRequiredException("User authorization attributes not found.");
+      throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }
     return uaa;
   }
@@ -1818,7 +1820,7 @@ public class ServerConnection implements Runnable {
       logger.debug("Unexpected exception", npe);
     }
     if (uaa == null) {
-      throw new AuthenticationRequiredException("User authorization attributes not found.");
+      throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }
 
     return uaa.getPostAuthzRequest();
