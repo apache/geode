@@ -37,7 +37,6 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     Properties credentials = new Properties();
     credentials.put("security-username", user.get());
     credentials.put("security-password", user.get());
-
     return credentials;
   }
 
