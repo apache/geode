@@ -18,7 +18,6 @@ package org.apache.geode.redis;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Files;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import com.github.dockerjava.api.model.ContainerNetwork;
 import org.apache.logging.log4j.Logger;
@@ -83,7 +81,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
 
         String fileContents = new String(Files.readAllBytes(Paths.get(composeYml.toURI())));
         for (int i = 0; i < NODE_COUNT; ++i) {
-          fileContents = fileContents.replace("#PORT_" + i, String.valueOf(availablePorts[i]));
+          fileContents = fileContents.replace("#PORT_" + i, "\"" + availablePorts[i] + "\"");
         }
         TemporaryFolder tempFolder = new TemporaryFolder();
         tempFolder.create();
