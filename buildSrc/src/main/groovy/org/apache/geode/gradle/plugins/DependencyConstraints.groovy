@@ -160,7 +160,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.3.2')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '1.3.3')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: get('springshell.version'))
         api(group: 'org.testcontainers', name: 'testcontainers', version: '1.15.3')
