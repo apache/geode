@@ -41,7 +41,7 @@ commons-codec-1.15.jar
 commons-collections-3.2.2.jar
 commons-io-2.11.0.jar
 commons-logging-1.2.jar
-classgraph-4.8.109.jar
+classgraph-4.8.110.jar
 micrometer-core-1.7.2.jar
 swagger-annotations-1.6.2.jar
 fastutil-core-8.5.4.jar
