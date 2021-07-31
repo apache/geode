@@ -87,7 +87,8 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
 
-  short GATEWAY_EVENT_IMPL = -136;
+  // -136 unused
+
   short GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT = -135;
   short GATEWAY_SENDER_EVENT_IMPL = -134;
 
@@ -596,12 +597,14 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short COMPACT_RESPONSE = 2119;
   short FLOW_CONTROL_PERMIT_MESSAGE = 2120;
 
-  short OBJECT_PART_LIST66 = 2121;
+  // 2121 unused
+
   short LINKED_RESULTSET = 2122;
   short LINKED_STRUCTSET = 2123;
   short PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE = 2124;
 
-  short SERIALIZED_OBJECT_PART_LIST = 2125;
+  // 2125 unused
+
   short FLUSH_TO_DISK_REQUEST = 2126;
   short FLUSH_TO_DISK_RESPONSE = 2127;
 
