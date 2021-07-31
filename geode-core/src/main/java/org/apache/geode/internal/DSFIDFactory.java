@@ -373,9 +373,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList651;
 import org.apache.geode.internal.cache.tier.sockets.RemoveClientFromDenylistMessage;
-import org.apache.geode.internal.cache.tier.sockets.SerializedObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.ServerInterestRegistrationMessage;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
@@ -858,7 +856,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(CLIENT_REPLACEMENT_REQUEST, ClientReplacementRequest.class);
     serializer.registerDSFID(OBJECT_PART_LIST, ObjectPartList.class);
     serializer.registerDSFID(VERSIONED_OBJECT_LIST, VersionedObjectList.class);
-    serializer.registerDSFID(OBJECT_PART_LIST66, ObjectPartList651.class);
     serializer.registerDSFID(PUTALL_VERSIONS_LIST, EntryVersionsList.class);
     serializer.registerDSFID(INITIAL_IMAGE_VERSIONED_OBJECT_LIST,
         InitialImageVersionedEntryList.class);
@@ -932,7 +929,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(BATCH_DESTROY_MESSAGE, BatchDestroyOperation.DestroyMessage.class);
     serializer.registerDSFID(FIND_REMOTE_TX_MESSAGE, FindRemoteTXMessage.class);
     serializer.registerDSFID(FIND_REMOTE_TX_REPLY, FindRemoteTXMessageReply.class);
-    serializer.registerDSFID(SERIALIZED_OBJECT_PART_LIST, SerializedObjectPartList.class);
     serializer.registerDSFID(FLUSH_TO_DISK_REQUEST, FlushToDiskRequest.class);
     serializer.registerDSFID(FLUSH_TO_DISK_RESPONSE, FlushToDiskResponse.class);
     serializer.registerDSFID(ENUM_ID, EnumId.class);
