@@ -970,7 +970,7 @@ lib/commons-beanutils-1.9.4.jar
 lib/commons-codec-1.15.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
-lib/commons-io-2.10.0.jar
+lib/commons-io-2.11.0.jar
 lib/commons-lang3-3.12.0.jar
 lib/commons-logging-1.2.jar
 lib/commons-modeler-2.0.1.jar
