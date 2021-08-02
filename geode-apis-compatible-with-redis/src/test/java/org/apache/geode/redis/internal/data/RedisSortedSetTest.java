@@ -475,6 +475,7 @@ public class RedisSortedSetTest {
     // inclusiveMax > realEntry
     assertThat(inclusiveMax.compareTo(realEntry)).isEqualTo(1);
   }
+
   @Test
   public void zpopmaxRemovesMemberWithHighestScore() {
     int originalSize = rangeSortedSet.getSortedSetSize();
