@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +29,12 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 import org.apache.logging.log4j.Logger;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.proxy.HostPort;
 import org.apache.geode.redis.internal.proxy.RedisProxy;
@@ -77,19 +73,8 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         assertThat(composeYml).as("Cannot load resource " + REDIS_COMPOSE_YML)
             .isNotNull();
 
-        int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(NODE_COUNT);
-
-        String fileContents = new String(Files.readAllBytes(Paths.get(composeYml.toURI())));
-        for (int i = 0; i < NODE_COUNT; i++) {
-          fileContents = fileContents.replace("#PORT_" + i, "\"" + availablePorts[i] + "\"");
-        }
-
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
-        temporaryFolder.create();
-        File editedYaml = temporaryFolder.newFile();
-        Files.write(editedYaml.toPath(), fileContents.getBytes());
-
-        redisCluster = new DockerComposeContainer<>("acceptance", editedYaml);
+        redisCluster =
+            new DockerComposeContainer<>("acceptance", new File(composeYml.getFile()));
         for (int i = 0; i < NODE_COUNT; i++) {
           redisCluster.withExposedService("redis-node-" + i, REDIS_PORT);
         }
