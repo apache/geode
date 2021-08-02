@@ -139,7 +139,7 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
             new Tuple("player4", 4D));
 
     assertThat(jedis.zrange("key", 0, 10))
-        .containsExactlyInAnyOrder("player0", "player1");
+        .containsExactly("player0", "player1");
   }
 
   /**

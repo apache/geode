@@ -26,8 +26,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZPopMaxExecutor extends AbstractExecutor {
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
-      throws Exception {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
 
     List<byte[]> commandElements = command.getProcessedCommand();
@@ -35,7 +34,7 @@ public class ZPopMaxExecutor extends AbstractExecutor {
     int count = 1;
     if (commandElements.size() > 2) {
       try {
-        count = (int) Coder.bytesToLong(commandElements.get(2));
+        count = Coder.narrowLongToInt(Coder.bytesToLong(commandElements.get(2)));
       } catch (NumberFormatException nex) {
         return RedisResponse.error(RedisConstants.ERROR_NOT_INTEGER);
       }

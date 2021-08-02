@@ -205,10 +205,14 @@ public class RedisSortedSet extends AbstractRedisData {
       scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
       // Adjust for removal.
-      sizeInBytesAdjustment -= orderedSetEntry.getSizeInBytes() + calculateByteArraySize(member);
+      adjustSizeForRemoval(orderedSetEntry);
     }
 
     return oldValue;
+  }
+
+  private void adjustSizeForRemoval(AbstractOrderedSetEntry entry) {
+    sizeInBytesAdjustment -= entry.getSizeInBytes() + calculateByteArraySize(entry.getMember());
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
@@ -400,17 +404,18 @@ public class RedisSortedSet extends AbstractRedisData {
   List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     Iterator<AbstractOrderedSetEntry> scoresIterator =
         scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
-    List<byte[]> result = new ArrayList<>();
 
     if (!scoresIterator.hasNext()) {
-      return result;
+      return Collections.emptyList();
     }
 
+    List<byte[]> result = new ArrayList<>();
     RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
     while (scoresIterator.hasNext()) {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();
       members.remove(entry.member);
+      adjustSizeForRemoval(entry);
 
       result.add(entry.member);
       result.add(entry.scoreBytes);
