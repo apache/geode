@@ -27,7 +27,7 @@ import java.util.Arrays;
 
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
-  SortedSetLexRangeOptions(byte[] minimumBytes, byte[] maximumBytes) {
+  public SortedSetLexRangeOptions(byte[] minimumBytes, byte[] maximumBytes) {
     super(minimumBytes, maximumBytes);
   }
 

@@ -64,6 +64,11 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
+  long zlexcount(SortedSetLexRangeOptions rangeOptions) {
+    return 0;
+  }
+
+  @Override
   List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
     return Collections.emptyList();
   }

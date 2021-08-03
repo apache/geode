@@ -56,6 +56,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -273,6 +274,84 @@ public class RedisSortedSetTest {
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes(),
         "member4".getBytes(), "1.3".getBytes(), "member5".getBytes(), "1.4".getBytes(),
         "member6".getBytes(), "1.5".getBytes());
+  }
+
+  @Test
+  public void zlexcount_shouldBeInclusiveWhenSpecified() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions =
+        new SortedSetLexRangeOptions("[member1".getBytes(), "[member3".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(3);
+  }
+
+  @Test
+  public void zlexcount_shouldBeExclusiveWhenSpecified() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions =
+        new SortedSetLexRangeOptions("(member1".getBytes(), "(member3".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(1);
+  }
+
+  @Test
+  public void zlexcount_shouldBeZero_whenMinIsTooGreat() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[member6".getBytes(),
+        "(member8".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
+  }
+
+  @Test
+  public void zlexcount_shouldBeZero_whenMaxIsTooSmall() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[membeq0".getBytes(),
+        "[member0".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
+  }
+
+  @Test
+  public void zlexcount_shouldBeZero_whenMinAndMaxAreReversed() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions =
+        new SortedSetLexRangeOptions("[member5".getBytes(), "[member0".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
+  }
+
+  @Test
+  public void zlexcount_shouldBeAbleToCountAllEntries() {
+    RedisSortedSet sortedSet = createRedisSortedSet(
+        "1.1", "member1",
+        "1.1", "member2",
+        "1.1", "member3",
+        "1.1", "member4",
+        "1.1", "member5");
+    SortedSetLexRangeOptions lexOptions =
+        new SortedSetLexRangeOptions("-".getBytes(), "+".getBytes());
+    assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(5);
   }
 
   @Test
