@@ -474,6 +474,70 @@ public class RedisSortedSetTest {
   }
 
   @Test
+  public void zpopminRemovesMemberWithLowestScore() {
+    int originalSize = rangeSortedSet.getSortedSetSize();
+    RedisSortedSet sortedSet = spy(rangeSortedSet);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+    int count = 1;
+
+    List<byte[]> result = sortedSet.zpopmin(region, key, count);
+    assertThat(result).containsExactly("member1".getBytes(), "1".getBytes());
+
+    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
+    assertThat(argumentCaptor.getValue().getRemoves()).containsExactly("member1".getBytes());
+    assertThat(rangeSortedSet.getSortedSetSize()).isEqualTo(originalSize - count);
+  }
+
+  @Test
+  public void zpopminRemovesMembersWithHighestScores_whenCountIsGreaterThanOne() {
+    int originalSize = rangeSortedSet.getSortedSetSize();
+    RedisSortedSet sortedSet = spy(rangeSortedSet);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+    int count = 3;
+
+    List<byte[]> result = sortedSet.zpopmin(region, key, count);
+    assertThat(result).containsExactlyInAnyOrder("member1".getBytes(), "1".getBytes(),
+        "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes());
+
+    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
+    assertThat(argumentCaptor.getValue().getRemoves()).containsExactlyInAnyOrder(
+        "member1".getBytes(), "member2".getBytes(), "member3".getBytes());
+    assertThat(rangeSortedSet.getSortedSetSize()).isEqualTo(originalSize - count);
+  }
+
+  @Test
+  public void zpopminRemovesRegionEntryWhenSetBecomesEmpty() {
+    RedisSortedSet sortedSet = spy(createRedisSortedSet(score1, member1));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+
+    List<byte[]> result = sortedSet.zpopmin(region, key, 1);
+    assertThat(result).containsExactly(member1.getBytes(), score1.getBytes());
+
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+    verify(region).remove(key);
+  }
+
+  @Test
+  public void zpopminRemovesLowestLexWhenScoresAreEqual() {
+    RedisSortedSet sortedSet = spy(createRedisSortedSet(
+        "1.1", "member5",
+        "1.1", "member4",
+        "1.1", "member3",
+        "1.1", "member2",
+        "1.1", "member1"));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+
+    List<byte[]> result = sortedSet.zpopmin(region, key, 1);
+    assertThat(result).containsExactly("member1".getBytes(), "1.1".getBytes());
+  }
+
+  @Test
   public void zpopmaxRemovesMemberWithHighestScore() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
@@ -638,7 +702,6 @@ public class RedisSortedSetTest {
     }
   }
 
-
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForZpopmax() {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
@@ -659,6 +722,27 @@ public class RedisSortedSetTest {
       int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
+    }
+  }
+
+  @Test
+  public void redisSortedSetGetSizeInBytes_isAccurateForZpopmin() {
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    RedisKey mockKey = mock(RedisKey.class);
+    ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
+
+    int numberOfEntries = 100;
+    for (int i = 0; i < numberOfEntries; ++i) {
+      List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i), new byte[i]);
+      sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
+    }
+
+    // Remove all members by zpopmin and ensure size is correct
+    for (int i = 0; i < numberOfEntries; ++i) {
+      sortedSet.zpopmin(mockRegion, mockKey, 1);
+      sortedSet.clearDelta();
+      assertThat(sizer.sizeof(sortedSet)).isEqualTo(sortedSet.getSizeInBytes());
     }
   }
 

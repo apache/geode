@@ -12,18 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public class ZPopMaxExecutor extends AbstractZPopExecutor {
+public class ZPopMinNativeRedisAcceptanceTest extends AbstractZPopMinIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
   @Override
-  protected List<byte[]> zpop(RedisSortedSetCommands sortedSetCommands, RedisKey key, int count) {
-    return sortedSetCommands.zpopmax(key, count);
+  public int getPort() {
+    return server.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    server.flushAll();
   }
 
 }

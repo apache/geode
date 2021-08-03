@@ -49,5 +49,7 @@ public interface RedisSortedSetCommands {
 
   byte[] zscore(RedisKey key, byte[] member);
 
+  List<byte[]> zpopmin(RedisKey key, int count);
+
   List<byte[]> zpopmax(RedisKey key, int count);
 }

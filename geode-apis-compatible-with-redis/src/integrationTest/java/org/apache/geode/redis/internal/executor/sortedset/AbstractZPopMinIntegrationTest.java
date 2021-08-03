@@ -34,7 +34,7 @@ import redis.clients.jedis.Tuple;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 
-public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractZPopMinIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
 
   @Before
@@ -51,27 +51,27 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
   @Test
   public void shouldError_givenWrongNumberOfArguments() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("key", Protocol.Command.ZPOPMAX, "key", "1", "2"))
+        () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "1", "2"))
             .hasMessageContaining(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenWrongNumberFormat() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("key", Protocol.Command.ZPOPMAX, "key", "wat"))
+        () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "wat"))
             .hasMessageContaining(RedisConstants.ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldReturnEmpty_givenNonExistentSortedSet() {
-    assertThat(jedis.zpopmax("unknown", 1)).isEmpty();
+    assertThat(jedis.zpopmin("unknown", 1)).isEmpty();
   }
 
   @Test
   public void shouldReturnEmpty_givenNegativeCount() {
     jedis.zadd("key", 1, "player1");
 
-    List<?> result = (List<?>) jedis.sendCommand("key", Protocol.Command.ZPOPMAX, "key", "-1");
+    List<?> result = (List<?>) jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "-1");
     assertThat(result).isEmpty();
     assertThat(jedis.zrange("key", 0, 10)).containsExactly("player1");
   }
@@ -82,20 +82,20 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
     jedis.zadd("key", 1, "player2");
     jedis.zadd("key", 1, "player3");
 
-    assertThat(jedis.zpopmax("key").getElement()).isEqualTo("player3");
+    assertThat(jedis.zpopmin("key").getElement()).isEqualTo("player1");
     assertThat(jedis.zrange("key", 0, 10))
-        .containsExactlyInAnyOrder("player1", "player2");
+        .containsExactlyInAnyOrder("player2", "player3");
   }
 
   @Test
-  public void shouldReturn_highestScore() {
+  public void shouldReturn_lowestScore() {
     jedis.zadd("key", 3, "player1");
     jedis.zadd("key", 2, "player2");
     jedis.zadd("key", 1, "player3");
 
-    assertThat(jedis.zpopmax("key").getElement()).isEqualTo("player1");
+    assertThat(jedis.zpopmin("key").getElement()).isEqualTo("player3");
     assertThat(jedis.zrange("key", 0, 10))
-        .containsExactlyInAnyOrder("player2", "player3");
+        .containsExactlyInAnyOrder("player1", "player2");
   }
 
   @Test
@@ -106,10 +106,10 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
     List<Integer> shuffles = makeShuffledList(count);
     for (int i = 0; i < count; i++) {
       jedis.zadd("key", count - shuffles.get(i), "player" + shuffles.get(i));
-      tuples.add(new Tuple("player" + i, (double) (count - i)));
+      tuples.add(new Tuple("player" + (count - i - 1), (double) (i + 1)));
     }
 
-    assertThat(jedis.zpopmax("key", count)).containsExactlyElementsOf(tuples);
+    assertThat(jedis.zpopmin("key", count)).containsExactlyElementsOf(tuples);
   }
 
   @Test
@@ -120,26 +120,26 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
     List<Integer> shuffles = makeShuffledList(count);
     for (int i = 0; i < count; i++) {
       jedis.zadd("key", 1D, "player" + shuffles.get(i));
-      tuples.add(new Tuple("player" + (count - i - 1), 1D));
+      tuples.add(new Tuple("player" + i, 1D));
     }
 
-    assertThat(jedis.zpopmax("key", count)).containsExactlyElementsOf(tuples);
+    assertThat(jedis.zpopmin("key", count)).containsExactlyElementsOf(tuples);
   }
 
   @Test
-  public void shouldReturn_countHighestScores() {
+  public void shouldReturn_countLowestScores() {
     for (int i = 0; i < 5; i++) {
       jedis.zadd("key", i, "player" + i);
     }
 
-    assertThat(jedis.zpopmax("key", 3))
+    assertThat(jedis.zpopmin("key", 3))
         .containsExactly(
-            new Tuple("player4", 4D),
-            new Tuple("player3", 3D),
+            new Tuple("player0", 0D),
+            new Tuple("player1", 1D),
             new Tuple("player2", 2D));
 
     assertThat(jedis.zrange("key", 0, 10))
-        .containsExactly("player0", "player1");
+        .containsExactly("player3", "player4");
   }
 
   /**
