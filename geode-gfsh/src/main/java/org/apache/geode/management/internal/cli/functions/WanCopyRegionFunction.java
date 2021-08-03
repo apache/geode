@@ -25,13 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -209,47 +208,31 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       Region<?, ?> region, String regionName, GatewaySender sender, long maxRate, int batchSize)
       throws InterruptedException, ExecutionException, CancellationException {
     String executionName = getExecutionName(regionName, sender.getId());
-    Callable<CliFunctionResult> callable =
-        new WanCopyRegionCallable(this, context, region, sender, maxRate, batchSize);
-    FutureTask<CliFunctionResult> future = new FutureTask<>(callable);
 
-    if (executions.putIfAbsent(executionName, future) != null) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
-              regionName, sender.getId()));
-    }
-
+    CompletableFuture<CliFunctionResult> future;
     try {
-      executor.execute(future);
+      synchronized (executions) {
+        future = CompletableFuture.supplyAsync(() -> {
+          CliFunctionResult result;
+          try {
+            result = wanCopyRegion(context, region, sender, maxRate, batchSize);
+          } catch (InterruptedException e) {
+            return new CliFunctionResult(context.getMemberName(),
+                CliFunctionResult.StatusState.ERROR,
+                CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
+          }
+          return result;
+        }, executor);
+
+        if (executions.putIfAbsent(executionName, future) != null) {
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+              CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
+                  regionName, sender.getId()));
+        }
+      }
       return future.get();
     } finally {
       executions.remove(executionName);
-    }
-  }
-
-  static class WanCopyRegionCallable implements Callable<CliFunctionResult> {
-    private final FunctionContext<Object[]> context;
-    private final Region<?, ?> region;
-    private final GatewaySender sender;
-    private final long maxRate;
-    private final int batchSize;
-    private final WanCopyRegionFunction function;
-
-    public WanCopyRegionCallable(final WanCopyRegionFunction function,
-        final FunctionContext<Object[]> context, final Region<?, ?> region,
-        final GatewaySender sender, final long maxRate,
-        final int batchSize) {
-      this.function = function;
-      this.context = context;
-      this.region = region;
-      this.sender = sender;
-      this.maxRate = maxRate;
-      this.batchSize = batchSize;
-    }
-
-    @Override
-    public CliFunctionResult call() throws Exception {
-      return function.wanCopyRegion(context, region, sender, maxRate, batchSize);
     }
   }
 
