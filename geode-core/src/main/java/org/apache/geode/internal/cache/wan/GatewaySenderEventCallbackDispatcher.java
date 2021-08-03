@@ -190,8 +190,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
 
   @Override
   public void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
-      ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException)
-      throws BatchException70 {
+      ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException) {
     throw new UnsupportedOperationException();
   }
 }

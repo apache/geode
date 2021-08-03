@@ -37,7 +37,7 @@ The main uses of this command are:
 -   Adding a new WAN site to a <%=vars.product_name%> system in which the data in the new WAN site needs to be initially loaded from
     an existing WAN site.
 
-The execution of a currently running instance of this command my be stopped by using
+The execution of a currently running instance of this command may be stopped by using
 this same command with the `--cancel` option.
 
 **Requirements:**
@@ -76,7 +76,7 @@ table th:nth-of-type(3) {
 | &#8209;&#8209;sender-id| <em>Required</em>. The gateway sender to be used to copy the region entries. | |
 | &#8209;&#8209;max-rate| The maximum copy rate in entries per second. If the sender is parallel, the maximum rate limit is applied to each server hosting buckets for the region to be copied. | 0 (unlimited) |
 | &#8209;&#8209;batch-size| The size of the batches, in number of entries, to be used to copy the region entries. | 1000 |
-| &#8209;&#8209;cancel| Cancel a running `wan-copy region` command for the specified sender and region. |  |
+| &#8209;&#8209;cancel| Cancel a running `wan-copy region` command for the specified sender and region. If the `sender-id` and `region` passed are both "*", then all running `wan-copy region` commands will be canceled. |  |
 
 <span class="tablecap">Table 1. Copy Region Parameters</span>
 
@@ -89,6 +89,10 @@ wan-copy region --region=myRegion--sender-id=mySender --max-rate=1000 --batch-si
 
 ``` pre
 wan-copy region --region=/overload --sender-id=sender1 --cancel
+```
+
+``` pre
+wan-copy region --region=* --sender-id=* --cancel
 ```
 
 **Sample Output:**
@@ -173,5 +177,16 @@ gfsh> wan-copy region --region=/region1 --sender-id=sender1 --cancel
     server-sender2 | ERROR  | No running command to be canceled for region /region1 and sender sender1
     server-sender  | ERROR  | No running command to be canceled for region /region1 and sender sender1
     server-sender3 | ERROR  | No running command to be canceled for region /region1 and sender sender1
+```
+
+Example of cancel of all running `wan-copy region` commands:
+
+``` pre
+gfsh> wan-copy region --region=* --sender-id=* --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------------------------------------
+    server-sender2 | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
+    server-sender  | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
+    server-sender3 | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
 ```
 

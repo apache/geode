@@ -42,6 +42,7 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Condition;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -155,6 +156,18 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     testUnsuccessfulExecution_ExceptionAtReceiver(true, true);
   }
 
+  @Test
+  public void testUnsuccessfulExecutionWithPartitionedRegionAndSerialSender_ExceptionAtReceiver()
+      throws Exception {
+    testUnsuccessfulExecution_ExceptionAtReceiver(true, false);
+  }
+
+  @Test
+  public void testUnsuccessfulExecutionWithReplicatedRegionAndSerialSender_ExceptionAtReceiver()
+      throws Exception {
+    testUnsuccessfulExecution_ExceptionAtReceiver(false, false);
+  }
+
   public void testUnsuccessfulExecution_ExceptionAtReceiver(
       boolean isPartitionedRegion, boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
@@ -168,7 +181,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         vm1, vm2, serversInA, serverInB, serverInC, client,
         senderIdInA, senderIdInB);
 
-    String regionName = getRegionName(true);
+    String regionName = getRegionName(isPartitionedRegion);
     int wanCopyRegionBatchSize = 20;
 
     int entries = 20;
@@ -387,6 +400,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         "Exception when running wan-copy region command: ");
     IgnoredException.addIgnoredException(
         "Exception when running wan-copy region command: java.util.concurrent.ExecutionException: org.apache.geode.cache.EntryDestroyedException");
+    IgnoredException.addIgnoredException(
+        "Error closing the connection used to wan-copy region entries");
   }
 
   private void addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown() {
@@ -418,7 +433,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         senderIdInA);
 
     // Create client
-    client.invoke(() -> WANTestBase.createClientWithLocator(locatorAPort, "localhost",
+    client.invoke(() -> WANTestBase.createClientWithLocatorAndRegion(locatorAPort, "localhost",
         regionName, ClientRegionShortcut.PROXY));
 
     return locatorAPort;
@@ -515,6 +530,109 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       stopReceiverAndVerifyResult(useParallel, stopPrimarySender, entries, regionName, server1InB,
           server2InB, server3InB, wanCopyCommandFuture);
     }
+  }
+
+  @Test
+  public void testRegionDestroyedDuringExecution_WithPartitionedRegionAndParallelGatewaySender()
+      throws Exception {
+    testRegionDestroyedDuringExecution(true, true);
+  }
+
+  @Test
+  public void testRegionDestroyedDuringExecution_WithPartitionedRegionAndSerialGatewaySender()
+      throws Exception {
+    testRegionDestroyedDuringExecution(false, true);
+  }
+
+  @Test
+  public void testRegionDestroyedDuringExecution_WithReplicatedRegionAndSerialGatewaySender()
+      throws Exception {
+    testRegionDestroyedDuringExecution(false, false);
+  }
+
+  public void testRegionDestroyedDuringExecution(boolean isParallelGatewaySender,
+      boolean isPartitionedRegion)
+      throws Exception {
+    final int wanCopyRegionBatchSize = 10;
+    final int entries = 1000;
+
+    final String regionName = getRegionName(isPartitionedRegion);
+
+    // Site A
+    VM locatorInA = vm0;
+    VM server1InA = vm1;
+    List<VM> serversInA = ImmutableList.of(server1InA);
+    final String senderIdInA = "B";
+
+    // Site B
+    VM locatorInB = vm4;
+    VM server1InB = vm5;
+    List<VM> serversInB = ImmutableList.of(server1InB);
+    VM client = vm8;
+
+    int locatorAPort = create2WanSitesAndClient(locatorInA, serversInA, senderIdInA, locatorInB,
+        serversInB, client, isPartitionedRegion, regionName);
+
+    // Put entries
+    client.invoke(() -> WANTestBase.doClientPutsFrom(regionName, 0, entries));
+    for (VM member : serversInA) {
+      member.invoke(() -> WANTestBase.validateRegionSize(regionName, entries));
+    }
+
+    // Create senders and receivers with replication as follows: "A" -> "B"
+    createReceiverInVMs(server1InB);
+    createSenders(isParallelGatewaySender, serversInA, null, senderIdInA, null);
+
+    CountDownLatch wanCopyCommandStartLatch = new CountDownLatch(1);
+
+    FutureTask<CommandResultAssert> wanCopyCommandFuture =
+        new FutureTask<>(() -> {
+          String command = new CommandStringBuilder(WAN_COPY_REGION)
+              .addOption(WAN_COPY_REGION__REGION, regionName)
+              .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
+              .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
+              .addOption(WAN_COPY_REGION__MAXRATE, "5")
+              .getCommandString();
+          GfshCommandRule gfsh = new GfshCommandRule();
+          try {
+            gfsh.connectAndVerify(locatorAPort, GfshCommandRule.PortType.locator);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          wanCopyCommandStartLatch.countDown();
+          return gfsh.executeAndAssertThat(command);
+        });
+    LoggingExecutors.newSingleThreadExecutor(getTestMethodName(), true)
+        .submit(wanCopyCommandFuture);
+
+    // Wait for the wan-copy command to start
+    wanCopyCommandStartLatch.await();
+    Thread.sleep(1000);
+
+    server1InA.invoke(() -> cache.getRegion(regionName).destroyRegion());
+
+    CommandResultAssert result = wanCopyCommandFuture.get();
+    result.statusIsError();
+    result.hasTableSection().hasColumns().hasSize(3);
+    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+        .hasSize(1);
+    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .hasSize(1);
+    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+        .containsExactly("ERROR");
+    Condition<String> startsWithRegionDestroyedError;
+    if (isPartitionedRegion && !isParallelGatewaySender) {
+      startsWithRegionDestroyedError = new Condition<>(
+          s -> (s.startsWith(
+              "Execution failed. Error: org.apache.geode.cache.RegionDestroyedException: ")),
+          "execution error");
+    } else {
+      startsWithRegionDestroyedError = new Condition<>(
+          s -> (s.startsWith("Error (Region destroyed) in operation after having copied")),
+          "execution error");
+    }
+    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+        .asList().haveExactly(1, startsWithRegionDestroyedError);
   }
 
   public void testDetectOngoingExecution(boolean useParallel,
@@ -879,8 +997,6 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     serverInC.invoke(() -> WANTestBase.validateRegionSize(regionName, 0));
   }
 
-
-
   /**
    * Scenario with 2 WAN sites: "A" and "B".
    * Initially, no replication is configured between sites.
@@ -1108,12 +1224,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           .containsExactly(msg, msg, msg);
     } else {
       verifyStatusIsErrorInOneServer(wanCopyCommandResult);
-      String msg1 =
-          WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
-      String msg2 = CliStrings
+      String msg1 = CliStrings
           .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       wanCopyCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-          .containsExactlyInAnyOrder(msg1, msg2, msg2);
+          .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED, msg1,
+              msg1);
     }
   }
 
@@ -1190,7 +1305,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Create client
-    client.invoke(() -> WANTestBase.createClientWithLocator(senderLocatorPort, "localhost",
+    client.invoke(() -> WANTestBase.createClientWithLocatorAndRegion(senderLocatorPort, "localhost",
         regionName, ClientRegionShortcut.PROXY));
 
     return senderLocatorPort;

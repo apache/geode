@@ -605,6 +605,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(2);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--region");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--sender-id");
   }
 
   @Test

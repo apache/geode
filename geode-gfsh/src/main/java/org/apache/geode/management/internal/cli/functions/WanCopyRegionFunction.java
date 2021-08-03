@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Clock;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
@@ -111,9 +114,10 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   /**
    * Contains the ongoing executions of this function
    */
-  private static final Map<String, Future<?>> executions = new ConcurrentHashMap<>();
+  private static final Map<String, Future<CliFunctionResult>> executions =
+      new ConcurrentHashMap<>();
 
-  private volatile int batchId = 0;
+  private int batchId = 0;
 
   public WanCopyRegionFunction() {
     this(Clock.systemDefaultZone(), new ThreadSleeper());
@@ -153,39 +157,35 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     long maxRate = (Long) args[3];
     int batchSize = (Integer) args[4];
 
-    if (regionName.endsWith("*") && senderId.equals("*") && isCancel) {
+    if ((regionName.equals("*") || regionName.equals(SEPARATOR + "*")) && senderId.equals("*")
+        && isCancel) {
       return cancelAllWanCopyRegion(context);
     }
 
     if (isCancel) {
       return cancelWanCopyRegion(context, regionName, senderId);
     }
-
-    final InternalCache cache = (InternalCache) context.getCache();
+    final Cache cache = context.getCache();
 
     final Region<?, ?> region = cache.getRegion(regionName);
     if (region == null) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__FOUND, regionName));
     }
-
     GatewaySender sender = cache.getGatewaySender(senderId);
     if (sender == null) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderId));
     }
-
     if (!region.getAttributes().getGatewaySenderIds().contains(sender.getId())) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__USING_SENDER, regionName,
               senderId));
     }
-
     if (!sender.isRunning()) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING, senderId));
     }
-
     if (!sender.isParallel() && !((InternalGatewaySender) sender).isPrimary()) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
@@ -375,7 +375,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   final CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
-    Future<?> execution = executions.remove(getExecutionName(regionName, senderId));
+    Future<CliFunctionResult> execution = executions.remove(getExecutionName(regionName, senderId));
     if (execution == null) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
@@ -388,7 +388,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   final CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
     String executionsString = executions.keySet().toString();
-    for (Future<?> execution : executions.values()) {
+    for (Future<CliFunctionResult> execution : executions.values()) {
       execution.cancel(true);
     }
     executions.clear();

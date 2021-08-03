@@ -5179,7 +5179,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes, boolean isObject,
-      Object callbackArg, ClientProxyMembershipID memberId, boolean fromClient,
+      Object callbackArg, ClientProxyMembershipID memberId,
       EntryEventImpl clientEvent, boolean generateCallbacks)
       throws TimeoutException, CacheWriterException {
 

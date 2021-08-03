@@ -309,7 +309,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                     // attempt to update the entry
                     if (!result) {
                       result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                          serverConnection.getProxyID(), false, clientEvent, true);
+                          serverConnection.getProxyID(), clientEvent, true);
                     }
                   }
 
@@ -407,12 +407,10 @@ public class GatewayReceiverCommand extends BaseCommand {
                   if (isPdxEvent) {
                     result = addPdxType(crHelper, key, value);
                   } else {
-                    boolean generateCallbacks = true;
-                    if (actionType == GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
-                      generateCallbacks = false;
-                    }
+                    boolean generateCallbacks =
+                        actionType != GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS;
                     result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                        serverConnection.getProxyID(), false, clientEvent, generateCallbacks);
+                        serverConnection.getProxyID(), clientEvent, generateCallbacks);
                   }
                   if (result || clientEvent.isConcurrencyConflict()) {
                     serverConnection.setModificationInfo(true, regionName, key);
