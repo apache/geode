@@ -40,11 +40,12 @@ dependencies {
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')
     testImplementation(project(':geode-junit'))
+    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
-    
+
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')

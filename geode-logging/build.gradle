@@ -35,6 +35,7 @@ dependencies {
 
     testImplementation('org.mockito:mockito-core')
     testImplementation('junit:junit')
+    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     testImplementation('org.assertj:assertj-core')
 
 

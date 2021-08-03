@@ -341,6 +341,7 @@ dependencies {
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
+    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     testRuntimeOnly('commons-collections:commons-collections')
     testRuntimeOnly('commons-configuration:commons-configuration')
     testRuntimeOnly('commons-io:commons-io')

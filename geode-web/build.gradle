@@ -55,6 +55,7 @@ dependencies {
   runtimeOnly('commons-fileupload:commons-fileupload')
 
   testImplementation(project(':geode-junit'))
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.springframework:spring-test')
 
   integrationTestImplementation(project(':geode-dunit'));

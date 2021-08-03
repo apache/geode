@@ -35,6 +35,7 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.awaitility:awaitility')
 
 

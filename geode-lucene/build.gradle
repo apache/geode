@@ -45,6 +45,7 @@ dependencies {
 
 
   testImplementation(project(':geode-junit'))
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation(project(':geode-lucene:geode-lucene-test'))
   testImplementation('org.apache.lucene:lucene-test-framework')
   testImplementation('com.pholser:junit-quickcheck-generators')

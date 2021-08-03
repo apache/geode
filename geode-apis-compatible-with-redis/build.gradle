@@ -45,6 +45,7 @@ dependencies {
   implementation('it.unimi.dsi:fastutil')
 
   testImplementation(project(':geode-junit'))
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.mockito:mockito-core')
   testImplementation('redis.clients:jedis')
   testImplementation('com.pholser:junit-quickcheck-core')

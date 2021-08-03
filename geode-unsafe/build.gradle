@@ -27,6 +27,7 @@ dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
 
   testImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')

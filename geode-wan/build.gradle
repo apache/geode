@@ -37,6 +37,7 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit'))

@@ -101,6 +101,7 @@ dependencies {
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }

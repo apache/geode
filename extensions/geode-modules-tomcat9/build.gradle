@@ -37,6 +37,7 @@ dependencies {
   // test
   testImplementation(project(':extensions:geode-modules-test'))
   testImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat9.version'))

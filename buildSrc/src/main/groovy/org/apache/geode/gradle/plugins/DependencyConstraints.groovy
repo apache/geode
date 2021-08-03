@@ -65,6 +65,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
+    deps.put("junit-jupiter.version", "5.7.2")
     deps.put("cglib.version", "3.3.0")
     return deps
   }
@@ -219,6 +220,10 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.hamcrest', version: '2.2') {
       entry('hamcrest')
+    }
+
+    dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
+      entry('junit-vintage-engine')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

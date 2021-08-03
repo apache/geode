@@ -121,6 +121,7 @@ dependencies {
   }
   testImplementation(project(':geode-core'))
   testImplementation('javax.servlet:javax.servlet-api')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
   integrationTestImplementation(sourceSets.commonTest.output)
 

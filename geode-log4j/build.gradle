@@ -49,6 +49,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   jmhImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   jmhImplementation('org.assertj:assertj-core')
   jmhImplementation('org.mockito:mockito-core')
 
