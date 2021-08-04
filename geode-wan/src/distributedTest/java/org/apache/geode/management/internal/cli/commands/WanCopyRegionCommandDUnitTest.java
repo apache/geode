@@ -716,20 +716,18 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
+    Condition<String> exceptionError = new Condition<>(
+        s -> s.equals(CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
+            Region.SEPARATOR + regionName, senderIdInA)),
+        "already running");
     if (useParallel) {
       CommandResultAssert command =
           verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
-      Condition<String> exceptionError =
-          new Condition<>(s -> s.startsWith("There is already a command running for"),
-              "Already running command");
       command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
           .asList().haveExactly(3, exceptionError);
     } else {
       CommandResultAssert command =
           verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
-      Condition<String> exceptionError =
-          new Condition<>(s -> s.startsWith("There is already a command running for"),
-              "Already running command");
       Condition<String> senderNotPrimary = new Condition<>(
           s -> s.equals(CliStrings
               .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
