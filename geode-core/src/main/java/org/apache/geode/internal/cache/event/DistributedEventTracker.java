@@ -240,6 +240,13 @@ public class DistributedEventTracker implements EventTracker {
               oldEvh.setLastSequenceNumber(evh.getLastSequenceNumber());
               oldEvh.setVersionTag(evh.getVersionTag());
             }
+            if (evh.getKeySequenceIdSize() > 0) {
+              for (Map.Entry<Object, Long> entry : evh.getKeySequenceId().entrySet()) {
+                if (!oldEvh.getKeySequenceId().containsKey(entry.getKey())) {
+                  oldEvh.getKeySequenceId().put(entry.getKey(), entry.getValue());
+                }
+              }
+            }
           }
         }
       } else {
@@ -265,7 +272,13 @@ public class DistributedEventTracker implements EventTracker {
       canonicalizeIDs(tag, v);
     }
 
-    EventSequenceNumberHolder newEvh = new EventSequenceNumberHolder(eventID.getSequenceID(), tag);
+    Object key = null;
+    if (event instanceof EntryEventImpl) {
+      key = ((EntryEventImpl) event).getKey();
+    }
+
+    EventSequenceNumberHolder newEvh =
+        new EventSequenceNumberHolder(eventID.getSequenceID(), tag, key);
     if (logger.isTraceEnabled()) {
       logger.trace("region event tracker recording {}", event);
     }
@@ -370,6 +383,17 @@ public class DistributedEventTracker implements EventTracker {
       if (evh.isRemoved() || evh.getLastSequenceNumber() < eventID.getSequenceID()) {
         return false;
       }
+
+      if (tagHolder instanceof EntryEventImpl && evh.getKeySequenceIdSize() > 0) {
+        if (!evh.getKeySequenceId().containsKey(((EntryEventImpl) tagHolder).getKey())) {
+          return false;
+        }
+        if (evh.getKeySequenceId().get(((EntryEventImpl) tagHolder).getKey()) < eventID
+            .getSequenceID()) {
+          return false;
+        }
+      }
+
       Pair<Boolean, String> shouldLogPreviouslySeenEvent =
           shouldLogPreviouslySeenEvent(tagHolder, evh);
       if (shouldLogPreviouslySeenEvent.getLeft()) {
