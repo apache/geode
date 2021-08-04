@@ -40,15 +40,12 @@ dependencies {
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
     testImplementation('org.springframework:spring-test')
     testImplementation(project(':geode-junit'))
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
     integrationTestImplementation(project(':geode-dunit'))
-    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
 
     distributedTestImplementation(project(':geode-dunit'))
-    distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
@@ -56,7 +53,6 @@ dependencies {
     testCompileOnly('io.swagger:swagger-annotations')
 
     upgradeTestImplementation(project(':geode-junit'))
-    upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     upgradeTestImplementation(project(':geode-dunit'))
 
     upgradeTestImplementation('org.awaitility:awaitility')

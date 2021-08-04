@@ -45,7 +45,6 @@ dependencies {
 
 
   testImplementation(project(':geode-junit'))
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation(project(':geode-lucene:geode-lucene-test'))
   testImplementation('org.apache.lucene:lucene-test-framework')
   testImplementation('com.pholser:junit-quickcheck-generators')
@@ -55,7 +54,6 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-junit'))
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
@@ -63,14 +61,12 @@ dependencies {
 
 
   integrationTestImplementation(project(':geode-dunit'))
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
   integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
 
   upgradeTestImplementation(project(':geode-dunit'))
-  upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   upgradeTestImplementation('commons-io:commons-io')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 

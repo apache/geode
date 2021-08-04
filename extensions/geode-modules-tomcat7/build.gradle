@@ -37,7 +37,6 @@ dependencies {
   // test
   testImplementation(project(':extensions:geode-modules-test'))
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version'))
@@ -47,7 +46,6 @@ dependencies {
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.httpunit:httpunit')
   integrationTestImplementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat7.version'))
   integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version'))

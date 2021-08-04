@@ -45,7 +45,6 @@ dependencies {
   implementation('it.unimi.dsi:fastutil')
 
   testImplementation(project(':geode-junit'))
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.mockito:mockito-core')
   testImplementation('redis.clients:jedis')
   testImplementation('com.pholser:junit-quickcheck-core')
@@ -60,7 +59,6 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation(sourceSets.commonTest.output)
   integrationTestImplementation('redis.clients:jedis')
   integrationTestImplementation('io.lettuce:lettuce-core')
@@ -75,7 +73,6 @@ dependencies {
   acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
-  acceptanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))

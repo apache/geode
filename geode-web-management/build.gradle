@@ -121,7 +121,6 @@ dependencies {
   }
   testImplementation(project(':geode-core'))
   testImplementation('javax.servlet:javax.servlet-api')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
   integrationTestImplementation(sourceSets.commonTest.output)
 
@@ -133,7 +132,6 @@ dependencies {
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
@@ -151,7 +149,6 @@ dependencies {
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }

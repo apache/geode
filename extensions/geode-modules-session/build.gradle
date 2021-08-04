@@ -48,7 +48,6 @@ dependencies {
   integrationTestImplementation('commons-io:commons-io')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
   integrationTestImplementation('junit:junit')
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.apache.tomcat:jasper:' + DependencyConstraints.get('tomcat6.version'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('org.eclipse.jetty:jetty-http:' + DependencyConstraints.get('jetty.version') + ':tests')

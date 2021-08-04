@@ -38,6 +38,5 @@ dependencies {
   compileOnly('org.apache.logging.log4j:log4j-api')
   compileOnly('org.assertj:assertj-core')
   compileOnly('org.codehaus.cargo:cargo-core-uberjar')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 }
 

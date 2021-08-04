@@ -31,7 +31,6 @@ dependencies {
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     testImplementation('org.assertj:assertj-core')
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
@@ -42,7 +41,6 @@ dependencies {
 
     upgradeTestImplementation(project(':geode-gfsh'))
     upgradeTestImplementation(project(':geode-dunit'))
-    upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     upgradeTestImplementation(project(':geode-membership'))
 
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))

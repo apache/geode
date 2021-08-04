@@ -43,7 +43,6 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation('junit:junit')
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.awaitility:awaitility')
   integrationTestImplementation('org.hamcrest:hamcrest')
 }

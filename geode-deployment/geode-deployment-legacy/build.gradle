@@ -32,7 +32,6 @@ dependencies {
     compileOnly('com.fasterxml.jackson.core:jackson-databind')
 
     testImplementation(project(':geode-junit'))
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
     integrationTestImplementation(project(':geode-junit'))
     integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')

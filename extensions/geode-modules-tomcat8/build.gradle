@@ -46,14 +46,12 @@ dependencies {
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 
 
   // distributedTest
   distributedTestImplementation(project(':extensions:geode-modules-test'))
   distributedTestImplementation(project(':geode-dunit'))
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation('org.httpunit:httpunit')
   distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))

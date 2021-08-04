@@ -30,13 +30,11 @@ dependencies {
 
 
   testImplementation(project(':geode-junit'))
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.awaitility:awaitility')
 
 
@@ -56,7 +54,6 @@ dependencies {
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation('junit:junit')
-  upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.mockito:mockito-core')
 

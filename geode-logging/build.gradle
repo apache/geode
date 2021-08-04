@@ -31,7 +31,6 @@ dependencies {
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     testImplementation(project(':geode-concurrency-test'))
 
     testImplementation('org.mockito:mockito-core')

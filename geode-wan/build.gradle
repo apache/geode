@@ -37,13 +37,11 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('junit:junit')
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
 
   distributedTestImplementation(project(':geode-gfsh'))
@@ -53,7 +51,6 @@ dependencies {
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('junit:junit')
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('org.hamcrest:hamcrest')
@@ -65,7 +62,6 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))
-  upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   upgradeTestImplementation(project(':geode-dunit'))
 
   upgradeTestImplementation('org.awaitility:awaitility')

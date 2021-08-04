@@ -41,7 +41,6 @@ dependencies {
   testImplementation('org.apache.bcel:bcel')
   testImplementation('org.mockito:mockito-core')
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
 
 

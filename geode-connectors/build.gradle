@@ -93,7 +93,6 @@ dependencies {
   implementation('com.healthmarketscience.rmiio:rmiio')
 
   testImplementation('pl.pragmatists:JUnitParams')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
   integrationTestImplementation('junit:junit')
   integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
@@ -101,7 +100,6 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestImplementation('junit:junit')
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
