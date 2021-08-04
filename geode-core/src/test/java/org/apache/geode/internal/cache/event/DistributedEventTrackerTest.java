@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +45,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
+import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -55,6 +57,7 @@ public class DistributedEventTrackerTest {
   private DistributedEventTracker eventTracker;
   private ClientProxyMembershipID memberId;
   private DistributedMember member;
+  private KeyInfo keyInfo;
 
   @Before
   public void setup() {
@@ -72,6 +75,9 @@ public class DistributedEventTrackerTest {
     when(region.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(ids);
     when(ids.getOffHeapStore()).thenReturn(null);
+
+    keyInfo = new KeyInfo("key", "value", null);
+    when(region.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
 
     member = mock(DistributedMember.class);
     eventTracker = new DistributedEventTracker(region);
