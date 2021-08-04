@@ -341,7 +341,6 @@ dependencies {
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
-    testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     testRuntimeOnly('commons-collections:commons-collections')
     testRuntimeOnly('commons-configuration:commons-configuration')
     testRuntimeOnly('commons-io:commons-io')
@@ -352,7 +351,6 @@ dependencies {
     integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
     integrationTestImplementation(project(':geode-gfsh'))
     integrationTestImplementation(project(':geode-junit'))
-    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
@@ -370,7 +368,6 @@ dependencies {
     distributedTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }
-    distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     distributedTestImplementation(project(':geode-dunit')) {
         exclude module: 'geode-core'
     }
@@ -390,13 +387,11 @@ dependencies {
 
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     upgradeTestRuntimeOnly(project(':geode-log4j'))
-    upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
 
     performanceTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }
-    performanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     performanceTestImplementation(project(':geode-log4j'))
 
     jmhImplementation('org.jctools:jctools-core:3.3.0')

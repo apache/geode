@@ -223,7 +223,9 @@ class DependencyConstraints implements Plugin<Project> {
     }
 
     dependencySet(group: 'org.junit.jupiter', version: get('junit-jupiter.version')) {
-      entry('junit-jupiter')
+      entry('junit-jupiter-api')
+      entry('junit-jupiter-params')
+      entry('junit-jupiter-engine')
     }
 
     dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
