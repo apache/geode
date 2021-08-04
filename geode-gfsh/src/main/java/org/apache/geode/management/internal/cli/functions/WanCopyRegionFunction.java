@@ -208,31 +208,30 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       Region<?, ?> region, String regionName, GatewaySender sender, long maxRate, int batchSize)
       throws InterruptedException, ExecutionException, CancellationException {
     String executionName = getExecutionName(regionName, sender.getId());
-
-    CompletableFuture<CliFunctionResult> future;
+    CompletableFuture<CliFunctionResult> future = null;
     try {
       synchronized (executions) {
+        if (executions.containsKey(executionName)) {
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+              CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
+                  regionName, sender.getId()));
+        }
         future = CompletableFuture.supplyAsync(() -> {
-          CliFunctionResult result;
           try {
-            result = wanCopyRegion(context, region, sender, maxRate, batchSize);
+            return wanCopyRegion(context, region, sender, maxRate, batchSize);
           } catch (InterruptedException e) {
             return new CliFunctionResult(context.getMemberName(),
                 CliFunctionResult.StatusState.ERROR,
                 CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
           }
-          return result;
         }, executor);
-
-        if (executions.putIfAbsent(executionName, future) != null) {
-          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-              CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
-                  regionName, sender.getId()));
-        }
+        executions.put(executionName, future);
       }
       return future.get();
     } finally {
-      executions.remove(executionName);
+      if (future != null) {
+        executions.remove(executionName);
+      }
     }
   }
 
