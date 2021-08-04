@@ -34,5 +34,4 @@ dependencies {
     testImplementation(project(':geode-junit'))
 
     integrationTestImplementation(project(':geode-junit'))
-    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 }

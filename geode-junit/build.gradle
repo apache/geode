@@ -66,8 +66,6 @@ dependencies {
   implementation('org.junit.vintage:junit-vintage-engine')
 
   testImplementation('pl.pragmatists:JUnitParams')
-
-//  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 }
 
 test {

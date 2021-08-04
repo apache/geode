@@ -72,7 +72,6 @@ dependencies {
 
 
   performanceTestImplementation(project(':geode-junit'))
-  performanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))
 }
 

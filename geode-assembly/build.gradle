@@ -257,7 +257,6 @@ dependencies {
   acceptanceTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  acceptanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,

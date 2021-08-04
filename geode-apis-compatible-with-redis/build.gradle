@@ -91,7 +91,6 @@ dependencies {
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
-  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
   distributedTestImplementation('io.lettuce:lettuce-core')

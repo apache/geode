@@ -95,7 +95,6 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation('junit:junit')
-  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
@@ -109,7 +108,6 @@ dependencies {
     exclude module: 'junit-dep'
   }
   acceptanceTestImplementation('junit:junit')
-  acceptanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   acceptanceTestImplementation('org.assertj:assertj-core')
   acceptanceTestImplementation('org.awaitility:awaitility')
   acceptanceTestImplementation('org.mockito:mockito-core')

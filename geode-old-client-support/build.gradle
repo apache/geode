@@ -26,8 +26,6 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
 
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
-
   distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
