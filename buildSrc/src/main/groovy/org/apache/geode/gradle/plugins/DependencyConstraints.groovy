@@ -222,6 +222,10 @@ class DependencyConstraints implements Plugin<Project> {
       entry('hamcrest')
     }
 
+    dependencySet(group: 'org.junit.jupiter', version: get('junit-jupiter.version')) {
+      entry('junit-jupiter')
+    }
+
     dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
       entry('junit-vintage-engine')
     }

@@ -38,7 +38,7 @@ dependencies {
   api('junit:junit') {
     exclude module: 'hamcrest'
   }
-
+  api('org.junit.jupiter:junit-jupiter')
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
