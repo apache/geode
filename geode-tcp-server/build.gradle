@@ -42,6 +42,7 @@ dependencies {
 
     upgradeTestImplementation(project(':geode-gfsh'))
     upgradeTestImplementation(project(':geode-dunit'))
+    upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     upgradeTestImplementation(project(':geode-membership'))
 
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))

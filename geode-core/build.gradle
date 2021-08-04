@@ -390,6 +390,7 @@ dependencies {
 
     upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     upgradeTestRuntimeOnly(project(':geode-log4j'))
+    upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
 
     performanceTestImplementation(project(':geode-junit')) {

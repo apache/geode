@@ -67,7 +67,13 @@ dependencies {
   }
 
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+
+  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 }
 
 distributedTest {

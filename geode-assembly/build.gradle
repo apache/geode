@@ -197,6 +197,7 @@ dependencies {
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
@@ -233,6 +234,7 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
+  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(project(':extensions:session-testing-war'))
   distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
   distributedTestImplementation('org.apache.httpcomponents:httpclient')
@@ -258,6 +260,7 @@ dependencies {
   acceptanceTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  acceptanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
@@ -270,6 +273,7 @@ dependencies {
   uiTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  uiTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   uiTestImplementation(project(':geode-pulse'))
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
   uiTestImplementation(project(':geode-assembly:geode-assembly-test'))
@@ -287,6 +291,7 @@ dependencies {
   upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  upgradeTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   upgradeTestImplementation('org.apache.httpcomponents:httpclient')

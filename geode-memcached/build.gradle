@@ -35,6 +35,7 @@ dependencies {
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation('net.spy:spymemcached')
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
   distributedTestImplementation(project(':geode-dunit'))
 }

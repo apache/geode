@@ -55,6 +55,7 @@ dependencies {
 
 
     integrationTestImplementation(project(':geode-junit'))
+    integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
     integrationTestImplementation('pl.pragmatists:JUnitParams')
 

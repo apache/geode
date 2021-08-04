@@ -60,6 +60,7 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   integrationTestImplementation(sourceSets.commonTest.output)
   integrationTestImplementation('redis.clients:jedis')
   integrationTestImplementation('io.lettuce:lettuce-core')
@@ -74,6 +75,7 @@ dependencies {
   acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
+  acceptanceTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))
@@ -92,6 +94,7 @@ dependencies {
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')
   distributedTestImplementation('io.lettuce:lettuce-core')

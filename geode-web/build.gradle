@@ -59,11 +59,13 @@ dependencies {
   testImplementation('org.springframework:spring-test')
 
   integrationTestImplementation(project(':geode-dunit'));
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
   integrationTestRuntimeOnly(files(war.destinationDirectory))
 
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestRuntimeOnly(files(war.destinationDirectory))
