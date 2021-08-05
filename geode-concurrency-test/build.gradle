@@ -25,6 +25,7 @@ dependencies {
   implementation('junit:junit')
   implementation('org.apache.logging.log4j:log4j-api')
   integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 }
 
 integrationTest {
