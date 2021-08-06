@@ -23,6 +23,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -101,7 +102,7 @@ public class GeodeRedisServerStartupDUnitTest {
           .withProperty(REDIS_PORT, "" + port)
           .withProperty(REDIS_BIND_ADDRESS, "localhost")
           .withProperty(REDIS_ENABLED, "true")))
-              .hasRootCauseMessage("Address already in use");
+              .hasRootCauseInstanceOf(BindException.class);
     }
   }
 
