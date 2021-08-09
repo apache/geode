@@ -31,9 +31,6 @@ public interface RedisSortedSetCommands {
 
   List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
 
-  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores);
-
   List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 
   List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
@@ -44,6 +41,9 @@ public interface RedisSortedSetCommands {
   long zrem(RedisKey key, List<byte[]> membersToRemove);
 
   List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScore);
+
+  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
+      boolean withScores);
 
   long zrevrank(RedisKey key, byte[] member);
 

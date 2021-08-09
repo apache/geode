@@ -32,58 +32,58 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
   }
 
   @Override
-  void parseStartRange(byte[] minBytes) {
-    if (minBytes.length == 1) {
-      if (minBytes[0] == bPLUS) {
+  void parseStartRange(byte[] startBytes) {
+    if (startBytes.length == 1) {
+      if (startBytes[0] == bPLUS) {
         isStartExclusive = false;
         startRange = bGREATEST_MEMBER_NAME;
-      } else if (minBytes[0] == bMINUS) {
+      } else if (startBytes[0] == bMINUS) {
         isStartExclusive = false;
         startRange = bLEAST_MEMBER_NAME;
-      } else if (minBytes[0] == bLEFT_PAREN) {
+      } else if (startBytes[0] == bLEFT_PAREN) {
         isStartExclusive = true;
         startRange = new byte[0];
-      } else if (minBytes[0] == bLEFT_SQUARE_BRACKET) {
+      } else if (startBytes[0] == bLEFT_SQUARE_BRACKET) {
         isStartExclusive = false;
         startRange = new byte[0];
       } else {
         throw new IllegalArgumentException();
       }
-    } else if (minBytes[0] == bLEFT_PAREN) {
+    } else if (startBytes[0] == bLEFT_PAREN) {
       isStartExclusive = true;
-      startRange = Arrays.copyOfRange(minBytes, 1, minBytes.length);
-    } else if (minBytes[0] == bLEFT_SQUARE_BRACKET) {
+      startRange = Arrays.copyOfRange(startBytes, 1, startBytes.length);
+    } else if (startBytes[0] == bLEFT_SQUARE_BRACKET) {
       isStartExclusive = false;
-      startRange = Arrays.copyOfRange(minBytes, 1, minBytes.length);
+      startRange = Arrays.copyOfRange(startBytes, 1, startBytes.length);
     } else {
       throw new IllegalArgumentException();
     }
   }
 
   @Override
-  void parseEndRange(byte[] maxBytes) {
-    if (maxBytes.length == 1) {
-      if (maxBytes[0] == bPLUS) {
+  void parseEndRange(byte[] endBytes) {
+    if (endBytes.length == 1) {
+      if (endBytes[0] == bPLUS) {
         isEndExclusive = false;
         endRange = bGREATEST_MEMBER_NAME;
-      } else if (maxBytes[0] == bMINUS) {
+      } else if (endBytes[0] == bMINUS) {
         isEndExclusive = false;
         endRange = bLEAST_MEMBER_NAME;
-      } else if (maxBytes[0] == bLEFT_PAREN) {
+      } else if (endBytes[0] == bLEFT_PAREN) {
         isEndExclusive = true;
         endRange = new byte[0];
-      } else if (maxBytes[0] == bLEFT_SQUARE_BRACKET) {
+      } else if (endBytes[0] == bLEFT_SQUARE_BRACKET) {
         isEndExclusive = false;
         endRange = new byte[0];
       } else {
         throw new IllegalArgumentException();
       }
-    } else if (maxBytes[0] == bLEFT_PAREN) {
+    } else if (endBytes[0] == bLEFT_PAREN) {
       isEndExclusive = true;
-      endRange = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
-    } else if (maxBytes[0] == bLEFT_SQUARE_BRACKET) {
+      endRange = Arrays.copyOfRange(endBytes, 1, endBytes.length);
+    } else if (endBytes[0] == bLEFT_SQUARE_BRACKET) {
       isEndExclusive = false;
-      endRange = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
+      endRange = Arrays.copyOfRange(endBytes, 1, endBytes.length);
     } else {
       throw new IllegalArgumentException();
     }

@@ -21,8 +21,8 @@ import java.util.Arrays;
 
 public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Double> {
 
-  public SortedSetScoreRangeOptions(byte[] minBytes, byte[] maxBytes) {
-    super(minBytes, maxBytes);
+  public SortedSetScoreRangeOptions(byte[] startBytes, byte[] endBytes) {
+    super(startBytes, endBytes);
   }
 
   @Override
