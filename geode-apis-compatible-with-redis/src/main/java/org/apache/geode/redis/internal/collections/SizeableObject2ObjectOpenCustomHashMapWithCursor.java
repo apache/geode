@@ -15,15 +15,13 @@
 package org.apache.geode.redis.internal.collections;
 
 import static it.unimi.dsi.fastutil.HashCommon.mix;
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
-import static org.apache.geode.internal.JvmSizeUtils.sizeObjectArray;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -38,8 +36,8 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT =
-      sizeClass(SizeableObject2ObjectOpenCustomHashMapWithCursor.class);
+  public static final int OPEN_HASH_MAP_OVERHEAD =
+      memoryOverhead(SizeableObject2ObjectOpenCustomHashMapWithCursor.class);
 
   private int arrayContentsOverhead;
 
@@ -224,6 +222,7 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     // - keys an instance of it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap.KeySet
     // - values an instance of an anonymous subclass of
     // it.unimi.dsi.fastutil.objects.AbstractObjectCollection
+    //
     // These fields get lazily initialized when their corresponding method is called.
     // Once they are initialized they stay that way forever. The object they reference is immutable.
     // Its only field is the implicit objref to their outer class instance.
@@ -234,29 +233,13 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     // to initialize when constructed so one thing we could do is override the methods that cache it
     // to either null out the cached field after calling the super method, or have a brand new impl
     // that just creates and returns an instance without caching. The cache fields themselves would
-    // be
-    // a waste of memory in that case but only 24 bytes (12 with compressed oops).
+    // be a waste of memory in that case but only 24 bytes (12 with compressed oops).
     // Another possibility would be for our code that uses the map to only call entrySet(), that way
-    // one
-    // instance would be cached instead of 3. You can always get keys and values from the entrySet.
+    // one instance would be cached instead of 3. You can always get keys and values from the
+    // entrySet.
 
-    return arrayContentsOverhead + calculateBackingArraysOverhead();
-  }
-
-  @VisibleForTesting
-  public int calculateBackingArraysOverhead() {
-    return BACKING_ARRAY_OVERHEAD_CONSTANT
-        + sizeObjectArray(key) + sizeObjectArray(value);
-  }
-
-  @VisibleForTesting
-  int getArrayContentsOverhead() {
-    return arrayContentsOverhead;
-  }
-
-  @VisibleForTesting
-  int getTotalBackingArrayLength() {
-    return key.length + value.length;
+    return OPEN_HASH_MAP_OVERHEAD + memoryOverhead(key) + memoryOverhead(value)
+        + arrayContentsOverhead;
   }
 
   public interface EntryConsumer<K, V, D> {

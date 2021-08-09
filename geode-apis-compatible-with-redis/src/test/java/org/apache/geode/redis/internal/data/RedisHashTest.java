@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisHash.REDIS_HASH_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -225,7 +225,7 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(Collections.emptyList());
     RedisHash.Hash backingHash = new RedisHash.Hash(0);
 
-    assertThat(sizer.sizeof(hash) - sizer.sizeof(backingHash)).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
+    assertThat(sizer.sizeof(hash) - sizer.sizeof(backingHash)).isEqualTo(REDIS_HASH_OVERHEAD);
   }
 
   /******* constructor *******/

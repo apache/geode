@@ -15,8 +15,7 @@
 package org.apache.geode.redis.internal.collections;
 
 
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
-import static org.apache.geode.internal.JvmSizeUtils.sizeObjectArray;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -24,14 +23,13 @@ import java.util.Iterator;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
 
 public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCustomHashSet<K>
     implements Sizeable {
   private static final long serialVersionUID = 9174920505089089517L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT =
-      sizeClass(SizeableObjectOpenCustomHashSet.class);
+  private static final int OPEN_HASH_SET_OVERHEAD =
+      memoryOverhead(SizeableObjectOpenCustomHashSet.class);
 
   private int memberOverhead;
 
@@ -114,22 +112,9 @@ public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCusto
 
   @Override
   public int getSizeInBytes() {
-    return memberOverhead + calculateBackingArrayOverhead();
-  }
-
-  @VisibleForTesting
-  int getMemberOverhead() {
-    return memberOverhead;
-  }
-
-  @VisibleForTesting
-  int getBackingArrayLength() {
-    return key.length;
-  }
-
-  @VisibleForTesting
-  public int calculateBackingArrayOverhead() {
-    return BACKING_ARRAY_OVERHEAD_CONSTANT + sizeObjectArray(key);
+    // The object referenced by the "strategy" field is not sized
+    // since it is usually a singleton instance.
+    return OPEN_HASH_SET_OVERHEAD + memoryOverhead(key) + memberOverhead;
   }
 
   protected abstract int sizeElement(K element);

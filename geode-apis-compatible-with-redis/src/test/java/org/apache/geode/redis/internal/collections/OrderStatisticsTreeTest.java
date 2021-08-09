@@ -25,7 +25,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.ORDER_STATISTICS_TREE_BASE_SIZE;
 import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.PER_ENTRY_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -765,7 +764,7 @@ public class OrderStatisticsTreeTest {
   @Test
   public void orderStatisticsTreeBaseSize_shouldMatchReflectedSize() {
     RedisSortedSet.ScoreSet tree = new RedisSortedSet.ScoreSet();
-    assertThat(ORDER_STATISTICS_TREE_BASE_SIZE).isEqualTo(sizer.sizeof(tree));
+    assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
   }
 
   @Test

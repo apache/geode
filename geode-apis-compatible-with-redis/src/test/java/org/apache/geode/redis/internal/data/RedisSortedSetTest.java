@@ -16,8 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisSortedSet.BASE_REDIS_SORTED_SET_OVERHEAD;
-import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.BASE_ORDERED_SET_ENTRY_SIZE;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.ORDERED_SET_ENTRY_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.REDIS_SORTED_SET_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
@@ -551,7 +551,7 @@ public class RedisSortedSetTest {
     int baseRedisSetOverhead =
         sizer.sizeof(set) - sizer.sizeof(backingMap) - sizer.sizeof(backingTree);
 
-    assertThat(BASE_REDIS_SORTED_SET_OVERHEAD).isEqualTo(baseRedisSetOverhead);
+    assertThat(REDIS_SORTED_SET_OVERHEAD).isEqualTo(baseRedisSetOverhead);
   }
 
   @Test
@@ -562,7 +562,7 @@ public class RedisSortedSetTest {
         new RedisSortedSet.OrderedSetEntry(memberBytes, scoreBytes);
     int expectedSize = sizer.sizeof(entry) - sizer.sizeof(scoreBytes) - sizer.sizeof(memberBytes);
 
-    assertThat(BASE_ORDERED_SET_ENTRY_SIZE).isEqualTo(expectedSize);
+    assertThat(ORDERED_SET_ENTRY_OVERHEAD).isEqualTo(expectedSize);
   }
 
   /****************** Size ******************/

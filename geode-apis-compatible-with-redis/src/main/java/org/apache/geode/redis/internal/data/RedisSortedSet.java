@@ -17,8 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
-import static org.apache.geode.internal.JvmSizeUtils.sizeByteArray;
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
@@ -41,7 +40,6 @@ import java.util.Objects;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -58,14 +56,14 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOpt
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
 public class RedisSortedSet extends AbstractRedisData {
+  protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
+
   private MemberMap members;
   private final ScoreSet scoreSet = new ScoreSet();
 
-  protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = sizeClass(RedisSortedSet.class);
-
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
+    return REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
   }
 
   RedisSortedSet(List<byte[]> members) {
@@ -576,10 +574,6 @@ public class RedisSortedSet extends AbstractRedisData {
     // with same name...
   }
 
-  private static int calculateByteArraySize(byte[] bytes) {
-    return sizeByteArray(bytes);
-  }
-
   public abstract static class AbstractOrderedSetEntry
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
@@ -618,8 +612,7 @@ public class RedisSortedSet extends AbstractRedisData {
   // Entry used to store data in the scoreSet
   public static class OrderedSetEntry extends AbstractOrderedSetEntry {
 
-    public static final int BASE_ORDERED_SET_ENTRY_SIZE =
-        JvmSizeUtils.sizeClass(OrderedSetEntry.class);
+    public static final int ORDERED_SET_ENTRY_OVERHEAD = memoryOverhead(OrderedSetEntry.class);
 
     public OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
@@ -636,7 +629,7 @@ public class RedisSortedSet extends AbstractRedisData {
     public int getSizeInBytes() {
       // don't include the member size since it is accounted
       // for as the key on the Hash.
-      return BASE_ORDERED_SET_ENTRY_SIZE + calculateByteArraySize(scoreBytes);
+      return ORDERED_SET_ENTRY_OVERHEAD + memoryOverhead(scoreBytes);
     }
 
     public void updateScore(byte[] newScore) {
@@ -724,7 +717,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     @Override
     protected int sizeKey(byte[] key) {
-      return sizeByteArray(key);
+      return memoryOverhead(key);
     }
 
     @Override

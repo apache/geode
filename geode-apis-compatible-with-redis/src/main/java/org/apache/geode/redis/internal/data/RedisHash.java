@@ -17,8 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
-import static org.apache.geode.internal.JvmSizeUtils.sizeByteArray;
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
@@ -53,7 +52,7 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  protected static final int BASE_REDIS_HASH_OVERHEAD = sizeClass(RedisHash.class);
+  protected static final int REDIS_HASH_OVERHEAD = memoryOverhead(RedisHash.class);
 
   private Hash hash;
 
@@ -390,7 +389,7 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
+    return REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
   }
 
   public static class Hash
@@ -414,7 +413,7 @@ public class RedisHash extends AbstractRedisData {
 
     @Override
     protected int sizeKey(byte[] key) {
-      return sizeByteArray(key);
+      return memoryOverhead(key);
     }
 
     @Override

@@ -26,7 +26,7 @@
 package org.apache.geode.redis.internal.collections;
 
 
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.Arrays;
@@ -50,8 +50,11 @@ import org.apache.geode.annotations.VisibleForTesting;
 public class OrderStatisticsTree<E extends Comparable<? super E>>
     implements OrderStatisticsSet<E> {
 
-  public static final int ORDER_STATISTICS_TREE_BASE_SIZE = sizeClass(OrderStatisticsTree.class);
-  public static final int PER_ENTRY_OVERHEAD = sizeClass(Node.class);
+  private static final int ORDER_STATISTICS_TREE_OVERHEAD =
+      memoryOverhead(OrderStatisticsTree.class);
+  @VisibleForTesting
+  static final int PER_ENTRY_OVERHEAD = memoryOverhead(Node.class);
+
   private Node<E> root;
   private int size;
   private int modCount;
@@ -740,7 +743,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
   @Override
   public int getSizeInBytes() {
-    return ORDER_STATISTICS_TREE_BASE_SIZE + (size * PER_ENTRY_OVERHEAD);
+    return ORDER_STATISTICS_TREE_OVERHEAD + (size * PER_ENTRY_OVERHEAD);
   }
 
   /**

@@ -17,8 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
-import static org.apache.geode.internal.JvmSizeUtils.sizeByteArray;
-import static org.apache.geode.internal.JvmSizeUtils.sizeClass;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
@@ -52,9 +51,9 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
-  private MemberSet members;
+  protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
 
-  protected static final int BASE_REDIS_SET_OVERHEAD = sizeClass(RedisSet.class);
+  private MemberSet members;
 
   RedisSet(Collection<byte[]> members) {
     this.members = new MemberSet(members.size());
@@ -330,7 +329,7 @@ public class RedisSet extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_SET_OVERHEAD + members.getSizeInBytes();
+    return REDIS_SET_OVERHEAD + members.getSizeInBytes();
   }
 
   public static class MemberSet extends SizeableObjectOpenCustomHashSet<byte[]> {
@@ -352,7 +351,7 @@ public class RedisSet extends AbstractRedisData {
 
     @Override
     protected int sizeElement(byte[] element) {
-      return sizeByteArray(element);
+      return memoryOverhead(element);
     }
   }
 

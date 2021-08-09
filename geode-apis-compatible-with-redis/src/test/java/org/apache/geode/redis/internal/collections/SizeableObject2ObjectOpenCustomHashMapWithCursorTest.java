@@ -14,17 +14,15 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.internal.JvmSizeUtils.sizeByteArray;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
@@ -227,31 +225,6 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     assertThat(SizeableObject2ObjectOpenCustomHashMapWithCursor.rev(0xFF)).isEqualTo(0xFF000000);
   }
 
-  // This test can be used to derive the formula for calculating overhead associated with resizing
-  // the backing arrays of the map. If it fails, examine the output of this test and determine if
-  // the constant or the formula needs to be adjusted. If all the assertions fail with a constant
-  // difference between the expected and actual, adjust the constant. If they fail with inconsistent
-  // differences, adjust the formula
-  @Test
-  public void backingArrayOverheadCalculationTest() {
-    RedisHash.Hash map = new RedisHash.Hash(0);
-    int arrayContentsOverhead = 0;
-    SoftAssertions softly = new SoftAssertions();
-    for (int i = 0; i < 250; ++i) {
-      byte[] key = new byte[i];
-      byte[] value = new byte[250 - i];
-      map.put(key, value);
-      arrayContentsOverhead += sizer.sizeof(key) + sizer.sizeof(value);
-
-      // Calculate the overhead associated only with the backing array
-      int backingArrayOverhead =
-          sizer.sizeof(map) - arrayContentsOverhead - sizer.sizeof(ByteArrays.HASH_STRATEGY);
-      int expected = map.calculateBackingArraysOverhead();
-      softly.assertThat(backingArrayOverhead).isEqualTo(expected);
-    }
-    softly.assertAll();
-  }
-
   @Test
   public void putUpdatesSizeWhenCreatingNewEntry() {
     RedisHash.Hash hash = new RedisHash.Hash();
@@ -290,32 +263,6 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
     hash.remove(key);
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
-  }
-
-  @Test
-  public void calculateBackingArraysOverheadForDifferentInitialSizes() {
-    for (int i = 0; i < 1000; ++i) {
-      RedisHash.Hash hash = new RedisHash.Hash(i);
-      assertThat(hash.calculateBackingArraysOverhead()).isEqualTo(expectedSize(hash));
-    }
-  }
-
-  @Test
-  public void calculateBackingArraysOverheadForDifferentLoadFactorsAndInitialSizes() {
-    Random random = new Random(42);
-    for (int i = 0; i < 1000; ++i) {
-      float loadFactor = random.nextFloat();
-      int initialSize = random.nextInt(1000);
-
-      // Create a map with a random initial size and load factor
-      RedisHash.Hash hash = new RedisHash.Hash(initialSize, loadFactor);
-
-      // Confirm that the calculated value matches the actual value
-      assertThat(((SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]>) hash)
-          .calculateBackingArraysOverhead())
-              .as("load factor = " + loadFactor + ", initial size = " + initialSize)
-              .isEqualTo(expectedSize(hash));
-    }
   }
 
   private int expectedSize(SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], ?> map) {
@@ -404,8 +351,8 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       byte[] scoreBytes = String.valueOf(i).getBytes();
       RedisSortedSet.OrderedSetEntry value = hash.get(key);
       byte[] oldScoreBytes = value.getScoreBytes();
-      int scoreDelta = sizeByteArray(scoreBytes)
-          - sizeByteArray(oldScoreBytes);
+      int scoreDelta = memoryOverhead(scoreBytes)
+          - memoryOverhead(oldScoreBytes);
 
       int oldSize = hash.getSizeInBytes();
       value.updateScore(scoreBytes);

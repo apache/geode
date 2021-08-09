@@ -157,7 +157,12 @@ public class JvmSizeUtils {
     return size;
   }
 
-  public static int sizeByteArray(byte[] byteArray) {
+  /**
+   * Returns the amount of memory used to store the given
+   * byte array. Note that this does include the
+   * memory used to store the bytes in the array.
+   */
+  public static int memoryOverhead(byte[] byteArray) {
     if (byteArray == null) {
       return 0;
     }
@@ -167,7 +172,12 @@ public class JvmSizeUtils {
     return roundUpSize(result);
   }
 
-  public static int sizeObjectArray(Object[] objectArray) {
+  /**
+   * Returns the amount of memory used to store the given
+   * object array. Note that this does not include the
+   * memory used by objects referenced by the array.
+   */
+  public static int memoryOverhead(Object[] objectArray) {
     if (objectArray == null) {
       return 0;
     }
@@ -177,7 +187,13 @@ public class JvmSizeUtils {
     return roundUpSize(result);
   }
 
-  public static int sizeClass(Class<?> clazz) {
+  /**
+   * Returns the amount of memory used to store an instance
+   * of the given class. Note that this does not include
+   * memory used by objects referenced from fields of the
+   * instance.
+   */
+  public static int memoryOverhead(Class<?> clazz) {
     return (int) sizeof(clazz);
   }
 }

@@ -18,120 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.redis.internal.data.RedisSet;
 
 public class SizeableObjectOpenCustomHashSetTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
-  private final SingleObjectSizer elementSizer = new ReflectionSingleObjectSizer();
-
-  // This test can be used to derive the formula for calculating overhead associated with resizing
-  // the backing array of the set. If it fails examine the output of this test and determine if the
-  // constant or the formula needs to be adjusted. If all the assertions fail with a constant
-  // difference between the expected and actual, adjust the constant. If they fail with inconsistent
-  // differences, adjust the formula
-  @Test
-  public void backingArrayOverheadCalculationTest() {
-    RedisSet.MemberSet set = new RedisSet.MemberSet(0);
-    int backingArrayOverhead;
-    int memberOverhead = 0;
-    SoftAssertions softly = new SoftAssertions();
-    for (int i = 0; i < 250; ++i) {
-      byte[] element = new byte[i];
-      set.add(element);
-      memberOverhead += sizer.sizeof(element);
-      backingArrayOverhead = expectedSize(set) - memberOverhead;
-      int expected = set.calculateBackingArrayOverhead();
-      softly.assertThat(backingArrayOverhead).isEqualTo(expected);
-    }
-    softly.assertAll();
-  }
-
-  private static int getMemberOverhead(SizeableObjectOpenCustomHashSet<byte[]> set) {
-    return set.getMemberOverhead();
-  }
-
-  @Test
-  public void addIncreasesMemberOverheadByCorrectAmount() {
-    RedisSet.MemberSet set = new RedisSet.MemberSet();
-    int initialSize = getMemberOverhead(set);
-    List<byte[]> members = new ArrayList<>();
-    for (int i = 0; i < 100; ++i) {
-      members.add(new byte[i]);
-    }
-
-    // Add a duplicate member to check that member overhead isn't increased if a member isn't added
-    // to the set
-    members.add(new byte[100]);
-
-    for (byte[] bytes : members) {
-      boolean added = set.add(bytes);
-      if (added) {
-        long expectedOverhead = elementSizer.sizeof(bytes);
-        assertThat(expectedOverhead).isEqualTo(getMemberOverhead(set) - initialSize);
-        initialSize = getMemberOverhead(set);
-      } else {
-        assertThat(getMemberOverhead(set) - initialSize).isZero();
-      }
-    }
-  }
-
-  @Test
-  public void removeDecreasesMemberOverheadByCorrectAmount() {
-    RedisSet.MemberSet set = new RedisSet.MemberSet();
-    List<byte[]> members = new ArrayList<>();
-    for (int i = 0; i < 100; ++i) {
-      members.add(new byte[i]);
-    }
-    set.addAll(members);
-
-    // Add a byte to the list that isn't present in the set to ensure that member overhead isn't
-    // decreased when a member isn't actually removed
-    members.add(new byte[101]);
-
-    int initialSize = getMemberOverhead(set);
-
-    for (byte[] bytes : members) {
-      boolean removed = set.remove(bytes);
-      if (removed) {
-        long expectedOverhead = elementSizer.sizeof(bytes);
-        assertThat(expectedOverhead).isEqualTo(initialSize - getMemberOverhead(set));
-        initialSize = getMemberOverhead(set);
-      } else {
-        assertThat(getMemberOverhead(set) - initialSize).isZero();
-      }
-    }
-  }
-
-  @Test
-  public void calculateBackingArrayOverheadForDifferentInitialSizes() {
-    for (int i = 0; i < 1000; ++i) {
-      RedisSet.MemberSet set = new RedisSet.MemberSet(i);
-      assertThat(set.calculateBackingArrayOverhead()).isEqualTo(expectedSize(set));
-    }
-  }
-
-  @Test
-  public void calculateBackingArrayOverheadForDifferentLoadFactorsAndInitialSizes() {
-    Random random = new Random(42);
-    for (int i = 0; i < 1000; ++i) {
-      float loadFactor = random.nextFloat();
-      int initialSize = random.nextInt(1000);
-      RedisSet.MemberSet set = new RedisSet.MemberSet(initialSize, loadFactor);
-      assertThat(set.calculateBackingArrayOverhead())
-          .as("load factor = " + loadFactor + ", initial size = " + initialSize)
-          .isEqualTo(expectedSize(set));
-    }
-  }
 
   private int expectedSize(RedisSet.MemberSet set) {
     return sizer.sizeof(set) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
