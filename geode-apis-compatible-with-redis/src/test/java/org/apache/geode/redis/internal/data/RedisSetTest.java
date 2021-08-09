@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -329,20 +328,6 @@ public class RedisSetTest {
     doRemovesAndAssertSize(set, set.scard() - 1);
 
     doAddsAndAssertSize(set, membersToAdd);
-  }
-
-  /******** constants *******/
-  // This test contains the math that is used to derive the constant in RedisSet. If this test
-  // starts failing, it is because the overhead of RedisSet has changed. If it has decreased, good
-  // job! You can change the constant in RedisSet to reflect that. If it has increased, carefully
-  // consider that increase before changing the constants.
-  @Test
-  public void baseOverheadConstant_shouldMatchReflectedSize() {
-    RedisSet set = new RedisSet(Collections.emptyList());
-    RedisSet.MemberSet backingSet = new RedisSet.MemberSet(0);
-    int baseRedisSetOverhead = sizer.sizeof(set) - sizer.sizeof(backingSet);
-
-    assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
   }
 
   /******* helper methods *******/
