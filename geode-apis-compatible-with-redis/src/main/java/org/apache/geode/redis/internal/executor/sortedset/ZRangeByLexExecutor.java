@@ -59,7 +59,7 @@ public class ZRangeByLexExecutor extends AbstractExecutor {
     }
 
     // If the range is empty, return early
-    if (rangeOptions.isEmptyRange()) {
+    if (rangeOptions.isEmptyRange(false)) {
       return RedisResponse.emptyArray();
     }
     // If offset is negative

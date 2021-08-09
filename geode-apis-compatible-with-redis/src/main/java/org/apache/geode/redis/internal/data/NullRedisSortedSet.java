@@ -97,7 +97,7 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  List<byte[]> zrevrangebyscore(SortedSetRangeOptions rangeOptions, boolean withScores) {
+  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
     return Collections.emptyList();
   }
 

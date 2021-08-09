@@ -17,11 +17,8 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isNaN;
-import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.List;
@@ -35,7 +32,7 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
-    SortedSetRangeOptions rangeOptions;
+    SortedSetScoreRangeOptions rangeOptions;
 
     try {
       byte[] startBytes = commandElements.get(2);
@@ -43,7 +40,7 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
       if (isNaN(startBytes) || isNaN(endBytes)) {
         return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
       }
-      rangeOptions = new SortedSetRangeOptions(startBytes, endBytes);
+      rangeOptions = new SortedSetScoreRangeOptions(startBytes, endBytes);
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_MIN_MAX_NOT_A_FLOAT);
     }
@@ -61,7 +58,7 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
             withScores = true;
             currentCommandElement++;
           } else {
-            parseLimitArguments(rangeOptions, commandElements, currentCommandElement);
+            rangeOptions.parseLimitArguments(commandElements, currentCommandElement);
             currentCommandElement += 3;
           }
         } catch (NumberFormatException nfex) {
@@ -74,14 +71,13 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
 
     // If the range is empty (min == max and both are exclusive,
     // or limit specified but count is zero), return early
-    if ((rangeOptions.hasLimit() && (rangeOptions.getCount() == 0 || rangeOptions.getOffset() < 0))
-        || (rangeOptions.getStartDouble() == rangeOptions.getEndDouble())
-            && rangeOptions.isStartExclusive() && rangeOptions.isEndExclusive()) {
+    if (rangeOptions.isEmptyRange(isRev())) {
       return RedisResponse.emptyArray();
     }
-    // For ZRANGEBYSCORE, min and max are reversed in order; check if limits are impossible
-    if (isRev() ? (rangeOptions.getStartDouble() < rangeOptions.getEndDouble())
-        : (rangeOptions.getStartDouble() > rangeOptions.getEndDouble())) {
+
+    // Check if limits are impossible; For ZREVRANGEBYSCORE, start and end are reversed
+    if (isRev() ? (rangeOptions.getStartRange() < rangeOptions.getEndRange())
+        : (rangeOptions.getStartRange() > rangeOptions.getEndRange())) {
       return RedisResponse.emptyArray();
     }
 
@@ -94,21 +90,6 @@ public abstract class AbstractZRangeByScoreExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.array(result);
-  }
-
-  void parseLimitArguments(SortedSetRangeOptions rangeOptions, List<byte[]> commandElements,
-      int commandIndex) {
-    if (equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)
-        && commandElements.size() > commandIndex + 2) {
-      int offset = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 1)));
-      int count = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
-      if (count < 0) {
-        count = Integer.MAX_VALUE;
-      }
-      rangeOptions.setLimitValues(offset, count);
-    } else {
-      throw new IllegalArgumentException();
-    }
   }
 
   public abstract boolean isRev();

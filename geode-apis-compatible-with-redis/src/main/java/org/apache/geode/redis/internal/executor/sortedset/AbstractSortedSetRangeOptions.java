@@ -24,17 +24,17 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractSortedSetRangeOptions<T> {
-  boolean isMinExclusive;
-  T minimum;
-  boolean isMaxExclusive;
-  T maximum;
+  boolean isStartExclusive;
+  T startRange;
+  boolean isEndExclusive;
+  T endRange;
   boolean hasLimit;
   int offset;
   int count;
 
   AbstractSortedSetRangeOptions(byte[] minimumBytes, byte[] maximumBytes) {
-    parseMinimum(minimumBytes);
-    parseMaximum(maximumBytes);
+    parseStartRange(minimumBytes);
+    parseEndRange(maximumBytes);
   }
 
   void parseLimitArguments(List<byte[]> commandElements, int commandIndex) {
@@ -66,26 +66,31 @@ public abstract class AbstractSortedSetRangeOptions<T> {
 
   // If limit specified but count is zero, or min > max, or min == max and either are exclusive, the
   // range cannot contain any elements
-  boolean isEmptyRange() {
-    int minVsMax = compareMinToMax();
-    return (hasLimit && (count == 0 || offset < 0)) || minVsMax == 1
-        || (minVsMax == 0 && (isMinExclusive || isMaxExclusive));
+  boolean isEmptyRange(boolean isRev) {
+    int startVsEnd = compareStartToEnd();
+    if (isRev) {
+      return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == -1
+          || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
+    } else {
+       return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == 1
+          || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
+    }
   }
 
-  public boolean isMinExclusive() {
-    return isMinExclusive;
+  public boolean isStartExclusive() {
+    return isStartExclusive;
   }
 
-  public T getMinimum() {
-    return minimum;
+  public T getStartRange() {
+    return startRange;
   }
 
-  public boolean isMaxExclusive() {
-    return isMaxExclusive;
+  public boolean isEndExclusive() {
+    return isEndExclusive;
   }
 
-  public T getMaximum() {
-    return maximum;
+  public T getEndRange() {
+    return endRange;
   }
 
   public boolean hasLimit() {
@@ -100,9 +105,9 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     return count;
   }
 
-  abstract void parseMinimum(byte[] minimumBytes);
+  abstract void parseStartRange(byte[] minimumBytes);
 
-  abstract void parseMaximum(byte[] maximumBytes);
+  abstract void parseEndRange(byte[] maximumBytes);
 
-  abstract int compareMinToMax();
+  abstract int compareStartToEnd();
 }

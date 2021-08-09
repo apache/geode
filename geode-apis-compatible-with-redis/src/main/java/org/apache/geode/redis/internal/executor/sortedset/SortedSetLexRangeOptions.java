@@ -32,68 +32,68 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
   }
 
   @Override
-  void parseMinimum(byte[] minBytes) {
+  void parseStartRange(byte[] minBytes) {
     if (minBytes.length == 1) {
       if (minBytes[0] == bPLUS) {
-        isMinExclusive = false;
-        minimum = bGREATEST_MEMBER_NAME;
+        isStartExclusive = false;
+        startRange = bGREATEST_MEMBER_NAME;
       } else if (minBytes[0] == bMINUS) {
-        isMinExclusive = false;
-        minimum = bLEAST_MEMBER_NAME;
+        isStartExclusive = false;
+        startRange = bLEAST_MEMBER_NAME;
       } else if (minBytes[0] == bLEFT_PAREN) {
-        isMinExclusive = true;
-        minimum = new byte[0];
+        isStartExclusive = true;
+        startRange = new byte[0];
       } else if (minBytes[0] == bLEFT_SQUARE_BRACKET) {
-        isMinExclusive = false;
-        minimum = new byte[0];
+        isStartExclusive = false;
+        startRange = new byte[0];
       } else {
         throw new IllegalArgumentException();
       }
     } else if (minBytes[0] == bLEFT_PAREN) {
-      isMinExclusive = true;
-      minimum = Arrays.copyOfRange(minBytes, 1, minBytes.length);
+      isStartExclusive = true;
+      startRange = Arrays.copyOfRange(minBytes, 1, minBytes.length);
     } else if (minBytes[0] == bLEFT_SQUARE_BRACKET) {
-      isMinExclusive = false;
-      minimum = Arrays.copyOfRange(minBytes, 1, minBytes.length);
+      isStartExclusive = false;
+      startRange = Arrays.copyOfRange(minBytes, 1, minBytes.length);
     } else {
       throw new IllegalArgumentException();
     }
   }
 
   @Override
-  void parseMaximum(byte[] maxBytes) {
+  void parseEndRange(byte[] maxBytes) {
     if (maxBytes.length == 1) {
       if (maxBytes[0] == bPLUS) {
-        isMaxExclusive = false;
-        maximum = bGREATEST_MEMBER_NAME;
+        isEndExclusive = false;
+        endRange = bGREATEST_MEMBER_NAME;
       } else if (maxBytes[0] == bMINUS) {
-        isMaxExclusive = false;
-        maximum = bLEAST_MEMBER_NAME;
+        isEndExclusive = false;
+        endRange = bLEAST_MEMBER_NAME;
       } else if (maxBytes[0] == bLEFT_PAREN) {
-        isMaxExclusive = true;
-        maximum = new byte[0];
+        isEndExclusive = true;
+        endRange = new byte[0];
       } else if (maxBytes[0] == bLEFT_SQUARE_BRACKET) {
-        isMaxExclusive = false;
-        maximum = new byte[0];
+        isEndExclusive = false;
+        endRange = new byte[0];
       } else {
         throw new IllegalArgumentException();
       }
     } else if (maxBytes[0] == bLEFT_PAREN) {
-      isMaxExclusive = true;
-      maximum = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
+      isEndExclusive = true;
+      endRange = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
     } else if (maxBytes[0] == bLEFT_SQUARE_BRACKET) {
-      isMaxExclusive = false;
-      maximum = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
+      isEndExclusive = false;
+      endRange = Arrays.copyOfRange(maxBytes, 1, maxBytes.length);
     } else {
       throw new IllegalArgumentException();
     }
   }
 
   @Override
-  int compareMinToMax() {
-    int dummyNameComparison = checkDummyMemberNames(minimum, maximum);
+  int compareStartToEnd() {
+    int dummyNameComparison = checkDummyMemberNames(startRange, endRange);
     if (dummyNameComparison == 0) {
-      return javaImplementationOfAnsiCMemCmp(minimum, maximum);
+      return javaImplementationOfAnsiCMemCmp(startRange, endRange);
     } else {
       return dummyNameComparison;
     }
