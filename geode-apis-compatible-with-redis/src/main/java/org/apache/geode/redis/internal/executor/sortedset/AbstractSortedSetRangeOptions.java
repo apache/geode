@@ -72,7 +72,7 @@ public abstract class AbstractSortedSetRangeOptions<T> {
       return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == -1
           || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
     } else {
-       return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == 1
+      return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == 1
           || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
     }
   }
