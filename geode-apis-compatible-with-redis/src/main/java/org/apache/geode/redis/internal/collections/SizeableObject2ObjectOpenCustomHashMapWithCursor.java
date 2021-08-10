@@ -216,27 +216,6 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   public int getSizeInBytes() {
     // The size of the object referenced by the "strategy" field is not included
     // here because in most cases it is a static singleton.
-    // TODO: The size of the object referenced by these fields is not included here:
-    // - entries an instance of
-    // it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap.MapEntrySet
-    // - keys an instance of it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap.KeySet
-    // - values an instance of an anonymous subclass of
-    // it.unimi.dsi.fastutil.objects.AbstractObjectCollection
-    //
-    // These fields get lazily initialized when their corresponding method is called.
-    // Once they are initialized they stay that way forever. The object they reference is immutable.
-    // Its only field is the implicit objref to their outer class instance.
-    // Currently it looks like we have redis ops that can end up calling all three of these methods
-    // in which case these objects would account for over 100 bytes on a 64-bit jvm,
-    // It is not clear to me why the implementors of Object2ObjectOpenCustomHashMap chose to
-    // cache this immutable object instead of just creating it every time. They have no state
-    // to initialize when constructed so one thing we could do is override the methods that cache it
-    // to either null out the cached field after calling the super method, or have a brand new impl
-    // that just creates and returns an instance without caching. The cache fields themselves would
-    // be a waste of memory in that case but only 24 bytes (12 with compressed oops).
-    // Another possibility would be for our code that uses the map to only call entrySet(), that way
-    // one instance would be cached instead of 3. You can always get keys and values from the
-    // entrySet.
 
     return OPEN_HASH_MAP_OVERHEAD + memoryOverhead(key) + memoryOverhead(value)
         + arrayContentsOverhead;
