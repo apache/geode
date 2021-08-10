@@ -30,6 +30,7 @@ import java.net.Socket;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -38,6 +39,7 @@ import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class GeodeRedisServerStartupDUnitTest {
@@ -48,6 +50,7 @@ public class GeodeRedisServerStartupDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
+  @Category(IgnoreInRepeatTestTasks.class)
   @Test
   public void startupOnDefaultPort() {
     MemberVM server = cluster.startServerVM(0, s -> s
