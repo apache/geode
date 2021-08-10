@@ -35,8 +35,18 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
     Properties credentials = new Properties();
-    credentials.put("security-username", user.get());
-    credentials.put("security-password", user.get());
+    if (securityProps.size() < 2) {
+      credentials.put("security-username", user.get());
+      credentials.put("security-password", user.get());
+    } else {
+      Object userName = securityProps.get("security-username");
+      if (userName != null && !((String) userName).isEmpty()) {
+        credentials.put("security-username", userName);
+        credentials.put("security-password", userName);
+      } else {
+        throw new AuthenticationFailedException("No username provided.");
+      }
+    }
     return credentials;
   }
 
