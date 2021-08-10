@@ -71,6 +71,9 @@ public class SystemPropertyHelper {
 
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
 
+  public static final String ENABLE_QUERY_RETRY_ON_PDX_SERIALIZATION_EXCEPTION =
+      "enableQueryRetryOnPdxSerializationException";
+
   /**
    * a comma separated string to list out the packages to scan. If not specified, the entire
    * classpath is scanned.
