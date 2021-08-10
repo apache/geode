@@ -245,7 +245,7 @@ public class PubSubDUnitTest {
     Future<Void> subscriber2Future =
         executor.submit(() -> subscriber2.subscribe(mockSubscriber2, CHANNEL_NAME));
 
-    assertThat(latch.await(30, TimeUnit.SECONDS))
+    assertThat(latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS))
         .as("channel subscription was not received").isTrue();
 
     publisher1.publish(CHANNEL_NAME, "hello");
