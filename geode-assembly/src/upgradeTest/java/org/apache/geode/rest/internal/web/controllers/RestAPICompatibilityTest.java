@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.configuration.DiskStore;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
@@ -98,14 +99,14 @@ public class RestAPICompatibilityTest {
 
   @Test
   public void restCommandExecutedOnLatestLocatorShouldBeBackwardsCompatible() throws Exception {
+    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int locatorPort1 = locatorPorts[0];
+    int locatorPort2 = locatorPorts[1];
+
     // Initialize all cluster members with old versions
-    MemberVM locator1 =
-        cluster.startLocatorVM(0, 0, oldVersion, MemberStarterRule::withHttpService);
-    int locatorPort1 = locator1.getPort();
-    MemberVM locator2 =
-        cluster.startLocatorVM(1, 0, oldVersion,
-            x -> x.withConnectionToLocator(locatorPort1).withHttpService());
-    int locatorPort2 = locator2.getPort();
+    cluster.startLocatorVM(0, locatorPort1, oldVersion, MemberStarterRule::withHttpService);
+    cluster.startLocatorVM(1, locatorPort2, oldVersion,
+        x -> x.withConnectionToLocator(locatorPort1).withHttpService());
     cluster
         .startServerVM(2, oldVersion, s -> s.withRegion(RegionShortcut.PARTITION, "region")
             .withConnectionToLocator(locatorPort1, locatorPort2));
@@ -117,7 +118,7 @@ public class RestAPICompatibilityTest {
     cluster.stop(0);
     // gradle sets a property telling us where the build is located
     final String buildDir = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
-    locator1 = cluster.startLocatorVM(0, l -> l.withHttpService().withPort(locatorPort1)
+    MemberVM locator1 = cluster.startLocatorVM(0, l -> l.withHttpService().withPort(locatorPort1)
         .withConnectionToLocator(locatorPort2)
         .withSystemProperty("geode.build.dir", buildDir));
     cluster.stop(1);
