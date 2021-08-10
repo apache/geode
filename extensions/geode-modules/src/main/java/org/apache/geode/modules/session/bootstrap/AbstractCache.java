@@ -16,6 +16,7 @@ package org.apache.geode.modules.session.bootstrap;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PREFIX;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
@@ -191,18 +192,19 @@ public abstract class AbstractCache {
       return;
     }
 
-    // Determine the validity of the input property
-    boolean validProperty = false;
-    // TODO: AbstractDistributionConfig is internal and _getAttNames is designed for testing.
-    for (String gemfireProperty : AbstractDistributionConfig._getAttNames()) {
-      if (name.equals(gemfireProperty)) {
-        validProperty = true;
-        break;
+    // Determine the validity of the input property (all those that start with security-* are valid)
+    boolean validProperty = name.startsWith(SECURITY_PREFIX);
+    if (!validProperty) {
+      // TODO: AbstractDistributionConfig is internal and _getAttNames is designed for testing.
+      for (String gemfireProperty : AbstractDistributionConfig._getAttNames()) {
+        if (name.equals(gemfireProperty)) {
+          validProperty = true;
+          break;
+        }
       }
     }
 
-    // If it is a valid GemFire property, add it to the the GemFire properties.
-    // Otherwise, log a warning.
+    // If it is a valid GemFire property, add it to the GemFire properties, log a warning otherwise.
     if (validProperty) {
       this.gemfireProperties.put(name, value);
     } else {
@@ -219,9 +221,7 @@ public abstract class AbstractCache {
     Properties properties = new Properties();
 
     // Add any additional gemfire properties
-    for (Map.Entry<String, String> entry : this.gemfireProperties.entrySet()) {
-      properties.put(entry.getKey(), entry.getValue());
-    }
+    properties.putAll(this.gemfireProperties);
 
     // Replace the cache xml file in the properties
     File cacheXmlFile = getCacheXmlFile();
