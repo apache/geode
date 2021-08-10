@@ -64,16 +64,20 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     }
   }
 
-  // If limit specified but count is zero, or min > max, or min == max and either are exclusive, the
-  // range cannot contain any elements
+  // If limit specified but count is zero, or min == max and either are exclusive,
+  // or start & end are in wrong size order, the range cannot contain any elements
   boolean isEmptyRange(boolean isRev) {
+    if (hasLimit && (count == 0 || offset < 0)) {
+      return true;
+    }
     int startVsEnd = compareStartToEnd();
+    if (startVsEnd == 0 && (isStartExclusive || isEndExclusive)) {
+      return true;
+    }
     if (isRev) {
-      return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == -1
-          || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
+      return startVsEnd == -1;
     } else {
-      return (hasLimit && (count == 0 || offset < 0)) || startVsEnd == 1
-          || (startVsEnd == 0 && (isStartExclusive || isEndExclusive));
+      return startVsEnd == 1;
     }
   }
 
