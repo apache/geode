@@ -1072,7 +1072,8 @@ public class IndexMaintenanceJUnitTest {
   }
 
   /**
-   * Starting of section - moved from wrongly spelled old class "IndexMaintainceJUnitTest". GEODE-1505
+   * Starting of section - moved from wrongly spelled old class "IndexMaintainceJUnitTest".
+   * GEODE-1505
    */
 
   @Test
@@ -1110,16 +1111,16 @@ public class IndexMaintenanceJUnitTest {
             + "portfolio index_iter1, index_iter1.collectionHolderMap[index_iter1.ID.toString()].arr index_iter3")
         || !i3.getCanonicalizedIndexedExpression().equals("index_iter3")
         || !i3.getFromClause()
-        .equals(
-            SEPARATOR + "portfolio pf, pf.collectionHolderMap[(pf.ID).toString()].arr sIter")
+            .equals(
+                SEPARATOR + "portfolio pf, pf.collectionHolderMap[(pf.ID).toString()].arr sIter")
         || !i3.getIndexedExpression().equals("sIter")) {
       fail("Mismatch found among fromClauses or IndexedExpressions");
     }
     if (!i4.getCanonicalizedFromClause().equals(SEPARATOR + "portfolio index_iter1")
         || !i4.getCanonicalizedIndexedExpression().equals(
-        "index_iter1.collectionHolderMap[index_iter1.ID.toString()].arr[index_iter1.ID]")
+            "index_iter1.collectionHolderMap[index_iter1.ID.toString()].arr[index_iter1.ID]")
         || !i4.getFromClause().equals(SEPARATOR + "portfolio pf") || !i4.getIndexedExpression()
-        .equals("pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]")) {
+            .equals("pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]")) {
       fail("Mismatch found among fromClauses or IndexedExpressions");
     }
     if (!i5.getCanonicalizedFromClause()
@@ -1182,8 +1183,8 @@ public class IndexMaintenanceJUnitTest {
   }
 
   /**
-   * Needed to fix this since the key "4" was not found and the size was then redueced to 3 after invalidating the key 3
-   * @throws Exception
+   * Needed to fix this since the key "4" was not found and the size was then redueced to 3 after
+   * invalidating the key 3
    */
   @Test
   public void test003InvalidateEntry() throws Exception {
@@ -1453,6 +1454,7 @@ public class IndexMaintenanceJUnitTest {
       CacheUtils.restartCache();
     }
   }
+
   /**
    * Ending of section - moved from wrongly spelled old class "IndexMaintainceJUnitTest". GEODE-1505
    */
