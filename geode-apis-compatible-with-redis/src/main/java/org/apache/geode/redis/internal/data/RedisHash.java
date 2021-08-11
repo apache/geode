@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
@@ -39,13 +38,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -85,11 +85,19 @@ public class RedisHash extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writePrimitiveInt(hash.size(), out);
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      byte[] key = entry.getKey();
-      byte[] value = entry.getValue();
-      DataSerializer.writeByteArray(key, out);
-      DataSerializer.writeByteArray(value, out);
+    try {
+      hash.fastForEach(entry -> {
+        byte[] key = entry.getKey();
+        byte[] value = entry.getValue();
+        try {
+          DataSerializer.writeByteArray(key, out);
+          DataSerializer.writeByteArray(value, out);
+        } catch (IOException e) {
+          throw new GemFireIOException("", e);
+        }
+      });
+    } catch (GemFireIOException ex) {
+      throw (IOException) (ex.getCause());
     }
   }
 
@@ -190,11 +198,11 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hgetall() {
-    ArrayList<byte[]> result = new ArrayList<>(hash.size());
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+    ArrayList<byte[]> result = new ArrayList<>(hash.size() * 2);
+    hash.fastForEach(entry -> {
       result.add(entry.getKey());
       result.add(entry.getValue());
-    }
+    });
     return result;
   }
 
@@ -228,11 +236,15 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hvals() {
-    return new ArrayList<>(hash.values());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachValue(value -> result.add(value));
+    return result;
   }
 
   public Collection<byte[]> hkeys() {
-    return new ArrayList<>(hash.keySet());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachKey(key -> result.add(key));
+    return result;
   }
 
   public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
@@ -364,12 +376,8 @@ public class RedisHash extends AbstractRedisData {
       return false;
     }
 
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      if (!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
-        return false;
-      }
-    }
-    return true;
+    return hash.fastWhileEach(
+        entry -> Arrays.equals(redisHash.hash.get(entry.getKey()), entry.getValue()));
   }
 
   @Override
@@ -393,27 +401,18 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public static class Hash
-      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> {
+      extends SizeableBytes2ObjectOpenCustomHashMapWithCursor<byte[]> {
 
     public Hash() {
-      super(HASH_STRATEGY);
+      super();
     }
 
     public Hash(int expected) {
-      super(expected, HASH_STRATEGY);
-    }
-
-    public Hash(int expected, float f) {
-      super(expected, f, HASH_STRATEGY);
+      super(expected);
     }
 
     public Hash(Map<byte[], byte[]> m) {
-      super(m, HASH_STRATEGY);
-    }
-
-    @Override
-    protected int sizeKey(byte[] key) {
-      return memoryOverhead(key);
+      super(m);
     }
 
     @Override

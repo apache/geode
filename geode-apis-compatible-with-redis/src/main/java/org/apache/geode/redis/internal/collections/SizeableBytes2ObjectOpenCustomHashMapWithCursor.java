@@ -19,9 +19,9 @@ import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Map;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -32,57 +32,25 @@ import org.apache.geode.internal.size.Sizeable;
  * The scan method provides the same guarantees as Redis's HSCAN, and in fact
  * uses the same algorithm.
  */
-public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
-    extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
+public abstract class SizeableBytes2ObjectOpenCustomHashMapWithCursor<V>
+    extends Bytes2ObjectOpenHashMap<V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
   public static final int OPEN_HASH_MAP_OVERHEAD =
-      memoryOverhead(SizeableObject2ObjectOpenCustomHashMapWithCursor.class);
+      memoryOverhead(SizeableBytes2ObjectOpenCustomHashMapWithCursor.class);
 
   private int arrayContentsOverhead;
 
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(int expected, float f,
-      Strategy<? super K> strategy) {
-    super(expected, f, strategy);
+  public SizeableBytes2ObjectOpenCustomHashMapWithCursor(int expected) {
+    super(expected);
   }
 
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(int expected,
-      Strategy<? super K> strategy) {
-    super(expected, strategy);
+  public SizeableBytes2ObjectOpenCustomHashMapWithCursor() {
+    super();
   }
 
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Strategy<? super K> strategy) {
-    super(strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m, float f,
-      Strategy<? super K> strategy) {
-    super(m, f, strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Map<? extends K, ? extends V> m,
-      Strategy<? super K> strategy) {
-    super(m, strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Object2ObjectMap<K, V> m, float f,
-      Strategy<? super K> strategy) {
-    super(m, f, strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(Object2ObjectMap<K, V> m,
-      Strategy<? super K> strategy) {
-    super(m, strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v, float f,
-      Strategy<? super K> strategy) {
-    super(k, v, f, strategy);
-  }
-
-  public SizeableObject2ObjectOpenCustomHashMapWithCursor(K[] k, V[] v,
-      Strategy<? super K> strategy) {
-    super(k, v, strategy);
+  public SizeableBytes2ObjectOpenCustomHashMapWithCursor(Map<byte[], ? extends V> m) {
+    super(m);
   }
 
   /**
@@ -102,7 +70,7 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
    * @param <D> The type of the data passed to the function/
    * @return The next cursor to scan from, or 0 if the scan has touched all elements.
    */
-  public <D> int scan(int cursor, int count, EntryConsumer<K, V, D> consumer, D privateData) {
+  public <D> int scan(int cursor, int count, EntryConsumer<byte[], V, D> consumer, D privateData) {
     // Implementation notes
     //
     // This stateless scan cursor algorithm is based on the dictScan cursor
@@ -128,7 +96,7 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
       // those as well. This may even wrap around to the front of the hashtable.
       int position = cursor;
       while (key[position & mask] != null) {
-        K currentKey = key[position & mask];
+        byte[] currentKey = key[position & mask];
         if (keyHashesTo(currentKey, position, cursor & mask)) {
           consumer.consume(privateData, currentKey, value[position & mask]);
           count--;
@@ -176,21 +144,22 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
    * @param currentPosition The position of the key in the key[] array
    * @param expectedHash - the expected hash of the key.
    */
-  private boolean keyHashesTo(K currentKey, int currentPosition, int expectedHash) {
+  private boolean keyHashesTo(byte[] currentKey, int currentPosition, int expectedHash) {
     // There is a small optimization here. If the previous element
     // is null, we know that the element at position does hash to the expected
     // hash because it is not here as a result of a collision at some previous position.
 
-    K previousKey = key[(currentPosition - 1) & mask];
+    byte[] previousKey = key[(currentPosition - 1) & mask];
     return previousKey == null || hash(currentKey) == expectedHash;
   }
 
-  private int hash(K key) {
-    return mix(strategy.hashCode(key)) & mask;
+  @VisibleForTesting
+  public int hash(byte[] key) {
+    return mix(strategy().hashCode(key)) & mask;
   }
 
   @Override
-  public V put(K k, V v) {
+  public V put(byte[] k, V v) {
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
@@ -203,11 +172,10 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      arrayContentsOverhead -= sizeKey((K) k) + sizeValue(oldValue);
+      arrayContentsOverhead -= sizeKey((byte[]) k) + sizeValue(oldValue);
     }
     return oldValue;
   }
@@ -225,7 +193,9 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     void consume(D privateData, K key, V value);
   }
 
-  protected abstract int sizeKey(K key);
+  protected int sizeKey(byte[] key) {
+    return memoryOverhead(key);
+  }
 
   protected abstract int sizeValue(V value);
 

@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.BeforeClass;
@@ -721,7 +720,7 @@ public class RedisSortedSetTest {
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList());
 
-    int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+    int expectedSize = sizer.sizeof(sortedSet);
     int actualSize = sortedSet.getSizeInBytes();
     assertThat(actualSize).isEqualTo(expectedSize);
 
@@ -730,7 +729,7 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i), new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
-      expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      expectedSize = sizer.sizeof(sortedSet);
       actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
     }
@@ -753,7 +752,7 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries / 2; ++i) {
       List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i * 2), new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
-      int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
     }
@@ -776,7 +775,7 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> memberToRemove = Collections.singletonList(new byte[i]);
       sortedSet.zrem(mockRegion, mockKey, memberToRemove);
-      int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
     }
@@ -798,7 +797,7 @@ public class RedisSortedSetTest {
     // Remove all members by zpopmax and ensure size is correct
     for (int i = 0; i < numberOfEntries; ++i) {
       sortedSet.zpopmax(mockRegion, mockKey, 1);
-      int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
     }
@@ -820,7 +819,7 @@ public class RedisSortedSetTest {
     // Remove all members by zpopmin and ensure size is correct
     for (int i = 0; i < numberOfEntries; ++i) {
       sortedSet.zpopmin(mockRegion, mockKey, 1);
-      int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
     }

@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -46,7 +46,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -107,11 +107,19 @@ public class RedisSortedSet extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     InternalDataSerializer.writePrimitiveInt(members.size(), out);
-    for (Map.Entry<byte[], OrderedSetEntry> entry : members.entrySet()) {
-      byte[] member = entry.getKey();
-      byte[] score = entry.getValue().getScoreBytes();
-      InternalDataSerializer.writeByteArray(member, out);
-      InternalDataSerializer.writeByteArray(score, out);
+    try {
+      members.fastForEach(entry -> {
+        byte[] member = entry.getKey();
+        byte[] score = entry.getValue().getScoreBytes();
+        try {
+          InternalDataSerializer.writeByteArray(member, out);
+          InternalDataSerializer.writeByteArray(score, out);
+        } catch (IOException e) {
+          throw new GemFireIOException("", e);
+        }
+      });
+    } catch (GemFireIOException ex) {
+      throw (IOException) ex.getCause();
     }
   }
 
@@ -146,7 +154,7 @@ public class RedisSortedSet extends AbstractRedisData {
       return false;
     }
 
-    for (Map.Entry<byte[], OrderedSetEntry> entry : members.entrySet()) {
+    return members.fastWhileEach(entry -> {
       OrderedSetEntry otherEntry = other.members.get(entry.getKey());
       if (otherEntry == null) {
         return false;
@@ -154,8 +162,8 @@ public class RedisSortedSet extends AbstractRedisData {
       if (Double.compare(otherEntry.getScore(), entry.getValue().getScore()) != 0) {
         return false;
       }
-    }
-    return true;
+      return true;
+    });
   }
 
   @Override
@@ -742,19 +750,14 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   public static class MemberMap
-      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], OrderedSetEntry> {
+      extends SizeableBytes2ObjectOpenCustomHashMapWithCursor<OrderedSetEntry> {
 
     public MemberMap(int size) {
-      super(size, HASH_STRATEGY);
+      super(size);
     }
 
     public MemberMap(Map<byte[], RedisSortedSet.OrderedSetEntry> initialElements) {
-      super(initialElements, HASH_STRATEGY);
-    }
-
-    @Override
-    protected int sizeKey(byte[] key) {
-      return memoryOverhead(key);
+      super(initialElements);
     }
 
     @Override
