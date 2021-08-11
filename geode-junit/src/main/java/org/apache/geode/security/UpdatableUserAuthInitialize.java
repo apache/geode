@@ -30,6 +30,8 @@ import org.apache.geode.distributed.DistributedMember;
 public class UpdatableUserAuthInitialize implements AuthInitialize {
   // use static field for ease of testing since there is only one instance of this in each VM
   private static final AtomicReference<String> user = new AtomicReference<>();
+  private static final AtomicReference<Boolean> alternate = new AtomicReference<>();
+  private static final AtomicReference<Integer> attempts = new AtomicReference<>();
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
@@ -41,8 +43,18 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     } else {
       Object userName = securityProps.get("security-username");
       if (userName != null && !((String) userName).isEmpty()) {
-        credentials.put("security-username", userName);
-        credentials.put("security-password", userName);
+        if (alternate.get() && attempts.get() > 0) {
+          credentials.put("security-username", user.get());
+          credentials.put("security-password", user.get());
+          alternate.set(Boolean.FALSE);
+          attempts.set(0);
+        } else {
+          credentials.put("security-username", userName);
+          credentials.put("security-password", userName);
+          if (alternate.get()) {
+            attempts.set(attempts.get() + 1);
+          }
+        }
       } else {
         throw new AuthenticationFailedException("No username provided.");
       }
@@ -58,7 +70,25 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     user.set(newValue);
   }
 
+  public static Boolean getAlternate() {
+    return alternate.get();
+  }
+
+  public static void setAlternate(Boolean newValue) {
+    alternate.set(newValue);
+  }
+
+  public static Integer getAttempts() {
+    return attempts.get();
+  }
+
+  public static void setAttempts(Integer newValue) {
+    attempts.set(newValue);
+  }
+
   public static void reset() {
     user.set(null);
+    alternate.set(Boolean.FALSE);
+    attempts.set(0);
   }
 }

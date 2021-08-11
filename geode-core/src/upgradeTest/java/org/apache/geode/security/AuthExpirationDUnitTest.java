@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -39,7 +38,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -126,7 +124,9 @@ public class AuthExpirationDUnitTest {
             .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("user1");
+      UpdatableUserAuthInitialize.setUser("serviceUser0");
+      UpdatableUserAuthInitialize.setAttempts(0);
+      UpdatableUserAuthInitialize.setAlternate(false);
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       assert clientCache != null;
       clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
@@ -136,9 +136,11 @@ public class AuthExpirationDUnitTest {
       RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
       Region<Object, Object> region = regionService.getRegion("/region");
       region.put(0, "value0");
+      regionService.close();
     });
 
     clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("serviceUser1");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Properties userSecurityProperties = new Properties();
       userSecurityProperties.put("security-username", "serviceUser1");
@@ -152,8 +154,7 @@ public class AuthExpirationDUnitTest {
 
     ExpirableSecurityManager.addExpiredUser("serviceUser1");
 
-    List<String> errorInfo = clientVM.invoke(() -> {
-      List<String> eInfo = new ArrayList<>();
+    clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Properties userSecurityProperties = new Properties();
       userSecurityProperties.put("security-username", "serviceUser1");
@@ -161,22 +162,10 @@ public class AuthExpirationDUnitTest {
       assert clientCache != null;
       RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
       Region<Object, Object> region = regionService.getRegion("/region");
-      try {
-        region.put(2, "value2");
-      } catch (ServerOperationException soe) {
-        eInfo.add(soe.getMessage());
-        eInfo.add(soe.getClass().getSimpleName());
-        eInfo.add(soe.getCause().getClass().getSimpleName());
-        Arrays.stream(soe.getStackTrace()).forEach(element -> eInfo.add(element.toString()));
-        userSecurityProperties.put("security-username", "serviceUser2");
-        userSecurityProperties.put("security-password", "serviceUser2");
-        regionService.close();
-        regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-        region = regionService.getRegion("/region");
-        region.put(2, "value2");
-      }
+      UpdatableUserAuthInitialize.setUser("serviceUser2");
+      UpdatableUserAuthInitialize.setAlternate(Boolean.TRUE);
+      region.put(2, "value2");
       regionService.close();
-      return eInfo;
     });
 
     clientVM.invoke(() -> {
@@ -201,7 +190,6 @@ public class AuthExpirationDUnitTest {
     assertThat(authorizedOps.get("serviceUser1").size()).isEqualTo(1);
     assertThat(authorizedOps.get("serviceUser2").size()).isEqualTo(1);
     assertThat(region.size()).isEqualTo(4);
-    assertThat(errorInfo.size()).isGreaterThan(0);
   }
 
 }
