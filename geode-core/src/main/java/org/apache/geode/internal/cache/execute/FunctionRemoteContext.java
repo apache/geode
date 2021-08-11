@@ -90,7 +90,7 @@ public class FunctionRemoteContext implements DataSerializable {
     if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
         || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
-        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_2)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
       this.principal = DataSerializer.readObject(in);
     }
@@ -118,7 +118,7 @@ public class FunctionRemoteContext implements DataSerializable {
     if (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_14_0)
         || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_12_1)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_13_0))
-        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_1)
+        || (dataStreamVersion.isNewerThanOrEqualTo(KnownVersion.GEODE_1_13_2)
             && dataStreamVersion.isOlderThan(KnownVersion.GEODE_1_14_0))) {
       DataSerializer.writeObject(this.principal, out);
     }
