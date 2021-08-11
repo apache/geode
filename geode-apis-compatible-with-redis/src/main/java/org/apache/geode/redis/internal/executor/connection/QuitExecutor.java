@@ -26,8 +26,6 @@ public class QuitExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    context.eventLoopReady();
-
     return RedisResponse.ok();
   }
 

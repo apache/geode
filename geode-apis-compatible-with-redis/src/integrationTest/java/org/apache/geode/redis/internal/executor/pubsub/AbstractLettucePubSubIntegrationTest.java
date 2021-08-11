@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -144,7 +145,7 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
     assertThat(publishCount1).isEqualTo(1);
     assertThat(publishCount2).isEqualTo(1);
     GeodeAwaitility.await().untilAsserted(() -> assertThat(messages).hasSize(2));
-    assertThat(messages).containsExactly(expectedMap1, expectedMap2);
+    assertThat(messages).containsExactlyInAnyOrder(expectedMap1, expectedMap2);
 
     subscriber.sync().unsubscribe();
   }
@@ -328,6 +329,8 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
     String quitResponse = subscriber.sync().quit();
     assertThat(quitResponse).isEqualTo("OK");
 
+    // Shutting down the subscriber is asynchronous so we need to wait a moment here
+    GeodeAwaitility.await().during(Duration.ofMillis(100)).until(() -> true);
     long publishCount = publisher.sync().publish(CHANNEL, "hello there");
     assertThat(publishCount).isEqualTo(0L);
   }

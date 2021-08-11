@@ -31,13 +31,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.services.StripedCoordinator;
+import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -76,12 +76,13 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
+
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
-    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
+    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
-    regionProvider = new RegionProvider(cache, stripedExecutor, redisStats);
+    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 

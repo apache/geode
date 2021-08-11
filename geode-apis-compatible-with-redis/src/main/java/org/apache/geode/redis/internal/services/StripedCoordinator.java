@@ -11,10 +11,9 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
-package org.apache.geode.redis.internal.executor;
+package org.apache.geode.redis.internal.services;
 
 import java.util.concurrent.Callable;
 
@@ -26,7 +25,7 @@ import java.util.concurrent.Callable;
  * For example it could use the hashCode of the stripeId or use the equals method.
  * Work submitted for the same stripe is guaranteed to be executed sequentially.
  */
-public interface StripedExecutor {
+public interface StripedCoordinator {
   /**
    * Executes, at some time in the future,
    * the given callable by invoking "call" on it and then returning the result.
@@ -34,8 +33,7 @@ public interface StripedExecutor {
    * @param stripeId defines the "stripe"
    * @param callable the unit of work to do sequentially. May be called after run returns.
    */
-  public <T> T execute(Object stripeId,
-      Callable<T> callable);
+  <T> T execute(Object stripeId, Callable<T> callable);
 
   int compareStripes(Object object1, Object object2);
 }
