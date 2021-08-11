@@ -53,7 +53,7 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
   private static final int ORDER_STATISTICS_TREE_OVERHEAD =
       memoryOverhead(OrderStatisticsTree.class);
   @VisibleForTesting
-  static final int PER_ENTRY_OVERHEAD = memoryOverhead(Node.class);
+  static final int NODE_OVERHEAD = memoryOverhead(Node.class);
 
   private Node<E> root;
   private int size;
@@ -160,7 +160,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       root = new Node<>(element);
       size = 1;
       modCount++;
-      incrementSize(element);
       return true;
     }
 
@@ -196,7 +195,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     newNode.parent = parent;
     size++;
     modCount++;
-    incrementSize(element);
     Node<E> hi = parent;
     Node<E> lo = newNode;
 
@@ -267,7 +265,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     }
 
     x = deleteNode(x);
-    decrementSize(x.key);
     fixAfterModification(x, false);
     size--;
     modCount++;
@@ -741,22 +738,15 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
     return leftTreeSize + 1 + rightTreeSize;
   }
 
+  /**
+   * Returns the amount of memory used by this instance and its Node instances.
+   * Note that this does not include the memory used by the elements referenced
+   * by the nodes.
+   */
   @Override
   public int getSizeInBytes() {
-    return ORDER_STATISTICS_TREE_OVERHEAD + (size * PER_ENTRY_OVERHEAD);
+    return ORDER_STATISTICS_TREE_OVERHEAD + (size * NODE_OVERHEAD);
   }
-
-  /**
-   * subclasses can choose to keep track of the size of elements
-   * by overriding these methods.
-   * This class ignores the size of each element instance but tracks
-   * everything else. If a subclass does track element size then they
-   * should also override getSizeInBytes to add the element size to
-   * what it returns.
-   */
-  protected void incrementSize(E element) {}
-
-  protected void decrementSize(E element) {}
 
   private static final class Node<T> {
     T key;
@@ -827,7 +817,6 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
       checkConcurrentModification();
 
       Node<E> x = deleteNode(previousNode);
-      decrementSize(x.key);
       fixAfterModification(x, false);
 
       if (x == nextNode) {

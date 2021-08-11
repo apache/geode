@@ -25,7 +25,7 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.PER_ENTRY_OVERHEAD;
+import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.NODE_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -778,7 +778,7 @@ public class OrderStatisticsTreeTest {
       tree.add(entry);
       int afterSize = sizer.sizeof(tree);
       int perMemberOverhead = afterSize - beforeSize - sizer.sizeof(entry);
-      assertThat(PER_ENTRY_OVERHEAD).isEqualTo(perMemberOverhead);
+      assertThat(NODE_OVERHEAD).isEqualTo(perMemberOverhead);
       beforeSize = afterSize;
     }
   }
