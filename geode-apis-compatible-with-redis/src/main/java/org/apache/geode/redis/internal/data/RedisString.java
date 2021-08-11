@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
@@ -37,17 +38,13 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-  private int appendSequence;
 
-  private byte[] value;
-
-  // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
-  // of the object. It can't be used directly because of its performance impact. This value causes
-  // the size we keep track of to converge to the actual size as it increases.
-  protected static final int BASE_REDIS_STRING_OVERHEAD = 48;
-
+  private static final int REDIS_STRING_OVERHEAD = memoryOverhead(RedisString.class);
   // An array containing the number of set bits for each value from 0x00 to 0xff
   private static final byte[] bitCountTable = getBitCountTable();
+
+  private int appendSequence;
+  private byte[] value;
 
   public RedisString(byte[] value) {
     this.value = value;
@@ -475,7 +472,7 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_STRING_OVERHEAD + value.length;
+    return REDIS_STRING_OVERHEAD + memoryOverhead(value);
   }
 
   private static byte[] getBitCountTable() {
