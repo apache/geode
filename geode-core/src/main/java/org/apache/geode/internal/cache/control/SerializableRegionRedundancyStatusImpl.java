@@ -36,7 +36,9 @@ public class SerializableRegionRedundancyStatusImpl extends
   /**
    * Default constructor used for serialization
    */
-  public SerializableRegionRedundancyStatusImpl() {}
+  public SerializableRegionRedundancyStatusImpl() {
+    status = RedundancyStatus.NOT_SATISFIED;
+  }
 
   public SerializableRegionRedundancyStatusImpl(PartitionedRegion region) {
     regionName = region.getName();
