@@ -55,7 +55,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(FunctionServiceTest.class)
 @SuppressWarnings("serial")
 public class NestedFunctionExecutionDistributedTest implements Serializable {
-
+  // Limit the number of FE threads for this test. On a CI machine, the default value can be very
+  // large, which can cause this test to overwhelm the system and prevent other tests and processes
+  // from creating threads.
+  private static final String TEST_MAX_FE_THREADS = "100";
+  private static final String MAX_FE_THREADS_PROPERTY = "DistributionManager.MAX_FE_THREADS";
   private String uniqueName;
   private String regionName;
   private String hostName;
@@ -99,6 +103,7 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
     Properties properties = new Properties();
     properties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.internal.cache.execute.NestedFunctionExecutionDistributedTest*");
+    System.setProperty(MAX_FE_THREADS_PROPERTY, TEST_MAX_FE_THREADS);
     cacheRule.createCache(properties);
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
@@ -111,6 +116,7 @@ public class NestedFunctionExecutionDistributedTest implements Serializable {
 
   private void createClientCache(int port, int functionTimeout) {
     System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(functionTimeout));
+    System.setProperty(MAX_FE_THREADS_PROPERTY, TEST_MAX_FE_THREADS);
     clientCacheRule.createClientCache();
     PoolManager.createFactory().addServer(hostName, port).setRetryAttempts(0).create(uniqueName);
   }

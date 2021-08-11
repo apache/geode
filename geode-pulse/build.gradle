@@ -26,7 +26,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 jar.enabled = true
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 

@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfig;
@@ -230,7 +231,11 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   public DistributionLocatorId(InetAddress address, Locator locator) {
     this(address, locator.getPort(),
-        locator.getBindAddress() == null ? null : locator.getBindAddress().getHostAddress(), null,
+        (((InternalLocator) locator).getBindAddressString() != null
+            ? ((InternalLocator) locator).getBindAddressString()
+            : (locator.getBindAddress() != null ? locator.getBindAddress().getHostAddress()
+                : null)),
+        null,
         locator.getHostnameForClients());
   }
 
@@ -254,8 +259,9 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   private SSLConfig validateSSLConfig(SSLConfig sslConfig) {
-    if (sslConfig == null)
+    if (sslConfig == null) {
       return new SSLConfig.Builder().build(); // uses defaults
+    }
     return sslConfig;
   }
 
@@ -378,20 +384,26 @@ public class DistributionLocatorId implements java.io.Serializable {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof DistributionLocatorId))
+    }
+    if (!(other instanceof DistributionLocatorId)) {
       return false;
+    }
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (!Objects.equals(this.host, that.host))
+    if (!Objects.equals(this.host, that.host)) {
       return false;
-    if (this.port != that.port)
+    }
+    if (this.port != that.port) {
       return false;
-    if (!StringUtils.equals(this.bindAddress, that.bindAddress))
+    }
+    if (!StringUtils.equals(this.bindAddress, that.bindAddress)) {
       return false;
+    }
 
     return true;
   }
@@ -404,22 +416,29 @@ public class DistributionLocatorId implements java.io.Serializable {
    * @return true if this object is the same as the obj argument; false otherwise.
    */
   public boolean detailCompare(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof DistributionLocatorId))
+    }
+    if (!(other instanceof DistributionLocatorId)) {
       return false;
+    }
     final DistributionLocatorId that = (DistributionLocatorId) other;
 
-    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients))
+    if (!StringUtils.equals(this.hostnameForClients, that.hostnameForClients)) {
       return false;
-    if (!Objects.equals(this.host, that.host))
+    }
+    if (!Objects.equals(this.host, that.host)) {
       return false;
-    if (this.port != that.port)
+    }
+    if (this.port != that.port) {
       return false;
-    if (!StringUtils.equals(this.bindAddress, that.bindAddress))
+    }
+    if (!StringUtils.equals(this.bindAddress, that.bindAddress)) {
       return false;
+    }
 
     return true;
   }

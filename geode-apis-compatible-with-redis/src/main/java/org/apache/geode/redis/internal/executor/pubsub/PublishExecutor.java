@@ -32,7 +32,7 @@ public class PublishExecutor extends AbstractExecutor {
     byte[] channelName = args.get(1);
     byte[] message = args.get(2);
     long publishCount = context.getPubSub()
-        .publish(context.getRegionProvider().getDataRegion(), channelName, message);
+        .publish(context.getRegionProvider(), channelName, message, context.getClient());
 
     return RedisResponse.integer(publishCount);
   }

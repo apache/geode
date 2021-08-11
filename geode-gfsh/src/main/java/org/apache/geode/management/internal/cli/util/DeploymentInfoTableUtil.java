@@ -37,7 +37,7 @@ public class DeploymentInfoTableUtil {
         Map<String, String> infoMap = (Map<String, String>) cliResult.getResultObject();
         if (infoMap != null) {
           for (Map.Entry<String, String> deploymentInfoEntry : infoMap.entrySet()) {
-            deployedJarInfo.add(new DeploymentInfo(cliResult.getMemberIdOrName(), "",
+            deployedJarInfo.add(new DeploymentInfo(cliResult.getMemberIdOrName(),
                 deploymentInfoEntry.getKey(), deploymentInfoEntry.getValue()));
           }
         }
@@ -53,9 +53,8 @@ public class DeploymentInfoTableUtil {
       List<DeploymentInfo> deployedJarInfo) {
     for (DeploymentInfo deploymentInfo : deployedJarInfo) {
       tabularData.accumulate(columnHeaders[0], deploymentInfo.getMemberName());
-      tabularData.accumulate(columnHeaders[1], deploymentInfo.getDeploymentName());
-      tabularData.accumulate(columnHeaders[2], deploymentInfo.getFileName());
-      tabularData.accumulate(columnHeaders[3], deploymentInfo.getAdditionalDeploymentInfo());
+      tabularData.accumulate(columnHeaders[1], deploymentInfo.getFileName());
+      tabularData.accumulate(columnHeaders[2], deploymentInfo.getAdditionalDeploymentInfo());
     }
   }
 }

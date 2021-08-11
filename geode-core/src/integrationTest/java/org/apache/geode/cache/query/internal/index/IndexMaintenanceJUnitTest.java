@@ -686,7 +686,7 @@ public class IndexMaintenanceJUnitTest {
     // Test index maintenance
     // addition of new Portfolio object
     Map<Object, AbstractIndex> indxMap = mri.getRangeIndexHolderForTesting();
-    assertEquals(indxMap.size(), 3);
+    assertEquals(indxMap.size(), 4);
     for (int j = 1; j <= 3; ++j) {
       assertTrue(indxMap.containsKey("key" + j));
       RangeIndex rng = (RangeIndex) indxMap.get("key" + j);
@@ -717,7 +717,7 @@ public class IndexMaintenanceJUnitTest {
       mkid.maap.put("key" + j, "val" + j);
     }
     testRgn.put(ID, mkid);
-    assertEquals(indxMap.size(), 3);
+    assertEquals(indxMap.size(), 4);
     for (int j = 1; j <= 3; ++j) {
       assertTrue(indxMap.containsKey("key" + j));
       RangeIndex rng = (RangeIndex) indxMap.get("key" + j);

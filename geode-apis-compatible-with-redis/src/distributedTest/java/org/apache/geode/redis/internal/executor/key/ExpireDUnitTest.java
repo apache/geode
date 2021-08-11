@@ -15,17 +15,15 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -39,51 +37,32 @@ public class ExpireDUnitTest {
   static final String LOCAL_HOST = "127.0.0.1";
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
-
-  private static Properties locatorProperties;
+  private static JedisCluster jedis;
 
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
-  private static int redisServerPort3;
-
   @BeforeClass
   public static void classSetup() {
-
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
     server3 = clusterStartUp.startRedisVM(3, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
-    redisServerPort3 = clusterStartUp.getRedisPort(3);
-
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort3, JEDIS_TIMEOUT);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @After
   public void testCleanUp() {
-    jedis1.flushAll();
+    clusterStartUp.flushAll();
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
-    jedis3.disconnect();
+    jedis.close();
 
     server1.stop();
     server2.stop();
@@ -91,114 +70,114 @@ public class ExpireDUnitTest {
   }
 
   @Test
-  public void expireOnOneServer_shouldPropagateToAllServers() {
+  public void expire_shouldPropagate() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 20);
+    jedis.sadd(key, "value");
+    jedis.expire(key, 20L);
 
-    assertThat(jedis2.ttl(key)).isGreaterThan(0);
+    assertThat(jedis.ttl(key)).isGreaterThan(0);
   }
 
   @Test
-  public void expireOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
+  public void expire_shouldResultInKeyRemoval() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 1);
+    jedis.sadd(key, "value");
+    jedis.expire(key, 1L);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
+    GeodeAwaitility.await().until(() -> jedis.ttl(key) == -2);
   }
 
   @Test
-  public void whenExpirationIsSet_andIsUpdatedOnAnotherServer_itIsReflectedOnFirstServer() {
+  public void whenExpirationIsSet_andIsUpdated_itHasLastSetValue() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 20);
-    jedis2.expire(key, 10000);
+    jedis.sadd(key, "value");
+    jedis.expire(key, 20L);
+    jedis.expire(key, 10000L);
 
-    assertThat(jedis1.ttl(key)).isGreaterThan(20L);
+    assertThat(jedis.ttl(key)).isGreaterThan(20L);
   }
 
   @Test
-  public void whenExpirationIsSet_andKeyIsResetOnAnotherServer_ttlIsRemovedOnFirstServer() {
+  public void whenExpirationIsSet_andKeyIsReset_ttlIsRemoved() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 20);
-    jedis2.del(key);
-    jedis2.sadd(key, "newValue");
+    jedis.sadd(key, "value");
+    jedis.expire(key, 20L);
+    jedis.del(key);
+    jedis.sadd(key, "newValue");
 
-    assertThat(jedis1.ttl(key)).isEqualTo(-1);
+    assertThat(jedis.ttl(key)).isEqualTo(-1);
   }
 
   @Test
-  public void whenExpirationIsSet_andKeyIsPersistedOnAnotherServer_ttlIsRemovedOnFirstServer() {
+  public void whenExpirationIsSet_andKeyIsPersisted_ttlIsRemoved() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 20);
-    jedis2.persist(key);
+    jedis.sadd(key, "value");
+    jedis.expire(key, 20L);
+    jedis.persist(key);
 
-    assertThat(jedis1.ttl(key)).isEqualTo(-1);
+    assertThat(jedis.ttl(key)).isEqualTo(-1);
   }
 
   @Test
-  public void whenExpirationIsSet_andKeyIsDeletedOnAnotherServerThenReset_ttlIsRemoved() {
+  public void whenExpirationIsSet_andKeyIsDeletedThenReset_ttlIsRemoved() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expire(key, 10000);
-    jedis2.del(key);
-    jedis2.sadd(key, "newVal");
+    jedis.sadd(key, "value");
+    jedis.expire(key, 10000L);
+    jedis.del(key);
+    jedis.sadd(key, "newVal");
 
-    assertThat(jedis1.ttl(key)).isEqualTo(-1);
-    assertThat(jedis2.ttl(key)).isEqualTo(-1);
+    assertThat(jedis.ttl(key)).isEqualTo(-1);
+    assertThat(jedis.ttl(key)).isEqualTo(-1);
   }
 
 
   @Test
-  public void whenExpirationIsSet_andKeyWithoutExpirationIsRenamedOnAnotherServer_expirationIsCorrectlyTransferred() {
-    String key1 = "key1";
-    String key2 = "key2";
+  public void whenExpirationIsSet_andKeyWithoutExpirationIsRenamed_expirationIsCorrectlySet() {
+    String key1 = "{rename}key1";
+    String key2 = "{rename}key2";
 
-    jedis1.sadd(key1, "value");
-    jedis1.sadd(key2, "value");
-    jedis1.expire(key1, 200);
-    jedis2.rename(key1, key2);
+    jedis.sadd(key1, "value");
+    jedis.sadd(key2, "value");
+    jedis.expire(key1, 200L);
+    jedis.rename(key1, key2);
 
-    assertThat(jedis1.ttl(key2)).isGreaterThan(0L);
-    assertThat(jedis2.ttl(key2)).isGreaterThan(0L);
+    assertThat(jedis.ttl(key2)).isGreaterThan(0L);
+    assertThat(jedis.ttl(key2)).isGreaterThan(0L);
   }
 
   @Test
-  public void pExpireOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
+  public void pExpire_shouldResultInKeyRemoval() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.pexpire(key, 50);
+    jedis.sadd(key, "value");
+    jedis.pexpire(key, 50);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
+    GeodeAwaitility.await().until(() -> jedis.ttl(key) == -2);
   }
 
   @Test
-  public void expireAtOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
+  public void expireAt_shouldResultInKeyRemoval() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.expireAt(key, System.currentTimeMillis() / 1000 + 2);
+    jedis.sadd(key, "value");
+    jedis.expireAt(key, System.currentTimeMillis() / 1000 + 2);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
+    GeodeAwaitility.await().until(() -> jedis.ttl(key) == -2);
   }
 
   @Test
-  public void pExpireAtOnOneServer_shouldResultInKeyRemovalFromOtherServer() {
+  public void pExpireAt_shouldResultInKeyRemoval() {
     String key = "key";
 
-    jedis1.sadd(key, "value");
-    jedis1.pexpireAt(key, System.currentTimeMillis() + 100);
+    jedis.sadd(key, "value");
+    jedis.pexpireAt(key, System.currentTimeMillis() + 100);
 
-    GeodeAwaitility.await().until(() -> jedis2.ttl(key) == -2);
+    GeodeAwaitility.await().until(() -> jedis.ttl(key) == -2);
   }
 }

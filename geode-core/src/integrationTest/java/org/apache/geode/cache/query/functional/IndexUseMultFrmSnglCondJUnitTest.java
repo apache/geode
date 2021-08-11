@@ -169,12 +169,14 @@ public class IndexUseMultFrmSnglCondJUnitTest {
     while (iter1.hasNext()) {
       Struct stc2 = (Struct) iter2.next();
       Struct stc1 = (Struct) iter1.next();
-      if (stc2.get(strAr2[0]) != stc1.get(strAr1[0]))
+      if (stc2.get(strAr2[0]) != stc1.get(strAr1[0])) {
         fail(
             "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      }
       if (stc2.get(strAr2[1]) != stc1.get(strAr1[1])
-          || !((Position) stc1.get(strAr1[1])).secId.equals("IBM"))
+          || !((Position) stc1.get(strAr1[1])).secId.equals("IBM")) {
         fail("FAILED: In both the cases either Positions Or secIds obtained are different");
+      }
     }
 
     CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);

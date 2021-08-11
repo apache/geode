@@ -85,9 +85,7 @@ public class DeployCommand extends GfshCommand {
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
-          help = CliStrings.DEPLOY__DIR__HELP) String dir,
-      @CliOption(key = CliStrings.DEPLOYMENT__NAME, help = CliStrings.DEPLOYMENT__NAME__HELP,
-          specifiedDefaultValue = "") String deploymentName)
+          help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 
     ResultModel result = new ResultModel();
@@ -104,14 +102,14 @@ public class DeployCommand extends GfshCommand {
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
-    results = deployJars(deploymentName, jarFullPaths, targetMembers, results, exporter);
+    results = deployJars(jarFullPaths, targetMembers, results, exporter);
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
 
     List<DeploymentInfo> deploymentInfos =
         DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(cleanedResults);
     DeploymentInfoTableUtil.writeDeploymentInfoToTable(
-        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, deployResult,
+        new String[] {"Member", "JAR", "JAR Location"}, deployResult,
         deploymentInfos);
 
     if (result.getStatus() == Result.Status.OK) {
@@ -119,14 +117,15 @@ public class DeployCommand extends GfshCommand {
       if (sc == null) {
         result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       } else {
-        sc.addJarsToThisLocator(deploymentName, jarFullPaths, groups);
+        sc.addJarsToThisLocator(jarFullPaths, groups);
       }
     }
     return result;
   }
 
-  private List<List<Object>> deployJars(String deploymentName, List<String> jarFullPaths,
-      Set<DistributedMember> targetMembers, List<List<Object>> results,
+  private List<List<Object>> deployJars(List<String> jarFullPaths,
+      Set<DistributedMember> targetMembers,
+      List<List<Object>> results,
       RemoteStreamExporter exporter)
       throws FileNotFoundException, java.rmi.RemoteException {
     for (DistributedMember member : targetMembers) {
@@ -153,7 +152,7 @@ public class DeployCommand extends GfshCommand {
         // this deploys the jars to all the matching servers
         ResultCollector<?, ?> resultCollector =
             executeFunction(this.deployFunction,
-                new Object[] {jarNames, remoteStreams, deploymentName}, member);
+                new Object[] {jarNames, remoteStreams}, member);
 
         @SuppressWarnings("unchecked")
         final List<List<Object>> resultCollectorResult =

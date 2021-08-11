@@ -20,13 +20,8 @@ import static org.apache.geode.management.runtime.RegionRedundancyStatus.Redunda
 import static org.apache.geode.management.runtime.RegionRedundancyStatus.RedundancyStatus.SATISFIED;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.FAILURE;
 import static org.apache.geode.management.runtime.RestoreRedundancyResults.Status.SUCCESS;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,9 +106,11 @@ public class RestoreRedundancyOperationDUnitTest {
       ResourceManagerStats stats = Objects.requireNonNull(ClusterStartupRule.getCache())
           .getInternalResourceManager().getStats();
 
-      assertThat(stats.getRestoreRedundanciesInProgress(), equalTo(0L));
-      assertThat(stats.getRestoreRedundanciesCompleted(), equalTo(1L));
-      assertThat(stats.getRestoreRedundancyTime(), greaterThan(0L));
+      await()
+          .untilAsserted(() -> assertThat(stats.getRestoreRedundanciesInProgress()).isEqualTo(0L));
+      await()
+          .untilAsserted(() -> assertThat(stats.getRestoreRedundanciesCompleted()).isEqualTo(1L));
+      await().untilAsserted(() -> assertThat(stats.getRestoreRedundancyTime()).isGreaterThan(0L));
     });
   }
 
@@ -121,12 +118,13 @@ public class RestoreRedundancyOperationDUnitTest {
   public void redundancyIsRecoveredAndPrimariesBalancedWhenRestoreRedundancyIsCalledWithNoIncludedOrExcludedRegions() {
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
-      assertThat(results.getTotalPrimaryTransfersCompleted() > 0, is(true));
-      assertThat(results.getTotalPrimaryTransferTime() > 0, is(true));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
+      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
+      assertThat(results.getTotalPrimaryTransferTime() > 0).isTrue();
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus())
+          .isEqualTo(SATISFIED);
     });
 
     servers.forEach(s -> s.invoke(() -> {
@@ -144,12 +142,13 @@ public class RestoreRedundancyOperationDUnitTest {
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, false);
 
-      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
-      assertThat(results.getTotalPrimaryTransfersCompleted(), is(0));
-      assertThat(results.getTotalPrimaryTransferTime(), is(0L));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
+      assertThat(results.getTotalPrimaryTransfersCompleted()).isEqualTo(0);
+      assertThat(results.getTotalPrimaryTransferTime()).isEqualTo(0L);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus())
+          .isEqualTo(SATISFIED);
     });
 
     servers.forEach(s -> s.invoke(() -> {
@@ -168,10 +167,10 @@ public class RestoreRedundancyOperationDUnitTest {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null,
           Collections.singleton(LOW_REDUNDANCY_REGION_NAME), true);
 
-      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME), nullValue());
+      assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME)).isNull();
     });
 
     servers.forEach(s -> s.invoke(() -> {
@@ -196,9 +195,9 @@ public class RestoreRedundancyOperationDUnitTest {
       RestoreRedundancyResults results =
           restoreRedundancyAndGetResults(includeSet, excludeSet, true);
 
-      assertThat(results.getRegionOperationStatus(), is(SUCCESS));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(SATISFIED));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(SUCCESS);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus()).isEqualTo(SATISFIED);
     });
 
     servers.forEach(s -> s.invoke(() -> {
@@ -216,10 +215,11 @@ public class RestoreRedundancyOperationDUnitTest {
 
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getRegionOperationStatus(), is(FAILURE));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NOT_SATISFIED));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NOT_SATISFIED));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(), is(SATISFIED));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(FAILURE);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus()).isEqualTo(NOT_SATISFIED);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus()).isEqualTo(NOT_SATISFIED);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus())
+          .isEqualTo(SATISFIED);
     });
 
     servers.forEach(s -> s.invoke(() -> {
@@ -239,15 +239,17 @@ public class RestoreRedundancyOperationDUnitTest {
     servers.remove(servers.size() - 1).stop();
     servers.remove(servers.size() - 1).stop();
 
-    assertThat(servers.size(), is(1));
+    assertThat(servers.size()).isEqualTo(1);
 
     servers.get(0).invoke(() -> {
       RestoreRedundancyResults results = restoreRedundancyAndGetResults(null, null, true);
-      assertThat(results.getRegionOperationStatus(), is(FAILURE));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(NO_REDUNDANT_COPIES));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(),
-          is(NO_REDUNDANT_COPIES));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(FAILURE);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus())
+          .isEqualTo(NO_REDUNDANT_COPIES);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus())
+          .isEqualTo(NO_REDUNDANT_COPIES);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus())
+          .isEqualTo(NO_REDUNDANT_COPIES);
       assertRedundancyStatus(PARENT_REGION_NAME, false);
       assertRedundancyStatus(CHILD_REGION_NAME, false);
       assertRedundancyStatus(LOW_REDUNDANCY_REGION_NAME, false);
@@ -278,9 +280,8 @@ public class RestoreRedundancyOperationDUnitTest {
         .excludeRegions(excludeRegions)
         .shouldReassignPrimaries(shouldReassign)
         .start();
-    assertThat(resourceManager.getRestoreRedundancyFutures().size(), is(1));
-    assertThat(resourceManager.getRestoreRedundancyFutures().contains(redundancyOpFuture),
-        is(true));
+    assertThat(resourceManager.getRestoreRedundancyFutures().size()).isEqualTo(1);
+    assertThat(resourceManager.getRestoreRedundancyFutures().contains(redundancyOpFuture)).isTrue();
     return redundancyOpFuture.get();
   }
 
@@ -321,8 +322,8 @@ public class RestoreRedundancyOperationDUnitTest {
 
     String message =
         "Expecting redundancy to " + (shouldBeSatisfied ? "" : "not") + " be satisfied";
-    assertThat(message, region.getRedundancyProvider().isRedundancyImpaired(),
-        is(!shouldBeSatisfied));
+    assertThat(region.getRedundancyProvider().isRedundancyImpaired()).as(message)
+        .isEqualTo(!shouldBeSatisfied);
   }
 
   private static void assertPrimariesBalanced(String regionName, int numberOfServers,
@@ -339,11 +340,11 @@ public class RestoreRedundancyOperationDUnitTest {
     String message = "Primaries should be balanced, but expectedPrimaries:actualPrimaries = "
         + expectedPrimaries + ":" + primariesOnServer;
     if (shouldBeBalanced) {
-      assertThat(message, Math.abs(primariesOnServer - expectedPrimaries),
-          is(lessThanOrEqualTo(2)));
+      assertThat(Math.abs(primariesOnServer - expectedPrimaries)).as(message)
+          .isLessThanOrEqualTo(2);
     } else {
-      assertThat("Primaries should not be balanced",
-          Math.abs(primariesOnServer - expectedPrimaries), is(not(lessThanOrEqualTo(2))));
+      assertThat(Math.abs(primariesOnServer - expectedPrimaries))
+          .as("Primaries should not be balanced").isGreaterThan(2);
     }
   }
 
@@ -355,13 +356,13 @@ public class RestoreRedundancyOperationDUnitTest {
           .getResourceManager()
           .createRestoreRedundancyOperation()
           .redundancyStatus();
-      assertThat(results.getRegionOperationStatus(), is(expectedResultStatus));
-      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus(), is(
-          expectedRedundancyStatus));
-      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus(), is(
-          expectedRedundancyStatus));
-      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus(),
-          is(expectedRedundancyStatus));
+      assertThat(results.getRegionOperationStatus()).isEqualTo(expectedResultStatus);
+      assertThat(results.getRegionResult(PARENT_REGION_NAME).getStatus())
+          .isEqualTo(expectedRedundancyStatus);
+      assertThat(results.getRegionResult(CHILD_REGION_NAME).getStatus())
+          .isEqualTo(expectedRedundancyStatus);
+      assertThat(results.getRegionResult(LOW_REDUNDANCY_REGION_NAME).getStatus())
+          .isEqualTo(expectedRedundancyStatus);
     }));
   }
 

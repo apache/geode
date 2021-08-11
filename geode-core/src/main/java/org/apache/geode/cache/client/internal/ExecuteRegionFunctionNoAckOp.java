@@ -70,10 +70,11 @@ public class ExecuteRegionFunctionNoAckOp {
             "ExecuteRegionFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message: {} to server using pool: {}",
             op.getMessage(), pool, ex);
       }
-      if (ex.getMessage() != null)
+      if (ex.getMessage() != null) {
         throw new FunctionException(ex.getMessage(), ex);
-      else
+      } else {
         throw new FunctionException("Unexpected exception during function execution:", ex);
+      }
     }
   }
 
@@ -95,10 +96,11 @@ public class ExecuteRegionFunctionNoAckOp {
             "ExecuteRegionFunctionNoAckOp#execute : Exception occurred while Sending Function Execution Message: {} to server using pool: {}",
             op.getMessage(), pool, ex);
       }
-      if (ex.getMessage() != null)
+      if (ex.getMessage() != null) {
         throw new FunctionException(ex.getMessage(), ex);
-      else
+      } else {
         throw new FunctionException("Unexpected exception during function execution:", ex);
+      }
     }
   }
 

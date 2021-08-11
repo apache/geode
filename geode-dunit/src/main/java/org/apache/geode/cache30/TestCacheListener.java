@@ -195,8 +195,9 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
   @Override
   public void afterRegionDestroy(RegionEvent<K, V> event) {
     // check argument to see if this is during tearDown
-    if ("teardown".equals(event.getCallbackArgument()))
+    if ("teardown".equals(event.getCallbackArgument())) {
       return;
+    }
     afterRegionDestroyBeforeAddEvent(event);
     addEvent(event);
     try {

@@ -16,19 +16,29 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -40,16 +50,18 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class RedisHashTest {
+  private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
+  private final ReflectionSingleObjectSizer elementSizer =
+      new ReflectionSingleObjectSizer();
 
   @BeforeClass
   public static void beforeClass() {
-    InternalDataSerializer
-        .getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.REDIS_BYTE_ARRAY_WRAPPER, ByteArrayWrapper.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_HASH_ID,
         RedisHash.class);
@@ -71,15 +83,6 @@ public class RedisHashTest {
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisHash o2 = DataSerializer.readObject(in);
     assertThat(o2).isEqualTo(o1);
-  }
-
-  private RedisHash createRedisHash(String k1, String v1, String k2, String v2) {
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
-    elements.add(createByteArrayWrapper(k1));
-    elements.add(createByteArrayWrapper(v1));
-    elements.add(createByteArrayWrapper(k2));
-    elements.add(createByteArrayWrapper(v2));
-    return new RedisHash(elements);
   }
 
   @Test
@@ -117,14 +120,15 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  /************* HSET *************/
   @SuppressWarnings("unchecked")
   @Test
   public void hset_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k3 = createByteArrayWrapper("k3");
-    ByteArrayWrapper v3 = createByteArrayWrapper("v3");
-    ArrayList<ByteArrayWrapper> adds = new ArrayList<>();
+    byte[] k3 = stringToBytes("k3");
+    byte[] v3 = stringToBytes("v3");
+    ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
     o1.hset(region, null, adds, false);
@@ -144,8 +148,8 @@ public class RedisHashTest {
   public void hdel_stores_delta_that_is_stable() throws IOException {
     Region<RedisKey, RedisData> region = mock(Region.class);
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
-    ByteArrayWrapper k1 = createByteArrayWrapper("k1");
-    ArrayList<ByteArrayWrapper> removes = new ArrayList<>();
+    byte[] k1 = stringToBytes("k1");
+    ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(k1);
     o1.hdel(region, null, removes);
     assertThat(o1.hasDelta()).isTrue();
@@ -159,6 +163,7 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  /************* Expiration *************/
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
@@ -176,108 +181,310 @@ public class RedisHashTest {
     assertThat(o2).isEqualTo(o1);
   }
 
+  /************* HSCAN *************/
   @Test
-  public void hscanSnaphots_shouldBeEmpty_givenHscanHasNotBeenCalled() {
-    RedisHash subject = createRedisHash(100);
-    assertThat(subject.getHscanSnapShots()).isEmpty();
-  }
+  public void hscanReturnsCorrectNumberOfElements() {
+    RedisHash hash = createRedisHash("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4");
+    ImmutablePair<Integer, List<byte[]>> result = hash.hscan(null, 2, 0);
 
-  @Test
-  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled() {
-
-    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
-    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
-    UUID clientID = UUID.randomUUID();
-
-    subject.hscan(clientID, null, 10, 0);
-
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
-
-    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
-
-    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
-    assertThat(keyList).isNotEmpty();
-
-    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (entry.toString().contains("field")) {
-        assertThat(keyList).contains(entry);
-      } else if (entry.toString().contains("value")) {
-        assertThat(keyList).doesNotContain(entry);
-      }
-    });
-
+    assertThat(result.left).isNotEqualTo(0);
+    assertThat(result.right).hasSize(4);
+    result = hash.hscan(null, 3, result.left);
+    assertThat(result.left).isEqualTo(0);
+    assertThat(result.right).hasSize(4);
   }
 
   @Test
-  public void hscanSnaphots_shouldContainSnapshot_givenHscanHasBeenCalled_WithNonZeroCursor() {
+  public void hscanOnlyReturnsElementsMatchingPattern() {
+    RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
+    ImmutablePair<Integer, List<byte[]>> result = hash.hscan(Pattern.compile("a.*"), 3, 0);
 
-    final List<ByteArrayWrapper> FIELDS_AND_VALUES_FOR_HASH = createListOfDataElements(100);
-    RedisHash subject = new RedisHash(FIELDS_AND_VALUES_FOR_HASH);
-    UUID clientID = UUID.randomUUID();
+    assertThat(result.left).isEqualTo(0);
+    List<String> fieldsAndValues =
+        result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());
 
-    subject.hscan(clientID, null, 10, 10);
-
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
-
-    assertThat(hscanSnapShotMap.containsKey(clientID)).isTrue();
-
-    List<ByteArrayWrapper> keyList = hscanSnapShotMap.get(clientID);
-    assertThat(keyList).isNotEmpty();
-
-    FIELDS_AND_VALUES_FOR_HASH.forEach((entry) -> {
-      if (entry.toString().contains("field")) {
-        assertThat(keyList).contains(entry);
-      } else if (entry.toString().contains("value")) {
-        assertThat(keyList).doesNotContain(entry);
-      }
-    });
+    assertThat(fieldsAndValues).containsExactly("ak1", "v1", "ak3", "v3");
   }
 
   @Test
-  public void hscanSnaphots_shouldBeRemoved_givenCompleteIteration() {
-    RedisHash subject = createRedisHashWithExpiration(1, 100000);
-    UUID client_ID = UUID.randomUUID();
+  public void hscanThrowsWhenReturnedArrayListLengthWouldExceedVMLimit() {
+    RedisHash hash = spy(new RedisHash());
+    doReturn(Integer.MAX_VALUE - 10).when(hash).hlen();
 
-    subject.hscan(client_ID, null, 10, 0);
+    assertThatThrownBy(() -> hash.hscan(null, Integer.MAX_VALUE - 10, 0))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
 
-    ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap = subject.getHscanSnapShots();
-    assertThat(hscanSnapShotMap).isEmpty();
+  /************* Hash Size *************/
+  /******* constants *******/
+  // this test contains the math that was used to derive the constant in RedisHash. If this test
+  // starts failing, it is because the overhead of RedisHash has changed. If it has decreased, good
+  // job! You can change the constant in RedisHash to reflect that. If it has increased, carefully
+  // consider that increase before changing the constant.
+  @Test
+  public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> backingHash =
+        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(0, ByteArrays.HASH_STRATEGY);
+
+    assertThat(sizer.sizeof(hash) - sizer.sizeof(backingHash)).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
+  }
+
+  /******* constructor *******/
+
+  @Test
+  public void should_calculateSize_equalToROSSize_ofIndividualInstanceWithSingleValue() {
+    ArrayList<byte[]> data = new ArrayList<>();
+    data.add(stringToBytes("field"));
+    data.add(stringToBytes("valuethatisverylonggggggggg"));
+
+    RedisHash redisHash = new RedisHash(data);
+
+    final int expected = sizer.sizeof(redisHash);
+    final int actual = redisHash.getSizeInBytes();
+
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
-  public void hscanSnaphots_shouldExpireAfterExpiryPeriod() {
-    RedisHash subject = createRedisHashWithExpiration(1000, 1);
-    UUID client_ID = UUID.randomUUID();
+  public void should_calculateSize_equalToROSSize_ofIndividualInstanceWithMultipleValues() {
+    RedisHash redisHash =
+        createRedisHash("aSuperLongField", "value", "field", "aSuperLongValue");
 
-    subject.hscan(client_ID, null, 1, 0);
+    final int expected = sizer.sizeof(redisHash);
+    final int actual = redisHash.getSizeInBytes();
 
-    GeodeAwaitility.await().atMost(2, SECONDS).untilAsserted(() -> {
-      ConcurrentHashMap<UUID, List<ByteArrayWrapper>> hscanSnapShotMap =
-          subject.getHscanSnapShots();
-      assertThat(hscanSnapShotMap).isEmpty();
-    });
+    assertThat(actual).isEqualTo(expected);
   }
 
-  private RedisHash createRedisHash(int NumberOfFields) {
-    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
-    return new RedisHash(elements);
-  }
+  @Test
+  public void should_calculateSize_equalToROSSize_withManyEntries() {
+    final String baseField = "longerbase";
+    final String baseValue = "base";
 
-  private ArrayList<ByteArrayWrapper> createListOfDataElements(int NumberOfFields) {
-    ArrayList<ByteArrayWrapper> elements = new ArrayList<>();
-    for (int i = 0; i < NumberOfFields; i++) {
-      elements.add(createByteArrayWrapper("field_" + i));
-      elements.add(createByteArrayWrapper("value_" + i));
+    ArrayList<byte[]> elements = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      elements.add(stringToBytes(baseField + i));
+      elements.add(stringToBytes(baseValue + i));
     }
-    return elements;
+    RedisHash hash = new RedisHash(elements);
+
+    Integer actual = hash.getSizeInBytes();
+    int expected = sizer.sizeof(hash);
+
+    assertThat(actual).isEqualTo(expected);
   }
 
-  private RedisHash createRedisHashWithExpiration(int NumberOfFields, int hcanSnapshotExpiry) {
-    ArrayList<ByteArrayWrapper> elements = createListOfDataElements(NumberOfFields);
-    return new RedisHash(elements, hcanSnapshotExpiry, hcanSnapshotExpiry);
+  /******* put *******/
+  @Test
+  public void hsetShould_calculateSize_equalToSizeCalculatedInConstructor_forMultipleEntries() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String baseField = "field";
+    final String baseValue = "value";
+
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(), any())).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
+    }
+
+    hash.hset(region, key, data, false);
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(data));
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedRedisHash.getSizeInBytes());
   }
 
-  private ByteArrayWrapper createByteArrayWrapper(String str) {
-    return new ByteArrayWrapper(Coder.stringToBytes(str));
+  @Test
+  public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_newIsShorterThanOld() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String field = "field";
+    final String initialValue = "initialValueThatIsMuchLongerThanFinalValue";
+    final String finalValue = "finalValue";
+
+    testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
+  }
+
+  @Test
+  public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_oldIsShorterThanNew() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String field = "field";
+    final String initialValue = "initialValue";
+    final String finalValue = "finalValueThatIsMuchLongerThanInitialValue";
+
+    testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
+  }
+
+  @Test
+  public void hsetShould_calculateSizeDifference_whenUpdatingExistingEntry_valuesAreSameLength() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String field = "field";
+    final String initialValue = "initialValue";
+    final String finalValue = "finalValueee";
+
+    testThatSizeIsUpdatedWhenUpdatingValue(key, field, initialValue, finalValue);
+  }
+
+  public void testThatSizeIsUpdatedWhenUpdatingValue(final RedisKey key, final String field,
+      final String initialValue, final String finalValue) {
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> initialData = new ArrayList<>();
+    initialData.add(stringToBytes(field));
+    initialData.add(stringToBytes(initialValue));
+
+    hash.hset(region, key, initialData, false);
+    hash.clearDelta();
+
+    long initialSize = sizer.sizeof(hash);
+
+    List<byte[]> finalData = new ArrayList<>();
+    finalData.add(stringToBytes(field));
+    finalData.add(stringToBytes(finalValue));
+
+    hash.hset(region, key, finalData, false);
+    hash.clearDelta();
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+
+    long expectedSizeChange = elementSizer.sizeof(Coder.stringToBytes(finalValue))
+        - elementSizer.sizeof(Coder.stringToBytes(initialValue));
+    long actualSizeChange = hash.getSizeInBytes() - initialSize;
+
+    assertThat(actualSizeChange).isEqualTo(expectedSizeChange);
+  }
+
+  /******* put if absent *******/
+  @Test
+  public void putIfAbsentShould_calculateSizeEqualToSizeCalculatedInConstructor_forMultipleUniqueEntries() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String baseField = "field";
+    final String baseValue = "value";
+
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
+    }
+
+    hash.hset(region, key, data, true);
+    RedisHash expectedRedisHash = new RedisHash(new ArrayList<>(data));
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedRedisHash.getSizeInBytes());
+  }
+
+  @Test
+  public void putIfAbsentShould_notChangeSize_whenSameDataIsSetTwice() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String baseField = "field";
+    final String baseValue = "value";
+
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> data = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      data.add(stringToBytes((baseField + i)));
+      data.add(stringToBytes((baseValue + i)));
+    }
+
+    hash.hset(region, key, data, true);
+
+    int expectedSize = hash.getSizeInBytes();
+
+    hash.hset(region, key, data, true);
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize);
+  }
+
+  @Test
+  public void putIfAbsent_shouldNotChangeSize_whenPuttingToExistingFields() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String baseField = "field";
+    final String initialBaseValue = "value";
+    final String finalBaseValue = "longerValue";
+
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
+
+    RedisHash hash = new RedisHash(Collections.emptyList());
+    List<byte[]> initialData = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      initialData.add(stringToBytes((baseField + i)));
+      initialData.add(stringToBytes((initialBaseValue + i)));
+    }
+
+    hash.hset(region, key, initialData, true);
+
+    int expectedSize = hash.getSizeInBytes();
+
+    List<byte[]> finalData = new ArrayList<>();
+    for (int i = 0; i < 10_000; i++) {
+      finalData.add(stringToBytes((baseField + i)));
+      finalData.add(stringToBytes((finalBaseValue + i)));
+    }
+
+    hash.hset(region, key, finalData, true);
+
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize);
+  }
+
+  /******* remove *******/
+  @Test
+  public void sizeShouldDecrease_whenValueIsRemoved() {
+    final RedisKey key = new RedisKey(stringToBytes("key"));
+    final String baseField = "field";
+    final String baseValue = "value";
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final RedisData returnData = mock(RedisData.class);
+    when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
+
+    List<byte[]> data = new ArrayList<>();
+    List<byte[]> dataToRemove = new ArrayList<>();
+    byte[] field1 = stringToBytes((baseField + 1));
+    byte[] value1 = stringToBytes((baseValue + 1));
+    byte[] field2 = stringToBytes((baseField + 2));
+    byte[] value2 = stringToBytes((baseValue + 2));
+    data.add(field1);
+    data.add(value1);
+    data.add(field2);
+    data.add(value2);
+    dataToRemove.add(field1);
+
+    RedisHash redisHash = new RedisHash(data);
+    redisHash.clearDelta();
+
+    int initialSize = redisHash.getSizeInBytes();
+
+    redisHash.hdel(region, key, dataToRemove);
+    redisHash.clearDelta();
+
+    int finalSize = redisHash.getSizeInBytes();
+    assertThat(finalSize).isLessThan(initialSize);
+
+    assertThat(finalSize).isEqualTo(sizer.sizeof(redisHash));
+  }
+
+  private RedisHash createRedisHash(String... keysAndValues) {
+    final List<byte[]> keysAndValuesList = Arrays
+        .stream(keysAndValues)
+        .map(Coder::stringToBytes)
+        .collect(Collectors.toList());
+    return new RedisHash(keysAndValuesList);
   }
 }

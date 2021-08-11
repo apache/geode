@@ -15,18 +15,18 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.redis.internal.executor.string.SetOptions.Exists.NONE;
+import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NONE;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetEXExecutor extends StringExecutor {
+public class SetEXExecutor extends AbstractExecutor {
 
   private static final String ERROR_SECONDS_NOT_A_NUMBER =
       "The expiration argument provided was not a number";
@@ -34,15 +34,13 @@ public class SetEXExecutor extends StringExecutor {
   private static final String ERROR_SECONDS_NOT_LEGAL =
       "invalid expire time in setex";
 
-  private static final String SUCCESS = "OK";
-
   private static final int VALUE_INDEX = 3;
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     RedisKey key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
@@ -64,9 +62,9 @@ public class SetEXExecutor extends StringExecutor {
     }
     SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    stringCommands.set(key, new ByteArrayWrapper(value), setOptions);
+    stringCommands.set(key, value, setOptions);
 
-    return RedisResponse.string(SUCCESS);
+    return RedisResponse.ok();
   }
 
   protected boolean timeUnitMillis() {

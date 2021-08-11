@@ -96,12 +96,14 @@ public class MsgDestreamer {
   }
 
   private void waitUntilDone() throws InterruptedException {
-    if (this.t.isClosed() || Thread.interrupted())
+    if (this.t.isClosed() || Thread.interrupted()) {
       throw new InterruptedException();
+    }
     synchronized (this) {
       while (this.failure == null && this.result == null) {
-        if (this.t.isClosed() || Thread.interrupted())
+        if (this.t.isClosed() || Thread.interrupted()) {
           throw new InterruptedException();
+        }
         this.wait(); // spurious wakeup ok
       }
     }
@@ -358,18 +360,21 @@ public class MsgDestreamer {
     }
 
     private ByteBuffer waitForData() throws InterruptedException {
-      if (isClosed() || Thread.interrupted())
+      if (isClosed() || Thread.interrupted()) {
         throw new InterruptedException();
+      }
       synchronized (this.dataMon) {
         ByteBuffer result = this.data;
         while (result == null) {
-          if (isClosed() || Thread.interrupted())
+          if (isClosed() || Thread.interrupted()) {
             throw new InterruptedException();
+          }
           // logit("about to dataMon wait");
           this.dataMon.wait(); // spurious wakeup ok
           // logit("after dataMon wait");
-          if (isClosed() || Thread.interrupted())
+          if (isClosed() || Thread.interrupted()) {
             throw new InterruptedException();
+          }
           result = this.data;
         }
         return result;
@@ -389,17 +394,20 @@ public class MsgDestreamer {
     }
 
     private void waitUntilDone() throws InterruptedException {
-      if (isClosed() || Thread.interrupted())
+      if (isClosed() || Thread.interrupted()) {
         throw new InterruptedException();
+      }
       synchronized (this.doneMon) {
         while (this.data != null) {
-          if (isClosed() || Thread.interrupted())
+          if (isClosed() || Thread.interrupted()) {
             throw new InterruptedException();
+          }
           // logit("about to doneMon wait");
           this.doneMon.wait(); // spurious wakeup ok
           // logit("after doneMon wait");
-          if (isClosed() || Thread.interrupted())
+          if (isClosed() || Thread.interrupted()) {
             throw new InterruptedException();
+          }
         }
       }
     }

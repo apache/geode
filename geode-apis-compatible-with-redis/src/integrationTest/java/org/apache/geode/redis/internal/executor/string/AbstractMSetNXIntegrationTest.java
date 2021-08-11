@@ -23,46 +23,48 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractMSetNXIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private final String hashTag = "{111}";
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX))
+    assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSETNX))
         .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSETNX, "key"))
         .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
   }
 
   @Test
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.MSETNX, "key1", "value1", "key2",
-        "value2", "key3"))
+    assertThatThrownBy(() -> jedis.sendCommand(hashTag, Protocol.Command.MSETNX, "key1" + hashTag,
+        "value1", "key2" + hashTag, "value2", "key3" + hashTag))
             .hasMessageContaining("ERR wrong number of arguments");
   }
 
@@ -70,7 +72,7 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisPortSupplier
   public void testMSetNX() {
     Set<String> keysAndVals = new HashSet<String>();
     for (int i = 0; i < 2 * 5; i++) {
-      keysAndVals.add(randString());
+      keysAndVals.add(randString() + hashTag);
     }
     String[] keysAndValsArray = keysAndVals.toArray(new String[0]);
     long response = jedis.msetnx(keysAndValsArray);

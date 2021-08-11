@@ -59,13 +59,13 @@ dependencies {
 
   integrationTestImplementation(project(':geode-dunit'));
 
-  integrationTestRuntimeOnly(files(war.destinationDir))
+  integrationTestRuntimeOnly(files(war.destinationDirectory))
 
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-  distributedTestRuntimeOnly(files(war.destinationDir))
+  distributedTestRuntimeOnly(files(war.destinationDirectory))
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }

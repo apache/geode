@@ -1,16 +1,9 @@
 org/apache/geode/redis/internal/ParameterRequirements/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/RedisCommandSupportLevel,false
 org/apache/geode/redis/internal/RedisCommandType,false,deferredParameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,executor:org/apache/geode/redis/internal/executor/Executor,parameterRequirements:org/apache/geode/redis/internal/ParameterRequirements/ParameterRequirements,supportLevel:org/apache/geode/redis/internal/RedisCommandSupportLevel
-org/apache/geode/redis/internal/data/NullRedisSet$SetOp,false
-org/apache/geode/redis/internal/data/NullRedisString$BitOp,false
 org/apache/geode/redis/internal/data/RedisDataType,false,toStringValue:java/lang/String
-org/apache/geode/redis/internal/data/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/delta/DeltaType,false
-org/apache/geode/redis/internal/executor/CommandFunction,true,-1302506316316454732
-org/apache/geode/redis/internal/executor/SingleResultRedisFunction,true,3239452234149879302
-org/apache/geode/redis/internal/executor/key/RenameFunction,true,7047473969356686453
-org/apache/geode/redis/internal/executor/string/SetOptions$Exists,false
-org/apache/geode/redis/internal/gfsh/RedisCommandFunction,true,-6607122865046807926
+org/apache/geode/redis/internal/executor/BaseSetOptions$Exists,false
 org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949
 org/apache/geode/redis/internal/pubsub/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/pubsub/PubSubImpl

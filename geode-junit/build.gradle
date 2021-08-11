@@ -19,9 +19,13 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+compileJava {
+  options.compilerArgs << '-Xlint:-sunapi'
+  options.compilerArgs << '-XDenableSunApiLintControl'
+}
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
@@ -34,6 +38,8 @@ dependencies {
   api('junit:junit') {
     exclude module: 'hamcrest'
   }
+  api('org.junit.jupiter:junit-jupiter-api')
+  api('org.junit.jupiter:junit-jupiter-params')
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
@@ -51,15 +57,16 @@ dependencies {
   api('org.apache.logging.log4j:log4j-api')
   
   api('org.awaitility:awaitility')
-  api('org.bouncycastle:bcpkix-jdk15on')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
   
   api('org.skyscreamer:jsonassert')
 
+  implementation('org.junit.jupiter:junit-jupiter-engine')
+  implementation('org.junit.vintage:junit-vintage-engine')
+
   testImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 test {

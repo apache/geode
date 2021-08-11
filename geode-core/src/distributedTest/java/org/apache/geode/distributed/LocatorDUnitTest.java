@@ -100,8 +100,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -427,7 +427,7 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 

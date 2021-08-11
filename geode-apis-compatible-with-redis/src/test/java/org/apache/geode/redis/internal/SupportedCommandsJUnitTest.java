@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.Arrays.asList;
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -32,31 +33,33 @@ public class SupportedCommandsJUnitTest {
   private final String[] supportedCommands = new String[] {
       "APPEND",
       "AUTH",
+      "CLUSTER",
       "DECR",
       "DECRBY",
       "DEL",
+      "DUMP",
       "EXISTS",
       "EXPIRE",
       "EXPIREAT",
       "GET",
       "GETRANGE",
-      "HGET",
       "HDEL",
       "HEXISTS",
+      "HGET",
       "HGETALL",
+      "HINCRBY",
       "HINCRBYFLOAT",
+      "HLEN",
+      "HMGET",
       "HMSET",
+      "HSCAN",
       "HSET",
       "HSETNX",
-      "HLEN",
-      "HSCAN",
-      "HMGET",
       "HSTRLEN",
-      "HINCRBY",
       "HVALS",
       "HKEYS",
-      "INCRBY",
       "INCR",
+      "INCRBY",
       "INCRBYFLOAT",
       "INFO",
       "KEYS",
@@ -66,11 +69,13 @@ public class SupportedCommandsJUnitTest {
       "PEXPIREAT",
       "PING",
       "PSUBSCRIBE",
+      "PUBSUB",
       "PTTL",
       "PUBLISH",
       "PUNSUBSCRIBE",
       "QUIT",
       "RENAME",
+      "RESTORE",
       "SADD",
       "SET",
       "SETNX",
@@ -82,6 +87,19 @@ public class SupportedCommandsJUnitTest {
       "TTL",
       "TYPE",
       "UNSUBSCRIBE",
+      "ZADD",
+      "ZINCRBY",
+      "ZCARD",
+      "ZCOUNT",
+      "ZPOPMAX",
+      "ZRANGE",
+      "ZRANGEBYLEX",
+      "ZRANGEBYSCORE",
+      "ZRANK",
+      "ZREM",
+      "ZREVRANGE",
+      "ZREVRANK",
+      "ZSCORE"
   };
 
   private final String[] unSupportedCommands = new String[] {
@@ -133,7 +151,7 @@ public class SupportedCommandsJUnitTest {
   public void crossCheckAllUnsupportedCommands_areMarkedUnsupported() {
     for (String commandName : unSupportedCommands) {
       List<byte[]> args = new ArrayList<>();
-      args.add(commandName.getBytes());
+      args.add(stringToBytes(commandName));
 
       Command command = new Command(args);
 
@@ -147,7 +165,7 @@ public class SupportedCommandsJUnitTest {
   public void crossCheckAllSupportedCommands_areMarkedSupported() {
     for (String commandName : supportedCommands) {
       List<byte[]> args = new ArrayList<>();
-      args.add(commandName.getBytes());
+      args.add(stringToBytes(commandName));
 
       Command command = new Command(args);
 

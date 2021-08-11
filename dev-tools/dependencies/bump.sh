@@ -24,7 +24,7 @@ fi
 
 if [ "$2" = "-l" ] ; then
   ./gradlew dependencyUpdates -Drevision=release ; find . | grep build/dependencyUpdates/report.txt | xargs cat \
-   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|gradle-tooling-api|springfox|derby|classgraph|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers)' \
+   | grep ' -> ' | egrep -v '(Gradle|antlr|lucene|JUnitParams|docker-compose-rule|javax.servlet-api|springfox|derby|selenium|jgroups|jmh|\[6.0.37|commons-collections|jaxb|testcontainers)' \
    | sort -u | tr -d '][' | sed -e 's/ -> / /' -e 's#.*:#'"$0 $1"' #'
   exit 0
 fi
@@ -57,4 +57,4 @@ if [ $(git diff | wc -l) -gt 0 ] ; then
   git stash
   git stash drop
 fi
-./gradlew devBuild checkPom :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest
+[ -n "$SKIP" ] || ./gradlew devBuild checkPom :geode-assembly:integrationTest --tests AssemblyContentsIntegrationTest --tests GeodeDependencyJarIntegrationTest --tests BundledJarsJUnitTest --tests GemfireCoreClasspathTest

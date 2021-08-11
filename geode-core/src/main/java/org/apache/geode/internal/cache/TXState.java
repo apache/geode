@@ -245,15 +245,16 @@ public class TXState implements TXStateInterface {
     boolean isConfigError = false;
     EntryEventImpl lastTransactionEvent = null;
     try {
-      lastTransactionEvent =
-          TXLastEventInTransactionUtils.getLastTransactionEvent(getPendingCallbacks(), getCache());
+      lastTransactionEvent = TXLastEventInTransactionUtils
+          .getLastTransactionEventInGroupedTxForWANSender(getPendingCallbacks(), getCache());
     } catch (ServiceConfigurationError ex) {
       logger.error(ex.getMessage());
       isConfigError = true;
     }
 
     for (EntryEventImpl ee : getPendingCallbacks()) {
-      boolean isLastTransactionEvent = isConfigError || ee.equals(lastTransactionEvent);
+      boolean isLastTransactionEvent = TXLastEventInTransactionUtils
+          .isLastTransactionEvent(isConfigError, lastTransactionEvent, ee);
       if (ee.getOperation().isDestroy()) {
         ee.getRegion().invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, ee, true,
             isLastTransactionEvent);
@@ -393,9 +394,10 @@ public class TXState implements TXStateInterface {
     this.locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
-    if (statisticsClock.isEnabled())
+    if (statisticsClock.isEnabled()) {
       this.proxy.getTxMgr().getCachePerfStats()
           .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
+    }
     if (this.internalAfterReservation != null) {
       this.internalAfterReservation.run();
     }
@@ -947,9 +949,10 @@ public class TXState implements TXStateInterface {
         } catch (IllegalArgumentException | IllegalMonitorStateException e) {
           exception = e;
         }
-        if (statisticsClock.isEnabled())
+        if (statisticsClock.isEnabled()) {
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
+        }
       }
       Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       while (it.hasNext()) {
@@ -1061,8 +1064,9 @@ public class TXState implements TXStateInterface {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof TXEntryStateWithRegionAndKey))
+      if (!(o instanceof TXEntryStateWithRegionAndKey)) {
         return false;
+      }
       return compareTo(o) == 0;
     }
 

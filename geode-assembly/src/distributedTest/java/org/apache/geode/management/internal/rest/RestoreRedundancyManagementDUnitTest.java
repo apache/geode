@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
 import org.apache.geode.management.runtime.RestoreRedundancyResults;
@@ -58,7 +58,7 @@ public class RestoreRedundancyManagementDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator;
+  private MemberVM locator1;
   private List<MemberVM> servers;
   private static final int SERVERS_TO_START = 3;
   private static final String HIGH_REDUNDANCY_REGION_NAME = "highRedundancy";
@@ -70,24 +70,33 @@ public class RestoreRedundancyManagementDUnitTest {
   private static final String NO_CONFIGURED_REDUNDANCY_REGION_NAME = "noConfiguredRedundancy";
 
   private ClusterManagementService client1;
+  private ClusterManagementService client2;
 
   @Before
   public void setup() {
-    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    int locator1Port = locator1.getPort();
+    MemberVM locator2 = cluster.startLocatorVM(1,
+        l -> l.withHttpService().withConnectionToLocator(locator1Port));
     servers = new ArrayList<>();
-    int locatorPort = locator.getPort();
+    int locatorPort = locator1.getPort();
     IntStream.range(0, SERVERS_TO_START)
-        .forEach(i -> servers.add(cluster.startServerVM(i + 1, locatorPort)));
+        .forEach(i -> servers.add(cluster.startServerVM(i + 2, locatorPort)));
 
     client1 = new ClusterManagementServiceBuilder()
         .setHost("localhost")
-        .setPort(locator.getHttpPort())
+        .setPort(locator1.getHttpPort())
+        .build();
+    client2 = new ClusterManagementServiceBuilder()
+        .setHost("localhost")
+        .setPort(locator2.getHttpPort())
         .build();
   }
 
   @After
   public void tearDown() {
     client1.close();
+    client2.close();
   }
 
   @Test
@@ -98,14 +107,42 @@ public class RestoreRedundancyManagementDUnitTest {
     createAndPopulateRegions(regionNames);
 
     int numberOfServers = servers.size();
-    regionNames.forEach(region -> locator
+    regionNames.forEach(region -> locator1
         .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region, numberOfServers));
 
     RestoreRedundancyRequest restoreRedundancyRequest = new RestoreRedundancyRequest();
 
     restoreRedundancyRequest.setIncludeRegions(regionNames);
 
-    verifyClusterManagementOperationRequestAndResponse(restoreRedundancyRequest);
+    verifyClusterManagementOperationRequestAndResponse(restoreRedundancyRequest, client1, client1);
+
+    // Confirm all regions have their configured redundancy and that primaries were balanced
+    int numberOfActiveServers = servers.size();
+    servers.get(0).invoke(() -> {
+      for (String regionName : regionNames) {
+        assertRedundancyStatusForRegion(regionName, true);
+        assertPrimariesBalanced(regionName, numberOfActiveServers, true);
+      }
+    });
+  }
+
+  @Test
+  public void canReadRestoreRedundancyResultFromDifferentLocator()
+      throws ExecutionException, InterruptedException {
+
+    List<String> regionNames = getAllRegionNames();
+    createAndPopulateRegions(regionNames);
+
+    int numberOfServers = servers.size();
+    regionNames.forEach(region -> locator1
+        .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region, numberOfServers));
+
+    RestoreRedundancyRequest restoreRedundancyRequest = new RestoreRedundancyRequest();
+
+    restoreRedundancyRequest.setIncludeRegions(regionNames);
+
+    // Perform the operation on locator1 and use a client connected to locator2 to get the result
+    verifyClusterManagementOperationRequestAndResponse(restoreRedundancyRequest, client1, client2);
 
     // Confirm all regions have their configured redundancy and that primaries were balanced
     int numberOfActiveServers = servers.size();
@@ -119,15 +156,16 @@ public class RestoreRedundancyManagementDUnitTest {
 
   // Helper methods
   private void verifyClusterManagementOperationRequestAndResponse(
-      RestoreRedundancyRequest restoreRedundancyRequest)
+      RestoreRedundancyRequest restoreRedundancyRequest, ClusterManagementService startClient,
+      ClusterManagementService readResultClient)
       throws InterruptedException, ExecutionException {
     ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults> startResult =
-        client1.start(restoreRedundancyRequest);
+        startClient.start(restoreRedundancyRequest);
 
     assertThat(startResult.isSuccessful()).isTrue();
 
     ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults> endResult =
-        client1.getFuture(restoreRedundancyRequest, startResult.getOperationId()).get();
+        readResultClient.getFuture(restoreRedundancyRequest, startResult.getOperationId()).get();
     RestoreRedundancyResults restoreRedundancyResult = endResult.getOperationResult();
 
     assertThat(restoreRedundancyResult.getSuccess()).isTrue();

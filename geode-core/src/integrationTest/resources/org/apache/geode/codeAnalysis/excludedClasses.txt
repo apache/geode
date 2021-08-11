@@ -15,7 +15,7 @@ org/apache/geode/distributed/internal/ThrottlingMemLinkedQueueWithDMStats
 org/apache/geode/distributed/internal/membership/gms/messenger/JGAddress
 org/apache/geode/distributed/internal/membership/gms/GMSMembership$BoundedLinkedHashMap
 org/apache/geode/internal/AbstractConfig$SortedProperties
-org/apache/geode/internal/AvailablePort$Keeper
+org/apache/geode/internal/membership/utils/AvailablePort$Keeper
 org/apache/geode/internal/ExitCode
 org/apache/geode/deployment/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
@@ -57,6 +57,7 @@ org/apache/geode/internal/shared/TCPSocketOptions
 org/apache/geode/internal/statistics/platform/LinuxProcFsStatistics$CPU
 org/apache/geode/internal/tcp/VersionedByteBufferInputStream
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
+org/apache/geode/internal/util/redaction/ParserRegex$Group
 org/apache/geode/logging/internal/LogMessageRegex$Group
 org/apache/geode/logging/internal/log4j/LogWriterLogger
 org/apache/geode/logging/internal/spi/LogLevelUpdateOccurs
@@ -101,4 +102,4 @@ org/apache/geode/cache/query/internal/xml/ElementType
 org/apache/geode/cache/query/internal/xml/ElementType$1
 org/apache/geode/cache/query/internal/xml/ElementType$2
 org/apache/geode/cache/query/internal/xml/ElementType$3
-org/apache/geode/internal/net/ByteBufferSharingImpl$OpenAttemptTimedOut
+org/apache/geode/internal/net/ByteBufferVendor$OpenAttemptTimedOut

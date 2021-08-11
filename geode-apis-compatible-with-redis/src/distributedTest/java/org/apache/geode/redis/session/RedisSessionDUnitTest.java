@@ -17,20 +17,19 @@ package org.apache.geode.redis.session;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.RedisTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category({RedisTest.class})
+@Ignore("GEODE-9437")
 public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @Rule
@@ -43,7 +42,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_beAbleToCreateASession_storedInRedis() {
+  public void should_beAbleToCreateASession_storedInRedis() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -54,15 +53,13 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void createSessionsConcurrently() throws ExecutionException, InterruptedException {
+  public void createSessionsConcurrently() throws Exception {
     AtomicBoolean running = new AtomicBoolean(true);
-    CountDownLatch latch = new CountDownLatch(1);
+    CyclicBarrier barrier = new CyclicBarrier(3);
 
-    Future<Void> future1 = executor.submit(() -> sessionCreator(1, 100, running, latch));
-    Future<Void> future2 = executor.submit(() -> sessionCreator(2, 100, running, latch));
-    Future<Void> future3 = executor.submit(() -> sessionCreator(3, 100, running, latch));
-
-    latch.countDown();
+    Future<Void> future1 = executor.submit(() -> sessionCreator(1, 100, running, barrier));
+    Future<Void> future2 = executor.submit(() -> sessionCreator(2, 100, running, barrier));
+    Future<Void> future3 = executor.submit(() -> sessionCreator(3, 100, running, barrier));
 
     future1.get();
     future2.get();
@@ -70,10 +67,9 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   private void sessionCreator(int index, int iterations, AtomicBoolean running,
-      CountDownLatch latch)
-      throws InterruptedException {
+      CyclicBarrier barrier) throws BrokenBarrierException, InterruptedException {
     int iterationCount = 0;
-    latch.await();
+    barrier.await();
     while (iterationCount < iterations && running.get()) {
       String noteName = String.format("note-%d-%d", index, iterationCount);
       try {
@@ -90,7 +86,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_storeSession() {
+  public void should_storeSession() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
 
     String[] sessionNotes = getSessionNotes(APP2, sessionCookie);
@@ -99,7 +95,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_propagateSession_toOtherServers() {
+  public void should_propagateSession_toOtherServers() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "noteFromClient1");
 
     String[] sessionNotes = getSessionNotes(APP2, sessionCookie);
@@ -108,7 +104,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_getSessionFromServer1_whenServer2GoesDown() {
+  public void should_getSessionFromServer1_whenServer2GoesDown() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "noteFromClient2");
     cluster.crashVM(SERVER2);
     try {
@@ -121,7 +117,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_getSessionFromServer_whenServerGoesDownAndIsRestarted() {
+  public void should_getSessionFromServer_whenServerGoesDownAndIsRestarted() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "noteFromClient2");
     cluster.crashVM(SERVER2);
     addNoteToSession(APP1, sessionCookie, "noteFromClient1");
@@ -133,7 +129,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_getSession_whenServer2GoesDown_andAppFailsOverToServer1() {
+  public void should_getSession_whenServer2GoesDown_andAppFailsOverToServer1() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "noteFromClient2");
     cluster.crashVM(SERVER2);
 
@@ -147,7 +143,8 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void should_getSessionCreatedByApp2_whenApp2GoesDown_andClientConnectsToApp1() {
+  public void should_getSessionCreatedByApp2_whenApp2GoesDown_andClientConnectsToApp1()
+      throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "noteFromClient2");
     stopSpringApp(APP2);
 
@@ -156,11 +153,7 @@ public class RedisSessionDUnitTest extends SessionDUnitTest {
 
       assertThat(sessionNotes).containsExactly("noteFromClient2");
     } finally {
-      if (ports.get(SERVER2) == null) {
-        startSpringApp(APP2, SERVER1, DEFAULT_SESSION_TIMEOUT);
-      } else {
-        startSpringApp(APP2, SERVER1, SERVER2, DEFAULT_SESSION_TIMEOUT);
-      }
+      startSpringApp(APP2, DEFAULT_SESSION_TIMEOUT, ports.get(SERVER2));
     }
   }
 }

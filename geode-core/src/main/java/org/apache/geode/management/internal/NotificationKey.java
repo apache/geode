@@ -49,8 +49,9 @@ public class NotificationKey implements java.io.Serializable {
     if (anObject instanceof NotificationKey) {
       NotificationKey anotherFedComp = (NotificationKey) anObject;
       if (anotherFedComp.objectName.equals(this.objectName)
-          && anotherFedComp.currentTime == this.currentTime)
+          && anotherFedComp.currentTime == this.currentTime) {
         return true;
+      }
     }
 
     return false;

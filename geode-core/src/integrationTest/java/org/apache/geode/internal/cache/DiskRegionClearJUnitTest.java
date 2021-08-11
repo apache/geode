@@ -162,8 +162,9 @@ public class DiskRegionClearJUnitTest {
     }
     ThreadUtils.join(thread, 10 * 60 * 1000);
     assertTrue(counter == 3);
-    if (!cleared)
+    if (!cleared) {
       fail("clear not done although puts have been done");
+    }
   }
 
   @Test

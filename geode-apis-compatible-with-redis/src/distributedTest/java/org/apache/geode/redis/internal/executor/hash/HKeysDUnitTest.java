@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -30,7 +29,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -47,42 +47,31 @@ public class HKeysDUnitTest {
   private static final int NUM_ITERATIONS = 1000;
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-
-  private static Properties locatorProperties;
+  private static JedisCluster jedis;
 
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
-
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
+    locator = clusterStartUp.startLocatorVM(0);
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
     server2 = clusterStartUp.startRedisVM(2, locator.getPort());
 
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
-
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
+    int redisServerPort = clusterStartUp.getRedisPort(1);
+    jedis = new JedisCluster(new HostAndPort(LOCAL_HOST, redisServerPort), JEDIS_TIMEOUT);
   }
 
   @Before
   public void testSetup() {
-    jedis1.flushAll();
+    clusterStartUp.flushAll();
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
+    jedis.close();
 
     server1.stop();
     server2.stop();
@@ -97,12 +86,12 @@ public class HKeysDUnitTest {
     Set<String> expectedFields = makeSet(HASH_SIZE, "field-");
     BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
-    jedis1.hset(key, testMap);
+    jedis.hset(key, testMap);
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
         (i) -> {
           int newIndex = HASH_SIZE + i + 1;
-          jedis1.hset(key, "field-" + newIndex, "value-" + newIndex);
+          jedis.hset(key, "field-" + newIndex, "value-" + newIndex);
           queue.add("field-" + newIndex);
         },
         (i) -> {
@@ -111,10 +100,10 @@ public class HKeysDUnitTest {
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
-          assertThat(jedis2.hkeys(key)).containsAll(expectedFields);
+          assertThat(jedis.hkeys(key)).containsAll(expectedFields);
         }).run();
 
-    assertThat(jedis1.hkeys(key)).containsExactlyInAnyOrderElementsOf(expectedFields);
+    assertThat(jedis.hkeys(key)).containsExactlyInAnyOrderElementsOf(expectedFields);
   }
 
   @Test
@@ -122,13 +111,13 @@ public class HKeysDUnitTest {
     String key = "key";
     Map<String, String> testMap = makeHashMap(NUM_ITERATIONS, "field-", "value-");
 
-    jedis1.hset(key, testMap);
+    jedis.hset(key, testMap);
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
-        (i) -> jedis1.hdel(key, "field-" + i),
-        (i) -> jedis2.hkeys(key)).run();
+        (i) -> jedis.hdel(key, "field-" + i),
+        (i) -> jedis.hkeys(key)).run();
 
-    assertThat(jedis1.hkeys(key).size()).isEqualTo(0);
+    assertThat(jedis.hkeys(key).size()).isEqualTo(0);
   }
 
   @Test
@@ -136,19 +125,19 @@ public class HKeysDUnitTest {
     String key = "key";
     Map<String, String> testMap = makeHashMap(NUM_ITERATIONS, "field-", "value-");
 
-    jedis1.hset(key, testMap);
+    jedis.hset(key, testMap);
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
         (i) -> {
-          jedis1.hset(key, "field-" + i, "changedValue-" + i);
+          jedis.hset(key, "field-" + i, "changedValue-" + i);
           testMap.put("field-" + i, "changedValue-" + i);
         },
-        (i) -> assertThat(jedis2.hkeys(key)).containsExactlyInAnyOrderElementsOf(testMap.keySet()))
+        (i) -> assertThat(jedis.hkeys(key)).containsExactlyInAnyOrderElementsOf(testMap.keySet()))
             .run();
 
-    assertThat(jedis1.hkeys(key)).containsExactlyInAnyOrderElementsOf(testMap.keySet());
+    assertThat(jedis.hkeys(key)).containsExactlyInAnyOrderElementsOf(testMap.keySet());
     for (String field : testMap.keySet()) {
-      assertThat(jedis1.hget(key, field)).isEqualTo(testMap.get(field));
+      assertThat(jedis.hget(key, field)).isEqualTo(testMap.get(field));
     }
   }
 

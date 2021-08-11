@@ -27,31 +27,29 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier {
-  private Jedis jedis;
-  private Jedis jedis2;
+public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTest {
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -61,33 +59,33 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void testSmove_returnsWrongType_whenWrongSourceIsUsed() {
-    jedis.set("a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("a-string", "some-set", "foo"))
+    jedis.set("{user1}a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("{user1}a-string", "{user1}some-set", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
-    jedis.hset("a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("a-hash", "some-set", "foo"))
+    jedis.hset("{user1}a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("{user1}a-hash", "{user1}some-set", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testSmove_returnsWrongType_whenWrongDestinationIsUsed() {
-    jedis.sadd("a-set", "foobaz");
+    jedis.sadd("{user1}a-set", "foobaz");
 
-    jedis.set("a-string", "value");
-    assertThatThrownBy(() -> jedis.smove("a-set", "a-string", "foo"))
+    jedis.set("{user1}a-string", "value");
+    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-string", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
 
-    jedis.hset("a-hash", "field", "value");
-    assertThatThrownBy(() -> jedis.smove("a-set", "a-hash", "foo"))
+    jedis.hset("{user1}a-hash", "field", "value");
+    assertThatThrownBy(() -> jedis.smove("{user1}a-set", "{user1}a-hash", "foo"))
         .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void testSMove() {
-    String source = "source";
-    String dest = "dest";
-    String test = "test";
+    String source = "{user1}source";
+    String dest = "{user1}dest";
+    String test = "{user1}test";
     int elements = 10;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
@@ -109,22 +107,22 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void testSMoveNegativeCases() {
-    String source = "source";
-    String dest = "dest";
+    String source = "{user1}source";
+    String dest = "{user1}dest";
     jedis.sadd(source, "sourceField");
     jedis.sadd(dest, "destField");
     String nonexistentField = "nonexistentField";
 
     assertThat(jedis.smove(source, dest, nonexistentField)).isEqualTo(0);
     assertThat(jedis.sismember(dest, nonexistentField)).isFalse();
-    assertThat(jedis.smove(source, "nonexistentDest", nonexistentField)).isEqualTo(0);
-    assertThat(jedis.smove("nonExistentSource", dest, nonexistentField)).isEqualTo(0);
+    assertThat(jedis.smove(source, "{user1}nonexistentDest", nonexistentField)).isEqualTo(0);
+    assertThat(jedis.smove("{user1}nonExistentSource", dest, nonexistentField)).isEqualTo(0);
   }
 
   @Test
   public void testConcurrentSMove() {
-    String source = "source";
-    String dest = "dest";
+    String source = "{user1}source";
+    String dest = "{user1}dest";
     int elements = 10000;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
@@ -132,7 +130,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     AtomicLong counter = new AtomicLong(0);
     new ConcurrentLoopingThreads(elements,
         (i) -> counter.getAndAdd(jedis.smove(source, dest, strings[i])),
-        (i) -> counter.getAndAdd(jedis2.smove(source, dest, strings[i]))).run();
+        (i) -> counter.getAndAdd(jedis.smove(source, dest, strings[i]))).run();
 
     assertThat(counter.get()).isEqualTo(new Long(strings.length));
     assertThat(jedis.smembers(dest)).containsExactlyInAnyOrder(strings);
@@ -141,9 +139,9 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void testConcurrentSMove_withDifferentDestination() {
-    String source = "source";
-    String dest1 = "dest1";
-    String dest2 = "dest2";
+    String source = "{user1}source";
+    String dest1 = "{user1}dest1";
+    String dest2 = "{user1}dest2";
     int elements = 10000;
     String[] strings = generateStrings(elements, "value-");
     jedis.sadd(source, strings);
@@ -151,7 +149,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     AtomicLong counter = new AtomicLong(0);
     new ConcurrentLoopingThreads(elements,
         (i) -> counter.getAndAdd(jedis.smove(source, dest1, strings[i])),
-        (i) -> counter.getAndAdd(jedis2.smove(source, dest2, strings[i]))).run();
+        (i) -> counter.getAndAdd(jedis.smove(source, dest2, strings[i]))).run();
 
     List<String> result = new ArrayList<>();
     result.addAll(jedis.smembers(dest1));
@@ -160,17 +158,6 @@ public abstract class AbstractSMoveIntegrationTest implements RedisPortSupplier 
     assertThat(counter.get()).isEqualTo(new Long(strings.length));
     assertThat(result).containsExactlyInAnyOrder(strings);
     assertThat(jedis.scard(source)).isEqualTo(0L);
-  }
-
-
-  private long moveSetElements(String source, String dest, String[] strings,
-      Jedis jedis) {
-    long results = 0;
-    for (String entry : strings) {
-      results += jedis.smove(source, dest, entry);
-      Thread.yield();
-    }
-    return results;
   }
 
   private String[] generateStrings(int elements, String prefix) {

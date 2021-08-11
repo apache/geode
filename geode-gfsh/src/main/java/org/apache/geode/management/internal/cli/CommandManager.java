@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -41,7 +40,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
@@ -58,15 +56,25 @@ public class CommandManager {
   private static final String USER_CMD_PACKAGES_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   private static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
+  private static final String SPRING_CONVERTER_PACKAGE = "org.springframework.shell.converters";
+
+  /** Skip some of the Converters from Spring Shell for our customization */
+  @Immutable
+  private static final List<Class<?>> SPRING_CONVERTERS_TO_SKIP =
+      Collections.unmodifiableList(Arrays.asList(
+          // skip springs SimpleFileConverter to use our own FilePathConverter
+          SimpleFileConverter.class,
+          // skip spring's EnumConverter to use our own EnumConverter
+          EnumConverter.class));
 
   private final Helper helper = new Helper();
 
   private final List<Converter<?>> converters = new ArrayList<>();
   private final List<CommandMarker> commandMarkers = new ArrayList<>();
 
-  private Properties cacheProperties;
-  private LogWrapper logWrapper;
-  private InternalCache cache;
+  private final Properties cacheProperties = new Properties();
+  private final LogWrapper logWrapper;
+  private final InternalCache cache;
 
   /**
    * this constructor is used from Gfsh VM. We are getting the user-command-package from system
@@ -80,16 +88,17 @@ public class CommandManager {
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties, InternalCache cache) {
-    if (cacheProperties != null) {
-      this.cacheProperties = cacheProperties;
+  public CommandManager(final Properties newCacheProperties, InternalCache cache) {
+    if (newCacheProperties != null) {
+      this.cacheProperties.putAll(newCacheProperties);
     }
     this.cache = cache;
     logWrapper = LogWrapper.getInstance(cache);
     loadCommands();
+    loadConverters();
   }
 
-  private static void raiseExceptionIfEmpty(Set<Class<?>> foundClasses, String errorFor)
+  private static void raiseExceptionIfEmpty(Set<?> foundClasses, String errorFor)
       throws IllegalStateException {
     if (foundClasses == null || foundClasses.isEmpty()) {
       throw new IllegalStateException(
@@ -112,12 +121,10 @@ public class CommandManager {
     }
 
     // Find by packages specified in the distribution config
-    if (this.cacheProperties != null) {
-      String cacheUserCmdPackages =
-          this.cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES);
-      if (cacheUserCmdPackages != null && !cacheUserCmdPackages.isEmpty()) {
-        userCommandSources.add(cacheUserCmdPackages);
-      }
+    String cacheUserCmdPackages =
+        this.cacheProperties.getProperty(ConfigurationProperties.USER_COMMAND_PACKAGES, "");
+    if (!cacheUserCmdPackages.isEmpty()) {
+      userCommandSources.add(cacheUserCmdPackages);
     }
 
     for (String source : userCommandSources) {
@@ -127,15 +134,17 @@ public class CommandManager {
     return userCommandPackages;
   }
 
-  private void loadUserCommands(ClasspathScanLoadHelper scanner, Set<String> restrictedToPackages) {
-    if (restrictedToPackages.size() == 0) {
+  private void loadUserDefinedCommands() {
+    String[] userCommandPackages = getUserCommandPackages().toArray(new String[] {});
+
+    if (userCommandPackages.length == 0) {
       return;
     }
 
     // Load commands found in all of the packages
-    try {
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-          restrictedToPackages.toArray(new String[] {}));
+    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(userCommandPackages)) {
+      Set<Class<?>> foundClasses =
+          scanner.scanPackagesForClassesImplementing(CommandMarker.class, userCommandPackages);
       for (Class<?> klass : foundClasses) {
         try {
           add((CommandMarker) klass.newInstance());
@@ -156,63 +165,38 @@ public class CommandManager {
    *
    * @since GemFire 8.1
    */
-  private void loadPluginCommands() {
-    ServiceLoader<CommandMarker> loader =
+  private void loadGeodeCommands() {
+    ServiceLoader<CommandMarker> commandMarkers =
         ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
-    Iterator<CommandMarker> iterator = loader.iterator();
-    try {
-      while (iterator.hasNext()) {
-        try {
-          add(iterator.next());
-        } catch (Throwable t) {
-          logWrapper.warning("Could not load plugin command: " + t.getMessage());
-        }
-      }
-    } catch (Throwable th) {
-      logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
+
+    boolean loadedAtLeastOneCommand = false;
+    for (CommandMarker commandMarker : commandMarkers) {
+      add(commandMarker);
+      loadedAtLeastOneCommand = true;
     }
+    if (!loadedAtLeastOneCommand) {
+      throw new IllegalStateException(
+          "Required Command classes were not loaded. Check logs for errors.");
+    }
+  }
+
+  private void loadConverters() {
+    loadGeodeDefinedConverters();
+    loadSpringDefinedConverters();
   }
 
   private void loadCommands() {
-    Set<String> userCommandPackages = getUserCommandPackages();
-    Set<String> packagesToScan = new HashSet<>(userCommandPackages);
-    packagesToScan.add("org.apache.geode.management.internal.cli.converters");
-    packagesToScan.add("org.springframework.shell.converters");
-    packagesToScan.add(GfshCommand.class.getPackage().getName());
-    packagesToScan.add(VersionCommand.class.getPackage().getName());
-
-    // Create one scanner to be used everywhere
-    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
-      loadUserCommands(scanner, userCommandPackages);
-      loadPluginCommands();
-      loadGeodeCommands(scanner);
-      loadConverters(scanner);
-    }
+    loadGeodeCommands();
+    loadUserDefinedCommands();
   }
 
-  private void loadConverters(ClasspathScanLoadHelper scanner) {
-    Set<Class<?>> foundClasses;
-    // Converters
-    try {
-      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
-          "org.apache.geode.management.internal.cli.converters");
-      for (Class<?> klass : foundClasses) {
-        try {
-          Converter<?> object = (Converter<?>) klass.newInstance();
-          add(object);
-
-        } catch (Exception e) {
-          logWrapper.warning(
-              "Could not load Converter from: " + klass + " due to " + e.getLocalizedMessage()); // continue
-        }
-      }
-      raiseExceptionIfEmpty(foundClasses, "Converters");
-
+  private void loadSpringDefinedConverters() {
+    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(SPRING_CONVERTER_PACKAGE)) {
       // Spring shell's converters
-      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
-          "org.springframework.shell.converters");
+      Set<Class<?>> foundClasses =
+          scanner.scanPackagesForClassesImplementing(Converter.class, SPRING_CONVERTER_PACKAGE);
       for (Class<?> klass : foundClasses) {
-        if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
+        if (!SPRING_CONVERTERS_TO_SKIP.contains(klass)) {
           try {
             add((Converter<?>) klass.newInstance());
           } catch (Exception e) {
@@ -221,48 +205,27 @@ public class CommandManager {
           }
         }
       }
-      raiseExceptionIfEmpty(foundClasses, "Basic Converters");
+      raiseExceptionIfEmpty(foundClasses, "Spring Converter");
     } catch (IllegalStateException e) {
       logWrapper.warning(e.getMessage(), e);
       throw e;
     }
   }
 
-  private void loadGeodeCommands(ClasspathScanLoadHelper scanner) {
-    // CommandMarkers
-    Set<Class<?>> foundClasses;
-    try {
-      // geode's commands
-      foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
-          GfshCommand.class.getPackage().getName(),
-          VersionCommand.class.getPackage().getName());
+  private void loadGeodeDefinedConverters() {
+    ServiceLoader<Converter> converters =
+        ServiceLoader.load(Converter.class, ClassPathLoader.getLatestAsClassLoader());
 
-      for (Class<?> klass : foundClasses) {
-        try {
-          add((CommandMarker) klass.newInstance());
-        } catch (Exception e) {
-          logWrapper.warning(
-              "Could not load Command from: " + klass + " due to " + e.getLocalizedMessage()); // continue
-        }
-      }
-      raiseExceptionIfEmpty(foundClasses, "Commands");
-
-      // do not add Spring shell's commands for now. When we add it, we need to tell the parser that
-      // these are offline commands.
-    } catch (IllegalStateException e) {
-      logWrapper.warning(e.getMessage(), e);
-      throw e;
+    boolean loadedAtLeastOneConverter = false;
+    for (Converter<?> converter : converters) {
+      add(converter);
+      loadedAtLeastOneConverter = true;
+    }
+    if (!loadedAtLeastOneConverter) {
+      throw new IllegalStateException(
+          "Required Converter classes were not loaded. Check logs for errors.");
     }
   }
-
-  /** Skip some of the Converters from Spring Shell for our customization */
-  @Immutable
-  private static final List<Class> SHL_CONVERTERS_TOSKIP =
-      Collections.unmodifiableList(Arrays.asList(
-          // skip springs SimpleFileConverter to use our own FilePathConverter
-          SimpleFileConverter.class,
-          // skip spring's EnumConverter to use our own EnumConverter
-          EnumConverter.class));
 
   public List<Converter<?>> getConverters() {
     return converters;
@@ -335,5 +298,4 @@ public class CommandManager {
   public String obtainHint(String topic) {
     return helper.getHint(topic);
   }
-
 }

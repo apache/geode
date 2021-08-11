@@ -130,13 +130,13 @@ task raJar(type: Jar, dependsOn: classes) {
     description 'Assembles the jar archive that contains the JCA classes'
     from sourceSets.jca.output
     exclude 'org/apache/geode/ra/**'
-    archiveName 'ra.jar'
+    archiveFileName='ra.jar'
 }
 
 task jcaJar(type: Jar, dependsOn: raJar) {
     description 'Assembles the jar archive that contains the JCA bundle'
-    baseName 'geode-jca'
-    extension 'rar'
+    archiveBaseName='geode-jca'
+    archiveExtension='rar'
     metaInf { from 'src/jca/ra.xml' }
     from raJar.archivePath
 }
@@ -325,7 +325,7 @@ dependencies {
     api(project(':geode-management'))
 
 
-    jcaCompile(sourceSets.main.output)
+    jcaImplementation(sourceSets.main.output)
 
     testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
@@ -341,11 +341,11 @@ dependencies {
 
     testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
-    testRuntime('commons-collections:commons-collections')
-    testRuntime('commons-configuration:commons-configuration')
-    testRuntime('commons-io:commons-io')
-    testRuntime('commons-validator:commons-validator')
-    testRuntime('com.pholser:junit-quickcheck-generators')
+    testRuntimeOnly('commons-collections:commons-collections')
+    testRuntimeOnly('commons-configuration:commons-configuration')
+    testRuntimeOnly('commons-io:commons-io')
+    testRuntimeOnly('commons-validator:commons-validator')
+    testRuntimeOnly('com.pholser:junit-quickcheck-generators')
 
     // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
     integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
@@ -359,7 +359,6 @@ dependencies {
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-    integrationTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestRuntimeOnly('org.apache.derby:derby')
     integrationTestRuntimeOnly('xerces:xercesImpl')
@@ -379,7 +378,6 @@ dependencies {
     distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
     distributedTestImplementation('net.openhft:compiler')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
@@ -387,7 +385,7 @@ dependencies {
         exclude module: 'geode-core'
     }
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
     upgradeTestRuntimeOnly(project(':geode-log4j'))
 
 
@@ -396,6 +394,7 @@ dependencies {
     }
     performanceTestImplementation(project(':geode-log4j'))
 
+    jmhImplementation('org.jctools:jctools-core:3.3.0')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

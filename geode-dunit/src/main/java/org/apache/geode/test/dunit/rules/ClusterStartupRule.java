@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.closeAndCheckForSuspects;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -182,7 +183,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
     IgnoredException.removeAllExpectedExceptions();
-    DUnitLauncher.closeAndCheckForSuspects();
+    closeAndCheckForSuspects();
   }
 
 
@@ -222,9 +223,9 @@ public class ClusterStartupRule implements SerializableTestRule {
       SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
     VM locatorVM = getVM(index, version);
+    LocatorStarterRule locatorStarter = new LocatorStarterRule();
     Locator server = locatorVM.invoke("start locator in vm" + index, () -> {
-      memberStarter = new LocatorStarterRule();
-      LocatorStarterRule locatorStarter = (LocatorStarterRule) memberStarter;
+      memberStarter = locatorStarter;
       if (logFile) {
         locatorStarter.withLogFile();
       }
@@ -265,9 +266,9 @@ public class ClusterStartupRule implements SerializableTestRule {
       SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
+    ServerStarterRule serverStarter = new ServerStarterRule();
     Server server = serverVM.invoke("startServerVM", () -> {
-      memberStarter = new ServerStarterRule();
-      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
+      memberStarter = serverStarter;
       if (logFile) {
         serverStarter.withLogFile();
       }
@@ -351,6 +352,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public void stop(int index, boolean cleanWorkingDir) {
+    closeAndCheckForSuspects(index);
     occupiedVMs.get(index).stop(cleanWorkingDir);
   }
 

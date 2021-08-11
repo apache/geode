@@ -39,6 +39,8 @@ import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.index.MemoryIndexStore;
+import org.apache.geode.cache.query.internal.index.MemoryIndexStore.CachedEntryWrapper;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -187,6 +189,9 @@ public class QueryUtils {
       try {
         for (Iterator itr = small.iterator(); itr.hasNext();) {
           Object element = itr.next();
+          if (element instanceof MemoryIndexStore.CachedEntryWrapper) {
+            element = ((CachedEntryWrapper) element).getKey();
+          }
           int count = large.occurrences(element);
           if (small.occurrences(element) > count) {
             // bag intersection: only retain smaller number of dups
@@ -202,6 +207,9 @@ public class QueryUtils {
       try {
         for (Iterator itr = large.iterator(); itr.hasNext();) {
           Object element = itr.next();
+          if (element instanceof MemoryIndexStore.CachedEntryWrapper) {
+            element = ((CachedEntryWrapper) element).getKey();
+          }
           int count = small.occurrences(element);
           if (large.occurrences(element) > count) {
             // bag intersection: only retain smaller number of dups
@@ -380,8 +388,9 @@ public class QueryUtils {
 
         }
       } else {
-        if (select)
+        if (select) {
           returnSet.add(((RuntimeIterator) itr.next()).evaluate(context));
+        }
       }
     } else if (level < results.length) {
       SelectResults individualResultSet = results[level];
@@ -423,8 +432,9 @@ public class QueryUtils {
   public static boolean applyCondition(CompiledValue operand, ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    if (operand == null)
+    if (operand == null) {
       return true;
+    }
     Object result = operand.evaluate(context);
     if (result instanceof Boolean) {
       return (Boolean) result;
@@ -537,8 +547,9 @@ public class QueryUtils {
       Object[] fieldValues = struct.getFieldValues();
       int size = fieldValues.length;
       Object[] checkFields = null;
-      if (icdeh.cutDownNeeded)
+      if (icdeh.cutDownNeeded) {
         checkFields = new Object[icdeh.checkSize];
+      }
       // Object values[] = new Object[numItersInResultSet];
       int j = 0;
       RuntimeIterator rItr = null;
@@ -709,8 +720,9 @@ public class QueryUtils {
           }
         }
       } else {
-        if (select)
+        if (select) {
           resultSet.add(((RuntimeIterator) itr.next()).evaluate(context));
+        }
       }
     } else {
       RuntimeIterator currentLevel = (RuntimeIterator) expansionItrs.next();
@@ -849,8 +861,9 @@ public class QueryUtils {
     Iterator iter = set.iterator();
     while (iter.hasNext()) {
       RuntimeIterator rIter = (RuntimeIterator) iter.next();
-      if (rIter.getScopeID() != context.currentScope().getScopeID()/* context.getScopeCount() */)
+      if (rIter.getScopeID() != context.currentScope().getScopeID()/* context.getScopeCount() */) {
         iter.remove();
+      }
     }
     return set;
   }
@@ -922,8 +935,9 @@ public class QueryUtils {
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     Set set = new HashSet();
     context.computeUltimateDependencies(cv, set);
-    if (set.size() != 1)
+    if (set.size() != 1) {
       return null;
+    }
     RuntimeIterator rIter = (RuntimeIterator) set.iterator().next();
     String regionPath = null;
     // An Index is not available if the ultimate independent RuntimeIterator is
@@ -1262,8 +1276,9 @@ public class QueryUtils {
                   expansionListIterator, finalList, context, iterOperands, icdeh,
                   0);
             }
-            if (icdeh[0].cutDownNeeded)
+            if (icdeh[0].cutDownNeeded) {
               icdeh[0].checkSet.clear();
+            }
           }
         } finally {
           observer.afterMergeJoinOfDoubleIndexResults(returnSet);
@@ -1503,8 +1518,9 @@ public class QueryUtils {
           mergeAndExpandCutDownRelationshipIndexResults(values, returnSet, mappings,
               expansionListIterator, totalFinalList, context, iterOperands, icdeh,
               0 /* Level */);
-          if (icdeh[0].cutDownNeeded)
+          if (icdeh[0].cutDownNeeded) {
             icdeh[0].checkSet.clear();
+          }
         }
       } finally {
         observer.afterMergeJoinOfDoubleIndexResults(returnSet);

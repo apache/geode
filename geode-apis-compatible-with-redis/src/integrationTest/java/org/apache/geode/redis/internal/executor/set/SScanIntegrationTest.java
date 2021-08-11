@@ -38,19 +38,20 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
 
   @Test
   public void givenDifferentCursorThanSpecifiedByPreviousSscan_returnsAllMembers() {
-    List<String> memberList = new ArrayList<>();
+    List<byte[]> memberList = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       jedis.sadd("a", String.valueOf(i));
-      memberList.add(String.valueOf(i));
+      memberList.add(String.valueOf(i).getBytes());
     }
 
     ScanParams scanParams = new ScanParams();
     scanParams.count(5);
-    ScanResult<String> result = jedis.sscan("a", "0", scanParams);
+    ScanResult<byte[]> result =
+        jedis.sscan("a".getBytes(), "0".getBytes(), scanParams);
     assertThat(result.isCompleteIteration()).isFalse();
 
-    result = jedis.sscan("a", "100");
+    result = jedis.sscan("a".getBytes(), "100".getBytes());
 
-    assertThat(result.getResult()).containsExactlyInAnyOrder(memberList.toArray(new String[0]));
+    assertThat(result.getResult()).containsExactlyInAnyOrderElementsOf(memberList);
   }
 }

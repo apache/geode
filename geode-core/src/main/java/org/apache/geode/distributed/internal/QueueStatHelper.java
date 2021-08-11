@@ -37,5 +37,5 @@ public interface QueueStatHelper {
   /**
    * Called when count items are removed from the queue.
    */
-  void remove(int count);
+  void remove(long count);
 }

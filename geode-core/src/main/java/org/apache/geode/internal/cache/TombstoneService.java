@@ -239,7 +239,7 @@ public class TombstoneService {
    * @return a collection of keys removed (only if the region is a bucket - empty otherwise)
    */
   @SuppressWarnings("rawtypes")
-  public Set<Object> gcTombstones(LocalRegion r, Map<VersionSource, Long> regionGCVersions,
+  public Set<Object> gcTombstones(LocalRegion r, Map<VersionSource<?>, Long> regionGCVersions,
       boolean needsKeys) {
     synchronized (getBlockGCLock()) {
       int count = getGCBlockCount();
@@ -272,7 +272,7 @@ public class TombstoneService {
       });
 
       // Record the GC versions now, so that we can persist them
-      for (Map.Entry<VersionSource, Long> entry : regionGCVersions.entrySet()) {
+      for (Map.Entry<VersionSource<?>, Long> entry : regionGCVersions.entrySet()) {
         r.getVersionVector().recordGCVersion(entry.getKey(), entry.getValue());
       }
 

@@ -25,23 +25,33 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private final String hashTag = "{111}";
+  private final String destKey = "destKey" + hashTag;
+  private final String srcKey = "srcKey" + hashTag;
+  private final String value = "value";
+  private final byte[] key = {1, '{', 111, '}'};
+  private final byte[] other = {2, '{', 111, '}'};
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
@@ -53,64 +63,65 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
   @Test
   public void bitop_givenInvalidOperationType_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.BITOP, "invalidOp", "destKey", "srcKey"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand(hashTag, Protocol.Command.BITOP, "invalidOp", destKey,
+            srcKey)).hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void bitop_givenSetFails() {
-    jedis.sadd("foo", "m1");
-    assertThatThrownBy(() -> jedis.bitop(BitOP.AND, "key", "foo"))
+    jedis.sadd(srcKey, "m1");
+    assertThatThrownBy(() -> jedis.bitop(BitOP.AND, destKey, srcKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, "key", "foo"))
+    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, destKey, srcKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, "key", "foo"))
+    assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, destKey, srcKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, "key", "foo"))
+    assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, destKey, srcKey))
         .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void bitopNOT_givenMoreThanOneSourceKey_returnsError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.BITOP, "NOT", "destKey", "srcKey", "srcKey2"))
-            .hasMessageContaining(ERROR_BITOP_NOT);
+        () -> jedis.sendCommand(
+            hashTag, Protocol.Command.BITOP, "NOT", destKey, srcKey, "srcKey2" + hashTag))
+                .hasMessageContaining(ERROR_BITOP_NOT);
   }
 
   @Test
   public void bitopNOT_givenNothingLeavesKeyUnset() {
-    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
-    assertThat(jedis.exists("key")).isFalse();
+    assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
+    assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenNothingDeletesKey() {
-    jedis.set("key", "value");
-    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
-    assertThat(jedis.exists("key")).isFalse();
+    jedis.set(destKey, value);
+    assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
+    assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenNothingDeletesSet() {
-    jedis.sadd("key", "value");
-    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
-    assertThat(jedis.exists("key")).isFalse();
+    jedis.sadd(destKey, value);
+    assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
+    assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenEmptyStringDeletesKey() {
-    jedis.set("key", "value");
-    jedis.set("foo", "");
-    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
-    assertThat(jedis.exists("key")).isFalse();
+    jedis.set(destKey, value);
+    jedis.set(srcKey, "");
+    assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
+    assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
   public void bitopNOT_givenEmptyStringDeletesSet() {
-    jedis.sadd("key", "value");
-    jedis.set("foo", "");
-    assertThat(jedis.bitop(BitOP.NOT, "key", "foo")).isEqualTo(0);
-    assertThat(jedis.exists("key")).isFalse();
+    jedis.sadd(destKey, value);
+    jedis.set(srcKey, "");
+    assertThat(jedis.bitop(BitOP.NOT, destKey, srcKey)).isEqualTo(0);
+    assertThat(jedis.exists(destKey)).isFalse();
   }
 
   @Test
@@ -126,8 +137,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopNOT_createsNonExistingKey() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     jedis.set(other, bytes);
     assertThat(jedis.bitop(BitOP.NOT, key, other)).isEqualTo(1);
@@ -138,8 +147,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopAND_givenSelfAndOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     byte[] otherBytes = {-1};
     jedis.set(key, bytes);
@@ -152,8 +159,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopAND_givenSelfAndLongerOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     byte[] otherBytes = {-1, 3};
     jedis.set(key, bytes);
@@ -167,8 +172,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopOR_givenSelfAndOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     byte[] otherBytes = {8};
     jedis.set(key, bytes);
@@ -181,8 +184,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopOR_givenSelfAndLongerOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     byte[] otherBytes = {-1, 3};
     jedis.set(key, bytes);
@@ -196,8 +197,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopXOR_givenSelfAndOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {9};
     byte[] otherBytes = {8};
     jedis.set(key, bytes);
@@ -210,8 +209,6 @@ public abstract class AbstractBitOpIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void bitopXOR_givenSelfAndLongerOther() {
-    byte[] key = {1};
-    byte[] other = {2};
     byte[] bytes = {1};
     byte[] otherBytes = {-1, 3};
     jedis.set(key, bytes);

@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
 
 
@@ -69,5 +69,5 @@ dependencies {
   upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
 
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

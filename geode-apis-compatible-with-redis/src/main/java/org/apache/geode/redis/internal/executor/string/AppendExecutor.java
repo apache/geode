@@ -17,25 +17,23 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class AppendExecutor extends StringExecutor {
+public class AppendExecutor extends AbstractExecutor {
 
   private static final int VALUE_INDEX = 2;
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
     byte[] bytesToAppend = commandElems.get(VALUE_INDEX);
-    ByteArrayWrapper valueToAppend = new ByteArrayWrapper(bytesToAppend);
 
-    long returnValue = getRedisStringCommands(context).append(key, valueToAppend);
+    long returnValue = context.getStringCommands().append(key, bytesToAppend);
 
     return RedisResponse.integer(returnValue);
   }

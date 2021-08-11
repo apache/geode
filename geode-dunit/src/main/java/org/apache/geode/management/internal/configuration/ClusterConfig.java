@@ -39,13 +39,12 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.utils.JarFileUtils;
 import org.apache.geode.services.result.ServiceResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -59,27 +58,6 @@ public class ClusterConfig implements Serializable {
     Collections.addAll(this.groups, configGroups);
   }
 
-  private static Set<String> toSetIgnoringHiddenFiles(String[] array) {
-    if (array == null) {
-      return Collections.emptySet();
-    }
-    return Arrays.stream(array).filter((String name) -> !name.startsWith(".")).collect(toSet());
-  }
-
-  private static String nameOfClassContainedInJar(String deploymentName) {
-    switch (deploymentName) {
-      case "cluster":
-        return "Cluster";
-      case "group1":
-        return "Group1";
-      case "group2":
-        return "Group2";
-      default:
-        throw new IllegalArgumentException(
-            "We don't know what class to expect in the jar named " + deploymentName);
-    }
-  }
-
   public Set<String> getMaxLogFileSizes() {
     if (this.groups.size() == 0) {
       return Collections.emptySet();
@@ -88,9 +66,8 @@ public class ClusterConfig implements Serializable {
         .collect(toSet());
   }
 
-  public List<String> getDeploymentNames() {
-    return groups.stream()
-        .flatMap((ConfigGroup configGroup) -> configGroup.getDeploymentNames().stream())
+  public List<String> getJarNames() {
+    return groups.stream().flatMap((ConfigGroup configGroup) -> configGroup.getJars().stream())
         .collect(Collectors.toList());
   }
 
@@ -104,10 +81,11 @@ public class ClusterConfig implements Serializable {
   }
 
   public void verify(MemberVM memberVM) throws ClassNotFoundException {
-    if (memberVM.isLocator())
+    if (memberVM.isLocator()) {
       verifyLocator(memberVM);
-    else
+    } else {
       verifyServer(memberVM);
+    }
   }
 
   public void verifyLocator(MemberVM locatorVM) {
@@ -127,9 +105,7 @@ public class ClusterConfig implements Serializable {
       for (ConfigGroup configGroup : this.getGroups()) {
         // verify jars are as expected
         Configuration config = sc.getConfiguration(configGroup.name);
-        Set<String> deploymentNames =
-            config.getDeployments().stream().map(Deployment::getDeploymentName).collect(toSet());
-        assertThat(deploymentNames).isEqualTo(configGroup.getDeploymentNames());
+        assertThat(config.getJarNames()).isEqualTo(configGroup.getJars());
 
         // verify property is as expected
         if (StringUtils.isNotBlank(configGroup.getMaxLogFileSize())) {
@@ -152,23 +128,21 @@ public class ClusterConfig implements Serializable {
 
     for (ConfigGroup configGroup : this.getGroups()) {
       Set<String> actualFiles =
-          toSetIgnoringHiddenFiles(new File(clusterConfigDir, configGroup.name).list()).stream()
-              .map(JarFileUtils::getArtifactId).collect(toSet());
+          toSetIgnoringHiddenFiles(new File(clusterConfigDir, configGroup.name).list());
 
-      Set<String> expectedDeployments = configGroup.getDeploymentNames();
-      assertThat(actualFiles).isEqualTo(expectedDeployments);
+      Set<String> expectedFiles = configGroup.getAllJarFiles();
+      assertThat(actualFiles).isEqualTo(expectedFiles);
     }
   }
 
   public void verifyServer(MemberVM serverVM) {
     // verify files exist in filesystem
-    Set<String> expectedJarNames = new HashSet<>(this.getDeploymentNames());
+    Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
 
     String[] actualJarFiles =
         serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
     Set<String> actualJarNames = Stream.of(actualJarFiles)
-        .map(jar -> JarFileUtils.getArtifactId(jar.replaceAll("\\.v\\d+\\.jar", ".jar")))
-        .collect(toSet());
+        .map(jar -> jar.replaceAll("\\.v\\d+\\.jar", ".jar")).collect(toSet());
 
     // We will end up with extra jars on disk if they are deployed and then undeployed
     assertThat(expectedJarNames).isSubsetOf(actualJarNames);
@@ -187,13 +161,12 @@ public class ClusterConfig implements Serializable {
         assertThat(this.getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
       }
 
-      for (String deploymentName : this.getDeploymentNames()) {
+      for (String fileName : this.getJarNames()) {
         ServiceResult<Deployment> serviceResult =
-            JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
-                .getDeployed(deploymentName);
+            ClassPathLoader.getLatest().getJarDeploymentService().getDeployed(fileName);
         assertThat(serviceResult.isSuccessful()).isTrue();
         Deployment deployment = serviceResult.getMessage();
-        assertThat(Class.forName(nameOfClassContainedInJar(deploymentName), true,
+        assertThat(Class.forName(nameOfClassContainedInJar(fileName), true,
             new URLClassLoader(new URL[] {deployment.getFile().toURI().toURL()}))).isNotNull();
       }
 
@@ -205,9 +178,32 @@ public class ClusterConfig implements Serializable {
         System.out.println("Verifying undeployed jar: " + jar);
 
         ServiceResult<Deployment> serviceResult =
-            JarDeploymentServiceFactory.getJarDeploymentServiceInstance().getDeployed(jar);
+            ClassPathLoader.getLatest().getJarDeploymentService().getDeployed(jar);
         assertThat(serviceResult.isFailure()).isTrue();
       }
     });
+  }
+
+
+
+  private static Set<String> toSetIgnoringHiddenFiles(String[] array) {
+    if (array == null) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(array).filter((String name) -> !name.startsWith(".")).collect(toSet());
+  }
+
+  private static String nameOfClassContainedInJar(String jarName) {
+    switch (jarName) {
+      case "cluster.jar":
+        return "Cluster";
+      case "group1.jar":
+        return "Group1";
+      case "group2.jar":
+        return "Group2";
+      default:
+        throw new IllegalArgumentException(
+            "We don't know what class to expect in the jar named " + jarName);
+    }
   }
 }

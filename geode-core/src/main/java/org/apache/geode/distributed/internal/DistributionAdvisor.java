@@ -295,6 +295,11 @@ public class DistributionAdvisor {
         .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(0L);
   }
 
+  @VisibleForTesting
+  MembershipListener getMembershipListener() {
+    return membershipListener;
+  }
+
   /**
    * find the region for a delta-gii operation (synch)
    */
@@ -374,7 +379,7 @@ public class DistributionAdvisor {
         membershipClosed = true;
         operationMonitor.close();
       }
-      getDistributionManager().removeMembershipListener(membershipListener);
+      getDistributionManagerWithNoCheck().removeMembershipListener(membershipListener);
     } catch (CancelException e) {
       // if distribution has stopped, above is a no-op.
     } catch (IllegalArgumentException ignore) {
@@ -1330,11 +1335,13 @@ public class DistributionAdvisor {
     for (int i = 0; i < profs.length; i++) {
       Profile p = profs[i];
       if (id instanceof InternalDistributedMember) {
-        if (p.getDistributedMember().equals(id))
+        if (p.getDistributedMember().equals(id)) {
           return i;
+        }
       } else {
-        if (p.getId().equals(id))
+        if (p.getId().equals(id)) {
           return i;
+        }
       }
     }
     return -1;

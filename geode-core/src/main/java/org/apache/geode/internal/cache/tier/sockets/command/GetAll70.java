@@ -38,7 +38,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -55,19 +54,17 @@ public class GetAll70 extends BaseCommand {
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException, InterruptedException {
-    Part regionNamePart = null, keysPart = null;
-    String regionName = null;
-    Object[] keys = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
     int partIdx = 0;
 
     // Retrieve the region name from the message parts
-    regionNamePart = clientMessage.getPart(partIdx++);
-    regionName = regionNamePart.getCachedString();
+    final Part regionNamePart = clientMessage.getPart(partIdx++);
+    final String regionName = regionNamePart.getCachedString();
 
     // Retrieve the keys array from the message parts
-    keysPart = clientMessage.getPart(partIdx++);
+    final Part keysPart = clientMessage.getPart(partIdx++);
+    final Object[] keys;
     try {
       keys = (Object[]) keysPart.getObject();
     } catch (Exception e) {
@@ -85,8 +82,8 @@ public class GetAll70 extends BaseCommand {
           .append(serverConnection.getSocketString()).append(" for region ").append(regionName)
           .append(" keys ");
       if (keys != null) {
-        for (int i = 0; i < keys.length; i++) {
-          buffer.append(keys[i]).append(" ");
+        for (final Object key : keys) {
+          buffer.append(key).append(" ");
         }
       } else {
         buffer.append("NULL");
@@ -96,11 +93,7 @@ public class GetAll70 extends BaseCommand {
 
     // Process the getAll request
     if (regionName == null) {
-      String message = null;
-      // if (regionName == null) (can only be null)
-      {
-        message = "The input region name for the getAll request is null";
-      }
+      String message = "The input region name for the getAll request is null";
       logger.warn("{}: {}", serverConnection.getName(), message);
       writeChunkedErrorResponse(clientMessage, MessageType.GET_ALL_DATA_ERROR, message,
           serverConnection);
@@ -134,23 +127,23 @@ public class GetAll70 extends BaseCommand {
       // Otherwise, write an exception message and continue
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
-      return;
     }
   }
 
-  private void fillAndSendGetAllResponseChunks(Region region, String regionName, Object[] keys,
+  private void fillAndSendGetAllResponseChunks(Region<?, ?> region, String regionName,
+      Object[] keys,
       ServerConnection servConn, boolean requestSerializedValues, SecurityService securityService)
       throws IOException {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
-    Iterator allKeysIter;
-    int numKeys;
+    final Iterator<?> allKeysIter;
+    final int numKeys;
     if (keys != null) {
       allKeysIter = null;
       numKeys = keys.length;
     } else {
-      Set allKeys = region.keySet();
+      Set<?> allKeys = region.keySet();
       allKeysIter = allKeys.iterator();
       numKeys = allKeys.size();
     }
@@ -158,7 +151,7 @@ public class GetAll70 extends BaseCommand {
     // The answer is no.
     // Note that the current implementation of client/server getAll the "keys" will always be
     // non-null.
-    // The server callects and returns the values in the same order as the keys it received.
+    // The server collects and returns the values in the same order as the keys it received.
     // So the server does not need to send the keys back to the client.
     // When the client receives the server's "values" it calls setKeys using the key list the client
     // already has.
@@ -183,8 +176,7 @@ public class GetAll70 extends BaseCommand {
           values.clear();
         }
 
-        Object key;
-        boolean keyNotPresent = false;
+        final Object key;
         if (keys != null) {
           key = keys[i];
         } else {
@@ -202,10 +194,8 @@ public class GetAll70 extends BaseCommand {
               logger.debug("{}: Passed GET pre-authorization for key={}", servConn.getName(), key);
             }
           } catch (NotAuthorizedException ex) {
-            logger.warn(String.format(
-                "%s: Caught the following exception attempting to get value for key=%s",
-                new Object[] {servConn.getName(), key}),
-                ex);
+            logger.warn("{}: Caught the following exception attempting to get value for key={}",
+                servConn.getName(), key, ex);
             values.addExceptionPart(key, ex);
             continue;
           }
@@ -214,10 +204,8 @@ public class GetAll70 extends BaseCommand {
         try {
           securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
         } catch (NotAuthorizedException ex) {
-          logger.warn(
-              String.format("%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
-              ex);
+          logger.warn("{}: Caught the following exception attempting to get value for key={}",
+              servConn.getName(), key, ex);
           values.addExceptionPart(key, ex);
           continue;
         }
@@ -237,7 +225,7 @@ public class GetAll70 extends BaseCommand {
         try {
           boolean isObject = entry.isObject;
           VersionTag versionTag = entry.versionTag;
-          keyNotPresent = entry.keyNotPresent;
+          boolean keyNotPresent = entry.keyNotPresent;
 
           if (postAuthzRequest != null) {
             try {
@@ -251,10 +239,8 @@ public class GetAll70 extends BaseCommand {
                 data = newData;
               }
             } catch (NotAuthorizedException ex) {
-              logger.warn(String.format(
-                  "%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
-                  ex);
+              logger.warn("{}: Caught the following exception attempting to get value for key={}",
+                  servConn.getName(), key, ex);
               values.addExceptionPart(key, ex);
               continue;
             } finally {
@@ -269,11 +255,10 @@ public class GetAll70 extends BaseCommand {
           // Add the entry to the list that will be returned to the client
           if (keyNotPresent) {
             values.addObjectPartForAbsentKey(key, data, versionTag);
-            addedToValues = true;
           } else {
             values.addObjectPart(key, data, isObject, versionTag);
-            addedToValues = true;
           }
+          addedToValues = true;
         } finally {
           if (!addedToValues || data != originalData) {
             OffHeapHelper.release(originalData);
@@ -281,11 +266,7 @@ public class GetAll70 extends BaseCommand {
         }
       }
 
-      // Send the last chunk even if the list is of zero size.
-      if (KnownVersion.GFE_701.compareTo(servConn.getClientVersion()) <= 0) {
-        // 7.0.1 and later clients do not expect the keys in the response
-        values.setKeys(null);
-      }
+      values.setKeys(null);
       sendGetAllResponseChunk(region, values, true, servConn);
       servConn.setAsTrue(RESPONDED);
     } finally {
@@ -294,7 +275,8 @@ public class GetAll70 extends BaseCommand {
   }
 
 
-  private static void sendGetAllResponseChunk(Region region, ObjectPartList list, boolean lastChunk,
+  private static void sendGetAllResponseChunk(Region<?, ?> region, ObjectPartList list,
+      boolean lastChunk,
       ServerConnection servConn) throws IOException {
     ChunkedMessage chunkedResponseMsg = servConn.getChunkedResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);

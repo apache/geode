@@ -48,13 +48,13 @@ public class CollectionConverter extends OpenTypeConverter {
      */
     Type raw = ((ParameterizedType) targetType).getRawType();
     Class c = (Class<?>) raw;
-    if (c == List.class)
+    if (c == List.class) {
       collectionClass = ArrayList.class;
-    else if (c == Set.class)
+    } else if (c == Set.class) {
       collectionClass = HashSet.class;
-    else if (c == SortedSet.class)
+    } else if (c == SortedSet.class) {
       collectionClass = TreeSet.class;
-    else { // can't happen
+    } else { // can't happen
       assert (false);
       collectionClass = null;
     }
@@ -73,8 +73,9 @@ public class CollectionConverter extends OpenTypeConverter {
     final Object[] openArray =
         (Object[]) Array.newInstance(getOpenClass().getComponentType(), valueCollection.size());
     int i = 0;
-    for (Object o : valueCollection)
+    for (Object o : valueCollection) {
       openArray[i++] = elementConverter.toOpenValue(o);
+    }
     return openArray;
   }
 

@@ -20,6 +20,12 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -29,22 +35,21 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SScanExecutor extends AbstractScanExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    String cursorString = Coder.bytesToString(commandElems.get(2));
+    String cursorString = bytesToString(commandElems.get(2));
     BigInteger cursor;
     Pattern matchPattern;
     String globPattern = null;
@@ -62,12 +67,13 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     RedisKey key = command.getKey();
 
-    if (!getDataRegion(context).containsKey(key)) {
+    RedisData value = context.getRegionProvider().getRedisData(key);
+    if (value.isNull()) {
       context.getRedisStats().incKeyspaceMisses();
       return RedisResponse.emptyScan();
     }
 
-    if (getDataRegion(context).get(key).getType() != REDIS_SET) {
+    if (value.getType() != REDIS_SET) {
       throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
     }
 
@@ -79,15 +85,14 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     for (int i = 3; i < commandElems.size(); i = i + 2) {
       byte[] commandElemBytes = commandElems.get(i);
-      String keyword = Coder.bytesToString(commandElemBytes);
-      if (keyword.equalsIgnoreCase("MATCH")) {
+      if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
         commandElemBytes = commandElems.get(i + 1);
-        globPattern = Coder.bytesToString(commandElemBytes);
+        globPattern = bytesToString(commandElemBytes);
 
-      } else if (keyword.equalsIgnoreCase("COUNT")) {
+      } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
         commandElemBytes = commandElems.get(i + 1);
         try {
-          count = Coder.bytesToInt(commandElemBytes);
+          count = narrowLongToInt(bytesToLong(commandElemBytes));
         } catch (NumberFormatException e) {
           return RedisResponse.error(ERROR_NOT_INTEGER);
         }
@@ -110,10 +115,8 @@ public class SScanExecutor extends AbstractScanExecutor {
       return RedisResponse.emptyScan();
     }
 
-    RedisSetCommands redisSetCommands =
-        new RedisSetCommandsFunctionInvoker(context.getRegionProvider().getDataRegion());
     Pair<BigInteger, List<Object>> scanResult =
-        redisSetCommands.sscan(key, matchPattern, count, cursor);
+        context.getSetCommands().sscan(key, matchPattern, count, cursor);
 
     context.setSscanCursor(scanResult.getLeft());
 

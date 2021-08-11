@@ -31,19 +31,25 @@ public class RenameExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandWrapperKeys();
+    List<RedisKey> commandElems = command.getProcessedCommandKeys();
     RedisKey key = command.getKey();
     RedisKey newKey = commandElems.get(2);
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     if (key.equals(newKey)) {
-      return RedisResponse.string("OK");
+      return RedisResponse.ok();
+    }
+
+    if (key.getBucketId() != newKey.getBucketId()) {
+      // Will produce MOVED exceptions here for whichever key is at fault
+      context.getRegionProvider().getRedisData(newKey);
+      context.getRegionProvider().getRedisData(key);
     }
 
     if (!redisKeyCommands.rename(key, newKey)) {
       return RedisResponse.error(ERROR_NO_SUCH_KEY);
     }
 
-    return RedisResponse.string("OK");
+    return RedisResponse.ok();
   }
 }

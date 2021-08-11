@@ -169,7 +169,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   }
 
   int initServerCache(boolean notifyBySub, VM vm, boolean isHA) {
-    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA));
+    int port = getRandomAvailableTCPPort();
+    return vm.invoke(() -> createServerCache(notifyBySub, getMaxThreads(), isHA, port));
   }
 
   @Test
@@ -945,8 +946,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
   }
 
 
-  public static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
-      boolean isHA) throws Exception {
+  protected static Integer createServerCache(Boolean notifyBySubscription, Integer maxThreads,
+      boolean isHA, int port) throws Exception {
     Cache cache = new ClientServerMiscDUnitTestBase().createCacheV(new Properties());
     unsetSlowDispatcherFlag();
     AttributesFactory factory = new AttributesFactory();
@@ -971,7 +972,6 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(pr);
 
     CacheServer server = cache.addCacheServer();
-    int port = getRandomAvailableTCPPort();
     r1.getCache().getDistributedSystem().getLogWriter().info("Starting server on port " + port);
     server.setPort(port);
     server.setMaxThreads(maxThreads);
@@ -1168,14 +1168,18 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     assertNotNull(r1);
     assertNotNull(r2);
 
-    if (!r1.containsKey(k1))
+    if (!r1.containsKey(k1)) {
       r1.create(k1, k1);
-    if (!r1.containsKey(k2))
+    }
+    if (!r1.containsKey(k2)) {
       r1.create(k2, k2);
-    if (!r2.containsKey(k1))
+    }
+    if (!r2.containsKey(k1)) {
       r2.create(k1, k1);
-    if (!r2.containsKey(k2))
+    }
+    if (!r2.containsKey(k2)) {
       r2.create(k2, k2);
+    }
 
     assertEquals(r1.getEntry(k1).getValue(), k1);
     assertEquals(r1.getEntry(k2).getValue(), k2);

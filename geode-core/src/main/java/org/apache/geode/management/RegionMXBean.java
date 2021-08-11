@@ -297,12 +297,15 @@ public interface RegionMXBean {
   long getDiskUsage();
 
   /**
-   * Returns the aggregate entry size (in bytes) of all entries. This will provide a correct value
-   * only if the eviction algorithm has been set to {@link EvictionAlgorithm#LRU_MEMORY}.
+   * Returns the aggregate entry size (in bytes) of all entries.
+   * For replicated regions, provides a value only if the eviction algorithm
+   * is set to {@link EvictionAlgorithm#LRU_MEMORY}.
    *
-   * For all partition regions it will show entry size in bytes. It will also include size of all
-   * the secondary entries in the data store. So while referring to size one should take redundancy
-   * into account
+   * All partitioned regions can report entry size, but the value also includes
+   * redundant entries and also counts the size of all the secondary entries in
+   * the node.
+   *
+   * @return total entry size in bytes, -1 for replicated regions without LRU_MEMORY eviction
    */
   long getEntrySize();
 

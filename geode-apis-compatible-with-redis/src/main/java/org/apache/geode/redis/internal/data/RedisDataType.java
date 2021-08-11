@@ -18,9 +18,11 @@ package org.apache.geode.redis.internal.data;
 
 public enum RedisDataType {
 
+  REDIS_DATA("data"),
   REDIS_STRING("string"),
   REDIS_HASH("hash"),
   REDIS_SET("set"),
+  REDIS_SORTED_SET("sortedset"),
   REDIS_PUBSUB("pubsub");
 
   private final String toStringValue;

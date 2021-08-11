@@ -15,121 +15,107 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class StringsDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private static final String LOCAL_HOST = "127.0.0.1";
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
+
   private static final int LIST_SIZE = 1000;
   private static final int NUM_ITERATIONS = 1000;
-  private static final int JEDIS_TIMEOUT = Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis1;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
-
-  private static Properties locatorProperties;
+  private static JedisCluster jedisCluster;
 
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
-
-  private static int redisServerPort1;
-  private static int redisServerPort2;
-  private static int redisServerPort3;
 
   @BeforeClass
   public static void classSetup() {
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    locator = clusterStartUp.startLocatorVM(0);
+    clusterStartUp.startRedisVM(1, locator.getPort());
+    clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(3, locator.getPort());
 
-    locator = clusterStartUp.startLocatorVM(0, locatorProperties);
-    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
-
-    redisServerPort1 = clusterStartUp.getRedisPort(1);
-    redisServerPort2 = clusterStartUp.getRedisPort(2);
-    redisServerPort3 = clusterStartUp.getRedisPort(3);
-
-    jedis1 = new Jedis(LOCAL_HOST, redisServerPort1, JEDIS_TIMEOUT);
-    jedis2 = new Jedis(LOCAL_HOST, redisServerPort2, JEDIS_TIMEOUT);
-    jedis3 = new Jedis(LOCAL_HOST, redisServerPort3, JEDIS_TIMEOUT);
+    int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    jedisCluster =
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
-  @Before
-  public void testSetup() {
-    jedis1.flushAll();
+  @After
+  public void after() {
+    clusterStartUp.flushAll();
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis1.disconnect();
-    jedis2.disconnect();
-    jedis3.disconnect();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
+    jedisCluster.close();
   }
 
   @Test
-  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClients() {
+  public void get_shouldAllowClientToLocateDataForGivenKey() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.set(keys.get(i), values.get(i))).run();
+        (i) -> jedisCluster.set(keys.get(i), values.get(i))).run();
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> assertThat(jedis2.get(keys.get(i))).isEqualTo(values.get(i))).run();
+        (i) -> assertThat(jedisCluster.get(keys.get(i))).isEqualTo(values.get(i))).run();
   }
 
   @Test
   public void setnx_shouldOnlySucceedOnceForAParticularKey_givenMultipleClientsSettingSameKey() {
-    Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
+
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
     AtomicInteger successes1 = new AtomicInteger(0);
     AtomicInteger successes2 = new AtomicInteger(0);
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        makeSetNXConsumer(keys, values, successes1, jedis1),
-        makeSetNXConsumer(keys, values, successes2, jedis1B)).run();
+        makeSetNXConsumer(keys, values, successes1, jedisCluster),
+        makeSetNXConsumer(keys, values, successes2, jedisCluster)).run();
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> assertThat(jedis3.get(keys.get(i))).isEqualTo(values.get(i))).run();
+        (i) -> assertThat(jedisCluster.get(keys.get(i))).isEqualTo(values.get(i))).run();
 
     assertThat(successes1.get())
         .as("Apparently ConcurrentLoopingThread did not run")
         .isGreaterThan(0);
+
     assertThat(successes2.get())
         .as("Apparently ConcurrentLoopingThread did not run")
         .isGreaterThan(0);
+
     assertThat(successes1.get() + successes2.get()).isEqualTo(LIST_SIZE);
   }
 
@@ -142,80 +128,60 @@ public class StringsDUnitTest {
     AtomicLong successes2 = new AtomicLong(0);
 
     for (int i = 0; i < LIST_SIZE; i++) {
-      jedis1.set(keys.get(i), values.get(i));
+      jedisCluster.set(keys.get(i), values.get(i));
     }
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        makeSetXXConsumer(keys, values, successes1, jedis1),
-        makeSetXXConsumer(keys, values, successes2, jedis2)).run();
+        makeSetXXConsumer(keys, values, successes1, jedisCluster),
+        makeSetXXConsumer(keys, values, successes2, jedisCluster)).run();
 
     assertThat(successes2.get() + successes1.get()).isEqualTo(LIST_SIZE * 2);
   }
 
   @Test
-  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAddingDifferentDataToDifferentStringsConcurrently() {
+  public void set_shouldAllowMultipleClientsToSetValuesOnDifferentKeysConcurrently() {
     List<String> keys1 = makeStringList(LIST_SIZE, "key1-");
     List<String> values1 = makeStringList(LIST_SIZE, "values1-");
     List<String> keys2 = makeStringList(LIST_SIZE, "key2-");
     List<String> values2 = makeStringList(LIST_SIZE, "values2-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.set(keys1.get(i), values1.get(i)),
-        (i) -> jedis2.set(keys2.get(i), values2.get(i))).run();
+        (i) -> jedisCluster.set(keys1.get(i), values1.get(i)),
+        (i) -> jedisCluster.set(keys2.get(i), values2.get(i))).run();
 
     for (int i = 0; i < LIST_SIZE; i++) {
-      assertThat(jedis3.get(keys1.get(i))).isEqualTo(values1.get(i));
-      assertThat(jedis3.get(keys2.get(i))).isEqualTo(values2.get(i));
+      assertThat(jedisCluster.get(keys1.get(i))).isEqualTo(values1.get(i));
+      assertThat(jedisCluster.get(keys2.get(i))).isEqualTo(values2.get(i));
     }
   }
 
   @Test
-  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAddingSameDataToSameStringsConcurrently() {
+  public void set_shouldAllowMultipleClientsToSetValuesOnTheSameKeysConcurrently() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values = makeStringList(LIST_SIZE, "values1-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.set(keys.get(i), values.get(i)),
-        (i) -> jedis2.set(keys.get(i), values.get(i))).run();
+        (i) -> jedisCluster.set(keys.get(i), values.get(i)),
+        (i) -> jedisCluster.set(keys.get(i), values.get(i))).run();
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> assertThat(jedis3.get(keys.get(i))).isEqualTo(values.get(i))).run();
+        (i) -> assertThat(jedisCluster.get(keys.get(i))).isEqualTo(values.get(i))).run();
   }
 
-  @Test
-  public void set_shouldDistributeDataAmongMultipleServers_givenTwoSetsOfClientsOperatingOnTheSameStringConcurrently() {
-    Jedis jedis1B = new Jedis(LOCAL_HOST, redisServerPort1);
-    Jedis jedis2B = new Jedis(LOCAL_HOST, redisServerPort2);
-
-    List<String> keys = makeStringList(LIST_SIZE, "keys-");
-    List<String> values = makeStringList(LIST_SIZE, "values-");
-
-    new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.set(keys.get(i), values.get(i)),
-        (i) -> jedis1B.set(keys.get(i), values.get(i)),
-        (i) -> jedis2.set(keys.get(i), values.get(i)),
-        (i) -> jedis2B.set(keys.get(i), values.get(i))).run();
-
-    new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> assertThat(jedis3.get(keys.get(i))).isEqualTo(values.get(i))).run();
-
-    jedis1B.disconnect();
-    jedis2B.disconnect();
-  }
 
   @Test
-  public void set_shouldDistributeDataAmongMultipleServers_givenMultipleClientsAppendingDifferentDataToSameStringConcurrently() {
+  public void append_shouldAllowMultipleClientsToAppendDifferentValueToSameKeyConcurrently() {
     List<String> keys = makeStringList(LIST_SIZE, "key1-");
     List<String> values1 = makeStringList(LIST_SIZE, "values1-");
     List<String> values2 = makeStringList(LIST_SIZE, "values2-");
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.append(keys.get(i), values1.get(i)),
-        (i) -> jedis2.append(keys.get(i), values2.get(i))).run();
+        (i) -> jedisCluster.append(keys.get(i), values1.get(i)),
+        (i) -> jedisCluster.append(keys.get(i), values2.get(i))).runInLockstep();
 
     for (int i = 0; i < LIST_SIZE; i++) {
-      assertThat(jedis3.get(keys.get(i))).contains(values1.get(i));
-      assertThat(jedis3.get(keys.get(i))).contains(values2.get(i));
+      assertThat(jedisCluster.get(keys.get(i))).contains(values1.get(i));
+      assertThat(jedisCluster.get(keys.get(i))).contains(values2.get(i));
     }
   }
 
@@ -223,46 +189,47 @@ public class StringsDUnitTest {
   public void decr_shouldDecrementWhileDoingConcurrentDecr() {
     String key = "key";
     int initialValue = NUM_ITERATIONS * 2;
-    jedis1.set(key, String.valueOf(initialValue));
+    jedisCluster.set(key, String.valueOf(initialValue));
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
-        (i) -> jedis1.decr(key),
-        (i) -> jedis2.decr(key))
+        (i) -> jedisCluster.decr(key),
+        (i) -> jedisCluster.decr(key))
             .run();
 
-    assertThat(jedis1.get(key)).isEqualTo("0");
+    assertThat(jedisCluster.get(key)).isEqualTo("0");
   }
 
   @Test
   public void decrby_shouldDecrementReliably_givenConcurrentThreadsPerformingDecrby() {
     String key = "key";
     int initialValue = NUM_ITERATIONS * 6;
-    jedis1.set(key, String.valueOf(initialValue));
+    jedisCluster.set(key, String.valueOf(initialValue));
 
     new ConcurrentLoopingThreads(NUM_ITERATIONS,
-        (i) -> jedis1.decrBy(key, 4),
-        (i) -> jedis2.decrBy(key, 2)).run();
+        (i) -> jedisCluster.decrBy(key, 4),
+        (i) -> jedisCluster.decrBy(key, 2)).runInLockstep();
 
-    assertThat(jedis1.get(key)).isEqualTo("0");
+    assertThat(jedisCluster.get(key)).isEqualTo("0");
   }
 
   @Test
-  public void strLen_returnsStringLengthWhileUpdatingValues() {
+  public void strLen_returnsStringLengthWhileConcurrentlyUpdatingValues() {
     for (int i = 0; i < LIST_SIZE; i++) {
-      jedis1.set("key-" + i, "value-" + i);
+      jedisCluster.set("key-" + i, "value-" + i);
     }
 
     new ConcurrentLoopingThreads(LIST_SIZE,
-        (i) -> jedis1.set("key-" + i, "changedValue-" + i),
+        (i) -> jedisCluster.set("key-" + i, "changedValue-" + i),
         (i) -> {
-          long stringLength = jedis2.strlen("key-" + i);
-          assertThat(stringLength == ("changedValue-" + i).length()
-              || stringLength == ("value-" + i).length()).isTrue();
-        }).run();
+          long stringLength = jedisCluster.strlen("key-" + i);
+          assertThat(
+              stringLength == ("changedValue-" + i).length()
+                  || stringLength == ("value-" + i).length()).isTrue();
+        }).runInLockstep();
 
     for (int i = 0; i < LIST_SIZE; i++) {
       String key = "key-" + i;
-      String value = jedis1.get(key);
+      String value = jedisCluster.get(key);
       String expectedValue = "changedValue-" + i;
 
       assertThat(value.length()).isEqualTo(expectedValue.length());
@@ -270,6 +237,73 @@ public class StringsDUnitTest {
     }
   }
 
+  @Test
+  public void givenBucketsMoveDuringAppend_thenDataIsNotLost() throws Exception {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    List<String> hashtags = new ArrayList<>();
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 1));
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 2));
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 3));
+
+    Runnable task1 = () -> appendPerformAndVerify(1, 10000, hashtags.get(0), running);
+    Runnable task2 = () -> appendPerformAndVerify(2, 10000, hashtags.get(1), running);
+    Runnable task3 = () -> appendPerformAndVerify(3, 10000, hashtags.get(2), running);
+
+    Future<Void> future1 = executor.runAsync(task1);
+    Future<Void> future2 = executor.runAsync(task2);
+    Future<Void> future3 = executor.runAsync(task3);
+
+    for (int i = 0; i < 100 && running.get(); i++) {
+      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
+      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
+    }
+
+    for (int i = 0; i < 100 && running.get(); i++) {
+      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
+      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
+    }
+
+    running.set(false);
+
+    future1.get();
+    future2.get();
+    future3.get();
+  }
+
+  private void appendPerformAndVerify(int index, int minimumIterations, String hashtag,
+      AtomicBoolean isRunning) {
+    String key = "{" + hashtag + "}-key-" + index;
+    int iterationCount = 0;
+
+    while (iterationCount < minimumIterations || isRunning.get()) {
+      String appendString = "-" + key + "-" + iterationCount + "-";
+      try {
+        jedisCluster.append(key, appendString);
+      } catch (Exception ex) {
+        isRunning.set(false);
+        throw new RuntimeException("Exception performing APPEND " + appendString, ex);
+      }
+      iterationCount += 1;
+    }
+
+    String storedString = jedisCluster.get(key);
+
+    int idx = 0;
+    int i = 0;
+    while (i < iterationCount) {
+      String expectedValue = "-" + key + "-" + i + "-";
+      String foundValue = storedString.substring(idx, idx + expectedValue.length());
+      if (!foundValue.equals(expectedValue)) {
+        Assert.fail("unexpected " + foundValue + " at index " + i + " iterationCount="
+            + iterationCount + " in string "
+            + storedString);
+        break;
+      }
+      idx += expectedValue.length();
+      i++;
+    }
+  }
 
   private List<String> makeStringList(int setSize, String baseString) {
     List<String> strings = new ArrayList<>();
@@ -280,7 +314,7 @@ public class StringsDUnitTest {
   }
 
   private Consumer<Integer> makeSetXXConsumer(List<String> keys, List<String> values,
-      AtomicLong counter, Jedis jedis) {
+      AtomicLong counter, JedisCluster jedis) {
     return (i) -> {
       SetParams setParams = new SetParams();
       setParams.xx();
@@ -292,7 +326,7 @@ public class StringsDUnitTest {
   }
 
   private Consumer<Integer> makeSetNXConsumer(List<String> keys, List<String> values,
-      AtomicInteger counter, Jedis jedis) {
+      AtomicInteger counter, JedisCluster jedis) {
     return (i) -> {
       SetParams setParams = new SetParams();
       setParams.nx();

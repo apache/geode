@@ -174,8 +174,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
             // if interrupted, we must be shutting down
             return;
           } finally {
-            if (interrupted)
+            if (interrupted) {
               Thread.currentThread().interrupt();
+            }
           }
         }
         if (pool.getActiveCount() > 1) {

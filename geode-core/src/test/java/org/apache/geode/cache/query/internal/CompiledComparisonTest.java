@@ -32,6 +32,8 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.index.AbstractMapIndex;
+import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 
@@ -128,5 +130,119 @@ public class CompiledComparisonTest {
         spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_EQ));
 
     comparison.evaluate(context);
+  }
+
+  @Test
+  public void cannotUseIndexReturnsFalse_WithNullIndex() {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(null);
+    ExecutionContext context = mock(ExecutionContext.class);
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_NE));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isFalse();
+  }
+
+  @Test
+  public void cannotUseIndexReturnsFalse_WithoutAllKeysIndex() {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    AbstractMapIndex indexProtocol = mock(AbstractMapIndex.class);
+    when(indexProtocol.getIsAllKeys()).thenReturn(false);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(indexProtocol);
+    ExecutionContext context = mock(ExecutionContext.class);
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_NE));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isFalse();
+  }
+
+  @Test
+  public void cannotUseIndexReturnsTrue_WithAllKeysIndexAndNE()
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    AbstractMapIndex indexProtocol = mock(AbstractMapIndex.class);
+    when(indexProtocol.getIsAllKeys()).thenReturn(true);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(indexProtocol);
+    ExecutionContext context = mock(ExecutionContext.class);
+    when(left.evaluate(context)).thenReturn(null);
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_NE));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isTrue();
+  }
+
+  @Test
+  public void cannotUseIndexReturnsTrue_WithAllKeysIndexAndEQWithLeftNull()
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    AbstractMapIndex indexProtocol = mock(AbstractMapIndex.class);
+    when(indexProtocol.getIsAllKeys()).thenReturn(true);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(indexProtocol);
+    ExecutionContext context = mock(ExecutionContext.class);
+    Region.Entry<?, ?> rightEntry = mock(Region.Entry.class);
+    when(left.evaluate(context)).thenReturn(rightEntry);
+    when(left.evaluate(context)).thenReturn(null);
+
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_EQ));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isTrue();
+  }
+
+  @Test
+  public void cannotUseIndexReturnsTrue_WithAllKeysIndexAndEQWithRightNull()
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    AbstractMapIndex indexProtocol = mock(AbstractMapIndex.class);
+    when(indexProtocol.getIsAllKeys()).thenReturn(true);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(indexProtocol);
+    ExecutionContext context = mock(ExecutionContext.class);
+    Region.Entry<?, ?> leftEntry = mock(Region.Entry.class);
+    when(left.evaluate(context)).thenReturn(leftEntry);
+    when(right.evaluate(context)).thenReturn(null);
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_EQ));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isTrue();
+  }
+
+  @Test
+  public void cannotUseIndexReturnsFalse_WithAllKeysIndexAndEQWithoutNulls()
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException {
+    CompiledValue left = mock(CompiledLiteral.class);
+    CompiledValue right = mock(CompiledLiteral.class);
+    AbstractMapIndex indexProtocol = mock(AbstractMapIndex.class);
+    when(indexProtocol.getIsAllKeys()).thenReturn(true);
+    IndexData indexData = mock(IndexData.class);
+    when(indexData.getIndex()).thenReturn(indexProtocol);
+    ExecutionContext context = mock(ExecutionContext.class);
+    Region.Entry<?, ?> leftEntry = mock(Region.Entry.class);
+    when(left.evaluate(context)).thenReturn(leftEntry);
+    Region.Entry<?, ?> rightEntry = mock(Region.Entry.class);
+    when(right.evaluate(context)).thenReturn(rightEntry);
+
+    CompiledComparison comparison =
+        spy(new CompiledComparison(left, right, OQLLexerTokenTypes.TOK_EQ));
+
+    assertThat(comparison.indexCannotBeUsed(context, indexData)).isFalse();
   }
 }

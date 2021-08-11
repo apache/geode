@@ -21,25 +21,32 @@ limitations under the License.
 
 In this section you download, install, and set up the HTTP Session Management modules.
 
+Following the Apache Tomcat convention, this page assumes the CATALINA_HOME environment variable is set to the root directory of the "binary" Tomcat distribution.
+For example, if Apache Tomcat is installed in `/usr/bin/apache-tomcat-9.0.50` then
+
+```
+CATALINA_HOME=/usr/bin/apache-tomcat-9.0.50
+```
+
 ## <a id="quick_start__section_6A4A00B6DA404E10A5C29E5E31101445" class="no-quick-link"></a>Quick Start Instructions
 
 1.  Download and install one of the application servers.
 
-    | Supported Application Server | Version                     | Download Location                                                                                                                                                                                                    |
-    |------------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | tc Server                    | 3.2           | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver)                                                                     |
-    | Tomcat                       | 8.5                    | [http://tomcat.apache.org/download-80.cgi](http://tomcat.apache.org/download-80.cgi)                                                                                             |
-    | Tomcat                       | 9.0                    | [https://tomcat.apache.org/download-90.cgi](https://tomcat.apache.org/download-90.cgi)                                                                                             |
+    | Supported Application Server | Version | Download Location       |
+    |------------------------------|---------|-------------------------|
+    | tc Server                    | 3.2     | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver) |
+    | Tomcat                       | 8.5     | [Tomcat 8 Software Downloads](https://tomcat.apache.org/download-80.cgi)                                     |
+    | Tomcat                       | 9.0     | [Tomcat 9 Software Downloads](https://tomcat.apache.org/download-90.cgi)                                     |
 
     The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 3.1 specification.
 
 2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
 
-    | Supported Application Server | Version                     | Module                                                   | Target Location for Module                                                       |
-    |------------------------------|-----------------------------|----------------------------------------------------------|----------------------------------------------------------------------------------|
-    | tc Server                    | 3.2           | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
-    | Tomcat                       | 8.5            | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
-    | Tomcat                       | 9.0            | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
+    | Supported Application Server | Version  | Module                                               | Target Location for Module       |
+    |------------------------------|----------|------------------------------------------------------|----------------------------------|
+    | tc Server                    | 2.9      | Apache_Geode_Modules-SERVER-VERSION-tcServer.zip     | `<tc Server root dir>/templates` |
+    | tc Server                    | 3.2      | Apache_Geode_Modules-SERVER-VERSION-tcServer30.zip   | `<tc Server root dir>/templates` |
+    | Tomcat                       | 8.5, 9.0 | Apache_Geode_Modules-SERVER-VERSION-Tomcat.zip       | `$CATALINA_HOME`                 |
 
 3.  Complete the appropriate set up instructions for your application server described in the following sections:
     -   [Additional Quick Start Instructions for tc Server Module](quick_start.html#quick_start__section_EE60463F524A46B7B83CE74C1C3E8E0E)
@@ -72,22 +79,28 @@ These steps provide a basic starting point for using the Tomcat module. For more
     For example, in a peer-to-peer configuration using Tomcat 9, you would add the following entry within the `<server>` element of server.xml:
 
     ``` pre
-    <Listener className="org.apache.geode.modules.session.catalina.
-                             PeerToPeerCacheLifecycleListener"
-                             locator="localhost[10334]" />
+    <Listener className="org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener"
+        locator="localhost[10334]" />
     ```
 
     and the following entry within the `<context>` tag in the context.xml file:
 
     ``` pre
-    <Manager className="org.apache.geode.modules.session.catalina.
-                             Tomcat9DeltaSessionManager"/> 
+    <Manager className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"/> 
     ```
 
     See [Setting Up the HTTP Module for Tomcat](tomcat_setting_up_the_module.html) for additional instructions.
 
-2.  Restart the application server.
+2.  Start the Tomcat application server.
 
+    ```
+    $CATALINA_HOME/bin/startup.sh
+    ```
+
+3. Confirm that Tomcat is running by opening a browser and navigating to `localhost:8080`. If you see the Tomcat home page, your installation was successful.
+
+    <img src="../../images/Apache_Tomcat_Homepage.png">
+    
 ## <a id="quick_start__section_1587C3E55F06406EBD4AB13014A406D4" class="no-quick-link"></a>Additional Instructions for AppServers Module
 
 These steps provide a basic starting point for using the AppServers module with WebLogic, WebSphere or JBoss. For more configuration options, see [HTTP Session Management Module for AppServers](session_mgmt_weblogic.html).

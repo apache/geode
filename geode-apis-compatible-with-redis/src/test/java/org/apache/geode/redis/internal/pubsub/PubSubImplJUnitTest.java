@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -31,6 +32,7 @@ import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 
 public class PubSubImplJUnitTest {
@@ -47,18 +49,18 @@ public class PubSubImplJUnitTest {
     when(deadClient.isDead()).thenReturn(true);
 
     ChannelSubscription subscription =
-        spy(new ChannelSubscription(deadClient, "sally".getBytes(), mockContext, subscriptions));
-    subscription.readyToPublish();
+        spy(new ChannelSubscription(deadClient, stringToBytes("sally"), mockContext,
+            subscriptions));
 
     subscriptions.add(subscription);
+    subscription.readyToPublish();
 
     PubSubImpl subject = new PubSubImpl(subscriptions);
 
-    Long numberOfSubscriptions =
-        subject.publishMessageToSubscribers("sally".getBytes(), "message".getBytes());
+    subject.publishMessageToSubscribers(stringToBytes("sally"), stringToBytes("message"));
 
-    assertThat(numberOfSubscriptions).isEqualTo(0);
-    assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty());
   }
 
   @SuppressWarnings("unchecked")

@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**

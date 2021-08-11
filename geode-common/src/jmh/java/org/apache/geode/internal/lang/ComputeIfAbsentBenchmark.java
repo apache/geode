@@ -28,6 +28,8 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
+
 
 /**
  * Test spins up threads that constantly do computeIfAbsent

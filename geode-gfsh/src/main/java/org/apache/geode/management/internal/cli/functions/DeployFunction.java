@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
-import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
@@ -75,15 +74,9 @@ public class DeployFunction implements InternalFunction<Object[]> {
       List<DeploymentInfo> results = new LinkedList<>();
 
       List<Deployment> deployments;
-      String deploymentName = (String) args[2];
-      if (Strings.isNullOrEmpty(deploymentName)) {
-        deployments = jarFilenames.stream().map(jarFileName -> new Deployment(jarFileName,
-            getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
-      } else {
-        deployments =
-            jarFilenames.stream().map(jarFileName -> new Deployment(deploymentName, jarFileName,
-                getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
-      }
+
+      deployments = jarFilenames.stream().map(jarFileName -> new Deployment(jarFileName,
+          getDeployedBy(cache), Instant.now().toString())).collect(Collectors.toList());
 
       for (int i = 0; i < deployments.size(); i++) {
         Deployment deployment = deployments.get(i);
@@ -101,7 +94,7 @@ public class DeployFunction implements InternalFunction<Object[]> {
               logger.warn("Error executing CacheRealizationFunction.", entry);
             } else if (entry instanceof RealizationResult) {
               RealizationResult realizationResult = (RealizationResult) entry;
-              results.add(new DeploymentInfo(memberId, deployment.getDeploymentName(),
+              results.add(new DeploymentInfo(memberId,
                   deployment.getFileName(), realizationResult.getMessage()));
             }
           }

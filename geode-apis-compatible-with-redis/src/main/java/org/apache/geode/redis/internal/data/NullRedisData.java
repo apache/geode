@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+
 import java.io.DataInput;
 import java.io.DataOutput;
 
@@ -24,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RegionProvider;
 
 /**
  * Implements behaviour for when no instance of RedisData exists.
@@ -69,12 +71,12 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public int pexpireat(CommandHelper helper, RedisKey key, long timestamp) {
+  public int pexpireat(RegionProvider regionProvider, RedisKey key, long timestamp) {
     return 0;
   }
 
   @Override
-  public void doExpiration(CommandHelper helper, RedisKey key) {
+  public void doExpiration(RegionProvider regionProvider, RedisKey key) {
     // nothing needed
   }
 
@@ -86,6 +88,16 @@ public class NullRedisData implements RedisData {
   @Override
   public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
     return false;
+  }
+
+  @Override
+  public byte[] dump() {
+    return null;
+  }
+
+  @Override
+  public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
+    return restore(data);
   }
 
   @Override
@@ -121,5 +133,10 @@ public class NullRedisData implements RedisData {
   @Override
   public void fromDelta(DataInput in) throws InvalidDeltaException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int getSizeInBytes() {
+    return 0;
   }
 }

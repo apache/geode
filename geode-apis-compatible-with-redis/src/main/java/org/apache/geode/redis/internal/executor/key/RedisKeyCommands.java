@@ -36,4 +36,8 @@ public interface RedisKeyCommands {
   String type(RedisKey key);
 
   String internalType(RedisKey key);
+
+  byte[] dump(RedisKey key);
+
+  void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options);
 }

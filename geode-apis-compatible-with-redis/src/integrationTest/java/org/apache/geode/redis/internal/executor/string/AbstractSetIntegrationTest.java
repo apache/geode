@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -30,111 +31,110 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private final String key = "key";
+  private final String value = "value";
   private static final int ITERATION_COUNT = 4000;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.SET))
         .hasMessageContaining("ERR wrong number of arguments for 'set' command");
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.SET, key))
         .hasMessageContaining("ERR wrong number of arguments for 'set' command");
   }
 
   @Test
   public void givenEXKeyword_withoutParameter_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "EX"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "EX"))
         .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenEXKeyword_whenParameterIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "EX", "NaN"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "EX", "NaN"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "0"))
-        .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "0"))
+            .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
   public void givenPXKeyword_withoutParameter_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX"))
+    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX"))
         .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenPXKeyword_whenParameterIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "NaN"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "NaN"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenPXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "0"))
-        .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "0"))
+            .hasMessageContaining(ERROR_INVALID_EXPIRE_TIME);
   }
 
   @Test
   public void givenPXAndEXInSameCommand_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "PX", "3000", "EX", "3"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "3000", "EX",
+            "3"))
+                .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenNXAndXXInSameCommand_returnsSyntaxError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "NX", "XX"))
-        .hasMessageContaining(ERROR_SYNTAX);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "NX", "XX"))
+            .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void givenInvalidKeyword_returnsSyntaxError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.SET, "key", "value", "invalidKeyword"))
+        () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "invalidKeyword"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void testSET_shouldSetStringValueToKey_givenEmptyKey() {
-
-    String key = "key";
-    String value = "value";
-
     String result = jedis.get(key);
     assertThat(result).isNull();
 
@@ -145,116 +145,92 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeSet() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.sadd(key, "member1", "member2");
 
-    jedis.set(key, stringValue);
+    jedis.set(key, value);
     String result = jedis.get(key);
 
-    assertThat(result).isEqualTo(stringValue);
+    assertThat(result).isEqualTo(value);
   }
 
   @Test
   public void testSET_shouldSetStringValueToKey_givenKeyIsOfDataTypeHash() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.hset(key, "field", "something else");
 
-    String result = jedis.set(key, stringValue);
+    String result = jedis.set(key, value);
     assertThat(result).isEqualTo("OK");
 
-    assertThat(stringValue).isEqualTo(jedis.get(key));
+    assertThat(value).isEqualTo(jedis.get(key));
   }
 
   @Test
   public void testSET_shouldSetNX_evenIfKeyContainsOtherDataType() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.sadd(key, "member1", "member2");
     SetParams setParams = new SetParams();
     setParams.nx();
 
-    String result = jedis.set(key, stringValue, setParams);
+    String result = jedis.set(key, value, setParams);
     assertThat(result).isNull();
   }
 
   @Test
   public void testSET_shouldSetXX_evenIfKeyContainsOtherDataType() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.sadd(key, "member1", "member2");
     SetParams setParams = new SetParams();
     setParams.xx();
 
-    jedis.set(key, stringValue, setParams);
+    jedis.set(key, value, setParams);
     String result = jedis.get(key);
 
-    assertThat(result).isEqualTo(stringValue);
+    assertThat(result).isEqualTo(value);
   }
 
   @Test
   public void testSET_withNXAndExArguments() {
-    String key = "key";
-    String stringValue = "value";
-
     SetParams setParams = new SetParams();
     setParams.nx();
-    setParams.ex(20);
+    setParams.ex(20L);
 
-    jedis.set(key, stringValue, setParams);
+    jedis.set(key, value, setParams);
     assertThat(jedis.ttl(key)).isGreaterThan(15);
-    assertThat(jedis.get(key)).isEqualTo(stringValue);
+    assertThat(jedis.get(key)).isEqualTo(value);
   }
 
   @Test
   public void testSET_withXXAndExArguments() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.set(key, "differentValue");
 
     SetParams setParams = new SetParams();
     setParams.xx();
-    setParams.ex(20);
+    setParams.ex(20L);
 
-    jedis.set(key, stringValue, setParams);
+    jedis.set(key, value, setParams);
     assertThat(jedis.ttl(key)).isGreaterThan(15);
-    assertThat(jedis.get(key)).isEqualTo(stringValue);
+    assertThat(jedis.get(key)).isEqualTo(value);
   }
 
   @Test
   public void testSET_withNXAndPxArguments() {
-    String key = "key";
-    String stringValue = "value";
-
     SetParams setParams = new SetParams();
     setParams.nx();
     setParams.px(2000);
 
-    jedis.set(key, stringValue, setParams);
+    jedis.set(key, value, setParams);
     assertThat(jedis.pttl(key)).isGreaterThan(1500);
-    assertThat(jedis.get(key)).isEqualTo(stringValue);
+    assertThat(jedis.get(key)).isEqualTo(value);
   }
 
   @Test
   public void testSET_withXXAndPxArguments() {
-    String key = "key";
-    String stringValue = "value";
-
     jedis.set(key, "differentValue");
 
     SetParams setParams = new SetParams();
     setParams.xx();
     setParams.px(2000);
 
-    jedis.set(key, stringValue, setParams);
+    jedis.set(key, value, setParams);
     assertThat(jedis.pttl(key)).isGreaterThan(1500);
-    assertThat(jedis.get(key)).isEqualTo(stringValue);
+    assertThat(jedis.get(key)).isEqualTo(value);
   }
 
   @Test
@@ -277,7 +253,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
             counter.addAndGet(1);
           }
         },
-        (i) -> jedis2.set(keys.get(i), values.get(i), setParams))
+        (i) -> jedis.set(keys.get(i), values.get(i), setParams))
             .run();
 
     assertThat(counter.get()).isEqualTo(ITERATION_COUNT);
@@ -285,9 +261,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void testSET_withEXArgument_shouldSetExpireTime() {
-    String key = "key";
-    String value = "value";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20;
 
     SetParams setParams = new SetParams();
     setParams.ex(secondsUntilExpiration);
@@ -296,14 +270,12 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
     Long result = jedis.ttl(key);
 
-    assertThat(result).isGreaterThan(15l);
+    assertThat(result).isGreaterThan(15L);
   }
 
   @Test
   public void testSET_withNegativeEXTime_shouldReturnError() {
-    String key = "key";
-    String value = "value";
-    int millisecondsUntilExpiration = -1;
+    long millisecondsUntilExpiration = -1;
 
     SetParams setParams = new SetParams();
     setParams.ex(millisecondsUntilExpiration);
@@ -315,8 +287,6 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void testSET_withPXArgument_shouldSetExpireTime() {
-    String key = "key";
-    String value = "value";
     int millisecondsUntilExpiration = 20000;
 
     SetParams setParams = new SetParams();
@@ -326,13 +296,11 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
     Long result = jedis.ttl(key);
 
-    assertThat(result).isGreaterThan(15l);
+    assertThat(result).isGreaterThan(15L);
   }
 
   @Test
   public void testSET_withNegativePXTime_shouldReturnError() {
-    String key = "key";
-    String value = "value";
     int millisecondsUntilExpiration = -1;
 
     SetParams setParams = new SetParams();
@@ -345,9 +313,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void testSET_shouldClearPreviousTTL() {
-    String key = "key";
-    String value = "value";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20;
 
     SetParams setParams = new SetParams();
     setParams.ex(secondsUntilExpiration);
@@ -363,9 +329,8 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void testSET_withXXArgument_shouldClearPreviousTTL() {
-    String key = "xx_key";
     String value = "did exist";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20;
     SetParams setParamsXX = new SetParams();
     setParamsXX.xx();
     SetParams setParamsEX = new SetParams();
@@ -385,7 +350,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
   public void testSET_shouldNotClearPreviousTTL_onFailure() {
     String key_NX = "nx_key";
     String value_NX = "set only if key did not exist";
-    int secondsUntilExpiration = 20;
+    long secondsUntilExpiration = 20;
 
     SetParams setParamsEX = new SetParams();
     setParamsEX.ex(secondsUntilExpiration);
@@ -404,9 +369,7 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
   @Test
   @Ignore("KEEPTTL is part of redis 6")
   public void testSET_withKEEPTTL_shouldRetainPreviousTTL_onSuccess() {
-    String key = "key";
-    String value = "value";
-    int secondsToExpire = 30;
+    long secondsToExpire = 30;
 
     SetParams setParamsEx = new SetParams();
     setParamsEx.ex(secondsToExpire);
@@ -515,48 +478,52 @@ public abstract class AbstractSetIntegrationTest implements RedisPortSupplier {
   public void testSET_withInvalidOptions() {
     SoftAssertions soft = new SoftAssertions();
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET))
-        .as("invalid options #1")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET))
+        .as("no key")
         .isInstanceOf(JedisDataException.class);
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "EX", "0"))
-        .as("invalid options #2")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, "EX", "0"))
+        .as("no value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "EX", "a"))
-        .as("invalid options #3")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "EX", "a"))
+        .as("non-integer expiration value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("value is not an integer");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "EX", "0"))
-        .as("invalid options #4")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "1", "EX", "0"))
+        .as("both PX and EX provided")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "1", "XX", "0"))
-        .as("invalid options #5")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "1", "XX", "0"))
+        .as("extra integer option as last option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "PX", "XX", "0"))
-        .as("invalid options #6")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "PX", "XX", "0"))
+        .as("expiration option used with no integer value")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "1", "PX", "1"))
-        .as("invalid options #7")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "1", "PX", "1"))
+        .as("extra integer option as first option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "foo", "bar", "NX", "XX"))
-        .as("invalid options #8")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "NX", "XX"))
+        .as("both NX and XX provided")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "NX", "a"))
+        .as("invalid option after valid option")
+        .isInstanceOf(JedisDataException.class)
+        .hasMessageContaining("syntax error");
 
-    soft.assertThatThrownBy(() -> jedis.sendCommand(SET, "key", "value", "blah"))
-        .as("invalid options #9")
+    soft.assertThatThrownBy(() -> jedis.sendCommand(key, SET, key, value, "blah"))
+        .as("invalid option")
         .isInstanceOf(JedisDataException.class)
         .hasMessageContaining("syntax error");
 

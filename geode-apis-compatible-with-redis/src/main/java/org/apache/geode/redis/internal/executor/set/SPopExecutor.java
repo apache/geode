@@ -14,40 +14,42 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SPopExecutor extends SetExecutor {
+public class SPopExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     boolean isCountPassed = false;
     int popCount = 1;
 
     if (commandElems.size() == 3) {
       isCountPassed = true;
-      popCount = Integer.parseInt(new String(commandElems.get(2)));
+      popCount = narrowLongToInt(bytesToLong(commandElems.get(2)));
     }
 
     RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
-    Collection<ByteArrayWrapper> popped = redisSetCommands.spop(key, popCount);
+    RedisSetCommands redisSetCommands = context.getSetCommands();
+    Collection<byte[]> popped = redisSetCommands.spop(key, popCount);
 
     if (popped.isEmpty() && !isCountPassed) {
       return RedisResponse.nil();
     }
 
     if (!isCountPassed) {
-      return RedisResponse.bulkString(popped.iterator().next().toString());
+      return RedisResponse.bulkString(popped.iterator().next());
     }
 
     return RedisResponse.array(popped);

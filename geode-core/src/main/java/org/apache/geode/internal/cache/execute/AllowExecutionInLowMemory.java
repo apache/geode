@@ -18,6 +18,6 @@ package org.apache.geode.internal.cache.execute;
 /**
  * An internal marker interface used to allow functions to run in low-memory conditions.
  */
-public interface AllowExecutionInLowMemory extends InternalFunction<Object[]> {
+public interface AllowExecutionInLowMemory<T> extends InternalFunction<T> {
 
 }

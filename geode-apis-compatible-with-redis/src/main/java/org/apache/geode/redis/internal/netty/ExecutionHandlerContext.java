@@ -18,8 +18,6 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,22 +36,25 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
-import org.apache.geode.redis.internal.executor.CommandFunction;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
+import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
+import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
+import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -81,10 +82,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
-  private final EventLoopGroup subscriberGroup;
+  private final DistributedMember member;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
-  private int hscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final int MAX_QUEUED_COMMANDS =
       Integer.getInteger("geode.redis.commandQueueSize", 1000);
@@ -92,7 +92,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
   private final int serverPort;
-  private CountDownLatch eventLoopSwitched;
 
   private boolean isAuthenticated;
 
@@ -109,24 +108,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Runnable shutdownInvoker,
       RedisStats redisStats,
       ExecutorService backgroundExecutor,
-      EventLoopGroup subscriberGroup,
       byte[] password,
-      int serverPort) {
+      int serverPort,
+      DistributedMember member) {
     this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.subscriberGroup = subscriberGroup;
     this.client = new Client(channel);
     this.byteBufAllocator = this.channel.alloc();
     this.authPassword = password;
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
+    this.member = member;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
-    this.hscanCursor = 0;
     redisStats.addClient();
 
     backgroundExecutor.submit(this::processCommandQueue);
@@ -136,7 +134,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
         .addListener((ChannelFutureListener) f -> {
           response.afterWrite();
-          logResponse(response, channel.remoteAddress().toString(), f.cause());
+          logResponse(response, channel.remoteAddress(), f.cause());
         });
   }
 
@@ -187,10 +185,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  public EventLoopGroup getSubscriberGroup() {
-    return subscriberGroup;
-  }
-
   public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
       Consumer<Boolean> callback) {
     if (newGroup.equals(channel.eventLoop())) {
@@ -215,53 +209,45 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
-    RedisResponse response;
     if (cause instanceof IOException) {
       channelInactive(ctx);
       return null;
     }
 
-    if (cause instanceof FunctionException
-        && !(cause instanceof FunctionInvocationTargetException)) {
-      Throwable th = CommandFunction.getInitialCause((FunctionException) cause);
-      if (th != null) {
-        cause = th;
-      }
-    }
-
-    if (cause instanceof NumberFormatException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof ArithmeticException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof RedisDataTypeMismatchException) {
-      response = RedisResponse.wrongType(cause.getMessage());
-    } else if (cause instanceof LowMemoryException) {
-      response = RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
-    } else if (cause instanceof DecoderException
-        && cause.getCause() instanceof RedisCommandParserException) {
-      response = RedisResponse.error(RedisConstants.PARSING_EXCEPTION_MESSAGE);
-
-    } else if (cause instanceof InterruptedException || cause instanceof CacheClosedException) {
-      response = RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
-    } else if (cause instanceof IllegalStateException
-        || cause instanceof RedisParametersMismatchException) {
-      response = RedisResponse.error(cause.getMessage());
-    } else if (cause instanceof FunctionInvocationTargetException
-        || cause instanceof DistributedSystemDisconnectedException
-        || cause instanceof ForcedDisconnectException) {
-      // This indicates a member departed or got disconnected
-      logger.warn(
-          "Closing client connection because one of the servers doing this operation departed.");
-      channelInactive(ctx);
-      response = null;
+    Throwable rootCause = getRootCause(cause);
+    if (rootCause instanceof RedisDataMovedException) {
+      return RedisResponse.moved(rootCause.getMessage());
+    } else if (rootCause instanceof RedisDataTypeMismatchException) {
+      return RedisResponse.wrongType(rootCause.getMessage());
+    } else if (rootCause instanceof IllegalStateException
+        || rootCause instanceof RedisParametersMismatchException
+        || rootCause instanceof RedisException
+        || rootCause instanceof NumberFormatException
+        || rootCause instanceof ArithmeticException) {
+      return RedisResponse.error(rootCause.getMessage());
+    } else if (rootCause instanceof LowMemoryException) {
+      return RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
+    } else if (rootCause instanceof DecoderException
+        && rootCause.getCause() instanceof RedisCommandParserException) {
+      return RedisResponse
+          .error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + rootCause.getMessage());
+    } else if (rootCause instanceof InterruptedException
+        || rootCause instanceof CacheClosedException) {
+      return RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
     } else {
       if (logger.isErrorEnabled()) {
-        logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
+        logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), rootCause);
       }
-      response = RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
+      return RedisResponse.error(RedisConstants.SERVER_ERROR_MESSAGE);
     }
+  }
 
-    return response;
+  private Throwable getRootCause(Throwable cause) {
+    Throwable root = cause;
+    while (root.getCause() != null) {
+      root = root.getCause();
+    }
+    return root;
   }
 
   @Override
@@ -279,7 +265,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void executeCommand(Command command) {
+  private void executeCommand(Command command) throws Exception {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {} - {}", command,
@@ -321,7 +307,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         channelInactive(command.getChannelHandlerContext());
       }
     } catch (Exception e) {
-      logger.warn("Execution of Redis command {} failed: {}", command, e);
+      if (!(e instanceof RedisDataMovedException)) {
+        logger.warn("Execution of Redis command {} failed: {}", command, e);
+      }
       throw e;
     }
   }
@@ -330,7 +318,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return allowUnsupportedSupplier.get();
   }
 
-  private RedisResponse handleUnAuthenticatedCommand(Command command) {
+  private RedisResponse handleUnAuthenticatedCommand(Command command) throws Exception {
     RedisResponse response;
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
@@ -340,7 +328,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return response;
   }
 
-  private void logResponse(RedisResponse response, String extraMessage, Throwable cause) {
+  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
     if (logger.isDebugEnabled() && response != null) {
       ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
       if (cause == null) {
@@ -402,10 +390,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return client;
   }
 
-  public UUID getClientUUID() {
-    return this.getClient().getId();
-  }
-
   public void shutdown() {
     shutdownInvoker.run();
   }
@@ -434,40 +418,28 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.sscanCursor = sscanCursor;
   }
 
-  public int getHscanCursor() {
-    return this.hscanCursor;
+  public String getMemberName() {
+    return member.getUniqueId();
   }
 
-  public void setHscanCursor(int hscanCursor) {
-    this.hscanCursor = hscanCursor;
+  public RedisHashCommands getHashCommands() {
+    return regionProvider.getHashCommands();
   }
 
-  /**
-   * This method and {@link #eventLoopReady()} are relevant for pubsub related commands which need
-   * to return responses on a different EventLoopGroup. We need to ensure that the EventLoopGroup
-   * switch has occurred before subsequent commands are executed.
-   */
-  public CountDownLatch getOrCreateEventLoopLatch() {
-    if (eventLoopSwitched != null) {
-      return eventLoopSwitched;
-    }
-
-    eventLoopSwitched = new CountDownLatch(1);
-    return eventLoopSwitched;
+  public RedisSortedSetCommands getSortedSetCommands() {
+    return regionProvider.getSortedSetCommands();
   }
 
-  /**
-   * Signals that we have successfully switched over to a new EventLoopGroup.
-   */
-  public void eventLoopReady() {
-    if (eventLoopSwitched == null) {
-      return;
-    }
-
-    try {
-      eventLoopSwitched.await();
-    } catch (InterruptedException e) {
-      logger.info("Event loop interrupted", e);
-    }
+  public RedisKeyCommands getKeyCommands() {
+    return regionProvider.getKeyCommands();
   }
+
+  public RedisStringCommands getStringCommands() {
+    return regionProvider.getStringCommands();
+  }
+
+  public RedisSetCommands getSetCommands() {
+    return regionProvider.getSetCommands();
+  }
+
 }

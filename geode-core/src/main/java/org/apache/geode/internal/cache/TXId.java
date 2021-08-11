@@ -86,8 +86,9 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   @Override
   public int hashCode() {
     int retval = this.uniqId;
-    if (this.memberId != null)
+    if (this.memberId != null) {
       retval = retval * 37 + this.memberId.hashCode();
+    }
     return retval;
   }
 

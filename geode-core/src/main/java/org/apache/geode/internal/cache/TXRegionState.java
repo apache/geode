@@ -333,7 +333,7 @@ public class TXRegionState {
           Map.Entry me = (Map.Entry) it.next();
           Object eKey = me.getKey();
           TXEntryState txes = (TXEntryState) me.getValue();
-          txes.buildMessage(r, eKey, msg, this.otherMembers);
+          txes.buildMessage(r, eKey, msg);
           if (txes.getFilterRoutingInfo() != null) {
             newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
           }
@@ -377,7 +377,7 @@ public class TXRegionState {
           Map.Entry me = (Map.Entry) it.next();
           Object eKey = me.getKey();
           TXEntryState txes = (TXEntryState) me.getValue();
-          txes.buildMessage(r, eKey, msg, this.otherMembers);
+          txes.buildMessage(r, eKey, msg);
           if (txes.getFilterRoutingInfo() != null) {
             newMemberSet.addAll(txes.getFilterRoutingInfo().getMembers());
           }
@@ -419,7 +419,7 @@ public class TXRegionState {
           Map.Entry me = (Map.Entry) it.next();
           Object eKey = me.getKey();
           TXEntryState txes = (TXEntryState) me.getValue();
-          txes.buildCompleteMessage(r, eKey, msg, this.otherMembers);
+          txes.buildCompleteMessage(r, eKey, msg);
         }
         msg.finishRegionComplete();
       }
@@ -506,8 +506,9 @@ public class TXRegionState {
   }
 
   void cleanup(InternalRegion r) {
-    if (this.cleanedUp)
+    if (this.cleanedUp) {
       return;
+    }
     this.cleanedUp = true;
     Iterator it = this.entryMods.values().iterator();
     while (it.hasNext()) {

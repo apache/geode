@@ -31,33 +31,31 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -137,7 +135,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
 
     ExecutorService pool = Executors.newFixedThreadPool(2);
     Callable<Integer> callable1 = () -> doABunchOfSAdds(key, members1, jedis);
-    Callable<Integer> callable2 = () -> doABunchOfSAdds(key, members2, jedis2);
+    Callable<Integer> callable2 = () -> doABunchOfSAdds(key, members2, jedis);
     Future<Integer> future1 = pool.submit(callable1);
     Future<Integer> future2 = pool.submit(callable2);
 
@@ -160,7 +158,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
 
     ExecutorService pool = Executors.newFixedThreadPool(2);
     Callable<Integer> callable1 = () -> doABunchOfSAdds(key1, strings, jedis);
-    Callable<Integer> callable2 = () -> doABunchOfSAdds(key2, strings, jedis2);
+    Callable<Integer> callable2 = () -> doABunchOfSAdds(key2, strings, jedis);
     Future<Integer> future1 = pool.submit(callable1);
     Future<Integer> future2 = pool.submit(callable2);
 
@@ -173,8 +171,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
     pool.shutdown();
   }
 
-  private int doABunchOfSAdds(String key, String[] strings,
-      Jedis jedis) {
+  private int doABunchOfSAdds(String key, String[] strings, JedisCluster jedis) {
     int successes = 0;
 
     for (int i = 0; i < strings.length; i++) {
@@ -237,14 +234,15 @@ public abstract class AbstractSetsIntegrationTest implements RedisPortSupplier {
 
   @Test
   public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMEMBERS))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SMEMBERS))
         .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
   }
 
   @Test
   public void smembers_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SMEMBERS, "key", "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+    assertThatThrownBy(() -> jedis
+        .sendCommand("key", Protocol.Command.SMEMBERS, "key", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
   }
 
   @Test

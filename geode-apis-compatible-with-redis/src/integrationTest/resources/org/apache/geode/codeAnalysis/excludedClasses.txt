@@ -1,0 +1,11 @@
+org/apache/geode/redis/internal/cluster/RedisMemberInfoRetrievalFunction
+org/apache/geode/redis/internal/collections/SizeableObject2ObjectOpenCustomHashMapWithCursor
+org/apache/geode/redis/internal/collections/SizeableObjectOpenCustomHashSet
+org/apache/geode/redis/internal/collections/IndexibleTreeSet
+org/apache/geode/redis/internal/data/RedisDataMovedException
+org/apache/geode/redis/internal/data/RedisDataTypeMismatchException
+org/apache/geode/redis/internal/RedisException
+org/apache/geode/redis/internal/data/RedisRestoreKeyExistsException
+org/apache/geode/redis/internal/data/RedisSetCommandsFunctionExecutor$SetOp
+org/apache/geode/redis/internal/data/RedisStringCommandsFunctionExecutor$BitOp
+org/apache/geode/redis/internal/services/StripedExecutorService$State

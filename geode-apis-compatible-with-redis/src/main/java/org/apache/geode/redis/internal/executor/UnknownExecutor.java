@@ -16,10 +16,10 @@
 package org.apache.geode.redis.internal.executor;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -34,14 +34,14 @@ public class UnknownExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems != null && !commandElems.isEmpty()) {
-      commandText = Coder.bytesToString(commandElems.get(0));
+      commandText = bytesToString(commandElems.get(0));
 
       if (commandElems.size() > 1) {
         for (int i = 1; i < commandElems.size(); i++) {
           if (commandElems.get(i) == null) {
             continue;
           }
-          commandArguments.append("`").append(Coder.bytesToString(commandElems.get(i)))
+          commandArguments.append("`").append(bytesToString(commandElems.get(i)))
               .append("`, ");
         }
       }

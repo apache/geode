@@ -16,35 +16,28 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.pubsub.Subscription.Type.PATTERN;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
-  private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-
-    context.eventLoopReady();
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> patternNames = extractPatternNames(command);
     if (patternNames.isEmpty()) {
-      patternNames = context.getPubSub().findSubscriptionNames(context.getClient(),
-          Subscription.Type.PATTERN);
+      patternNames = context.getPubSub().findSubscriptionNames(context.getClient(), PATTERN);
     }
 
     Collection<Collection<?>> response = punsubscribe(context, patternNames);
@@ -53,10 +46,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
   }
 
   private List<byte[]> extractPatternNames(Command command) {
-    return command.getProcessedCommandWrappers().stream()
-        .skip(1)
-        .map(ByteArrayWrapper::toBytes)
-        .collect(Collectors.toList());
+    return command.getProcessedCommand().stream().skip(1).collect(Collectors.toList());
   }
 
   private Collection<Collection<?>> punsubscribe(ExecutionHandlerContext context,
@@ -68,7 +58,7 @@ public class PunsubscribeExecutor extends AbstractExecutor {
     } else {
       for (byte[] pattern : patternNames) {
         long subscriptionCount =
-            context.getPubSub().punsubscribe(new GlobPattern(new String(pattern)),
+            context.getPubSub().punsubscribe(new GlobPattern(bytesToString(pattern)),
                 context.getClient());
         response.add(createItem(pattern, subscriptionCount));
       }

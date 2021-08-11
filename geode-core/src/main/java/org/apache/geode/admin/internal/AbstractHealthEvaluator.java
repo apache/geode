@@ -68,7 +68,7 @@ public abstract class AbstractHealthEvaluator {
    * @param status A list of {@link AbstractHealthEvaluator.HealthStatus HealthStatus} objects that
    *        is populated when ill health is detected.
    */
-  public void evaluate(List status) {
+  public void evaluate(List<HealthStatus> status) {
     this.numEvaluations++;
     check(status);
   }
@@ -78,7 +78,7 @@ public abstract class AbstractHealthEvaluator {
    *
    * @see #evaluate
    */
-  protected abstract void check(List status);
+  protected abstract void check(List<HealthStatus> status);
 
   /**
    * Returns whether or not this is the first evaluation

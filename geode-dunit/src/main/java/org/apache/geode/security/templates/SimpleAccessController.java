@@ -76,8 +76,9 @@ public class SimpleAccessController implements AccessControl {
     String[] principals = principal.toString().toLowerCase().split(",");
     for (String role : principals) {
       String permissionString = permission.replace(":", "").toLowerCase();
-      if (permissionString.startsWith(role))
+      if (permissionString.startsWith(role)) {
         return true;
+      }
     }
     return false;
   }

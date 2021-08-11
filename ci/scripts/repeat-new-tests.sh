@@ -42,7 +42,7 @@ function changes_for_path() {
       echo "Could not determine merge base. Exiting..."
       exit 1
     fi
-    git diff --name-only ${mergeBase} -- $path
+    git diff --name-only --diff-filter=ACMR ${mergeBase} -- $path
   popd >> /dev/null
 }
 
@@ -60,11 +60,11 @@ function create_gradle_test_targets() {
   echo $(${JAVA_HOME}/bin/java -cp $(cat /tmp/classpath.txt) org.apache.geode.test.util.StressNewTestHelper $@)
 }
 
-UNIT_TEST_CHANGES=$(changes_for_path '*/src/test/java') || exit $?
-INTEGRATION_TEST_CHANGES=$(changes_for_path '*/src/integrationTest/java') || exit $?
-DISTRIBUTED_TEST_CHANGES=$(changes_for_path '*/src/distributedTest/java') || exit $?
-ACCEPTANCE_TEST_CHANGES=$(changes_for_path '*/src/acceptanceTest/java') || exit $?
-UPGRADE_TEST_CHANGES=$(changes_for_path '*/src/upgradeTest/java') || exit $?
+UNIT_TEST_CHANGES=$(changes_for_path ':(glob)**/src/test/java/**') || exit $?
+INTEGRATION_TEST_CHANGES=$(changes_for_path ':(glob)**/src/integrationTest/java/**') || exit $?
+DISTRIBUTED_TEST_CHANGES=$(changes_for_path ':(glob)**/src/distributedTest/java/**') || exit $?
+ACCEPTANCE_TEST_CHANGES=$(changes_for_path ':(glob)**/src/acceptanceTest/java/**') || exit $?
+UPGRADE_TEST_CHANGES=$(changes_for_path ':(glob)**/src/upgradeTest/java/**') || exit $?
 
 CHANGED_FILES_ARRAY=( $UNIT_TEST_CHANGES $INTEGRATION_TEST_CHANGES $DISTRIBUTED_TEST_CHANGES $ACCEPTANCE_TEST_CHANGES $UPGRADE_TEST_CHANGES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}

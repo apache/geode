@@ -18,39 +18,36 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisHashCommands {
-  int hset(RedisKey key, List<ByteArrayWrapper> fieldsToSet, boolean NX);
+  int hset(RedisKey key, List<byte[]> fieldsToSet, boolean NX);
 
-  int hdel(RedisKey key, List<ByteArrayWrapper> fieldsToRemove);
+  int hdel(RedisKey key, List<byte[]> fieldsToRemove);
 
-  Collection<ByteArrayWrapper> hgetall(RedisKey key);
+  Collection<byte[]> hgetall(RedisKey key);
 
-  int hexists(RedisKey key, ByteArrayWrapper field);
+  int hexists(RedisKey key, byte[] field);
 
-  ByteArrayWrapper hget(RedisKey key, ByteArrayWrapper field);
+  byte[] hget(RedisKey key, byte[] field);
 
   int hlen(RedisKey key);
 
-  int hstrlen(RedisKey key, ByteArrayWrapper field);
+  int hstrlen(RedisKey key, byte[] field);
 
-  List<ByteArrayWrapper> hmget(RedisKey key, List<ByteArrayWrapper> fields);
+  List<byte[]> hmget(RedisKey key, List<byte[]> fields);
 
-  Collection<ByteArrayWrapper> hvals(RedisKey key);
+  Collection<byte[]> hvals(RedisKey key);
 
-  Collection<ByteArrayWrapper> hkeys(RedisKey key);
+  Collection<byte[]> hkeys(RedisKey key);
 
-  Pair<Integer, List<Object>> hscan(RedisKey key, Pattern matchPattern, int count,
-      int cursor, UUID clientID);
+  Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count, int cursor);
 
-  long hincrby(RedisKey key, ByteArrayWrapper field, long increment);
+  long hincrby(RedisKey key, byte[] field, long increment);
 
-  BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment);
+  BigDecimal hincrbyfloat(RedisKey key, byte[] field, BigDecimal increment);
 }

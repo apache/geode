@@ -174,29 +174,7 @@ public interface GatewaySender {
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES =
       Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-retries",
-          2);
-  /**
-   * Milliseconds to wait before retrying to get events for a transaction from the
-   * gateway sender queue when group-transaction-events is true.
-   */
-  int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
-      Integer.getInteger(
-          GeodeGlossary.GEMFIRE_PREFIX + "get-transaction-events-from-queue-wait-time-ms",
-          1);
-
-  /**
-   * When group-transaction-events is true and the gateway sender is stopped,
-   * addition to the queue of a group of transaction events might be interrupted.
-   * To ensure that the queue does not contain incomplete transactions, this parameter
-   * allows for a grace period, specified in milliseconds, before the gateway sender is actually
-   * stopped, allowing complete transaction event groups to be queued. Any event received
-   * during the grace period that is not part of a transaction event group in the queue
-   * is dropped.
-   */
-  int TIME_TO_COMPLETE_TRANSACTIONS_BEFORE_STOP_MS =
-      Integer.getInteger(
-          GeodeGlossary.GEMFIRE_PREFIX + "time-to-complete-transactions-before-stop-ms",
-          1000);
+          10);
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
@@ -462,7 +440,6 @@ public interface GatewaySender {
 
   int getMaxParallelismForReplicatedRegion();
 
-
   /**
    * Destroys the GatewaySender.
    * <p>
@@ -481,4 +458,46 @@ public interface GatewaySender {
    *
    */
   boolean getEnforceThreadsConnectSameReceiver();
+
+
+  /**
+   * Set AlertThreshold for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setAlertThreshold(int alertThreshold);
+
+  /**
+   * Set BatchSize for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchSize(int batchSize);
+
+  /**
+   * Set BatchTimeInterval for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setBatchTimeInterval(int batchTimeInterval);
+
+  /**
+   * Set GroupTransactionEvents for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGroupTransactionEvents(boolean groupTransactionEvents);
+
+  /**
+   * Set GatewayEventFilters for this GatewaySender.
+   *
+   * @since Geode 1.14
+   *
+   */
+  void setGatewayEventFilters(List<GatewayEventFilter> filters);
+
 }

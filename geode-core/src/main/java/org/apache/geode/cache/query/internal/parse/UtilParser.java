@@ -58,8 +58,9 @@ public class UtilParser extends LLkParser {
   public static void main(String[] args) throws Exception {
     boolean useFrame = false;
     Reader reader = new InputStreamReader(System.in);
-    if (args.length > 0 && args[0].startsWith("-f"))
+    if (args.length > 0 && args[0].startsWith("-f")) {
       useFrame = true;
+    }
     for (int i = 0; i < args.length; i++) {
       if (!args[i].startsWith("-")) {
         reader = new StringReader(args[i]);

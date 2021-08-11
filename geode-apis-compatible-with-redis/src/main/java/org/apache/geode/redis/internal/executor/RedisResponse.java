@@ -82,7 +82,7 @@ public class RedisResponse {
   }
 
   public static RedisResponse ok() {
-    return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, "OK"));
+    return new RedisResponse(Coder::getOKResponse);
   }
 
   public static RedisResponse nil() {
@@ -121,8 +121,16 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getErrorResponse(buffer, error));
   }
 
+  public static RedisResponse moved(String error) {
+    return new RedisResponse((buffer) -> Coder.getMovedResponse(buffer, error));
+  }
+
   public static RedisResponse oom(String error) {
     return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
+  }
+
+  public static RedisResponse busykey(String error) {
+    return new RedisResponse((bba) -> Coder.getBusyKeyResponse(bba, error));
   }
 
   public static RedisResponse customError(String error) {
@@ -133,7 +141,7 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getWrongTypeResponse(buffer, error));
   }
 
-  public static RedisResponse scan(BigInteger cursor, List<Object> scanResult) {
+  public static RedisResponse scan(BigInteger cursor, List<?> scanResult) {
     return new RedisResponse((buffer) -> Coder.getScanResponse(buffer, cursor, scanResult));
   }
 

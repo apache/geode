@@ -20,6 +20,8 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DMStats;
@@ -282,7 +284,7 @@ public class BufferPool {
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-  void releaseBuffer(BufferPool.BufferType type, ByteBuffer buffer) {
+  void releaseBuffer(BufferPool.BufferType type, @NotNull ByteBuffer buffer) {
     switch (type) {
       case UNTRACKED:
         return;

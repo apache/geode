@@ -12,209 +12,89 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.util;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.util.redaction.StringRedaction;
 
 public class ArgumentRedactor {
-  public static final String redacted = "********";
 
   @Immutable
-  private static final List<String> tabooToContain =
-      Collections.unmodifiableList(ArrayUtils.asList("password"));
-  @Immutable
-  private static final List<String> tabooForOptionToStartWith =
-      Collections.unmodifiableList(ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME,
-          DistributionConfig.SSL_SYSTEM_PROPS_NAME,
-          ConfigurationProperties.SECURITY_PREFIX));
+  private static final StringRedaction DELEGATE = new StringRedaction();
 
-  private static final Pattern optionWithArgumentPattern = getOptionWithArgumentPattern();
-
-
-  /**
-   * This method returns the {@link java.util.regex.Pattern} given below, used to capture
-   * command-line options that accept an argument. For clarity, the regex is given here without
-   * the escape characters required by Java's string handling.
-   * <p>
-   *
-   * {@code ((?:^| )(?:--J=)?--?)([^\s=]+)(?=[ =])( *[ =] *)(?! *-)((?:"[^"]*"|\S+))}
-   *
-   * <p>
-   * This pattern consists of one captured boundary,
-   * three additional capture groups, and two look-ahead boundaries.
-   *
-   * <p>
-   * The four capture groups are:
-   * <ul>
-   * <li>[1] The beginning boundary, including at most one leading space,
-   * possibly including "--J=", and including the option's leading "-" or "--"</li>
-   * <li>[2] The option, which cannot include spaces</li>
-   * <li>[3] The option / argument separator, consisting of at least one character
-   * made of spaces and/or at most one "="</li>
-   * <li>[4] The argument, which terminates at the next space unless it is encapsulated by
-   * quotation-marks, in which case it terminates at the next quotation mark.</li>
-   * </ul>
-   *
-   * Look-ahead groups avoid falsely identifying two flag options (e.g. `{@code --help --all}`) from
-   * interpreting the second flag as the argument to the first option
-   * (here, misinterpreting as `{@code --help="--all"}`).
-   * <p>
-   *
-   * Note that at time of writing, the argument (capture group 4) is not consumed by this class's
-   * logic, but its capture has proven repeatedly useful during iteration and testing.
-   */
-  private static Pattern getOptionWithArgumentPattern() {
-    String capture_beginningBoundary;
-    {
-      String spaceOrBeginningAnchor = "(?:^| )";
-      String maybeLeadingWithDashDashJEquals = "(?:--J=)?";
-      String oneOrTwoDashes = "--?";
-      capture_beginningBoundary =
-          "(" + spaceOrBeginningAnchor + maybeLeadingWithDashDashJEquals + oneOrTwoDashes + ")";
-    }
-
-    String capture_optionNameHasNoSpaces = "([^\\s=]+)";
-
-    String boundary_lookAheadForSpaceOrEquals = "(?=[ =])";
-
-    String capture_optionArgumentSeparator = "( *[ =] *)";
-
-    String boundary_negativeLookAheadToPreventNextOptionAsThisArgument = "(?! *-)";
-
-    String capture_Argument;
-    {
-      String argumentCanBeAnythingBetweenQuotes = "\"[^\"]*\"";
-      String argumentCanHaveNoSpacesWithoutQuotes = "\\S+";
-      String argumentCanBeEitherOfTheAbove = "(?:" + argumentCanBeAnythingBetweenQuotes + "|"
-          + argumentCanHaveNoSpacesWithoutQuotes + ")";
-      capture_Argument = "(" + argumentCanBeEitherOfTheAbove + ")";
-    }
-
-    String fullPattern = capture_beginningBoundary + capture_optionNameHasNoSpaces
-        + boundary_lookAheadForSpaceOrEquals + capture_optionArgumentSeparator
-        + boundary_negativeLookAheadToPreventNextOptionAsThisArgument + capture_Argument;
-    return Pattern.compile(fullPattern);
+  private ArgumentRedactor() {
+    // do not instantiate
   }
 
-  private ArgumentRedactor() {}
-
   /**
-   * Parse a string to find option/argument pairs and redact the arguments if necessary.<br>
+   * Parse a string to find key/value pairs and redact the values if identified as sensitive.
    *
+   * <p>
    * The following format is expected:<br>
-   * - Each option/argument pair should be separated by spaces.<br>
-   * - The option of each pair must be preceded by at least one hyphen '-'.<br>
-   * - Arguments may or may not be wrapped in quotation marks.<br>
-   * - Options and arguments may be separated by an equals sign '=' or any number of spaces.<br>
-   * <br>
-   * Examples:<br>
-   * "--password=secret"<br>
-   * "--user me --password secret"<br>
-   * "-Dflag -Dopt=arg"<br>
-   * "--classpath=."<br>
+   * - Each key/value pair should be separated by spaces.<br>
+   * - The key must be preceded by '--', '-D', or '--J=-D'.<br>
+   * - The value may optionally be wrapped in quotation marks.<br>
+   * - The value is assigned to a key with '=', '=' padded with any number of optional spaces, or
+   * any number of spaces without '='.<br>
+   * - The value must not contain spaces without being wrapped in quotation marks.<br>
+   * - The value may contain spaces or any other symbols when wrapped in quotation marks.
    *
-   * See {@link #getOptionWithArgumentPattern()} for more information on
-   * the regular expression used.
+   * <p>
+   * Examples:
+   * <ol>
+   * <li>"--password=secret"
+   * <li>"--user me --password secret"
+   * <li>"-Dflag -Dopt=arg"
+   * <li>"--classpath=."
+   * <li>"password=secret"
+   * </ol>
    *
-   * @param line The argument input to be parsed
-   * @param permitFirstPairWithoutHyphen When true, prepends the line with a "-", which is later
-   *        removed. This allows the use on, e.g., "password=secret" rather than "--password=secret"
+   * @param string The string input to be parsed
    *
-   * @return A redacted string that has sensitive information obscured.
+   * @return A string that has sensitive data redacted.
    */
-  public static String redact(String line, boolean permitFirstPairWithoutHyphen) {
+  public static String redact(String string) {
+    return DELEGATE.redact(string);
+  }
 
-    boolean wasPaddedWithHyphen = false;
-    if (!line.trim().startsWith("-") && permitFirstPairWithoutHyphen) {
-      line = "-" + line.trim();
-      wasPaddedWithHyphen = true;
-    }
-
-    Matcher matcher = optionWithArgumentPattern.matcher(line);
-    while (matcher.find()) {
-      String option = matcher.group(2);
-      if (!isTaboo(option)) {
-        continue;
-      }
-
-      String leadingBoundary = matcher.group(1);
-      String separator = matcher.group(3);
-      String withRedaction = leadingBoundary + option + separator + redacted;
-      line = line.replace(matcher.group(), withRedaction);
-    }
-
-    if (wasPaddedWithHyphen) {
-      line = line.substring(1);
-    }
-    return line;
+  public static String redact(Iterable<String> strings) {
+    return DELEGATE.redact(strings);
   }
 
   /**
-   * Alias for {@code redact(line, true)}. See
-   * {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
+   * Return the redacted value string if the provided key is identified as sensitive, otherwise
+   * return the original value.
+   *
+   * @param key A string such as a system property, java option, or command-line key.
+   * @param value The string value for the key.
+   *
+   * @return The redacted string if the key is identified as sensitive, otherwise the original
+   *         value.
    */
-  public static String redact(String line) {
-    return redact(line, true);
+  public static String redactArgumentIfNecessary(String key, String value) {
+    return DELEGATE.redactArgumentIfNecessary(key, value);
   }
 
-  public static String redact(final List<String> args) {
-    return redact(String.join(" ", args));
+  public static List<String> redactEachInList(Collection<String> strings) {
+    return DELEGATE.redactEachInList(strings);
   }
 
   /**
-   * Return the redaction string if the provided option's argument should be redacted.
-   * Otherwise, return the provided argument unchanged.
+   * Returns true if a string identifies sensitive data. For example, a string containing
+   * the word "password" identifies data that is sensitive and should be secured.
    *
-   * @param option A string such as a system property, jvm parameter or command-line option.
-   * @param argument A string that is the argument assigned to the option.
+   * @param key The string to be evaluated.
    *
-   * @return A redacted string if the option indicates it should be redacted, otherwise the
-   *         provided argument.
+   * @return true if the string identifies sensitive data.
    */
-  public static String redactArgumentIfNecessary(String option, String argument) {
-    if (isTaboo(option)) {
-      return redacted;
-    }
-    return argument;
+  public static boolean isSensitive(String key) {
+    return DELEGATE.isSensitive(key);
   }
 
-  /**
-   * Determine whether a option's argument should be redacted.
-   *
-   * @param option The option in question.
-   *
-   * @return true if the value should be redacted, otherwise false.
-   */
-  static boolean isTaboo(String option) {
-    if (option == null) {
-      return false;
-    }
-    for (String taboo : tabooForOptionToStartWith) {
-      // If a parameter is passed with -Dsecurity-option=argument, the option option is
-      // "Dsecurity-option".
-      // With respect to taboo words, also check for the addition of the extra D
-      if (option.toLowerCase().startsWith(taboo) || option.toLowerCase().startsWith("d" + taboo)) {
-        return true;
-      }
-    }
-    for (String taboo : tabooToContain) {
-      if (option.toLowerCase().contains(taboo)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static List<String> redactEachInList(List<String> argList) {
-    return argList.stream().map(ArgumentRedactor::redact).collect(Collectors.toList());
+  public static String getRedacted() {
+    return DELEGATE.getRedacted();
   }
 }

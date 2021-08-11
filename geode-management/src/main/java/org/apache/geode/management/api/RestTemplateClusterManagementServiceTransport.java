@@ -17,7 +17,7 @@
 package org.apache.geode.management.api;
 
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
-import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+import static org.apache.geode.management.rest.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +51,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.HasFile;
-import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
+import org.apache.geode.management.rest.internal.exception.RestTemplateResponseErrorHandler;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;

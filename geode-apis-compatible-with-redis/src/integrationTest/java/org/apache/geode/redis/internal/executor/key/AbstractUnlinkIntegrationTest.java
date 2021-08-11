@@ -23,31 +23,29 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractUnlinkIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractUnlinkIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -73,9 +71,9 @@ public abstract class AbstractUnlinkIntegrationTest implements RedisPortSupplier
 
   @Test
   public void testUnlink_unlinkingMultipleKeys_returnsCountOfOnlyUnlinkedKeys() {
-    String key1 = "firstKey";
-    String key2 = "secondKey";
-    String key3 = "thirdKey";
+    String key1 = "{user1}firstKey";
+    String key2 = "{user1}secondKey";
+    String key3 = "{user1}thirdKey";
 
     jedis.set(key1, "value1");
     jedis.set(key2, "value2");
@@ -97,9 +95,8 @@ public abstract class AbstractUnlinkIntegrationTest implements RedisPortSupplier
     AtomicLong unlinkedCount = new AtomicLong();
     new ConcurrentLoopingThreads(ITERATION_COUNT,
         (i) -> unlinkedCount.addAndGet(jedis.unlink(keyBaseName + i)),
-        (i) -> unlinkedCount.addAndGet(jedis2.unlink(keyBaseName + i)))
+        (i) -> unlinkedCount.addAndGet(jedis.unlink(keyBaseName + i)))
             .run();
-
 
     assertThat(unlinkedCount.get()).isEqualTo(ITERATION_COUNT);
 

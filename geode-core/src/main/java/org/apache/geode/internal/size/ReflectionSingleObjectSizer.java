@@ -30,6 +30,7 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
+
   public static final int REFERENCE_SIZE = JvmSizeUtils.getReferenceSize();
   public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
 
@@ -39,8 +40,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     Unsafe tmp = null;
     try {
       tmp = new Unsafe();
-    } catch (RuntimeException ignore) {
-    } catch (Error ignore) {
+    } catch (RuntimeException | Error ignore) {
     }
     unsafe = tmp;
   }
@@ -83,7 +83,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     }
   }
 
-  public static long sizeof(Class clazz) {
+  public static long sizeof(Class<?> clazz) {
     return sizeof(clazz, true);
   }
 
@@ -91,7 +91,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
    * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
    * need to do is find which of the non-static declared fields has the greatest offset.
    */
-  public static long sizeof(Class clazz, boolean roundResult) {
+  public static long sizeof(Class<?> clazz, boolean roundResult) {
     Assert.assertTrue(!clazz.isArray());
     long size;
     if (unsafe != null) {
@@ -156,27 +156,26 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
 
   private static int sizeType(Class<?> t) {
 
-    if (t == Boolean.TYPE)
+    if (t == Boolean.TYPE) {
       return 1;
-    else if (t == Byte.TYPE)
+    } else if (t == Byte.TYPE) {
       return 1;
-    else if (t == Character.TYPE)
+    } else if (t == Character.TYPE) {
       return 2;
-    else if (t == Short.TYPE)
+    } else if (t == Short.TYPE) {
       return 2;
-    else if (t == Integer.TYPE)
+    } else if (t == Integer.TYPE) {
       return 4;
-    else if (t == Long.TYPE)
+    } else if (t == Long.TYPE) {
       return 8;
-    else if (t == Float.TYPE)
+    } else if (t == Float.TYPE) {
       return 4;
-    else if (t == Double.TYPE)
+    } else if (t == Double.TYPE) {
       return 8;
-    else if (t == Void.TYPE)
+    } else if (t == Void.TYPE) {
       return 0;
-    else
+    } else {
       return REFERENCE_SIZE;
+    }
   }
-
-
 }

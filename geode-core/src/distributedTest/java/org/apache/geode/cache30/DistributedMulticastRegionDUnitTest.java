@@ -296,8 +296,8 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   protected void addDSProps(Properties p) {}
 
   protected void validateMulticastOpsAfterRegionOps() {
-    int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
-    int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
+    long writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
+    long reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
     assertTrue("Should have multicast writes or reads. Writes=  " + writes + " ,read= " + reads,
         writes > 0 || reads > 0);
 
@@ -306,7 +306,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
   protected void validateUDPEncryptionStats() {
     long encrptTime =
-        getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTiime();
+        getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTime();
     long decryptTime =
         getGemfireCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
     assertTrue("Should have multicast writes or reads. encrptTime=  " + encrptTime
@@ -314,9 +314,9 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateMulticastOpsBeforeRegionOps() {
-    int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
-    int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
-    int total = writes + reads;
+    long writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
+    long reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
+    long total = writes + reads;
     assertTrue("Should not have any multicast writes or reads before region ops. Writes=  " + writes
         + " ,read= " + reads, total == 0);
   }

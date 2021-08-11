@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -50,7 +52,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
-import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.BatchException;
@@ -85,17 +86,20 @@ public class OpExecutorImpl implements ExecutablePool {
   private final RegisterInterestTracker riTracker;
   private final QueueManager queueManager;
   private final CancelCriterion cancelCriterion;
-  private /* final */ PoolImpl pool;
+  private final PoolImpl pool;
   private final ThreadLocal<Boolean> serverAffinity = ThreadLocal.withInitial(() -> Boolean.FALSE);
   private boolean serverAffinityFailover = false;
   private final ThreadLocal<ServerLocation> affinityServerLocation = new ThreadLocal<>();
 
   private final ThreadLocal<Integer> affinityRetryCount = ThreadLocal.withInitial(() -> 0);
 
-  public OpExecutorImpl(ConnectionManager connectionManager, QueueManager queueManager,
-      EndpointManager endpointManager, RegisterInterestTracker riTracker, int retryAttempts,
-      long serverTimeout, long singleServerTimeout, CancelCriterion cancelCriterion,
-      PoolImpl pool) {
+  public OpExecutorImpl(final @NotNull ConnectionManager connectionManager,
+      final @Nullable QueueManager queueManager,
+      final @NotNull EndpointManager endpointManager,
+      final @NotNull RegisterInterestTracker riTracker, final int retryAttempts,
+      final long serverTimeout, final long singleServerTimeout,
+      final @NotNull CancelCriterion cancelCriterion,
+      final @NotNull PoolImpl pool) {
     this.connectionManager = connectionManager;
     this.queueManager = queueManager;
     this.endpointManager = endpointManager;
@@ -282,18 +286,17 @@ public class OpExecutorImpl implements ExecutablePool {
    * internal.ServerLocation, org.apache.geode.cache.client.internal.Op)
    */
   @Override
-  public Object executeOn(ServerLocation server, Op op) {
+  public Object executeOn(final ServerLocation server, final Op op) {
     return executeOn(server, op, true, false);
   }
 
   @Override
-  public Object executeOn(ServerLocation p_server, Op op, boolean accessed,
-      boolean onlyUseExistingCnx) {
-    ServerLocation server = p_server;
+  public Object executeOn(ServerLocation server, final Op op, final boolean accessed,
+      final boolean onlyUseExistingCnx) {
     if (serverAffinity.get()) {
-      ServerLocation affinityserver = affinityServerLocation.get();
-      if (affinityserver != null) {
-        server = affinityserver;
+      final ServerLocation affinityServer = affinityServerLocation.get();
+      if (affinityServer != null) {
+        server = affinityServer;
       } else {
         affinityServerLocation.set(server);
       }
@@ -304,72 +307,66 @@ public class OpExecutorImpl implements ExecutablePool {
     return executeOnServer(server, op, accessed, onlyUseExistingCnx);
   }
 
-  protected Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
-      boolean onlyUseExistingCnx) {
-    boolean returnCnx = true;
-    boolean pingOp = (op instanceof PingOp.PingOpImpl);
-    Connection conn = null;
-    if (pingOp) {
+  protected Object executeOnServer(ServerLocation server, Op op, boolean accessed,
+      boolean onlyUseExistingConnection) {
+    boolean returnConnection = true;
+    Connection connection = null;
+    if (op instanceof PingOp.PingOpImpl) {
       // currently for pings we prefer to queue clientToServer cnx so that we will
-      // not create a pooled cnx when all we have is queue cnxs.
+      // not create a pooled cnx when all we have is queue connections.
       if (queueManager != null) {
         // see if our QueueManager has a connection to this server that we can send
         // the ping on.
-        ServerLocationAndMemberId slAndMId = new ServerLocationAndMemberId(p_server,
+        final ServerLocationAndMemberId slAndMId = new ServerLocationAndMemberId(server,
             ((PingOp.PingOpImpl) op).getServerID().getUniqueId());
-        Endpoint ep = endpointManager.getEndpointMap().get(slAndMId);
-        if (ep != null) {
-          QueueConnections qcs = queueManager.getAllConnectionsNoWait();
-          conn = qcs.getConnection(ep);
-          if (conn != null) {
+        final Endpoint endpoint = endpointManager.getEndpointMap().get(slAndMId);
+        if (endpoint != null) {
+          QueueConnections queueConnections = queueManager.getAllConnectionsNoWait();
+          connection = queueConnections.getConnection(endpoint);
+          if (connection != null) {
             // we found one to do the ping on
-            returnCnx = false;
+            returnConnection = false;
           }
         }
       }
     }
-    if (conn == null) {
-      conn = connectionManager.borrowConnection(p_server, singleServerTimeout, onlyUseExistingCnx);
+    if (connection == null) {
+      connection = connectionManager.borrowConnection(server, singleServerTimeout,
+          onlyUseExistingConnection);
     }
     try {
-      return executeWithPossibleReAuthentication(conn, op);
-    } catch (Exception e) {
-      handleException(e, conn, 0, true);
+      return executeWithPossibleReAuthentication(connection, op);
+    } catch (final Exception e) {
+      handleException(e, connection, 0, true);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);
     } finally {
       if (serverAffinity.get() && affinityServerLocation.get() == null) {
         if (logger.isDebugEnabled()) {
-          logger.debug("setting server affinity to {} server:{}", conn.getEndpoint().getMemberId(),
-              conn.getServer());
+          logger.debug("setting server affinity to {} server:{}",
+              connection.getEndpoint().getMemberId(),
+              connection.getServer());
         }
-        affinityServerLocation.set(conn.getServer());
+        affinityServerLocation.set(connection.getServer());
       }
-      if (returnCnx) {
-        connectionManager.returnConnection(conn, accessed);
+      if (returnConnection) {
+        connectionManager.returnConnection(connection, accessed);
       }
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.ExecutablePool#executeOnPrimary(org.apache.geode.cache.
-   * client.internal.Op)
-   */
   @Override
-  public Object executeOnPrimary(Op op) {
+  public Object executeOnPrimary(final Op op) {
     if (queueManager == null) {
       throw new SubscriptionNotEnabledException();
     }
 
-    HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
+    final HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
     while (true) {
-      Connection primary = queueManager.getAllConnections().getPrimary();
+      final Connection primary = queueManager.getAllConnections().getPrimary();
       try {
         return executeWithPossibleReAuthentication(primary, op);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         boolean finalAttempt = !attemptedPrimaries.add(primary.getServer());
         handleException(e, primary, 0, finalAttempt);
         // we shouldn't reach this code, but just in case
@@ -388,8 +385,8 @@ public class OpExecutorImpl implements ExecutablePool {
 
     RuntimeException lastException = null;
 
-    QueueConnections connections = queueManager.getAllConnectionsNoWait();
-    Connection primary = connections.getPrimary();
+    final QueueConnections connections = queueManager.getAllConnectionsNoWait();
+    final Connection primary = connections.getPrimary();
     if (primary != null) {
       try {
         executeWithPossibleReAuthentication(primary, op);
@@ -402,13 +399,13 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
 
-    List<Connection> backups = connections.getBackups();
-    for (Connection conn : backups) {
+    final List<Connection> backups = connections.getBackups();
+    for (final Connection connection : backups) {
       try {
-        executeWithPossibleReAuthentication(conn, op);
+        executeWithPossibleReAuthentication(connection, op);
       } catch (Exception e) {
         try {
-          handleException(e, conn, 0, false);
+          handleException(e, connection, 0, false);
         } catch (RuntimeException e2) {
           lastException = e2;
         }
@@ -420,35 +417,28 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.ExecutablePool#executeOnAllQueueServers(org.apache.geode
-   * .cache.client.internal.Op)
-   */
   @Override
-  public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
+  public Object executeOnQueuesAndReturnPrimaryResult(final Op op) {
     if (queueManager == null) {
       throw new SubscriptionNotEnabledException();
     }
-    QueueConnections connections = queueManager.getAllConnections();
+    final QueueConnections connections = queueManager.getAllConnections();
 
-    List backups = connections.getBackups();
+    final List<Connection> backups = connections.getBackups();
     if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
       logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "sending {} to backups: {}", op, backups);
     }
     for (int i = backups.size() - 1; i >= 0; i--) {
-      Connection conn = (Connection) backups.get(i);
+      final Connection connection = backups.get(i);
       try {
-        executeWithPossibleReAuthentication(conn, op);
+        executeWithPossibleReAuthentication(connection, op);
       } catch (Exception e) {
-        handleException(e, conn, 0, false);
+        handleException(e, connection, 0, false);
       }
     }
 
     Connection primary = connections.getPrimary();
-    HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
+    final HashSet<ServerLocation> attemptedPrimaries = new HashSet<>();
     while (true) {
       try {
         if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
@@ -460,7 +450,7 @@ public class OpExecutorImpl implements ExecutablePool {
           logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "caught exception sending to primary {}",
               e.getMessage(), e);
         }
-        boolean finalAttempt = !attemptedPrimaries.add(primary.getServer());
+        final boolean finalAttempt = !attemptedPrimaries.add(primary.getServer());
         handleException(e, primary, 0, finalAttempt);
         primary = queueManager.getAllConnections().getPrimary();
         // we shouldn't reach this code, but just in case
@@ -475,11 +465,11 @@ public class OpExecutorImpl implements ExecutablePool {
    * Used by GatewayBatchOp
    */
   @Override
-  public Object executeOn(Connection conn, Op op, boolean timeoutFatal) {
+  public Object executeOn(final Connection connection, final Op op, final boolean timeoutFatal) {
     try {
-      return executeWithPossibleReAuthentication(conn, op);
+      return executeWithPossibleReAuthentication(connection, op);
     } catch (Exception e) {
-      handleException(op, e, conn, 0, true, timeoutFatal);
+      handleException(op, e, connection, 0, true, timeoutFatal);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);
     }
@@ -489,8 +479,8 @@ public class OpExecutorImpl implements ExecutablePool {
    * This is used by unit tests
    */
   @Override
-  public Object executeOn(Connection conn, Op op) {
-    return executeOn(conn, op, false);
+  public Object executeOn(final Connection connection, final Op op) {
+    return executeOn(connection, op, false);
   }
 
   @Override
@@ -504,7 +494,7 @@ public class OpExecutorImpl implements ExecutablePool {
    */
   protected void handleException(Throwable e, Connection conn, int retryCount,
       boolean finalAttempt) {
-    handleException(e, conn, retryCount, finalAttempt, false/* timeoutFatal */);
+    handleException(e, conn, retryCount, finalAttempt, false);
   }
 
   protected void handleException(Op op, Throwable e, Connection conn, int retryCount,
@@ -519,161 +509,161 @@ public class OpExecutorImpl implements ExecutablePool {
     handleException(e, conn, retryCount, finalAttempt, timeoutFatal);
   }
 
-  protected void handleException(Throwable e, Connection conn, int retryCount, boolean finalAttempt,
-      boolean timeoutFatal) throws CacheRuntimeException {
-    GemFireException exToThrow = null;
-    String title;
-    boolean invalidateServer = true;
-    boolean warn = true;
-    boolean forceThrow = false;
-    Throwable cause = e;
+  protected void handleException(final Throwable throwable, final Connection connection,
+      final int retryCount, final boolean finalAttempt,
+      final boolean timeoutFatal) throws CacheRuntimeException {
 
-    cancelCriterion.checkCancelInProgress(e);
+    cancelCriterion.checkCancelInProgress(throwable);
 
-    if (logger.isDebugEnabled() && !(e instanceof java.io.EOFException)) {
-      if (e instanceof java.net.SocketTimeoutException) {
+    if (logger.isDebugEnabled() && !(throwable instanceof java.io.EOFException)) {
+      if (throwable instanceof java.net.SocketTimeoutException) {
         logger.debug("OpExecutor.handleException on Connection to {} read timed out",
-            conn.getServer());
+            connection.getServer());
       } else {
-        logger.debug("OpExecutor.handleException on Connection to {}", conn.getServer(), e);
+        logger.debug("OpExecutor.handleException on Connection to {}", connection.getServer(),
+            throwable);
       }
     }
 
     // first take care of all exceptions that should not invalidate the
     // connection and do not need to be logged
 
-    if (e instanceof MessageTooLargeException) {
+    GemFireException exceptionToThrow = null;
+    String title;
+    boolean invalidateServer = true;
+    boolean warn = true;
+    boolean forceThrow = false;
+    if (throwable instanceof MessageTooLargeException) {
       title = null;
-      exToThrow = new GemFireIOException("message is too large to transmit", e);
-    } else if (e instanceof NotSerializableException) {
+      exceptionToThrow = new GemFireIOException("message is too large to transmit", throwable);
+    } else if (throwable instanceof NotSerializableException) {
       title = null; // no message
-      exToThrow = new SerializationException("Pool message failure", e);
-    } else if (e instanceof BatchException || e instanceof BatchException70) {
+      exceptionToThrow = new SerializationException("Pool message failure", throwable);
+    } else if (throwable instanceof BatchException || throwable instanceof BatchException70) {
       title = null; // no message
-      exToThrow = new ServerOperationException(e);
-    } else if (e instanceof RegionDestroyedException) {
+      exceptionToThrow = new ServerOperationException(throwable);
+    } else if (throwable instanceof RegionDestroyedException) {
       invalidateServer = false;
       title = null;
-      exToThrow = (RegionDestroyedException) e;
-    } else if (e instanceof GemFireSecurityException) {
+      exceptionToThrow = (RegionDestroyedException) throwable;
+    } else if (throwable instanceof GemFireSecurityException) {
       title = null;
-      exToThrow = new ServerOperationException(e);
-    } else if (e instanceof SerializationException) {
+      exceptionToThrow = new ServerOperationException(throwable);
+    } else if (throwable instanceof SerializationException) {
       title = null; // no message
-      exToThrow = new ServerOperationException(e);
-    } else if (e instanceof CopyException) {
+      exceptionToThrow = new ServerOperationException(throwable);
+    } else if (throwable instanceof CopyException) {
       title = null; // no message
-      exToThrow = new ServerOperationException(e);
-    } else if (e instanceof ClassNotFoundException) {
+      exceptionToThrow = new ServerOperationException(throwable);
+    } else if (throwable instanceof ClassNotFoundException) {
       title = null; // no message
-      exToThrow = new ServerOperationException(e);
-    } else if (e instanceof TransactionException) {
+      exceptionToThrow = new ServerOperationException(throwable);
+    } else if (throwable instanceof TransactionException) {
       title = null; // no message
-      exToThrow = (TransactionException) e;
+      exceptionToThrow = (TransactionException) throwable;
       invalidateServer = false;
-    } else if (e instanceof SynchronizationCommitConflictException) {
+    } else if (throwable instanceof SynchronizationCommitConflictException) {
       title = null;
-      exToThrow = (SynchronizationCommitConflictException) e;
+      exceptionToThrow = (SynchronizationCommitConflictException) throwable;
       invalidateServer = false;
-    } else if (e instanceof SocketException) {
-      if ("Socket closed".equals(e.getMessage()) || "Connection reset".equals(e.getMessage())
-          || "Connection refused: connect".equals(e.getMessage())
-          || "Connection refused".equals(e.getMessage())) {
-        title = e.getMessage();
+    } else if (throwable instanceof SocketException) {
+      if ("Socket closed".equals(throwable.getMessage())
+          || "Connection reset".equals(throwable.getMessage())
+          || "Connection refused: connect".equals(throwable.getMessage())
+          || "Connection refused".equals(throwable.getMessage())) {
+        title = throwable.getMessage();
       } else {
         title = "SocketException";
       }
-    } else if (e instanceof SocketTimeoutException) {
+    } else if (throwable instanceof SocketTimeoutException) {
       invalidateServer = timeoutFatal;
       title = "socket timed out on client";
-      cause = null;
-    } else if (e instanceof ConnectionDestroyedException) {
+    } else if (throwable instanceof ConnectionDestroyedException) {
       invalidateServer = false;
       title = "connection was asynchronously destroyed";
-      cause = null;
-    } else if (e instanceof java.io.EOFException) {
+    } else if (throwable instanceof java.io.EOFException) {
       title = "closed socket on server";
-    } else if (e instanceof IOException) {
+    } else if (throwable instanceof IOException) {
       title = "IOException";
-    } else if (e instanceof BufferUnderflowException) {
+    } else if (throwable instanceof BufferUnderflowException) {
       title = "buffer underflow reading from server";
-    } else if (e instanceof CancelException) {
+    } else if (throwable instanceof CancelException) {
       title = "Cancelled";
       warn = false;
-    } else if (e instanceof InternalFunctionInvocationTargetException) {
+    } else if (throwable instanceof InternalFunctionInvocationTargetException) {
       // In this case, function will be re executed
       title = null;
-      exToThrow = (InternalFunctionInvocationTargetException) e;
-    } else if (e instanceof FunctionInvocationTargetException) {
+      exceptionToThrow = (InternalFunctionInvocationTargetException) throwable;
+    } else if (throwable instanceof FunctionInvocationTargetException) {
       // in this case function will not be re executed
       title = null;
-      exToThrow = (GemFireException) e;
-    } else if (e instanceof PutAllPartialResultException) {
+      exceptionToThrow = (GemFireException) throwable;
+    } else if (throwable instanceof PutAllPartialResultException) {
       title = null;
-      exToThrow = (PutAllPartialResultException) e;
+      exceptionToThrow = (PutAllPartialResultException) throwable;
       invalidateServer = false;
     } else {
-      Throwable t = e.getCause();
+      Throwable t = throwable.getCause();
       if ((t instanceof IOException)
           || (t instanceof SerializationException) || (t instanceof CopyException)
           || (t instanceof GemFireSecurityException) || (t instanceof ServerOperationException)
           || (t instanceof TransactionException) || (t instanceof CancelException)) {
-        handleException(t, conn, retryCount, finalAttempt, timeoutFatal);
+        handleException(t, connection, retryCount, finalAttempt, timeoutFatal);
         return;
-      } else if (e instanceof ServerOperationException) {
+      } else if (throwable instanceof ServerOperationException) {
         title = null; // no message
-        exToThrow = (ServerOperationException) e;
+        exceptionToThrow = (ServerOperationException) throwable;
         invalidateServer = false; // fix for bug #42225
-      } else if (e instanceof FunctionException) {
+      } else if (throwable instanceof FunctionException) {
         if (t instanceof InternalFunctionInvocationTargetException) {
           // Client server to re-execute for node failure
-          handleException(t, conn, retryCount, finalAttempt, timeoutFatal);
+          handleException(t, connection, retryCount, finalAttempt, timeoutFatal);
           return;
         } else {
           title = null; // no message
-          exToThrow = (FunctionException) e;
+          exceptionToThrow = (FunctionException) throwable;
         }
-      } else if (e instanceof ServerConnectivityException
-          && e.getMessage().equals("Connection error while authenticating user")) {
+      } else if (throwable instanceof ServerConnectivityException
+          && throwable.getMessage().equals("Connection error while authenticating user")) {
         title = null;
         if (logger.isDebugEnabled()) {
-          logger.debug(e.getMessage(), e);
+          logger.debug(throwable.getMessage(), throwable);
         }
       } else {
-        title = e.toString();
+        title = throwable.toString();
         forceThrow = true;
       }
     }
     if (title != null) {
-      conn.destroy();
+      connection.destroy();
       if (invalidateServer) {
-        endpointManager.serverCrashed(conn.getEndpoint());
+        endpointManager.serverCrashed(connection.getEndpoint());
       }
       boolean logEnabled = warn ? logger.isWarnEnabled() : logger.isDebugEnabled();
       boolean msgNeeded = logEnabled || finalAttempt;
       if (msgNeeded) {
-        final StringBuffer sb = getExceptionMessage(title, retryCount, finalAttempt, conn);
+        final StringBuilder sb = getExceptionMessage(title, retryCount, finalAttempt, connection);
         final String msg = sb.toString();
         if (logEnabled) {
           if (warn) {
             logger.warn(msg);
           } else {
-            logger.debug(msg, e);
+            logger.debug(msg, throwable);
           }
         }
         if (forceThrow || finalAttempt) {
-          exToThrow = new ServerConnectivityException(msg, cause);
+          exceptionToThrow = new ServerConnectivityException(msg, throwable);
         }
       }
     }
-    if (exToThrow != null) {
-      throw exToThrow;
+    if (exceptionToThrow != null) {
+      throw exceptionToThrow;
     }
   }
 
-  private StringBuffer getExceptionMessage(String exceptionName, int retryCount,
-      boolean finalAttempt, Connection connection) {
-    StringBuffer message = new StringBuffer(200);
+  private StringBuilder getExceptionMessage(final String exceptionName, final int retryCount,
+      final boolean finalAttempt, final Connection connection) {
+    final StringBuilder message = new StringBuilder(200);
     message.append("Pool unexpected ").append(exceptionName);
     if (connection != null) {
       message.append(" connection=").append(connection);
@@ -689,46 +679,38 @@ public class OpExecutorImpl implements ExecutablePool {
     return message;
   }
 
-  private void authenticateIfRequired(Connection conn, Op op) {
-    if (!conn.getServer().getRequiresCredentials()) {
+  private void authenticateIfRequired(final Connection connection, final Op op) {
+    if (!connection.getServer().getRequiresCredentials()) {
       return;
     }
 
-    if (pool == null) {
-      PoolImpl poolImpl =
-          (PoolImpl) PoolManagerImpl.getPMI().find(endpointManager.getPoolName());
-      if (poolImpl == null) {
-        return;
-      }
-      pool = poolImpl;
-    }
     if (pool.getMultiuserAuthentication()) {
       if (((AbstractOp) op).needsUserId()) {
-        UserAttributes ua = UserAttributes.userAttributes.get();
+        final UserAttributes ua = UserAttributes.userAttributes.get();
         if (ua != null) {
-          if (!ua.getServerToId().containsKey(conn.getServer())) {
-            authenticateMultiuser(pool, conn, ua);
+          if (!ua.getServerToId().containsKey(connection.getServer())) {
+            authenticateMultiuser(pool, connection, ua);
           }
         }
       }
     } else if (((AbstractOp) op).needsUserId()) {
-      // This should not be reached, but keeping this code here in case it is
-      // reached.
-      if (conn.getServer().getUserId() == -1) {
-        Connection connImpl = conn.getWrappedConnection();
-        conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, pool));
+      // This should not be reached, but keeping this code here in case it is reached.
+      if (connection.getServer().getUserId() == -1) {
+        final Connection wrappedConnection = connection.getWrappedConnection();
+        connection.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, pool));
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "OpExecutorImpl.execute() - single user mode - authenticated this user on {}", conn);
+              "OpExecutorImpl.execute() - single user mode - authenticated this user on {}",
+              connection);
         }
       }
     }
   }
 
-  private void authenticateMultiuser(PoolImpl pool, Connection conn, UserAttributes ua) {
+  private void authenticateMultiuser(final PoolImpl pool, final Connection conn,
+      final UserAttributes ua) {
     try {
-      Long userId =
-          (Long) AuthenticateUserOp.executeOn(conn.getServer(), pool, ua.getCredentials());
+      final Long userId = AuthenticateUserOp.executeOn(conn.getServer(), pool, ua.getCredentials());
       if (userId != null) {
         ua.setServerToId(conn.getServer(), userId);
         if (logger.isDebugEnabled()) {
@@ -737,7 +719,7 @@ public class OpExecutorImpl implements ExecutablePool {
         }
       }
     } catch (ServerConnectivityException sce) {
-      Throwable cause = sce.getCause();
+      final Throwable cause = sce.getCause();
       if (cause instanceof IOException || cause instanceof BufferUnderflowException
           || cause instanceof CancelException
           || (sce.getMessage() != null
@@ -751,32 +733,28 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  private Object executeWithPossibleReAuthentication(Connection conn, Op op) throws Exception {
+  private Object executeWithPossibleReAuthentication(final Connection conn, final Op op)
+      throws Exception {
     try {
       return conn.execute(op);
-
-    } catch (ServerConnectivityException sce) {
-      Throwable cause = sce.getCause();
+    } catch (final ServerConnectivityException sce) {
+      final Throwable cause = sce.getCause();
       if ((cause instanceof AuthenticationRequiredException
           && "User authorization attributes not found.".equals(cause.getMessage()))
           || sce.getMessage().contains("Connection error while authenticating user")) {
-        // (ashetkar) Need a cleaner way of doing above check.
         // 2nd exception-message above is from AbstractOp.sendMessage()
 
-        PoolImpl pool =
-            (PoolImpl) PoolManagerImpl.getPMI().find(endpointManager.getPoolName());
-        if (!pool.getMultiuserAuthentication()) {
-          Connection connImpl = conn.getWrappedConnection();
-          conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this));
-          return conn.execute(op);
-        } else {
-          UserAttributes ua = UserAttributes.userAttributes.get();
+        if (pool.getMultiuserAuthentication()) {
+          final UserAttributes ua = UserAttributes.userAttributes.get();
           if (ua != null) {
             authenticateMultiuser(pool, conn, ua);
           }
-          return conn.execute(op);
+        } else {
+          final Connection wrappedConnection = conn.getWrappedConnection();
+          conn.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, this));
         }
 
+        return conn.execute(op);
       } else {
         throw sce;
       }

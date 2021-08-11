@@ -168,23 +168,30 @@ public class EnumInfo implements DataSerializableFixedID {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     EnumInfo other = (EnumInfo) obj;
     if (clazz == null) {
-      if (other.clazz != null)
+      if (other.clazz != null) {
         return false;
-    } else if (!clazz.equals(other.clazz))
+      }
+    } else if (!clazz.equals(other.clazz)) {
       return false;
+    }
     if (name == null) {
-      if (other.name != null)
+      if (other.name != null) {
         return false;
-    } else if (!name.equals(other.name))
+      }
+    } else if (!name.equals(other.name)) {
       return false;
+    }
     if (this.ordinal != other.ordinal) {
       throw new PdxSerializationException("The ordinal value for the enum " + this.name
           + " on class " + this.clazz
@@ -298,25 +305,32 @@ public class EnumInfo implements DataSerializableFixedID {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
         return true;
-      if (obj == null)
+      }
+      if (obj == null) {
         return false;
-      if (!(obj instanceof ComparableEnum))
+      }
+      if (!(obj instanceof ComparableEnum)) {
         return false;
+      }
       ComparableEnum other = (ComparableEnum) obj;
       String className = getClassName();
       if (className == null) {
-        if (other.getClassName() != null)
+        if (other.getClassName() != null) {
           return false;
-      } else if (!className.equals(other.getClassName()))
+        }
+      } else if (!className.equals(other.getClassName())) {
         return false;
+      }
       String enumName = getName();
       if (enumName == null) {
-        if (other.getName() != null)
+        if (other.getName() != null) {
           return false;
-      } else if (!enumName.equals(other.getName()))
+        }
+      } else if (!enumName.equals(other.getName())) {
         return false;
+      }
       return true;
     }
 

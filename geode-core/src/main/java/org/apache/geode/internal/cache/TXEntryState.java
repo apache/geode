@@ -941,8 +941,9 @@ public class TXEntryState implements Releasable {
       returnedResult = true;
       return result;
     } finally {
-      if (!returnedResult)
+      if (!returnedResult) {
         result.release();
+      }
     }
   }
 
@@ -1423,11 +1424,13 @@ public class TXEntryState implements Releasable {
   }
 
   private boolean areIdentical(Object o1, Object o2) {
-    if (o1 == o2)
+    if (o1 == o2) {
       return true;
+    }
     if (o1 instanceof StoredObject) {
-      if (o1.equals(o2))
+      if (o1.equals(o2)) {
         return true;
+      }
     }
     return false;
   }
@@ -1636,7 +1639,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1672,7 +1675,7 @@ public class TXEntryState implements Releasable {
       case OP_PUT:
       case OP_LLOAD_PUT:
       case OP_NLOAD_PUT:
-        msg.addOp(r, key, this, otherRecipients);
+        msg.addOp(r, key, this);
         break;
 
       default:
@@ -1681,8 +1684,7 @@ public class TXEntryState implements Releasable {
   }
 
 
-  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg,
-      Set otherRecipients) {
+  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1718,7 +1720,7 @@ public class TXEntryState implements Releasable {
       case OP_PUT:
       case OP_LLOAD_PUT:
       case OP_NLOAD_PUT:
-        msg.addOp(r, key, this, otherRecipients);
+        msg.addOp(r, key, this);
         break;
 
       default:
@@ -1980,8 +1982,9 @@ public class TXEntryState implements Releasable {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof TxEntryEventImpl))
+      if (!(o instanceof TxEntryEventImpl)) {
         return false;
+      }
       return compareTo(o) == 0;
     }
 

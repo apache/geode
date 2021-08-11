@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -30,22 +32,19 @@ import redis.clients.jedis.Pipeline;
 
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractCommandPipeliningIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractCommandPipeliningIntegrationTest implements RedisIntegrationTest {
   private Jedis publisher;
   private Jedis subscriber;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
-    subscriber = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    publisher = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    subscriber = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    publisher = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -78,11 +77,12 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisP
 
     List<Object> responses = pipe.syncAndReturnAll();
 
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages));
+
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
   }
 
   @Test

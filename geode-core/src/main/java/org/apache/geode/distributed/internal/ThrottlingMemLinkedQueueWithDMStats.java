@@ -98,8 +98,9 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
 
   @Override
   protected void preAddInterruptibly(Object o) throws InterruptedException {
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
     // only block threads reading from tcp stream sockets. blocking udp
     // will cause retransmission storms
     if (!DistributionMessage.isMembershipMessengerThread()) {
@@ -142,7 +143,7 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
   }
 
   @Override
-  protected void postDrain(Collection c) {
+  protected void postDrain(Collection<? super E> c) {
     for (Object aC : c) {
       postRemove(aC);
     }

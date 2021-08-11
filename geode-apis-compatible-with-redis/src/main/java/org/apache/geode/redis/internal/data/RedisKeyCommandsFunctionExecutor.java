@@ -16,19 +16,27 @@
 
 package org.apache.geode.redis.internal.data;
 
+
+import java.util.List;
+
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
+import org.apache.geode.redis.internal.executor.key.RestoreOptions;
 
 public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisKeyCommands {
 
-  public RedisKeyCommandsFunctionExecutor(
-      CommandHelper helper) {
-    super(helper);
+  public RedisKeyCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   @Override
-  public boolean del(RedisKey key) {
-    return stripedExecute(key, () -> getRegion().remove(key) != null);
+  public synchronized boolean del(RedisKey key) {
+    return stripedExecute(key, () -> {
+      // Trigger MOVED if necessary
+      getRedisData(key);
+      return getRegion().remove(key) != null;
+    });
   }
 
   @Override
@@ -36,9 +44,9 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     boolean keyExists = stripedExecute(key, () -> getRedisData(key).exists());
 
     if (keyExists) {
-      helper.getRedisStats().incKeyspaceHits();
+      getRegionProvider().getRedisStats().incKeyspaceHits();
     } else {
-      helper.getRedisStats().incKeyspaceMisses();
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
     }
 
     return keyExists;
@@ -49,9 +57,9 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     long result = stripedExecute(key, () -> getRedisData(key).pttl(getRegion(), key));
 
     if (result == -2) {
-      helper.getRedisStats().incKeyspaceMisses();
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
     } else {
-      helper.getRedisStats().incKeyspaceHits();
+      getRegionProvider().getRedisStats().incKeyspaceHits();
     }
 
     return result;
@@ -65,7 +73,7 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   @Override
   public int pexpireat(RedisKey key, long timestamp) {
     return stripedExecute(key,
-        () -> getRedisData(key).pexpireat(helper, key, timestamp));
+        () -> getRedisData(key).pexpireat(getRegionProvider(), key, timestamp));
   }
 
   @Override
@@ -78,9 +86,9 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
     String type = stripedExecute(key, () -> getRedisData(key).type());
 
     if (type.equalsIgnoreCase("none")) {
-      helper.getRedisStats().incKeyspaceMisses();
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
     } else {
-      helper.getRedisStats().incKeyspaceHits();
+      getRegionProvider().getRedisStats().incKeyspaceHits();
     }
 
     return type;
@@ -92,8 +100,49 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public boolean rename(RedisKey oldKey, RedisKey newKey) {
-    // caller has already done all the stripedExecutor locking
-    return getRedisData(oldKey).rename(getRegion(), oldKey, newKey);
+  public byte[] dump(RedisKey key) {
+    byte[] dumpBytes = stripedExecute(key, () -> getRedisData(key).dump());
+
+    if (dumpBytes == null) {
+      getRegionProvider().getRedisStats().incKeyspaceMisses();
+    } else {
+      getRegionProvider().getRedisStats().incKeyspaceHits();
+    }
+
+    return dumpBytes;
   }
+
+  @Override
+  public void restore(RedisKey key, long ttl, byte[] data, RestoreOptions options) {
+    long expireAt;
+    if (ttl == 0) {
+      expireAt = AbstractRedisData.NO_EXPIRATION;
+    } else {
+      if (options.isAbsttl()) {
+        expireAt = ttl;
+      } else {
+        expireAt = System.currentTimeMillis() + ttl;
+      }
+    }
+
+    stripedExecute(key, () -> {
+      RedisData value = getRedisData(key).restore(data, options.isReplace());
+      ((AbstractRedisData) value).setExpirationTimestampNoDelta(expireAt);
+      getRegion().put(key, value);
+      return null;
+    });
+  }
+
+  @Override
+  public boolean rename(RedisKey oldKey, RedisKey newKey) {
+    List<RedisKey> orderedKeys = orderForLocking(oldKey, newKey);
+    return stripedExecute(orderedKeys.get(0), () -> rename0(orderedKeys.get(1), oldKey, newKey));
+  }
+
+  private boolean rename0(RedisKey lockKey, RedisKey oldKey, RedisKey newKey) {
+    return stripedExecute(lockKey,
+        () -> getRedisData(oldKey).rename(getRegionProvider().getLocalDataRegion(), oldKey,
+            newKey));
+  }
+
 }

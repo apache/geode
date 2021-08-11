@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -23,31 +24,26 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.SetParams;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractPersistIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractPersistIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private JedisCluster jedis;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
-    jedis2.close();
   }
 
   @Test
@@ -60,7 +56,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     String stringKey = "stringKey";
     String stringValue = "stringValue";
     jedis.set(stringKey, stringValue);
-    jedis.expire(stringKey, 20);
+    jedis.expire(stringKey, 20L);
 
     assertThat(jedis.persist(stringKey)).isEqualTo(1L);
     assertThat(jedis.ttl(stringKey)).isEqualTo(-1L);
@@ -77,7 +73,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     String setMember = "setValue";
 
     jedis.sadd(setKey, setMember);
-    jedis.expire(setKey, 20);
+    jedis.expire(setKey, 20L);
 
     assertThat(jedis.persist(setKey)).isEqualTo(1L);
     assertThat(jedis.ttl(setKey)).isEqualTo(-1L);
@@ -90,7 +86,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     String hashValue = "hashValue";
 
     jedis.hset(hashKey, hashField, hashValue);
-    jedis.expire(hashKey, 20);
+    jedis.expire(hashKey, 20L);
 
     assertThat(jedis.persist(hashKey)).isEqualTo(1L);
     assertThat(jedis.ttl(hashKey)).isEqualTo(-1L);
@@ -103,7 +99,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     String bitMapValue = "0";
 
     jedis.setbit(bitMapKey, offset, bitMapValue);
-    jedis.expire(bitMapKey, 20);
+    jedis.expire(bitMapKey, 20L);
 
     assertThat(jedis.persist(bitMapKey)).isEqualTo(1L);
     assertThat(jedis.ttl(bitMapKey)).isEqualTo(-1L);
@@ -118,7 +114,7 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     AtomicLong persistedFromThread2 = new AtomicLong(0);
 
     Runnable runnable1 = () -> persistKeys(persistedFromThread1, jedis, iterationCount);
-    Runnable runnable2 = () -> persistKeys(persistedFromThread2, jedis2, iterationCount);
+    Runnable runnable2 = () -> persistKeys(persistedFromThread2, jedis, iterationCount);
 
     Thread thread1 = new Thread(runnable1);
     Thread thread2 = new Thread(runnable2);
@@ -131,16 +127,16 @@ public abstract class AbstractPersistIntegrationTest implements RedisPortSupplie
     assertThat(persistedFromThread1.get() + persistedFromThread2.get()).isEqualTo(iterationCount);
   }
 
-  private void setKeysWithExpiration(Jedis jedis, int iterationCount) {
+  private void setKeysWithExpiration(JedisCluster jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       SetParams setParams = new SetParams();
-      setParams.ex(600);
+      setParams.ex(600L);
 
       jedis.set("key" + i, "value" + i, setParams);
     }
   }
 
-  private void persistKeys(AtomicLong atomicLong, Jedis jedis, int iterationCount) {
+  private void persistKeys(AtomicLong atomicLong, JedisCluster jedis, int iterationCount) {
     for (int i = 0; i < iterationCount; i++) {
       String key = "key" + i;
       atomicLong.addAndGet(jedis.persist(key));

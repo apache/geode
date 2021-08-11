@@ -26,27 +26,30 @@ import java.math.BigInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
+  private final String hashTag = "{111}";
+  private final String someKey = "someKey" + hashTag;
 
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
@@ -101,14 +104,14 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
 
   @Test
   public void shouldThrowArithmeticException_givenDecrbyMoreThanMaxLong() {
-    jedis.set("somekey", "1");
+    jedis.set(someKey, "1");
 
     BigInteger maxLongValue = new BigInteger(String.valueOf(Long.MAX_VALUE));
     BigInteger biggerThanMaxLongValue = maxLongValue.add(new BigInteger("1"));
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(Protocol.Command.DECRBY,
-            "somekey", String.valueOf(biggerThanMaxLongValue)))
+        () -> jedis.sendCommand(hashTag, Protocol.Command.DECRBY,
+            someKey, String.valueOf(biggerThanMaxLongValue)))
                 .hasMessageContaining(ERROR_NOT_INTEGER);
 
     jedis.set("key", String.valueOf((Long.MIN_VALUE)));
@@ -117,14 +120,14 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
   @Test
   public void shouldReturnArithmeticError_givenDecrbyLessThanMinLong() {
 
-    jedis.set("somekey", "1");
+    jedis.set(someKey, "1");
 
     BigInteger minLongValue = new BigInteger(String.valueOf(Long.MIN_VALUE));
     BigInteger smallerThanMinLongValue = minLongValue.subtract(new BigInteger("1"));
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(
-            Protocol.Command.DECRBY, "somekey",
+        () -> jedis.sendCommand(hashTag,
+            Protocol.Command.DECRBY, someKey,
             smallerThanMinLongValue.toString()))
                 .hasMessageContaining(ERROR_NOT_INTEGER);
   }
@@ -133,11 +136,11 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
   public void shouldReturnOverflowError_givenDecrbyThatWouldResultInValueLessThanMinLong() {
 
     BigInteger minLongValue = new BigInteger(String.valueOf(Long.MIN_VALUE));
-    jedis.set("somekey", String.valueOf(minLongValue));
+    jedis.set(someKey, String.valueOf(minLongValue));
 
     assertThatThrownBy(
-        () -> jedis.sendCommand(
-            Protocol.Command.DECRBY, "somekey",
+        () -> jedis.sendCommand(hashTag,
+            Protocol.Command.DECRBY, someKey,
             "1"))
                 .hasMessageContaining(ERROR_OVERFLOW);
   }
@@ -146,9 +149,9 @@ public abstract class AbstractDecrByIntegrationTest implements RedisPortSupplier
   @Test
   public void should_returnWrongTypeError_givenKeyContainsNonStringValue() {
 
-    jedis.hset("key", "1", "1");
+    jedis.hset("setKey", "1", "1");
     assertThatThrownBy(
-        () -> jedis.decrBy("key", 1)).hasMessageContaining(ERROR_WRONG_TYPE);
+        () -> jedis.decrBy("setKey", 1)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test

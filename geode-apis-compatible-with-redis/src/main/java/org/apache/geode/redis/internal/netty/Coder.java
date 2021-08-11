@@ -15,16 +15,50 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static java.lang.Double.NaN;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_ARRAY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_STRING;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bERR;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
+
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
@@ -32,64 +66,12 @@ import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 public class Coder {
 
   /**
-   * byte identifier of a bulk string
-   */
-  public static final byte BULK_STRING_ID = 36; // '$'
-
-  /**
-   * byte identifier of an array
-   */
-  public static final byte ARRAY_ID = 42; // '*'
-
-  /**
-   * byte identifier of an error
-   */
-  public static final byte ERROR_ID = 45; // '-'
-
-  /**
-   * byte identifier of an integer
-   */
-  public static final byte INTEGER_ID = 58; // ':'
-  public static final byte NUMBER_1_BYTE = 0x31; // '1'
-  /**
-   * byte identifier of a simple string
-   */
-  public static final byte SIMPLE_STRING_ID = 43; // '+'
-  public static final String CRLF = "\r\n";
-  @MakeImmutable
-  public static final byte[] CRLFar = stringToBytes(CRLF); // {13, 10} == {'\r', '\n'}
-
-  /**
-   * byte array of a nil response
-   */
-  @MakeImmutable
-  public static final byte[] bNIL = stringToBytes("$-1\r\n"); // {'$', '-', '1', '\r', '\n'};
-
-  /**
-   * byte array of an empty array
-   */
-  @MakeImmutable
-  public static final byte[] bEMPTY_ARRAY = stringToBytes("*0\r\n"); // {'*', '0', '\r', '\n'};
-
-  /**
-   * byte array of an empty string
-   */
-  @MakeImmutable
-  public static final byte[] bEMPTY_STRING = stringToBytes("$0\r\n\r\n");
-
-  @MakeImmutable
-  public static final byte[] err = stringToBytes("ERR ");
-
-  @MakeImmutable
-  public static final byte[] oom = stringToBytes("OOM ");
-
-  @MakeImmutable
-  public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
-
-  /**
    * The charset being used by this coder, {@value #CHARSET}.
    */
   public static final String CHARSET = "UTF-8";
+
+  // In UTF-8 encoding, upper- and lowercase versions of the same character differ by this amount
+  public static final int CHARSET_CASE_OFFSET = 32;
 
   @MakeImmutable
   protected static final DecimalFormat decimalFormatter = new DecimalFormat("#");
@@ -97,16 +79,6 @@ public class Coder {
   static {
     decimalFormatter.setMaximumFractionDigits(10);
   }
-
-  /**
-   * Positive infinity string
-   */
-  public static final String P_INF = "+inf";
-
-  /**
-   * Negative infinity string
-   */
-  public static final String N_INF = "-inf";
 
   public static ByteBuf getBulkStringResponse(ByteBuf buffer, Object v)
       throws CoderException {
@@ -117,8 +89,8 @@ public class Coder {
     } else if (v instanceof byte[]) {
       toWrite = (byte[]) v;
       writeStringResponse(buffer, toWrite);
-    } else if (v instanceof ByteArrayWrapper) {
-      toWrite = ((ByteArrayWrapper) v).toBytes();
+    } else if (v instanceof RedisKey) {
+      toWrite = ((RedisKey) v).toBytes();
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Double) {
       toWrite = doubleToBytes((Double) v);
@@ -130,11 +102,11 @@ public class Coder {
     } else if (v instanceof Integer) {
       buffer.writeByte(INTEGER_ID);
       buffer.writeBytes(intToBytes((Integer) v));
-      buffer.writeBytes(CRLFar);
+      buffer.writeBytes(bCRLF);
     } else if (v instanceof Long) {
       buffer.writeByte(INTEGER_ID);
       buffer.writeBytes(intToBytes(((Long) v).intValue()));
-      buffer.writeBytes(CRLFar);
+      buffer.writeBytes(bCRLF);
     } else {
       throw new CoderException();
     }
@@ -145,9 +117,9 @@ public class Coder {
   private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
     buffer.writeByte(BULK_STRING_ID);
     buffer.writeBytes(intToBytes(toWrite.length));
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     buffer.writeBytes(toWrite);
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
   }
 
   public static ByteBuf getFlattenedArrayResponse(ByteBuf buffer, Collection<Collection<?>> items)
@@ -163,7 +135,7 @@ public class Coder {
       throws CoderException {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(items.size()));
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next);
     }
@@ -171,53 +143,34 @@ public class Coder {
     return buffer;
   }
 
-  private static void writeCollectionOrString(ByteBuf buffer, Object next)
-      throws CoderException {
-    ByteBuf tmp = null;
-    try {
-      if (next instanceof Collection) {
-        Collection<?> nextItems = (Collection<?>) next;
-        getArrayResponse(buffer, nextItems);
-      } else {
-        getBulkStringResponse(buffer, next);
-      }
-    } finally {
-      if (tmp != null) {
-        tmp.release();
-      }
+  private static void writeCollectionOrString(ByteBuf buffer, Object next) throws CoderException {
+    if (next instanceof Collection) {
+      Collection<?> nextItems = (Collection<?>) next;
+      getArrayResponse(buffer, nextItems);
+    } else {
+      getBulkStringResponse(buffer, next);
     }
   }
 
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
-      List<Object> scanResult) {
+      List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
     buffer.writeBytes(intToBytes(2));
-    buffer.writeBytes(CRLFar);
-    buffer.writeByte(BULK_STRING_ID);
+    buffer.writeBytes(bCRLF);
     byte[] cursorBytes = stringToBytes(cursor.toString());
-    buffer.writeBytes(intToBytes(cursorBytes.length));
-    buffer.writeBytes(CRLFar);
-    buffer.writeBytes(cursorBytes);
-    buffer.writeBytes(CRLFar);
+    writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(scanResult.size()));
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(longToBytes(scanResult.size()));
+    buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        buffer.writeByte(BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(next.length()));
-        buffer.writeBytes(CRLFar);
-        buffer.writeBytes(stringToBytes(next));
-        buffer.writeBytes(CRLFar);
-      } else if (nextObject instanceof ByteArrayWrapper) {
-        byte[] next = ((ByteArrayWrapper) nextObject).toBytes();
-        buffer.writeByte(BULK_STRING_ID);
-        buffer.writeBytes(intToBytes(next.length));
-        buffer.writeBytes(CRLFar);
-        buffer.writeBytes(next);
-        buffer.writeBytes(CRLFar);
+        writeStringResponse(buffer, stringToBytes(next));
+      } else if (nextObject instanceof RedisKey) {
+        writeStringResponse(buffer, ((RedisKey) nextObject).toBytes());
+      } else {
+        writeStringResponse(buffer, (byte[]) nextObject);
       }
     }
     return buffer;
@@ -241,25 +194,41 @@ public class Coder {
   public static ByteBuf getSimpleStringResponse(ByteBuf buffer, byte[] byteArray) {
     buffer.writeByte(SIMPLE_STRING_ID);
     buffer.writeBytes(byteArray);
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
+    return buffer;
+  }
+
+  private static ByteBuf getErrorResponse0(ByteBuf buffer, byte[] type, String error) {
+    byte[] errorAr = stringToBytes(error);
+    buffer.writeByte(ERROR_ID);
+    buffer.writeBytes(type);
+    buffer.writeBytes(errorAr);
+    buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(err);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(CRLFar);
-    return buffer;
+    return getErrorResponse0(buffer, bERR, error);
+  }
+
+  public static ByteBuf getMovedResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bMOVED, error);
   }
 
   public static ByteBuf getOOMResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bOOM, error);
+  }
+
+  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bWRONGTYPE, error);
+  }
+
+  public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(oom);
+    buffer.writeBytes(bBUSYKEY);
     buffer.writeBytes(errorAr);
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     return buffer;
   }
 
@@ -267,30 +236,21 @@ public class Coder {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
     buffer.writeBytes(errorAr);
-    buffer.writeBytes(CRLFar);
-    return buffer;
-  }
-
-  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(wrongType);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
     buffer.writeByte(INTEGER_ID);
     buffer.writeBytes(intToBytes(integer));
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
     buffer.writeByte(INTEGER_ID);
     buffer.writeBytes(longToBytes(l));
-    buffer.writeBytes(CRLFar);
+    buffer.writeBytes(bCRLF);
     return buffer;
   }
 
@@ -299,25 +259,33 @@ public class Coder {
     return buffer;
   }
 
+  public static ByteBuf getOKResponse(ByteBuf buffer) {
+    buffer.writeBytes(bOK);
+    return buffer;
+  }
+
   public static ByteBuf getNilResponse(ByteBuf buffer) {
     buffer.writeBytes(bNIL);
     return buffer;
   }
 
-
   public static String bytesToString(byte[] bytes) {
     if (bytes == null) {
       return null;
     }
-    return new String(bytes);
+    try {
+      return new String(bytes, CHARSET);
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public static String doubleToString(double d) {
     if (d == Double.POSITIVE_INFINITY) {
-      return "Infinity";
+      return "inf";
     }
     if (d == Double.NEGATIVE_INFINITY) {
-      return "-Infinity";
+      return "-inf";
     }
 
     String stringValue = String.valueOf(d);
@@ -331,7 +299,11 @@ public class Coder {
     if (string == null) {
       return null;
     }
-    return string.getBytes();
+    try {
+      return string.getBytes(CHARSET);
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /*
@@ -359,10 +331,6 @@ public class Coder {
     return new BigDecimal(bytesToString(bytes));
   }
 
-  public static int bytesToInt(byte[] bytes) {
-    return Integer.parseInt(bytesToString(bytes));
-  }
-
   public static long bytesToLong(byte[] bytes) {
     return Long.parseLong(bytesToString(bytes));
   }
@@ -376,6 +344,15 @@ public class Coder {
    * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
   public static double bytesToDouble(byte[] bytes) {
+    if (isPositiveInfinity(bytes)) {
+      return POSITIVE_INFINITY;
+    }
+    if (isNegativeInfinity(bytes)) {
+      return NEGATIVE_INFINITY;
+    }
+    if (isNaN(bytes)) {
+      return NaN;
+    }
     return stringToDouble(bytesToString(bytes));
   }
 
@@ -394,5 +371,104 @@ public class Coder {
     } else {
       return Double.parseDouble(d);
     }
+  }
+
+  /**
+   * This method allows comparison of byte array representations of Strings, ignoring case, allowing
+   * the return of String.equalsIgnoreCase() to be evaluated without performing expensive String
+   * conversion. This method should only be used to compare against known constant byte arrays found
+   * in the {@link StringBytesGlossary} class.
+   *
+   * @param test the byte array representation of the String we wish to compare
+   * @param expected a byte array constant from the {@link StringBytesGlossary} class representing
+   *        the String we wish to compare against
+   * @return true if the Strings represented by the byte arrays would return true from
+   *         {@code test.equalsIgnoreCase(expected)}, false otherwise
+   */
+  public static boolean equalsIgnoreCaseBytes(byte[] test, byte[] expected) {
+    if (test == expected) {
+      return true;
+    }
+    if (test == null || expected == null || test.length != expected.length) {
+      return false;
+    }
+    for (int i = 0; i < expected.length; ++i) {
+      if (toUpperCase(test[i]) != toUpperCase(expected[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Transforms a byte array representing a String into a byte array representing the uppercase
+   * version of that String.
+   *
+   * @param bytes the byte array representing a String to be transformed
+   * @return a byte array representing the result of calling String.toUpperCase() on the input
+   *         String
+   */
+  public static byte[] toUpperCaseBytes(byte[] bytes) {
+    if (bytes == null) {
+      return null;
+    }
+    byte[] uppercase = new byte[bytes.length];
+    for (int i = 0; i < bytes.length; ++i) {
+      uppercase[i] = toUpperCase(bytes[i]);
+    }
+    return uppercase;
+  }
+
+  private static byte toUpperCase(byte b) {
+    return isLowerCase(b) ? (byte) (b - CHARSET_CASE_OFFSET) : b;
+  }
+
+  private static boolean isLowerCase(byte value) {
+    return value >= bLOWERCASE_A && value <= bLOWERCASE_Z;
+  }
+
+  public static boolean isInfinity(byte[] bytes) {
+    return isPositiveInfinity(bytes) || isNegativeInfinity(bytes);
+  }
+
+  // Checks if the given byte array is equivalent to the String "NaN", ignoring case.
+  public static boolean isNaN(byte[] bytes) {
+    return equalsIgnoreCaseBytes(bytes, bNaN);
+  }
+
+  // Checks if the given byte array is equivalent to the Strings "INF", "INFINITY", "+INF" or
+  // "+INFINITY", ignoring case.
+  public static boolean isPositiveInfinity(byte[] bytes) {
+    return equalsIgnoreCaseBytes(bytes, bINF)
+        || equalsIgnoreCaseBytes(bytes, bP_INF)
+        || equalsIgnoreCaseBytes(bytes, bINFINITY)
+        || equalsIgnoreCaseBytes(bytes, bP_INFINITY);
+  }
+
+  // Checks if the given byte array is equivalent to the Strings "-INF" or "-INFINITY", ignoring
+  // case.
+  public static boolean isNegativeInfinity(byte[] bytes) {
+    return equalsIgnoreCaseBytes(bytes, bN_INF)
+        || equalsIgnoreCaseBytes(bytes, bN_INFINITY);
+  }
+
+  // Takes a long value and converts it to an int. Values outside the range Integer.MIN_VALUE and
+  // Integer.MAX_VALUE will be converted to either Integer.MIN_VALUE or Integer.MAX_VALUE
+  public static int narrowLongToInt(long toBeNarrowed) {
+    if (toBeNarrowed > Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    } else if (toBeNarrowed < Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    } else {
+      return (int) toBeNarrowed;
+    }
+  }
+
+  public static byte[] stripTrailingZeroFromDouble(byte[] doubleBytes) {
+    if (doubleBytes.length > 1 && doubleBytes[doubleBytes.length - 2] == bPERIOD
+        && doubleBytes[doubleBytes.length - 1] == NUMBER_0_BYTE) {
+      return Arrays.copyOfRange(doubleBytes, 0, doubleBytes.length - 2);
+    }
+    return doubleBytes;
   }
 }

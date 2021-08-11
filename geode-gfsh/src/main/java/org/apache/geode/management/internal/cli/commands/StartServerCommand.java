@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.cli.GfshCommand.EXPERIMENTAL;
+import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -130,11 +133,13 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS,
           help = CliStrings.START_SERVER__MEMCACHED_BIND_ADDRESS__HELP) final String memcachedBindAddress,
       @CliOption(key = CliStrings.START_SERVER__REDIS_PORT,
-          help = CliStrings.START_SERVER__REDIS_PORT__HELP) final Integer redisPort,
+          help = EXPERIMENTAL + CliStrings.START_SERVER__REDIS_PORT__HELP) final Integer redisPort,
       @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
-          help = CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
+          help = EXPERIMENTAL
+              + CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
       @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
-          help = CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
+          help = EXPERIMENTAL
+              + CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -196,11 +201,11 @@ public class StartServerCommand extends OfflineGfshCommand {
       }
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(
-        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
+    String resolvedWorkingDirectory = resolveWorkingDirectory(workingDirectory, memberName);
 
     return doStartServer(memberName, assignBuckets, bindAddress, cacheXmlPathname, classpath,
-        criticalHeapPercentage, criticalOffHeapPercentage, workingDirectory, disableDefaultServer,
+        criticalHeapPercentage, criticalOffHeapPercentage, resolvedWorkingDirectory,
+        disableDefaultServer,
         disableExitWhenOutOfMemory, enableTimeStatistics, evictionHeapPercentage,
         evictionOffHeapPercentage, force, group, hostNameForClients, jmxManagerHostnameForClients,
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,

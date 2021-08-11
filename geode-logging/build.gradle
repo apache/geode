@@ -21,7 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+    api(platform(project(':boms:geode-all-bom')))
 
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
@@ -37,7 +37,6 @@ dependencies {
     testImplementation('junit:junit')
     testImplementation('org.assertj:assertj-core')
 
-    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
@@ -53,8 +52,7 @@ dependencies {
         exclude module: 'geode-logging'
     }
     distributedTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
 

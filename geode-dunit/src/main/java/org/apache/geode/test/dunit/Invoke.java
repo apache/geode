@@ -53,10 +53,11 @@ public class Invoke {
       Host host = Host.getHost(hostIndex);
 
       for (VM vm : host.getAllVMs()) {
-        if (name != null)
+        if (name != null) {
           vm.invoke(name, runnable);
-        else
+        } else {
           vm.invoke(runnable);
+        }
       }
     }
   }
@@ -114,10 +115,11 @@ public class Invoke {
     for (int h = 0; h < Host.getHostCount(); h++) {
       Host host = Host.getHost(h);
       for (VM vm : host.getAllVMs()) {
-        if (name != null)
+        if (name != null) {
           ret.put(vm, vm.invoke(name, callable));
-        else
+        } else {
           ret.put(vm, vm.invoke(callable));
+        }
       }
     }
     return ret;

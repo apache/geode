@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +83,7 @@ public class CheckPrimaryBucketFunction implements Function {
       }
     }
 
-    Runnable r = () -> {
+    Callable<Void> r = () -> {
       if (!releaseLatchEarly) {
         signalFunctionHasStarted.countDown();
       }
@@ -97,6 +98,7 @@ public class CheckPrimaryBucketFunction implements Function {
         e.printStackTrace();
         result.lastResult(false);
       }
+      return null;
     };
 
     LocalDataSet localDataSet = (LocalDataSet) localRegion;
@@ -105,6 +107,8 @@ public class CheckPrimaryBucketFunction implements Function {
       partitionedRegion.computeWithPrimaryLocked(key, r);
     } catch (PrimaryBucketLockException ex) {
       throw new BucketMovedException(ex.toString());
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
     }
   }
 

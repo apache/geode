@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.persistence;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -27,11 +28,11 @@ public interface DiskInitFileInterpreter {
 
   String getNameForError();
 
-  void cmnInstantiatorId(int id, Class c, Class ic);
+  void cmnInstantiatorId(int id, Class<?> c, Class<?> ic);
 
   void cmnInstantiatorId(int id, String cn, String icn);
 
-  void cmnDataSerializerId(Class dsc);
+  void cmnDataSerializerId(Class<? extends DataSerializer> dsc);
 
   void cmnOnlineMemberId(long drId, PersistentMemberID pmid);
 

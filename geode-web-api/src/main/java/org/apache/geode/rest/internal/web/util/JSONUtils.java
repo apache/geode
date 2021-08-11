@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.Assert;
@@ -53,7 +52,6 @@ public abstract class JSONUtils {
   }
 
   public static JsonGenerator enableDisableJSONGeneratorFeature(JsonGenerator generator) {
-    generator.enable(JsonWriteFeature.ESCAPE_NON_ASCII.mappedFeature());
     generator.disable(Feature.AUTO_CLOSE_TARGET);
     generator.setPrettyPrinter(new DefaultPrettyPrinter());
     return generator;

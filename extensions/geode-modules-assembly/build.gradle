@@ -42,7 +42,7 @@ jar.enabled = true
 def moduleBaseName = "Apache_Geode_Modules"
 
 def configureTcServerAssembly = {
-  baseName = moduleBaseName
+  archiveBaseName = moduleBaseName
   classifier = "tcServer"
 
   // All client-server files
@@ -124,7 +124,7 @@ def configureTcServerAssembly = {
 }
 
 def configureTcServer30Assembly = {
-  baseName = moduleBaseName
+  archiveBaseName = moduleBaseName
   classifier = "tcServer30"
 
   into('geode-cs-tomcat-8/conf') {
@@ -165,7 +165,7 @@ def configureTcServer30Assembly = {
 }
 
 tasks.register('distTomcat', Zip) {
-  baseName = moduleBaseName
+  archiveBaseName = moduleBaseName
   classifier = "Tomcat"
 
   // All client-server files
@@ -192,7 +192,7 @@ tasks.register('distTomcat', Zip) {
 }
 
 tasks.register('distAppServer', Zip) {
-  baseName = moduleBaseName
+  archiveBaseName = moduleBaseName
   classifier = "AppServer"
 
   into('lib') {
@@ -206,7 +206,7 @@ tasks.register('distAppServer', Zip) {
     from('release/session/bin/') {
       include 'modify_war'
 
-      filter(ReplaceTokens, tokens:['GEODE_VERSION': version])
+      filter(ReplaceTokens, tokens:['GEODE_VERSION': archiveVersion.get()])
       filter(ReplaceTokens, tokens:['SLF4J_VERSION': DependencyConstraints.get('slf4j-api.version')])
       filter(ReplaceTokens, tokens:['LOG4J_VERSION': DependencyConstraints.get('log4j.version')])
       filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': DependencyConstraints.get('fastutil.version')])

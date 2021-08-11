@@ -59,7 +59,11 @@ public class JarDeployer implements Serializable {
   }
 
   public JarDeployer(final File deployDirectory) {
-    this.deployDirectory = deployDirectory;
+    if (deployDirectory == null) {
+      this.deployDirectory = new File(System.getProperty("user.dir"));
+    } else {
+      this.deployDirectory = deployDirectory;
+    }
   }
 
   /**
@@ -73,8 +77,7 @@ public class JarDeployer implements Serializable {
       throws IOException {
     lock.lock();
     try {
-      boolean shouldDeployNewVersion =
-          shouldDeployNewVersion(artifactId, stagedJar);
+      boolean shouldDeployNewVersion = shouldDeployNewVersion(artifactId, stagedJar);
       if (!shouldDeployNewVersion) {
         logger.debug("No need to deploy a new version of {}", stagedJar.getName());
         return null;
@@ -230,7 +233,7 @@ public class JarDeployer implements Serializable {
       if (deployedJar != null) {
         logger.info("Registering new version of jar: {}", deployedJar);
         DeployedJar oldJar = this.deployedJars.put(artifactId, deployedJar);
-        ClassPathLoader.getLatest().chainClassloader(deployedJar.getFile(), artifactId);
+        ClassPathLoader.getLatest().chainClassloader(deployedJar.getFile());
       }
     } finally {
       lock.unlock();
@@ -250,7 +253,7 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public DeployedJar deploy(String artifactId, final File stagedJarFile)
+  public DeployedJar deploy(final File stagedJarFile)
       throws IOException, ClassNotFoundException {
 
     if (!JarFileUtils.hasValidJarContent(stagedJarFile)) {
@@ -260,6 +263,7 @@ public class JarDeployer implements Serializable {
 
     lock.lock();
     try {
+      String artifactId = JarFileUtils.getArtifactId(stagedJarFile.getName());
       DeployedJar deployedJar = deployWithoutRegistering(artifactId, stagedJarFile);
       registerNewVersions(artifactId, deployedJar);
 
@@ -269,8 +273,8 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  private boolean shouldDeployNewVersion(String deploymentName, File stagedJar) throws IOException {
-    DeployedJar oldDeployedJar = this.deployedJars.get(deploymentName);
+  private boolean shouldDeployNewVersion(String artifactId, File stagedJar) throws IOException {
+    DeployedJar oldDeployedJar = this.deployedJars.get(artifactId);
 
     if (oldDeployedJar == null) {
       return true;

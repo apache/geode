@@ -52,7 +52,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -383,7 +382,7 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + dsId);
     props.setProperty(LOCATORS, "localhost[" + localPort + "]");
     props.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocPort + "]");
-    Locator locator = Locator.startLocatorAndDS(0, null, InetAddress.getByName("0.0.0.0"), props,
+    Locator locator = Locator.startLocatorAndDS(0, null, null, props,
         true, true, hostnameForClients);
     return locator.getPort();
   }
@@ -1319,23 +1318,6 @@ public class WANTestBase extends DistributedTestCase {
     }
     assertEquals(eventsReceived, gatewayReceiverStats.getEventsReceived());
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
-  }
-
-  public static List<Integer> getReceiverStats() {
-    Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
-    GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
-    assertTrue(stats instanceof GatewayReceiverStats);
-    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
-    ArrayList<Integer> statsList = new ArrayList<>();
-    statsList.add(gatewayReceiverStats.getEventsReceived());
-    statsList.add(gatewayReceiverStats.getEventsRetried());
-    statsList.add(gatewayReceiverStats.getProcessBatchRequests());
-    statsList.add(gatewayReceiverStats.getDuplicateBatchesReceived());
-    statsList.add(gatewayReceiverStats.getOutoforderBatchesReceived());
-    statsList.add(gatewayReceiverStats.getEarlyAcks());
-    statsList.add(gatewayReceiverStats.getExceptionsOccurred());
-    return statsList;
   }
 
   public static void checkMinimumGatewayReceiverStats(int processBatches, int eventsReceived) {
@@ -2320,6 +2302,21 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
+  public static void doTxPuts(String regionName, int numPuts) {
+    try (
+        IgnoredException ignored = IgnoredException.addIgnoredException(InterruptedException.class);
+        IgnoredException ignored1 =
+            IgnoredException.addIgnoredException(GatewaySenderException.class)) {
+      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
+      for (long i = 0; i < numPuts; i++) {
+        cache.getCacheTransactionManager().begin();
+        r.put(i, "Value_" + i);
+        cache.getCacheTransactionManager().commit();
+      }
+    }
+  }
+
   public static void doPutsSameKey(String regionName, int numPuts, String key) {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(InterruptedException.class.getName());
@@ -2744,10 +2741,9 @@ public class WANTestBase extends DistributedTestCase {
     assertNotNull(r);
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
-    long i = 0;
     long j = 0;
     CacheTransactionManager mgr = cache.getCacheTransactionManager();;
-    for (i = 0; i < transactions; i++) {
+    for (int i = 0; i < transactions; i++) {
       boolean done = false;
       do {
         try {
@@ -2893,13 +2889,15 @@ public class WANTestBase extends DistributedTestCase {
     assertNotNull(r);
 
     List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
-    for (long i = 0; i < 5; i++)
+    for (long i = 0; i < 5; i++) {
       tasks.add(new PutTask(r, ai, numPuts));
+    }
 
     try {
       List<Future<Object>> l = execService.invokeAll(tasks);
-      for (Future<Object> f : l)
+      for (Future<Object> f : l) {
         f.get();
+      }
     } catch (InterruptedException e1) { // TODO: eats exception
       e1.printStackTrace();
     } catch (ExecutionException e) { // TODO: eats exceptions
@@ -3445,8 +3443,9 @@ public class WANTestBase extends DistributedTestCase {
     ConcurrentParallelGatewaySenderEventProcessor cProc =
         (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
             .getEventProcessor();
-    if (cProc == null)
+    if (cProc == null) {
       return 0;
+    }
 
     int totalDispatched = 0;
     for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
@@ -3786,8 +3785,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -3834,8 +3834,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }
@@ -3886,8 +3887,9 @@ public class WANTestBase extends DistributedTestCase {
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof MyGatewayEventFilter))
+      if (!(obj instanceof MyGatewayEventFilter)) {
         return false;
+      }
       MyGatewayEventFilter filter = (MyGatewayEventFilter) obj;
       return this.Id.equals(filter.Id);
     }

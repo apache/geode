@@ -33,7 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -49,7 +49,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_whenRequestedFromSameServer() {
+  public void sessionShouldTimeout_whenRequestedFromSameServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -59,7 +59,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_OnSecondaryServer() {
+  public void sessionShouldTimeout_OnSecondaryServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -69,7 +69,8 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldNotTimeoutOnFirstServer_whenAccessedOnSecondaryServer() {
+  public void sessionShouldNotTimeoutOnFirstServer_whenAccessedOnSecondaryServer()
+      throws Exception {
     String sessionCookie = createNewSessionWithNote(APP1, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -82,7 +83,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() {
+  public void sessionShouldTimeout_whenAppFailsOverToAnotherRedisServer() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     String sessionId = getSessionId(sessionCookie);
 
@@ -100,7 +101,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   }
 
   @Test
-  public void sessionShouldNotTimeout_whenPersisted() {
+  public void sessionShouldNotTimeout_whenPersisted() throws Exception {
     String sessionCookie = createNewSessionWithNote(APP2, "note1");
     setMaxInactiveInterval(APP2, sessionCookie, -1);
 
@@ -133,7 +134,8 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
   private void compareMaxInactiveIntervals() {
     cluster.getVM(1).invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion("__REDIS_DATA");
+      PartitionedRegion region =
+          (PartitionedRegion) cache.getRegion(RegionProvider.REDIS_DATA_REGION);
       for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
         List<BucketDump> buckets = region.getAllBucketEntries(j);
         if (buckets.isEmpty()) {
@@ -161,7 +163,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
       return 0;
     }
     ObjectInputStream inputStream;
-    byte[] bytes = redisHash.hget(new ByteArrayWrapper("maxInactiveInterval".getBytes())).toBytes();
+    byte[] bytes = redisHash.hget("maxInactiveInterval".getBytes());
     ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
     try {
       inputStream = new ObjectInputStream(byteStream);

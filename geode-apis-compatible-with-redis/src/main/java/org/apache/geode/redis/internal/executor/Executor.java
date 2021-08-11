@@ -31,5 +31,5 @@ public interface Executor {
    * @param command The command to be executed
    * @param context The execution context by which this command is to be executed
    */
-  RedisResponse executeCommand(Command command, ExecutionHandlerContext context);
+  RedisResponse executeCommand(Command command, ExecutionHandlerContext context) throws Exception;
 }

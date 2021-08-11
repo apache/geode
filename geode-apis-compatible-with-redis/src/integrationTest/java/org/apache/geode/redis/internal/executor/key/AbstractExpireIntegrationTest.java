@@ -17,32 +17,31 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractExpireIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private JedisCluster jedis;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
+  public void tearDown() {
+    flushAll();
     jedis.close();
   }
 
@@ -53,7 +52,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void givenInvalidTimestamp_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.EXPIRE, "key", "notInteger"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.EXPIRE, "key", "notInteger"))
         .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
@@ -68,7 +67,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -85,7 +84,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -103,7 +102,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -113,7 +112,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
   public void should_setExpiration_givenKeyTo_BitMapValue() {
 
     String key = "key";
-    Long offset = 1L;
+    long offset = 1L;
     String value = "0";
 
     jedis.setbit(key, offset, value);
@@ -121,7 +120,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isEqualTo(-1);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
     timeToLive = jedis.ttl(key);
 
     assertThat(timeToLive).isGreaterThanOrEqualTo(15);
@@ -135,7 +134,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String anotherValue = "anotherValue";
     jedis.set(key, value);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key, anotherValue);
 
@@ -151,7 +150,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String anotherValue = "anotherValue";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.getSet(key, anotherValue);
     Long timeToLive = jedis.ttl(key);
@@ -166,7 +165,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.del(key);
     jedis.set(key, value);
@@ -178,9 +177,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
   @Test
   public void callingSDIFFSTOREonExistingKey_ShouldClearExpirationTime() {
 
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -191,7 +190,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sdiffstore(key3, key1, key2);
 
@@ -201,9 +200,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void callingSINTERSTOREonExistingKey_ShouldClearExpirationTime() {
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -214,7 +213,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sinterstore(key3, key1, key2);
 
@@ -224,9 +223,9 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void callingSUNIONSTOREonExistingKey_ShouldClearExpirationTime() {
-    String key1 = "key1";
-    String key2 = "key2";
-    String key3 = "key3";
+    String key1 = "{user1}key1";
+    String key2 = "{user1}key2";
+    String key3 = "{user1}key3";
     String value1 = "value1";
     String value2 = "value2";
     String value3 = "value3";
@@ -237,7 +236,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     jedis.sadd(key2, value2);
 
     jedis.sadd(key3, value3);
-    jedis.expire(key3, 20);
+    jedis.expire(key3, 20L);
 
     jedis.sinterstore(key3, key1, key2);
 
@@ -251,7 +250,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String value = "0";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.incr(key);
 
@@ -268,7 +267,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
     jedis.hset(key, field, value);
 
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.hset(key, field, value2);
 
@@ -279,11 +278,11 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_Not_InUse() {
-    String key = "key";
-    String newKeyName = "new key name";
+    String key = "{user1}key";
+    String newKeyName = "{user1}new key name";
     String value = "value";
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.rename(key, newKeyName);
 
@@ -293,12 +292,12 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_ButNo_ExpirationSet() {
-    String key = "key";
-    String key2 = "key2";
+    String key = "{user1}key";
+    String key2 = "{user1}key2";
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key2, value);
 
@@ -310,15 +309,15 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
 
   @Test
   public void callingRENAMEonExistingKey_shouldTransferExpirationTimeToNewKeyName_GivenNewName_is_InUse_AndHas_ExpirationSet() {
-    String key = "key";
-    String key2 = "key2";
+    String key = "{user1}key";
+    String key2 = "{user1}key2";
     String value = "value";
 
     jedis.set(key, value);
-    jedis.expire(key, 20);
+    jedis.expire(key, 20L);
 
     jedis.set(key2, value);
-    jedis.expire(key2, 14);
+    jedis.expire(key2, 14L);
 
     jedis.rename(key, key2);
 
@@ -333,7 +332,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String value = "value";
     jedis.set(key, value);
 
-    Long expirationWasSet = jedis.expire(key, -5);
+    Long expirationWasSet = jedis.expire(key, -5L);
     assertThat(expirationWasSet).isEqualTo(1);
 
     Boolean keyExists = jedis.exists(key);
@@ -347,8 +346,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisPortSupplier
     String value = "value";
     jedis.set(key, value);
 
-    jedis.expire(key, 20);
-    jedis.expire(key, 20000);
+    jedis.expire(key, 20L);
+    jedis.expire(key, 20000L);
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isGreaterThan(21);

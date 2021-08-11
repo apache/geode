@@ -63,12 +63,14 @@ public class GfshConfig {
   }
 
   public boolean deleteHistoryFile() {
-    if (historyFileName == null)
+    if (historyFileName == null) {
       return true;
+    }
 
     File file = new File(historyFileName);
-    if (!file.exists())
+    if (!file.exists()) {
       return true;
+    }
 
     return file.delete();
   }

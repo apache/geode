@@ -65,9 +65,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.FailDeserializationFunction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
@@ -99,6 +101,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
   private VM locatorvm;
   private VM vm1;
+  private VM vm2;
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -114,12 +117,14 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
     locatorvm = VM.getVM(0);
     vm1 = VM.getVM(1);
+    vm2 = VM.getVM(2);
     Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
     final int port = locatorvm.invoke(() -> {
       System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
       return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
     });
     vm1.invoke(() -> locatorPort = port);
+    vm2.invoke(() -> locatorPort = port);
     locatorPort = port;
   }
 
@@ -463,6 +468,28 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     cyclicBarrier.await(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
     system.disconnect();
     future.get(getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+  }
+
+  @Test
+  public void testMemberJoinsAfterNewViewIsInstalled() {
+    vm1.invoke("join the cluster", () -> getSystem().getDistributedMember());
+    vm1.invoke(
+        () -> system.getDistributionManager().addMembershipListener(new MembershipListener() {
+          @Override
+          public void memberJoined(DistributionManager distributionManager,
+              InternalDistributedMember id) {
+            if (!distributionManager.getDistribution().getMembership().memberExists(id)) {
+              // if MemberJoinedEvent is triggered before the new view is installed,
+              // the test will throw an exception
+              FunctionService.onMember(id)
+                  .execute(new FailDeserializationFunction());
+            }
+          }
+        }));
+    // trigger MemberJoinedEvent
+    DistributedMember member =
+        vm2.invoke("join the cluster", () -> getSystem().getDistributedMember());
+    assertThat(member).isNotNull();
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {

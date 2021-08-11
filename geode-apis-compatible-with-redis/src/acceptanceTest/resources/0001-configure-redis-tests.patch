@@ -1,22 +1,3 @@
-From 15b752b4d129d4f303d033f0e6e63871355388cc Mon Sep 17 00:00:00 2001
-From: Hale Bales <hbales@vmware.com>
-Date: Wed, 22 Jul 2020 16:55:20 -0400
-Subject: [PATCH] configure redis tests
-
-change redis tests for compatibility with geode redis
----
- tests/support/server.tcl   |   7 +-
- tests/support/test.tcl     |   4 +-
- tests/test_helper.tcl      |  11 +-
- tests/unit/auth.tcl        |  13 +-
- tests/unit/expire.tcl      | 104 +++++++-------
- tests/unit/pubsub.tcl      | 336 +++++++++++++++++++++++----------------------
- tests/unit/quit.tcl        |   5 +-
- tests/unit/type/hash.tcl   |  52 +++----
- tests/unit/type/set.tcl    |   8 +-
- tests/unit/type/string.tcl |  42 +++---
- 10 files changed, 294 insertions(+), 288 deletions(-)
-
 diff --git a/tests/support/server.tcl b/tests/support/server.tcl
 index 5578f1fd6..55c0a5253 100644
 --- a/tests/support/server.tcl
@@ -113,8 +94,637 @@ index 633cda95c..03857205d 100644
  
  start_server {tags {"auth"} overrides {requirepass foobar}} {
      test {AUTH fails when a wrong password is given} {
+diff --git a/tests/unit/dump.tcl b/tests/unit/dump.tcl
+index 4c4e5d075..18bb694f2 100644
+--- a/tests/unit/dump.tcl
++++ b/tests/unit/dump.tcl
+@@ -41,34 +41,35 @@ start_server {tags {"dump"}} {
+         r set foo bar
+         set encoded [r dump foo]
+         set now [clock milliseconds]
+-        r debug set-active-expire 0
++#        r debug set-active-expire 0
+         r restore foo [expr $now-3000] $encoded absttl REPLACE
+-        catch {r debug object foo} e
+-        r debug set-active-expire 1
+-        set e
+-    } {ERR no such key}
+-
+-    test {RESTORE can set LRU} {
+-        r set foo bar
+-        set encoded [r dump foo]
+-        r del foo
+-        r config set maxmemory-policy allkeys-lru
+-        r restore foo 0 $encoded idletime 1000
+-        set idle [r object idletime foo]
+-        assert {$idle >= 1000 && $idle <= 1010}
+-        r get foo
+-    } {bar}
+-    
+-    test {RESTORE can set LFU} {
+-        r set foo bar
+-        set encoded [r dump foo]
+-        r del foo
+-        r config set maxmemory-policy allkeys-lfu
+-        r restore foo 0 $encoded freq 100
+-        set freq [r object freq foo]
+-        assert {$freq == 100}
++#        catch {r debug object foo} e
++#        r debug set-active-expire 1
++#        set e
+         r get foo
+-    } {bar}
++    } {}
++
++#    test {RESTORE can set LRU} {
++#        r set foo bar
++#        set encoded [r dump foo]
++#        r del foo
++#        r config set maxmemory-policy allkeys-lru
++#        r restore foo 0 $encoded idletime 1000
++#        set idle [r object idletime foo]
++#        assert {$idle >= 1000 && $idle <= 1010}
++#        r get foo
++#    } {bar}
++#    
++#    test {RESTORE can set LFU} {
++#        r set foo bar
++#        set encoded [r dump foo]
++#        r del foo
++#        r config set maxmemory-policy allkeys-lfu
++#        r restore foo 0 $encoded freq 100
++#        set freq [r object freq foo]
++#        assert {$freq == 100}
++#        r get foo
++#    } {bar}
+ 
+     test {RESTORE returns an error of the key already exists} {
+         r set foo bar
+@@ -97,283 +98,283 @@ start_server {tags {"dump"}} {
+         r dump nonexisting_key
+     } {}
+ 
+-    test {MIGRATE is caching connections} {
+-        # Note, we run this as first test so that the connection cache
+-        # is empty.
+-        set first [srv 0 client]
+-        r set key "Some Value"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert_match {*migrate_cached_sockets:0*} [r -1 info]
+-            r -1 migrate $second_host $second_port key 9 1000
+-            assert_match {*migrate_cached_sockets:1*} [r -1 info]
+-        }
+-    }
+-
+-    test {MIGRATE cached connections are released after some time} {
+-        after 15000
+-        assert_match {*migrate_cached_sockets:0*} [r info]
+-    }
+-
+-    test {MIGRATE is able to migrate a key between two instances} {
+-        set first [srv 0 client]
+-        r set key "Some Value"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key] == 1}
+-            assert {[$second exists key] == 0}
+-            set ret [r -1 migrate $second_host $second_port key 9 5000]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key] == 0}
+-            assert {[$second exists key] == 1}
+-            assert {[$second get key] eq {Some Value}}
+-            assert {[$second ttl key] == -1}
+-        }
+-    }
+-
+-    test {MIGRATE is able to copy a key between two instances} {
+-        set first [srv 0 client]
+-        r del list
+-        r lpush list a b c d
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists list] == 1}
+-            assert {[$second exists list] == 0}
+-            set ret [r -1 migrate $second_host $second_port list 9 5000 copy]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists list] == 1}
+-            assert {[$second exists list] == 1}
+-            assert {[$first lrange list 0 -1] eq [$second lrange list 0 -1]}
+-        }
+-    }
+-
+-    test {MIGRATE will not overwrite existing keys, unless REPLACE is used} {
+-        set first [srv 0 client]
+-        r del list
+-        r lpush list a b c d
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists list] == 1}
+-            assert {[$second exists list] == 0}
+-            $second set list somevalue
+-            catch {r -1 migrate $second_host $second_port list 9 5000 copy} e
+-            assert_match {ERR*} $e
+-            set res [r -1 migrate $second_host $second_port list 9 5000 copy replace]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists list] == 1}
+-            assert {[$second exists list] == 1}
+-            assert {[$first lrange list 0 -1] eq [$second lrange list 0 -1]}
+-        }
+-    }
+-
+-    test {MIGRATE propagates TTL correctly} {
+-        set first [srv 0 client]
+-        r set key "Some Value"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key] == 1}
+-            assert {[$second exists key] == 0}
+-            $first expire key 10
+-            set ret [r -1 migrate $second_host $second_port key 9 5000]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key] == 0}
+-            assert {[$second exists key] == 1}
+-            assert {[$second get key] eq {Some Value}}
+-            assert {[$second ttl key] >= 7 && [$second ttl key] <= 10}
+-        }
+-    }
+-
+-    test {MIGRATE can correctly transfer large values} {
+-        set first [srv 0 client]
+-        r del key
+-        for {set j 0} {$j < 40000} {incr j} {
+-            r rpush key 1 2 3 4 5 6 7 8 9 10
+-            r rpush key "item 1" "item 2" "item 3" "item 4" "item 5" \
+-                        "item 6" "item 7" "item 8" "item 9" "item 10"
+-        }
+-        assert {[string length [r dump key]] > (1024*64)}
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key] == 1}
+-            assert {[$second exists key] == 0}
+-            set ret [r -1 migrate $second_host $second_port key 9 10000]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key] == 0}
+-            assert {[$second exists key] == 1}
+-            assert {[$second ttl key] == -1}
+-            assert {[$second llen key] == 40000*20}
+-        }
+-    }
+-
+-    test {MIGRATE can correctly transfer hashes} {
+-        set first [srv 0 client]
+-        r del key
+-        r hmset key field1 "item 1" field2 "item 2" field3 "item 3" \
+-                    field4 "item 4" field5 "item 5" field6 "item 6"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key] == 1}
+-            assert {[$second exists key] == 0}
+-            set ret [r -1 migrate $second_host $second_port key 9 10000]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key] == 0}
+-            assert {[$second exists key] == 1}
+-            assert {[$second ttl key] == -1}
+-        }
+-    }
+-
+-    test {MIGRATE timeout actually works} {
+-        set first [srv 0 client]
+-        r set key "Some Value"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key] == 1}
+-            assert {[$second exists key] == 0}
+-
+-            set rd [redis_deferring_client]
+-            $rd debug sleep 1.0 ; # Make second server unable to reply.
+-            set e {}
+-            catch {r -1 migrate $second_host $second_port key 9 500} e
+-            assert_match {IOERR*} $e
+-        }
+-    }
+-
+-    test {MIGRATE can migrate multiple keys at once} {
+-        set first [srv 0 client]
+-        r set key1 "v1"
+-        r set key2 "v2"
+-        r set key3 "v3"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            assert {[$first exists key1] == 1}
+-            assert {[$second exists key1] == 0}
+-            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys key1 key2 key3]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key1] == 0}
+-            assert {[$first exists key2] == 0}
+-            assert {[$first exists key3] == 0}
+-            assert {[$second get key1] eq {v1}}
+-            assert {[$second get key2] eq {v2}}
+-            assert {[$second get key3] eq {v3}}
+-        }
+-    }
+-
+-    test {MIGRATE with multiple keys must have empty key arg} {
+-        catch {r MIGRATE 127.0.0.1 6379 NotEmpty 9 5000 keys a b c} e
+-        set e
+-    } {*empty string*}
+-
+-    test {MIGRATE with multiple keys migrate just existing ones} {
+-        set first [srv 0 client]
+-        r set key1 "v1"
+-        r set key2 "v2"
+-        r set key3 "v3"
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys nokey-1 nokey-2 nokey-2]
+-            assert {$ret eq {NOKEY}}
+-
+-            assert {[$first exists key1] == 1}
+-            assert {[$second exists key1] == 0}
+-            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys nokey-1 key1 nokey-2 key2 nokey-3 key3]
+-            assert {$ret eq {OK}}
+-            assert {[$first exists key1] == 0}
+-            assert {[$first exists key2] == 0}
+-            assert {[$first exists key3] == 0}
+-            assert {[$second get key1] eq {v1}}
+-            assert {[$second get key2] eq {v2}}
+-            assert {[$second get key3] eq {v3}}
+-        }
+-    }
+-
+-    test {MIGRATE with multiple keys: stress command rewriting} {
+-        set first [srv 0 client]
+-        r flushdb
+-        r mset a 1 b 2 c 3 d 4 c 5 e 6 f 7 g 8 h 9 i 10 l 11 m 12 n 13 o 14 p 15 q 16
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys a b c d e f g h i l m n o p q]
+-
+-            assert {[$first dbsize] == 0}
+-            assert {[$second dbsize] == 15}
+-        }
+-    }
+-
+-    test {MIGRATE with multiple keys: delete just ack keys} {
+-        set first [srv 0 client]
+-        r flushdb
+-        r mset a 1 b 2 c 3 d 4 c 5 e 6 f 7 g 8 h 9 i 10 l 11 m 12 n 13 o 14 p 15 q 16
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-
+-            $second mset c _ d _; # Two busy keys and no REPLACE used
+-
+-            catch {r -1 migrate $second_host $second_port "" 9 5000 keys a b c d e f g h i l m n o p q} e
+-
+-            assert {[$first dbsize] == 2}
+-            assert {[$second dbsize] == 15}
+-            assert {[$first exists c] == 1}
+-            assert {[$first exists d] == 1}
+-        }
+-    }
+-
+-    test {MIGRATE AUTH: correct and wrong password cases} {
+-        set first [srv 0 client]
+-        r del list
+-        r lpush list a b c d
+-        start_server {tags {"repl"}} {
+-            set second [srv 0 client]
+-            set second_host [srv 0 host]
+-            set second_port [srv 0 port]
+-            $second config set requirepass foobar
+-            $second auth foobar
+-
+-            assert {[$first exists list] == 1}
+-            assert {[$second exists list] == 0}
+-            set ret [r -1 migrate $second_host $second_port list 9 5000 AUTH foobar]
+-            assert {$ret eq {OK}}
+-            assert {[$second exists list] == 1}
+-            assert {[$second lrange list 0 -1] eq {d c b a}}
+-
+-            r -1 lpush list a b c d
+-            $second config set requirepass foobar2
+-            catch {r -1 migrate $second_host $second_port list 9 5000 AUTH foobar} err
+-            assert_match {*invalid password*} $err
+-        }
+-    }
++#    test {MIGRATE is caching connections} {
++#        # Note, we run this as first test so that the connection cache
++#        # is empty.
++#        set first [srv 0 client]
++#        r set key "Some Value"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert_match {*migrate_cached_sockets:0*} [r -1 info]
++#            r -1 migrate $second_host $second_port key 9 1000
++#            assert_match {*migrate_cached_sockets:1*} [r -1 info]
++#        }
++#    }
++#
++#    test {MIGRATE cached connections are released after some time} {
++#        after 15000
++#        assert_match {*migrate_cached_sockets:0*} [r info]
++#    }
++#
++#    test {MIGRATE is able to migrate a key between two instances} {
++#        set first [srv 0 client]
++#        r set key "Some Value"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key] == 1}
++#            assert {[$second exists key] == 0}
++#            set ret [r -1 migrate $second_host $second_port key 9 5000]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key] == 0}
++#            assert {[$second exists key] == 1}
++#            assert {[$second get key] eq {Some Value}}
++#            assert {[$second ttl key] == -1}
++#        }
++#    }
++#
++#    test {MIGRATE is able to copy a key between two instances} {
++#        set first [srv 0 client]
++#        r del list
++#        r lpush list a b c d
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists list] == 1}
++#            assert {[$second exists list] == 0}
++#            set ret [r -1 migrate $second_host $second_port list 9 5000 copy]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists list] == 1}
++#            assert {[$second exists list] == 1}
++#            assert {[$first lrange list 0 -1] eq [$second lrange list 0 -1]}
++#        }
++#    }
++#
++#    test {MIGRATE will not overwrite existing keys, unless REPLACE is used} {
++#        set first [srv 0 client]
++#        r del list
++#        r lpush list a b c d
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists list] == 1}
++#            assert {[$second exists list] == 0}
++#            $second set list somevalue
++#            catch {r -1 migrate $second_host $second_port list 9 5000 copy} e
++#            assert_match {ERR*} $e
++#            set res [r -1 migrate $second_host $second_port list 9 5000 copy replace]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists list] == 1}
++#            assert {[$second exists list] == 1}
++#            assert {[$first lrange list 0 -1] eq [$second lrange list 0 -1]}
++#        }
++#    }
++#
++#    test {MIGRATE propagates TTL correctly} {
++#        set first [srv 0 client]
++#        r set key "Some Value"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key] == 1}
++#            assert {[$second exists key] == 0}
++#            $first expire key 10
++#            set ret [r -1 migrate $second_host $second_port key 9 5000]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key] == 0}
++#            assert {[$second exists key] == 1}
++#            assert {[$second get key] eq {Some Value}}
++#            assert {[$second ttl key] >= 7 && [$second ttl key] <= 10}
++#        }
++#    }
++#
++#    test {MIGRATE can correctly transfer large values} {
++#        set first [srv 0 client]
++#        r del key
++#        for {set j 0} {$j < 40000} {incr j} {
++#            r rpush key 1 2 3 4 5 6 7 8 9 10
++#            r rpush key "item 1" "item 2" "item 3" "item 4" "item 5" \
++#                        "item 6" "item 7" "item 8" "item 9" "item 10"
++#        }
++#        assert {[string length [r dump key]] > (1024*64)}
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key] == 1}
++#            assert {[$second exists key] == 0}
++#            set ret [r -1 migrate $second_host $second_port key 9 10000]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key] == 0}
++#            assert {[$second exists key] == 1}
++#            assert {[$second ttl key] == -1}
++#            assert {[$second llen key] == 40000*20}
++#        }
++#    }
++#
++#    test {MIGRATE can correctly transfer hashes} {
++#        set first [srv 0 client]
++#        r del key
++#        r hmset key field1 "item 1" field2 "item 2" field3 "item 3" \
++#                    field4 "item 4" field5 "item 5" field6 "item 6"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key] == 1}
++#            assert {[$second exists key] == 0}
++#            set ret [r -1 migrate $second_host $second_port key 9 10000]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key] == 0}
++#            assert {[$second exists key] == 1}
++#            assert {[$second ttl key] == -1}
++#        }
++#    }
++#
++#    test {MIGRATE timeout actually works} {
++#        set first [srv 0 client]
++#        r set key "Some Value"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key] == 1}
++#            assert {[$second exists key] == 0}
++#
++#            set rd [redis_deferring_client]
++#            $rd debug sleep 1.0 ; # Make second server unable to reply.
++#            set e {}
++#            catch {r -1 migrate $second_host $second_port key 9 500} e
++#            assert_match {IOERR*} $e
++#        }
++#    }
++#
++#    test {MIGRATE can migrate multiple keys at once} {
++#        set first [srv 0 client]
++#        r set key1 "v1"
++#        r set key2 "v2"
++#        r set key3 "v3"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            assert {[$first exists key1] == 1}
++#            assert {[$second exists key1] == 0}
++#            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys key1 key2 key3]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key1] == 0}
++#            assert {[$first exists key2] == 0}
++#            assert {[$first exists key3] == 0}
++#            assert {[$second get key1] eq {v1}}
++#            assert {[$second get key2] eq {v2}}
++#            assert {[$second get key3] eq {v3}}
++#        }
++#    }
++#
++#    test {MIGRATE with multiple keys must have empty key arg} {
++#        catch {r MIGRATE 127.0.0.1 6379 NotEmpty 9 5000 keys a b c} e
++#        set e
++#    } {*empty string*}
++#
++#    test {MIGRATE with multiple keys migrate just existing ones} {
++#        set first [srv 0 client]
++#        r set key1 "v1"
++#        r set key2 "v2"
++#        r set key3 "v3"
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys nokey-1 nokey-2 nokey-2]
++#            assert {$ret eq {NOKEY}}
++#
++#            assert {[$first exists key1] == 1}
++#            assert {[$second exists key1] == 0}
++#            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys nokey-1 key1 nokey-2 key2 nokey-3 key3]
++#            assert {$ret eq {OK}}
++#            assert {[$first exists key1] == 0}
++#            assert {[$first exists key2] == 0}
++#            assert {[$first exists key3] == 0}
++#            assert {[$second get key1] eq {v1}}
++#            assert {[$second get key2] eq {v2}}
++#            assert {[$second get key3] eq {v3}}
++#        }
++#    }
++#
++#    test {MIGRATE with multiple keys: stress command rewriting} {
++#        set first [srv 0 client]
++#        r flushdb
++#        r mset a 1 b 2 c 3 d 4 c 5 e 6 f 7 g 8 h 9 i 10 l 11 m 12 n 13 o 14 p 15 q 16
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            set ret [r -1 migrate $second_host $second_port "" 9 5000 keys a b c d e f g h i l m n o p q]
++#
++#            assert {[$first dbsize] == 0}
++#            assert {[$second dbsize] == 15}
++#        }
++#    }
++#
++#    test {MIGRATE with multiple keys: delete just ack keys} {
++#        set first [srv 0 client]
++#        r flushdb
++#        r mset a 1 b 2 c 3 d 4 c 5 e 6 f 7 g 8 h 9 i 10 l 11 m 12 n 13 o 14 p 15 q 16
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#
++#            $second mset c _ d _; # Two busy keys and no REPLACE used
++#
++#            catch {r -1 migrate $second_host $second_port "" 9 5000 keys a b c d e f g h i l m n o p q} e
++#
++#            assert {[$first dbsize] == 2}
++#            assert {[$second dbsize] == 15}
++#            assert {[$first exists c] == 1}
++#            assert {[$first exists d] == 1}
++#        }
++#    }
++#
++#    test {MIGRATE AUTH: correct and wrong password cases} {
++#        set first [srv 0 client]
++#        r del list
++#        r lpush list a b c d
++#        start_server {tags {"repl"}} {
++#            set second [srv 0 client]
++#            set second_host [srv 0 host]
++#            set second_port [srv 0 port]
++#            $second config set requirepass foobar
++#            $second auth foobar
++#
++#            assert {[$first exists list] == 1}
++#            assert {[$second exists list] == 0}
++#            set ret [r -1 migrate $second_host $second_port list 9 5000 AUTH foobar]
++#            assert {$ret eq {OK}}
++#            assert {[$second exists list] == 1}
++#            assert {[$second lrange list 0 -1] eq {d c b a}}
++#
++#            r -1 lpush list a b c d
++#            $second config set requirepass foobar2
++#            catch {r -1 migrate $second_host $second_port list 9 5000 AUTH foobar} err
++#            assert_match {*invalid password*} $err
++#        }
++#    }
+ }
 diff --git a/tests/unit/expire.tcl b/tests/unit/expire.tcl
-index de24eabed..aeeb1da7f 100644
+index de24eabed..533eca9ac 100644
 --- a/tests/unit/expire.tcl
 +++ b/tests/unit/expire.tcl
 @@ -7,7 +7,7 @@ start_server {tags {"expire"}} {
@@ -126,20 +736,22 @@ index de24eabed..aeeb1da7f 100644
  
      test {EXPIRE - It should be still possible to read 'x'} {
          r get x
-@@ -22,10 +22,10 @@ start_server {tags {"expire"}} {
+@@ -22,11 +22,11 @@ start_server {tags {"expire"}} {
  
      test {EXPIRE - write on expire should work} {
          r del x
 -        r lpush x foo
-+        r sadd x foo
++        r set x foo
          r expire x 1000
 -        r lpush x bar
 -        r lrange x 0 -1
-+        r sadd x bar
-+        r smembers x
-     } {bar foo}
+-    } {bar foo}
++        r set x bar
++        r get x
++    } {bar}
  
      test {EXPIREAT - Check for EXPIRE alike behavior} {
+         r del x
 @@ -56,16 +56,16 @@ start_server {tags {"expire"}} {
          } {}
      }
@@ -162,18 +774,24 @@ index de24eabed..aeeb1da7f 100644
  
      test {PERSIST returns 0 against non existing or non volatile keys} {
          r set x foo
-@@ -154,39 +154,39 @@ start_server {tags {"expire"}} {
-         set size1 [r dbsize]
-         # Redis expires random keys ten times every second so we are
-         # fairly sure that all the three keys should be evicted after
+@@ -146,47 +146,47 @@ start_server {tags {"expire"}} {
+         list [r ttl x] [r pttl x]
+     } {-2 -2}
+ 
+-    test {Redis should actively expire keys incrementally} {
+-        r flushdb
+-        r psetex key1 500 a
+-        r psetex key2 500 a
+-        r psetex key3 500 a
+-        set size1 [r dbsize]
+-        # Redis expires random keys ten times every second so we are
+-        # fairly sure that all the three keys should be evicted after
 -        # one second.
 -        after 1000
-+        # two seconds.
-+        after 2000
-         set size2 [r dbsize]
-         list $size1 $size2
-     } {3 0}
- 
+-        set size2 [r dbsize]
+-        list $size1 $size2
+-    } {3 0}
+-
 -    test {Redis should lazy expire keys} {
 -        r flushdb
 -        r debug set-active-expire 0
@@ -201,6 +819,20 @@ index de24eabed..aeeb1da7f 100644
 -        r debug set-active-expire 1
 -        r exists foo
 -    } {0}
++#    test {Redis should actively expire keys incrementally} {
++#        r flushdb
++#        r psetex key1 500 a
++#        r psetex key2 500 a
++#        r psetex key3 500 a
++#        set size1 [r dbsize]
++#        # Redis expires random keys ten times every second so we are
++#        # fairly sure that all the three keys should be evicted after
++#        # one second.
++#        after 1000
++#        set size2 [r dbsize]
++#        list $size1 $size2
++#    } {3 0}
++
 + #   test {Redis should lazy expire keys} {
 + #       r flushdb
 + #       r debug set-active-expire 0
@@ -265,7 +897,7 @@ index de24eabed..aeeb1da7f 100644
 +#    }
  }
 diff --git a/tests/unit/pubsub.tcl b/tests/unit/pubsub.tcl
-index 9c7a43bf0..b81618fe3 100644
+index 9c7a43bf0..16173b654 100644
 --- a/tests/unit/pubsub.tcl
 +++ b/tests/unit/pubsub.tcl
 @@ -107,6 +107,7 @@ start_server {tags {"pubsub"}} {
@@ -284,19 +916,6 @@ index 9c7a43bf0..b81618fe3 100644
          assert_equal 0 [r publish chan1.hi hello]
          assert_equal 0 [r publish chan2.hi hello]
          assert_equal 0 [r publish chan3.hi hello]
-@@ -196,9 +198,9 @@ start_server {tags {"pubsub"}} {
-         $rd1 close
-     }
- 
--    test "NUMSUB returns numbers, not strings (#1561)" {
--        r pubsub numsub abc def
--    } {abc 0 def 0}
-+#    test "NUMSUB returns numbers, not strings (#1561)" {
-+#        r pubsub numsub abc def
-+#    } {abc 0 def 0}
- 
-     test "Mix SUBSCRIBE and PSUBSCRIBE" {
-         set rd1 [redis_deferring_client]
 @@ -223,168 +225,168 @@ start_server {tags {"pubsub"}} {
          concat $reply1 $reply2
      } {punsubscribe {} 0 unsubscribe {} 0}
@@ -656,7 +1275,7 @@ index 4cf440abf..990513d50 100644
          r write [format_command set foo [string repeat "x" 1024]]
          r flush
 diff --git a/tests/unit/type/hash.tcl b/tests/unit/type/hash.tcl
-index d2c679d32..f354f5953 100644
+index d2c679d32..6d17de48b 100644
 --- a/tests/unit/type/hash.tcl
 +++ b/tests/unit/type/hash.tcl
 @@ -252,10 +252,10 @@ start_server {tags {"hash"}} {
@@ -803,6 +1422,1771 @@ index 7122fd987..12c323fc2 100644
          assert_error "WRONGTYPE*" {r setrange mykey 0 bar}
      }
  
--- 
-2.15.1
+diff --git a/tests/unit/type/zset.tcl b/tests/unit/type/zset.tcl
+index a8c817f6e..df2b738ed 100644
+--- a/tests/unit/type/zset.tcl
++++ b/tests/unit/type/zset.tcl
+@@ -7,22 +7,22 @@ start_server {tags {"zset"}} {
+     }
+ 
+     proc basics {encoding} {
+-        if {$encoding == "ziplist"} {
+-            r config set zset-max-ziplist-entries 128
+-            r config set zset-max-ziplist-value 64
+-        } elseif {$encoding == "skiplist"} {
+-            r config set zset-max-ziplist-entries 0
+-            r config set zset-max-ziplist-value 0
+-        } else {
+-            puts "Unknown sorted set encoding"
+-            exit
+-        }
+-
+-        test "Check encoding - $encoding" {
+-            r del ztmp
+-            r zadd ztmp 10 x
+-            assert_encoding $encoding ztmp
+-        }
++        # if {$encoding == "ziplist"} {
++        #     r config set zset-max-ziplist-entries 128
++        #     r config set zset-max-ziplist-value 64
++        # } elseif {$encoding == "skiplist"} {
++        #     r config set zset-max-ziplist-entries 0
++        #     r config set zset-max-ziplist-value 0
++        # } else {
++        #     puts "Unknown sorted set encoding"
++        #     exit
++        # }
++
++        # test "Check encoding - $encoding" {
++        #     r del ztmp
++        #     r zadd ztmp 10 x
++        #     assert_encoding $encoding ztmp
++        # }
+ 
+         test "ZSET basic ZADD and score update - $encoding" {
+             r del ztmp
+@@ -218,35 +218,35 @@ start_server {tags {"zset"}} {
+             assert_equal {a 1 b 2 c 3 d 4} [r zrange ztmp 0 -1 withscores]
+         }
+ 
+-        test "ZREVRANGE basics - $encoding" {
+-            r del ztmp
+-            r zadd ztmp 1 a
+-            r zadd ztmp 2 b
+-            r zadd ztmp 3 c
+-            r zadd ztmp 4 d
+-
+-            assert_equal {d c b a} [r zrevrange ztmp 0 -1]
+-            assert_equal {d c b} [r zrevrange ztmp 0 -2]
+-            assert_equal {c b a} [r zrevrange ztmp 1 -1]
+-            assert_equal {c b} [r zrevrange ztmp 1 -2]
+-            assert_equal {b a} [r zrevrange ztmp -2 -1]
+-            assert_equal {b} [r zrevrange ztmp -2 -2]
+-
+-            # out of range start index
+-            assert_equal {d c b} [r zrevrange ztmp -5 2]
+-            assert_equal {d c} [r zrevrange ztmp -5 1]
+-            assert_equal {} [r zrevrange ztmp 5 -1]
+-            assert_equal {} [r zrevrange ztmp 5 -2]
+-
+-            # out of range end index
+-            assert_equal {d c b a} [r zrevrange ztmp 0 5]
+-            assert_equal {c b a} [r zrevrange ztmp 1 5]
+-            assert_equal {} [r zrevrange ztmp 0 -5]
+-            assert_equal {} [r zrevrange ztmp 1 -5]
+-
+-            # withscores
+-            assert_equal {d 4 c 3 b 2 a 1} [r zrevrange ztmp 0 -1 withscores]
+-        }
++        # test "ZREVRANGE basics - $encoding" {
++        #     r del ztmp
++        #     r zadd ztmp 1 a
++        #     r zadd ztmp 2 b
++        #     r zadd ztmp 3 c
++        #     r zadd ztmp 4 d
++
++        #     assert_equal {d c b a} [r zrevrange ztmp 0 -1]
++        #     assert_equal {d c b} [r zrevrange ztmp 0 -2]
++        #     assert_equal {c b a} [r zrevrange ztmp 1 -1]
++        #     assert_equal {c b} [r zrevrange ztmp 1 -2]
++        #     assert_equal {b a} [r zrevrange ztmp -2 -1]
++        #     assert_equal {b} [r zrevrange ztmp -2 -2]
++
++        #     # out of range start index
++        #     assert_equal {d c b} [r zrevrange ztmp -5 2]
++        #     assert_equal {d c} [r zrevrange ztmp -5 1]
++        #     assert_equal {} [r zrevrange ztmp 5 -1]
++        #     assert_equal {} [r zrevrange ztmp 5 -2]
++
++        #     # out of range end index
++        #     assert_equal {d c b a} [r zrevrange ztmp 0 5]
++        #     assert_equal {c b a} [r zrevrange ztmp 1 5]
++        #     assert_equal {} [r zrevrange ztmp 0 -5]
++        #     assert_equal {} [r zrevrange ztmp 1 -5]
++
++        #     # withscores
++        #     assert_equal {d 4 c 3 b 2 a 1} [r zrevrange ztmp 0 -1 withscores]
++        # }
+ 
+         test "ZRANK/ZREVRANK basics - $encoding" {
+             r del zranktmp
+@@ -257,10 +257,10 @@ start_server {tags {"zset"}} {
+             assert_equal 1 [r zrank zranktmp y]
+             assert_equal 2 [r zrank zranktmp z]
+             assert_equal "" [r zrank zranktmp foo]
+-            assert_equal 2 [r zrevrank zranktmp x]
+-            assert_equal 1 [r zrevrank zranktmp y]
+-            assert_equal 0 [r zrevrank zranktmp z]
+-            assert_equal "" [r zrevrank zranktmp foo]
++            # assert_equal 2 [r zrevrank zranktmp x]
++            # assert_equal 1 [r zrevrank zranktmp y]
++            # assert_equal 0 [r zrevrank zranktmp z]
++            # assert_equal "" [r zrevrank zranktmp foo]
+         }
+ 
+         test "ZRANK - after deletion - $encoding" {
+@@ -300,505 +300,505 @@ start_server {tags {"zset"}} {
+             create_zset zset {-inf a 1 b 2 c 3 d 4 e 5 f +inf g}
+         }
+ 
+-        test "ZRANGEBYSCORE/ZREVRANGEBYSCORE/ZCOUNT basics" {
+-            create_default_zset
+-
+-            # inclusive range
+-            assert_equal {a b c} [r zrangebyscore zset -inf 2]
+-            assert_equal {b c d} [r zrangebyscore zset 0 3]
+-            assert_equal {d e f} [r zrangebyscore zset 3 6]
+-            assert_equal {e f g} [r zrangebyscore zset 4 +inf]
+-            assert_equal {c b a} [r zrevrangebyscore zset 2 -inf]
+-            assert_equal {d c b} [r zrevrangebyscore zset 3 0]
+-            assert_equal {f e d} [r zrevrangebyscore zset 6 3]
+-            assert_equal {g f e} [r zrevrangebyscore zset +inf 4]
+-            assert_equal 3 [r zcount zset 0 3]
+-
+-            # exclusive range
+-            assert_equal {b}   [r zrangebyscore zset (-inf (2]
+-            assert_equal {b c} [r zrangebyscore zset (0 (3]
+-            assert_equal {e f} [r zrangebyscore zset (3 (6]
+-            assert_equal {f}   [r zrangebyscore zset (4 (+inf]
+-            assert_equal {b}   [r zrevrangebyscore zset (2 (-inf]
+-            assert_equal {c b} [r zrevrangebyscore zset (3 (0]
+-            assert_equal {f e} [r zrevrangebyscore zset (6 (3]
+-            assert_equal {f}   [r zrevrangebyscore zset (+inf (4]
+-            assert_equal 2 [r zcount zset (0 (3]
+-
+-            # test empty ranges
+-            r zrem zset a
+-            r zrem zset g
+-
+-            # inclusive
+-            assert_equal {} [r zrangebyscore zset 4 2]
+-            assert_equal {} [r zrangebyscore zset 6 +inf]
+-            assert_equal {} [r zrangebyscore zset -inf -6]
+-            assert_equal {} [r zrevrangebyscore zset +inf 6]
+-            assert_equal {} [r zrevrangebyscore zset -6 -inf]
+-
+-            # exclusive
+-            assert_equal {} [r zrangebyscore zset (4 (2]
+-            assert_equal {} [r zrangebyscore zset 2 (2]
+-            assert_equal {} [r zrangebyscore zset (2 2]
+-            assert_equal {} [r zrangebyscore zset (6 (+inf]
+-            assert_equal {} [r zrangebyscore zset (-inf (-6]
+-            assert_equal {} [r zrevrangebyscore zset (+inf (6]
+-            assert_equal {} [r zrevrangebyscore zset (-6 (-inf]
+-
+-            # empty inner range
+-            assert_equal {} [r zrangebyscore zset 2.4 2.6]
+-            assert_equal {} [r zrangebyscore zset (2.4 2.6]
+-            assert_equal {} [r zrangebyscore zset 2.4 (2.6]
+-            assert_equal {} [r zrangebyscore zset (2.4 (2.6]
+-        }
+-
+-        test "ZRANGEBYSCORE with WITHSCORES" {
+-            create_default_zset
+-            assert_equal {b 1 c 2 d 3} [r zrangebyscore zset 0 3 withscores]
+-            assert_equal {d 3 c 2 b 1} [r zrevrangebyscore zset 3 0 withscores]
+-        }
+-
+-        test "ZRANGEBYSCORE with LIMIT" {
+-            create_default_zset
+-            assert_equal {b c}   [r zrangebyscore zset 0 10 LIMIT 0 2]
+-            assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 3]
+-            assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 10]
+-            assert_equal {}      [r zrangebyscore zset 0 10 LIMIT 20 10]
+-            assert_equal {f e}   [r zrevrangebyscore zset 10 0 LIMIT 0 2]
+-            assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 3]
+-            assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 10]
+-            assert_equal {}      [r zrevrangebyscore zset 10 0 LIMIT 20 10]
+-        }
+-
+-        test "ZRANGEBYSCORE with LIMIT and WITHSCORES" {
+-            create_default_zset
+-            assert_equal {e 4 f 5} [r zrangebyscore zset 2 5 LIMIT 2 3 WITHSCORES]
+-            assert_equal {d 3 c 2} [r zrevrangebyscore zset 5 2 LIMIT 2 3 WITHSCORES]
+-        }
+-
+-        test "ZRANGEBYSCORE with non-value min or max" {
+-            assert_error "*not*float*" {r zrangebyscore fooz str 1}
+-            assert_error "*not*float*" {r zrangebyscore fooz 1 str}
+-            assert_error "*not*float*" {r zrangebyscore fooz 1 NaN}
+-        }
+-
+-        proc create_default_lex_zset {} {
+-            create_zset zset {0 alpha 0 bar 0 cool 0 down
+-                              0 elephant 0 foo 0 great 0 hill
+-                              0 omega}
+-        }
+-
+-        test "ZRANGEBYLEX/ZREVRANGEBYLEX/ZLEXCOUNT basics" {
+-            create_default_lex_zset
+-
+-            # inclusive range
+-            assert_equal {alpha bar cool} [r zrangebylex zset - \[cool]
+-            assert_equal {bar cool down} [r zrangebylex zset \[bar \[down]
+-            assert_equal {great hill omega} [r zrangebylex zset \[g +]
+-            assert_equal {cool bar alpha} [r zrevrangebylex zset \[cool -]
+-            assert_equal {down cool bar} [r zrevrangebylex zset \[down \[bar]
+-            assert_equal {omega hill great foo elephant down} [r zrevrangebylex zset + \[d]
+-            assert_equal 3 [r zlexcount zset \[ele \[h]
+-
+-            # exclusive range
+-            assert_equal {alpha bar} [r zrangebylex zset - (cool]
+-            assert_equal {cool} [r zrangebylex zset (bar (down]
+-            assert_equal {hill omega} [r zrangebylex zset (great +]
+-            assert_equal {bar alpha} [r zrevrangebylex zset (cool -]
+-            assert_equal {cool} [r zrevrangebylex zset (down (bar]
+-            assert_equal {omega hill} [r zrevrangebylex zset + (great]
+-            assert_equal 2 [r zlexcount zset (ele (great]
+-
+-            # inclusive and exclusive
+-            assert_equal {} [r zrangebylex zset (az (b]
+-            assert_equal {} [r zrangebylex zset (z +]
+-            assert_equal {} [r zrangebylex zset - \[aaaa]
+-            assert_equal {} [r zrevrangebylex zset \[elez \[elex]
+-            assert_equal {} [r zrevrangebylex zset (hill (omega]
+-        }
++        # test "ZRANGEBYSCORE/ZREVRANGEBYSCORE/ZCOUNT basics" {
++        #     create_default_zset
++
++        #     # inclusive range
++        #     assert_equal {a b c} [r zrangebyscore zset -inf 2]
++        #     assert_equal {b c d} [r zrangebyscore zset 0 3]
++        #     assert_equal {d e f} [r zrangebyscore zset 3 6]
++        #     assert_equal {e f g} [r zrangebyscore zset 4 +inf]
++        #     assert_equal {c b a} [r zrevrangebyscore zset 2 -inf]
++        #     assert_equal {d c b} [r zrevrangebyscore zset 3 0]
++        #     assert_equal {f e d} [r zrevrangebyscore zset 6 3]
++        #     assert_equal {g f e} [r zrevrangebyscore zset +inf 4]
++        #     assert_equal 3 [r zcount zset 0 3]
++
++        #     # exclusive range
++        #     assert_equal {b}   [r zrangebyscore zset (-inf (2]
++        #     assert_equal {b c} [r zrangebyscore zset (0 (3]
++        #     assert_equal {e f} [r zrangebyscore zset (3 (6]
++        #     assert_equal {f}   [r zrangebyscore zset (4 (+inf]
++        #     assert_equal {b}   [r zrevrangebyscore zset (2 (-inf]
++        #     assert_equal {c b} [r zrevrangebyscore zset (3 (0]
++        #     assert_equal {f e} [r zrevrangebyscore zset (6 (3]
++        #     assert_equal {f}   [r zrevrangebyscore zset (+inf (4]
++        #     assert_equal 2 [r zcount zset (0 (3]
++
++        #     # test empty ranges
++        #     r zrem zset a
++        #     r zrem zset g
++
++        #     # inclusive
++        #     assert_equal {} [r zrangebyscore zset 4 2]
++        #     assert_equal {} [r zrangebyscore zset 6 +inf]
++        #     assert_equal {} [r zrangebyscore zset -inf -6]
++        #     assert_equal {} [r zrevrangebyscore zset +inf 6]
++        #     assert_equal {} [r zrevrangebyscore zset -6 -inf]
++
++        #     # exclusive
++        #     assert_equal {} [r zrangebyscore zset (4 (2]
++        #     assert_equal {} [r zrangebyscore zset 2 (2]
++        #     assert_equal {} [r zrangebyscore zset (2 2]
++        #     assert_equal {} [r zrangebyscore zset (6 (+inf]
++        #     assert_equal {} [r zrangebyscore zset (-inf (-6]
++        #     assert_equal {} [r zrevrangebyscore zset (+inf (6]
++        #     assert_equal {} [r zrevrangebyscore zset (-6 (-inf]
++
++        #     # empty inner range
++        #     assert_equal {} [r zrangebyscore zset 2.4 2.6]
++        #     assert_equal {} [r zrangebyscore zset (2.4 2.6]
++        #     assert_equal {} [r zrangebyscore zset 2.4 (2.6]
++        #     assert_equal {} [r zrangebyscore zset (2.4 (2.6]
++        # }
++
++        # test "ZRANGEBYSCORE with WITHSCORES" {
++        #     create_default_zset
++        #     assert_equal {b 1 c 2 d 3} [r zrangebyscore zset 0 3 withscores]
++        #     assert_equal {d 3 c 2 b 1} [r zrevrangebyscore zset 3 0 withscores]
++        # }
++
++        # test "ZRANGEBYSCORE with LIMIT" {
++        #     create_default_zset
++        #     assert_equal {b c}   [r zrangebyscore zset 0 10 LIMIT 0 2]
++        #     assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 3]
++        #     assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 10]
++        #     assert_equal {}      [r zrangebyscore zset 0 10 LIMIT 20 10]
++        #     assert_equal {f e}   [r zrevrangebyscore zset 10 0 LIMIT 0 2]
++        #     assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 3]
++        #     assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 10]
++        #     assert_equal {}      [r zrevrangebyscore zset 10 0 LIMIT 20 10]
++        # }
++
++        # test "ZRANGEBYSCORE with LIMIT and WITHSCORES" {
++        #     create_default_zset
++        #     assert_equal {e 4 f 5} [r zrangebyscore zset 2 5 LIMIT 2 3 WITHSCORES]
++        #     assert_equal {d 3 c 2} [r zrevrangebyscore zset 5 2 LIMIT 2 3 WITHSCORES]
++        # }
++
++        # test "ZRANGEBYSCORE with non-value min or max" {
++        #     assert_error "*not*float*" {r zrangebyscore fooz str 1}
++        #     assert_error "*not*float*" {r zrangebyscore fooz 1 str}
++        #     assert_error "*not*float*" {r zrangebyscore fooz 1 NaN}
++        # }
++
++        # proc create_default_lex_zset {} {
++        #     create_zset zset {0 alpha 0 bar 0 cool 0 down
++        #                       0 elephant 0 foo 0 great 0 hill
++        #                       0 omega}
++        # }
++
++        # test "ZRANGEBYLEX/ZREVRANGEBYLEX/ZLEXCOUNT basics" {
++        #     create_default_lex_zset
++
++        #     # inclusive range
++        #     assert_equal {alpha bar cool} [r zrangebylex zset - \[cool]
++        #     assert_equal {bar cool down} [r zrangebylex zset \[bar \[down]
++        #     assert_equal {great hill omega} [r zrangebylex zset \[g +]
++        #     assert_equal {cool bar alpha} [r zrevrangebylex zset \[cool -]
++        #     assert_equal {down cool bar} [r zrevrangebylex zset \[down \[bar]
++        #     assert_equal {omega hill great foo elephant down} [r zrevrangebylex zset + \[d]
++        #     assert_equal 3 [r zlexcount zset \[ele \[h]
++
++        #     # exclusive range
++        #     assert_equal {alpha bar} [r zrangebylex zset - (cool]
++        #     assert_equal {cool} [r zrangebylex zset (bar (down]
++        #     assert_equal {hill omega} [r zrangebylex zset (great +]
++        #     assert_equal {bar alpha} [r zrevrangebylex zset (cool -]
++        #     assert_equal {cool} [r zrevrangebylex zset (down (bar]
++        #     assert_equal {omega hill} [r zrevrangebylex zset + (great]
++        #     assert_equal 2 [r zlexcount zset (ele (great]
++
++        #     # inclusive and exclusive
++        #     assert_equal {} [r zrangebylex zset (az (b]
++        #     assert_equal {} [r zrangebylex zset (z +]
++        #     assert_equal {} [r zrangebylex zset - \[aaaa]
++        #     assert_equal {} [r zrevrangebylex zset \[elez \[elex]
++        #     assert_equal {} [r zrevrangebylex zset (hill (omega]
++        # }
+         
+-        test "ZLEXCOUNT advanced" {
+-            create_default_lex_zset
++        # test "ZLEXCOUNT advanced" {
++        #     create_default_lex_zset
+     
+-            assert_equal 9 [r zlexcount zset - +]
+-            assert_equal 0 [r zlexcount zset + -]
+-            assert_equal 0 [r zlexcount zset + \[c]
+-            assert_equal 0 [r zlexcount zset \[c -]
+-            assert_equal 8 [r zlexcount zset \[bar +]
+-            assert_equal 5 [r zlexcount zset \[bar \[foo]
+-            assert_equal 4 [r zlexcount zset \[bar (foo]
+-            assert_equal 4 [r zlexcount zset (bar \[foo]
+-            assert_equal 3 [r zlexcount zset (bar (foo]
+-            assert_equal 5 [r zlexcount zset - (foo]
+-            assert_equal 1 [r zlexcount zset (maxstring +]
+-        }
+-
+-        test "ZRANGEBYSLEX with LIMIT" {
+-            create_default_lex_zset
+-            assert_equal {alpha bar} [r zrangebylex zset - \[cool LIMIT 0 2]
+-            assert_equal {bar cool} [r zrangebylex zset - \[cool LIMIT 1 2]
+-            assert_equal {} [r zrangebylex zset \[bar \[down LIMIT 0 0]
+-            assert_equal {} [r zrangebylex zset \[bar \[down LIMIT 2 0]
+-            assert_equal {bar} [r zrangebylex zset \[bar \[down LIMIT 0 1]
+-            assert_equal {cool} [r zrangebylex zset \[bar \[down LIMIT 1 1]
+-            assert_equal {bar cool down} [r zrangebylex zset \[bar \[down LIMIT 0 100]
+-            assert_equal {omega hill great foo elephant} [r zrevrangebylex zset + \[d LIMIT 0 5]
+-            assert_equal {omega hill great foo} [r zrevrangebylex zset + \[d LIMIT 0 4]
+-        }
+-
+-        test "ZRANGEBYLEX with invalid lex range specifiers" {
+-            assert_error "*not*string*" {r zrangebylex fooz foo bar}
+-            assert_error "*not*string*" {r zrangebylex fooz \[foo bar}
+-            assert_error "*not*string*" {r zrangebylex fooz foo \[bar}
+-            assert_error "*not*string*" {r zrangebylex fooz +x \[bar}
+-            assert_error "*not*string*" {r zrangebylex fooz -x \[bar}
+-        }
+-
+-        test "ZREMRANGEBYSCORE basics" {
+-            proc remrangebyscore {min max} {
+-                create_zset zset {1 a 2 b 3 c 4 d 5 e}
+-                assert_equal 1 [r exists zset]
+-                r zremrangebyscore zset $min $max
+-            }
+-
+-            # inner range
+-            assert_equal 3 [remrangebyscore 2 4]
+-            assert_equal {a e} [r zrange zset 0 -1]
+-
+-            # start underflow
+-            assert_equal 1 [remrangebyscore -10 1]
+-            assert_equal {b c d e} [r zrange zset 0 -1]
+-
+-            # end overflow
+-            assert_equal 1 [remrangebyscore 5 10]
+-            assert_equal {a b c d} [r zrange zset 0 -1]
+-
+-            # switch min and max
+-            assert_equal 0 [remrangebyscore 4 2]
+-            assert_equal {a b c d e} [r zrange zset 0 -1]
+-
+-            # -inf to mid
+-            assert_equal 3 [remrangebyscore -inf 3]
+-            assert_equal {d e} [r zrange zset 0 -1]
+-
+-            # mid to +inf
+-            assert_equal 3 [remrangebyscore 3 +inf]
+-            assert_equal {a b} [r zrange zset 0 -1]
+-
+-            # -inf to +inf
+-            assert_equal 5 [remrangebyscore -inf +inf]
+-            assert_equal {} [r zrange zset 0 -1]
+-
+-            # exclusive min
+-            assert_equal 4 [remrangebyscore (1 5]
+-            assert_equal {a} [r zrange zset 0 -1]
+-            assert_equal 3 [remrangebyscore (2 5]
+-            assert_equal {a b} [r zrange zset 0 -1]
+-
+-            # exclusive max
+-            assert_equal 4 [remrangebyscore 1 (5]
+-            assert_equal {e} [r zrange zset 0 -1]
+-            assert_equal 3 [remrangebyscore 1 (4]
+-            assert_equal {d e} [r zrange zset 0 -1]
+-
+-            # exclusive min and max
+-            assert_equal 3 [remrangebyscore (1 (5]
+-            assert_equal {a e} [r zrange zset 0 -1]
+-
+-            # destroy when empty
+-            assert_equal 5 [remrangebyscore 1 5]
+-            assert_equal 0 [r exists zset]
+-        }
+-
+-        test "ZREMRANGEBYSCORE with non-value min or max" {
+-            assert_error "*not*float*" {r zremrangebyscore fooz str 1}
+-            assert_error "*not*float*" {r zremrangebyscore fooz 1 str}
+-            assert_error "*not*float*" {r zremrangebyscore fooz 1 NaN}
+-        }
+-
+-        test "ZREMRANGEBYRANK basics" {
+-            proc remrangebyrank {min max} {
+-                create_zset zset {1 a 2 b 3 c 4 d 5 e}
+-                assert_equal 1 [r exists zset]
+-                r zremrangebyrank zset $min $max
+-            }
+-
+-            # inner range
+-            assert_equal 3 [remrangebyrank 1 3]
+-            assert_equal {a e} [r zrange zset 0 -1]
+-
+-            # start underflow
+-            assert_equal 1 [remrangebyrank -10 0]
+-            assert_equal {b c d e} [r zrange zset 0 -1]
+-
+-            # start overflow
+-            assert_equal 0 [remrangebyrank 10 -1]
+-            assert_equal {a b c d e} [r zrange zset 0 -1]
+-
+-            # end underflow
+-            assert_equal 0 [remrangebyrank 0 -10]
+-            assert_equal {a b c d e} [r zrange zset 0 -1]
+-
+-            # end overflow
+-            assert_equal 5 [remrangebyrank 0 10]
+-            assert_equal {} [r zrange zset 0 -1]
+-
+-            # destroy when empty
+-            assert_equal 5 [remrangebyrank 0 4]
+-            assert_equal 0 [r exists zset]
+-        }
+-
+-        test "ZUNIONSTORE against non-existing key doesn't set destination - $encoding" {
+-            r del zseta
+-            assert_equal 0 [r zunionstore dst_key 1 zseta]
+-            assert_equal 0 [r exists dst_key]
+-        }
+-
+-        test "ZUNIONSTORE with empty set - $encoding" {
+-            r del zseta zsetb
+-            r zadd zseta 1 a
+-            r zadd zseta 2 b
+-            r zunionstore zsetc 2 zseta zsetb
+-            r zrange zsetc 0 -1 withscores
+-        } {a 1 b 2}
+-
+-        test "ZUNIONSTORE basics - $encoding" {
+-            r del zseta zsetb zsetc
+-            r zadd zseta 1 a
+-            r zadd zseta 2 b
+-            r zadd zseta 3 c
+-            r zadd zsetb 1 b
+-            r zadd zsetb 2 c
+-            r zadd zsetb 3 d
+-
+-            assert_equal 4 [r zunionstore zsetc 2 zseta zsetb]
+-            assert_equal {a 1 b 3 d 3 c 5} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZUNIONSTORE with weights - $encoding" {
+-            assert_equal 4 [r zunionstore zsetc 2 zseta zsetb weights 2 3]
+-            assert_equal {a 2 b 7 d 9 c 12} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZUNIONSTORE with a regular set and weights - $encoding" {
+-            r del seta
+-            r sadd seta a
+-            r sadd seta b
+-            r sadd seta c
+-
+-            assert_equal 4 [r zunionstore zsetc 2 seta zsetb weights 2 3]
+-            assert_equal {a 2 b 5 c 8 d 9} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZUNIONSTORE with AGGREGATE MIN - $encoding" {
+-            assert_equal 4 [r zunionstore zsetc 2 zseta zsetb aggregate min]
+-            assert_equal {a 1 b 1 c 2 d 3} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZUNIONSTORE with AGGREGATE MAX - $encoding" {
+-            assert_equal 4 [r zunionstore zsetc 2 zseta zsetb aggregate max]
+-            assert_equal {a 1 b 2 c 3 d 3} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZINTERSTORE basics - $encoding" {
+-            assert_equal 2 [r zinterstore zsetc 2 zseta zsetb]
+-            assert_equal {b 3 c 5} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZINTERSTORE with weights - $encoding" {
+-            assert_equal 2 [r zinterstore zsetc 2 zseta zsetb weights 2 3]
+-            assert_equal {b 7 c 12} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZINTERSTORE with a regular set and weights - $encoding" {
+-            r del seta
+-            r sadd seta a
+-            r sadd seta b
+-            r sadd seta c
+-            assert_equal 2 [r zinterstore zsetc 2 seta zsetb weights 2 3]
+-            assert_equal {b 5 c 8} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZINTERSTORE with AGGREGATE MIN - $encoding" {
+-            assert_equal 2 [r zinterstore zsetc 2 zseta zsetb aggregate min]
+-            assert_equal {b 1 c 2} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        test "ZINTERSTORE with AGGREGATE MAX - $encoding" {
+-            assert_equal 2 [r zinterstore zsetc 2 zseta zsetb aggregate max]
+-            assert_equal {b 2 c 3} [r zrange zsetc 0 -1 withscores]
+-        }
+-
+-        foreach cmd {ZUNIONSTORE ZINTERSTORE} {
+-            test "$cmd with +inf/-inf scores - $encoding" {
+-                r del zsetinf1 zsetinf2
+-
+-                r zadd zsetinf1 +inf key
+-                r zadd zsetinf2 +inf key
+-                r $cmd zsetinf3 2 zsetinf1 zsetinf2
+-                assert_equal inf [r zscore zsetinf3 key]
+-
+-                r zadd zsetinf1 -inf key
+-                r zadd zsetinf2 +inf key
+-                r $cmd zsetinf3 2 zsetinf1 zsetinf2
+-                assert_equal 0 [r zscore zsetinf3 key]
+-
+-                r zadd zsetinf1 +inf key
+-                r zadd zsetinf2 -inf key
+-                r $cmd zsetinf3 2 zsetinf1 zsetinf2
+-                assert_equal 0 [r zscore zsetinf3 key]
+-
+-                r zadd zsetinf1 -inf key
+-                r zadd zsetinf2 -inf key
+-                r $cmd zsetinf3 2 zsetinf1 zsetinf2
+-                assert_equal -inf [r zscore zsetinf3 key]
+-            }
+-
+-            test "$cmd with NaN weights $encoding" {
+-                r del zsetinf1 zsetinf2
+-
+-                r zadd zsetinf1 1.0 key
+-                r zadd zsetinf2 1.0 key
+-                assert_error "*weight*not*float*" {
+-                    r $cmd zsetinf3 2 zsetinf1 zsetinf2 weights nan nan
+-                }
+-            }
+-        }
+-
+-        test "Basic ZPOP with a single key - $encoding" {
+-            r del zset
+-            assert_equal {} [r zpopmin zset]
+-            create_zset zset {-1 a 1 b 2 c 3 d 4 e}
+-            assert_equal {a -1} [r zpopmin zset]
+-            assert_equal {b 1} [r zpopmin zset]
+-            assert_equal {e 4} [r zpopmax zset]
+-            assert_equal {d 3} [r zpopmax zset]
+-            assert_equal {c 2} [r zpopmin zset]
+-            assert_equal 0 [r exists zset]
+-            r set foo bar
+-            assert_error "*WRONGTYPE*" {r zpopmin foo}
+-        }
+-
+-        test "ZPOP with count - $encoding" {
+-            r del z1 z2 z3 foo
+-            r set foo bar
+-            assert_equal {} [r zpopmin z1 2]
+-            assert_error "*WRONGTYPE*" {r zpopmin foo 2}
+-            create_zset z1 {0 a 1 b 2 c 3 d}
+-            assert_equal {a 0 b 1} [r zpopmin z1 2]
+-            assert_equal {d 3 c 2} [r zpopmax z1 2]
+-        }
+-
+-        test "BZPOP with a single existing sorted set - $encoding" {
+-            set rd [redis_deferring_client]
+-            create_zset zset {0 a 1 b 2 c}
+-
+-            $rd bzpopmin zset 5
+-            assert_equal {zset a 0} [$rd read]
+-            $rd bzpopmin zset 5
+-            assert_equal {zset b 1} [$rd read]
+-            $rd bzpopmax zset 5
+-            assert_equal {zset c 2} [$rd read]
+-            assert_equal 0 [r exists zset]
+-        }
+-
+-        test "BZPOP with multiple existing sorted sets - $encoding" {
+-            set rd [redis_deferring_client]
+-            create_zset z1 {0 a 1 b 2 c}
+-            create_zset z2 {3 d 4 e 5 f}
+-
+-            $rd bzpopmin z1 z2 5
+-            assert_equal {z1 a 0} [$rd read]
+-            $rd bzpopmax z1 z2 5
+-            assert_equal {z1 c 2} [$rd read]
+-            assert_equal 1 [r zcard z1]
+-            assert_equal 3 [r zcard z2]
+-
+-            $rd bzpopmax z2 z1 5
+-            assert_equal {z2 f 5} [$rd read]
+-            $rd bzpopmin z2 z1 5
+-            assert_equal {z2 d 3} [$rd read]
+-            assert_equal 1 [r zcard z1]
+-            assert_equal 1 [r zcard z2]
+-        }
+-
+-        test "BZPOP second sorted set has members - $encoding" {
+-            set rd [redis_deferring_client]
+-            r del z1
+-            create_zset z2 {3 d 4 e 5 f}
+-            $rd bzpopmax z1 z2 5
+-            assert_equal {z2 f 5} [$rd read]
+-            $rd bzpopmin z2 z1 5
+-            assert_equal {z2 d 3} [$rd read]
+-            assert_equal 0 [r zcard z1]
+-            assert_equal 1 [r zcard z2]
+-        }
+-    }
+-
+-    basics ziplist
++        #     assert_equal 9 [r zlexcount zset - +]
++        #     assert_equal 0 [r zlexcount zset + -]
++        #     assert_equal 0 [r zlexcount zset + \[c]
++        #     assert_equal 0 [r zlexcount zset \[c -]
++        #     assert_equal 8 [r zlexcount zset \[bar +]
++        #     assert_equal 5 [r zlexcount zset \[bar \[foo]
++        #     assert_equal 4 [r zlexcount zset \[bar (foo]
++        #     assert_equal 4 [r zlexcount zset (bar \[foo]
++        #     assert_equal 3 [r zlexcount zset (bar (foo]
++        #     assert_equal 5 [r zlexcount zset - (foo]
++        #     assert_equal 1 [r zlexcount zset (maxstring +]
++        # }
++
++        # test "ZRANGEBYSLEX with LIMIT" {
++        #     create_default_lex_zset
++        #     assert_equal {alpha bar} [r zrangebylex zset - \[cool LIMIT 0 2]
++        #     assert_equal {bar cool} [r zrangebylex zset - \[cool LIMIT 1 2]
++        #     assert_equal {} [r zrangebylex zset \[bar \[down LIMIT 0 0]
++        #     assert_equal {} [r zrangebylex zset \[bar \[down LIMIT 2 0]
++        #     assert_equal {bar} [r zrangebylex zset \[bar \[down LIMIT 0 1]
++        #     assert_equal {cool} [r zrangebylex zset \[bar \[down LIMIT 1 1]
++        #     assert_equal {bar cool down} [r zrangebylex zset \[bar \[down LIMIT 0 100]
++        #     assert_equal {omega hill great foo elephant} [r zrevrangebylex zset + \[d LIMIT 0 5]
++        #     assert_equal {omega hill great foo} [r zrevrangebylex zset + \[d LIMIT 0 4]
++        # }
++
++        # test "ZRANGEBYLEX with invalid lex range specifiers" {
++        #     assert_error "*not*string*" {r zrangebylex fooz foo bar}
++        #     assert_error "*not*string*" {r zrangebylex fooz \[foo bar}
++        #     assert_error "*not*string*" {r zrangebylex fooz foo \[bar}
++        #     assert_error "*not*string*" {r zrangebylex fooz +x \[bar}
++        #     assert_error "*not*string*" {r zrangebylex fooz -x \[bar}
++        # }
++
++        # test "ZREMRANGEBYSCORE basics" {
++        #     proc remrangebyscore {min max} {
++        #         create_zset zset {1 a 2 b 3 c 4 d 5 e}
++        #         assert_equal 1 [r exists zset]
++        #         r zremrangebyscore zset $min $max
++        #     }
++
++        #     # inner range
++        #     assert_equal 3 [remrangebyscore 2 4]
++        #     assert_equal {a e} [r zrange zset 0 -1]
++
++        #     # start underflow
++        #     assert_equal 1 [remrangebyscore -10 1]
++        #     assert_equal {b c d e} [r zrange zset 0 -1]
++
++        #     # end overflow
++        #     assert_equal 1 [remrangebyscore 5 10]
++        #     assert_equal {a b c d} [r zrange zset 0 -1]
++
++        #     # switch min and max
++        #     assert_equal 0 [remrangebyscore 4 2]
++        #     assert_equal {a b c d e} [r zrange zset 0 -1]
++
++        #     # -inf to mid
++        #     assert_equal 3 [remrangebyscore -inf 3]
++        #     assert_equal {d e} [r zrange zset 0 -1]
++
++        #     # mid to +inf
++        #     assert_equal 3 [remrangebyscore 3 +inf]
++        #     assert_equal {a b} [r zrange zset 0 -1]
++
++        #     # -inf to +inf
++        #     assert_equal 5 [remrangebyscore -inf +inf]
++        #     assert_equal {} [r zrange zset 0 -1]
++
++        #     # exclusive min
++        #     assert_equal 4 [remrangebyscore (1 5]
++        #     assert_equal {a} [r zrange zset 0 -1]
++        #     assert_equal 3 [remrangebyscore (2 5]
++        #     assert_equal {a b} [r zrange zset 0 -1]
++
++        #     # exclusive max
++        #     assert_equal 4 [remrangebyscore 1 (5]
++        #     assert_equal {e} [r zrange zset 0 -1]
++        #     assert_equal 3 [remrangebyscore 1 (4]
++        #     assert_equal {d e} [r zrange zset 0 -1]
++
++        #     # exclusive min and max
++        #     assert_equal 3 [remrangebyscore (1 (5]
++        #     assert_equal {a e} [r zrange zset 0 -1]
++
++        #     # destroy when empty
++        #     assert_equal 5 [remrangebyscore 1 5]
++        #     assert_equal 0 [r exists zset]
++        # }
++
++        # test "ZREMRANGEBYSCORE with non-value min or max" {
++        #     assert_error "*not*float*" {r zremrangebyscore fooz str 1}
++        #     assert_error "*not*float*" {r zremrangebyscore fooz 1 str}
++        #     assert_error "*not*float*" {r zremrangebyscore fooz 1 NaN}
++        # }
++
++        # test "ZREMRANGEBYRANK basics" {
++        #     proc remrangebyrank {min max} {
++        #         create_zset zset {1 a 2 b 3 c 4 d 5 e}
++        #         assert_equal 1 [r exists zset]
++        #         r zremrangebyrank zset $min $max
++        #     }
++
++        #     # inner range
++        #     assert_equal 3 [remrangebyrank 1 3]
++        #     assert_equal {a e} [r zrange zset 0 -1]
++
++        #     # start underflow
++        #     assert_equal 1 [remrangebyrank -10 0]
++        #     assert_equal {b c d e} [r zrange zset 0 -1]
++
++        #     # start overflow
++        #     assert_equal 0 [remrangebyrank 10 -1]
++        #     assert_equal {a b c d e} [r zrange zset 0 -1]
++
++        #     # end underflow
++        #     assert_equal 0 [remrangebyrank 0 -10]
++        #     assert_equal {a b c d e} [r zrange zset 0 -1]
++
++        #     # end overflow
++        #     assert_equal 5 [remrangebyrank 0 10]
++        #     assert_equal {} [r zrange zset 0 -1]
++
++        #     # destroy when empty
++        #     assert_equal 5 [remrangebyrank 0 4]
++        #     assert_equal 0 [r exists zset]
++        # }
++
++        # test "ZUNIONSTORE against non-existing key doesn't set destination - $encoding" {
++        #     r del zseta
++        #     assert_equal 0 [r zunionstore dst_key 1 zseta]
++        #     assert_equal 0 [r exists dst_key]
++        # }
++
++        # test "ZUNIONSTORE with empty set - $encoding" {
++        #     r del zseta zsetb
++        #     r zadd zseta 1 a
++        #     r zadd zseta 2 b
++        #     r zunionstore zsetc 2 zseta zsetb
++        #     r zrange zsetc 0 -1 withscores
++        # } {a 1 b 2}
++
++        # test "ZUNIONSTORE basics - $encoding" {
++        #     r del zseta zsetb zsetc
++        #     r zadd zseta 1 a
++        #     r zadd zseta 2 b
++        #     r zadd zseta 3 c
++        #     r zadd zsetb 1 b
++        #     r zadd zsetb 2 c
++        #     r zadd zsetb 3 d
++
++        #     assert_equal 4 [r zunionstore zsetc 2 zseta zsetb]
++        #     assert_equal {a 1 b 3 d 3 c 5} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZUNIONSTORE with weights - $encoding" {
++        #     assert_equal 4 [r zunionstore zsetc 2 zseta zsetb weights 2 3]
++        #     assert_equal {a 2 b 7 d 9 c 12} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZUNIONSTORE with a regular set and weights - $encoding" {
++        #     r del seta
++        #     r sadd seta a
++        #     r sadd seta b
++        #     r sadd seta c
++
++        #     assert_equal 4 [r zunionstore zsetc 2 seta zsetb weights 2 3]
++        #     assert_equal {a 2 b 5 c 8 d 9} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZUNIONSTORE with AGGREGATE MIN - $encoding" {
++        #     assert_equal 4 [r zunionstore zsetc 2 zseta zsetb aggregate min]
++        #     assert_equal {a 1 b 1 c 2 d 3} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZUNIONSTORE with AGGREGATE MAX - $encoding" {
++        #     assert_equal 4 [r zunionstore zsetc 2 zseta zsetb aggregate max]
++        #     assert_equal {a 1 b 2 c 3 d 3} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZINTERSTORE basics - $encoding" {
++        #     assert_equal 2 [r zinterstore zsetc 2 zseta zsetb]
++        #     assert_equal {b 3 c 5} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZINTERSTORE with weights - $encoding" {
++        #     assert_equal 2 [r zinterstore zsetc 2 zseta zsetb weights 2 3]
++        #     assert_equal {b 7 c 12} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZINTERSTORE with a regular set and weights - $encoding" {
++        #     r del seta
++        #     r sadd seta a
++        #     r sadd seta b
++        #     r sadd seta c
++        #     assert_equal 2 [r zinterstore zsetc 2 seta zsetb weights 2 3]
++        #     assert_equal {b 5 c 8} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZINTERSTORE with AGGREGATE MIN - $encoding" {
++        #     assert_equal 2 [r zinterstore zsetc 2 zseta zsetb aggregate min]
++        #     assert_equal {b 1 c 2} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # test "ZINTERSTORE with AGGREGATE MAX - $encoding" {
++        #     assert_equal 2 [r zinterstore zsetc 2 zseta zsetb aggregate max]
++        #     assert_equal {b 2 c 3} [r zrange zsetc 0 -1 withscores]
++        # }
++
++        # foreach cmd {ZUNIONSTORE ZINTERSTORE} {
++        #     test "$cmd with +inf/-inf scores - $encoding" {
++        #         r del zsetinf1 zsetinf2
++
++        #         r zadd zsetinf1 +inf key
++        #         r zadd zsetinf2 +inf key
++        #         r $cmd zsetinf3 2 zsetinf1 zsetinf2
++        #         assert_equal inf [r zscore zsetinf3 key]
++
++        #         r zadd zsetinf1 -inf key
++        #         r zadd zsetinf2 +inf key
++        #         r $cmd zsetinf3 2 zsetinf1 zsetinf2
++        #         assert_equal 0 [r zscore zsetinf3 key]
++
++        #         r zadd zsetinf1 +inf key
++        #         r zadd zsetinf2 -inf key
++        #         r $cmd zsetinf3 2 zsetinf1 zsetinf2
++        #         assert_equal 0 [r zscore zsetinf3 key]
++
++        #         r zadd zsetinf1 -inf key
++        #         r zadd zsetinf2 -inf key
++        #         r $cmd zsetinf3 2 zsetinf1 zsetinf2
++        #         assert_equal -inf [r zscore zsetinf3 key]
++        #     }
++
++        #     test "$cmd with NaN weights $encoding" {
++        #         r del zsetinf1 zsetinf2
++
++        #         r zadd zsetinf1 1.0 key
++        #         r zadd zsetinf2 1.0 key
++        #         assert_error "*weight*not*float*" {
++        #             r $cmd zsetinf3 2 zsetinf1 zsetinf2 weights nan nan
++        #         }
++        #     }
++        # }
++
++    #     test "Basic ZPOP with a single key - $encoding" {
++    #         r del zset
++    #         assert_equal {} [r zpopmin zset]
++    #         create_zset zset {-1 a 1 b 2 c 3 d 4 e}
++    #         assert_equal {a -1} [r zpopmin zset]
++    #         assert_equal {b 1} [r zpopmin zset]
++    #         assert_equal {e 4} [r zpopmax zset]
++    #         assert_equal {d 3} [r zpopmax zset]
++    #         assert_equal {c 2} [r zpopmin zset]
++    #         assert_equal 0 [r exists zset]
++    #         r set foo bar
++    #         assert_error "*WRONGTYPE*" {r zpopmin foo}
++    #     }
++
++    #     test "ZPOP with count - $encoding" {
++    #         r del z1 z2 z3 foo
++    #         r set foo bar
++    #         assert_equal {} [r zpopmin z1 2]
++    #         assert_error "*WRONGTYPE*" {r zpopmin foo 2}
++    #         create_zset z1 {0 a 1 b 2 c 3 d}
++    #         assert_equal {a 0 b 1} [r zpopmin z1 2]
++    #         assert_equal {d 3 c 2} [r zpopmax z1 2]
++    #     }
++
++    #     test "BZPOP with a single existing sorted set - $encoding" {
++    #         set rd [redis_deferring_client]
++    #         create_zset zset {0 a 1 b 2 c}
++
++    #         $rd bzpopmin zset 5
++    #         assert_equal {zset a 0} [$rd read]
++    #         $rd bzpopmin zset 5
++    #         assert_equal {zset b 1} [$rd read]
++    #         $rd bzpopmax zset 5
++    #         assert_equal {zset c 2} [$rd read]
++    #         assert_equal 0 [r exists zset]
++    #     }
++
++    #     test "BZPOP with multiple existing sorted sets - $encoding" {
++    #         set rd [redis_deferring_client]
++    #         create_zset z1 {0 a 1 b 2 c}
++    #         create_zset z2 {3 d 4 e 5 f}
++
++    #         $rd bzpopmin z1 z2 5
++    #         assert_equal {z1 a 0} [$rd read]
++    #         $rd bzpopmax z1 z2 5
++    #         assert_equal {z1 c 2} [$rd read]
++    #         assert_equal 1 [r zcard z1]
++    #         assert_equal 3 [r zcard z2]
++
++    #         $rd bzpopmax z2 z1 5
++    #         assert_equal {z2 f 5} [$rd read]
++    #         $rd bzpopmin z2 z1 5
++    #         assert_equal {z2 d 3} [$rd read]
++    #         assert_equal 1 [r zcard z1]
++    #         assert_equal 1 [r zcard z2]
++    #     }
++
++    #     test "BZPOP second sorted set has members - $encoding" {
++    #         set rd [redis_deferring_client]
++    #         r del z1
++    #         create_zset z2 {3 d 4 e 5 f}
++    #         $rd bzpopmax z1 z2 5
++    #         assert_equal {z2 f 5} [$rd read]
++    #         $rd bzpopmin z2 z1 5
++    #         assert_equal {z2 d 3} [$rd read]
++    #         assert_equal 0 [r zcard z1]
++    #         assert_equal 1 [r zcard z2]
++    #     }
++    # }
++
++    # basics ziplist
+     basics skiplist
+ 
+-    test {ZINTERSTORE regression with two sets, intset+hashtable} {
+-        r del seta setb setc
+-        r sadd set1 a
+-        r sadd set2 10
+-        r zinterstore set3 2 set1 set2
+-    } {0}
+-
+-    test {ZUNIONSTORE regression, should not create NaN in scores} {
+-        r zadd z -inf neginf
+-        r zunionstore out 1 z weights 0
+-        r zrange out 0 -1 withscores
+-    } {neginf 0}
+-
+-    test {ZINTERSTORE #516 regression, mixed sets and ziplist zsets} {
+-        r sadd one 100 101 102 103
+-        r sadd two 100 200 201 202
+-        r zadd three 1 500 1 501 1 502 1 503 1 100
+-        r zinterstore to_here 3 one two three WEIGHTS 0 0 1
+-        r zrange to_here 0 -1
+-    } {100}
+-
+-    test {ZUNIONSTORE result is sorted} {
+-        # Create two sets with common and not common elements, perform
+-        # the UNION, check that elements are still sorted.
+-        r del one two dest
+-        set cmd1 [list r zadd one]
+-        set cmd2 [list r zadd two]
+-        for {set j 0} {$j < 1000} {incr j} {
+-            lappend cmd1 [expr rand()] [randomInt 1000]
+-            lappend cmd2 [expr rand()] [randomInt 1000]
+-        }
+-        {*}$cmd1
+-        {*}$cmd2
+-        assert {[r zcard one] > 100}
+-        assert {[r zcard two] > 100}
+-        r zunionstore dest 2 one two
+-        set oldscore 0
+-        foreach {ele score} [r zrange dest 0 -1 withscores] {
+-            assert {$score >= $oldscore}
+-            set oldscore $score
+-        }
+-    }
++    # test {ZINTERSTORE regression with two sets, intset+hashtable} {
++    #     r del seta setb setc
++    #     r sadd set1 a
++    #     r sadd set2 10
++    #     r zinterstore set3 2 set1 set2
++    # } {0}
++
++    # test {ZUNIONSTORE regression, should not create NaN in scores} {
++    #     r zadd z -inf neginf
++    #     r zunionstore out 1 z weights 0
++    #     r zrange out 0 -1 withscores
++    # } {neginf 0}
++
++    # test {ZINTERSTORE #516 regression, mixed sets and ziplist zsets} {
++    #     r sadd one 100 101 102 103
++    #     r sadd two 100 200 201 202
++    #     r zadd three 1 500 1 501 1 502 1 503 1 100
++    #     r zinterstore to_here 3 one two three WEIGHTS 0 0 1
++    #     r zrange to_here 0 -1
++    # } {100}
++
++    # test {ZUNIONSTORE result is sorted} {
++    #     # Create two sets with common and not common elements, perform
++    #     # the UNION, check that elements are still sorted.
++    #     r del one two dest
++    #     set cmd1 [list r zadd one]
++    #     set cmd2 [list r zadd two]
++    #     for {set j 0} {$j < 1000} {incr j} {
++    #         lappend cmd1 [expr rand()] [randomInt 1000]
++    #         lappend cmd2 [expr rand()] [randomInt 1000]
++    #     }
++    #     {*}$cmd1
++    #     {*}$cmd2
++    #     assert {[r zcard one] > 100}
++    #     assert {[r zcard two] > 100}
++    #     r zunionstore dest 2 one two
++    #     set oldscore 0
++    #     foreach {ele score} [r zrange dest 0 -1 withscores] {
++    #         assert {$score >= $oldscore}
++    #         set oldscore $score
++    #     }
++    # }
+ 
+     test "ZSET commands don't accept the empty strings as valid score" {
+         assert_error "*not*float*" {r zadd myzset "" abc}
+     }
+ 
+     proc stressers {encoding} {
+-        if {$encoding == "ziplist"} {
+-            # Little extra to allow proper fuzzing in the sorting stresser
+-            r config set zset-max-ziplist-entries 256
+-            r config set zset-max-ziplist-value 64
+-            set elements 128
+-        } elseif {$encoding == "skiplist"} {
+-            r config set zset-max-ziplist-entries 0
+-            r config set zset-max-ziplist-value 0
+-            if {$::accurate} {set elements 1000} else {set elements 100}
+-        } else {
+-            puts "Unknown sorted set encoding"
+-            exit
+-        }
++        # if {$encoding == "ziplist"} {
++        #     # Little extra to allow proper fuzzing in the sorting stresser
++        #     r config set zset-max-ziplist-entries 256
++        #     r config set zset-max-ziplist-value 64
++        set elements 128
++        # } elseif {$encoding == "skiplist"} {
++        #     r config set zset-max-ziplist-entries 0
++        #     r config set zset-max-ziplist-value 0
++        #     if {$::accurate} {set elements 1000} else {set elements 100}
++        # } else {
++        #     puts "Unknown sorted set encoding"
++        #     exit
++        # }
+ 
+         test "ZSCORE - $encoding" {
+             r del zscoretest
+@@ -809,7 +809,7 @@ start_server {tags {"zset"}} {
+                 r zadd zscoretest $score $i
+             }
+ 
+-            assert_encoding $encoding zscoretest
++            # assert_encoding $encoding zscoretest
+             for {set i 0} {$i < $elements} {incr i} {
+                 assert_equal [lindex $aux $i] [r zscore zscoretest $i]
+             }
+@@ -824,8 +824,8 @@ start_server {tags {"zset"}} {
+                 r zadd zscoretest $score $i
+             }
+ 
+-            r debug reload
+-            assert_encoding $encoding zscoretest
++            # r debug reload
++            # assert_encoding $encoding zscoretest
+             for {set i 0} {$i < $elements} {incr i} {
+                 assert_equal [lindex $aux $i] [r zscore zscoretest $i]
+             }
+@@ -867,7 +867,7 @@ start_server {tags {"zset"}} {
+                     lappend auxlist [lindex $x 1]
+                 }
+ 
+-                assert_encoding $encoding myzset
++                # assert_encoding $encoding myzset
+                 set fromredis [r zrange myzset 0 -1]
+                 set delta 0
+                 for {set i 0} {$i < [llength $fromredis]} {incr i} {
+@@ -879,210 +879,210 @@ start_server {tags {"zset"}} {
+             assert_equal 0 $delta
+         }
+ 
+-        test "ZRANGEBYSCORE fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
+-            set err {}
+-            r del zset
+-            for {set i 0} {$i < $elements} {incr i} {
+-                r zadd zset [expr rand()] $i
+-            }
+-
+-            assert_encoding $encoding zset
+-            for {set i 0} {$i < 100} {incr i} {
+-                set min [expr rand()]
+-                set max [expr rand()]
+-                if {$min > $max} {
+-                    set aux $min
+-                    set min $max
+-                    set max $aux
+-                }
+-                set low [r zrangebyscore zset -inf $min]
+-                set ok [r zrangebyscore zset $min $max]
+-                set high [r zrangebyscore zset $max +inf]
+-                set lowx [r zrangebyscore zset -inf ($min]
+-                set okx [r zrangebyscore zset ($min ($max]
+-                set highx [r zrangebyscore zset ($max +inf]
+-
+-                if {[r zcount zset -inf $min] != [llength $low]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-                if {[r zcount zset $min $max] != [llength $ok]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-                if {[r zcount zset $max +inf] != [llength $high]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-                if {[r zcount zset -inf ($min] != [llength $lowx]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-                if {[r zcount zset ($min ($max] != [llength $okx]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-                if {[r zcount zset ($max +inf] != [llength $highx]} {
+-                    append err "Error, len does not match zcount\n"
+-                }
+-
+-                foreach x $low {
+-                    set score [r zscore zset $x]
+-                    if {$score > $min} {
+-                        append err "Error, score for $x is $score > $min\n"
+-                    }
+-                }
+-                foreach x $lowx {
+-                    set score [r zscore zset $x]
+-                    if {$score >= $min} {
+-                        append err "Error, score for $x is $score >= $min\n"
+-                    }
+-                }
+-                foreach x $ok {
+-                    set score [r zscore zset $x]
+-                    if {$score < $min || $score > $max} {
+-                        append err "Error, score for $x is $score outside $min-$max range\n"
+-                    }
+-                }
+-                foreach x $okx {
+-                    set score [r zscore zset $x]
+-                    if {$score <= $min || $score >= $max} {
+-                        append err "Error, score for $x is $score outside $min-$max open range\n"
+-                    }
+-                }
+-                foreach x $high {
+-                    set score [r zscore zset $x]
+-                    if {$score < $max} {
+-                        append err "Error, score for $x is $score < $max\n"
+-                    }
+-                }
+-                foreach x $highx {
+-                    set score [r zscore zset $x]
+-                    if {$score <= $max} {
+-                        append err "Error, score for $x is $score <= $max\n"
+-                    }
+-                }
+-            }
+-            assert_equal {} $err
+-        }
+-
+-        test "ZRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
+-            set lexset {}
+-            r del zset
+-            for {set j 0} {$j < $elements} {incr j} {
+-                set e [randstring 0 30 alpha]
+-                lappend lexset $e
+-                r zadd zset 0 $e
+-            }
+-            set lexset [lsort -unique $lexset]
+-            for {set j 0} {$j < 100} {incr j} {
+-                set min [randstring 0 30 alpha]
+-                set max [randstring 0 30 alpha]
+-                set mininc [randomInt 2]
+-                set maxinc [randomInt 2]
+-                if {$mininc} {set cmin "\[$min"} else {set cmin "($min"}
+-                if {$maxinc} {set cmax "\[$max"} else {set cmax "($max"}
+-                set rev [randomInt 2]
+-                if {$rev} {
+-                    set cmd zrevrangebylex
+-                } else {
+-                    set cmd zrangebylex
+-                }
+-
+-                # Make sure data is the same in both sides
+-                assert {[r zrange zset 0 -1] eq $lexset}
+-
+-                # Get the Redis output
+-                set output [r $cmd zset $cmin $cmax]
+-                if {$rev} {
+-                    set outlen [r zlexcount zset $cmax $cmin]
+-                } else {
+-                    set outlen [r zlexcount zset $cmin $cmax]
+-                }
+-
+-                # Compute the same output via Tcl
+-                set o {}
+-                set copy $lexset
+-                if {(!$rev && [string compare $min $max] > 0) ||
+-                    ($rev && [string compare $max $min] > 0)} {
+-                    # Empty output when ranges are inverted.
+-                } else {
+-                    if {$rev} {
+-                        # Invert the Tcl array using Redis itself.
+-                        set copy [r zrevrange zset 0 -1]
+-                        # Invert min / max as well
+-                        lassign [list $min $max $mininc $maxinc] \
+-                            max min maxinc mininc
+-                    }
+-                    foreach e $copy {
+-                        set mincmp [string compare $e $min]
+-                        set maxcmp [string compare $e $max]
+-                        if {
+-                             ($mininc && $mincmp >= 0 || !$mininc && $mincmp > 0)
+-                             &&
+-                             ($maxinc && $maxcmp <= 0 || !$maxinc && $maxcmp < 0)
+-                        } {
+-                            lappend o $e
+-                        }
+-                    }
+-                }
+-                assert {$o eq $output}
+-                assert {$outlen eq [llength $output]}
+-            }
+-        }
+-
+-        test "ZREMRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
+-            set lexset {}
+-            r del zset zsetcopy
+-            for {set j 0} {$j < $elements} {incr j} {
+-                set e [randstring 0 30 alpha]
+-                lappend lexset $e
+-                r zadd zset 0 $e
+-            }
+-            set lexset [lsort -unique $lexset]
+-            for {set j 0} {$j < 100} {incr j} {
+-                # Copy...
+-                r zunionstore zsetcopy 1 zset
+-                set lexsetcopy $lexset
+-
+-                set min [randstring 0 30 alpha]
+-                set max [randstring 0 30 alpha]
+-                set mininc [randomInt 2]
+-                set maxinc [randomInt 2]
+-                if {$mininc} {set cmin "\[$min"} else {set cmin "($min"}
+-                if {$maxinc} {set cmax "\[$max"} else {set cmax "($max"}
+-
+-                # Make sure data is the same in both sides
+-                assert {[r zrange zset 0 -1] eq $lexset}
+-
+-                # Get the range we are going to remove
+-                set torem [r zrangebylex zset $cmin $cmax]
+-                set toremlen [r zlexcount zset $cmin $cmax]
+-                r zremrangebylex zsetcopy $cmin $cmax
+-                set output [r zrange zsetcopy 0 -1]
+-
+-                # Remove the range with Tcl from the original list
+-                if {$toremlen} {
+-                    set first [lsearch -exact $lexsetcopy [lindex $torem 0]]
+-                    set last [expr {$first+$toremlen-1}]
+-                    set lexsetcopy [lreplace $lexsetcopy $first $last]
+-                }
+-                assert {$lexsetcopy eq $output}
+-            }
+-        }
+-
+-        test "ZSETs skiplist implementation backlink consistency test - $encoding" {
+-            set diff 0
+-            for {set j 0} {$j < $elements} {incr j} {
+-                r zadd myzset [expr rand()] "Element-$j"
+-                r zrem myzset "Element-[expr int(rand()*$elements)]"
+-            }
+-
+-            assert_encoding $encoding myzset
+-            set l1 [r zrange myzset 0 -1]
+-            set l2 [r zrevrange myzset 0 -1]
+-            for {set j 0} {$j < [llength $l1]} {incr j} {
+-                if {[lindex $l1 $j] ne [lindex $l2 end-$j]} {
+-                    incr diff
+-                }
+-            }
+-            assert_equal 0 $diff
+-        }
++        # test "ZRANGEBYSCORE fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
++        #     set err {}
++        #     r del zset
++        #     for {set i 0} {$i < $elements} {incr i} {
++        #         r zadd zset [expr rand()] $i
++        #     }
++
++        #     assert_encoding $encoding zset
++        #     for {set i 0} {$i < 100} {incr i} {
++        #         set min [expr rand()]
++        #         set max [expr rand()]
++        #         if {$min > $max} {
++        #             set aux $min
++        #             set min $max
++        #             set max $aux
++        #         }
++        #         set low [r zrangebyscore zset -inf $min]
++        #         set ok [r zrangebyscore zset $min $max]
++        #         set high [r zrangebyscore zset $max +inf]
++        #         set lowx [r zrangebyscore zset -inf ($min]
++        #         set okx [r zrangebyscore zset ($min ($max]
++        #         set highx [r zrangebyscore zset ($max +inf]
++
++        #         if {[r zcount zset -inf $min] != [llength $low]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++        #         if {[r zcount zset $min $max] != [llength $ok]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++        #         if {[r zcount zset $max +inf] != [llength $high]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++        #         if {[r zcount zset -inf ($min] != [llength $lowx]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++        #         if {[r zcount zset ($min ($max] != [llength $okx]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++        #         if {[r zcount zset ($max +inf] != [llength $highx]} {
++        #             append err "Error, len does not match zcount\n"
++        #         }
++
++        #         foreach x $low {
++        #             set score [r zscore zset $x]
++        #             if {$score > $min} {
++        #                 append err "Error, score for $x is $score > $min\n"
++        #             }
++        #         }
++        #         foreach x $lowx {
++        #             set score [r zscore zset $x]
++        #             if {$score >= $min} {
++        #                 append err "Error, score for $x is $score >= $min\n"
++        #             }
++        #         }
++        #         foreach x $ok {
++        #             set score [r zscore zset $x]
++        #             if {$score < $min || $score > $max} {
++        #                 append err "Error, score for $x is $score outside $min-$max range\n"
++        #             }
++        #         }
++        #         foreach x $okx {
++        #             set score [r zscore zset $x]
++        #             if {$score <= $min || $score >= $max} {
++        #                 append err "Error, score for $x is $score outside $min-$max open range\n"
++        #             }
++        #         }
++        #         foreach x $high {
++        #             set score [r zscore zset $x]
++        #             if {$score < $max} {
++        #                 append err "Error, score for $x is $score < $max\n"
++        #             }
++        #         }
++        #         foreach x $highx {
++        #             set score [r zscore zset $x]
++        #             if {$score <= $max} {
++        #                 append err "Error, score for $x is $score <= $max\n"
++        #             }
++        #         }
++        #     }
++        #     assert_equal {} $err
++        # }
++
++        # test "ZRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
++        #     set lexset {}
++        #     r del zset
++        #     for {set j 0} {$j < $elements} {incr j} {
++        #         set e [randstring 0 30 alpha]
++        #         lappend lexset $e
++        #         r zadd zset 0 $e
++        #     }
++        #     set lexset [lsort -unique $lexset]
++        #     for {set j 0} {$j < 100} {incr j} {
++        #         set min [randstring 0 30 alpha]
++        #         set max [randstring 0 30 alpha]
++        #         set mininc [randomInt 2]
++        #         set maxinc [randomInt 2]
++        #         if {$mininc} {set cmin "\[$min"} else {set cmin "($min"}
++        #         if {$maxinc} {set cmax "\[$max"} else {set cmax "($max"}
++        #         set rev [randomInt 2]
++        #         if {$rev} {
++        #             set cmd zrevrangebylex
++        #         } else {
++        #             set cmd zrangebylex
++        #         }
++
++        #         # Make sure data is the same in both sides
++        #         assert {[r zrange zset 0 -1] eq $lexset}
++
++        #         # Get the Redis output
++        #         set output [r $cmd zset $cmin $cmax]
++        #         if {$rev} {
++        #             set outlen [r zlexcount zset $cmax $cmin]
++        #         } else {
++        #             set outlen [r zlexcount zset $cmin $cmax]
++        #         }
++
++        #         # Compute the same output via Tcl
++        #         set o {}
++        #         set copy $lexset
++        #         if {(!$rev && [string compare $min $max] > 0) ||
++        #             ($rev && [string compare $max $min] > 0)} {
++        #             # Empty output when ranges are inverted.
++        #         } else {
++        #             if {$rev} {
++        #                 # Invert the Tcl array using Redis itself.
++        #                 set copy [r zrevrange zset 0 -1]
++        #                 # Invert min / max as well
++        #                 lassign [list $min $max $mininc $maxinc] \
++        #                     max min maxinc mininc
++        #             }
++        #             foreach e $copy {
++        #                 set mincmp [string compare $e $min]
++        #                 set maxcmp [string compare $e $max]
++        #                 if {
++        #                      ($mininc && $mincmp >= 0 || !$mininc && $mincmp > 0)
++        #                      &&
++        #                      ($maxinc && $maxcmp <= 0 || !$maxinc && $maxcmp < 0)
++        #                 } {
++        #                     lappend o $e
++        #                 }
++        #             }
++        #         }
++        #         assert {$o eq $output}
++        #         assert {$outlen eq [llength $output]}
++        #     }
++        # }
++
++        # test "ZREMRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
++        #     set lexset {}
++        #     r del zset zsetcopy
++        #     for {set j 0} {$j < $elements} {incr j} {
++        #         set e [randstring 0 30 alpha]
++        #         lappend lexset $e
++        #         r zadd zset 0 $e
++        #     }
++        #     set lexset [lsort -unique $lexset]
++        #     for {set j 0} {$j < 100} {incr j} {
++        #         # Copy...
++        #         r zunionstore zsetcopy 1 zset
++        #         set lexsetcopy $lexset
++
++        #         set min [randstring 0 30 alpha]
++        #         set max [randstring 0 30 alpha]
++        #         set mininc [randomInt 2]
++        #         set maxinc [randomInt 2]
++        #         if {$mininc} {set cmin "\[$min"} else {set cmin "($min"}
++        #         if {$maxinc} {set cmax "\[$max"} else {set cmax "($max"}
++
++        #         # Make sure data is the same in both sides
++        #         assert {[r zrange zset 0 -1] eq $lexset}
++
++        #         # Get the range we are going to remove
++        #         set torem [r zrangebylex zset $cmin $cmax]
++        #         set toremlen [r zlexcount zset $cmin $cmax]
++        #         r zremrangebylex zsetcopy $cmin $cmax
++        #         set output [r zrange zsetcopy 0 -1]
++
++        #         # Remove the range with Tcl from the original list
++        #         if {$toremlen} {
++        #             set first [lsearch -exact $lexsetcopy [lindex $torem 0]]
++        #             set last [expr {$first+$toremlen-1}]
++        #             set lexsetcopy [lreplace $lexsetcopy $first $last]
++        #         }
++        #         assert {$lexsetcopy eq $output}
++        #     }
++        # }
++
++        # test "ZSETs skiplist implementation backlink consistency test - $encoding" {
++        #     set diff 0
++        #     for {set j 0} {$j < $elements} {incr j} {
++        #         r zadd myzset [expr rand()] "Element-$j"
++        #         r zrem myzset "Element-[expr int(rand()*$elements)]"
++        #     }
++
++        #     # assert_encoding $encoding myzset
++        #     set l1 [r zrange myzset 0 -1]
++        #     set l2 [r zrevrange myzset 0 -1]
++        #     for {set j 0} {$j < [llength $l1]} {incr j} {
++        #         if {[lindex $l1 $j] ne [lindex $l2 end-$j]} {
++        #             incr diff
++        #         }
++        #     }
++        #     assert_equal 0 $diff
++        # }
+ 
+         test "ZSETs ZRANK augmented skip list stress testing - $encoding" {
+             set err {}
+@@ -1094,7 +1094,7 @@ start_server {tags {"zset"}} {
+                 } else {
+                     set score [expr rand()]
+                     r zadd myzset $score $i
+-                    assert_encoding $encoding myzset
++                    # assert_encoding $encoding myzset
+                 }
+ 
+                 set card [r zcard myzset]
+@@ -1111,100 +1111,100 @@ start_server {tags {"zset"}} {
+             assert_equal {} $err
+         }
+ 
+-        test "BZPOPMIN, ZADD + DEL should not awake blocked client" {
+-            set rd [redis_deferring_client]
+-            r del zset
+-
+-            $rd bzpopmin zset 0
+-            r multi
+-            r zadd zset 0 foo
+-            r del zset
+-            r exec
+-            r del zset
+-            r zadd zset 1 bar
+-            $rd read
+-        } {zset bar 1}
+-
+-        test "BZPOPMIN, ZADD + DEL + SET should not awake blocked client" {
+-            set rd [redis_deferring_client]
+-            r del list
+-
+-            r del zset
+-
+-            $rd bzpopmin zset 0
+-            r multi
+-            r zadd zset 0 foo
+-            r del zset
+-            r set zset foo
+-            r exec
+-            r del zset
+-            r zadd zset 1 bar
+-            $rd read
+-        } {zset bar 1}
+-
+-        test "BZPOPMIN with same key multiple times should work" {
+-            set rd [redis_deferring_client]
+-            r del z1 z2
+-
+-            # Data arriving after the BZPOPMIN.
+-            $rd bzpopmin z1 z2 z2 z1 0
+-            r zadd z1 0 a
+-            assert_equal [$rd read] {z1 a 0}
+-            $rd bzpopmin z1 z2 z2 z1 0
+-            r zadd z2 1 b
+-            assert_equal [$rd read] {z2 b 1}
+-
+-            # Data already there.
+-            r zadd z1 0 a
+-            r zadd z2 1 b
+-            $rd bzpopmin z1 z2 z2 z1 0
+-            assert_equal [$rd read] {z1 a 0}
+-            $rd bzpopmin z1 z2 z2 z1 0
+-            assert_equal [$rd read] {z2 b 1}
+-        }
+-
+-        test "MULTI/EXEC is isolated from the point of view of BZPOPMIN" {
+-            set rd [redis_deferring_client]
+-            r del zset
+-            $rd bzpopmin zset 0
+-            r multi
+-            r zadd zset 0 a
+-            r zadd zset 1 b
+-            r zadd zset 2 c
+-            r exec
+-            $rd read
+-        } {zset a 0}
+-
+-        test "BZPOPMIN with variadic ZADD" {
+-            set rd [redis_deferring_client]
+-            r del zset
+-            if {$::valgrind} {after 100}
+-            $rd bzpopmin zset 0
+-            if {$::valgrind} {after 100}
+-            assert_equal 2 [r zadd zset -1 foo 1 bar]
+-            if {$::valgrind} {after 100}
+-            assert_equal {zset foo -1} [$rd read]
+-            assert_equal {bar} [r zrange zset 0 -1]
+-        }
+-
+-        test "BZPOPMIN with zero timeout should block indefinitely" {
+-            set rd [redis_deferring_client]
+-            r del zset
+-            $rd bzpopmin zset 0
+-            after 1000
+-            r zadd zset 0 foo
+-            assert_equal {zset foo 0} [$rd read]
+-        }
++        # test "BZPOPMIN, ZADD + DEL should not awake blocked client" {
++        #     set rd [redis_deferring_client]
++        #     r del zset
++
++        #     $rd bzpopmin zset 0
++        #     r multi
++        #     r zadd zset 0 foo
++        #     r del zset
++        #     r exec
++        #     r del zset
++        #     r zadd zset 1 bar
++        #     $rd read
++        # } {zset bar 1}
++
++        # test "BZPOPMIN, ZADD + DEL + SET should not awake blocked client" {
++        #     set rd [redis_deferring_client]
++        #     r del list
++
++        #     r del zset
++
++        #     $rd bzpopmin zset 0
++        #     r multi
++        #     r zadd zset 0 foo
++        #     r del zset
++        #     r set zset foo
++        #     r exec
++        #     r del zset
++        #     r zadd zset 1 bar
++        #     $rd read
++        # } {zset bar 1}
++
++        # test "BZPOPMIN with same key multiple times should work" {
++        #     set rd [redis_deferring_client]
++        #     r del z1 z2
++
++        #     # Data arriving after the BZPOPMIN.
++        #     $rd bzpopmin z1 z2 z2 z1 0
++        #     r zadd z1 0 a
++        #     assert_equal [$rd read] {z1 a 0}
++        #     $rd bzpopmin z1 z2 z2 z1 0
++        #     r zadd z2 1 b
++        #     assert_equal [$rd read] {z2 b 1}
++
++        #     # Data already there.
++        #     r zadd z1 0 a
++        #     r zadd z2 1 b
++        #     $rd bzpopmin z1 z2 z2 z1 0
++        #     assert_equal [$rd read] {z1 a 0}
++        #     $rd bzpopmin z1 z2 z2 z1 0
++        #     assert_equal [$rd read] {z2 b 1}
++        # }
++
++        # test "MULTI/EXEC is isolated from the point of view of BZPOPMIN" {
++        #     set rd [redis_deferring_client]
++        #     r del zset
++        #     $rd bzpopmin zset 0
++        #     r multi
++        #     r zadd zset 0 a
++        #     r zadd zset 1 b
++        #     r zadd zset 2 c
++        #     r exec
++        #     $rd read
++        # } {zset a 0}
++
++        # test "BZPOPMIN with variadic ZADD" {
++        #     set rd [redis_deferring_client]
++        #     r del zset
++        #     if {$::valgrind} {after 100}
++        #     $rd bzpopmin zset 0
++        #     if {$::valgrind} {after 100}
++        #     assert_equal 2 [r zadd zset -1 foo 1 bar]
++        #     if {$::valgrind} {after 100}
++        #     assert_equal {zset foo -1} [$rd read]
++        #     assert_equal {bar} [r zrange zset 0 -1]
++        # }
++
++        # test "BZPOPMIN with zero timeout should block indefinitely" {
++        #     set rd [redis_deferring_client]
++        #     r del zset
++        #     $rd bzpopmin zset 0
++        #     after 1000
++        #     r zadd zset 0 foo
++        #     assert_equal {zset foo 0} [$rd read]
++        # }
+     }
+ 
+     tags {"slow"} {
+-        stressers ziplist
++        # stressers ziplist
+         stressers skiplist
+     }
+ 
+     test {ZSET skiplist order consistency when elements are moved} {
+-        set original_max [lindex [r config get zset-max-ziplist-entries] 1]
+-        r config set zset-max-ziplist-entries 0
++        # set original_max [lindex [r config get zset-max-ziplist-entries] 1]
++        # r config set zset-max-ziplist-entries 0
+         for {set times 0} {$times < 10} {incr times} {
+             r del zset
+             for {set j 0} {$j < 1000} {incr j} {
+@@ -1225,6 +1225,6 @@ start_server {tags {"zset"}} {
+                 set prev_score $score
+             }
+         }
+-        r config set zset-max-ziplist-entries $original_max
++        # r config set zset-max-ziplist-entries $original_max
+     }
+ }
 

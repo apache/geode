@@ -133,7 +133,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
   --image="${IMAGE_NAME}" \
-  --boot-disk-size=100GB \
+  --boot-disk-size="${DISK}" \
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
@@ -198,7 +198,12 @@ else
 
   winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
     -https -insecure -port 5986 \
-    "powershell -command \"&{ mkdir c:\users\geode\.ssh -force; set-content -path c:\users\geode\.ssh\authorized_keys -encoding utf8 -value '${KEY}' }\""
+    "powershell -command \"&{\
+      \$authPath = (Join-Path \$env:ProgramData -ChildPath 'ssh') \
+    ; \$authFile = (Join-Path \$authPath 'administrators_authorized_keys') \
+    ; mkdir \$authPath -force\
+    ; add-content -path \$authFile -encoding utf8 -value '${KEY}'\
+    ; icacls \$authFile /inheritance:r /grant 'SYSTEM:(F)' /grant 'BUILTIN\Administrators:(F)' }\""
 
   if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
     set +e

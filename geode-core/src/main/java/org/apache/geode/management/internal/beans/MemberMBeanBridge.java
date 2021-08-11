@@ -1392,7 +1392,7 @@ public class MemberMBeanBridge {
   }
 
   int getRebalancesInProgress() {
-    return resourceManagerStats.getRebalancesInProgress();
+    return (int) resourceManagerStats.getRebalancesInProgress();
   }
 
   public int getReplyWaitsInProgress() {

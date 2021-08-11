@@ -22,31 +22,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractPExpireAtIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractPExpireAtIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
+  private JedisCluster jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
   private static final String key = "key";
   private static final String value = "value";
-  private long unixTimeStampInTheFutureInSeconds;
-  private final long unixTimeStampFromThePast = 0L;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    unixTimeStampInTheFutureInSeconds = (System.currentTimeMillis() / 1000) + 60;
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void testLevelTearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
@@ -57,8 +55,9 @@ public abstract class AbstractPExpireAtIntegrationTest implements RedisPortSuppl
 
   @Test
   public void givenInvalidTimestamp_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.PEXPIREAT, "key", "notInteger"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis
+        .sendCommand("key", Protocol.Command.PEXPIREAT, "key", "notInteger"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test

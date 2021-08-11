@@ -62,9 +62,8 @@ public class ListDeployedCommand extends GfshCommand {
         null, targetMembers);
 
     DeploymentInfoTableUtil.writeDeploymentInfoToTable(
-        new String[] {"Member", "Deployment Name", "JAR", "JAR Location"}, tabularData,
-        DeploymentInfoTableUtil
-            .getDeploymentInfoFromFunctionResults(functionResults));
+        new String[] {"Member", "JAR", "JAR Location"}, tabularData,
+        DeploymentInfoTableUtil.getDeploymentInfoFromFunctionResults(functionResults));
 
     if (tabularData.getRowSize() == 0) {
       return ResultModel.createInfo(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE);

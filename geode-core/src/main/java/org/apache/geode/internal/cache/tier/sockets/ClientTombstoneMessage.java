@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
@@ -41,7 +40,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   /** GC operation for non-partitioned regions */
   public static ClientTombstoneMessage gc(LocalRegion region,
-      Map<VersionSource, Long> regionGCVersions, EventID eventId) {
+      Map<VersionSource<?>, Long> regionGCVersions, EventID eventId) {
     return new ClientTombstoneMessage(TOperation.GC, region, regionGCVersions, eventId);
   }
 
@@ -76,29 +75,18 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
    */
   @Override
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
-    if (KnownVersion.GFE_70.compareTo(proxy.getVersion()) <= 0) {
-      return getGFE70Message(proxy.getVersion());
-    } else {
-      return null;
-    }
-  }
-
-  protected Message getGFE70Message(KnownVersion clientVersion) {
-    Message message = null;
-
     // The format:
     // part 0: operation (gc=0)
     // part 1: region name
     // part 2: operation ordinal
     // part 3: regionGCVersions
     // Last part: event ID
-    int numParts = 4;
-    message = new Message(numParts, clientVersion);
+    final Message message = new Message(4, proxy.getVersion());
     // Set message type
     message.setMessageType(MessageType.TOMBSTONE_OPERATION);
-    message.addStringPart(this.getRegionName(), true);
-    message.addIntPart(this.op.ordinal());
-    message.addObjPart(this.removalInformation);
+    message.addStringPart(getRegionName(), true);
+    message.addIntPart(op.ordinal());
+    message.addObjPart(removalInformation);
     message.addObjPart(getEventId());
     return message;
   }
@@ -115,9 +103,9 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     out.writeByte(op.ordinal());
     out.writeByte(_operation.getEventCode());
     DataSerializer.writeString(getRegionName(), out);
-    DataSerializer.writeObject(this.removalInformation, out);
-    DataSerializer.writeObject(this._membershipId, out);
-    DataSerializer.writeObject(this._eventIdentifier, out);
+    DataSerializer.writeObject(removalInformation, out);
+    DataSerializer.writeObject(_membershipId, out);
+    DataSerializer.writeObject(_eventIdentifier, out);
   }
 
   @Override
@@ -126,12 +114,12 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     // note: does not call super.fromData() since there are no keys, etc.
     // The message class hierarchy should be revised to have a more abstract
     // top-level class.
-    this.op = TOperation.values()[in.readByte()];
-    this._operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
-    this.setRegionName(DataSerializer.readString(in));
-    this.removalInformation = DataSerializer.readObject(in);
-    this._membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    this._eventIdentifier = (EventID) DataSerializer.readObject(in);
+    op = TOperation.values()[in.readByte()];
+    _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
+    setRegionName(DataSerializer.readString(in));
+    removalInformation = DataSerializer.readObject(in);
+    _membershipId = ClientProxyMembershipID.readCanonicalized(in);
+    _eventIdentifier = DataSerializer.readObject(in);
   }
 
   @Override
@@ -164,11 +152,9 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("ClientTombstoneMessage[op=").append(this.op).append(";region=")
-        .append(getRegionName()).append(";removalInfo=").append(this.removalInformation)
-        .append(";memberId=").append(getMembershipId()).append(";eventId=").append(getEventId())
-        .append("]");
-    return buffer.toString();
+    return "ClientTombstoneMessage[op=" + op + ";region="
+        + getRegionName() + ";removalInfo=" + removalInformation
+        + ";memberId=" + getMembershipId() + ";eventId=" + getEventId()
+        + "]";
   }
 }

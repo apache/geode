@@ -53,7 +53,7 @@ public class AuthIntegrationTest {
     cache.close();
   }
 
-  public void setupCacheWithPassword() {
+  public void setupCacheWithPassword() throws Exception {
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
@@ -62,6 +62,7 @@ public class AuthIntegrationTest {
     cf.set(ConfigurationProperties.REDIS_PASSWORD, PASSWORD);
     cache = cf.create();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
+    server.getRegionProvider().getSlotAdvisor().getBucketSlots();
     this.jedis = new Jedis("localhost", port, 100000);
   }
 
@@ -77,7 +78,7 @@ public class AuthIntegrationTest {
   }
 
   @Test
-  public void testAuthIncorrectNumberOfArguments() {
+  public void testAuthIncorrectNumberOfArguments() throws Exception {
     setupCacheWithPassword();
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
         .hasMessageContaining("wrong number of arguments");
@@ -86,14 +87,14 @@ public class AuthIntegrationTest {
   }
 
   @Test
-  public void testAuthConfig() {
+  public void testAuthConfig() throws Exception {
     setupCacheWithPassword();
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
     assertThat(iD.getConfig().getRedisPassword()).isEqualTo(PASSWORD);
   }
 
   @Test
-  public void testAuthRejectAccept() {
+  public void testAuthRejectAccept() throws Exception {
     setupCacheWithPassword();
 
     assertThatThrownBy(() -> jedis.auth("wrongpwd"))
@@ -111,7 +112,7 @@ public class AuthIntegrationTest {
   }
 
   @Test
-  public void testAuthAcceptRequests() {
+  public void testAuthAcceptRequests() throws Exception {
     setupCacheWithPassword();
 
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
@@ -124,7 +125,7 @@ public class AuthIntegrationTest {
   }
 
   @Test
-  public void testSeparateClientRequests() {
+  public void testSeparateClientRequests() throws Exception {
     setupCacheWithPassword();
     Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
     Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
@@ -141,7 +142,7 @@ public class AuthIntegrationTest {
   }
 
   @Test
-  public void lettuceAuthClient_withLettuceVersion6() {
+  public void lettuceAuthClient_withLettuceVersion6() throws Exception {
     setupCacheWithPassword();
 
     RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", PASSWORD, getPort()));

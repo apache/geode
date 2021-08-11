@@ -198,21 +198,27 @@ public class LockGrantorId {
    */
   @Override
   public boolean equals(Object other) {
-    if (other == this)
+    if (other == this) {
       return true;
-    if (other == null)
+    }
+    if (other == null) {
       return false;
-    if (!(other instanceof LockGrantorId))
+    }
+    if (!(other instanceof LockGrantorId)) {
       return false;
+    }
     final LockGrantorId that = (LockGrantorId) other;
 
     if (this.lockGrantorMember != that.lockGrantorMember && !(this.lockGrantorMember != null
-        && this.lockGrantorMember.equals(that.lockGrantorMember)))
+        && this.lockGrantorMember.equals(that.lockGrantorMember))) {
       return false;
-    if (this.lockGrantorVersion != that.lockGrantorVersion)
+    }
+    if (this.lockGrantorVersion != that.lockGrantorVersion) {
       return false;
-    if (this.lockGrantorSerialNumber != that.lockGrantorSerialNumber)
+    }
+    if (this.lockGrantorSerialNumber != that.lockGrantorSerialNumber) {
       return false;
+    }
 
     return true;
   }

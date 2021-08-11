@@ -33,11 +33,13 @@ public class ResourceInstance {
   private long[] previousStatValues = null;
   private long[] latestStatValues = null;
   private int[] updatedStats = null;
+  private boolean statValuesNotified;
 
   public ResourceInstance(int id, Statistics statistics, ResourceType type) {
     this.id = id;
     this.statistics = statistics;
     this.type = type;
+    this.statValuesNotified = false;
   }
 
   public int getId() {
@@ -50,6 +52,14 @@ public class ResourceInstance {
 
   public ResourceType getResourceType() {
     return this.type;
+  }
+
+  public boolean getStatValuesNotified() {
+    return this.statValuesNotified;
+  }
+
+  public void setStatValuesNotified(boolean notified) {
+    this.statValuesNotified = notified;
   }
 
   public Number getStatValue(StatisticDescriptor sd) {

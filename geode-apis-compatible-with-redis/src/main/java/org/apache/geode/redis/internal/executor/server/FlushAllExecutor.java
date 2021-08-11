@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -25,15 +27,17 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class FlushAllExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    RedisKeyCommands redisKeyCommands = getRedisKeyCommands(context);
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
-    for (RedisKey skey : context.getRegionProvider().getDataRegion().keySet()) {
-      redisKeyCommands.del(skey);
+    LocalDataSet local = (LocalDataSet) PartitionRegionHelper
+        .getLocalPrimaryData(context.getRegionProvider().getLocalDataRegion());
+
+    for (Object skey : local.keySet()) {
+      redisKeyCommands.del((RedisKey) skey);
     }
 
-    return RedisResponse.string("OK");
+    return RedisResponse.ok();
   }
 
 }

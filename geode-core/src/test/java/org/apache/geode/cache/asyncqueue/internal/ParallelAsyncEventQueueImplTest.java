@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,16 +51,17 @@ public class ParallelAsyncEventQueueImplTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
     statisticsClock = mock(StatisticsClock.class);
     statsFactory = mock(StatisticsFactory.class);
     attrs = new GatewaySenderAttributes();
-    attrs.isParallel = true;
-    attrs.id = "AsyncEventQueue_";
+    attrs.setParallel(true);
+    attrs.setId("AsyncEventQueue_");
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
     when(cache.getDistributedSystem()).thenReturn(system);
+    when(cache.getCancelCriterion().isCancelInProgress()).thenReturn(false);
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     when(system.getDistributionManager()).thenReturn(distributionManager);
     when(distributionManager.getDistributedSystemId()).thenReturn(-1);

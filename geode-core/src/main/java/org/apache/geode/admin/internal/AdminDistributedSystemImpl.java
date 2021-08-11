@@ -485,13 +485,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    */
   @Override
   public boolean isRunning() {
-    if (this.gfManagerAgent == null)
+    if (this.gfManagerAgent == null) {
       return false;
+    }
     // is there a better way??
     // this.gfManagerAgent.isConnected() ... this.gfManagerAgent.isListening()
 
-    if (isAnyMemberRunning())
+    if (isAnyMemberRunning()) {
       return true;
+    }
     return false;
   }
 
@@ -913,8 +915,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   @Override
   public boolean waitToBeConnected(long timeout) throws InterruptedException {
 
-    if (Thread.interrupted())
+    if (Thread.interrupted()) {
       throw new InterruptedException();
+    }
 
     checkConnectCalled();
 
@@ -1556,8 +1559,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * @return the system member that was removed; null if no match was found
    */
   protected SystemMember removeSystemMember(InternalDistributedMember internalId) {
-    if (internalId == null)
+    if (internalId == null) {
       return null;
+    }
 
     boolean found = false;
     SystemMemberImpl member = null;
@@ -1963,8 +1967,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   @Override
   public CacheVm[] getCacheVms() throws AdminException {
     Collection coll = getCacheVmsCollection();
-    if (coll == null)
+    if (coll == null) {
       return null;
+    }
     CacheVm[] array = new CacheVm[coll.size()];
     coll.toArray(array);
     return array;
@@ -1973,8 +1978,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   @Override
   public CacheServer[] getCacheServers() throws AdminException {
     Collection coll = getCacheVmsCollection();
-    if (coll == null)
+    if (coll == null) {
       return null;
+    }
     CacheServer[] array = new CacheServer[coll.size()];
     coll.toArray(array);
     return array;
@@ -2045,8 +2051,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   @Override
   public SystemMember lookupSystemMember(DistributedMember distributedMember)
       throws AdminException {
-    if (distributedMember == null)
+    if (distributedMember == null) {
       return null;
+    }
     SystemMember[] members = getSystemMemberApplications();
     for (int i = 0; i < members.length; i++) {
       if (distributedMember.equals(members[i].getDistributedMember())) {
@@ -2180,8 +2187,9 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     @Override
     public Object get() throws InterruptedException, ExecutionException {
 
-      if (Thread.interrupted())
+      if (Thread.interrupted()) {
         throw new InterruptedException();
+      }
       try {
         return super.get();
 

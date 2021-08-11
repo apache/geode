@@ -14,73 +14,55 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
-import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({RedisTest.class})
-public class PersistDUnitTest implements Serializable {
+public class PersistDUnitTest {
 
   @ClassRule
-  public static RedisClusterStartupRule cluster = new RedisClusterStartupRule(5);
+  public static RedisClusterStartupRule redisClusterStartupRule = new RedisClusterStartupRule(5);
+  private static JedisCluster jedis;
 
-  private static String LOCALHOST = "localhost";
-
-  public static final String KEY = "key";
   private static VM client1;
   private static VM client2;
 
-  private static int server1Port;
-  private static int server2Port;
-
-  private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-
-  private abstract static class ClientTestBase extends SerializableCallable {
-    int port;
-
-    protected ClientTestBase(int port) {
-      this.port = port;
-    }
-  }
-
   @BeforeClass
   public static void setup() {
-    MemberVM locator = cluster.startLocatorVM(0);
+    MemberVM locator = redisClusterStartupRule.startLocatorVM(0);
+    redisClusterStartupRule.startRedisVM(1, locator.getPort());
+    redisClusterStartupRule.startRedisVM(2, locator.getPort());
+    int serverPort = redisClusterStartupRule.getRedisPort(1);
 
-    cluster.startRedisVM(1, locator.getPort());
-    cluster.startRedisVM(2, locator.getPort());
+    client1 = redisClusterStartupRule.getVM(3);
+    client2 = redisClusterStartupRule.getVM(4);
 
-    server1Port = cluster.getRedisPort(1);
-    server2Port = cluster.getRedisPort(2);
-
-    client1 = cluster.getVM(3);
-    client2 = cluster.getVM(4);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, serverPort), REDIS_CLIENT_TIMEOUT);
   }
 
-  class ConcurrentPersistOperation extends ClientTestBase {
+  private static class ConcurrentPersistOperation extends SerializableCallable<AtomicLong> {
 
+    private final int port;
     private final String keyBaseName;
-    private AtomicLong persistedCount;
-    private Long iterationCount;
+    private final AtomicLong persistedCount;
+    private final long iterationCount;
 
-    protected ConcurrentPersistOperation(int port, String keyBaseName, Long iterationCount) {
-      super(port);
+    protected ConcurrentPersistOperation(int port, String keyBaseName, long iterationCount) {
+      this.port = port;
       this.keyBaseName = keyBaseName;
       this.persistedCount = new AtomicLong(0);
       this.iterationCount = iterationCount;
@@ -88,30 +70,32 @@ public class PersistDUnitTest implements Serializable {
 
     @Override
     public AtomicLong call() {
-      Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
+      JedisCluster internalJedisCluster =
+          new JedisCluster(new HostAndPort(BIND_ADDRESS, port), REDIS_CLIENT_TIMEOUT);
 
       for (int i = 0; i < this.iterationCount; i++) {
         String key = this.keyBaseName + i;
-        this.persistedCount.addAndGet(jedis.persist(key));
+        this.persistedCount.addAndGet(internalJedisCluster.persist(key));
       }
-
       return this.persistedCount;
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void testConcurrentPersistOperations() throws InterruptedException {
+  public void testConcurrentPersistOperations_shouldReportCorrectNumberOfTotalKeysPersisted()
+      throws InterruptedException {
     Long iterationCount = 5000L;
-    Jedis jedis = new Jedis(LOCALHOST, server1Port, JEDIS_TIMEOUT);
+    int serverPort = redisClusterStartupRule.getRedisPort(1);
+
     setKeysWithExpiration(jedis, iterationCount, "key");
 
     AsyncInvocation<AtomicLong> remotePersistInvocationClient1 =
-        (AsyncInvocation<AtomicLong>) client1
-            .invokeAsync(new ConcurrentPersistOperation(server1Port, "key", iterationCount));
+        client1.invokeAsync("remotePersistInvocation1",
+            new ConcurrentPersistOperation(serverPort, "key", iterationCount));
+
     AtomicLong remotePersistInvocationClient2 =
-        (AtomicLong) client2.invoke("remotePersistInvocation2",
-            new ConcurrentPersistOperation(server2Port, "key", iterationCount));
+        client2.invoke("remotePersistInvocation2",
+            new ConcurrentPersistOperation(serverPort, "key", iterationCount));
 
     remotePersistInvocationClient1.await();
 
@@ -121,10 +105,10 @@ public class PersistDUnitTest implements Serializable {
         .isEqualTo(iterationCount);
   }
 
-  private void setKeysWithExpiration(Jedis jedis, Long iterationCount, String key) {
+  private void setKeysWithExpiration(JedisCluster jedis, Long iterationCount, String key) {
     for (int i = 0; i < iterationCount; i++) {
       jedis.sadd(key + i, "value" + 9);
-      jedis.expire(key + i, 600);
+      jedis.expire(key + i, 600L);
     }
   }
 }

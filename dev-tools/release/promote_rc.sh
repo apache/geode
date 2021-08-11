@@ -88,10 +88,20 @@ else
 fi
 
 
+echo ""
+echo "============================================================"
+echo "Checking docker..."
+echo "============================================================"
+if ! docker images >/dev/null ; then
+  echo "Make sure docker daemon is running and try again."
+  exit 1
+fi
+
+
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 116-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 126-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -207,6 +217,7 @@ set +x
 sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -e "s/^ENV GEODE_SHA256.*/ENV GEODE_SHA256 ${GEODE_SHA}/" \
+    -e "s/ha.pool.sks-keyservers.net/keyserver.ubuntu.com/" \
     -i.bak Dockerfile
 rm Dockerfile.bak
 set -x
@@ -230,7 +241,7 @@ if [ -r .travis.yml ] ; then
       -i.bak .travis.yml
 fi
 sed -e "s/GEODE_VERSION=.*/GEODE_VERSION=${VERSION}/" \
-       "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -i.bak $(git grep -l GEODE_VERSION= ; git grep -l 'ENV GEODE_VERSION')
 rm $(find . -name '*.bak')
 set -x

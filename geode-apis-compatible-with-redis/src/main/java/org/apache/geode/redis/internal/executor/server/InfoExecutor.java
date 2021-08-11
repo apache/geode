@@ -15,11 +15,23 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bALL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLIENTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLUSTER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bDEFAULT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSPACE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMEMORY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERSISTENCE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLICATION;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSERVER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSTATS;
+
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -36,8 +48,7 @@ public class InfoExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     String result;
-    List<ByteArrayWrapper> commands =
-        command.getProcessedCommandWrappers();
+    List<byte[]> commands = command.getProcessedCommand();
 
     if (containsSectionParameter(commands)) {
       result = getSpecifiedSection(context, commands);
@@ -47,48 +58,33 @@ public class InfoExecutor extends AbstractExecutor {
     return RedisResponse.bulkString(result);
   }
 
-  private boolean containsSectionParameter(List<ByteArrayWrapper> commands) {
+  private boolean containsSectionParameter(List<byte[]> commands) {
     return commands.size() == 2;
   }
 
-  private String getSpecifiedSection(ExecutionHandlerContext context,
-      List<ByteArrayWrapper> commands) {
-    String result;
-    String section = commands.get(1).toString().toLowerCase();
-    switch (section) {
-      case "server":
-        result = getServerSection(context);
-        break;
-      case "cluster":
-        result = getClusterSection();
-        break;
-      case "persistence":
-        result = getPersistenceSection();
-        break;
-      case "replication":
-        result = getReplicationSection();
-        break;
-      case "stats":
-        result = getStatsSection(context);
-        break;
-      case "clients":
-        result = getClientsSection(context);
-        break;
-      case "memory":
-        result = getMemorySection(context);
-        break;
-      case "keyspace":
-        result = getKeyspaceSection(context);
-        break;
-      case "default":
-      case "all":
-        result = getAllSections(context);
-        break;
-      default:
-        result = "";
-        break;
+  private String getSpecifiedSection(ExecutionHandlerContext context, List<byte[]> commands) {
+    byte[] bytes = toUpperCaseBytes(commands.get(1));
+    if (Arrays.equals(bytes, bSERVER)) {
+      return getServerSection(context);
+    } else if (Arrays.equals(bytes, bCLUSTER)) {
+      return getClusterSection();
+    } else if (Arrays.equals(bytes, bPERSISTENCE)) {
+      return getPersistenceSection();
+    } else if (Arrays.equals(bytes, bREPLICATION)) {
+      return getReplicationSection();
+    } else if (Arrays.equals(bytes, bSTATS)) {
+      return getStatsSection(context);
+    } else if (Arrays.equals(bytes, bCLIENTS)) {
+      return getClientsSection(context);
+    } else if (Arrays.equals(bytes, bMEMORY)) {
+      return getMemorySection(context);
+    } else if (Arrays.equals(bytes, bKEYSPACE)) {
+      return getKeyspaceSection(context);
+    } else if (Arrays.equals(bytes, bDEFAULT) || Arrays.equals(bytes, bALL)) {
+      return getAllSections(context);
+    } else {
+      return "";
     }
-    return result;
   }
 
   private String getStatsSection(ExecutionHandlerContext context) {

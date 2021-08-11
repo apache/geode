@@ -123,8 +123,9 @@ public class RuntimeIterator extends AbstractCompiledValue {
 
   @Override
   public boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context) {
-    if (itr == this)
+    if (itr == this) {
       return true; // never true(?)
+    }
     return cmpIteratorDefn.isDependentOnIterator(itr, context);
   }
 

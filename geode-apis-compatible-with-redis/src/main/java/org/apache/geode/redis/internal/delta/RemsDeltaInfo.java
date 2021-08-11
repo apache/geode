@@ -16,34 +16,36 @@
 
 package org.apache.geode.redis.internal.delta;
 
+import static org.apache.geode.redis.internal.delta.DeltaType.REMS;
+
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 
 public class RemsDeltaInfo implements DeltaInfo {
-  private final ArrayList<ByteArrayWrapper> deltas;
+  private final ArrayList<byte[]> deltas;
 
   public RemsDeltaInfo() {
-    this(new ArrayList<>());
+    this.deltas = new ArrayList<>();
   }
 
-  public RemsDeltaInfo(ArrayList<ByteArrayWrapper> deltas) {
-    this.deltas = deltas;
+  public RemsDeltaInfo(List<byte[]> deltas) {
+    this.deltas = new ArrayList<>(deltas);
   }
 
-  public void add(ByteArrayWrapper delta) {
+  public void add(byte[] delta) {
     deltas.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.REMS, out);
+    DataSerializer.writeEnum(REMS, out);
     DataSerializer.writeArrayList(deltas, out);
   }
 
-  public ArrayList<ByteArrayWrapper> getRemoves() {
+  public List<byte[]> getRemoves() {
     return deltas;
   }
 }

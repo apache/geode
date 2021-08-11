@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# FROM openjdk:8-jre-alpine
 FROM bellsoft/liberica-openjdk-alpine:8
 
 # runtime dependencies
@@ -51,8 +50,7 @@ RUN set -eux; \
 	; do \
 		target="$(basename "$file")"; \
 		for url in \
-# https://issues.apache.org/jira/browse/INFRA-8753?focusedCommentId=14735394#comment-14735394
-			"https://www.apache.org/dyn/closer.cgi?action=download&filename=$file" \
+			"https://www.apache.org/dyn/closer.lua/$file?action=download"
 			"https://downloads.apache.org/$file" \
 			"https://archive.apache.org/dist/$file" \
 		; do \
@@ -65,7 +63,7 @@ RUN set -eux; \
 	[ -s "apache-geode-$GEODE_VERSION.tgz.asc" ]; \
 	echo "$GEODE_SHA256 *apache-geode-$GEODE_VERSION.tgz" | sha256sum -c -; \
 	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GEODE_GPG"; \
+	gpg --keyserver keyserver.ubuntu.com --recv-keys "$GEODE_GPG"; \
 	gpg --batch --verify "apache-geode-$GEODE_VERSION.tgz.asc" "apache-geode-$GEODE_VERSION.tgz"; \
 	rm -rf "$GNUPGHOME"; \
 	mkdir /geode; \

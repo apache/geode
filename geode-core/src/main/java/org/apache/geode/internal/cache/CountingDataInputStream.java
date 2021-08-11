@@ -19,6 +19,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A data input stream that counts the bytes it plans on reading.
  *
@@ -26,118 +28,118 @@ import java.io.InputStream;
  * @since GemFire prPersistSprint2
  */
 
-public class CountingDataInputStream implements DataInput {
+public class CountingDataInputStream implements DataInput, AutoCloseable {
   private final long fileLength;
   private long count;
   private final DataInputStream dis;
 
   public CountingDataInputStream(InputStream is, long fileLength) {
     this.fileLength = fileLength;
-    this.dis = new DataInputStream(is);
+    dis = new DataInputStream(is);
   }
 
   public long getCount() {
-    return this.count;
+    return count;
   }
 
   public long getFileLength() {
-    return this.fileLength;
+    return fileLength;
   }
 
   public void decrementCount() {
-    this.count--;
+    count--;
   }
 
   public boolean atEndOfFile() {
-    return this.fileLength == this.count;
+    return fileLength == count;
   }
 
   @Override
-  public void readFully(byte b[]) throws IOException {
-    this.dis.readFully(b);
-    this.count += b.length;
+  public void readFully(byte @NotNull [] b) throws IOException {
+    dis.readFully(b);
+    count += b.length;
   }
 
   @Override
-  public void readFully(byte b[], int off, int len) throws IOException {
-    this.dis.readFully(b, off, len);
-    this.count += len;
+  public void readFully(byte @NotNull [] b, int off, int len) throws IOException {
+    dis.readFully(b, off, len);
+    count += len;
   }
 
   @Override
   public int skipBytes(int n) throws IOException {
-    int result = this.dis.skipBytes(n);
-    this.count += result;
+    int result = dis.skipBytes(n);
+    count += result;
     return result;
   }
 
   @Override
   public boolean readBoolean() throws IOException {
-    boolean result = this.dis.readBoolean();
-    this.count += 1;
+    boolean result = dis.readBoolean();
+    count += 1;
     return result;
   }
 
   @Override
   public byte readByte() throws IOException {
-    byte result = this.dis.readByte();
-    this.count += 1;
+    byte result = dis.readByte();
+    count += 1;
     return result;
   }
 
   @Override
   public int readUnsignedByte() throws IOException {
-    int result = this.dis.readUnsignedByte();
-    this.count += 1;
+    int result = dis.readUnsignedByte();
+    count += 1;
     return result;
   }
 
   @Override
   public short readShort() throws IOException {
-    short result = this.dis.readShort();
-    this.count += 2;
+    short result = dis.readShort();
+    count += 2;
     return result;
   }
 
   @Override
   public int readUnsignedShort() throws IOException {
-    int result = this.dis.readUnsignedShort();
-    this.count += 2;
+    int result = dis.readUnsignedShort();
+    count += 2;
     return result;
   }
 
   @Override
   public char readChar() throws IOException {
-    char result = this.dis.readChar();
-    this.count += 2;
+    char result = dis.readChar();
+    count += 2;
     return result;
   }
 
   @Override
   public int readInt() throws IOException {
-    int result = this.dis.readInt();
-    this.count += 4;
+    int result = dis.readInt();
+    count += 4;
     return result;
   }
 
   @Override
   public long readLong() throws IOException {
-    long result = this.dis.readLong();
-    this.count += 8;
+    long result = dis.readLong();
+    count += 8;
     return result;
   }
 
   @Override
   public float readFloat() throws IOException {
-    float result = this.dis.readFloat();
-    this.count += 4;
+    float result = dis.readFloat();
+    count += 4;
     return result;
   }
 
   @Override
   public double readDouble() throws IOException {
-    double result = this.dis.readDouble();
-    this.count += 8;
+    double result = dis.readDouble();
+    count += 8;
     return result;
   }
 
@@ -152,6 +154,6 @@ public class CountingDataInputStream implements DataInput {
   }
 
   public void close() throws IOException {
-    this.dis.close();
+    dis.close();
   }
 }

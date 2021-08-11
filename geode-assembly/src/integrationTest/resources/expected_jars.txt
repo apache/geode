@@ -22,6 +22,8 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
+fastutil-core
+fastutil-extra
 fastutil
 findbugs-annotations
 geo
@@ -106,6 +108,7 @@ spring-plugin-core
 spring-plugin-metadata
 spring-security-config
 spring-security-core
+spring-security-crypto
 spring-security-ldap
 spring-security-oauth2-client
 spring-security-oauth2-core

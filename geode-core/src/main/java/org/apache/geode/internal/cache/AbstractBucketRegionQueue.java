@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -265,27 +264,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
   }
 
-  /**
-   * Marks all events in the iterator as duplicate
-   */
-  protected void markEventsAsDuplicate(Iterator itr) {
-    int i = 0;
-    // mark setPossibleDuplicate to true for all events in this bucket before it becomes primary on
-    // the node
-    while (itr.hasNext()) {
-      Object key = itr.next();
-      Object senderEvent = getNoLRU(key, true, false, false);
-
-      if (senderEvent != null) {
-        ((GatewaySenderEventImpl) senderEvent).setPossibleDuplicate(true);
-        if (logger.isDebugEnabled()) {
-          logger.debug("Set possibleDuplicate to true on event: {}", senderEvent);
-        }
-      }
-      i++;
-    }
-  }
-
   @Override
   public void forceSerialized(EntryEventImpl event) {
     // NOOP since we want the value in the region queue to stay in object form.
@@ -323,8 +301,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     for (PartitionedRegion colocatedPR : colocatedPRs.values()) {
       if (!colocatedPR.isShadowPR() && isThisSenderAttached(colocatedPR)) {
         BucketRegion parentBucket = colocatedPR.getDataStore().getLocalBucketById(getId());
-        if (parentBucket != null)
+        if (parentBucket != null) {
           userPRBuckets.add(parentBucket);
+        }
       }
     }
     return userPRBuckets;

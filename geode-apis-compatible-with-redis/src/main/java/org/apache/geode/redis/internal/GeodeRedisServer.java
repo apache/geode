@@ -20,21 +20,24 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.executor.CommandFunction;
-import org.apache.geode.redis.internal.executor.StripedExecutor;
-import org.apache.geode.redis.internal.executor.SynchronizedStripedExecutor;
-import org.apache.geode.redis.internal.executor.key.RenameFunction;
-import org.apache.geode.redis.internal.gfsh.RedisCommandFunction;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
+import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.services.StripedCoordinator;
+import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -73,25 +76,27 @@ public class GeodeRedisServer {
   public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
+
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
-    StripedExecutor stripedExecutor = new SynchronizedStripedExecutor();
-    regionProvider = new RegionProvider(cache);
+    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
+    RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
-    CommandFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
-    RenameFunction.register(regionProvider.getDataRegion(), stripedExecutor, redisStats);
-    RedisCommandFunction.register();
+    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
 
-    passiveExpirationManager =
-        new PassiveExpirationManager(regionProvider.getDataRegion(), redisStats);
+    passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     redisCommandExecutor =
         LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
 
+    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor);
+        redisCommandExecutor, member);
+
+    infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
 
   @VisibleForTesting
@@ -145,5 +150,16 @@ public class GeodeRedisServer {
       redisStats.close();
       shutdown = true;
     }
+  }
+
+  @VisibleForTesting
+  public Long getDataStoreBytesInUseForDataRegion() {
+    PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
+    return dataRegion.getPrStats().getDataStoreBytesInUse();
+  }
+
+  @VisibleForTesting
+  public RedisMemberInfo getMemberInfo(String key) throws InterruptedException {
+    return regionProvider.getSlotAdvisor().getMemberInfo(new RedisKey(Coder.stringToBytes(key)));
   }
 }

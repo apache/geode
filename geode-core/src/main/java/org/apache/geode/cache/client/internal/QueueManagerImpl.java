@@ -394,8 +394,9 @@ public class QueueManagerImpl implements QueueManager {
     QueueConnectionImpl deadConnection;
 
     synchronized (lock) {
-      if (shuttingDown)
+      if (shuttingDown) {
         return;
+      }
       // if same client updater then only remove as we don't know whether it has created new
       // updater/connection on same endpoint or not..
       deadConnection = queueConnections.getConnection(endpoint);
@@ -986,8 +987,9 @@ public class QueueManagerImpl implements QueueManager {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
-      if (cu == null || (!cu.isAlive()) || (!cu.isProcessing()))
+      if (cu == null || (!cu.isAlive()) || (!cu.isProcessing())) {
         return false;// don't add
+      }
       // now still CCU can died but then it will execute Checkendpoint with lock it will remove
       // connection connection and it will reschedule it.
       if (connection.getEndpoint().isClosed() || shuttingDown

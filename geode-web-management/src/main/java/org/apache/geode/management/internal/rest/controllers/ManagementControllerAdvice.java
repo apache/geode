@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+import static org.apache.geode.management.rest.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.util.List;
 

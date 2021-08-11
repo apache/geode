@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.Map;
@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -32,39 +33,33 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommandsFunctionInvoker;
-import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
-  private final Region<RedisKey, RedisData> dataRegion;
   private final ScheduledExecutorService expirationExecutor;
-  private final RedisStats redisStats;
 
+  @VisibleForTesting
+  public static final int INTERVAL = 3;
 
-  public PassiveExpirationManager(Region<RedisKey, RedisData> dataRegion, RedisStats redisStats) {
-    this.dataRegion = dataRegion;
-    this.redisStats = redisStats;
+  public PassiveExpirationManager(RegionProvider regionProvider) {
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    int INTERVAL = 1;
-    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(dataRegion), INTERVAL,
-        INTERVAL,
-        SECONDS);
+    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), INTERVAL,
+        INTERVAL, MINUTES);
   }
 
   public void stop() {
     expirationExecutor.shutdownNow();
   }
 
-  private void doDataExpiration(Region<RedisKey, RedisData> redisData) {
-    final long start = redisStats.startPassiveExpirationCheck();
+  private void doDataExpiration(RegionProvider regionProvider) {
+    final long start = regionProvider.getRedisStats().startPassiveExpirationCheck();
     long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
       Region<RedisKey, RedisData> localPrimaryData =
-          PartitionRegionHelper.getLocalPrimaryData(redisData);
-      RedisKeyCommands redisKeyCommands = new RedisKeyCommandsFunctionInvoker(redisData);
+          PartitionRegionHelper.getLocalPrimaryData(regionProvider.getLocalDataRegion());
+      RedisKeyCommands redisKeyCommands = regionProvider.getKeyCommands();
       for (Map.Entry<RedisKey, RedisData> entry : localPrimaryData.entrySet()) {
         try {
           if (entry.getValue().hasExpired(now)) {
@@ -81,7 +76,7 @@ public class PassiveExpirationManager {
       logger.warn("Passive expiration failed. Will try again in 1 second.",
           ex);
     } finally {
-      redisStats.endPassiveExpirationCheck(start, expireCount);
+      regionProvider.getRedisStats().endPassiveExpirationCheck(start, expireCount);
     }
   }
 }

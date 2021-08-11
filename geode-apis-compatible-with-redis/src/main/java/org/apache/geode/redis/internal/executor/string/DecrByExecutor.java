@@ -16,16 +16,17 @@ package org.apache.geode.redis.internal.executor.string;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class DecrByExecutor extends StringExecutor {
+public class DecrByExecutor extends AbstractExecutor {
 
   private static final int DECREMENT_INDEX = 2;
 
@@ -35,16 +36,15 @@ public class DecrByExecutor extends StringExecutor {
     RedisKey key = command.getKey();
 
     byte[] decrArray = commandElems.get(DECREMENT_INDEX);
-    String decrString = Coder.bytesToString(decrArray);
     long decrement;
 
     try {
-      decrement = Long.parseLong(decrString);
+      decrement = bytesToLong(decrArray);
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
-    long value = getRedisStringCommands(context).decrby(key, decrement);
+    long value = context.getStringCommands().decrby(key, decrement);
     return RedisResponse.integer(value);
   }
 }

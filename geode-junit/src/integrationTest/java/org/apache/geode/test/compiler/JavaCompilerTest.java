@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -55,7 +56,7 @@ public class JavaCompilerTest {
   }
 
   @Test
-  public void invalidSourceThrowsException() {
+  public void invalidSourceThrowsException() throws IOException {
     JavaCompiler javaCompiler = new JavaCompiler();
     String sourceCode = "public class foo {this is not valid java source code}";
     assertThatThrownBy(() -> javaCompiler.compile(sourceCode)).isInstanceOf(Exception.class);

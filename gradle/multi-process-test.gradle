@@ -1,0 +1,71 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Configuration for running multi-process tests in isolation. See the 'multiProcessTestTasks'
+ * variable for the list of multi-process test tasks.
+ *
+ * To run multi-process tests in isolation, set the Gradle property 'parallelDunit'.
+ *
+ * Additional configuration properties for running multi-process tests in Docker are:
+ *
+ *  --max-workers        The maximum number of workers processes for Gradle to run in parallel.
+ *                       (Note that Gradle applies this value to all tasks, not just test tasks.)
+ *
+ *  testMaxParallelForks The maximum number of tests for each multi-process test task to process in
+ *                       parallel. If 'parallelDunit' us defined, `testMaxParallelForks` defaults to
+ *                       1/4 of the machine's available processors. If 'parallelDunit' is not
+ *                       defined, the default 'testMaxParallelForks' is 1. (Note that test.gradle
+ *                       also applies this property to unit test tasks, with different defaults.)
+ */
+
+import org.apache.geode.gradle.testing.Executers
+import org.apache.geode.gradle.testing.isolation.WorkingDirectoryIsolator
+
+def multiProcessTestTasks = [acceptanceTest, repeatAcceptanceTest,
+                             distributedTest, repeatDistributedTest,
+                             integrationTest, repeatIntegrationTest,
+                             upgradeTest, repeatUpgradeTest,
+                             uiTest, repeatUnitTest]
+
+if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+  for (task in multiProcessTestTasks) {
+    task.environment "JAVA_HOME", "${project.testJVM}"
+  }
+}
+
+if (project.hasProperty('parallelDunit')) {
+  def parallelForks = project.hasProperty('testMaxParallelForks')
+    ? Integer.parseUnsignedInt(project.testMaxParallelForks)
+    : Runtime.runtime.availableProcessors().intdiv(4) ?: 1
+  for (task in multiProcessTestTasks) {
+    task.maxParallelForks = parallelForks
+    task.ext {
+      isolatedTest = true
+    }
+  }
+  apply plugin: 'geode-isolated-test'
+} else {
+  for (task in multiProcessTestTasks) {
+    if (project.hasProperty('testMaxParallelForks')) {
+      task.maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
+    }
+    task.doFirst {
+      testExecuter = Executers.withAdjustment(it, new WorkingDirectoryIsolator())
+    }
+  }
+}

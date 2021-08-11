@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.redis.internal.executor.server.AbstractHitsMissesIntegrationTest.getInfo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -34,10 +33,11 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTest {
 
   private static final String KEYSPACE_START = "db0";
   private Jedis jedis;
@@ -272,14 +272,14 @@ public abstract class AbstractInfoIntegrationTest implements RedisPortSupplier {
   public void shouldReturnKeySpaceSection_givenServerWithOneOrMoreKeys() {
     jedis.set("key", "value");
 
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(KEYSPACE_START)).startsWith("keys=1");
   }
 
   @Test
   public void shouldNotReturnKeySpaceSection_givenServerWithNoKeys() {
-    Map<String, String> info = getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(KEYSPACE_START)).isNull();
   }

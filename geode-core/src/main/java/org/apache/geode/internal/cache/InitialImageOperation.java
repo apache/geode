@@ -171,7 +171,7 @@ public class InitialImageOperation {
   /**
    * received GC versions from the GCC source
    */
-  protected Map<VersionSource, Long> gcVersions;
+  protected Map<VersionSource<?>, Long> gcVersions;
 
   /**
    * true if this is delta gii
@@ -1461,8 +1461,9 @@ public class InitialImageOperation {
     buf.append("[");
     for (int i = 0; i < a.length; i++) {
       buf.append(String.valueOf(a[i]));
-      if (i < (a.length - 1))
+      if (i < (a.length - 1)) {
         buf.append(",");
+      }
     }
     buf.append("]");
     return buf.toString();
@@ -1618,8 +1619,9 @@ public class InitialImageOperation {
 
       Throwable thr = null;
       final boolean lclAbortTest = abortTest;
-      if (lclAbortTest)
+      if (lclAbortTest) {
         abortTest = false;
+      }
       DistributedRegion targetRegion = null;
       boolean sendFailureMessage = true;
       try {
@@ -1789,7 +1791,7 @@ public class InitialImageOperation {
                     boolean abort = rgn.isDestroyed();
                     if (!abort) {
                       int flowControlId = flowControl.getId();
-                      Map<VersionSource, Long> gcVersions = null;
+                      Map<VersionSource<?>, Long> gcVersions = null;
                       if (this.last && rgn.getVersionVector() != null) {
                         gcVersions = rgn.getVersionVector().getMemberToGCVersion();
                       }
@@ -2088,14 +2090,14 @@ public class InitialImageOperation {
     }
 
     private void replyNoData(ClusterDistributionManager dm, boolean isDeltaGII,
-        Map<VersionSource, Long> gcVersions) {
+        Map<VersionSource<?>, Long> gcVersions) {
       ImageReplyMessage.send(getSender(), this.processorId, null, dm, null, 0, 0, 1, true, 0,
           isDeltaGII, null, gcVersions);
     }
 
     protected void replyWithData(ClusterDistributionManager dm, List entries, int seriesNum,
         int msgNum, int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
-        RegionVersionHolder holderToSend, Map<VersionSource, Long> gcVersions) {
+        RegionVersionHolder holderToSend, Map<VersionSource<?>, Long> gcVersions) {
       ImageReplyMessage.send(getSender(), this.processorId, null, dm, entries, seriesNum, msgNum,
           numSeries, lastInSeries, flowControlId, isDeltaGII, holderToSend, gcVersions);
     }
@@ -2794,7 +2796,7 @@ public class InitialImageOperation {
      * A map of the final GC versions. This sent with the last GII chunk to ensure that the GII
      * recipient's GC version matches that of the sender.
      */
-    private Map<VersionSource, Long> gcVersions;
+    private Map<VersionSource<?>, Long> gcVersions;
 
     /** the {@link KnownVersion} of the remote peer */
     private transient KnownVersion remoteVersion;
@@ -2822,7 +2824,7 @@ public class InitialImageOperation {
     public static void send(InternalDistributedMember recipient, int processorId,
         ReplyException exception, ClusterDistributionManager dm, List entries, int seriesNum,
         int msgNum, int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
-        RegionVersionHolder holderToSend, Map<VersionSource, Long> gcVersions) {
+        RegionVersionHolder holderToSend, Map<VersionSource<?>, Long> gcVersions) {
       ImageReplyMessage m = new ImageReplyMessage();
 
       m.processorId = processorId;
@@ -2903,7 +2905,7 @@ public class InitialImageOperation {
 
       int gcVersionsLength = in.readShort();
       if (gcVersionsLength >= 0) {
-        gcVersions = new HashMap<VersionSource, Long>(gcVersionsLength);
+        gcVersions = new HashMap<>(gcVersionsLength);
       }
       for (int i = 0; i < gcVersionsLength; i++) {
         VersionSource key = context.getDeserializer().readObject(in);
@@ -2935,7 +2937,7 @@ public class InitialImageOperation {
       }
       out.writeShort(gcVersions == null ? -1 : gcVersions.size());
       if (gcVersions != null) {
-        for (Map.Entry<VersionSource, Long> entry : gcVersions.entrySet()) {
+        for (Map.Entry<VersionSource<?>, Long> entry : gcVersions.entrySet()) {
           context.getSerializer().writeObject(entry.getKey(), out);
           InternalDataSerializer.writeUnsignedVL(entry.getValue(), out);
         }

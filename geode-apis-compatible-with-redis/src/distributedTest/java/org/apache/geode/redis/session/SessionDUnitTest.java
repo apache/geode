@@ -17,6 +17,7 @@ package org.apache.geode.redis.session;
 
 
 import java.net.HttpCookie;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -24,20 +25,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.ClientResources;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.lettuce.core.RedisConnectionException;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
@@ -47,14 +51,16 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class SessionDUnitTest {
+
+  private static final Logger logger = LogService.getLogger();
 
   @ClassRule
   public static RedisClusterStartupRule cluster = new RedisClusterStartupRule();
@@ -62,6 +68,9 @@ public abstract class SessionDUnitTest {
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public TestName testName = new TestName();
 
   // 30 minutes
   protected static final int DEFAULT_SESSION_TIMEOUT = 60 * 30;
@@ -75,15 +84,26 @@ public abstract class SessionDUnitTest {
   protected static final Map<Integer, Integer> ports = new HashMap<>();
   private static ConfigurableApplicationContext springApplicationContext;
 
-  private static RedisClient redisClient;
-  private static StatefulRedisConnection<String, String> connection;
-  protected static RedisCommands<String, String> commands;
+  private RedisClusterClient redisClient;
+  private static StatefulRedisClusterConnection<String, String> connection;
+  protected static RedisAdvancedClusterCommands<String, String> commands;
+  private static Retry retry;
 
   @BeforeClass
   public static void setup() {
     setupAppPorts();
     setupGeodeRedis();
-    setupClient();
+    setupRetry();
+  }
+
+  protected static void setupRetry() {
+    RetryConfig config = RetryConfig.custom()
+        .maxAttempts(20)
+        .retryExceptions(HttpServerErrorException.InternalServerError.class,
+            RedisConnectionException.class)
+        .build();
+    RetryRegistry registry = RetryRegistry.of(config);
+    retry = registry.retry("sessions");
   }
 
   protected static void setupAppPorts() {
@@ -105,15 +125,19 @@ public abstract class SessionDUnitTest {
     startSpringApp(APP2, sessionTimeout, ports.get(SERVER2), ports.get(SERVER1));
   }
 
-  protected static void setupClient() {
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(new String[] {"" + ports.get(SERVER1)});
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
-        .autoReconnect(true)
+  @Before
+  public void setupClient() {
+    redisClient = RedisClusterClient.create("redis://localhost:" + ports.get(SERVER1));
+
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .enablePeriodicRefresh(Duration.ofSeconds(5))
+            .build();
+
+    redisClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
         .build());
     connection = redisClient.connect();
     commands = connection.sync();
@@ -121,24 +145,37 @@ public abstract class SessionDUnitTest {
 
   @AfterClass
   public static void cleanupAfterClass() {
-    connection.close();
     stopSpringApp(APP1);
     stopSpringApp(APP2);
   }
 
   @After
   public void cleanupAfterTest() {
-    commands.flushall();
+    logger.info(
+        "RetryMetrics after test {}: [successfulCallsWithRetries: {} successfulCallsWithoutRetries: {} failedCallsWithRetries: {} failedCallsWithoutRetries: {}]",
+        testName.getMethodName(),
+        retry.getMetrics().getNumberOfSuccessfulCallsWithRetryAttempt(),
+        retry.getMetrics().getNumberOfSuccessfulCallsWithoutRetryAttempt(),
+        retry.getMetrics().getNumberOfFailedCallsWithRetryAttempt(),
+        retry.getMetrics().getNumberOfFailedCallsWithoutRetryAttempt());
+
+    flushAll();
+
+    try {
+      redisClient.shutdown();
+    } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
+  }
+
+  protected void flushAll() {
+    GeodeAwaitility.await().ignoreExceptions()
+        .untilAsserted(() -> cluster.flushAll());
   }
 
   protected static void startRedisServer(int server) {
     cluster.startRedisVM(server, cluster.getMember(LOCATOR).getPort());
-
-    cluster.getVM(server).invoke("Set logging level to DEBUG", () -> {
-      Logger logger = LogManager.getLogger("org.apache.geode.redis.internal");
-      Configurator.setAllLevels(logger.getName(), Level.getLevel("DEBUG"));
-      FastLogger.setDelegating(true);
-    });
+    cluster.enableDebugLogging(server);
   }
 
   protected static void startSpringApp(int sessionApp, long sessionTimeout, int... serverPorts) {
@@ -146,15 +183,13 @@ public abstract class SessionDUnitTest {
     VM host = cluster.getVM(sessionApp);
     host.invoke("Start a Spring app", () -> {
       System.setProperty("server.port", "" + httpPort);
-      System.setProperty("spring.redis.port", "" + serverPorts[0]);
       System.setProperty("server.servlet.session.timeout", "" + sessionTimeout + "s");
-      String[] args = new String[serverPorts.length];
 
+      String[] args = new String[serverPorts.length];
       for (int i = 0; i < serverPorts.length; i++) {
-        args[i] = "" + serverPorts[i];
+        args[i] = "localhost:" + serverPorts[i];
       }
-      springApplicationContext = SpringApplication.run(
-          RedisSpringTestApplication.class, args);
+      springApplicationContext = SpringApplication.run(RedisSpringTestApplication.class, args);
     });
   }
 
@@ -162,60 +197,51 @@ public abstract class SessionDUnitTest {
     cluster.getVM(sessionApp).invoke(() -> springApplicationContext.close());
   }
 
-  protected String createNewSessionWithNote(int sessionApp, String note) {
-    HttpEntity<String> request = new HttpEntity<>(note);
-    String sessionCookie = "";
-    HttpHeaders resultHeaders = new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp)
-                + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
-    sessionCookie = resultHeaders.getFirst("Set-Cookie");
-
-    return sessionCookie;
+  protected String createNewSessionWithNote(int sessionApp, String note) throws Exception {
+    return Retry.decorateCallable(retry, () -> createNewSessionWithNote0(sessionApp, note)).call();
   }
 
-  protected String[] getSessionNotes(int sessionApp, String sessionCookie) {
+  private String createNewSessionWithNote0(int sessionApp, String note) {
+    HttpEntity<String> request = new HttpEntity<>(note);
+    HttpHeaders resultHeaders = new RestTemplate()
+        .postForEntity("http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request, String.class)
+        .getHeaders();
+
+    return resultHeaders.getFirst("Set-Cookie");
+  }
+
+  protected String[] getSessionNotes(int sessionApp, String sessionCookie) throws Exception {
+    return Retry.decorateCallable(retry, () -> getSessionNotes0(sessionApp, sessionCookie)).call();
+  }
+
+  private String[] getSessionNotes0(int sessionApp, String sessionCookie) {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     HttpEntity<String> request = new HttpEntity<>("", requestHeaders);
-    boolean sesssionObtained = false;
-    String[] responseBody = new String[0];
-    do {
-      try {
-        responseBody = new RestTemplate()
-            .exchange(
-                "http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
-                HttpMethod.GET,
-                request,
-                String[].class)
-            .getBody();
-        sesssionObtained = true;
-      } catch (HttpServerErrorException e) {
-        if (e.getMessage().contains("Internal Server Error")) {
-          // retry
-        } else {
-          throw e;
-        }
-      }
-    } while (!sesssionObtained);
-    return responseBody;
+
+    return new RestTemplate()
+        .exchange("http://localhost:" + ports.get(sessionApp) + "/getSessionNotes",
+            HttpMethod.GET, request, String[].class)
+        .getBody();
   }
 
-  void addNoteToSession(int sessionApp, String sessionCookie, String note) {
+  void addNoteToSession(int sessionApp, String sessionCookie, String note) throws Exception {
+    Retry.decorateCallable(retry, () -> addNoteToSession0(sessionApp, sessionCookie, note))
+        .call();
+  }
+
+  private Void addNoteToSession0(int sessionApp, String sessionCookie, String note)
+      throws Exception {
     HttpHeaders requestHeaders = new HttpHeaders();
     requestHeaders.add("Cookie", sessionCookie);
     List<String> notes = new ArrayList<>();
     Collections.addAll(notes, getSessionNotes(sessionApp, sessionCookie));
     HttpEntity<String> request = new HttpEntity<>(note, requestHeaders);
     new RestTemplate()
-        .postForEntity(
-            "http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
-            request,
-            String.class)
-        .getHeaders();
+        .postForEntity("http://localhost:" + ports.get(sessionApp) + "/addSessionNote",
+            request, String.class);
+    return null;
   }
 
   protected String getSessionId(String sessionCookie) {
@@ -223,4 +249,5 @@ public abstract class SessionDUnitTest {
     byte[] decodedCookie = Base64.getDecoder().decode(cookies.get(0).getValue());
     return new String(decodedCookie);
   }
+
 }

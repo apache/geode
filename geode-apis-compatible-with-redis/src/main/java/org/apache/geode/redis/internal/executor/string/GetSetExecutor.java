@@ -17,13 +17,13 @@ package org.apache.geode.redis.internal.executor.string;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetSetExecutor extends StringExecutor {
+public class GetSetExecutor extends AbstractExecutor {
 
   private static final int VALUE_INDEX = 2;
 
@@ -33,11 +33,10 @@ public class GetSetExecutor extends StringExecutor {
 
     RedisKey key = command.getKey();
     byte[] newCharValue = commandElems.get(VALUE_INDEX);
-    ByteArrayWrapper newValueWrapper = new ByteArrayWrapper(newCharValue);
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper oldValueWrapper = stringCommands.getset(key, newValueWrapper);
+    RedisStringCommands stringCommands = context.getStringCommands();
+    byte[] oldValue = stringCommands.getset(key, newCharValue);
 
-    return respondBulkStrings(oldValueWrapper);
+    return respondBulkStrings(oldValue);
   }
 }

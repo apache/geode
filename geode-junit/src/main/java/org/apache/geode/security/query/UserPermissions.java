@@ -25,9 +25,10 @@ public class UserPermissions {
 
   public UserPermissions() {
     if (!manager.initializeFromJsonResource(
-        "org/apache/geode/management/internal/security/clientServer.json"))
+        "org/apache/geode/management/internal/security/clientServer.json")) {
       throw new RuntimeException(
           "Something bad happened while trying to load the TestSecurityManager with the org/apache/geode/management/internal/security/clientServer.json");
+    }
   }
 
 

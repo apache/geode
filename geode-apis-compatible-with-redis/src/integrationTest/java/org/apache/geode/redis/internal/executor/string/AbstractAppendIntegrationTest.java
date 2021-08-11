@@ -25,25 +25,27 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public abstract class AbstractAppendIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractAppendIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private Jedis jedis2;
+  private JedisCluster jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), 10000000);
-    jedis2 = new Jedis("localhost", getPort(), 10000000);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
-  public void flushAll() {
-    jedis.flushAll();
+  public void tearDown() {
+    flushAll();
     jedis.close();
   }
 
@@ -79,7 +81,7 @@ public abstract class AbstractAppendIntegrationTest implements RedisPortSupplier
 
     new ConcurrentLoopingThreads(listSize,
         (i) -> jedis.append(key, values1.get(i)),
-        (i) -> jedis2.append(key, values2.get(i))).run();
+        (i) -> jedis.append(key, values2.get(i))).run();
 
     for (int i = 0; i < listSize; i++) {
       assertThat(jedis.get(key)).contains(values1.get(i));

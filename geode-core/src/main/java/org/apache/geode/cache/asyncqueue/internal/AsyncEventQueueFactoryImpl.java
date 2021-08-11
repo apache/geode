@@ -64,60 +64,60 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     this.cache = cache;
     this.gatewaySenderAttributes = gatewaySenderAttributes;
     // set a different default for batchTimeInterval for AsyncEventQueue
-    this.gatewaySenderAttributes.batchTimeInterval = batchTimeInterval;
+    this.gatewaySenderAttributes.setBatchTimeInterval(batchTimeInterval);
   }
 
   @Override
   public AsyncEventQueueFactory setBatchSize(int size) {
-    gatewaySenderAttributes.batchSize = size;
+    gatewaySenderAttributes.setBatchSize(size);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setPersistent(boolean isPersistent) {
-    gatewaySenderAttributes.isPersistenceEnabled = isPersistent;
+    gatewaySenderAttributes.setPersistenceEnabled(isPersistent);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDiskStoreName(String name) {
-    gatewaySenderAttributes.diskStoreName = name;
+    gatewaySenderAttributes.setDiskStoreName(name);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setMaximumQueueMemory(int memory) {
-    gatewaySenderAttributes.maximumQueueMemory = memory;
+    gatewaySenderAttributes.setMaximumQueueMemory(memory);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDiskSynchronous(boolean isSynchronous) {
-    gatewaySenderAttributes.isDiskSynchronous = isSynchronous;
+    gatewaySenderAttributes.setDiskSynchronous(isSynchronous);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setBatchTimeInterval(int batchTimeInterval) {
-    gatewaySenderAttributes.batchTimeInterval = batchTimeInterval;
+    gatewaySenderAttributes.setBatchTimeInterval(batchTimeInterval);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setBatchConflationEnabled(boolean isConflation) {
-    gatewaySenderAttributes.isBatchConflationEnabled = isConflation;
+    gatewaySenderAttributes.setBatchConflationEnabled(isConflation);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDispatcherThreads(int numThreads) {
-    gatewaySenderAttributes.dispatcherThreads = numThreads;
+    gatewaySenderAttributes.setDispatcherThreads(numThreads);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setOrderPolicy(OrderPolicy policy) {
-    gatewaySenderAttributes.policy = policy;
+    gatewaySenderAttributes.setOrderPolicy(policy);
     return this;
   }
 
@@ -129,14 +129,14 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
   @Override
   public AsyncEventQueueFactory removeGatewayEventFilter(GatewayEventFilter filter) {
-    gatewaySenderAttributes.eventFilters.remove(filter);
+    gatewaySenderAttributes.getGatewayEventFilters().remove(filter);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setGatewayEventSubstitutionListener(
       GatewayEventSubstitutionFilter filter) {
-    gatewaySenderAttributes.eventSubstitutionFilter = filter;
+    gatewaySenderAttributes.setEventSubstitutionFilter(filter);
     return this;
   }
 
@@ -192,7 +192,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   private GatewaySender create(String id) {
-    gatewaySenderAttributes.id = id;
+    gatewaySenderAttributes.setId(id);
 
     if (gatewaySenderAttributes.getDispatcherThreads() <= 0) {
       throw new AsyncEventQueueConfigurationException(
@@ -222,7 +222,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     } else {
       if (gatewaySenderAttributes.getOrderPolicy() == null
           && gatewaySenderAttributes.getDispatcherThreads() > 1) {
-        gatewaySenderAttributes.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+        gatewaySenderAttributes.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
       }
 
       if (cache instanceof CacheCreation) {
@@ -238,46 +238,48 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   public void configureAsyncEventQueue(AsyncEventQueue asyncQueueCreation) {
-    gatewaySenderAttributes.batchSize = asyncQueueCreation.getBatchSize();
-    gatewaySenderAttributes.batchTimeInterval = asyncQueueCreation.getBatchTimeInterval();
-    gatewaySenderAttributes.isBatchConflationEnabled =
-        asyncQueueCreation.isBatchConflationEnabled();
-    gatewaySenderAttributes.isPersistenceEnabled = asyncQueueCreation.isPersistent();
-    gatewaySenderAttributes.diskStoreName = asyncQueueCreation.getDiskStoreName();
-    gatewaySenderAttributes.isDiskSynchronous = asyncQueueCreation.isDiskSynchronous();
-    gatewaySenderAttributes.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
-    gatewaySenderAttributes.isParallel = asyncQueueCreation.isParallel();
-    gatewaySenderAttributes.isBucketSorted =
-        ((AsyncEventQueueCreation) asyncQueueCreation).isBucketSorted();
-    gatewaySenderAttributes.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
-    gatewaySenderAttributes.policy = asyncQueueCreation.getOrderPolicy();
-    gatewaySenderAttributes.eventFilters = asyncQueueCreation.getGatewayEventFilters();
-    gatewaySenderAttributes.eventSubstitutionFilter =
-        asyncQueueCreation.getGatewayEventSubstitutionFilter();
-    gatewaySenderAttributes.isForInternalUse = true;
-    gatewaySenderAttributes.forwardExpirationDestroy =
-        asyncQueueCreation.isForwardExpirationDestroy();
+    gatewaySenderAttributes.setBatchSize(asyncQueueCreation.getBatchSize());
+    gatewaySenderAttributes.setBatchTimeInterval(asyncQueueCreation.getBatchTimeInterval());
+    gatewaySenderAttributes
+        .setBatchConflationEnabled(asyncQueueCreation.isBatchConflationEnabled());
+    gatewaySenderAttributes.setPersistenceEnabled(asyncQueueCreation.isPersistent());
+    gatewaySenderAttributes.setDiskStoreName(asyncQueueCreation.getDiskStoreName());
+    gatewaySenderAttributes.setDiskSynchronous(asyncQueueCreation.isDiskSynchronous());
+    gatewaySenderAttributes.setMaximumQueueMemory(asyncQueueCreation.getMaximumQueueMemory());
+    gatewaySenderAttributes.setParallel(asyncQueueCreation.isParallel());
+    gatewaySenderAttributes
+        .setBucketSorted(((AsyncEventQueueCreation) asyncQueueCreation).isBucketSorted());
+    gatewaySenderAttributes.setDispatcherThreads(asyncQueueCreation.getDispatcherThreads());
+    gatewaySenderAttributes.setOrderPolicy(asyncQueueCreation.getOrderPolicy());
+    for (GatewayEventFilter filter : asyncQueueCreation.getGatewayEventFilters()) {
+      gatewaySenderAttributes.getGatewayEventFilters().add(filter);
+    }
+    gatewaySenderAttributes
+        .setEventSubstitutionFilter(asyncQueueCreation.getGatewayEventSubstitutionFilter());
+    gatewaySenderAttributes.setForInternalUse(true);
+    gatewaySenderAttributes
+        .setForwardExpirationDestroy(asyncQueueCreation.isForwardExpirationDestroy());
   }
 
   @Override
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
-    gatewaySenderAttributes.isParallel = isParallel;
+    gatewaySenderAttributes.setParallel(isParallel);
     return this;
   }
 
   public AsyncEventQueueFactory setBucketSorted(boolean isbucketSorted) {
-    gatewaySenderAttributes.isBucketSorted = isbucketSorted;
+    gatewaySenderAttributes.setBucketSorted(isbucketSorted);
     return this;
   }
 
   public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
-    gatewaySenderAttributes.isMetaQueue = isMetaQueue;
+    gatewaySenderAttributes.setMetaQueue(isMetaQueue);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
-    gatewaySenderAttributes.forwardExpirationDestroy = forward;
+    gatewaySenderAttributes.setForwardExpirationDestroy(forward);
     return this;
   }
 

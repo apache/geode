@@ -106,7 +106,7 @@ gradle.taskGraph.whenReady({ graph ->
         attributes.put("Manifest-Version", "1.0")
         attributes.put("Created-By", System.getProperty("user.name"))
         attributes.put("Title", rootProject.name)
-        attributes.put("Version", version)
+        attributes.put("Version", archiveVersion)
         attributes.put("Organization", productOrg)
         attributes.put("Class-Path", runtimeList.join(' '))
         attributes.put("Dependent-Modules", projectDependencies.collect({ "${it.name}-${it.version}" }).join(' '))
@@ -133,7 +133,7 @@ configurations {
 // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
 tasks.all { task ->
   if (task instanceof Jar) {
-    baseName = project.name
+    archiveBaseName = project.name
   }
 }
 

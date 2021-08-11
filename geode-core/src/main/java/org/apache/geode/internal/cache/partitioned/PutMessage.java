@@ -548,15 +548,17 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     super.toData(out, context);
 
     int extraFlags = this.deserializationPolicy;
-    if (this.bridgeContext != null)
+    if (this.bridgeContext != null) {
       extraFlags |= HAS_BRIDGE_CONTEXT;
+    }
     if (this.deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
         && (this.valObj != null || getValBytes() != null) && this.sendDeltaWithFullValue
         && this.event.getDeltaBytes() != null) {
       extraFlags |= HAS_DELTA_WITH_FULL_VALUE;
     }
-    if (this.originalSender != null)
+    if (this.originalSender != null) {
       extraFlags |= HAS_ORIGINAL_SENDER;
+    }
     out.writeByte(extraFlags);
 
     DataSerializer.writeObject(getKey(), out);
@@ -603,14 +605,18 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.ifNew)
+    if (this.ifNew) {
       s |= IF_NEW;
-    if (this.ifOld)
+    }
+    if (this.ifOld) {
       s |= IF_OLD;
-    if (this.requireOldValue)
+    }
+    if (this.requireOldValue) {
       s |= REQUIRED_OLD_VAL;
-    if (this.expectedOldValue != null)
+    }
+    if (this.expectedOldValue != null) {
       s |= HAS_EXPECTED_OLD_VAL;
+    }
     if (this.filterInfo != null) {
       s |= HAS_FILTER_INFO;
       this.hasFilterInfo = true;
@@ -623,8 +629,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
         this.deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
       }
     }
-    if (this.versionTag != null)
+    if (this.versionTag != null) {
       s |= HAS_VERSION_TAG;
+    }
     return s;
   }
 

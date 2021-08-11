@@ -90,10 +90,10 @@ public class JGAddress extends UUID {
   public String toString() {
     StringBuilder sb = new StringBuilder();
 
-    if (ip_addr == null)
-      sb.append("<null>");
-    else {
-      sb.append(ip_addr.getHostName());
+    if (ip_addr == null) {
+      sb.append("<no address>");
+    } else {
+      sb.append(ip_addr);
     }
     if (vmViewId >= 0) {
       sb.append("<v").append(vmViewId).append('>');
@@ -132,8 +132,9 @@ public class JGAddress extends UUID {
       byte[] address = ip_addr.getAddress(); // 4 bytes (IPv4) or 16 bytes (IPv6)
       out.writeByte(address.length); // 1 byte
       out.write(address, 0, address.length);
-      if (ip_addr instanceof Inet6Address)
+      if (ip_addr instanceof Inet6Address) {
         out.writeInt(((Inet6Address) ip_addr).getScopeId());
+      }
     } else {
       out.writeByte(0);
     }
@@ -154,9 +155,10 @@ public class JGAddress extends UUID {
   @Override
   public void readFrom(DataInput in) throws Exception {
     int len = in.readByte();
-    if (len > 0 && (len != Global.IPV4_SIZE && len != Global.IPV6_SIZE))
+    if (len > 0 && (len != Global.IPV4_SIZE && len != Global.IPV6_SIZE)) {
       throw new IOException("length has to be " + Global.IPV4_SIZE + " or " + Global.IPV6_SIZE
           + " bytes (was " + len + " bytes)");
+    }
     byte[] a = new byte[len]; // 4 bytes (IPv4) or 16 bytes (IPv6)
     in.readFully(a);
     if (len == Global.IPV6_SIZE) {

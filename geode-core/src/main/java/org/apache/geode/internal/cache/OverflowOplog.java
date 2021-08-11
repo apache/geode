@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.OplogCancelledException;
@@ -51,6 +52,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 class OverflowOplog implements CompactableOplog, Flushable {
   private static final Logger logger = LogService.getLogger();
+
+  /* System property to override the disk store write buffer size. */
+  public final String WRITE_BUFFER_SIZE_SYS_PROP_NAME = "WRITE_BUF_SIZE";
 
   /** Extension of the oplog file * */
   static final String CRF_FILE_EXT = ".crf";
@@ -103,6 +107,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    *
    * @param oplogId integer identifying the new oplog
    * @param dirHolder The directory in which to create new Oplog
+   * @param minSize Minimum oplog file size in bytes
    */
   OverflowOplog(int oplogId, OverflowOplogSet parent, DirectoryHolder dirHolder, long minSize) {
     this.oplogId = oplogId;
@@ -142,7 +147,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
     }
   }
 
-  private DiskStoreImpl getParent() {
+  DiskStoreImpl getParent() {
     return this.parent;
   }
 
@@ -183,13 +188,27 @@ class OverflowOplog implements CompactableOplog, Flushable {
     this.stats.incOpenOplogs();
   }
 
-  private static ByteBuffer allocateWriteBuf(OverflowOplog previous) {
+  @VisibleForTesting
+  Integer getWriteBufferSizeProperty() {
+    return Integer.getInteger(WRITE_BUFFER_SIZE_SYS_PROP_NAME);
+  }
+
+  @VisibleForTesting
+  Integer getWriteBufferCapacity() {
+    Integer writeBufferSizeProperty = getWriteBufferSizeProperty();
+    if (writeBufferSizeProperty != null) {
+      return writeBufferSizeProperty;
+    }
+    return getParent().getWriteBufferSize();
+  }
+
+  private ByteBuffer allocateWriteBuf(OverflowOplog previous) {
     ByteBuffer result = null;
     if (previous != null) {
       result = previous.consumeWriteBuf();
     }
     if (result == null) {
-      result = ByteBuffer.allocateDirect(Integer.getInteger("WRITE_BUF_SIZE", 32768));
+      return ByteBuffer.allocateDirect(getWriteBufferCapacity());
     }
     return result;
   }
@@ -884,8 +903,9 @@ class OverflowOplog implements CompactableOplog, Flushable {
         bb = new BytesAndBits(DiskEntry.LOCAL_INVALID_BYTES, userBits);
       }
     } else {
-      if (offsetInOplog == -1)
+      if (offsetInOplog == -1) {
         return null;
+      }
       try {
         for (;;) {
           dr.getCancelCriterion().checkCancelInProgress(null);
@@ -937,10 +957,12 @@ class OverflowOplog implements CompactableOplog, Flushable {
       this.maxOplogSize = 0;
       olf.currSize = 0;
     }
-    if (olf.f == null)
+    if (olf.f == null) {
       return;
-    if (!olf.f.exists())
+    }
+    if (!olf.f.exists()) {
       return;
+    }
     if (!olf.f.delete() && olf.f.exists()) {
       throw new DiskAccessException(
           String.format("Could not delete %s.", olf.f.getAbsolutePath()),
@@ -1030,12 +1052,15 @@ class OverflowOplog implements CompactableOplog, Flushable {
   }
 
   boolean needsCompaction() {
-    if (!isCompactionPossible())
+    if (!isCompactionPossible()) {
       return false;
-    if (getParent().getCompactionThreshold() == 100)
+    }
+    if (getParent().getCompactionThreshold() == 100) {
       return true;
-    if (getParent().getCompactionThreshold() == 0)
+    }
+    if (getParent().getCompactionThreshold() == 0) {
       return false;
+    }
     // otherwise check if we have enough garbage to collect with a compact
     long rvHWMtmp = this.totalCount.get();
     if (rvHWMtmp > 0) {
@@ -1211,8 +1236,9 @@ class OverflowOplog implements CompactableOplog, Flushable {
   private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
   private boolean calledByCompactorThread() {
-    if (!this.compacting)
+    if (!this.compacting) {
       return false;
+    }
     Object v = isCompactorThread.get();
     return v != null && v == Boolean.TRUE;
   }

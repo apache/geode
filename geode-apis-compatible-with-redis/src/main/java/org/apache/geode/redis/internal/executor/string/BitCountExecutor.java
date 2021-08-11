@@ -18,12 +18,13 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class BitCountExecutor extends StringExecutor {
+public class BitCountExecutor extends AbstractExecutor {
 
   private static final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
@@ -33,7 +34,7 @@ public class BitCountExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     long result;
 
     if (commandElems.size() == 4) {

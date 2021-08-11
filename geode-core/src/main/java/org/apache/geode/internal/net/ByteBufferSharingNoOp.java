@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  * meant for use with the {@link NioPlainEngine} only, since that engine keeps no buffers and so,
  * needs no reference counting on buffers, nor any synchronization around access to buffers.
  *
- * See also {@link ByteBufferSharingImpl}
+ * See also {@link ByteBufferVendor}
  */
 class ByteBufferSharingNoOp implements ByteBufferSharing {
 
@@ -44,6 +44,11 @@ class ByteBufferSharingNoOp implements ByteBufferSharing {
 
   @Override
   public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
+    throw new UnsupportedOperationException("Can't expand buffer when using NioPlainEngine");
+  }
+
+  @Override
+  public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
     throw new UnsupportedOperationException("Can't expand buffer when using NioPlainEngine");
   }
 

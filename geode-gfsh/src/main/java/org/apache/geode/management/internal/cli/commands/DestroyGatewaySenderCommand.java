@@ -49,15 +49,15 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public ResultModel destroyGatewaySender(
+      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
+          optionContext = ConverterHint.GATEWAY_SENDER_ID,
+          help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
-      @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
-          optionContext = ConverterHint.GATEWAY_SENDER_ID,
-          help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id,
       @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExist) {
 

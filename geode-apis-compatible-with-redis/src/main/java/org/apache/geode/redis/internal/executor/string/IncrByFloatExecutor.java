@@ -14,25 +14,24 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class IncrByFloatExecutor extends StringExecutor {
+public class IncrByFloatExecutor extends AbstractExecutor {
 
   private static final int INCREMENT_INDEX = 2;
-
-  private static final Pattern invalidArgs =
-      Pattern.compile("[+-]?(inf|infinity)", Pattern.CASE_INSENSITIVE);
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -45,15 +44,14 @@ public class IncrByFloatExecutor extends StringExecutor {
       return validated.getRight();
     }
 
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
     BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
 
     return RedisResponse.bigDecimal(result);
   }
 
   public static Pair<BigDecimal, RedisResponse> validateIncrByFloatArgument(byte[] incrArray) {
-    String doub = Coder.bytesToString(incrArray).toLowerCase();
-    if (invalidArgs.matcher(doub).matches()) {
+    if (isInfinity(incrArray)) {
       return Pair.of(null, RedisResponse.error(RedisConstants.ERROR_NAN_OR_INFINITY));
     }
 

@@ -35,8 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -105,14 +105,19 @@ public class RestAccessControllerTest {
   private static final String ORDER_CAS_OLD_JSON = "order-cas-old.json";
   private static final String ORDER_CAS_NEW_JSON = "order-cas-new.json";
   private static final String ORDER_CAS_WRONG_OLD_JSON = "order-cas-wrong-old.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_JSON =
+      "customer-containing-non-ascii.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON =
+      "customer-containing-non-ascii-query-full-result.json";
+  private static final String CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON =
+      "customer-containing-non-ascii-query-struct-result.json";
 
-  private static final String SLASH = "/";
   private static final String KEY_PREFIX = "/?+ @&./";
   private static final String KEY_SUFFIX = "/?+ @&./";
 
-  private static Map<String, String> jsonResources = new HashMap<>();
+  private static final Map<String, String> jsonResources = new HashMap<>();
 
-  private static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
+  private static final RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
 
   private MockMvc mockMvc;
 
@@ -120,7 +125,7 @@ public class RestAccessControllerTest {
   private static Region<String, PdxInstance> customerRegion;
 
   private static String createKey(int keyNumber) {
-    return KEY_PREFIX + "KEY" + Integer.toString(keyNumber) + KEY_SUFFIX;
+    return KEY_PREFIX + "KEY" + keyNumber + KEY_SUFFIX;
   }
 
   private static String createEncodedKey(int keyNumber) {
@@ -130,14 +135,6 @@ public class RestAccessControllerTest {
   private static String encodeKey(String key) {
     try {
       return URLEncoder.encode(key, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  private static String decodeKey(String encodedKey) {
-    try {
-      return URLDecoder.decode(encodedKey, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException(e);
     }
@@ -167,6 +164,9 @@ public class RestAccessControllerTest {
     loadResource(ORDER_CAS_OLD_JSON);
     loadResource(ORDER_CAS_NEW_JSON);
     loadResource(ORDER_CAS_WRONG_OLD_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON);
+    loadResource(CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON);
 
     RestAgent.createParameterizedQueryRegion();
 
@@ -343,17 +343,8 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void putEntry() throws Exception {
-    mockMvc.perform(put("/v1/orders/2")
-        .content(jsonResources.get(ORDER2_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/orders/2"));
-
-    mockMvc.perform(put("/v1/orders/2")
-        .content(jsonResources.get(ORDER2_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/orders/2"));
+    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
+    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
   }
 
   @Test
@@ -473,7 +464,6 @@ public class RestAccessControllerTest {
         .andExpect(header().string("Location", BASE_URL + "/orders?keys=" + encodedKey));
 
     assertThat(orderRegion).hasSize(1);
-    PdxInstance customer = customerRegion.get(createKey(32));
     assertThat(orderRegion.containsKey(decodedKey)).isTrue();
     Order order = (Order) ((PdxInstance) orderRegion.get(decodedKey)).getObject();
     assertThat(order.getPurchaseOrderNo()).isEqualTo(112);
@@ -548,20 +538,10 @@ public class RestAccessControllerTest {
         .andExpect(status().isNotFound());
 
     // Create an entry that we can subsequently update
-    mockMvc.perform(put("/v1/orders/2")
-        .content(jsonResources.get(ORDER2_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL
-            + "/orders/2"));
+    putAndVerifyCustomer("/v1/orders/2", ORDER2_JSON, "/orders/2");
 
     // Do the actual update
-    mockMvc.perform(put("/v1/orders/2?op=REPLACE")
-        .content(jsonResources.get(ORDER2_UPDATED_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL
-            + "/orders/2"));
+    putAndVerifyCustomer("/v1/orders/2?op=REPLACE", ORDER2_UPDATED_JSON, "/orders/2");
 
     // Check the updated value
     mockMvc.perform(get("/v1/orders/2")
@@ -608,20 +588,10 @@ public class RestAccessControllerTest {
   @WithMockUser
   public void putWithCas() throws Exception {
     // First time through the key does not exist and we get a 404
-    mockMvc.perform(put("/v1/orders/3?op=CAS")
-        .content(jsonResources.get(ORDER_CAS_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk()) // This is wrong!!!
-        .andExpect(header().string("Location", BASE_URL
-            + "/orders/3"));
+    putAndVerifyCustomer("/v1/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
 
     // Create an entry that we can subsequently update
-    mockMvc.perform(put("/v1/orders/3")
-        .content(jsonResources.get(ORDER_CAS_OLD_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL
-            + "/orders/3"));
+    putAndVerifyCustomer("/v1/orders/3", ORDER_CAS_OLD_JSON, "/orders/3");
 
     // Check the value
     mockMvc.perform(get("/v1/orders/3")
@@ -645,11 +615,7 @@ public class RestAccessControllerTest {
         .andExpect(content().json(jsonResources.get(ORDER_CAS_OLD_JSON)));
 
     // Do the actual update
-    mockMvc.perform(put("/v1/orders/3?op=CAS")
-        .content(jsonResources.get(ORDER_CAS_JSON))
-        .with(POST_PROCESSOR))
-        .andExpect(status().isOk())
-        .andExpect(header().string("Location", BASE_URL + "/orders/3"));
+    putAndVerifyCustomer("/v1/orders/3?op=CAS", ORDER_CAS_JSON, "/orders/3");
 
     // Check the updated value
     mockMvc.perform(get("/v1/orders/3")
@@ -1356,6 +1322,54 @@ public class RestAccessControllerTest {
         .andExpect(header().string("Resource-Count", "60"));
   }
 
+  @Test
+  @WithMockUser
+  public void getCustomersContainingNonAsciiText() throws Exception {
+    // Put customer containing non-ascii text
+    putAndVerifyCustomer("/v1/customers/1", CUSTOMER_CONTAINING_NON_ASCII_JSON, "/customers/1");
+
+    // Get customer containing non-ascii text
+    mockMvc.perform(get("/v1/customers/1")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_JSON)));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeAdhocQueryOnCustomersContainingNonAsciiText() throws Exception {
+    // Put customer containing non-ascii text
+    putAndVerifyCustomer("/v1/customers/1", CUSTOMER_CONTAINING_NON_ASCII_JSON, "/customers/1");
+
+    // Query full customer containing non-ascii text
+    // Convert the non-ascii expected result to UTF-8 for Windows Server 2016
+    mockMvc.perform(
+        get("/v1/queries/adhoc?q=SELECT * FROM " + SEPARATOR + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content()
+            .json(new String(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_QUERY_FULL_RESULT_JSON)
+                .getBytes(StandardCharsets.UTF_8))));
+
+    // Query customer fields containing non-ascii text
+    // Convert the non-ascii expected result to UTF-8 for Windows Server 2016
+    mockMvc.perform(get("/v1/queries/adhoc?q=SELECT firstName, lastName FROM " + SEPARATOR
+        + "customers WHERE customerId = 1")
+            .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json(
+            new String(jsonResources.get(CUSTOMER_CONTAINING_NON_ASCII_QUERY_STRUCT_RESULT_JSON)
+                .getBytes(StandardCharsets.UTF_8))));
+  }
+
+  private void putAndVerifyCustomer(String url, String customerJson, String expectedResult)
+      throws Exception {
+    mockMvc.perform(put(url)
+        .content(jsonResources.get(customerJson))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Location", BASE_URL + expectedResult));
+  }
 
   private void deleteAllQueries() throws Exception {
     MvcResult result = mockMvc.perform(get("/v1/queries")

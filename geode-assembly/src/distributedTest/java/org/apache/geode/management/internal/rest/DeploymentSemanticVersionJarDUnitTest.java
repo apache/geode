@@ -30,12 +30,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -202,11 +201,9 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> listAssert =
         assertManagementListResult(client.list(new Deployment()));
-    listAssert.hasConfigurations().hasSize(1)
-        .extracting(Deployment::getFileName)
+    listAssert.hasConfigurations().hasSize(1).extracting(Deployment::getFileName)
         .containsExactly("def.jar");
-    listAssert.hasRuntimeInfos().hasSize(1)
-        .extracting(DeploymentInfo::getJarLocation).asString()
+    listAssert.hasRuntimeInfos().hasSize(1).extracting(DeploymentInfo::getJarLocation).asString()
         .containsOnlyOnce("def.v2.jar");
   }
 
@@ -218,7 +215,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
   private static void verifyLoadAndHasVersion(String artifactId, String className, String version)
       throws Exception {
-    assertThat(JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
+    assertThat(ClassPathLoader.getLatest().getJarDeploymentService()
         .getDeployed(artifactId).isSuccessful()).isTrue();
     Class<?> klass = ClassPathLoader.getLatest().forName(className);
     assertThat(klass).isNotNull();

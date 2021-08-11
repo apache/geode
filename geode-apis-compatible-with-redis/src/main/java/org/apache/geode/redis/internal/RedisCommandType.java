@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisCommandSupportLevel.SUPPORTED
 import static org.apache.geode.redis.internal.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
+import org.apache.geode.redis.internal.ParameterRequirements.ClusterParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.EvenParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.ExactParameterRequirements;
 import org.apache.geode.redis.internal.ParameterRequirements.MaximumParameterRequirements;
@@ -32,6 +33,7 @@ import org.apache.geode.redis.internal.ParameterRequirements.UnspecifiedParamete
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
+import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
 import org.apache.geode.redis.internal.executor.connection.PingExecutor;
@@ -53,6 +55,7 @@ import org.apache.geode.redis.internal.executor.hash.HSetNXExecutor;
 import org.apache.geode.redis.internal.executor.hash.HStrLenExecutor;
 import org.apache.geode.redis.internal.executor.hash.HValsExecutor;
 import org.apache.geode.redis.internal.executor.key.DelExecutor;
+import org.apache.geode.redis.internal.executor.key.DumpExecutor;
 import org.apache.geode.redis.internal.executor.key.ExistsExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireAtExecutor;
 import org.apache.geode.redis.internal.executor.key.ExpireExecutor;
@@ -62,10 +65,12 @@ import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
 import org.apache.geode.redis.internal.executor.key.PTTLExecutor;
 import org.apache.geode.redis.internal.executor.key.PersistExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameExecutor;
+import org.apache.geode.redis.internal.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.executor.key.TypeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PsubscribeExecutor;
+import org.apache.geode.redis.internal.executor.pubsub.PubSubExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
@@ -91,6 +96,19 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZIncrByExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZPopMaxExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeByLexExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeByScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRangeExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRemExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -134,6 +152,7 @@ public enum RedisCommandType {
   /*************** Keys ******************/
 
   DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  DUMP(new DumpExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
@@ -143,6 +162,7 @@ public enum RedisCommandType {
   PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  RESTORE(new RestoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
@@ -188,8 +208,28 @@ public enum RedisCommandType {
   SMEMBERS(new SMembersExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
 
+  /************ Sorted Sets **************/
+
+  ZADD(new ZAddExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
+  ZCARD(new ZCardExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  ZCOUNT(new ZCountExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
+  ZPOPMAX(new ZPopMaxExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
+      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
+  ZRANGE(new ZRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
+      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
+  ZRANGEBYLEX(new ZRangeByLexExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
+  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
+  ZRANK(new ZRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
+      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
+  ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+
   /************* Server *****************/
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
+  INFO(new InfoExecutor(), SUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
 
   /********** Publish Subscribe **********/
   SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
@@ -197,9 +237,10 @@ public enum RedisCommandType {
   PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
   PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
   UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
+  PUBSUB(new PubSubExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
 
-  /********** Server **********/
-  INFO(new InfoExecutor(), SUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  /************* Cluster *****************/
+  CLUSTER(new ClusterExecutor(), SUPPORTED, new ClusterParameterRequirements()),
 
   /***************************************
    ********* Internal Commands ***********
@@ -330,7 +371,7 @@ public enum RedisCommandType {
   }
 
   public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext executionHandlerContext) {
+      ExecutionHandlerContext executionHandlerContext) throws Exception {
 
     parameterRequirements.checkParameters(command, executionHandlerContext);
 

@@ -103,7 +103,7 @@ public class GfshParserConverterTest {
   public void testUnspecifiedValueToStringArray() {
     String command = "change loglevel --loglevel=finer --groups=group1,group2";
     ParseResult result = parser.parse(command);
-    String[] memberIdValue = (String[]) result.getArguments()[0];
+    String[] memberIdValue = (String[]) result.getArguments()[1];
     assertThat(memberIdValue).isNull();
   }
 

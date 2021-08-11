@@ -84,16 +84,16 @@ resources:
   type: git
   source:
     branch: master
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/upthewaterspout/geode-release-check.git
 
 jobs:
   - name: build-geode-from-tag
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -127,9 +127,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -165,9 +165,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -202,9 +202,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -231,9 +231,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-examples
-            trigger: true
+      - in_parallel:
+        - get: geode-examples
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -271,9 +271,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
+      - in_parallel:
+        - get: geode-native
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -316,10 +316,11 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode-native
-            trigger: true
-          - get: geode
+      - in_parallel:
+        - get: geode-native
+          trigger: true
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -366,11 +367,11 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
-          - get: upthewaterspout-tests
-          - get: geode-examples
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: upthewaterspout-tests
+        - get: geode-examples
       - task: validate
         timeout: 1h
         config:
@@ -391,7 +392,7 @@ jobs:
             - |
               set -ex
               apt update -q
-              apt install -qq -y --no-install-recommends unzip git gpg
+              apt install -qq -y --no-install-recommends unzip git gpg wget
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
@@ -444,9 +445,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -537,9 +538,9 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
+      - in_parallel:
+        - get: geode
+          trigger: true
       - task: validate
         timeout: 1h
         config:
@@ -587,11 +588,10 @@ jobs:
     serial: true
     public: true
     plan:
-      - aggregate:
-          - get: geode
-            trigger: true
-      - aggregate:
-          - get: geode-develop
+      - in_parallel:
+        - get: geode
+          trigger: true
+        - get: geode-develop
       - task: validate
         timeout: 1h
         config:

@@ -131,7 +131,7 @@ public class PoolImpl implements InternalPool {
 
   private final ConnectionSource source;
   private final ConnectionManager manager;
-  private QueueManager queueManager;
+  private final QueueManager queueManager;
   protected final EndpointManager endpointManager;
   private final PoolManagerImpl pm;
   protected final InternalLogWriter securityLogWriter;
@@ -274,6 +274,8 @@ public class PoolImpl implements InternalPool {
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
           subscriptionRedundancyLevel, pingInterval, securityLogWriter, proxyId);
+    } else {
+      queueManager = null;
     }
 
     manager = new ConnectionManagerImpl(name, connectionFactory, endpointManager, maxConnections,
@@ -297,8 +299,9 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 6.5
    */
   public boolean isCompatible(Pool p) {
-    if (p == null)
+    if (p == null) {
       return false;
+    }
     return getFreeConnectionTimeout() == p.getFreeConnectionTimeout()
         && getServerConnectionTimeout() == p.getServerConnectionTimeout()
         && getSocketConnectTimeout() == p.getSocketConnectTimeout()
@@ -322,8 +325,9 @@ public class PoolImpl implements InternalPool {
   }
 
   private void start() {
-    if (startDisabled)
+    if (startDisabled) {
       return;
+    }
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -968,10 +972,12 @@ public class PoolImpl implements InternalPool {
    * Test hook that returns the ThreadIdToSequenceIdMap
    */
   public Map getThreadIdToSequenceIdMap() {
-    if (queueManager == null)
+    if (queueManager == null) {
       return Collections.emptyMap();
-    if (queueManager.getState() == null)
+    }
+    if (queueManager.getState() == null) {
       return Collections.emptyMap();
+    }
     return queueManager.getState().getThreadIdToSequenceIdMap();
   }
 

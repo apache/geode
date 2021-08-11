@@ -64,13 +64,15 @@ public class QRegion implements SelectResults {
 
   /** Creates a new instance of QRegion */
   public QRegion(Region region, boolean includeKeys) {
-    if (region == null)
+    if (region == null) {
       throw new IllegalArgumentException(
           "Region can not be NULL");
+    }
     this.region = region;
     Class constraint = this.region.getAttributes().getValueConstraint();
-    if (constraint == null)
+    if (constraint == null) {
       constraint = Object.class;
+    }
     ResultsCollectionWrapper res = null;
     if (includeKeys) {
       res =
@@ -87,13 +89,15 @@ public class QRegion implements SelectResults {
 
   public QRegion(Region region, boolean includeKeys, ExecutionContext context) {
 
-    if (region == null)
+    if (region == null) {
       throw new IllegalArgumentException(
           "Region can not be NULL");
+    }
 
     Class constraint = region.getAttributes().getValueConstraint();
-    if (constraint == null)
+    if (constraint == null) {
       constraint = Object.class;
+    }
 
     ResultsCollectionWrapper res = null;
     if (context.getBucketList() != null && region instanceof PartitionedRegion) {

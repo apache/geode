@@ -63,38 +63,6 @@ public class KnownVersion extends AbstractVersion {
   public static final KnownVersion TOKEN =
       new KnownVersion("", "TOKEN", (byte) -1, (byte) 0, (byte) 0, (byte) 0, TOKEN_ORDINAL, true);
 
-  private static final short GFE_70_ORDINAL = 19;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_70 =
-      new KnownVersion("GFE", "7.0", (byte) 7, (byte) 0, (byte) 0, (byte) 0, GFE_70_ORDINAL, true);
-
-  private static final short GFE_701_ORDINAL = 20;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_701 =
-      new KnownVersion("GFE", "7.0.1", (byte) 7, (byte) 0, (byte) 1, (byte) 0, GFE_701_ORDINAL,
-          true);
-
-  private static final short GFE_7099_ORDINAL = 21;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_7099 =
-      new KnownVersion("GFE", "7.0.99", (byte) 7, (byte) 0, (byte) 99, (byte) 0, GFE_7099_ORDINAL,
-          true);
-
-  private static final short GFE_71_ORDINAL = 22;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_71 =
-      new KnownVersion("GFE", "7.1", (byte) 7, (byte) 1, (byte) 0, (byte) 0, GFE_71_ORDINAL, true);
-
-  // 23-29 available for 7.x variants
-
   private static final short GFE_80_ORDINAL = 30;
 
   @Immutable
@@ -237,12 +205,12 @@ public class KnownVersion extends AbstractVersion {
       new KnownVersion("GEODE", "1.13.0", (byte) 1, (byte) 13, (byte) 0, (byte) 0,
           GEODE_1_13_0_ORDINAL, true);
 
-  private static final short GEODE_1_13_1_ORDINAL = 121;
+  private static final short GEODE_1_13_2_ORDINAL = 121;
 
   @Immutable
-  public static final KnownVersion GEODE_1_13_1 =
-      new KnownVersion("GEODE", "1.13.1", (byte) 1, (byte) 13, (byte) 1, (byte) 0,
-          GEODE_1_13_1_ORDINAL, true);
+  public static final KnownVersion GEODE_1_13_2 =
+      new KnownVersion("GEODE", "1.13.2", (byte) 1, (byte) 13, (byte) 1, (byte) 0,
+          GEODE_1_13_2_ORDINAL, true);
 
   private static final short GEODE_1_14_0_ORDINAL = 125;
 
@@ -369,7 +337,7 @@ public class KnownVersion extends AbstractVersion {
   /**
    * @return KnownVersion for ordinal if known, otherwise null.
    */
-  static KnownVersion getKnownVersion(final short ordinal) {
+  public static KnownVersion getKnownVersion(final short ordinal) {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }

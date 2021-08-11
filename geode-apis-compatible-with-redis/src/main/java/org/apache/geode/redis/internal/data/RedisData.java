@@ -17,12 +17,26 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
+import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.RegionProvider;
 
-public interface RedisData extends Delta, DataSerializableFixedID {
-
+public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
   /**
    * Returns true if this instance does not exist.
@@ -49,12 +63,51 @@ public interface RedisData extends Delta, DataSerializableFixedID {
 
   long pttl(Region<RedisKey, RedisData> region, RedisKey key);
 
-  int pexpireat(CommandHelper helper, RedisKey key, long timestamp);
+  int pexpireat(RegionProvider regionProvider, RedisKey key, long timestamp);
 
-  void doExpiration(CommandHelper helper, RedisKey key);
+  void doExpiration(RegionProvider regionProvider, RedisKey key);
 
   String type();
 
   boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey);
+
+  default boolean getForceRecalculateSize() {
+    return true;
+  }
+
+  byte[] dump() throws IOException;
+
+  RedisData restore(byte[] data, boolean replaceExisting) throws Exception;
+
+  default RedisData restore(byte[] data) throws Exception {
+    Object obj;
+    byte[] header = new byte[bRADISH_DUMP_HEADER.length];
+
+    try {
+      ByteArrayInputStream bais = new ByteArrayInputStream(data);
+      bais.read(header);
+
+      // Don't handle Redis dump formats yet
+      if (!Arrays.equals(header, bRADISH_DUMP_HEADER)) {
+        throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD);
+      }
+
+      DataInputStream inputStream = new DataInputStream(bais);
+      short ordinal = inputStream.readShort();
+      KnownVersion knownVersion = KnownVersion.getKnownVersion(ordinal);
+      if (knownVersion == null) {
+        LogService.getLogger()
+            .info("Error restoring object - unknown version ordinal: {}", ordinal);
+        throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD);
+      }
+
+      obj = DataSerializer.readObject(new VersionedDataInputStream(bais, knownVersion));
+    } catch (Exception ex) {
+      LogService.getLogger().warn("Exception restoring data", ex);
+      throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD, ex);
+    }
+
+    return (RedisData) obj;
+  }
 
 }

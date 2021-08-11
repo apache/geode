@@ -19,51 +19,50 @@ package org.apache.geode.redis.internal.data;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 
 public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisHashCommands {
 
-  public RedisHashCommandsFunctionExecutor(
-      CommandHelper helper) {
-    super(helper);
+  public RedisHashCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisHash getRedisHash(RedisKey key, boolean updateStats) {
-    return helper.getRedisHash(key, updateStats);
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_HASH, key, updateStats);
   }
 
   @Override
-  public int hset(RedisKey key, List<ByteArrayWrapper> fieldsToSet, boolean NX) {
+  public int hset(RedisKey key, List<byte[]> fieldsToSet, boolean NX) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hset(getRegion(), key, fieldsToSet, NX));
   }
 
   @Override
-  public int hdel(RedisKey key, List<ByteArrayWrapper> fieldsToRemove) {
+  public int hdel(RedisKey key, List<byte[]> fieldsToRemove) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hdel(getRegion(), key, fieldsToRemove));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hgetall(RedisKey key) {
+  public Collection<byte[]> hgetall(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hgetall());
   }
 
   @Override
-  public int hexists(RedisKey key, ByteArrayWrapper field) {
+  public int hexists(RedisKey key, byte[] field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hexists(field));
   }
 
   @Override
-  public ByteArrayWrapper hget(RedisKey key, ByteArrayWrapper field) {
+  public byte[] hget(RedisKey key, byte[] field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hget(field));
   }
 
@@ -73,42 +72,42 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public int hstrlen(RedisKey key, ByteArrayWrapper field) {
+  public int hstrlen(RedisKey key, byte[] field) {
     return stripedExecute(key, () -> getRedisHash(key, true).hstrlen(field));
   }
 
   @Override
-  public List<ByteArrayWrapper> hmget(RedisKey key, List<ByteArrayWrapper> fields) {
+  public List<byte[]> hmget(RedisKey key, List<byte[]> fields) {
     return stripedExecute(key, () -> getRedisHash(key, true).hmget(fields));
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hvals(RedisKey key) {
+  public Collection<byte[]> hvals(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hvals());
   }
 
   @Override
-  public Collection<ByteArrayWrapper> hkeys(RedisKey key) {
+  public Collection<byte[]> hkeys(RedisKey key) {
     return stripedExecute(key, () -> getRedisHash(key, true).hkeys());
   }
 
   @Override
-  public Pair<Integer, List<Object>> hscan(RedisKey key, Pattern matchPattern,
-      int count, int cursor, UUID clientID) {
+  public Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count,
+      int cursor) {
     return stripedExecute(key,
         () -> getRedisHash(key, true)
-            .hscan(clientID, matchPattern, count, cursor));
+            .hscan(matchPattern, count, cursor));
   }
 
   @Override
-  public long hincrby(RedisKey key, ByteArrayWrapper field, long increment) {
+  public long hincrby(RedisKey key, byte[] field, long increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrby(getRegion(), key, field, increment));
   }
 
   @Override
-  public BigDecimal hincrbyfloat(RedisKey key, ByteArrayWrapper field, BigDecimal increment) {
+  public BigDecimal hincrbyfloat(RedisKey key, byte[] field, BigDecimal increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrbyfloat(getRegion(), key, field, increment));

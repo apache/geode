@@ -24,11 +24,11 @@ evaluationDependsOn(":geode-core")
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':extensions:geode-modules-session-internal')) {
+  api(platform(project(':boms:geode-all-bom')))
+  api(project(':extensions:geode-modules-session-internal')) {
     exclude module: 'geode-modules'
   }
-  compile(project(':geode-core'))
+  api(project(':geode-core'))
   implementation(project(':geode-common'))
 
   integrationTestImplementation(project(':extensions:geode-modules'))
@@ -69,7 +69,7 @@ jar {
   manifest {
     attributes 'Main-Class': 'org.apache.geode.modules.session.installer.Installer'
   }
-  baseName = 'geode-modules-session'
+  archiveBaseName = 'geode-modules-session'
 }
 
 sonarqube {

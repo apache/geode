@@ -199,7 +199,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /* Create Cache Server */
   public void createServer(VM server) {
-    createServer(server, 0);
+    createServer(server, AvailablePortHelper.getRandomAvailableTCPPort());
   }
 
   public void createServer(VM server, final int p) {

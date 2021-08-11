@@ -196,8 +196,9 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
     if (logger.isTraceEnabled()) {
       logger.trace("addObjectField fieldName: {}", fieldName);
     }
-    if (fieldName == null)
+    if (fieldName == null) {
       throw new IllegalStateException("addObjectField:Object should have fieldname");
+    }
     m_pdxInstanceFactory.writeObject(fieldName, member);
   }
 

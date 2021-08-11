@@ -20,11 +20,15 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,43 +38,46 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 
-public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTest {
+  protected JedisCluster jedis;
 
-  protected Jedis jedis;
-  private static Jedis jedis2;
-  private static Jedis jedis3;
+  public static final String HASH_KEY = "key";
+  public static final int SLOT_FOR_KEY = CRC16.calculate(HASH_KEY) % RegionProvider.REDIS_SLOTS;
+  public static final String ZERO_CURSOR = "0";
 
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  public static final String FIELD_ONE = "1";
+  public static final String VALUE_ONE = "yellow";
+  public static final String FIELD_TWO = "12";
+  public static final String VALUE_TWO = "green";
+  public static final String FIELD_THREE = "3";
+  public static final byte[] FIELD_THREE_BYTES = FIELD_THREE.getBytes();
+  public static final String VALUE_THREE = "orange";
+
+  public static final String BASE_FIELD = "baseField_";
+  private final int SIZE_OF_ENTRY_MAP = 100;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-    jedis3 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
-  }
-
-  @After
-  public void flushAll() {
-    jedis.flushAll();
-    jedis2.flushAll();
-    jedis3.flushAll();
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
+    flushAll();
     jedis.close();
-    jedis2.close();
-    jedis3.close();
   }
 
   /********* Parameter Checks **************/
@@ -82,119 +89,134 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void givenMatchArgumentWithoutPatternOnExistingKey_returnsSyntaxError() {
-    jedis.hset("key", "b", "1");
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "key", "0", "Match"))
-        .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  public void givenMatchArgumentWithoutPatternOnNonExistentKey_returnsEmptyArray() {
-
-    List<Object> result =
-        (List<Object>) jedis.sendCommand(Protocol.Command.HSCAN, "key1", "0", "Match");
-
-    assertThat((List<String>) result.get(1)).isEmpty();
-  }
-
-  @Test
-  public void givenCountArgumentWithoutNumberOnExistingKey_returnsSyntaxError() {
-    jedis.hset("a", "b", "1");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "Count"))
-        .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  public void givenCountArgumentWithoutNumberOnNonExistentKey_returnsEmptyArray() {
-    List<Object> result =
-        (List<Object>) jedis.sendCommand(Protocol.Command.HSCAN, "b", "0", "Count");
-
-    assertThat((List<String>) result.get(1)).isEmpty();
-  }
-
-  @Test
-  public void givenMatchOrCountKeywordNotSpecified_returnsSyntaxError() {
-    jedis.hset("a", "b", "1");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "a*", "1"))
-        .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  public void givenCount_whenCountParameterIsNotAnInteger_returnsNotIntegerError() {
-    jedis.hset("a", "b", "1");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "COUNT", "MATCH"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
-  }
-
-  @Test
-  public void givenMultipleCounts_whenAnyCountParameterIsNotAnInteger_returnsNotIntegerError() {
-    jedis.hset("a", "b", "1");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "COUNT", "3",
-        "COUNT", "sjlfs", "COUNT", "1"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
-  }
-
-  @Test
-  public void givenCount_whenCountParameterIsZero_returnsSyntaxError() {
-    jedis.hset("a", "b", "1");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "COUNT", "0"))
-        .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  public void givenCount_whenCountParameterIsNegative_returnsSyntaxError() {
-    jedis.hset("a", "b", "1");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0", "COUNT", "-37"))
-        .hasMessageContaining(ERROR_SYNTAX);
-  }
-
-  @Test
-  public void givenMultipleCounts_whenAnyCountParameterIsLessThanOne_returnsSyntaxError() {
-    jedis.hset("key", "b", "1");
-
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "key", "0", "COUNT", "3",
-        "COUNT", "0", "COUNT", "1"))
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "MATCH"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
-  public void givenKeyIsNotAHash_returnsWrongTypeError() {
-    jedis.sadd("a", "1");
+  public void givenMatchArgumentWithoutPatternOnNonExistentKey_returnsEmptyArray() {
+    List<Object> result =
+        uncheckedCast(jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, "nonexistentKey",
+            ZERO_CURSOR, "MATCH"));
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "0"))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThat((List<?>) result.get(1)).isEmpty();
+  }
+
+  @Test
+  public void givenCountArgumentWithoutNumberOnExistingKey_returnsSyntaxError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT"))
+            .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenCountArgumentWithoutNumberOnNonExistentKey_returnsEmptyArray() {
+    List<Object> result =
+        uncheckedCast(
+            jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT"));
+
+    assertThat((List<?>) result.get(1)).isEmpty();
+  }
+
+  @Test
+  public void givenMatchOrCountKeywordNotSpecified_returnsSyntaxError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "a*", "1"))
+            .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenCount_whenCountParameterIsNotAnInteger_returnsNotIntegerError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
+            "MATCH"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void givenMultipleCounts_whenAnyCountParameterIsNotAnInteger_returnsNotIntegerError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
+            "3",
+            "COUNT", "sjlfs", "COUNT", "1"))
+                .hasMessageContaining(ERROR_NOT_INTEGER);
+  }
+
+  @Test
+  public void givenCount_whenCountParameterIsZero_returnsSyntaxError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
+            ZERO_CURSOR))
+                .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenCount_whenCountParameterIsNegative_returnsSyntaxError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
+            "-37"))
+                .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenMultipleCounts_whenAnyCountParameterIsLessThanOne_returnsSyntaxError() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR,
+            "COUNT", "3",
+            "COUNT", "0",
+            "COUNT", "1"))
+                .hasMessageContaining(ERROR_SYNTAX);
+  }
+
+  @Test
+  public void givenKeyIsNotAHash_returnsWrongTypeError() {
+    jedis.sadd(HASH_KEY, "member");
+
+    assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
+        ZERO_CURSOR))
+            .hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void givenKeyIsNotAHash_andCursorIsNotAnInteger_returnsCursorError() {
-    jedis.sadd("a", "b");
+    jedis.sadd(HASH_KEY, "member");
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "sjfls"))
+    assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, "sjfls"))
         .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_andCursorIsNotAnInteger_returnsCursorError() {
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "notReal", "sjfls"))
-        .hasMessageContaining(ERROR_CURSOR);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("notReal", Protocol.Command.HSCAN, "notReal", "sjfls"))
+            .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
   public void givenExistentHashKey_andCursorIsNotAnInteger_returnsCursorError() {
-    jedis.hset("a", "b", "1");
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
 
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.HSCAN, "a", "sjfls"))
+    assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, "sjfls"))
         .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_returnsEmptyArray() {
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("nonexistent", "0");
+    ScanResult<Map.Entry<String, String>> result = jedis.hscan("nonexistent", ZERO_CURSOR);
 
     assertThat(result.isCompleteIteration()).isTrue();
     assertThat(result.getResult()).isEmpty();
@@ -202,18 +224,14 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void givenNegativeCursor_returnsEntriesUsingAbsoluteValueOfCursor() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("2", "green");
-    entryMap.put("3", "orange");
-    jedis.hmset("colors", entryMap);
+    Map<String, String> entryMap = initializeThreeFieldHash();
 
     String cursor = "-100";
     ScanResult<Map.Entry<String, String>> result;
     List<Map.Entry<String, String>> allEntries = new ArrayList<>();
 
     do {
-      result = jedis.hscan("colors", cursor);
+      result = jedis.hscan(HASH_KEY, cursor);
       allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
@@ -225,12 +243,11 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void givenInvalidRegexSyntax_returnsEmptyArray() {
-    jedis.hset("a", "1", "green");
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    scanParams.match("\\p");
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    ScanParams scanParams = new ScanParams().count(1).match("\\p");
 
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("a", "0", scanParams);
+    ScanResult<Map.Entry<byte[], byte[]>> result =
+        jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
 
     assertThat(result.getResult()).isEmpty();
   }
@@ -240,10 +257,10 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
   @Test
   public void givenHashWithOneEntry_returnsEntry() {
     Map<String, String> expected = new HashMap<>();
-    expected.put("1", "2");
-    jedis.hset("a", "1", "2");
+    expected.put(FIELD_ONE, VALUE_ONE);
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
 
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("a", "0");
+    ScanResult<Map.Entry<String, String>> result = jedis.hscan(HASH_KEY, ZERO_CURSOR);
 
     assertThat(result.isCompleteIteration()).isTrue();
     assertThat(result.getResult()).containsExactly(expected.entrySet().iterator().next());
@@ -251,253 +268,263 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
 
   @Test
   public void givenHashWithMultipleEntries_returnsAllEntries() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("2", "green");
-    entryMap.put("3", "orange");
-    jedis.hmset("colors", entryMap);
+    Map<String, String> entryMap = initializeThreeFieldHash();
 
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("colors", "0");
+    ScanResult<Map.Entry<String, String>> result = jedis.hscan(HASH_KEY, ZERO_CURSOR);
 
     assertThat(result.isCompleteIteration()).isTrue();
     assertThat(new HashSet<>(result.getResult())).isEqualTo(entryMap.entrySet());
   }
 
-
   @Test
-  @SuppressWarnings("unchecked")
   public void givenMultipleCounts_DoesNotFail() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("12", "green");
-    entryMap.put("3", "grey");
-    jedis.hmset("colors", entryMap);
-    List<Object> result;
+    initializeThreeFieldHash();
 
-    List<byte[]> allEntries = new ArrayList<>();
-    String cursor = "0";
+    List<Object> result;
+    String cursor = ZERO_CURSOR;
 
     do {
-      result = (List<Object>) jedis.sendCommand(Protocol.Command.HSCAN,
-          "colors",
+      result = uncheckedCast(jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN,
+          HASH_KEY,
           cursor,
           "COUNT", "2",
-          "COUNT", "1");
+          "COUNT", "1"));
 
-      allEntries.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
+    } while (!Arrays.equals((byte[]) result.get(0), ZERO_CURSOR.getBytes()));
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
+    assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
   }
 
   @Test
   public void givenCompleteIteration_shouldReturnCursorWithValueOfZero() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("2", "green");
-    entryMap.put("3", "orange");
-    jedis.hmset("colors", entryMap);
+    initializeThreeFieldHash();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    ScanResult<Map.Entry<String, String>> result;
-    List<Map.Entry<String, String>> allEntries = new ArrayList<>();
-    String cursor = "0";
+    ScanParams scanParams = new ScanParams().count(1);
+    ScanResult<Map.Entry<byte[], byte[]>> result;
+    String cursor = ZERO_CURSOR;
 
     do {
-      result = jedis.hscan("colors", cursor, scanParams);
-      allEntries.addAll(result.getResult());
+      result = jedis.hscan(HASH_KEY.getBytes(), cursor.getBytes(), scanParams);
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 
-    assertThat(result.getCursor()).isEqualTo("0");
+    assertThat(result.getCursor()).isEqualTo(ZERO_CURSOR);
   }
 
   @Test
   public void givenMatch_returnsAllMatchingEntries() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("12", "green");
-    entryMap.put("3", "grey");
-    jedis.hmset("colors", entryMap);
+    Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.match("1*");
+    ScanParams scanParams = new ScanParams().match("1*");
 
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("colors", "0", scanParams);
+    ScanResult<Map.Entry<byte[], byte[]>> result =
+        jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
 
-    entryMap.remove("3");
+    entryMap.remove(FIELD_THREE_BYTES);
     assertThat(result.isCompleteIteration()).isTrue();
-    assertThat(new HashSet<>(result.getResult())).containsAll(entryMap.entrySet());
+    assertThat(new HashSet<>(result.getResult()))
+        .usingElementComparator(new MapEntryWithByteArraysComparator())
+        .containsExactlyInAnyOrderElementsOf(entryMap.entrySet());
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void givenMultipleMatches_returnsEntriesMatchingLastMatchParameter() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("12", "green");
-    entryMap.put("3", "grey");
-    jedis.hmset("colors", entryMap);
+    initializeThreeFieldHash();
 
     List<Object> result =
-        (List<Object>) jedis.sendCommand(Protocol.Command.HSCAN,
-            "colors", "0", "MATCH", "3*", "MATCH", "1*");
+        uncheckedCast(jedis.sendCommand(HASH_KEY.getBytes(), Protocol.Command.HSCAN,
+            HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(),
+            "MATCH".getBytes(), "3*".getBytes(),
+            "MATCH".getBytes(), "1*".getBytes()));
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat((List<Object>) result.get(1)).containsAll(
-        Arrays.asList("1".getBytes(), "yellow".getBytes(), "12".getBytes(), "green".getBytes()));
+    assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
+    List<byte[]> fieldsAndValues = uncheckedCast(result.get(1));
+    assertThat(fieldsAndValues).containsAll(
+        Arrays.asList(FIELD_ONE.getBytes(), VALUE_ONE.getBytes(),
+            FIELD_TWO.getBytes(), VALUE_TWO.getBytes()));
   }
 
   @Test
   public void givenMatchAndCount_returnsAllMatchingKeys() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("12", "green");
-    entryMap.put("3", "orange");
-    jedis.hmset("colors", entryMap);
+    Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    scanParams.match("1*");
-    ScanResult<Map.Entry<String, String>> result;
-    List<Map.Entry<String, String>> allEntries = new ArrayList<>();
-    String cursor = "0";
+    ScanParams scanParams = new ScanParams().count(1).match("1*");
+    ScanResult<Map.Entry<byte[], byte[]>> result;
+    List<Map.Entry<byte[], byte[]>> allEntries = new ArrayList<>();
+    String cursor = ZERO_CURSOR;
 
     do {
-      result = jedis.hscan("colors", cursor, scanParams);
+      result = jedis.hscan(HASH_KEY.getBytes(), cursor.getBytes(), scanParams);
       allEntries.addAll(result.getResult());
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 
-    entryMap.remove("3");
+    entryMap.remove(FIELD_THREE_BYTES);
 
     assertThat(new HashSet<>(allEntries))
+        .usingElementComparator(new MapEntryWithByteArraysComparator())
         .containsAll(entryMap.entrySet());
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void givenMultipleCountsAndMatches_returnsEntriesMatchingLastMatchParameter() {
-    Map<String, String> entryMap = new HashMap<>();
-    entryMap.put("1", "yellow");
-    entryMap.put("12", "green");
-    entryMap.put("3", "grey");
-    jedis.hmset("colors", entryMap);
+    initializeThreeFieldHash();
     List<Object> result;
 
     List<byte[]> allEntries = new ArrayList<>();
-    String cursor = "0";
+    String cursor = ZERO_CURSOR;
 
     do {
-      result = (List<Object>) jedis.sendCommand(Protocol.Command.HSCAN, "colors", cursor, "COUNT",
-          "37", "MATCH", "3*", "COUNT", "2", "COUNT", "1", "MATCH", "1*");
-      allEntries.addAll((List<byte[]>) result.get(1));
+      result =
+          uncheckedCast(jedis.sendCommand(HASH_KEY.getBytes(), Protocol.Command.HSCAN,
+              HASH_KEY.getBytes(), cursor.getBytes(),
+              "COUNT".getBytes(), "37".getBytes(),
+              "MATCH".getBytes(), "3*".getBytes(),
+              "COUNT".getBytes(), "2".getBytes(),
+              "COUNT".getBytes(), "1".getBytes(),
+              "MATCH".getBytes(), "1*".getBytes()));
+      List<byte[]> fieldsAndValues = uncheckedCast(result.get(1));
+      allEntries.addAll(fieldsAndValues);
       cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), "0".getBytes()));
+    } while (!Arrays.equals((byte[]) result.get(0), ZERO_CURSOR.getBytes()));
 
-    assertThat((byte[]) result.get(0)).isEqualTo("0".getBytes());
-    assertThat(allEntries).containsExactlyInAnyOrder("1".getBytes(), "yellow".getBytes(),
-        "12".getBytes(), "green".getBytes());
+    assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
+    assertThat(allEntries).containsExactlyInAnyOrder(
+        FIELD_ONE.getBytes(), VALUE_ONE.getBytes(),
+        FIELD_TWO.getBytes(), VALUE_TWO.getBytes());
   }
 
   @Test
   public void should_notReturnValue_givenValueWasRemovedBeforeHSCANISCalled() {
+    Map<String, String> entryMap = initializeThreeFieldHash();
 
-    Map<String, String> data = new HashMap<>();
-    data.put("field_1", "yellow");
-    data.put("field_2", "green");
-    data.put("field_3", "grey");
-    jedis.hmset("colors", data);
-
-    jedis.hdel("colors", "field_3");
-    data.remove("field_3");
+    jedis.hdel(HASH_KEY, FIELD_THREE);
+    entryMap.remove(FIELD_THREE);
 
     GeodeAwaitility.await().untilAsserted(
-        () -> assertThat(jedis.hget("colors", "field_3")).isNull());
+        () -> assertThat(jedis.hget(HASH_KEY, FIELD_THREE)).isNull());
 
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("colors", "0");
+    ScanResult<Map.Entry<String, String>> result = jedis.hscan(HASH_KEY, ZERO_CURSOR);
 
     assertThat(new HashSet<>(result.getResult()))
-        .containsExactlyInAnyOrderElementsOf(data.entrySet());
+        .containsExactlyInAnyOrderElementsOf(entryMap.entrySet());
   }
 
   @Test
   public void should_notErrorGivenNonzeroCursorOnFirstCall() {
+    Map<String, String> entryMap = initializeThreeFieldHash();
 
-    Map<String, String> data = new HashMap<>();
-    data.put("field_1", "yellow");
-    data.put("field_2", "green");
-    data.put("field_3", "grey");
-    jedis.hmset("colors", data);
-
-
-    ScanResult<Map.Entry<String, String>> result = jedis.hscan("colors", "5");
+    ScanResult<Map.Entry<String, String>> result = jedis.hscan(HASH_KEY, "5");
 
     assertThat(new HashSet<>(result.getResult()))
-        .containsExactlyInAnyOrderElementsOf(data.entrySet());
+        .isSubsetOf(entryMap.entrySet());
+  }
+
+  @Test
+  public void should_notErrorGivenCountEqualToIntegerMaxValue() {
+    Map<byte[], byte[]> entryMap = initializeThreeFieldHashBytes();
+
+    ScanParams scanParams = new ScanParams().count(Integer.MAX_VALUE);
+
+    ScanResult<Map.Entry<byte[], byte[]>> result =
+        jedis.hscan(HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
+    assertThat(result.getResult())
+        .usingElementComparator(new MapEntryWithByteArraysComparator())
+        .containsExactlyInAnyOrderElementsOf(entryMap.entrySet());
+  }
+
+  @Test
+  public void should_notErrorGivenCountGreaterThanIntegerMaxValue() {
+    initializeThreeFieldHash();
+
+    String greaterThanInt = String.valueOf(2L * Integer.MAX_VALUE);
+    List<Object> result =
+        uncheckedCast(jedis.sendCommand(HASH_KEY.getBytes(), Protocol.Command.HSCAN,
+            HASH_KEY.getBytes(), ZERO_CURSOR.getBytes(),
+            "COUNT".getBytes(), greaterThanInt.getBytes()));
+
+    assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
+
+    List<byte[]> fieldsAndValues = uncheckedCast(result.get(1));
+    assertThat(fieldsAndValues).containsExactlyInAnyOrder(
+        FIELD_ONE.getBytes(), VALUE_ONE.getBytes(),
+        FIELD_TWO.getBytes(), VALUE_TWO.getBytes(),
+        FIELD_THREE_BYTES, VALUE_THREE.getBytes());
   }
 
   /**** Concurrency ***/
 
-  private final int SIZE_OF_INITIAL_HASH_DATA = 100;
-  final String HASH_KEY = "key";
-  final String BASE_FIELD = "baseField_";
-
   @Test
   public void should_notLoseFields_givenConcurrentThreadsDoingHScansAndChangingValues() {
-    final Map<String, String> INITIAL_HASH_DATA = makeEntrySet(SIZE_OF_INITIAL_HASH_DATA);
-    jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
-    final int ITERATION_COUNT = 500;
+    final Map<String, String> initialHashData = makeEntryMap();
+    jedis.hset(HASH_KEY, initialHashData);
+    final int iterationCount = 500;
 
-    new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis2, INITIAL_HASH_DATA),
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+
+    new ConcurrentLoopingThreads(iterationCount,
+        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis1, initialHashData),
+        (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis2, initialHashData),
         (i) -> {
-          int fieldSuffix = i % SIZE_OF_INITIAL_HASH_DATA;
-          jedis3.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
+          int fieldSuffix = i % SIZE_OF_ENTRY_MAP;
+          jedis.hset(HASH_KEY, BASE_FIELD + fieldSuffix, "new_value_" + i);
         }).run();
+
+    jedis1.close();
+    jedis2.close();
   }
 
   @Test
   public void should_notLoseKeysForConsistentlyPresentFields_givenConcurrentThreadsAddingAndRemovingFields() {
-    final Map<String, String> INITIAL_HASH_DATA = makeEntrySet(SIZE_OF_INITIAL_HASH_DATA);
-    jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
-    final int ITERATION_COUNT = 500;
+    final Map<String, String> initialHashData = makeEntryMap();
+    jedis.hset(HASH_KEY, initialHashData);
+    final int iterationCount = 500;
 
-    new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis2, INITIAL_HASH_DATA),
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+
+    new ConcurrentLoopingThreads(iterationCount,
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, initialHashData),
         (i) -> {
           String field = "new_" + BASE_FIELD + i;
-          jedis3.hset(HASH_KEY, field, "whatever");
-          jedis3.hdel(HASH_KEY, field);
+          jedis.hset(HASH_KEY, field, "whatever");
+          jedis.hdel(HASH_KEY, field);
         }).run();
 
+    jedis1.close();
+    jedis2.close();
   }
 
   @Test
   public void should_notAlterUnderlyingData_givenMultipleConcurrentHscans() {
-    final Map<String, String> INITIAL_HASH_DATA = makeEntrySet(SIZE_OF_INITIAL_HASH_DATA);
-    jedis.hset(HASH_KEY, INITIAL_HASH_DATA);
-    final int ITERATION_COUNT = 500;
+    final Map<String, String> initialHashData = makeEntryMap();
+    jedis.hset(HASH_KEY, initialHashData);
+    final int iterationCount = 500;
 
-    new ConcurrentLoopingThreads(ITERATION_COUNT,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis, INITIAL_HASH_DATA),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(jedis2, INITIAL_HASH_DATA));
+    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
-    INITIAL_HASH_DATA
-        .forEach((field, value) -> assertThat(jedis3.hget(HASH_KEY, field).equals(value)));
+    new ConcurrentLoopingThreads(iterationCount,
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, initialHashData))
+            .run();
 
+    initialHashData
+        .forEach((field, value) -> assertThat(jedis.hget(HASH_KEY, field).equals(value)));
+
+    jedis1.close();
+    jedis2.close();
   }
 
-  private void multipleHScanAndAssertOnContentOfResultSet(Jedis jedis,
+  private void multipleHScanAndAssertOnContentOfResultSet(int iteration, Jedis jedis,
       final Map<String, String> initialHashData) {
 
     List<String> allEntries = new ArrayList<>();
     ScanResult<Map.Entry<String, String>> result;
-    String cursor = "0";
+    String cursor = ZERO_CURSOR;
 
     do {
       result = jedis.hscan(HASH_KEY, cursor);
@@ -507,14 +534,15 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
           .forEach((entry) -> allEntries.add(entry.getKey()));
     } while (!result.isCompleteIteration());
 
-    assertThat(allEntries).containsAll(initialHashData.keySet());
+    assertThat(allEntries).as("failed on iteration " + iteration)
+        .containsAll(initialHashData.keySet());
   }
 
   private void multipleHScanAndAssertOnSizeOfResultSet(Jedis jedis,
       final Map<String, String> initialHashData) {
     List<Map.Entry<String, String>> allEntries = new ArrayList<>();
     ScanResult<Map.Entry<String, String>> result;
-    String cursor = "0";
+    String cursor = ZERO_CURSOR;
 
     do {
       result = jedis.hscan(HASH_KEY, cursor);
@@ -532,11 +560,39 @@ public abstract class AbstractHScanIntegrationTest implements RedisPortSupplier 
         .isEqualTo(initialHashData.size());
   }
 
-  private Map<String, String> makeEntrySet(int sizeOfDataSet) {
+  private Map<String, String> initializeThreeFieldHash() {
+    Map<String, String> entryMap = new HashMap<>();
+    entryMap.put(FIELD_ONE, VALUE_ONE);
+    entryMap.put(FIELD_TWO, VALUE_TWO);
+    entryMap.put(FIELD_THREE, VALUE_THREE);
+    jedis.hmset(HASH_KEY, entryMap);
+    return entryMap;
+  }
+
+  Map<byte[], byte[]> initializeThreeFieldHashBytes() {
+    Map<byte[], byte[]> entryMap = new HashMap<>();
+    entryMap.put(FIELD_ONE.getBytes(), VALUE_ONE.getBytes());
+    entryMap.put(FIELD_TWO.getBytes(), VALUE_TWO.getBytes());
+    entryMap.put(FIELD_THREE_BYTES, VALUE_THREE.getBytes());
+    jedis.hmset(HASH_KEY.getBytes(), entryMap);
+    return entryMap;
+  }
+
+  private Map<String, String> makeEntryMap() {
     Map<String, String> dataSet = new HashMap<>();
-    for (int i = 0; i < sizeOfDataSet; i++) {
+    for (int i = 0; i < SIZE_OF_ENTRY_MAP; i++) {
       dataSet.put(BASE_FIELD + i, "value_" + i);
     }
     return dataSet;
+  }
+
+  private static class MapEntryWithByteArraysComparator
+      implements Comparator<Map.Entry<byte[], byte[]>> {
+
+    @Override
+    public int compare(Map.Entry<byte[], byte[]> o1, Map.Entry<byte[], byte[]> o2) {
+      return Arrays.equals(o1.getKey(), o2.getKey()) &&
+          Arrays.equals(o1.getValue(), o2.getValue()) ? 0 : 1;
+    }
   }
 }

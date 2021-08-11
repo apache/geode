@@ -21,18 +21,19 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
+  implementation(project(':geode-cq'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
 
-  compile(project(':geode-junit')) {
+  api(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
 
@@ -65,7 +66,7 @@ dependencies {
     exclude module: 'hamcrest'
   }
 
-  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {

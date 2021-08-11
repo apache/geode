@@ -24,6 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,7 @@ import org.junit.Test;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -225,6 +228,20 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     when(region.keySet()).thenReturn(map.keySet());
     return region;
+  }
+
+  @Test
+  public void peekEventsFromIncompleteTransactionsDoesNotThrowConcurrentModificationExceptionWhenCompletingTwoTransactions() {
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
+
+    TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
+        QUEUE_REGION, metaRegionFactory);
+
+    queue.setGroupTransactionEvents(true);
+
+    List<AsyncEvent<?, ?>> batch = new ArrayList(Arrays.asList(event1, event2));
+    queue.peekEventsFromIncompleteTransactions(batch, 0);
   }
 
   private class TestableSerialGatewaySenderQueue extends SerialGatewaySenderQueue {

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -61,26 +62,39 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    long latestLastAccessTime = 0L;
-    InternalCache cache = dm.getCache();
-    if (cache == null) {
-      return;
-    }
-    InternalDistributedRegion region =
-        (InternalDistributedRegion) cache.getRegion(this.regionName);
-    if (region == null) {
-      return;
-    }
-    RegionEntry entry = region.getRegionEntry(this.key);
-    if (entry == null) {
-      return;
-    }
+    long lastAccessed = 0L;
     try {
-      latestLastAccessTime = entry.getLastAccessed();
-    } catch (InternalStatisticsDisabledException ignored) {
-      // last access time is not available
+      final InternalCache cache = dm.getCache();
+      if (cache == null) {
+        return;
+      }
+      final InternalDistributedRegion region =
+          (InternalDistributedRegion) cache.getRegion(this.regionName);
+      if (region == null) {
+        return;
+      }
+      final RegionEntry entry = region.getRegionEntry(this.key);
+      if (entry == null) {
+        return;
+      }
+      // noinspection SynchronizationOnLocalVariableOrMethodParameter
+      synchronized (entry) {
+        if (!entry.isInvalidOrRemoved()) {
+          try {
+            lastAccessed = entry.getLastAccessed();
+          } catch (InternalStatisticsDisabledException ignored) {
+            // last access time is not available
+          }
+        }
+      }
+    } finally {
+      sendReply(dm, lastAccessed);
     }
-    ReplyMessage.send(getSender(), this.processorId, latestLastAccessTime, dm);
+  }
+
+  @VisibleForTesting
+  void sendReply(ClusterDistributionManager dm, long lastAccessTime) {
+    ReplyMessage.send(getSender(), this.processorId, lastAccessTime, dm);
   }
 
   @Override

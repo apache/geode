@@ -15,42 +15,31 @@
 
 package org.apache.geode.redis.internal.executor.hash;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import io.lettuce.core.ClientOptions;
 import io.lettuce.core.MapScanCursor;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisException;
 import io.lettuce.core.ScanCursor;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
-import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.control.RebalanceFactory;
-import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.redis.session.springRedisTestApplication.config.DUnitSocketAddressResolver;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -63,152 +52,98 @@ public class HScanDunitTest {
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static RedisCommands<String, String> commands;
-  private RedisClient redisClient;
-  private StatefulRedisConnection<String, String> connection;
-  private static Properties locatorProperties;
+  private static RedisAdvancedClusterCommands<String, String> commands;
+  private static RedisClusterClient clusterClient;
 
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
 
-  static final String HASH_KEY = "key";
-  static final String BASE_FIELD = "baseField_";
-  static final Map<String, String> INITIAL_DATA_SET = makeEntrySet(1000);
-
-  static int[] redisPorts;
+  private static final String HASH_KEY = "key";
+  private static final String BASE_FIELD = "baseField_";
+  private static final Map<String, String> INITIAL_DATA_SET = makeEntrySet(1000);
 
   @BeforeClass
   public static void classSetup() {
-    int locatorPort;
-    locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
+    locator = redisClusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
 
-    locator = redisClusterStartupRule.startLocatorVM(0, locatorProperties);
-    locatorPort = locator.getPort();
-    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    redisClusterStartupRule.startRedisVM(1, locatorPort);
+    redisClusterStartupRule.startRedisVM(2, locatorPort);
+    redisClusterStartupRule.startRedisVM(3, locatorPort);
 
-    // note: due to rules around member weighting in split-brain scenarios,
-    // vm1 (server1) should not be crashed or it will cause additional (unrelated) failures
-    String redisPort1 = redisPorts[0] + "";
-    server1 = redisClusterStartupRule.startRedisVM(1, redisPort1, locatorPort);
+    int redisServerPort1 = redisClusterStartupRule.getRedisPort(1);
+    clusterClient = RedisClusterClient.create("redis://localhost:" + redisServerPort1);
 
-    String redisPort2 = redisPorts[1] + "";
-    server2 = redisClusterStartupRule.startServerVM(2, redisPort2, locatorPort);
+    ClusterTopologyRefreshOptions refreshOptions =
+        ClusterTopologyRefreshOptions.builder()
+            .enableAllAdaptiveRefreshTriggers()
+            .build();
 
-    String redisPort3 = redisPorts[2] + "";
-    server3 = redisClusterStartupRule.startServerVM(3, redisPort3, locatorPort);
-  }
-
-  @Before
-  public void testSetup() {
-    addIgnoredException(FunctionException.class);
-    String[] redisPortsAsStrings = new String[redisPorts.length];
-
-    for (int i = 0; i < redisPorts.length; i++) {
-      redisPortsAsStrings[i] = String.valueOf(redisPorts[i]);
-    }
-
-    DUnitSocketAddressResolver dnsResolver =
-        new DUnitSocketAddressResolver(redisPortsAsStrings);
-
-    ClientResources resources = ClientResources.builder()
-        .socketAddressResolver(dnsResolver)
-        .build();
-
-    redisClient = RedisClient.create(resources, "redis://localhost");
-    redisClient.setOptions(ClientOptions.builder()
-        .autoReconnect(true)
+    clusterClient.setOptions(ClusterClientOptions.builder()
+        .topologyRefreshOptions(refreshOptions)
+        .validateClusterNodeMembership(false)
         .build());
 
-    connection = redisClient.connect();
-    commands = connection.sync();
+    commands = clusterClient.connect().sync();
     commands.hset(HASH_KEY, INITIAL_DATA_SET);
   }
 
   @AfterClass
   public static void tearDown() {
-    commands.quit();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
+    try {
+      clusterClient.shutdown();
+    } catch (Exception ignored) {
+      // https://github.com/lettuce-io/lettuce-core/issues/1800
+    }
   }
 
   @Test
-  public void should_allowHscanIterationToCompleteSuccessfullyGivenServerCrashesDuringIteration()
+  public void should_allowHscanIterationToCompleteSuccessfullyGivenBucketIsMoving()
       throws ExecutionException, InterruptedException {
 
-    AtomicBoolean keepCrashingVMs = new AtomicBoolean(true);
-    AtomicInteger numberOfTimesVMCrashed = new AtomicInteger(0);
+    AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Void> hScanFuture = executor.runAsync(
-        () -> doHScanContinuallyAndAssertOnResults(keepCrashingVMs, numberOfTimesVMCrashed));
+        () -> doHScanContinuallyAndAssertOnResults(running));
 
-    Future<Void> crashingVmFuture = executor.runAsync(
-        () -> crashAlternatingVMS(keepCrashingVMs, numberOfTimesVMCrashed));
+    for (int i = 0; i < 100 && running.get(); i++) {
+      redisClusterStartupRule.moveBucketForKey(HASH_KEY);
+      GeodeAwaitility.await().during(200, TimeUnit.MILLISECONDS).until(() -> true);
+    }
 
+    running.set(false);
     hScanFuture.get();
-    crashingVmFuture.get();
   }
 
-
-  private static void doHScanContinuallyAndAssertOnResults(AtomicBoolean keepCrashingVMs,
-      AtomicInteger numberOfTimesServersCrashed) {
-    int numberOfAssertionsCompleted = 0;
-
+  private static void doHScanContinuallyAndAssertOnResults(AtomicBoolean running) {
     ScanCursor scanCursor = new ScanCursor("0", false);
     List<String> allEntries = new ArrayList<>();
     MapScanCursor<String, String> result;
+    int i = 0;
 
-    while (numberOfAssertionsCompleted < 3 || numberOfTimesServersCrashed.get() < 3) {
-
+    while (running.get()) {
       allEntries.clear();
       scanCursor.setCursor("0");
       scanCursor.setFinished(false);
 
+      do {
+        result = commands.hscan(HASH_KEY, scanCursor);
+        scanCursor.setCursor(result.getCursor());
+        Map<String, String> resultEntries = result.getMap();
+
+        resultEntries.forEach((key, value) -> allEntries.add(key));
+      } while (!result.isFinished());
+
       try {
-        do {
-          result = commands.hscan(HASH_KEY, scanCursor);
-          scanCursor.setCursor(result.getCursor());
-          Map<String, String> resultEntries = result.getMap();
-
-          resultEntries.entrySet().forEach(
-              entry -> allEntries.add(entry.getKey()));
-
-        } while (!result.isFinished());
-
         assertThat(allEntries).containsAll(INITIAL_DATA_SET.keySet());
-        numberOfAssertionsCompleted++;
-
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (ex.getMessage().contains("Connection reset by peer")) {// ignore error
-        } else {
-          throw ex;
-        }
+      } catch (AssertionError ex) {
+        running.set(false);
+        throw ex;
       }
+
+      i++;
     }
-    keepCrashingVMs.set(false);
-  }
 
-  private void crashAlternatingVMS(AtomicBoolean keepCrashingVMs,
-      AtomicInteger numberOfTimesServersCrashed) {
-
-    int vmToCrashToggle = 3;
-    MemberVM vm;
-    int redisPort;
-
-    do {
-      redisPort = redisPorts[vmToCrashToggle - 1];
-      redisClusterStartupRule.crashVM(vmToCrashToggle);
-      vm = redisClusterStartupRule.startServerVM(vmToCrashToggle, redisPort, locator.getPort());
-      rebalanceAllRegions(vm);
-      numberOfTimesServersCrashed.incrementAndGet();
-      vmToCrashToggle = (vmToCrashToggle == 2) ? 3 : 2;
-
-    } while (keepCrashingVMs.get());
+    LogService.getLogger().info("--->>> Completed {} iterations of HSCAN", i);
   }
 
   private static Map<String, String> makeEntrySet(int sizeOfDataSet) {
@@ -219,17 +154,4 @@ public class HScanDunitTest {
     return dataSet;
   }
 
-  private static void rebalanceAllRegions(MemberVM vm) {
-    vm.invoke(() -> {
-
-      ResourceManager manager = ClusterStartupRule.getCache().getResourceManager();
-      RebalanceFactory factory = manager.createRebalanceFactory();
-
-      try {
-        factory.start().getResults();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
 }

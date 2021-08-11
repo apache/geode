@@ -17,29 +17,25 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SRemExecutor extends SetExecutor {
+public class SRemExecutor extends AbstractExecutor {
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    List<ByteArrayWrapper> commandElements = command.getProcessedCommandWrappers();
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    List<byte[]> commandElements = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
 
-    RedisSetCommands redisSetCommands = createRedisSetCommands(context);
+    RedisSetCommands redisSetCommands = context.getSetCommands();
 
-    ArrayList<ByteArrayWrapper> membersToRemove =
+    List<byte[]> membersToRemove =
         new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
-    long membersRemoved =
-        redisSetCommands.srem(
-            key,
-            membersToRemove);
+    long membersRemoved = redisSetCommands.srem(key, membersToRemove);
 
     return RedisResponse.integer(membersRemoved);
   }

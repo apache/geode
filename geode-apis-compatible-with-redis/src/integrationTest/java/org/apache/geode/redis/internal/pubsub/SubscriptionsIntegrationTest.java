@@ -113,7 +113,8 @@ public class SubscriptionsIntegrationTest {
       Client client = new Client(channel);
       clients.add(client);
       subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));
+          .add(new ChannelSubscription(client, "channel".getBytes(), context,
+              subscriptions));
     }
 
     new ConcurrentLoopingThreads(1,
@@ -137,7 +138,8 @@ public class SubscriptionsIntegrationTest {
 
       clients.add(client);
       subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context, subscriptions));
+          .add(new ChannelSubscription(client, "channel".getBytes(), context,
+              subscriptions));
     }
 
     new ConcurrentLoopingThreads(1,

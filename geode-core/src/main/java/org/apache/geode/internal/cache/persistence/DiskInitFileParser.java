@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -65,7 +67,6 @@ public class DiskInitFileParser {
   private transient boolean gotEOF;
 
   public DiskStoreID parse() throws IOException, ClassNotFoundException {
-    KnownVersion gfversion = KnownVersion.GFE_70;
     DiskStoreID result = null;
     boolean endOfFile = false;
     while (!(endOfFile || dis.atEndOfFile())) {
@@ -87,14 +88,14 @@ public class DiskInitFileParser {
         }
           break;
         case DiskInitFile.IFREC_DATA_SERIALIZER_ID: {
-          Class<?> dsc = readClass(dis);
+          Class<? extends DataSerializer> dsc = uncheckedCast(readClass(dis));
           readEndOfRecord(dis);
           interpreter.cmnDataSerializerId(dsc);
         }
           break;
         case DiskInitFile.IFREC_ONLINE_MEMBER_ID: {
           long drId = readDiskRegionID(dis);
-          PersistentMemberID pmid = readPMID(dis, gfversion);
+          PersistentMemberID pmid = readPMID(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
@@ -105,7 +106,7 @@ public class DiskInitFileParser {
           break;
         case DiskInitFile.IFREC_OFFLINE_MEMBER_ID: {
           long drId = readDiskRegionID(dis);
-          PersistentMemberID pmid = readPMID(dis, gfversion);
+          PersistentMemberID pmid = readPMID(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
@@ -116,7 +117,7 @@ public class DiskInitFileParser {
           break;
         case DiskInitFile.IFREC_RM_MEMBER_ID: {
           long drId = readDiskRegionID(dis);
-          PersistentMemberID pmid = readPMID(dis, gfversion);
+          PersistentMemberID pmid = readPMID(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_RM_MEMBER_ID drId={} pmid={}",
@@ -127,7 +128,7 @@ public class DiskInitFileParser {
           break;
         case DiskInitFile.IFREC_MY_MEMBER_INITIALIZING_ID: {
           long drId = readDiskRegionID(dis);
-          PersistentMemberID pmid = readPMID(dis, gfversion);
+          PersistentMemberID pmid = readPMID(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
@@ -389,7 +390,7 @@ public class DiskInitFileParser {
           break;
         case DiskInitFile.IFREC_OFFLINE_AND_EQUAL_MEMBER_ID: {
           long drId = readDiskRegionID(dis);
-          PersistentMemberID pmid = readPMID(dis, gfversion);
+          PersistentMemberID pmid = readPMID(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
@@ -429,7 +430,7 @@ public class DiskInitFileParser {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
                 ver);
           }
-          gfversion = Versioning.getKnownVersionOrDefault(
+          final KnownVersion gfversion = Versioning.getKnownVersionOrDefault(
               Versioning.getVersion(ver), null);
           if (gfversion == null) {
             throw new DiskAccessException(
@@ -567,24 +568,20 @@ public class DiskInitFileParser {
     }
   }
 
-  private PersistentMemberID readPMID(CountingDataInputStream dis, KnownVersion gfversion)
+  private PersistentMemberID readPMID(CountingDataInputStream dis)
       throws IOException, ClassNotFoundException {
     int len = dis.readInt();
     byte[] buf = new byte[len];
     dis.readFully(buf);
-    return bytesToPMID(buf, gfversion);
+    return bytesToPMID(buf);
   }
 
-  private PersistentMemberID bytesToPMID(byte[] bytes, KnownVersion gfversion)
+  private PersistentMemberID bytesToPMID(byte[] bytes)
       throws IOException, ClassNotFoundException {
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
     DataInputStream dis = new DataInputStream(bais);
     PersistentMemberID result = new PersistentMemberID();
-    if (KnownVersion.GFE_70.compareTo(gfversion) > 0) {
-      result._fromData662(dis);
-    } else {
-      InternalDataSerializer.invokeFromData(result, dis);
-    }
+    InternalDataSerializer.invokeFromData(result, dis);
     return result;
   }
 

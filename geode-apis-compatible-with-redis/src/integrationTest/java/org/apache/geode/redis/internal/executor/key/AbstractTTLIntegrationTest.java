@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.TimeUnit;
@@ -24,26 +25,24 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
+import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractTTLIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private JedisCluster jedis;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
+    flushAll();
     jedis.close();
   }
 
@@ -67,7 +66,7 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
   @Test
   public void shouldReturnCorrectExpiration_givenKeyHasExpirationSet() {
     jedis.set("orange", "crush");
-    jedis.expire("orange", 20);
+    jedis.expire("orange", 20L);
 
     assertThat(jedis.ttl("orange")).isEqualTo(20);
   }
@@ -75,7 +74,7 @@ public abstract class AbstractTTLIntegrationTest implements RedisPortSupplier {
   @Test
   public void shouldSeeTTLdecreasing() {
     jedis.set("orange", "crush");
-    jedis.expire("orange", 20);
+    jedis.expire("orange", 20L);
 
     await("TTL should decrease").atMost(2, TimeUnit.SECONDS)
         .until(() -> jedis.ttl("orange") < 20);

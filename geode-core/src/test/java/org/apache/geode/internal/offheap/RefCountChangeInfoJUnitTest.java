@@ -61,8 +61,9 @@ public class RefCountChangeInfoJUnitTest {
   }
 
   private boolean hasStringLit(String str, String has) {
-    if (str.indexOf(has) == -1)
+    if (str.indexOf(has) == -1) {
       return false;
+    }
     return true;
   }
 

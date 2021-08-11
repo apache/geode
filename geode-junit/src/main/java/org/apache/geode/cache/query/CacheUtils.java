@@ -148,8 +148,9 @@ public class CacheUtils {
   public static Region createRegion(Region parentRegion, String regionName, Class valueConstraint) {
     try {
       AttributesFactory attributesFactory = new AttributesFactory();
-      if (valueConstraint != null)
+      if (valueConstraint != null) {
         attributesFactory.setValueConstraint(valueConstraint);
+      }
       RegionAttributes regionAttributes = attributesFactory.create();
       return parentRegion.createSubregion(regionName, regionAttributes);
     } catch (Exception e) {
@@ -162,8 +163,9 @@ public class CacheUtils {
   }
 
   public static QueryService getQueryService() {
-    if (cache.isClosed())
+    if (cache.isClosed()) {
       startCache();
+    }
     return cache.getQueryService();
   }
 

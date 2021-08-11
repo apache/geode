@@ -15,6 +15,10 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.i18n.CliStrings.CREATE_DISK_STORE__DIR_SIZE_IS_NEGATIVE;
+import static org.apache.geode.management.internal.i18n.CliStrings.CREATE_DISK_STORE__DIR_SIZE_NOT_A_NUMBER;
+import static org.apache.geode.management.internal.i18n.CliStrings.CREATE_DISK_STORE__DIR_SIZE_TOO_BIG_ERROR;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +60,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
   public ResultModel createDiskStore(
+      @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
+          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.CREATE_DISK_STORE__NAME__HELP) String name,
@@ -79,8 +85,6 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE,
           unspecifiedDefaultValue = "32768",
           help = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP) int writeBufferSize,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
-          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.CREATE_DISK_STORE__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
@@ -110,7 +114,9 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
         sizes[i] = Integer.MAX_VALUE;
       } else {
         directories[i] = new File(directoriesAndSizes[i].substring(0, hashPosition));
-        sizes[i] = Integer.parseInt(directoriesAndSizes[i].substring(hashPosition + 1));
+        String dirSizeString = directoriesAndSizes[i].substring(hashPosition + 1);
+        verifyDirSizeConstraints(dirSizeString);
+        sizes[i] = Integer.parseInt(dirSizeString);
       }
     }
     diskStoreAttributes.diskDirs = directories;
@@ -143,6 +149,25 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     }
 
     return result;
+  }
+
+  @VisibleForTesting
+  void verifyDirSizeConstraints(String dirSize) {
+    long dirSizeLongValue;
+    try {
+      dirSizeLongValue = Long.parseLong(dirSize);
+    } catch (NumberFormatException exc) {
+      throw new IllegalArgumentException(
+          String.format(CREATE_DISK_STORE__DIR_SIZE_NOT_A_NUMBER, dirSize));
+    }
+    if (dirSizeLongValue > Long.valueOf(Integer.MAX_VALUE)) {
+      throw new IllegalArgumentException(
+          String.format(CREATE_DISK_STORE__DIR_SIZE_TOO_BIG_ERROR, dirSize));
+    }
+    if (dirSizeLongValue < 0) {
+      throw new IllegalArgumentException(
+          String.format(CREATE_DISK_STORE__DIR_SIZE_IS_NEGATIVE, dirSize));
+    }
   }
 
   @VisibleForTesting

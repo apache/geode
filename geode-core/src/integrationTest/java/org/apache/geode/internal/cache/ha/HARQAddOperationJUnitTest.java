@@ -387,8 +387,9 @@ public class HARQAddOperationJUnitTest {
     ThreadUtils.join(t1, 180 * 1000);
     ThreadUtils.join(t2, 180 * 1000);
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     assertEquals(0, regionqueue.getAvailableIds().size());
     assertEquals(2, regionqueue.getLastDispatchedSequenceId(id2));
@@ -439,8 +440,9 @@ public class HARQAddOperationJUnitTest {
     ThreadUtils.join(t1, 180 * 1000);
     ThreadUtils.join(t2, 180 * 1000);
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     assertEquals(0, regionqueue.getAvailableIds().size());
     assertEquals(2, regionqueue.getLastDispatchedSequenceId(id2));
@@ -524,8 +526,9 @@ public class HARQAddOperationJUnitTest {
 
     this.logWriter.info("HARQAddOperationJUnitTest : testCleanUpForConflation after join");
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     assertEquals(
         "size of the conflation map should be 1 but actual size is "
@@ -597,8 +600,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     List pickObjects = regionqueue.peek(batchSize);
     assertEquals(batchSize, pickObjects.size());
@@ -658,8 +662,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     List pickObject = regionqueue.peek(batchSize);
     assertEquals(numOfThreads, pickObject.size());
@@ -723,8 +728,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     testFailed = false;
     message = null;
@@ -769,8 +775,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads_peek_remove[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     for (int i = 0; i < numOfThreads; i++) {
       assertEquals(3,
@@ -826,8 +833,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     testFailed = false;
     message = null;
@@ -871,8 +879,9 @@ public class HARQAddOperationJUnitTest {
       ThreadUtils.join(threads_peek_remove[k], 180 * 1000);
     }
 
-    if (testFailed)
+    if (testFailed) {
       fail("Test failed due to " + message);
+    }
 
     assertEquals(5, regionqueue.getAvailableIds().size());
 

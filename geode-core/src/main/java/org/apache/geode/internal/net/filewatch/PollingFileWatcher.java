@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.net.filewatch;
 
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,7 +53,7 @@ final class PollingFileWatcher {
     this.onError = onError;
 
     try {
-      lastModifiedTimeMillis = Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toMillis();
+      lastModifiedTimeMillis = Files.getLastModifiedTime(path).toMillis();
     } catch (IOException e) {
       throw new InternalGemFireException("Unable to start watching " + path, e);
     }
@@ -72,7 +71,7 @@ final class PollingFileWatcher {
 
   private void poll() {
     try {
-      long timeStampMillis = Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toMillis();
+      long timeStampMillis = Files.getLastModifiedTime(path).toMillis();
       if (timeStampMillis != lastModifiedTimeMillis) {
         logger.debug("Detected update for {}", path);
         lastModifiedTimeMillis = timeStampMillis;

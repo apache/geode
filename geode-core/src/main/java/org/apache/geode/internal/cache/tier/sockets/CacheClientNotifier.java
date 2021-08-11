@@ -326,7 +326,7 @@ public class CacheClientNotifier {
               statistics.incDurableReconnectionCount();
               cacheClientProxy.getProxyID()
                   .updateDurableTimeout(clientProxyMembershipID.getDurableTimeout());
-              cacheClientProxy.reinitialize(socket, clientProxyMembershipID, getCache(),
+              cacheClientProxy.reinitialize(socket, clientProxyMembershipID,
                   isPrimary, clientConflation,
                   clientVersion);
               cacheClientProxy.setMarkerEnqueued(true);
@@ -672,21 +672,11 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
-    Conflatable conflatable;
-
+    final Conflatable conflatable;
     if (clientMessage instanceof ClientTombstoneMessage) {
       // HAEventWrapper deserialization can't handle subclasses of ClientUpdateMessageImpl, so don't
       // wrap them
       conflatable = clientMessage;
-      // Remove clients older than 70 from the filterClients if the message is
-      // ClientTombstoneMessage
-      Object[] objects = filterClients.toArray();
-      for (Object id : objects) {
-        CacheClientProxy ccp = getClientProxy((ClientProxyMembershipID) id, true);
-        if (ccp != null && ccp.getVersion().isOlderThan(KnownVersion.GFE_70)) {
-          filterClients.remove(id);
-        }
-      }
     } else {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
       wrapper.incrementPutInProgressCounter("notify clients");
@@ -1261,8 +1251,7 @@ public class CacheClientNotifier {
       }
     }
     if (proxy == null && proxyInInitMode) {
-      for (Object o : _initClientProxies.values()) {
-        CacheClientProxy clientProxy = (CacheClientProxy) o;
+      for (final CacheClientProxy clientProxy : _initClientProxies.values()) {
         if (isTraceEnabled) {
           logger.trace("CacheClientNotifier: Checking initializing client {}", clientProxy);
         }
@@ -1402,8 +1391,7 @@ public class CacheClientNotifier {
    */
   public Map<ClientProxyMembershipID, CacheClientStatus> getAllClients() {
     Map<ClientProxyMembershipID, CacheClientStatus> clients = new HashMap<>();
-    for (Object o : _clientProxies.values()) {
-      CacheClientProxy proxy = (CacheClientProxy) o;
+    for (CacheClientProxy proxy : _clientProxies.values()) {
       ClientProxyMembershipID proxyID = proxy.getProxyID();
       clients.put(proxyID, new CacheClientStatus(proxyID));
     }
@@ -1419,8 +1407,7 @@ public class CacheClientNotifier {
    * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableId) {
-    for (Object o : _clientProxies.values()) {
-      CacheClientProxy proxy = (CacheClientProxy) o;
+    for (CacheClientProxy proxy : _clientProxies.values()) {
       ClientProxyMembershipID proxyID = proxy.getProxyID();
       if (durableId.equals(proxyID.getDurableId())) {
         return true;
@@ -1438,8 +1425,7 @@ public class CacheClientNotifier {
    * @since GemFire 5.6
    */
   public boolean hasPrimaryForDurableClient(String durableId) {
-    for (Object o : _clientProxies.values()) {
-      CacheClientProxy proxy = (CacheClientProxy) o;
+    for (CacheClientProxy proxy : _clientProxies.values()) {
       ClientProxyMembershipID proxyID = proxy.getProxyID();
       if (durableId.equals(proxyID.getDurableId())) {
         return proxy.isPrimary();
@@ -1455,8 +1441,7 @@ public class CacheClientNotifier {
    */
   public Map<ClientProxyMembershipID, Integer> getClientQueueSizes() {
     Map<ClientProxyMembershipID, Integer> queueSizes = new HashMap<>();
-    for (Object o : _clientProxies.values()) {
-      CacheClientProxy proxy = (CacheClientProxy) o;
+    for (CacheClientProxy proxy : _clientProxies.values()) {
       queueSizes.put(proxy.getProxyID(), proxy.getQueueSize());
     }
     return queueSizes;
@@ -1645,9 +1630,7 @@ public class CacheClientNotifier {
    * @since GemFire 5.8Beta
    */
   void notifyInterestRegistrationListeners(InterestRegistrationEvent event) {
-    for (Object writableInterestRegistrationListener : writableInterestRegistrationListeners) {
-      InterestRegistrationListener listener =
-          (InterestRegistrationListener) writableInterestRegistrationListener;
+    for (InterestRegistrationListener listener : writableInterestRegistrationListeners) {
       if (event.isRegister()) {
         listener.afterRegisterInterest(event);
       } else {

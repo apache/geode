@@ -119,30 +119,40 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     PersistentMemberPattern other = (PersistentMemberPattern) obj;
     if (directory == null) {
-      if (other.directory != null)
+      if (other.directory != null) {
         return false;
-    } else if (!directory.equals(other.directory))
+      }
+    } else if (!directory.equals(other.directory)) {
       return false;
+    }
     if (diskStoreID == null) {
-      if (other.diskStoreID != null)
+      if (other.diskStoreID != null) {
         return false;
-    } else if (!diskStoreID.equals(other.diskStoreID))
+      }
+    } else if (!diskStoreID.equals(other.diskStoreID)) {
       return false;
+    }
     if (host == null) {
-      if (other.host != null)
+      if (other.host != null) {
         return false;
-    } else if (!host.equals(other.host))
+      }
+    } else if (!host.equals(other.host)) {
       return false;
-    if (revokedTime != other.revokedTime)
+    }
+    if (revokedTime != other.revokedTime) {
       return false;
+    }
     return true;
   }
 

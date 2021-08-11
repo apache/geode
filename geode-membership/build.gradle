@@ -20,7 +20,8 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
-    compile(platform(project(':boms:geode-all-bom')))
+    api(platform(project(':boms:geode-all-bom')))
+    compileOnly(platform(project(':boms:geode-all-bom')))
 
     // Geode-common has annotations and other pieces used by geode-logging
     api(project(':geode-common'))
@@ -39,6 +40,8 @@ dependencies {
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
 
+    compileOnly('org.jetbrains:annotations')
+
 
     testImplementation(project(':geode-junit'))
     testImplementation(project(':geode-concurrency-test'))
@@ -48,7 +51,6 @@ dependencies {
     testImplementation('org.assertj:assertj-core')
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
-    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
     integrationTestImplementation(project(':geode-junit'))
@@ -62,10 +64,9 @@ dependencies {
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {

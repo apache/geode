@@ -27,6 +27,25 @@ dependencies {
   api('org.openjdk.jmh:jmh-core')
 
   testImplementation('junit:junit')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
+}
+
+jar {
+  manifest {
+    attributes(
+            'Premain-Class': 'org.apache.geode.benchmark.jmh.profilers.ObjectSizeAgent'
+    )
+  }
+}
+
+test {
+  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  dependsOn jar
+}
+
+repeatUnitTest {
+  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  dependsOn jar
 }

@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.OplogType;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.sequencelog.EntryLogger;
@@ -819,7 +820,7 @@ public class PersistentOplogSet implements OplogSet {
     }
   }
 
-  public void clear(DiskRegion diskRegion, RegionVersionVector regionVersionVector) {
+  public void clear(DiskRegion diskRegion, RegionVersionVector<DiskStoreID> regionVersionVector) {
     // call clear on each oplog
     Collection<Oplog> oplogsToClear = new ArrayList<>();
     synchronized (getOplogIdToOplog()) {

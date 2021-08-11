@@ -18,9 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.data.RedisData;
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -31,16 +29,21 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public interface PubSub {
 
   /**
-   * Publish a message on a channel
-   *
+   * Publish a message on a channel and return a count of (local) clients that received the message.
+   * This command is asynchronous and the caller may receive a response before subscribers
+   * receive the message.
+   * <p/>
+   * The returned value is somewhat arbitrary and mimics what Redis does in a clustered environment.
+   * Since subscribers and publishers can be connected to any member, the publish command is
+   * distributed to all members of the cluster but remote subscribers are not counted in the
+   * returned value.
    *
    * @param channel to publish to
    * @param message to publish
-   * @return the number of messages published
+   * @return the number of subscribers to this channel that are connected to the server on which
+   *         the command is executed.
    */
-  long publish(
-      Region<RedisKey, RedisData> dataRegion,
-      byte[] channel, byte[] message);
+  long publish(RegionProvider regionProvider, byte[] channel, byte[] message, Client client);
 
   /**
    * Subscribe to a channel
@@ -94,6 +97,32 @@ public interface PubSub {
    * @param client the Client which is to be queried
    * @return the list of channels and patterns
    */
-  List<byte[]> findSubscriptionNames(Client client);;
+  List<byte[]> findSubscriptionNames(Client client);
 
+  /**
+   * Return a list of all subscribed channel names (not including subscribed patterns).
+   */
+  List<byte[]> findChannelNames();
+
+  /**
+   * Return a list of all subscribed channels that match a pattern. This pattern is only applied to
+   * channel names and not to actual subscribed patterns. For example, given that the following
+   * subscriptions exist: "foo", "foobar" and "fo*" then calling this method with {@code f*} will
+   * return {@code foo} and {@code foobar}.
+   *
+   * @param pattern the glob pattern to search for
+   */
+  List<byte[]> findChannelNames(byte[] pattern);
+
+  /**
+   * Return a list consisting of pairs {@code channelName, subscriptionCount}.
+   *
+   * @param names a list of the names to consider. This should not include any patterns.
+   */
+  List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names);
+
+  /**
+   * Return a count of all pattern subscriptions including duplicates.
+   */
+  Long findNumberOfSubscribedPatterns();
 }

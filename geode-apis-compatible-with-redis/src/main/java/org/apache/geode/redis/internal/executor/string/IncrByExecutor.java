@@ -18,12 +18,13 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class IncrByExecutor extends StringExecutor {
+public class IncrByExecutor extends AbstractExecutor {
 
   private static final String ERROR_INCREMENT_NOT_USABLE =
       "The increment on this key must be numeric";
@@ -34,7 +35,7 @@ public class IncrByExecutor extends StringExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = getRedisStringCommands(context);
+    RedisStringCommands stringCommands = context.getStringCommands();
 
     byte[] incrArray = commandElems.get(INCREMENT_INDEX);
     long increment;

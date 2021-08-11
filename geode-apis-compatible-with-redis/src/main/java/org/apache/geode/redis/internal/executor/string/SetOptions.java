@@ -20,40 +20,25 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
 /**
  * Class representing different options that can be used with Redis string SET command.
  */
-public class SetOptions implements DataSerializableFixedID {
+public class SetOptions extends BaseSetOptions {
 
-  private Exists exists;
   private long expirationMillis;
   private boolean keepTTL;
 
   public SetOptions(Exists exists, long expiration, boolean keepTTL) {
-    this.exists = exists;
+    super(exists);
     this.expirationMillis = expiration;
     this.keepTTL = keepTTL;
   }
 
   public SetOptions() {}
-
-  public boolean isNX() {
-    return exists.equals(Exists.NX);
-  }
-
-  public boolean isXX() {
-    return exists.equals(Exists.XX);
-  }
-
-  public Exists getExists() {
-    return exists;
-  }
 
   public long getExpiration() {
     return expirationMillis;
@@ -70,35 +55,16 @@ public class SetOptions implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeEnum(exists, out);
+    super.toData(out, context);
     out.writeLong(expirationMillis);
     out.writeBoolean(keepTTL);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    exists = DataSerializer.readEnum(SetOptions.Exists.class, in);
+  public void fromData(DataInput in, DeserializationContext context) throws IOException {
+    super.fromData(in, context);
     expirationMillis = in.readLong();
     keepTTL = in.readBoolean();
   }
 
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
-  }
-
-  public enum Exists {
-    NONE,
-
-    /**
-     * Only set if key does not exist
-     */
-    NX,
-
-    /**
-     * Only set if key already exists
-     */
-    XX;
-  }
 }

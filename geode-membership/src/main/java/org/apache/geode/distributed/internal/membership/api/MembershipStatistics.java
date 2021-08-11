@@ -49,24 +49,24 @@ public interface MembershipStatistics {
    *
    * @since GemFire 5.0
    */
-  void incUcastWriteBytes(int bytesWritten);
+  void incUcastWriteBytes(long bytesWritten);
 
   /**
    * increment the number of unicast datagram payload bytes received and the number of unicast reads
    * performed
    */
-  void incUcastReadBytes(int amount);
+  void incUcastReadBytes(long amount);
 
   /**
    * increment the number of multicast datagrams sent and the number of multicast bytes transmitted
    */
-  void incMcastWriteBytes(int bytesWritten);
+  void incMcastWriteBytes(long bytesWritten);
 
   /**
    * increment the number of multicast datagram payload bytes received, and the number of mcast
    * messages read
    */
-  void incMcastReadBytes(int amount);
+  void incMcastReadBytes(long amount);
 
   /**
    * increment the number of unicast UDP retransmission requests received from other processes

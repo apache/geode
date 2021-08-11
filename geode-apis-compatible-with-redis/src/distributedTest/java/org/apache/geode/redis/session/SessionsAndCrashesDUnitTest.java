@@ -15,13 +15,12 @@
 
 package org.apache.geode.redis.session;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static java.util.Collections.singletonMap;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,13 +34,14 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.redis.RedisSystemException;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -66,17 +66,14 @@ public class SessionsAndCrashesDUnitTest {
   private static MemberVM server2;
   private static MemberVM server3;
   private static int[] redisPorts;
-  private static Jedis jedis;
+  private static JedisCluster jedis;
 
   private SessionRepository<Session> sessionRepository;
   private ConfigurableApplicationContext springContext;
 
   @BeforeClass
   public static void classSetup() {
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
-
-    locator = cluster.startLocatorVM(0, locatorProperties);
+    locator = cluster.startLocatorVM(0);
 
     server1 = startRedisVM(1, 0);
     server2 = startRedisVM(2, 0);
@@ -87,7 +84,7 @@ public class SessionsAndCrashesDUnitTest {
         cluster.getRedisPort(2),
         cluster.getRedisPort(3)};
 
-    jedis = new Jedis("localhost", redisPorts[0], JEDIS_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort("localhost", redisPorts[0]), JEDIS_TIMEOUT);
   }
 
   private static MemberVM startRedisVM(int vmId, Integer redisPort) {
@@ -104,10 +101,13 @@ public class SessionsAndCrashesDUnitTest {
     // Focus our connections on server2 and server3 since these are the ones going to be
     // restarted.
     String[] args = new String[] {
-        "" + redisPorts[1],
-        "" + redisPorts[2]};
+        "localhost:" + redisPorts[1],
+        "localhost:" + redisPorts[2]};
 
-    springContext = SpringApplication.run(RedisSpringTestApplication.class, args);
+    int appServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    SpringApplication app = new SpringApplication(RedisSpringTestApplication.class);
+    app.setDefaultProperties(singletonMap("server.port", String.valueOf(appServerPort)));
+    springContext = app.run(args);
     sessionRepository = springContext.getBean(SessionRepository.class);
     assertThat(sessionRepository).isNotNull();
   }
@@ -115,7 +115,7 @@ public class SessionsAndCrashesDUnitTest {
   @After
   public void teardown() {
     springContext.stop();
-    jedis.flushAll();
+    cluster.flushAll();
     sessionIds.clear();
   }
 
@@ -129,7 +129,7 @@ public class SessionsAndCrashesDUnitTest {
     Future<Integer> future1 = executor.submit(() -> sessionUpdater(1, running, phase));
     Future<Integer> future2 = executor.submit(() -> sessionUpdater(2, running, phase));
 
-    GeodeAwaitility.await().during(1, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
 
     phase.set("CRASH 1 SERVER2");
     cluster.crashVM(2);
@@ -156,7 +156,7 @@ public class SessionsAndCrashesDUnitTest {
     rebalanceAllRegions(server3);
 
     phase.set("FINISHING");
-    GeodeAwaitility.await().during(10, TimeUnit.SECONDS).until(() -> true);
+    GeodeAwaitility.await().during(20, TimeUnit.SECONDS).until(() -> true);
 
     running.set(false);
     int updatesThread1 = future1.get();
@@ -199,19 +199,16 @@ public class SessionsAndCrashesDUnitTest {
   }
 
   private Session findSession(String sessionId) {
-    try {
-      return sessionRepository.findById(sessionId);
-    } catch (RedisSystemException rex) {
-      return sessionRepository.findById(sessionId);
-    }
+    AtomicReference<Session> sessionRef = new AtomicReference<>(null);
+    GeodeAwaitility.await().ignoreExceptions()
+        .untilAsserted(() -> sessionRef.set(sessionRepository.findById(sessionId)));
+
+    return sessionRef.get();
   }
 
   private void saveSession(Session session) {
-    try {
-      sessionRepository.save(session);
-    } catch (RedisSystemException rex) {
-      sessionRepository.save(session);
-    }
+    GeodeAwaitility.await().ignoreExceptions()
+        .untilAsserted(() -> sessionRepository.save(session));
   }
 
   private void createSessions() {

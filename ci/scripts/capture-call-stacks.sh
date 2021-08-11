@@ -59,29 +59,28 @@ echo "Capturing call stacks"
 for (( h=0; h<${COUNT}; h++)); do
     today=`date +%Y-%m-%d-%H-%M-%S`
     logfile=${CALLSTACKS_DIR}/callstacks-${today}.txt
-    if [ -n "${PARALLEL_DUNIT}" ]; then
-        mapfile -t containers < <(docker ps --format '{{.Names}}')
 
-        for (( i=0; i<${#containers[@]}; i++ )); do
-            echo "Container: ${containers[i]}" | tee -a ${logfile};
-            [ -x $JAVA_HOME/bin/jps ] && JPS=$JAVA_HOME/bin/jps || JPS=jps
-            mapfile -t processes < <(docker exec ${containers[i]} ${JPS} | cut -d ' ' -f 1)
-            echo "Got past processes."
-            for ((j=0; j<${#processes[@]}; j++ )); do
-                  echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                      docker exec ${containers[i]} /bin/bash -c '[ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack; $JSTACK -l '"${processes[j]}" >> ${logfile}
-            done
-        done
-    else
-        mapfile -t processes < <(jps | cut -d ' ' -f 1)
+    # Capture call stacks from each Java process
+    mapfile -t processes < <(jps | cut -d ' ' -f 1)
+    echo "Got past processes."
+    [ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack
+    for ((j=0; j<${#processes[@]}; j++ )); do
+          echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
+              $JSTACK -l ${processes[j]} >> ${logfile}
+    done
+
+    # Capture call stacks from each Java process running in a Docker container
+    mapfile -t containers < <(docker ps --format '{{.Names}}')
+    for (( i=0; i<${#containers[@]}; i++ )); do
+        echo "Container: ${containers[i]}" | tee -a ${logfile};
+        [ -x $JAVA_HOME/bin/jps ] && JPS=$JAVA_HOME/bin/jps || JPS=jps
+        mapfile -t processes < <(docker exec ${containers[i]} ${JPS} | cut -d ' ' -f 1)
         echo "Got past processes."
-        [ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack
         for ((j=0; j<${#processes[@]}; j++ )); do
               echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                  $JSTACK -l ${processes[j]} >> ${logfile}
+                  docker exec ${containers[i]} /bin/bash -c '[ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack; $JSTACK -l '"${processes[j]}" >> ${logfile}
         done
-
-    fi
+    done
     sleep ${STACK_INTERVAL}
 done
 

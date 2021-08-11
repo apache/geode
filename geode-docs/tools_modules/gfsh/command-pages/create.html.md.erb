@@ -286,7 +286,7 @@ create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=v
 <pre class="pre codeblock"><code>--dir=/data/ds1 
 --dir=/data/ds2#5000</code></pre>
 If the specified directory does not exist, the command will create the directory for you.</td>
-<td> </td>
+<td>If the maximum directory size in megabytes is not specified, it will be set to `2147483647` (the value of `Integer.MAX_VALUE`)</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-allow-force-compaction</span></td>
@@ -325,7 +325,7 @@ If the specified directory does not exist, the command will create the directory
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-write-buffer-size</span></td>
-<td>The size of the write buffer that this disk store uses when writing data to disk. Larger values may increase performance but use more memory. The disk store allocates one direct memory buffer of this size.</td>
+<td>The size in bytes of the write buffer that this disk store uses when writing data to disk. Larger values may increase performance but use more memory. The disk store allocates one direct memory buffer of this size.</td>
 <td>32768</td>
 </tr>
 <tr>
@@ -423,13 +423,13 @@ if this option is specified and cluster configuration is enabled.
 <tr>
 <td><span class="keyword parmname">\-\-start-port</span></td>
 <td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">start-port</code> and <code class="ph codeph">end-port</code> values are inclusive. For example, if you specify <code class="ph codeph">start-port=&quot;50510&quot;</code> and <code class="ph codeph">end-port=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50520.</p></td>
 <td>5000</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-end-port</span></td>
 <td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
-<p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
+<p>The <code class="ph codeph">end-port</code> and <code class="ph codeph">start-port</code> values are inclusive. For example, if you specify <code class="ph codeph">start-port=&quot;50510&quot;</code> and <code class="ph codeph">end-port=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50520.</p></td>
 <td>5500</td>
 </tr>
 <tr>

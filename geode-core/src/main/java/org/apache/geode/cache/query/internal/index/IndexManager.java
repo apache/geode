@@ -142,6 +142,9 @@ public class IndexManager {
   public static final String INDEX_ELEMARRAY_SIZE_PROP = "index_elemarray_size";
   public static final int INDEX_ELEMARRAY_THRESHOLD =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_THRESHOLD_PROP, "100"));
+  @MutableForTesting
+  public static int INDEX_ELEMARRAY_THRESHOLD_FOR_TESTING = -1;
+
   public static final int INDEX_ELEMARRAY_SIZE =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_SIZE_PROP, "5"));
   @MakeNotStatic
@@ -978,8 +981,9 @@ public class IndexManager {
     if (logger.isDebugEnabled()) {
       logger.debug("IndexManager.updateIndexes {} + action: {}", entry.getKey(), action);
     }
-    if (entry == null)
+    if (entry == null) {
       return;
+    }
     if (isIndexMaintenanceTypeSynchronous()) {
       // System.out.println("Synchronous update");
       processAction(entry, action, opCode);
@@ -1305,8 +1309,9 @@ public class IndexManager {
    */
   public void destroy() throws QueryException {
     this.indexes.clear();
-    if (!isIndexMaintenanceTypeSynchronous())
+    if (!isIndexMaintenanceTypeSynchronous()) {
       updater.shutdown();
+    }
   }
 
   /**

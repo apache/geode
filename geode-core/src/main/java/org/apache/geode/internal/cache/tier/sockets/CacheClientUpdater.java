@@ -731,8 +731,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
           this.isOpCompleted = true;
         } finally {
-          if (newEvent != null)
+          if (newEvent != null) {
             newEvent.release();
+          }
         }
 
         if (isDebugEnabled) {
@@ -1464,8 +1465,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       switch (op) {
         case 0:
-          Map<VersionSource, Long> regionGCVersions =
-              (Map<VersionSource, Long>) clientMessage.getPart(partIdx++).getObject();
+          Map<VersionSource<?>, Long> regionGCVersions =
+              (Map<VersionSource<?>, Long>) clientMessage.getPart(partIdx++).getObject();
           EventID eventID = (EventID) clientMessage.getPart(partIdx).getObject();
           region.expireTombstones(regionGCVersions, eventID, null);
           break;

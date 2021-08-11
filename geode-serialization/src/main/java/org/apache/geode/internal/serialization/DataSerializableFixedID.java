@@ -337,7 +337,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte PR_INDEX_CREATION_REPLY_MSG = 68;
   byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
 
-  byte REDIS_BYTE_ARRAY_WRAPPER = 70;
+  // 70 unused
 
   byte UPDATE_MESSAGE = 71;
   byte REPLY_MESSAGE = 72;
@@ -687,6 +687,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short REDIS_HASH_ID = 2188;
   short REDIS_NULL_DATA_ID = 2189;
   short REDIS_SET_OPTIONS_ID = 2190;
+  short REDIS_MEMBER_INFO_ID = 2191;
+  short REDIS_SORTED_SET_ID = 2192;
+  short REDIS_SORTED_SET_OPTIONS_ID = 2193;
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**

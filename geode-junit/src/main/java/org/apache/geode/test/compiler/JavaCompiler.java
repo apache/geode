@@ -18,6 +18,8 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,17 +28,16 @@ import java.util.stream.Stream;
 import javax.tools.ToolProvider;
 
 import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 
 
 public class JavaCompiler {
-  private File tempDir;
+  private Path tempDir;
   private String classpath;
 
-  public JavaCompiler() {
-    this.tempDir = Files.createTempDir();
-    tempDir.deleteOnExit();
+  public JavaCompiler() throws IOException {
+    this.tempDir = Files.createTempDirectory("javaCompiler");
+    tempDir.toFile().deleteOnExit();
     this.classpath = System.getProperty("java.class.path");
   }
 
@@ -108,8 +109,8 @@ public class JavaCompiler {
     }
   }
 
-  private File createSubdirectory(File parent, String directoryName) {
-    File subdirectory = parent.toPath().resolve(directoryName).toFile();
+  private File createSubdirectory(Path parent, String directoryName) {
+    File subdirectory = parent.resolve(directoryName).toFile();
     if (!subdirectory.exists()) {
       subdirectory.mkdirs();
     }

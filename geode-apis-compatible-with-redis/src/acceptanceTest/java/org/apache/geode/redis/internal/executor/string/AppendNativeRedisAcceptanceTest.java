@@ -14,18 +14,22 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-
 import org.junit.ClassRule;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
 public class AppendNativeRedisAcceptanceTest extends AbstractAppendIntegrationTest {
 
   @ClassRule
-  public static NativeRedisTestRule server = new NativeRedisTestRule();
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
   @Override
   public int getPort() {
-    return server.getPort();
+    return server.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    server.flushAll();
   }
 }

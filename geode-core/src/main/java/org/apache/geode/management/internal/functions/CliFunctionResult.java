@@ -309,18 +309,23 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     CliFunctionResult other = (CliFunctionResult) obj;
     if (this.memberIdOrName == null) {
-      if (other.memberIdOrName != null)
+      if (other.memberIdOrName != null) {
         return false;
-    } else if (!this.memberIdOrName.equals(other.memberIdOrName))
+      }
+    } else if (!this.memberIdOrName.equals(other.memberIdOrName)) {
       return false;
+    }
     return true;
   }
 

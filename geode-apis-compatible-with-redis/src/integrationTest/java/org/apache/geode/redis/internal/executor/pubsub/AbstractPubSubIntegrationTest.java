@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.executor.pubsub.AbstractSubscriptionsIntegrationTest.REDIS_CLIENT_TIMEOUT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -44,13 +46,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.RedisPortSupplier;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier {
+public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationTest {
   private Jedis publisher;
   private Jedis subscriber;
 
@@ -61,8 +63,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
   @Before
   public void setUp() {
-    subscriber = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
-    publisher = new Jedis("localhost", getPort(), JEDIS_TIMEOUT);
+    subscriber = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+    publisher = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -75,7 +77,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   @SuppressWarnings("unchecked")
   public void punsubscribe_whenNonexistent() {
     assertThat((List<Object>) subscriber.sendCommand(Protocol.Command.PUNSUBSCRIBE, "Nonexistent"))
-        .containsExactly("punsubscribe".getBytes(), "Nonexistent".getBytes(), 0L);
+        .containsExactly("punsubscribe".getBytes(), "Nonexistent".getBytes(),
+            0L);
   }
 
   @Test
@@ -106,23 +109,26 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
+    mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(1);
+    mockSubscriber.awaitMessagesReceived();
 
     mockSubscriber.unsubscribe("salutations");
+
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages));
   }
 
   @Test
   public void punsubscribe_givenSubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -146,9 +152,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   public void unsubscribe_givenPsubscribe_doesNotReduceSubscriptions() {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.psubscribe(mockSubscriber, "salutations");
-    };
+    Runnable runnable = () -> subscriber.psubscribe(mockSubscriber, "salutations");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
@@ -246,8 +250,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("", "blank");
     assertThat(result).isEqualTo(1);
+    mockSubscriber.awaitMessagesReceived();
 
     mockSubscriber.unsubscribe("");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
@@ -300,11 +307,13 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     Long result = publisher.publish("salutations".getBytes(), expectedMessage);
     assertThat(result).isEqualTo(1);
 
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages())
+            .containsExactly(expectedMessage));
+
     mockSubscriber.unsubscribe("salutations".getBytes());
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(expectedMessage);
   }
 
   @Test
@@ -327,11 +336,12 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     Long result = publisher.publish(binaryBlob, binaryBlob);
     assertThat(result).isEqualTo(1);
 
+    GeodeAwaitility.await().untilAsserted(
+        () -> assertThat(mockSubscriber.getReceivedMessages()).containsExactly(binaryBlob));
+
     mockSubscriber.unsubscribe(binaryBlob);
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
-
-    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(binaryBlob);
   }
 
   @Test
@@ -346,25 +356,34 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
+    mockSubscriber.prepareMessagesReceivedLatch(2);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(1);
 
     result = publisher.publish("yuletide", "howdy");
+
     assertThat(result).isEqualTo(1);
+    mockSubscriber.awaitMessagesReceived();
+
     mockSubscriber.unsubscribe("salutations");
+
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
     assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
     assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
     assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(1);
     mockSubscriber.unsubscribeInfos.clear();
+
     mockSubscriber.unsubscribe("yuletide");
+
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     assertThat(mockSubscriber.unsubscribeInfos).hasSize(1);
     assertThat(mockSubscriber.unsubscribeInfos.get(0).channel).isEqualTo("yuletide");
     assertThat(mockSubscriber.unsubscribeInfos.get(0).count).isEqualTo(0);
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+    assertThat(mockSubscriber.getReceivedMessages())
+        .containsExactlyInAnyOrderElementsOf(expectedMessages);
   }
 
   @Test
@@ -433,11 +452,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   }
 
   @Test
-  public void ensureOrderingOfPublishedMessages() throws Exception {
+  public void ensureOrderingOfPublishedMessagesWithTwoSubscriptions() throws Exception {
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Void> future1 =
-        executor.submit(() -> runSubscribeAndPublish(1, 10000, running));
+        executor.submit(() -> runSubscribeAndPublish(1, 3000, running));
 
     running.set(false);
     future1.get();
@@ -478,7 +497,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
       mockSubscriber.psubscribe(pChannel);
       mockSubscriber.awaitPSubscribe(pChannel);
 
+      mockSubscriber.prepareMessagesReceivedLatch(1);
+      mockSubscriber.preparePMessagesReceivedLatch(1);
       localPublisher.publish(channel, "hello-" + index + "-" + iteration);
+      mockSubscriber.awaitMessagesReceived();
+      mockSubscriber.awaitPMessagesReceived();
 
       mockSubscriber.unsubscribe(channel);
       mockSubscriber.awaitUnsubscribe(channel);
@@ -489,6 +512,26 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     }
 
     return mockSubscriber.getReceivedEvents();
+  }
+
+  @Test
+  public void ensureOrderingWithOneSubscriberMultiplePublishes() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+    executor.submit(() -> subscriber.subscribe(mockSubscriber, "salutations"));
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.prepareMessagesReceivedLatch(5);
+    publisher.publish("salutations", "hello");
+    publisher.publish("salutations", "goodbye");
+    publisher.publish("salutations", "adieu");
+    publisher.publish("salutations", "totsiens");
+    publisher.publish("salutations", "auf wiedersehen");
+
+    mockSubscriber.awaitMessagesReceived();
+
+    assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye",
+        "adieu", "totsiens", "auf wiedersehen"));
   }
 
   @Test
@@ -508,18 +551,28 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 1);
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
 
+    mockSubscriber1.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(2);
+    mockSubscriber1.awaitMessagesReceived();
+
     mockSubscriber1.unsubscribe("salutations");
+
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber1Thread.isAlive());
     assertThat(mockSubscriber1.unsubscribeInfos).hasSize(1);
     assertThat(mockSubscriber1.unsubscribeInfos.get(0).channel).isEqualTo("salutations");
     assertThat(mockSubscriber1.unsubscribeInfos.get(0).count).isEqualTo(0);
 
+    mockSubscriber2.prepareMessagesReceivedLatch(1);
     result = publisher.publish("salutations", "goodbye");
+
     assertThat(result).isEqualTo(1);
+    mockSubscriber2.awaitMessagesReceived();
+
     mockSubscriber2.unsubscribe("salutations");
+
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
     waitFor(() -> !subscriber2Thread.isAlive());
     assertThat(mockSubscriber2.unsubscribeInfos).hasSize(1);
@@ -549,8 +602,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
+    mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(1);
+    mockSubscriber.awaitMessagesReceived();
 
     mockSubscriber.unsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
@@ -661,8 +717,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     mockSubscriber.psubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
+    mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(2);
+    mockSubscriber.awaitMessagesReceived();
 
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
@@ -697,8 +756,11 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     mockSubscriber.psubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
+    mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
+
     assertThat(result).isEqualTo(2);
+    mockSubscriber.awaitMessagesReceived();
 
     mockSubscriber.punsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
@@ -710,6 +772,33 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
     assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
     assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
+  }
+
+  @Test
+  public void concurrentSubscribers_andPublishers_doesNotHang() throws Exception {
+    AtomicBoolean running = new AtomicBoolean(true);
+
+    Future<Integer> makeSubscribersFuture1 =
+        executor.submit(() -> makeSubscribers(10000, running));
+    Future<Integer> makeSubscribersFuture2 =
+        executor.submit(() -> makeSubscribers(10000, running));
+
+    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
+    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
+    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
+    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
+    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
+
+    running.set(false);
+
+    assertThat(makeSubscribersFuture1.get()).isGreaterThan(0);
+    assertThat(makeSubscribersFuture2.get()).isGreaterThan(0);
+
+    assertThat(publish1.get()).isGreaterThan(0);
+    assertThat(publish2.get()).isGreaterThan(0);
+    assertThat(publish3.get()).isGreaterThan(0);
+    assertThat(publish4.get()).isGreaterThan(0);
+    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private Jedis getConnection() {
@@ -845,34 +934,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     executor.shutdownNow();
 
     return result;
-  }
-
-  @Test
-  public void concurrentSubscribers_andPublishers_doesNotHang()
-      throws InterruptedException, ExecutionException {
-    AtomicBoolean running = new AtomicBoolean(true);
-
-    Future<Integer> makeSubscribersFuture1 =
-        executor.submit(() -> makeSubscribers(10000, running));
-    Future<Integer> makeSubscribersFuture2 =
-        executor.submit(() -> makeSubscribers(10000, running));
-
-    Future<Integer> publish1 = executor.submit(() -> doPublishing(1, 10000, running));
-    Future<Integer> publish2 = executor.submit(() -> doPublishing(2, 10000, running));
-    Future<Integer> publish3 = executor.submit(() -> doPublishing(3, 10000, running));
-    Future<Integer> publish4 = executor.submit(() -> doPublishing(4, 10000, running));
-    Future<Integer> publish5 = executor.submit(() -> doPublishing(5, 10000, running));
-
-    running.set(false);
-
-    assertThat(makeSubscribersFuture1.get()).isGreaterThanOrEqualTo(10);
-    assertThat(makeSubscribersFuture2.get()).isGreaterThanOrEqualTo(10);
-
-    assertThat(publish1.get()).isGreaterThan(0);
-    assertThat(publish2.get()).isGreaterThan(0);
-    assertThat(publish3.get()).isGreaterThan(0);
-    assertThat(publish4.get()).isGreaterThan(0);
-    assertThat(publish5.get()).isGreaterThan(0);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

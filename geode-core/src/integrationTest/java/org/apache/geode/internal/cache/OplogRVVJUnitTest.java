@@ -40,6 +40,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
@@ -75,6 +76,7 @@ public class OplogRVVJUnitTest {
     final DiskStoreID m1 = DiskStoreID.random();
     final DiskStoreID m2 = DiskStoreID.random();
     final DiskRecoveryStore drs = mock(DiskRecoveryStore.class);
+    when(parent.getWriteBufferSize()).thenReturn(DiskStoreFactory.DEFAULT_WRITE_BUFFER_SIZE);
     when(df.getOrCreateCanonicalId(m1)).thenReturn(1);
     when(df.getOrCreateCanonicalId(m2)).thenReturn(2);
     when(df.getOrCreateCanonicalId(ownerId)).thenReturn(3);

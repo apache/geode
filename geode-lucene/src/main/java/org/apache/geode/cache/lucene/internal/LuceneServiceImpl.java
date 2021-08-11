@@ -603,8 +603,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   public void unregisterIndex(final String region) {
-    if (indexMap.containsKey(region))
+    if (indexMap.containsKey(region)) {
       indexMap.remove(region);
+    }
   }
 
   /** Public for test purposes */

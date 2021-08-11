@@ -21,7 +21,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -43,8 +47,14 @@ public class StartLocatorCommandIntegrationTest {
   private StartLocatorCommand spy;
 
   @Before
-  public void before() {
+  public void before() throws IOException {
+    final Process process = mock(Process.class);
+    when(process.getInputStream()).thenReturn(mock(InputStream.class));
+    when(process.getErrorStream()).thenReturn(mock(InputStream.class));
+    when(process.getOutputStream()).thenReturn(mock(OutputStream.class));
+
     spy = Mockito.spy(StartLocatorCommand.class);
+    doReturn(process).when(spy).getProcess(any(), any());
     doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
@@ -79,7 +89,6 @@ public class StartLocatorCommandIntegrationTest {
 
   @Test
   public void startWithBindAddress() throws Exception {
-    doReturn(mock(Process.class)).when(spy).getProcess(any(), any());
     commandRule.executeAndAssertThat(spy, "start locator --bind-address=127.0.0.1");
 
     ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
@@ -91,7 +100,6 @@ public class StartLocatorCommandIntegrationTest {
 
   @Test
   public void startLocatorRespectsHostnameForClients() throws Exception {
-    doReturn(mock(Process.class)).when(spy).getProcess(any(), any());
     String startLocatorCommand = new CommandStringBuilder("start locator")
         .addOption("hostname-for-clients", FAKE_HOSTNAME).toString();
 

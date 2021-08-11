@@ -20,13 +20,6 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 evaluationDependsOn(":geode-core")
 
-repositories {
-  maven {
-    // docker-compose-rule is published on bintray
-    url 'https://dl.bintray.com/palantir/releases'
-  }
-}
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 configurations {
@@ -48,7 +41,7 @@ task downloadJdbcJars(type:Copy) {
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
@@ -118,15 +111,14 @@ dependencies {
   acceptanceTestImplementation('org.assertj:assertj-core')
   acceptanceTestImplementation('org.awaitility:awaitility')
   acceptanceTestImplementation('org.mockito:mockito-core')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-core')
   acceptanceTestImplementation('pl.pragmatists:JUnitParams')
-  acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   acceptanceTestRuntimeOnly('mysql:mysql-connector-java')
   acceptanceTestRuntimeOnly('org.apache.derby:derby')
   acceptanceTestRuntimeOnly('org.postgresql:postgresql')
 
-  jdbcTestingJars('mysql:mysql-connector-java:8.0.23')
+  jdbcTestingJars('mysql:mysql-connector-java:8.0.25')
 }
 
 integrationTest.forkEvery 0

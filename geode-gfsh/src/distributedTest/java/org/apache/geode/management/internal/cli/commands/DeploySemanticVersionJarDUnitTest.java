@@ -28,7 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.internal.JarDeploymentServiceFactory;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -39,14 +38,13 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class DeploySemanticVersionJarDUnitTest {
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
+
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
+  private MemberVM locator0, locator1, server2;
   private static File stagedDir;
   private static File semanticJarVersion0, semanticJarVersion1, semanticJarVersion2,
       semanticJarVersion0b, semanticJarVersion0c;
-  @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
-  private MemberVM locator0, locator1, server2;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -65,6 +63,17 @@ public class DeploySemanticVersionJarDUnitTest {
     jarBuilder.buildJar(semanticJarVersion0c, createClassContent("version1c", "Def"));
   }
 
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
+
+  @Before
+  public void before() throws Exception {
+    locator0 = cluster.startLocatorVM(0);
+    locator1 = cluster.startLocatorVM(1, locator0.getPort());
+    server2 = cluster.startServerVM(2, locator0.getPort(), locator1.getPort());
+    gfsh.connectAndVerify(locator0);
+  }
+
   private static String createClassContent(String version, String functionName) {
     return "package jddunit.function;" + "import org.apache.geode.cache.execute.Function;"
         + "import org.apache.geode.cache.execute.FunctionContext;" + "public class "
@@ -73,29 +82,6 @@ public class DeploySemanticVersionJarDUnitTest {
         + "public String getVersion() {return \"" + version + "\";}"
         + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
         + version + "\");}}";
-  }
-
-  static Set<String> getDeployedJarsFromClusterConfig() {
-    InternalConfigurationPersistenceService cps =
-        ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-    return cps.getConfiguration("cluster").getJarNames();
-  }
-
-  private static void verifyLoadAndHasVersion(String artifactId, String className, String version)
-      throws Exception {
-    assertThat(JarDeploymentServiceFactory.getJarDeploymentServiceInstance()
-        .getDeployed(artifactId).isSuccessful()).isTrue();
-    Class<?> klass = ClassPathLoader.getLatest().forName(className);
-    assertThat(klass).isNotNull();
-    assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
-  }
-
-  @Before
-  public void before() throws Exception {
-    locator0 = cluster.startLocatorVM(0);
-    locator1 = cluster.startLocatorVM(1, locator0.getPort());
-    server2 = cluster.startServerVM(2, locator0.getPort(), locator1.getPort());
-    gfsh.connectAndVerify(locator0);
   }
 
   @Test
@@ -208,5 +194,20 @@ public class DeploySemanticVersionJarDUnitTest {
       assertThat(deployedJars).isEmpty();
     }, locator0, locator1);
     assertThat(server2.getWorkingDir().list()).isEmpty();
+  }
+
+  static Set<String> getDeployedJarsFromClusterConfig() {
+    InternalConfigurationPersistenceService cps =
+        ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+    return cps.getConfiguration("cluster").getJarNames();
+  }
+
+  private static void verifyLoadAndHasVersion(String artifactId, String className, String version)
+      throws Exception {
+    assertThat(ClassPathLoader.getLatest().getJarDeploymentService()
+        .getDeployed(artifactId)).isNotNull();
+    Class<?> klass = ClassPathLoader.getLatest().forName(className);
+    assertThat(klass).isNotNull();
+    assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
   }
 }

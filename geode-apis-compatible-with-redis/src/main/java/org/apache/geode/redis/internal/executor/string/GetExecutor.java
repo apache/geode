@@ -14,21 +14,20 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetExecutor extends StringExecutor {
+public class GetExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    RedisStringCommands redisStringCommands = getRedisStringCommands(context);
-    ByteArrayWrapper result = redisStringCommands.get(key);
+    RedisStringCommands redisStringCommands = context.getStringCommands();
+    byte[] result = redisStringCommands.get(key);
 
     return respondBulkStrings(result);
   }

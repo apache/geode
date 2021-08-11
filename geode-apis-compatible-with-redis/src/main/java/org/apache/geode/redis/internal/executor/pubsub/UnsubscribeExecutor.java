@@ -15,30 +15,26 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.pubsub.Subscription.Type.CHANNEL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.geode.redis.internal.data.ByteArrayWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-
-    context.eventLoopReady();
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> channelNames = extractChannelNames(command);
     if (channelNames.isEmpty()) {
-      channelNames = context.getPubSub().findSubscriptionNames(context.getClient(),
-          Subscription.Type.CHANNEL);
+      channelNames = context.getPubSub().findSubscriptionNames(context.getClient(), CHANNEL);
     }
 
     Collection<Collection<?>> response = unsubscribe(context, channelNames);
@@ -47,10 +43,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   }
 
   private List<byte[]> extractChannelNames(Command command) {
-    return command.getProcessedCommandWrappers().stream()
-        .skip(1)
-        .map(ByteArrayWrapper::toBytes)
-        .collect(Collectors.toList());
+    return command.getProcessedCommand().stream().skip(1).collect(Collectors.toList());
   }
 
   private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
@@ -61,8 +54,7 @@ public class UnsubscribeExecutor extends AbstractExecutor {
       response.add(createItem(null, 0));
     } else {
       for (byte[] channel : channelNames) {
-        long subscriptionCount =
-            context.getPubSub().unsubscribe(channel, context.getClient());
+        long subscriptionCount = context.getPubSub().unsubscribe(channel, context.getClient());
 
         response.add(createItem(channel, subscriptionCount));
       }

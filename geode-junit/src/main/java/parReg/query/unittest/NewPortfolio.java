@@ -107,8 +107,9 @@ public class NewPortfolio implements Serializable {
 
   private void setPositions() {
     int numOfPositions = rng.nextInt(MAX_NUM_OF_POSITIONS);
-    if (numOfPositions == 0)
+    if (numOfPositions == 0) {
       numOfPositions++;
+    }
 
     int secId = rng.nextInt(NUM_OF_SECURITIES);
 
@@ -118,8 +119,9 @@ public class NewPortfolio implements Serializable {
       // secId needs to be UNIQUE in one portfolio, keep track MAX_NUM_OF_POSITIONS and
       // NUM_OF_SECURITIES
       secId += i * 7;
-      if (secId > NUM_OF_SECURITIES)
+      if (secId > NUM_OF_SECURITIES) {
         secId -= NUM_OF_SECURITIES;
+      }
       props.setProperty("secId", Integer.toString(secId));
 
       Position pos = new Position();
