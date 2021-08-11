@@ -40,8 +40,8 @@ public class KnownVersionJUnitTest {
     compare(KnownVersion.GEODE_1_12_0, KnownVersion.GEODE_1_11_0);
     compare(KnownVersion.GEODE_1_12_1, KnownVersion.GEODE_1_12_0);
     compare(KnownVersion.GEODE_1_13_0, KnownVersion.GEODE_1_12_1);
-    compare(KnownVersion.GEODE_1_13_1, KnownVersion.GEODE_1_13_0);
-    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_1);
+    compare(KnownVersion.GEODE_1_13_2, KnownVersion.GEODE_1_13_0);
+    compare(KnownVersion.GEODE_1_14_0, KnownVersion.GEODE_1_13_2);
     compare(KnownVersion.GEODE_1_15_0, KnownVersion.GEODE_1_14_0);
   }
 
@@ -63,8 +63,8 @@ public class KnownVersionJUnitTest {
         .isEqualTo(KnownVersion.GEODE_1_12_1);
     assertThat(KnownVersion.GEODE_1_13_0.getClientServerProtocolVersion())
         .isEqualTo(KnownVersion.GEODE_1_13_0);
-    assertThat(KnownVersion.GEODE_1_13_1.getClientServerProtocolVersion())
-        .isEqualTo(KnownVersion.GEODE_1_13_1);
+    assertThat(KnownVersion.GEODE_1_13_2.getClientServerProtocolVersion())
+        .isEqualTo(KnownVersion.GEODE_1_13_2);
     assertThat(KnownVersion.GEODE_1_14_0.getClientServerProtocolVersion())
         .isEqualTo(KnownVersion.GEODE_1_14_0);
     assertThat(KnownVersion.GEODE_1_15_0.getClientServerProtocolVersion())
