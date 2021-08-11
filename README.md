@@ -44,7 +44,7 @@ latency and 24x7 availability requirements.
 You can download Apache Geode from the
 [website](https://geode.apache.org/releases/), run a Docker
 [image](https://hub.docker.com/r/apachegeode/geode/), or install with
-[homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
+[Homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
 can load dependencies from [Maven
 Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22).
 
