@@ -33,7 +33,7 @@ import org.apache.geode.internal.size.Sizeable;
  * uses the same algorithm.
  */
 public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
-    extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
+    extends ByteArray2ObjectOpenHashMap<K, V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
   public static final int OPEN_HASH_MAP_OVERHEAD =
