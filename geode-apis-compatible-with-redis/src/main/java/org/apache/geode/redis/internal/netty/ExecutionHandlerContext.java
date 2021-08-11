@@ -18,10 +18,7 @@ package org.apache.geode.redis.internal.netty;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
@@ -32,7 +29,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.EventLoopGroup;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
@@ -86,10 +82,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
-  private final int MAX_QUEUED_COMMANDS =
-      Integer.getInteger("geode.redis.commandQueueSize", 1000);
-  private final LinkedBlockingQueue<Command> commandQueue =
-      new LinkedBlockingQueue<>(MAX_QUEUED_COMMANDS);
 
   private final int serverPort;
 
@@ -107,7 +99,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
-      ExecutorService backgroundExecutor,
       byte[] password,
       int serverPort,
       DistributedMember member) {
@@ -126,8 +117,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
-
-    backgroundExecutor.submit(this::processCommandQueue);
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
@@ -138,39 +127,20 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         });
   }
 
-  private void processCommandQueue() {
-    while (true) {
-      Command command = takeCommandFromQueue();
-      if (command == TERMINATE_COMMAND) {
-        return;
-      }
+  /**
+   * This will handle the execution of received commands
+   */
+  @Override
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    Command command = (Command) msg;
+    command.setChannelHandlerContext(ctx);
+    if (!channelInactive.get()) {
       try {
         executeCommand(command);
         redisStats.incCommandsProcessed();
       } catch (Throwable ex) {
         exceptionCaught(command.getChannelHandlerContext(), ex);
       }
-    }
-  }
-
-  private Command takeCommandFromQueue() {
-    try {
-      return commandQueue.take();
-    } catch (InterruptedException e) {
-      logger.info("Command queue thread interrupted");
-      return TERMINATE_COMMAND;
-    }
-  }
-
-  /**
-   * This will handle the execution of received commands
-   */
-  @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    Command command = (Command) msg;
-    command.setChannelHandlerContext(ctx);
-    if (!channelInactive.get()) {
-      commandQueue.put(command);
     }
   }
 
@@ -183,29 +153,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (exceptionResponse != null) {
       writeToChannel(exceptionResponse);
     }
-  }
-
-  public synchronized void changeChannelEventLoopGroup(EventLoopGroup newGroup,
-      Consumer<Boolean> callback) {
-    if (newGroup.equals(channel.eventLoop())) {
-      // already registered with newGroup
-      callback.accept(true);
-      return;
-    }
-    channel.deregister().addListener((ChannelFutureListener) future -> {
-      boolean registerSuccess = true;
-      synchronized (channel) {
-        if (!channel.isRegistered()) {
-          try {
-            newGroup.register(channel).sync();
-          } catch (Exception e) {
-            logger.warn("Unable to register new EventLoopGroup: {}", e.getMessage());
-            registerSuccess = false;
-          }
-        }
-      }
-      callback.accept(registerSuccess);
-    });
   }
 
   private RedisResponse getExceptionResponse(ChannelHandlerContext ctx, Throwable cause) {
@@ -257,8 +204,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
       }
 
-      commandQueue.clear();
-      commandQueue.offer(TERMINATE_COMMAND);
       redisStats.removeClient();
       ctx.channel().close();
       ctx.close();

@@ -176,8 +176,8 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, backgroundExecutor,
-                redisPasswordBytes, getPort(), member));
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisPasswordBytes,
+                getPort(), member));
       }
     };
   }
