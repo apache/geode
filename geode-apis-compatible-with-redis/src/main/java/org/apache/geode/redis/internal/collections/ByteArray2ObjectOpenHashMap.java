@@ -59,12 +59,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   protected int size;
   /** The acceptable load factor. */
   protected final float f;
-  /** Cached set of entries. */
-  protected transient FastEntrySet<K, V> entries;
-  /** Cached set of keys. */
-  protected transient ObjectSet<K> keys;
-  /** Cached collection of values. */
-  protected transient ObjectCollection<V> values;
 
   /**
    * Creates a new hash map.
@@ -966,9 +960,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
 
   @Override
   public FastEntrySet<K, V> object2ObjectEntrySet() {
-    if (entries == null)
-      entries = new MapEntrySet();
-    return entries;
+    return new MapEntrySet();
   }
 
   /**
@@ -1074,9 +1066,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
 
   @Override
   public ObjectSet<K> keySet() {
-    if (keys == null)
-      keys = new KeySet();
-    return keys;
+    return new KeySet();
   }
 
   /**
@@ -1137,44 +1127,42 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
 
   @Override
   public ObjectCollection<V> values() {
-    if (values == null)
-      values = new AbstractObjectCollection<V>() {
-        @Override
-        public ObjectIterator<V> iterator() {
-          return new ValueIterator();
-        }
+    return new AbstractObjectCollection<V>() {
+      @Override
+      public ObjectIterator<V> iterator() {
+        return new ValueIterator();
+      }
 
-        @Override
-        public ObjectSpliterator<V> spliterator() {
-          return new ValueSpliterator();
-        }
+      @Override
+      public ObjectSpliterator<V> spliterator() {
+        return new ValueSpliterator();
+      }
 
-        /** {@inheritDoc} */
-        @Override
-        public void forEach(final Consumer<? super V> consumer) {
-          if (containsNullKey)
-            consumer.accept(value[n]);
-          for (int pos = n; pos-- != 0;)
-            if (!((key[pos]) == null))
-              consumer.accept(value[pos]);
-        }
+      /** {@inheritDoc} */
+      @Override
+      public void forEach(final Consumer<? super V> consumer) {
+        if (containsNullKey)
+          consumer.accept(value[n]);
+        for (int pos = n; pos-- != 0;)
+          if (!((key[pos]) == null))
+            consumer.accept(value[pos]);
+      }
 
-        @Override
-        public int size() {
-          return size;
-        }
+      @Override
+      public int size() {
+        return size;
+      }
 
-        @Override
-        public boolean contains(Object v) {
-          return containsValue(v);
-        }
+      @Override
+      public boolean contains(Object v) {
+        return containsValue(v);
+      }
 
-        @Override
-        public void clear() {
-          ByteArray2ObjectOpenHashMap.this.clear();
-        }
-      };
-    return values;
+      @Override
+      public void clear() {
+        ByteArray2ObjectOpenHashMap.this.clear();
+      }
+    };
   }
 
   /**
@@ -1282,9 +1270,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     } catch (CloneNotSupportedException cantHappen) {
       throw new InternalError();
     }
-    c.keys = null;
-    c.values = null;
-    c.entries = null;
     c.containsNullKey = containsNullKey;
     c.key = key.clone();
     c.value = value.clone();
