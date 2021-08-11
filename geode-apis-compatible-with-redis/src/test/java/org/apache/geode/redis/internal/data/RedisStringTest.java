@@ -21,7 +21,10 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,6 +34,7 @@ import java.math.BigDecimal;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -91,25 +95,19 @@ public class RedisStringTest {
   }
 
   @Test
-  public void appendStoresStableDelta() throws IOException {
+  public void appendStoresStableDelta() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] baseBytes = {0, 1};
-    byte[] bytesToAppend = {2, 3};
-    byte[] baseAndAppendedBytes = {0, 1, 2, 3};
+    final byte[] baseBytes = {'0', '1'};
+    final byte[] bytesToAppend = {'2', '3'};
 
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
     RedisString stringOne = new RedisString(baseBytes);
+
     stringOne.append(region, null, bytesToAppend);
-    assertThat(stringOne.hasDelta()).isTrue();
-    assertThat(stringOne.get()).isEqualTo(baseAndAppendedBytes);
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    stringOne.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(stringOne.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisString stringTwo = new RedisString(baseBytes);
-    assertThat(stringTwo).isNotEqualTo(stringOne);
-    stringTwo.fromDelta(in);
-    assertThat(stringTwo.get()).isEqualTo(baseAndAppendedBytes);
-    assertThat(stringTwo).isEqualTo(stringOne);
   }
 
   @Test
@@ -302,20 +300,31 @@ public class RedisStringTest {
   }
 
   @Test
-  public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
+  public void setExpirationTimestamp_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    byte[] bytes = {0, 1};
+    final byte[] bytes = {0, 1};
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(bytes, invocation));
     RedisString stringOne = new RedisString(bytes);
+
     stringOne.setExpirationTimestamp(region, null, 999);
-    assertThat(stringOne.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    stringOne.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  private Object validateDeltaSerialization(byte[] bytes, InvocationOnMock invocation)
+      throws IOException {
+    RedisString value = invocation.getArgument(1, RedisString.class);
+    assertThat(value.hasDelta()).isTrue();
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    value.toDelta(out);
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisString stringTwo = new RedisString(bytes);
-    assertThat(stringTwo).isNotEqualTo(stringOne);
+    assertThat(stringTwo).isNotEqualTo(value);
     stringTwo.fromDelta(in);
-    assertThat(stringTwo).isEqualTo(stringOne);
+    assertThat(stringTwo).isEqualTo(value);
+    return null;
   }
 
   @Test

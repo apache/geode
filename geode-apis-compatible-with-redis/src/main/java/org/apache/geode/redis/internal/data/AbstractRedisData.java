@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -180,11 +179,7 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    try {
-      deltaInfo.serializeTo(out);
-    } finally {
-      deltaInfo = null;
-    }
+    deltaInfo.serializeTo(out);
   }
 
   @Override
@@ -206,11 +201,6 @@ public abstract class AbstractRedisData implements RedisData {
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
     }
-  }
-
-  @VisibleForTesting
-  protected void clearDelta() {
-    this.deltaInfo = null;
   }
 
   @Override
@@ -248,7 +238,11 @@ public abstract class AbstractRedisData implements RedisData {
         region.remove(key);
       } else {
         setDelta(deltaInfo);
-        region.put(key, this);
+        try {
+          region.put(key, this);
+        } finally {
+          setDelta(null);
+        }
       }
     }
   }

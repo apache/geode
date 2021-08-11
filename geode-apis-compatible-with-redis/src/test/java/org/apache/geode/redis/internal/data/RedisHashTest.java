@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
@@ -42,6 +43,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -122,62 +124,66 @@ public class RedisHashTest {
   /************* HSET *************/
   @SuppressWarnings("unchecked")
   @Test
-  public void hset_stores_delta_that_is_stable() throws IOException {
+  public void hset_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     byte[] k3 = stringToBytes("k3");
     byte[] v3 = stringToBytes("v3");
     ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(k3);
     adds.add(v3);
+
     o1.hset(region, null, adds, false);
-    assertThat(o1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    o1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(o1.hasDelta()).isFalse();
+  }
+
+  private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
+    RedisHash value = invocation.getArgument(1, RedisHash.class);
+    assertThat(value.hasDelta()).isTrue();
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    value.toDelta(out);
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisHash o2 = createRedisHash("k1", "v1", "k2", "v2");
-    assertThat(o2).isNotEqualTo(o1);
+    assertThat(o2).isNotEqualTo(value);
     o2.fromDelta(in);
-    assertThat(o2).isEqualTo(o1);
+    assertThat(o2).isEqualTo(value);
+    return null;
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  public void hdel_stores_delta_that_is_stable() throws IOException {
+  public void hdel_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = mock(Region.class);
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
     byte[] k1 = stringToBytes("k1");
     ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(k1);
+
     o1.hdel(region, null, removes);
-    assertThat(o1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    o1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(o1.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisHash o2 = createRedisHash("k1", "v1", "k2", "v2");
-    assertThat(o2).isNotEqualTo(o1);
-    o2.fromDelta(in);
-    assertThat(o2).isEqualTo(o1);
   }
 
   /************* Expiration *************/
   @SuppressWarnings("unchecked")
   @Test
-  public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
+  public void setExpirationTimestamp_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = mock(Region.class);
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
+
     o1.setExpirationTimestamp(region, null, 999);
-    assertThat(o1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    o1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(o1.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisHash o2 = createRedisHash("k1", "v1", "k2", "v2");
-    assertThat(o2).isNotEqualTo(o1);
-    o2.fromDelta(in);
-    assertThat(o2).isEqualTo(o1);
   }
 
   /************* HSCAN *************/
@@ -343,7 +349,6 @@ public class RedisHashTest {
     initialData.add(stringToBytes(initialValue));
 
     hash.hset(region, key, initialData, false);
-    hash.clearDelta();
 
     long initialSize = expectedSize(hash);
 
@@ -352,7 +357,6 @@ public class RedisHashTest {
     finalData.add(stringToBytes(finalValue));
 
     hash.hset(region, key, finalData, false);
-    hash.clearDelta();
 
     assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
@@ -469,12 +473,10 @@ public class RedisHashTest {
     dataToRemove.add(field1);
 
     RedisHash redisHash = new RedisHash(data);
-    redisHash.clearDelta();
 
     int initialSize = redisHash.getSizeInBytes();
 
     redisHash.hdel(region, key, dataToRemove);
-    redisHash.clearDelta();
 
     int finalSize = redisHash.getSizeInBytes();
     assertThat(finalSize).isLessThan(initialSize);
