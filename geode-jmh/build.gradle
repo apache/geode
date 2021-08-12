@@ -27,7 +27,6 @@ dependencies {
   api('org.openjdk.jmh:jmh-core')
 
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
 }
