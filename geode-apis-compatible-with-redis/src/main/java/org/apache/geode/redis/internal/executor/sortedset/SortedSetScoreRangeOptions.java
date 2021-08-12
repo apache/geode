@@ -21,44 +21,44 @@ import java.util.Arrays;
 
 public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Double> {
 
-  public SortedSetScoreRangeOptions(byte[] minBytes, byte[] maxBytes) {
-    super(minBytes, maxBytes);
+  public SortedSetScoreRangeOptions(byte[] startBytes, byte[] endBytes) {
+    super(startBytes, endBytes);
   }
 
   @Override
-  void parseMinimum(byte[] minBytes) {
-    if (minBytes[0] == bLEFT_PAREN) {
+  void parseStartRange(byte[] startBytes) {
+    if (startBytes[0] == bLEFT_PAREN) {
       // A value of "(" is equivalent to "(0"
-      if (minBytes.length == 1) {
-        minimum = 0.0;
+      if (startBytes.length == 1) {
+        startRange = 0.0;
       } else {
-        minimum = bytesToDouble(Arrays.copyOfRange(minBytes, 1, minBytes.length));
+        startRange = bytesToDouble(Arrays.copyOfRange(startBytes, 1, startBytes.length));
       }
-      isMinExclusive = true;
+      isStartExclusive = true;
     } else {
-      isMinExclusive = false;
-      minimum = bytesToDouble(minBytes);
+      isStartExclusive = false;
+      startRange = bytesToDouble(startBytes);
     }
   }
 
   @Override
-  void parseMaximum(byte[] maxBytes) {
-    if (maxBytes[0] == bLEFT_PAREN) {
+  void parseEndRange(byte[] endBytes) {
+    if (endBytes[0] == bLEFT_PAREN) {
       // A value of "(" is equivalent to "(0"
-      if (maxBytes.length == 1) {
-        maximum = 0.0;
+      if (endBytes.length == 1) {
+        endRange = 0.0;
       } else {
-        maximum = bytesToDouble(Arrays.copyOfRange(maxBytes, 1, maxBytes.length));
+        endRange = bytesToDouble(Arrays.copyOfRange(endBytes, 1, endBytes.length));
       }
-      isMaxExclusive = true;
+      isEndExclusive = true;
     } else {
-      isMaxExclusive = false;
-      maximum = bytesToDouble(maxBytes);
+      isEndExclusive = false;
+      endRange = bytesToDouble(endBytes);
     }
   }
 
   @Override
-  int compareMinToMax() {
-    return Double.compare(minimum, maximum);
+  int compareStartToEnd() {
+    return Double.compare(startRange, endRange);
   }
 }

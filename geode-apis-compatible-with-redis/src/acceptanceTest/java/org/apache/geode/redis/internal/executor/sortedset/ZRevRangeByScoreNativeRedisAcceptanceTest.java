@@ -14,10 +14,23 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-public class ZRangeByScoreExecutor extends AbstractZRangeByScoreExecutor {
+import org.junit.ClassRule;
+
+import org.apache.geode.redis.NativeRedisClusterTestRule;
+
+public class ZRevRangeByScoreNativeRedisAcceptanceTest
+    extends AbstractZRevRangeByScoreIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
   @Override
-  public boolean isRev() {
-    return false;
+  public int getPort() {
+    return server.getExposedPorts().get(0);
+  }
+
+  @Override
+  public void flushAll() {
+    server.flushAll();
   }
 }

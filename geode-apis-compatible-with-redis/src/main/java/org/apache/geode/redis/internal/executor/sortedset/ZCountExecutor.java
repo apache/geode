@@ -41,7 +41,7 @@ public class ZCountExecutor extends AbstractExecutor {
     }
 
     // If the range is empty (min > max or min == max and both are exclusive), return early
-    if (rangeOptions.isEmptyRange()) {
+    if (rangeOptions.isEmptyRange(false)) {
       return RedisResponse.integer(0);
     }
 

@@ -42,6 +42,9 @@ public interface RedisSortedSetCommands {
 
   List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScore);
 
+  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
+      boolean withScores);
+
   long zrevrank(RedisKey key, byte[] member);
 
   byte[] zscore(RedisKey key, byte[] member);

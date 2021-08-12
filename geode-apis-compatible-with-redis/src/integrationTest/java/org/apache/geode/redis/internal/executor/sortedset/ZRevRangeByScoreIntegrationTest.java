@@ -14,10 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-public class ZRangeByScoreExecutor extends AbstractZRangeByScoreExecutor {
+import org.junit.ClassRule;
+
+import org.apache.geode.redis.GeodeRedisServerRule;
+
+public class ZRevRangeByScoreIntegrationTest extends AbstractZRevRangeByScoreIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public boolean isRev() {
-    return false;
+  public int getPort() {
+    return server.getPort();
   }
 }

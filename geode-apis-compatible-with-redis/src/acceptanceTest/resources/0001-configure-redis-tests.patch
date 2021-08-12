@@ -1423,7 +1423,7 @@ index 7122fd987..12c323fc2 100644
      }
  
 diff --git a/tests/unit/type/zset.tcl b/tests/unit/type/zset.tcl
-index a8c817f6e..df2b738ed 100644
+index a8c817f6e..74f06fd4f 100644
 --- a/tests/unit/type/zset.tcl
 +++ b/tests/unit/type/zset.tcl
 @@ -7,22 +7,22 @@ start_server {tags {"zset"}} {
@@ -1465,71 +1465,6 @@ index a8c817f6e..df2b738ed 100644
  
          test "ZSET basic ZADD and score update - $encoding" {
              r del ztmp
-@@ -218,35 +218,35 @@ start_server {tags {"zset"}} {
-             assert_equal {a 1 b 2 c 3 d 4} [r zrange ztmp 0 -1 withscores]
-         }
- 
--        test "ZREVRANGE basics - $encoding" {
--            r del ztmp
--            r zadd ztmp 1 a
--            r zadd ztmp 2 b
--            r zadd ztmp 3 c
--            r zadd ztmp 4 d
--
--            assert_equal {d c b a} [r zrevrange ztmp 0 -1]
--            assert_equal {d c b} [r zrevrange ztmp 0 -2]
--            assert_equal {c b a} [r zrevrange ztmp 1 -1]
--            assert_equal {c b} [r zrevrange ztmp 1 -2]
--            assert_equal {b a} [r zrevrange ztmp -2 -1]
--            assert_equal {b} [r zrevrange ztmp -2 -2]
--
--            # out of range start index
--            assert_equal {d c b} [r zrevrange ztmp -5 2]
--            assert_equal {d c} [r zrevrange ztmp -5 1]
--            assert_equal {} [r zrevrange ztmp 5 -1]
--            assert_equal {} [r zrevrange ztmp 5 -2]
--
--            # out of range end index
--            assert_equal {d c b a} [r zrevrange ztmp 0 5]
--            assert_equal {c b a} [r zrevrange ztmp 1 5]
--            assert_equal {} [r zrevrange ztmp 0 -5]
--            assert_equal {} [r zrevrange ztmp 1 -5]
--
--            # withscores
--            assert_equal {d 4 c 3 b 2 a 1} [r zrevrange ztmp 0 -1 withscores]
--        }
-+        # test "ZREVRANGE basics - $encoding" {
-+        #     r del ztmp
-+        #     r zadd ztmp 1 a
-+        #     r zadd ztmp 2 b
-+        #     r zadd ztmp 3 c
-+        #     r zadd ztmp 4 d
-+
-+        #     assert_equal {d c b a} [r zrevrange ztmp 0 -1]
-+        #     assert_equal {d c b} [r zrevrange ztmp 0 -2]
-+        #     assert_equal {c b a} [r zrevrange ztmp 1 -1]
-+        #     assert_equal {c b} [r zrevrange ztmp 1 -2]
-+        #     assert_equal {b a} [r zrevrange ztmp -2 -1]
-+        #     assert_equal {b} [r zrevrange ztmp -2 -2]
-+
-+        #     # out of range start index
-+        #     assert_equal {d c b} [r zrevrange ztmp -5 2]
-+        #     assert_equal {d c} [r zrevrange ztmp -5 1]
-+        #     assert_equal {} [r zrevrange ztmp 5 -1]
-+        #     assert_equal {} [r zrevrange ztmp 5 -2]
-+
-+        #     # out of range end index
-+        #     assert_equal {d c b a} [r zrevrange ztmp 0 5]
-+        #     assert_equal {c b a} [r zrevrange ztmp 1 5]
-+        #     assert_equal {} [r zrevrange ztmp 0 -5]
-+        #     assert_equal {} [r zrevrange ztmp 1 -5]
-+
-+        #     # withscores
-+        #     assert_equal {d 4 c 3 b 2 a 1} [r zrevrange ztmp 0 -1 withscores]
-+        # }
- 
-         test "ZRANK/ZREVRANK basics - $encoding" {
-             r del zranktmp
 @@ -257,10 +257,10 @@ start_server {tags {"zset"}} {
              assert_equal 1 [r zrank zranktmp y]
              assert_equal 2 [r zrank zranktmp z]
@@ -1545,86 +1480,10 @@ index a8c817f6e..df2b738ed 100644
          }
  
          test "ZRANK - after deletion - $encoding" {
-@@ -300,505 +300,505 @@ start_server {tags {"zset"}} {
-             create_zset zset {-inf a 1 b 2 c 3 d 4 e 5 f +inf g}
+@@ -376,429 +376,429 @@ start_server {tags {"zset"}} {
+             assert_equal {d 3 c 2} [r zrevrangebyscore zset 5 2 LIMIT 2 3 WITHSCORES]
          }
  
--        test "ZRANGEBYSCORE/ZREVRANGEBYSCORE/ZCOUNT basics" {
--            create_default_zset
--
--            # inclusive range
--            assert_equal {a b c} [r zrangebyscore zset -inf 2]
--            assert_equal {b c d} [r zrangebyscore zset 0 3]
--            assert_equal {d e f} [r zrangebyscore zset 3 6]
--            assert_equal {e f g} [r zrangebyscore zset 4 +inf]
--            assert_equal {c b a} [r zrevrangebyscore zset 2 -inf]
--            assert_equal {d c b} [r zrevrangebyscore zset 3 0]
--            assert_equal {f e d} [r zrevrangebyscore zset 6 3]
--            assert_equal {g f e} [r zrevrangebyscore zset +inf 4]
--            assert_equal 3 [r zcount zset 0 3]
--
--            # exclusive range
--            assert_equal {b}   [r zrangebyscore zset (-inf (2]
--            assert_equal {b c} [r zrangebyscore zset (0 (3]
--            assert_equal {e f} [r zrangebyscore zset (3 (6]
--            assert_equal {f}   [r zrangebyscore zset (4 (+inf]
--            assert_equal {b}   [r zrevrangebyscore zset (2 (-inf]
--            assert_equal {c b} [r zrevrangebyscore zset (3 (0]
--            assert_equal {f e} [r zrevrangebyscore zset (6 (3]
--            assert_equal {f}   [r zrevrangebyscore zset (+inf (4]
--            assert_equal 2 [r zcount zset (0 (3]
--
--            # test empty ranges
--            r zrem zset a
--            r zrem zset g
--
--            # inclusive
--            assert_equal {} [r zrangebyscore zset 4 2]
--            assert_equal {} [r zrangebyscore zset 6 +inf]
--            assert_equal {} [r zrangebyscore zset -inf -6]
--            assert_equal {} [r zrevrangebyscore zset +inf 6]
--            assert_equal {} [r zrevrangebyscore zset -6 -inf]
--
--            # exclusive
--            assert_equal {} [r zrangebyscore zset (4 (2]
--            assert_equal {} [r zrangebyscore zset 2 (2]
--            assert_equal {} [r zrangebyscore zset (2 2]
--            assert_equal {} [r zrangebyscore zset (6 (+inf]
--            assert_equal {} [r zrangebyscore zset (-inf (-6]
--            assert_equal {} [r zrevrangebyscore zset (+inf (6]
--            assert_equal {} [r zrevrangebyscore zset (-6 (-inf]
--
--            # empty inner range
--            assert_equal {} [r zrangebyscore zset 2.4 2.6]
--            assert_equal {} [r zrangebyscore zset (2.4 2.6]
--            assert_equal {} [r zrangebyscore zset 2.4 (2.6]
--            assert_equal {} [r zrangebyscore zset (2.4 (2.6]
--        }
--
--        test "ZRANGEBYSCORE with WITHSCORES" {
--            create_default_zset
--            assert_equal {b 1 c 2 d 3} [r zrangebyscore zset 0 3 withscores]
--            assert_equal {d 3 c 2 b 1} [r zrevrangebyscore zset 3 0 withscores]
--        }
--
--        test "ZRANGEBYSCORE with LIMIT" {
--            create_default_zset
--            assert_equal {b c}   [r zrangebyscore zset 0 10 LIMIT 0 2]
--            assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 3]
--            assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 10]
--            assert_equal {}      [r zrangebyscore zset 0 10 LIMIT 20 10]
--            assert_equal {f e}   [r zrevrangebyscore zset 10 0 LIMIT 0 2]
--            assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 3]
--            assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 10]
--            assert_equal {}      [r zrevrangebyscore zset 10 0 LIMIT 20 10]
--        }
--
--        test "ZRANGEBYSCORE with LIMIT and WITHSCORES" {
--            create_default_zset
--            assert_equal {e 4 f 5} [r zrangebyscore zset 2 5 LIMIT 2 3 WITHSCORES]
--            assert_equal {d 3 c 2} [r zrevrangebyscore zset 5 2 LIMIT 2 3 WITHSCORES]
--        }
--
 -        test "ZRANGEBYSCORE with non-value min or max" {
 -            assert_error "*not*float*" {r zrangebyscore fooz str 1}
 -            assert_error "*not*float*" {r zrangebyscore fooz 1 str}
@@ -1665,87 +1524,11 @@ index a8c817f6e..df2b738ed 100644
 -            assert_equal {} [r zrevrangebylex zset \[elez \[elex]
 -            assert_equal {} [r zrevrangebylex zset (hill (omega]
 -        }
-+        # test "ZRANGEBYSCORE/ZREVRANGEBYSCORE/ZCOUNT basics" {
-+        #     create_default_zset
-+
-+        #     # inclusive range
-+        #     assert_equal {a b c} [r zrangebyscore zset -inf 2]
-+        #     assert_equal {b c d} [r zrangebyscore zset 0 3]
-+        #     assert_equal {d e f} [r zrangebyscore zset 3 6]
-+        #     assert_equal {e f g} [r zrangebyscore zset 4 +inf]
-+        #     assert_equal {c b a} [r zrevrangebyscore zset 2 -inf]
-+        #     assert_equal {d c b} [r zrevrangebyscore zset 3 0]
-+        #     assert_equal {f e d} [r zrevrangebyscore zset 6 3]
-+        #     assert_equal {g f e} [r zrevrangebyscore zset +inf 4]
-+        #     assert_equal 3 [r zcount zset 0 3]
-+
-+        #     # exclusive range
-+        #     assert_equal {b}   [r zrangebyscore zset (-inf (2]
-+        #     assert_equal {b c} [r zrangebyscore zset (0 (3]
-+        #     assert_equal {e f} [r zrangebyscore zset (3 (6]
-+        #     assert_equal {f}   [r zrangebyscore zset (4 (+inf]
-+        #     assert_equal {b}   [r zrevrangebyscore zset (2 (-inf]
-+        #     assert_equal {c b} [r zrevrangebyscore zset (3 (0]
-+        #     assert_equal {f e} [r zrevrangebyscore zset (6 (3]
-+        #     assert_equal {f}   [r zrevrangebyscore zset (+inf (4]
-+        #     assert_equal 2 [r zcount zset (0 (3]
-+
-+        #     # test empty ranges
-+        #     r zrem zset a
-+        #     r zrem zset g
-+
-+        #     # inclusive
-+        #     assert_equal {} [r zrangebyscore zset 4 2]
-+        #     assert_equal {} [r zrangebyscore zset 6 +inf]
-+        #     assert_equal {} [r zrangebyscore zset -inf -6]
-+        #     assert_equal {} [r zrevrangebyscore zset +inf 6]
-+        #     assert_equal {} [r zrevrangebyscore zset -6 -inf]
-+
-+        #     # exclusive
-+        #     assert_equal {} [r zrangebyscore zset (4 (2]
-+        #     assert_equal {} [r zrangebyscore zset 2 (2]
-+        #     assert_equal {} [r zrangebyscore zset (2 2]
-+        #     assert_equal {} [r zrangebyscore zset (6 (+inf]
-+        #     assert_equal {} [r zrangebyscore zset (-inf (-6]
-+        #     assert_equal {} [r zrevrangebyscore zset (+inf (6]
-+        #     assert_equal {} [r zrevrangebyscore zset (-6 (-inf]
-+
-+        #     # empty inner range
-+        #     assert_equal {} [r zrangebyscore zset 2.4 2.6]
-+        #     assert_equal {} [r zrangebyscore zset (2.4 2.6]
-+        #     assert_equal {} [r zrangebyscore zset 2.4 (2.6]
-+        #     assert_equal {} [r zrangebyscore zset (2.4 (2.6]
-+        # }
-+
-+        # test "ZRANGEBYSCORE with WITHSCORES" {
-+        #     create_default_zset
-+        #     assert_equal {b 1 c 2 d 3} [r zrangebyscore zset 0 3 withscores]
-+        #     assert_equal {d 3 c 2 b 1} [r zrevrangebyscore zset 3 0 withscores]
-+        # }
-+
-+        # test "ZRANGEBYSCORE with LIMIT" {
-+        #     create_default_zset
-+        #     assert_equal {b c}   [r zrangebyscore zset 0 10 LIMIT 0 2]
-+        #     assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 3]
-+        #     assert_equal {d e f} [r zrangebyscore zset 0 10 LIMIT 2 10]
-+        #     assert_equal {}      [r zrangebyscore zset 0 10 LIMIT 20 10]
-+        #     assert_equal {f e}   [r zrevrangebyscore zset 10 0 LIMIT 0 2]
-+        #     assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 3]
-+        #     assert_equal {d c b} [r zrevrangebyscore zset 10 0 LIMIT 2 10]
-+        #     assert_equal {}      [r zrevrangebyscore zset 10 0 LIMIT 20 10]
-+        # }
-+
-+        # test "ZRANGEBYSCORE with LIMIT and WITHSCORES" {
-+        #     create_default_zset
-+        #     assert_equal {e 4 f 5} [r zrangebyscore zset 2 5 LIMIT 2 3 WITHSCORES]
-+        #     assert_equal {d 3 c 2} [r zrevrangebyscore zset 5 2 LIMIT 2 3 WITHSCORES]
-+        # }
-+
-+        # test "ZRANGEBYSCORE with non-value min or max" {
-+        #     assert_error "*not*float*" {r zrangebyscore fooz str 1}
-+        #     assert_error "*not*float*" {r zrangebyscore fooz 1 str}
-+        #     assert_error "*not*float*" {r zrangebyscore fooz 1 NaN}
-+        # }
++        #test "ZRANGEBYSCORE with non-value min or max" {
++            #assert_error "*not*float*" {r zrangebyscore fooz str 1}
++            #assert_error "*not*float*" {r zrangebyscore fooz 1 str}
++        #    assert_error "*not*float*" {r zrangebyscore fooz 1 NaN}
++        #}
 +
 +        # proc create_default_lex_zset {} {
 +        #     create_zset zset {0 alpha 0 bar 0 cool 0 down
@@ -2569,92 +2352,19 @@ index a8c817f6e..df2b738ed 100644
                  set fromredis [r zrange myzset 0 -1]
                  set delta 0
                  for {set i 0} {$i < [llength $fromredis]} {incr i} {
-@@ -879,210 +879,210 @@ start_server {tags {"zset"}} {
-             assert_equal 0 $delta
+@@ -886,7 +886,7 @@ start_server {tags {"zset"}} {
+                 r zadd zset [expr rand()] $i
+             }
+ 
+-            assert_encoding $encoding zset
++        #     assert_encoding $encoding zset
+             for {set i 0} {$i < 100} {incr i} {
+                 set min [expr rand()]
+                 set max [expr rand()]
+@@ -961,128 +961,128 @@ start_server {tags {"zset"}} {
+             assert_equal {} $err
          }
  
--        test "ZRANGEBYSCORE fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
--            set err {}
--            r del zset
--            for {set i 0} {$i < $elements} {incr i} {
--                r zadd zset [expr rand()] $i
--            }
--
--            assert_encoding $encoding zset
--            for {set i 0} {$i < 100} {incr i} {
--                set min [expr rand()]
--                set max [expr rand()]
--                if {$min > $max} {
--                    set aux $min
--                    set min $max
--                    set max $aux
--                }
--                set low [r zrangebyscore zset -inf $min]
--                set ok [r zrangebyscore zset $min $max]
--                set high [r zrangebyscore zset $max +inf]
--                set lowx [r zrangebyscore zset -inf ($min]
--                set okx [r zrangebyscore zset ($min ($max]
--                set highx [r zrangebyscore zset ($max +inf]
--
--                if {[r zcount zset -inf $min] != [llength $low]} {
--                    append err "Error, len does not match zcount\n"
--                }
--                if {[r zcount zset $min $max] != [llength $ok]} {
--                    append err "Error, len does not match zcount\n"
--                }
--                if {[r zcount zset $max +inf] != [llength $high]} {
--                    append err "Error, len does not match zcount\n"
--                }
--                if {[r zcount zset -inf ($min] != [llength $lowx]} {
--                    append err "Error, len does not match zcount\n"
--                }
--                if {[r zcount zset ($min ($max] != [llength $okx]} {
--                    append err "Error, len does not match zcount\n"
--                }
--                if {[r zcount zset ($max +inf] != [llength $highx]} {
--                    append err "Error, len does not match zcount\n"
--                }
--
--                foreach x $low {
--                    set score [r zscore zset $x]
--                    if {$score > $min} {
--                        append err "Error, score for $x is $score > $min\n"
--                    }
--                }
--                foreach x $lowx {
--                    set score [r zscore zset $x]
--                    if {$score >= $min} {
--                        append err "Error, score for $x is $score >= $min\n"
--                    }
--                }
--                foreach x $ok {
--                    set score [r zscore zset $x]
--                    if {$score < $min || $score > $max} {
--                        append err "Error, score for $x is $score outside $min-$max range\n"
--                    }
--                }
--                foreach x $okx {
--                    set score [r zscore zset $x]
--                    if {$score <= $min || $score >= $max} {
--                        append err "Error, score for $x is $score outside $min-$max open range\n"
--                    }
--                }
--                foreach x $high {
--                    set score [r zscore zset $x]
--                    if {$score < $max} {
--                        append err "Error, score for $x is $score < $max\n"
--                    }
--                }
--                foreach x $highx {
--                    set score [r zscore zset $x]
--                    if {$score <= $max} {
--                        append err "Error, score for $x is $score <= $max\n"
--                    }
--                }
--            }
--            assert_equal {} $err
--        }
--
 -        test "ZRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
 -            set lexset {}
 -            r del zset
@@ -2777,88 +2487,6 @@ index a8c817f6e..df2b738ed 100644
 -            }
 -            assert_equal 0 $diff
 -        }
-+        # test "ZRANGEBYSCORE fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
-+        #     set err {}
-+        #     r del zset
-+        #     for {set i 0} {$i < $elements} {incr i} {
-+        #         r zadd zset [expr rand()] $i
-+        #     }
-+
-+        #     assert_encoding $encoding zset
-+        #     for {set i 0} {$i < 100} {incr i} {
-+        #         set min [expr rand()]
-+        #         set max [expr rand()]
-+        #         if {$min > $max} {
-+        #             set aux $min
-+        #             set min $max
-+        #             set max $aux
-+        #         }
-+        #         set low [r zrangebyscore zset -inf $min]
-+        #         set ok [r zrangebyscore zset $min $max]
-+        #         set high [r zrangebyscore zset $max +inf]
-+        #         set lowx [r zrangebyscore zset -inf ($min]
-+        #         set okx [r zrangebyscore zset ($min ($max]
-+        #         set highx [r zrangebyscore zset ($max +inf]
-+
-+        #         if {[r zcount zset -inf $min] != [llength $low]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+        #         if {[r zcount zset $min $max] != [llength $ok]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+        #         if {[r zcount zset $max +inf] != [llength $high]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+        #         if {[r zcount zset -inf ($min] != [llength $lowx]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+        #         if {[r zcount zset ($min ($max] != [llength $okx]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+        #         if {[r zcount zset ($max +inf] != [llength $highx]} {
-+        #             append err "Error, len does not match zcount\n"
-+        #         }
-+
-+        #         foreach x $low {
-+        #             set score [r zscore zset $x]
-+        #             if {$score > $min} {
-+        #                 append err "Error, score for $x is $score > $min\n"
-+        #             }
-+        #         }
-+        #         foreach x $lowx {
-+        #             set score [r zscore zset $x]
-+        #             if {$score >= $min} {
-+        #                 append err "Error, score for $x is $score >= $min\n"
-+        #             }
-+        #         }
-+        #         foreach x $ok {
-+        #             set score [r zscore zset $x]
-+        #             if {$score < $min || $score > $max} {
-+        #                 append err "Error, score for $x is $score outside $min-$max range\n"
-+        #             }
-+        #         }
-+        #         foreach x $okx {
-+        #             set score [r zscore zset $x]
-+        #             if {$score <= $min || $score >= $max} {
-+        #                 append err "Error, score for $x is $score outside $min-$max open range\n"
-+        #             }
-+        #         }
-+        #         foreach x $high {
-+        #             set score [r zscore zset $x]
-+        #             if {$score < $max} {
-+        #                 append err "Error, score for $x is $score < $max\n"
-+        #             }
-+        #         }
-+        #         foreach x $highx {
-+        #             set score [r zscore zset $x]
-+        #             if {$score <= $max} {
-+        #                 append err "Error, score for $x is $score <= $max\n"
-+        #             }
-+        #         }
-+        #     }
-+        #     assert_equal {} $err
-+        # }
-+
 +        # test "ZRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
 +        #     set lexset {}
 +        #     r del zset
@@ -3189,4 +2817,3 @@ index a8c817f6e..df2b738ed 100644
 +        # r config set zset-max-ziplist-entries $original_max
      }
  }
-
