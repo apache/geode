@@ -28,13 +28,11 @@ dependencies {
 
   // test
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
 
 
   // jmhTest
   jmhTestImplementation('junit:junit')
-  jmhTestRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   jmhTestImplementation('org.assertj:assertj-core')
 }
