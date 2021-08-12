@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -38,6 +39,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class RegionCreateFunctionJUnitTest {
 
@@ -50,12 +52,13 @@ public class RegionCreateFunctionJUnitTest {
     InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
     @SuppressWarnings("unchecked")
     ResultSender<Object> resultSender = mock(ResultSender.class);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(internalCache);
     when(internalCache.getCacheForProcessingClientRequests()).thenReturn(cache);
     when(context.getMemberName()).thenReturn("member");
-
+    when(cache.getPdxRegistry()).thenReturn(typeRegistry);
     CreateRegionFunctionArgs args = new CreateRegionFunctionArgs(SEPARATOR + "REGION",
         new RegionConfig(), true);
     when(context.getArguments()).thenReturn(args);
@@ -74,5 +77,56 @@ public class RegionCreateFunctionJUnitTest {
 
     assertThat(captor.getValue().getStatusMessage())
         .isEqualTo("Skipping \"member\". Region \"" + SEPARATOR + "REGION\" already exists.");
+  }
+
+  @Test
+  public void testRegionCreateWillThrowExceptionWithPdxRegistryNull() {
+    RegionCreateFunction function = spy(new RegionCreateFunction());
+    @SuppressWarnings("unchecked")
+    FunctionContext<CreateRegionFunctionArgs> context = mock(FunctionContext.class);
+    InternalCache internalCache = mock(InternalCache.class);
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    @SuppressWarnings("unchecked")
+    ResultSender<Object> resultSender = mock(ResultSender.class);
+
+    when(context.getResultSender()).thenReturn(resultSender);
+    when(context.getCache()).thenReturn(internalCache);
+    when(internalCache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    when(context.getMemberName()).thenReturn("member");
+    when(cache.getPdxRegistry()).thenReturn(null);
+
+    CreateRegionFunctionArgs args = new CreateRegionFunctionArgs(SEPARATOR + "REGION",
+        new RegionConfig(), true);
+    when(context.getArguments()).thenReturn(args);
+
+    assertThatCode(() -> {
+      function.execute(context);
+    }).hasMessageContaining("The pdxRegistry is not created within 2000 ms");
+  }
+
+  @Test
+  public void testRegionCreateWillNotThrowExceptionWithPdxRegistryCreated() {
+    RegionCreateFunction function = spy(new RegionCreateFunction());
+    @SuppressWarnings("unchecked")
+    FunctionContext<CreateRegionFunctionArgs> context = mock(FunctionContext.class);
+    InternalCache internalCache = mock(InternalCache.class);
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    @SuppressWarnings("unchecked")
+    ResultSender<Object> resultSender = mock(ResultSender.class);
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+
+    when(context.getResultSender()).thenReturn(resultSender);
+    when(context.getCache()).thenReturn(internalCache);
+    when(internalCache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    when(context.getMemberName()).thenReturn("member");
+    when(cache.getPdxRegistry()).thenReturn(typeRegistry);
+
+    CreateRegionFunctionArgs args = new CreateRegionFunctionArgs(SEPARATOR + "REGION",
+        new RegionConfig(), true);
+    when(context.getArguments()).thenReturn(args);
+
+    assertThatCode(() -> {
+      function.execute(context);
+    }).doesNotThrowAnyException();
   }
 }
