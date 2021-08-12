@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.AbstractObjectCollection;
 import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
@@ -37,6 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSpliterators;
 
 public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<K, V>
     implements java.io.Serializable, Cloneable, Hash {
+  private static final Strategy<byte[]> strategy = ByteArrays.HASH_STRATEGY;
   private static final long serialVersionUID = 0L;
   private static final boolean ASSERTS = false;
   /** The array of keys. */
@@ -47,8 +49,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   protected transient int mask;
   /** Whether this map contains the key zero. */
   protected transient boolean containsNullKey;
-  /** The hash strategy of this custom map. */
-  protected Strategy<? super K> strategy;
   /** The current table size. */
   protected transient int n;
   /** Threshold after which we rehash. It must be the table size times {@link #f}. */
@@ -68,12 +68,14 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
    *
    * @param expected the expected number of elements in the hash map.
    * @param f the load factor.
-   * @param strategy the strategy.
+   * @param strategyParam the strategy.
    */
   @SuppressWarnings("unchecked")
   public ByteArray2ObjectOpenHashMap(final int expected, final float f,
-      final Strategy<? super K> strategy) {
-    this.strategy = strategy;
+      final Strategy<? super K> strategyParam) {
+    if (strategyParam != strategy) {
+      throw new IllegalArgumentException("only ByteArrays.HASH_STRATEGY is supported");
+    }
     if (f <= 0 || f >= 1)
       throw new IllegalArgumentException("Load factor must be greater than 0 and smaller than 1");
     if (expected < 0)
@@ -194,8 +196,9 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
    *
    * @return the hashing strategy of this custom hash map.
    */
+  @SuppressWarnings("unchecked")
   public Strategy<? super K> strategy() {
-    return strategy;
+    return (Strategy<K>)strategy;
   }
 
   private int realSize() {
@@ -248,22 +251,22 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
 
   @SuppressWarnings("unchecked")
   private int find(final K k) {
-    if ((strategy.equals((k), (null))))
+    if ((strategy().equals((k), (null))))
       return containsNullKey ? n : -(n + 1);
     K curr;
     final K[] key = this.key;
     int pos;
     // The starting point.
     if (((curr =
-        key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask]) == null))
+        key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
       return -(pos + 1);
-    if ((strategy.equals((k), (curr))))
+    if ((strategy().equals((k), (curr))))
       return pos;
     // There's always an unused entry.
     while (true) {
       if (((curr = key[pos = (pos + 1) & mask]) == null))
         return -(pos + 1);
-      if ((strategy.equals((k), (curr))))
+      if ((strategy().equals((k), (curr))))
         return pos;
     }
   }
@@ -310,7 +313,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
           value[last] = null;
           return;
         }
-        slot = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(curr))) & mask;
+        slot = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(curr))) & mask;
         if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos)
           break;
         pos = (pos + 1) & mask;
@@ -323,7 +326,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public V remove(final Object k) {
-    if ((strategy.equals(((K) k), (null)))) {
+    if ((strategy().equals(((K) k), (null)))) {
       if (containsNullKey)
         return removeNullEntry();
       return defRetValue;
@@ -333,14 +336,14 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     int pos;
     // The starting point.
     if (((curr = key[pos =
-        (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode((K) k))) & mask]) == null))
+        (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode((K) k))) & mask]) == null))
       return defRetValue;
-    if ((strategy.equals((K) (k), (curr))))
+    if ((strategy().equals((K) (k), (curr))))
       return removeEntry(pos);
     while (true) {
       if (((curr = key[pos = (pos + 1) & mask]) == null))
         return defRetValue;
-      if ((strategy.equals((K) (k), (curr))))
+      if ((strategy().equals((K) (k), (curr))))
         return removeEntry(pos);
     }
   }
@@ -348,22 +351,22 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public V get(final Object k) {
-    if ((strategy.equals(((K) k), (null))))
+    if ((strategy().equals(((K) k), (null))))
       return containsNullKey ? value[n] : defRetValue;
     K curr;
     final K[] key = this.key;
     int pos;
     // The starting point.
     if (((curr = key[pos =
-        (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode((K) k))) & mask]) == null))
+        (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode((K) k))) & mask]) == null))
       return defRetValue;
-    if ((strategy.equals((K) (k), (curr))))
+    if ((strategy().equals((K) (k), (curr))))
       return value[pos];
     // There's always an unused entry.
     while (true) {
       if (((curr = key[pos = (pos + 1) & mask]) == null))
         return defRetValue;
-      if ((strategy.equals((K) (k), (curr))))
+      if ((strategy().equals((K) (k), (curr))))
         return value[pos];
     }
   }
@@ -371,22 +374,22 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public boolean containsKey(final Object k) {
-    if ((strategy.equals(((K) k), (null))))
+    if ((strategy().equals(((K) k), (null))))
       return containsNullKey;
     K curr;
     final K[] key = this.key;
     int pos;
     // The starting point.
     if (((curr = key[pos =
-        (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode((K) k))) & mask]) == null))
+        (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode((K) k))) & mask]) == null))
       return false;
-    if ((strategy.equals((K) (k), (curr))))
+    if ((strategy().equals((K) (k), (curr))))
       return true;
     // There's always an unused entry.
     while (true) {
       if (((curr = key[pos = (pos + 1) & mask]) == null))
         return false;
-      if ((strategy.equals((K) (k), (curr))))
+      if ((strategy().equals((K) (k), (curr))))
         return true;
     }
   }
@@ -486,13 +489,13 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       if (!(o instanceof Map.Entry))
         return false;
       Map.Entry<K, V> e = (Map.Entry<K, V>) o;
-      return (strategy.equals((key[index]), ((e.getKey()))))
+      return (strategy().equals((key[index]), ((e.getKey()))))
           && java.util.Objects.equals(value[index], (e.getValue()));
     }
 
     @Override
     public int hashCode() {
-      return (strategy.hashCode(key[index]))
+      return (strategy().hashCode(key[index]))
           ^ ((value[index]) == null ? 0 : (value[index]).hashCode());
     }
 
@@ -547,8 +550,8 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
           // We are just enumerating elements from the wrapped list.
           last = Integer.MIN_VALUE;
           final K k = wrapped.get(-pos - 1);
-          int p = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask;
-          while (!(strategy.equals((k), (key[p]))))
+          int p = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask;
+          while (!(strategy().equals((k), (key[p]))))
             p = (p + 1) & mask;
           return p;
         }
@@ -569,8 +572,8 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
           // We are just enumerating elements from the wrapped list.
           last = Integer.MIN_VALUE;
           final K k = wrapped.get(-pos - 1);
-          int p = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask;
-          while (!(strategy.equals((k), (key[p]))))
+          int p = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask;
+          while (!(strategy().equals((k), (key[p]))))
             p = (p + 1) & mask;
           acceptOnIndex(action, p);
           c--;
@@ -600,7 +603,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
             value[last] = null;
             return;
           }
-          slot = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(curr))) & mask;
+          slot = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(curr))) & mask;
           if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos)
             break;
           pos = (pos + 1) & mask;
@@ -860,7 +863,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       final K k = ((K) e.getKey());
       final V v = ((V) e.getValue());
-      if ((strategy.equals((k), (null))))
+      if ((strategy().equals((k), (null))))
         return ByteArray2ObjectOpenHashMap.this.containsNullKey
             && java.util.Objects.equals(value[n], v);
       K curr;
@@ -868,15 +871,15 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       int pos;
       // The starting point.
       if (((curr =
-          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask]) == null))
+          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
         return false;
-      if ((strategy.equals((k), (curr))))
+      if ((strategy().equals((k), (curr))))
         return java.util.Objects.equals(value[pos], v);
       // There's always an unused entry.
       while (true) {
         if (((curr = key[pos = (pos + 1) & mask]) == null))
           return false;
-        if ((strategy.equals((k), (curr))))
+        if ((strategy().equals((k), (curr))))
           return java.util.Objects.equals(value[pos], v);
       }
     }
@@ -889,7 +892,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       final K k = ((K) e.getKey());
       final V v = ((V) e.getValue());
-      if ((strategy.equals((k), (null)))) {
+      if ((strategy().equals((k), (null)))) {
         if (containsNullKey && java.util.Objects.equals(value[n], v)) {
           removeNullEntry();
           return true;
@@ -901,9 +904,9 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       int pos;
       // The starting point.
       if (((curr =
-          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask]) == null))
+          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
         return false;
-      if ((strategy.equals((curr), (k)))) {
+      if ((strategy().equals((curr), (k)))) {
         if (java.util.Objects.equals(value[pos], v)) {
           removeEntry(pos);
           return true;
@@ -913,7 +916,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       while (true) {
         if (((curr = key[pos = (pos + 1) & mask]) == null))
           return false;
-        if ((strategy.equals((curr), (k)))) {
+        if ((strategy().equals((curr), (k)))) {
           if (java.util.Objects.equals(value[pos], v)) {
             removeEntry(pos);
             return true;
@@ -1239,7 +1242,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     for (int j = realSize(); j-- != 0;) {
       while (((key[--i]) == null));
       if (!((newKey[pos =
-          (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(key[i]))) & mask]) == null))
+          (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(key[i]))) & mask]) == null))
         while (!((newKey[pos = (pos + 1) & mask]) == null));
       newKey[pos] = key[i];
       newValue[pos] = value[i];
@@ -1273,7 +1276,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     c.containsNullKey = containsNullKey;
     c.key = key.clone();
     c.value = value.clone();
-    c.strategy = strategy;
     return c;
   }
 
@@ -1294,7 +1296,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       while (((key[i]) == null))
         i++;
       if (this != key[i])
-        t = (strategy.hashCode(key[i]));
+        t = (strategy().hashCode(key[i]));
       if (this != value[i])
         t ^= ((value[i]) == null ? 0 : (value[i]).hashCode());
       h += t;
@@ -1332,11 +1334,11 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     for (int i = size, pos; i-- != 0;) {
       k = (K) s.readObject();
       v = (V) s.readObject();
-      if ((strategy.equals((k), (null)))) {
+      if ((strategy().equals((k), (null)))) {
         pos = n;
         containsNullKey = true;
       } else {
-        pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy.hashCode(k))) & mask;
+        pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask;
         while (!((key[pos]) == null))
           pos = (pos + 1) & mask;
       }

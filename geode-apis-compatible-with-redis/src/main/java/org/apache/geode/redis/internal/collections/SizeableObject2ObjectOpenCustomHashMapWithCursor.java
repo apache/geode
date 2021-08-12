@@ -186,7 +186,7 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
   }
 
   private int hash(K key) {
-    return mix(strategy.hashCode(key)) & mask;
+    return mix(strategy().hashCode(key)) & mask;
   }
 
   @Override
