@@ -61,7 +61,6 @@ public class AuthExpirationDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-
   @Rule
   public RestoreSystemProperties restore = new RestoreSystemProperties();
 
@@ -77,8 +76,7 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
-      throws Exception {
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed() throws Exception {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -137,17 +135,12 @@ public class AuthExpirationDUnitTest {
       Region<Object, Object> region = regionService.getRegion("/region");
       region.put(0, "value0");
       regionService.close();
-    });
 
-    clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("serviceUser1");
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-      Properties userSecurityProperties = new Properties();
       userSecurityProperties.put("security-username", "serviceUser1");
       userSecurityProperties.put("security-password", "serviceUser1");
-      assert clientCache != null;
-      RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      Region<Object, Object> region = regionService.getRegion("/region");
+      regionService = clientCache.createAuthenticatedView(userSecurityProperties);
+      region = regionService.getRegion("/region");
       region.put(1, "value1");
       regionService.close();
     });
@@ -166,16 +159,11 @@ public class AuthExpirationDUnitTest {
       UpdatableUserAuthInitialize.setAlternate(Boolean.TRUE);
       region.put(2, "value2");
       regionService.close();
-    });
 
-    clientVM.invoke(() -> {
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-      Properties userSecurityProperties = new Properties();
       userSecurityProperties.put("security-username", "serviceUser0");
       userSecurityProperties.put("security-password", "serviceUser0");
-      assert clientCache != null;
-      RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      Region<Object, Object> region = regionService.getRegion("/region");
+      regionService = clientCache.createAuthenticatedView(userSecurityProperties);
+      region = regionService.getRegion("/region");
       region.put(3, "value3");
       regionService.close();
     });
