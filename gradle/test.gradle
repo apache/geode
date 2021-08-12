@@ -93,7 +93,7 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 configure([integrationTest, distributedTest, performanceTest]) {
   useJUnit {
     if (project.hasProperty("testCategory")) {
-      includeTags += project.testCategory
+      includeCategories += project.testCategory
     }
   }
 }
