@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -238,7 +237,7 @@ public class RedisHashTest {
 
     RedisHash redisHash = new RedisHash(data);
 
-    final int expected = sizer.sizeof(redisHash) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+    final int expected = expectedSize(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
@@ -256,7 +255,7 @@ public class RedisHashTest {
   }
 
   private int expectedSize(RedisHash hash) {
-    return sizer.sizeof(hash) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+    return sizer.sizeof(hash);
   }
 
   @Test

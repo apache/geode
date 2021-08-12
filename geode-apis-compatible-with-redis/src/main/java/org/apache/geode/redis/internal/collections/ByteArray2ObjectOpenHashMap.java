@@ -198,7 +198,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
    */
   @SuppressWarnings("unchecked")
   public Strategy<? super K> strategy() {
-    return (Strategy<K>)strategy;
+    return (Strategy<K>) strategy;
   }
 
   private int realSize() {
@@ -871,7 +871,8 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       int pos;
       // The starting point.
       if (((curr =
-          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
+          key[pos =
+              (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
         return false;
       if ((strategy().equals((k), (curr))))
         return java.util.Objects.equals(value[pos], v);
@@ -904,7 +905,8 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       int pos;
       // The starting point.
       if (((curr =
-          key[pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
+          key[pos =
+              (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
         return false;
       if ((strategy().equals((curr), (k)))) {
         if (java.util.Objects.equals(value[pos], v)) {

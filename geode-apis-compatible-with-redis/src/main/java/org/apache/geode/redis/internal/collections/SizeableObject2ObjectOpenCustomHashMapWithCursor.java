@@ -22,6 +22,7 @@ import java.util.Map;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -185,7 +186,8 @@ public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     return previousKey == null || hash(currentKey) == expectedHash;
   }
 
-  private int hash(K key) {
+  @VisibleForTesting
+  public int hash(K key) {
     return mix(strategy().hashCode(key)) & mask;
   }
 
