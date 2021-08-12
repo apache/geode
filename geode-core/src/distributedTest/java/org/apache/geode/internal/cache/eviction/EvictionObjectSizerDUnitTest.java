@@ -89,7 +89,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     int keySize = 0;
     int valueSize =
         JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
-    valueSize = (int) roundUpSize(valueSize);
+    valueSize = roundUpSize(valueSize);
     int entrySize = keySize + valueSize
         + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
             .getPerEntryOverhead();
@@ -117,7 +117,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       int keySize = 0;
       int valueSize =
           JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
-      valueSize = (int) roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -134,7 +134,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */
           + (1024 * 1024 * 2) /* bytes */;
-      valueSize = (int) roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -158,7 +158,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 0 /* bytes */;
-      valueSize = (int) roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -173,7 +173,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 4 /* bytes */;
-      valueSize = (int) roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();

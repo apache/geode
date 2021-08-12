@@ -41,7 +41,7 @@ public class WellKnownClassSizer {
   }
 
   public static int sizeof(Object o) {
-    int size = 0;
+    int size;
 
     if (o instanceof byte[]) {
       size = BYTE_ARRAY_OVERHEAD + ((byte[]) o).length;
@@ -51,8 +51,7 @@ public class WellKnownClassSizer {
       return 0;
     }
 
-    size = (int) roundUpSize(size);
-    return size;
+    return roundUpSize(size);
   }
 
 }

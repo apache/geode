@@ -104,12 +104,12 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     String sampleKey = new String("10000");
     int stringSize = getObjectHeaderSize() // String object
         + (2 * 4) + JvmSizeUtils.getReferenceSize(); // 2 ints and a reference on a string
-    stringSize = (int) roundUpSize(stringSize);
+    stringSize = roundUpSize(stringSize);
 
     int charArraySize = sampleKey.length() * 2 + getObjectHeaderSize() // char array
                                                                        // object
         + 4; // length of char array
-    charArraySize = (int) roundUpSize(charArraySize);
+    charArraySize = roundUpSize(charArraySize);
     assertEquals(stringSize, ReflectionSingleObjectSizer.sizeof(String.class));
     assertEquals(roundUpSize(getObjectHeaderSize() + 4),
         (new ReflectionSingleObjectSizer()).sizeof(new char[0]));
@@ -123,7 +123,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     byte[] sampleValue = new byte[1000];
     int valueSize = sampleValue.length + getObjectHeaderSize() // byte array object;
         + 4; // length of byte array
-    valueSize = (int) roundUpSize(valueSize);
+    valueSize = roundUpSize(valueSize);
     int entrySize = keySize + valueSize + getEntryOverhead(region);
     assertEquals(valueSize, ObjectSizer.DEFAULT.sizeof(sampleValue));
 

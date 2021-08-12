@@ -147,14 +147,7 @@ public class JvmSizeUtils {
   }
 
   public static int roundUpSize(int size) {
-    // Round up to the nearest 8 bytes. Experimentally, this
-    // is what we've seen the sun 32 bit VM do with object size.
-    // See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
-    int remainder = size % 8;
-    if (remainder != 0) {
-      size += 8 - remainder;
-    }
-    return size;
+    return (int) roundUpSize((long) size);
   }
 
   /**
