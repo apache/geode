@@ -75,15 +75,21 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "(a", "(b"))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "str", "1"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "str"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+    assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "NaN"))
+        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test
-  public void shouldReturnZero_givenNonExistentKey() {
+  public void shouldReturnEmptyList_givenNonExistentKey() {
     assertThat(jedis.zrangeByScore("fakeKey", "-inf", "inf")).isEmpty();
   }
 
   @Test
-  public void shouldReturnZero_givenMinGreaterThanMax() {
+  public void shouldReturnEmptyList_givenMinGreaterThanMax() {
     jedis.zadd(KEY, 1, "member");
 
     // Range +inf <= score <= -inf
@@ -200,7 +206,6 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThat(jedis.zrangeByScore(KEY, "(-inf", "(+inf")).containsExactly("member2");
   }
 
-
   private Map<String, Double> getExclusiveTestMap() {
     Map<String, Double> map = new HashMap<>();
 
@@ -211,7 +216,7 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
   }
 
   @Test
-  public void shouldReturnZero_givenExclusiveMinAndMaxEqualToScore() {
+  public void shouldReturnEmptyList_givenExclusiveMinAndMaxEqualToScore() {
     double score = 1;
     jedis.zadd(KEY, score, "member");
 
