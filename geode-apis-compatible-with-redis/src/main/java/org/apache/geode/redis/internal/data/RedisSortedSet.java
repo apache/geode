@@ -272,13 +272,11 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   long zcount(SortedSetScoreRangeOptions rangeOptions) {
-    AbstractOrderedSetEntry minEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getStartRange(),
+    int minIndex = getIndexByScore(rangeOptions.getStartRange(),
         rangeOptions.isStartExclusive(), true);
-    long minIndex = scoreSet.indexOf(minEntry);
 
-    AbstractOrderedSetEntry maxEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getEndRange(),
+    int maxIndex = getIndexByScore(rangeOptions.getEndRange(),
         rangeOptions.isEndExclusive(), false);
-    long maxIndex = scoreSet.indexOf(maxEntry);
 
     return maxIndex - minIndex;
   }
@@ -317,16 +315,14 @@ public class RedisSortedSet extends AbstractRedisData {
     // Assume that all members have the same score. Behaviour is unspecified otherwise.
     double score = scoreSet.get(0).score;
 
-    AbstractOrderedSetEntry minEntry = new MemberDummyOrderedSetEntry(rangeOptions.getStartRange(),
-        score, rangeOptions.isStartExclusive(), true);
-    int minIndex = scoreSet.indexOf(minEntry);
+    int minIndex =
+        getIndexByLex(score, rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
     if (minIndex >= scoreSet.size()) {
       return Collections.emptyList();
     }
 
-    AbstractOrderedSetEntry maxEntry = new MemberDummyOrderedSetEntry(rangeOptions.getEndRange(),
-        score, rangeOptions.isEndExclusive(), false);
-    int maxIndex = scoreSet.indexOf(maxEntry);
+    int maxIndex =
+        getIndexByLex(score, rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
     if (minIndex == maxIndex) {
       return Collections.emptyList();
     }
@@ -335,16 +331,14 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    AbstractOrderedSetEntry minEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getStartRange(),
-        rangeOptions.isStartExclusive(), true);
-    int minIndex = scoreSet.indexOf(minEntry);
+    int minIndex =
+        getIndexByScore(rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
     if (minIndex >= scoreSet.size()) {
       return Collections.emptyList();
     }
 
-    AbstractOrderedSetEntry maxEntry = new ScoreDummyOrderedSetEntry(rangeOptions.getEndRange(),
-        rangeOptions.isEndExclusive(), false);
-    int maxIndex = scoreSet.indexOf(maxEntry);
+    int maxIndex =
+        getIndexByScore(rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
     if (minIndex == maxIndex) {
       return Collections.emptyList();
     }
@@ -382,15 +376,10 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    AbstractOrderedSetEntry maxEntry =
-        new ScoreDummyOrderedSetEntry(rangeOptions.getStartRange(), rangeOptions.isStartExclusive(),
-            false);
-    int maxIndex = scoreSet.indexOf(maxEntry);
+    int maxIndex =
+        getIndexByScore(rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), false);
 
-    AbstractOrderedSetEntry minEntry =
-        new ScoreDummyOrderedSetEntry(rangeOptions.getEndRange(), rangeOptions.isEndExclusive(),
-            true);
-    int minIndex = scoreSet.indexOf(minEntry);
+    int minIndex = getIndexByScore(rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), true);
 
     if (minIndex > getSortedSetSize()) {
       return Collections.emptyList();
@@ -432,6 +421,19 @@ public class RedisSortedSet extends AbstractRedisData {
       return null;
     }
     return zincrby(region, key, increment, member);
+  }
+
+  private int getIndexByScore(Double startRange, boolean isExclusive, boolean isMinimum) {
+    AbstractOrderedSetEntry entry =
+        new ScoreDummyOrderedSetEntry(startRange, isExclusive, isMinimum);
+    return scoreSet.indexOf(entry);
+  }
+
+  private int getIndexByLex(double score, byte[] rangeValue, boolean isExclusive,
+      boolean isMinimum) {
+    AbstractOrderedSetEntry minEntry =
+        new MemberDummyOrderedSetEntry(rangeValue, score, isExclusive, isMinimum);
+    return scoreSet.indexOf(minEntry);
   }
 
   private List<byte[]> getRange(int min, int max, boolean withScores, boolean isReverse) {
