@@ -47,8 +47,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   protected transient V[] value;
   /** The mask for wrapping a position counter. */
   protected transient int mask;
-  /** Whether this map contains the key zero. */
-  protected transient boolean containsNullKey;
   /** The current table size. */
   protected transient int n;
   /** Threshold after which we rehash. It must be the table size times {@link #f}. */
@@ -202,7 +200,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   }
 
   private int realSize() {
-    return containsNullKey ? size - 1 : size;
+    return size;
   }
 
   private void ensureCapacity(final int capacity) {
@@ -229,7 +227,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   }
 
   private V removeNullEntry() {
-    containsNullKey = false;
     key[n] = null;
     final V oldValue = value[n];
     value[n] = null;
@@ -251,8 +248,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
 
   @SuppressWarnings("unchecked")
   private int find(final K k) {
-    if ((strategy().equals((k), (null))))
-      return containsNullKey ? n : -(n + 1);
     K curr;
     final K[] key = this.key;
     int pos;
@@ -272,8 +267,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   }
 
   private void insert(final int pos, final K k, final V v) {
-    if (pos == n)
-      containsNullKey = true;
     key[pos] = k;
     value[pos] = v;
     if (size++ >= maxFill)
@@ -326,11 +319,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public V remove(final Object k) {
-    if ((strategy().equals(((K) k), (null)))) {
-      if (containsNullKey)
-        return removeNullEntry();
-      return defRetValue;
-    }
     K curr;
     final K[] key = this.key;
     int pos;
@@ -351,8 +339,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public V get(final Object k) {
-    if ((strategy().equals(((K) k), (null))))
-      return containsNullKey ? value[n] : defRetValue;
     K curr;
     final K[] key = this.key;
     int pos;
@@ -374,8 +360,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   @Override
   @SuppressWarnings("unchecked")
   public boolean containsKey(final Object k) {
-    if ((strategy().equals(((K) k), (null))))
-      return containsNullKey;
     K curr;
     final K[] key = this.key;
     int pos;
@@ -398,8 +382,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
   public boolean containsValue(final Object v) {
     final V value[] = this.value;
     final K key[] = this.key;
-    if (containsNullKey && java.util.Objects.equals(value[n], v))
-      return true;
     for (int i = n; i-- != 0;)
       if (!((key[i]) == null) && java.util.Objects.equals(value[i], v))
         return true;
@@ -418,7 +400,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     if (size == 0)
       return;
     size = 0;
-    containsNullKey = false;
     Arrays.fill(key, (null));
     Arrays.fill(value, null);
   }
@@ -521,8 +502,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     int last = -1;
     /** A downward counter measuring how many entries must still be returned. */
     int c = size;
-    /** A boolean telling us whether we should return the entry with the null key. */
-    boolean mustReturnNullKey = ByteArray2ObjectOpenHashMap.this.containsNullKey;
     /**
      * A lazily allocated list containing keys of entries that have wrapped around the table because
      * of removals.
@@ -540,10 +519,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       if (!hasNext())
         throw new NoSuchElementException();
       c--;
-      if (mustReturnNullKey) {
-        mustReturnNullKey = false;
-        return last = n;
-      }
       final K key[] = ByteArray2ObjectOpenHashMap.this.key;
       for (;;) {
         if (--pos < 0) {
@@ -561,11 +536,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     }
 
     public void forEachRemaining(final ConsumerType action) {
-      if (mustReturnNullKey) {
-        mustReturnNullKey = false;
-        acceptOnIndex(action, last = n);
-        c--;
-      }
       final K key[] = ByteArray2ObjectOpenHashMap.this.key;
       while (c != 0) {
         if (--pos < 0) {
@@ -622,7 +592,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       if (last == -1)
         throw new IllegalStateException();
       if (last == n) {
-        containsNullKey = false;
         key[n] = null;
         value[n] = null;
       } else if (pos >= 0)
@@ -696,8 +665,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     int max = n;
     /** An upwards counter counting how many we have given */
     int c = 0;
-    /** A boolean telling us whether we should return the null key. */
-    boolean mustReturnNull = ByteArray2ObjectOpenHashMap.this.containsNullKey;
     boolean hasSplit = false;
 
     MapSpliterator() {}
@@ -705,7 +672,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     MapSpliterator(int pos, int max, boolean mustReturnNull, boolean hasSplit) {
       this.pos = pos;
       this.max = max;
-      this.mustReturnNull = mustReturnNull;
       this.hasSplit = hasSplit;
     }
 
@@ -714,12 +680,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     abstract SplitType makeForSplit(int pos, int max, boolean mustReturnNull);
 
     public boolean tryAdvance(final ConsumerType action) {
-      if (mustReturnNull) {
-        mustReturnNull = false;
-        ++c;
-        acceptOnIndex(action, n);
-        return true;
-      }
       final K key[] = ByteArray2ObjectOpenHashMap.this.key;
       while (pos < max) {
         if (!((key[pos]) == null)) {
@@ -733,11 +693,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     }
 
     public void forEachRemaining(final ConsumerType action) {
-      if (mustReturnNull) {
-        mustReturnNull = false;
-        ++c;
-        acceptOnIndex(action, n);
-      }
       final K key[] = ByteArray2ObjectOpenHashMap.this.key;
       while (pos < max) {
         if (!((key[pos]) == null)) {
@@ -758,7 +713,7 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
         // (size / n) * (max - pos) aka currentTableDensity * numberOfBucketsLeft seems like a good
         // estimate.
         return Math.min(size - c,
-            (long) (((double) realSize() / n) * (max - pos)) + (mustReturnNull ? 1 : 0));
+            (long) (((double) realSize() / n) * (max - pos)));
       }
     }
 
@@ -774,9 +729,8 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       // Since null is returned first, and the convention is that the returned split is the prefix
       // of elements,
       // the split will take care of returning null (if needed), and we won't return it anymore.
-      SplitType split = makeForSplit(retPos, retMax, mustReturnNull);
+      SplitType split = makeForSplit(retPos, retMax, false);
       this.pos = myNewPos;
-      this.mustReturnNull = false;
       this.hasSplit = true;
       return split;
     }
@@ -787,11 +741,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       if (n == 0)
         return 0;
       long skipped = 0;
-      if (mustReturnNull) {
-        mustReturnNull = false;
-        ++skipped;
-        --n;
-      }
       final K key[] = ByteArray2ObjectOpenHashMap.this.key;
       while (pos < max && n > 0) {
         if (!((key[pos++]) == null)) {
@@ -863,9 +812,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       final K k = ((K) e.getKey());
       final V v = ((V) e.getValue());
-      if ((strategy().equals((k), (null))))
-        return ByteArray2ObjectOpenHashMap.this.containsNullKey
-            && java.util.Objects.equals(value[n], v);
       K curr;
       final K[] key = ByteArray2ObjectOpenHashMap.this.key;
       int pos;
@@ -893,13 +839,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       final K k = ((K) e.getKey());
       final V v = ((V) e.getValue());
-      if ((strategy().equals((k), (null)))) {
-        if (containsNullKey && java.util.Objects.equals(value[n], v)) {
-          removeNullEntry();
-          return true;
-        }
-        return false;
-      }
       K curr;
       final K[] key = ByteArray2ObjectOpenHashMap.this.key;
       int pos;
@@ -940,8 +879,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     /** {@inheritDoc} */
     @Override
     public void forEach(final Consumer<? super Object2ObjectMap.Entry<K, V>> consumer) {
-      if (containsNullKey)
-        consumer.accept(new AbstractObject2ObjectMap.BasicEntry<K, V>(key[n], value[n]));
       for (int pos = n; pos-- != 0;)
         if (!((key[pos]) == null))
           consumer.accept(new AbstractObject2ObjectMap.BasicEntry<K, V>(key[pos], value[pos]));
@@ -951,10 +888,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     @Override
     public void fastForEach(final Consumer<? super Object2ObjectMap.Entry<K, V>> consumer) {
       final MyBasicEntry<K, V> entry = new MyBasicEntry<>();
-      if (containsNullKey) {
-        entry.setKeyAndValue(key[n], value[n]);
-        consumer.accept(entry);
-      }
       for (int pos = n; pos-- != 0;)
         if (!((key[pos]) == null)) {
           entry.setKeyAndValue(key[pos], value[pos]);
@@ -1037,8 +970,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     /** {@inheritDoc} */
     @Override
     public void forEach(final Consumer<? super K> consumer) {
-      if (containsNullKey)
-        consumer.accept(key[n]);
       for (int pos = n; pos-- != 0;) {
         final K k = key[pos];
         if (!((k) == null))
@@ -1146,8 +1077,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       /** {@inheritDoc} */
       @Override
       public void forEach(final Consumer<? super V> consumer) {
-        if (containsNullKey)
-          consumer.accept(value[n]);
         for (int pos = n; pos-- != 0;)
           if (!((key[pos]) == null))
             consumer.accept(value[pos]);
@@ -1275,7 +1204,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     } catch (CloneNotSupportedException cantHappen) {
       throw new InternalError();
     }
-    c.containsNullKey = containsNullKey;
     c.key = key.clone();
     c.value = value.clone();
     return c;
@@ -1304,9 +1232,6 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
       h += t;
       i++;
     }
-    // Zero / null keys have hash zero.
-    if (containsNullKey)
-      h += ((value[n]) == null ? 0 : (value[n]).hashCode());
     return h;
   }
 
@@ -1336,14 +1261,9 @@ public class ByteArray2ObjectOpenHashMap<K, V> extends AbstractObject2ObjectMap<
     for (int i = size, pos; i-- != 0;) {
       k = (K) s.readObject();
       v = (V) s.readObject();
-      if ((strategy().equals((k), (null)))) {
-        pos = n;
-        containsNullKey = true;
-      } else {
-        pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask;
-        while (!((key[pos]) == null))
-          pos = (pos + 1) & mask;
-      }
+      pos = (it.unimi.dsi.fastutil.HashCommon.mix(strategy().hashCode(k))) & mask;
+      while (!((key[pos]) == null))
+        pos = (pos + 1) & mask;
       key[pos] = k;
       value[pos] = v;
     }
