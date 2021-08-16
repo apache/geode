@@ -31,6 +31,7 @@ compileTestJava {
 }
 
 test {
+  useJUnitPlatform {}
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
@@ -132,6 +133,7 @@ configure([test, integrationTest, distributedTest, performanceTest, acceptanceTe
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+  useJUnitPlatform {}
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
