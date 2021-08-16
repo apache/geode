@@ -60,6 +60,10 @@ facets {
   }
 }
 
+jmhTest {
+  useJUnitPlatform()
+}
+
 configurations {
   jmhTestRuntimeOnly.extendsFrom(jmhRuntimeOnly)
 }

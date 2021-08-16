@@ -38,6 +38,8 @@ dependencies {
   api('junit:junit') {
     exclude module: 'hamcrest'
   }
+  api('org.junit.jupiter:junit-jupiter-api')
+  api('org.junit.jupiter:junit-jupiter-params')
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
@@ -59,6 +61,9 @@ dependencies {
   api('io.micrometer:micrometer-core')
 
   api('org.skyscreamer:jsonassert')
+
+  implementation('org.junit.jupiter:junit-jupiter-engine')
+  implementation('org.junit.vintage:junit-vintage-engine')
 
   implementation('pl.pragmatists:JUnitParams')
 

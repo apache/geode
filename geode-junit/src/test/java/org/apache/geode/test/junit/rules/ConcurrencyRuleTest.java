@@ -32,11 +32,11 @@ import java.util.function.Consumer;
 
 import junitparams.Parameters;
 import org.junit.Before;
-import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.MultipleFailureException;
+import org.opentest4j.AssertionFailedError;
 
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -399,7 +399,7 @@ public class ConcurrencyRuleTest {
         .repeatForDuration(Duration.ofSeconds(2));
 
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
-        .isInstanceOf(ComparisonFailure.class);
+        .isInstanceOf(AssertionFailedError.class);
     assertThat(invoked.get()).isTrue();
   }
 
@@ -519,8 +519,8 @@ public class ConcurrencyRuleTest {
     assertThat(errors.get(0)).isInstanceOf(AssertionError.class)
         .hasMessageContaining(IOException.class.getName());
     assertThat(errors.get(1)).isInstanceOf(AssertionError.class)
-        .hasMessageContaining("[successful] value")
-        .hasMessageContaining("[wrong] value");
+        .hasMessageContaining("successful value")
+        .hasMessageContaining("wrong value");
     assertThat(errors.get(2)).hasMessageContaining("foo")
         .isInstanceOf(IOException.class);
   }

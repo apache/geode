@@ -338,6 +338,7 @@ class ProcessManager implements ChildVMLauncher {
     List<String> originalClassPathEntries = Arrays.asList(classPath.split(File.pathSeparator));
     String classPathAttributeValue = originalClassPathEntries.stream()
         .map(Paths::get)
+        .filter(Files::exists)
         .map(currentWorkingDir::relativize) // Entries must be relative to pathing jar's dir
         .map(p -> Files.isDirectory(p) ? p + "/" : p.toString()) // Dir entries must end with /
         .map(s -> s.replaceAll("\\\\", "/")) // Separator must be /
