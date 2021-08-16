@@ -76,7 +76,8 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed() throws Exception {
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
+      throws Exception {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
