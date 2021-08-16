@@ -47,6 +47,8 @@ public interface RedisSortedSetCommands {
 
   long zremrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 
+  int zremrangebyrank(RedisKey key, int min, int max);
+
   long zremrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
