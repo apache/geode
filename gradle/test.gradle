@@ -129,7 +129,12 @@ task repeatUnitTest(type: RepeatTest) {
 
 configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
            repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
-  useJUnitPlatform()
+  useJUnitPlatform {
+    if (project.hasProperty("testCategory")) {
+      includeTags += project.testCategory
+    }
+    excludeEngines 'junit-vintage' // GeodeTestEngine replaces junit-vintage
+  }
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
@@ -154,9 +159,10 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-configure([integrationTest, distributedTest, performanceTest]) {
+configure([test, integrationTest, distributedTest, performanceTest]) {
   if (project.hasProperty("testCategory")) {
     testFramework.options.includeTags += project.testCategory
+    it.environment['GEODE_TEST_CATEGORY'] = project.testCategory
   }
 }
 
