@@ -57,6 +57,7 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisKey;
 
@@ -101,11 +102,11 @@ public class Coder {
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
       buffer.writeByte(INTEGER_ID);
-      buffer.writeBytes(intToBytes((Integer) v));
+      appendAsciiDigitsToByteBuf((Integer) v, buffer);
       buffer.writeBytes(bCRLF);
     } else if (v instanceof Long) {
       buffer.writeByte(INTEGER_ID);
-      buffer.writeBytes(intToBytes(((Long) v).intValue()));
+      appendAsciiDigitsToByteBuf((Long) v, buffer);
       buffer.writeBytes(bCRLF);
     } else {
       throw new CoderException();
@@ -116,7 +117,7 @@ public class Coder {
 
   private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
     buffer.writeByte(BULK_STRING_ID);
-    buffer.writeBytes(intToBytes(toWrite.length));
+    appendAsciiDigitsToByteBuf(toWrite.length, buffer);
     buffer.writeBytes(bCRLF);
     buffer.writeBytes(toWrite);
     buffer.writeBytes(bCRLF);
@@ -134,7 +135,7 @@ public class Coder {
   public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
       throws CoderException {
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(items.size()));
+    appendAsciiDigitsToByteBuf(items.size(), buffer);
     buffer.writeBytes(bCRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next);
@@ -152,15 +153,19 @@ public class Coder {
     }
   }
 
+  @Immutable
+  private static final byte[] TWO_ASCII = intToBytes(2);
+
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
       List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(2));
+    appendAsciiDigitsToByteBuf(2, buffer);
+    buffer.writeBytes(TWO_ASCII);
     buffer.writeBytes(bCRLF);
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(longToBytes(scanResult.size()));
+    appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
@@ -242,14 +247,14 @@ public class Coder {
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
     buffer.writeByte(INTEGER_ID);
-    buffer.writeBytes(intToBytes(integer));
+    appendAsciiDigitsToByteBuf(integer, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
     buffer.writeByte(INTEGER_ID);
-    buffer.writeBytes(longToBytes(l));
+    appendAsciiDigitsToByteBuf(l, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
@@ -471,4 +476,101 @@ public class Coder {
     }
     return doubleBytes;
   }
+
+  /**
+   * Takes the given "value" and computes the sequence of ASCII digits it represents,
+   * appending them to the given "buf".
+   * This code was adapted from the openjdk Long.java getChars methods.
+   */
+  public static void appendAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+    if (value < 0) {
+      buf.writeByte('-');
+    } else {
+      value = -value;
+    }
+    // at this point value <= 0
+
+    if (value > -100) {
+      // it has at most two digits: [0..99]
+      appendSmallAsciiDigitsToByteBuf((int) value, buf);
+    } else {
+      appendLargeAsciiDigitsToByteBuf(value, buf);
+    }
+  }
+
+  private static void appendSmallAsciiDigitsToByteBuf(int value, ByteBuf buf) {
+    int q = value / 10;
+    int r = (q * 10) - value;
+    if (q < 0) {
+      buf.writeByte((byte) ('0' - q));
+    }
+    buf.writeByte((byte) ('0' + r));
+  }
+
+  private static void appendLargeAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+    long q;
+    int r;
+    final int MAX_DIGITS = 19;
+    int charPos = MAX_DIGITS;
+    byte[] bytes = new byte[MAX_DIGITS];
+
+    // Get 2 digits/iteration using longs until quotient fits into an int
+    while (value <= Integer.MIN_VALUE) {
+      q = value / 100;
+      r = (int) ((q * 100) - value);
+      value = q;
+      bytes[--charPos] = DIGIT_ONES[r];
+      bytes[--charPos] = DIGIT_TENS[r];
+    }
+
+    // Get 2 digits/iteration using ints
+    int q2;
+    int i2 = (int) value;
+    while (i2 <= -100) {
+      q2 = i2 / 100;
+      r = (q2 * 100) - i2;
+      i2 = q2;
+      bytes[--charPos] = DIGIT_ONES[r];
+      bytes[--charPos] = DIGIT_TENS[r];
+    }
+
+    // We know there are at most two digits left at this point.
+    q2 = i2 / 10;
+    r = (q2 * 10) - i2;
+    bytes[--charPos] = (byte) ('0' + r);
+
+    // Whatever left is the remaining digit.
+    if (q2 < 0) {
+      bytes[--charPos] = (byte) ('0' - q2);
+    }
+    buf.writeBytes(bytes, charPos, MAX_DIGITS - charPos);
+  }
+
+  @Immutable
+  private static final byte[] DIGIT_TENS = {
+      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+      '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
+      '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
+      '3', '3', '3', '3', '3', '3', '3', '3', '3', '3',
+      '4', '4', '4', '4', '4', '4', '4', '4', '4', '4',
+      '5', '5', '5', '5', '5', '5', '5', '5', '5', '5',
+      '6', '6', '6', '6', '6', '6', '6', '6', '6', '6',
+      '7', '7', '7', '7', '7', '7', '7', '7', '7', '7',
+      '8', '8', '8', '8', '8', '8', '8', '8', '8', '8',
+      '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
+  };
+
+  @Immutable
+  private static final byte[] DIGIT_ONES = {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  };
 }
