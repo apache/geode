@@ -31,6 +31,7 @@ compileTestJava {
 }
 
 test {
+  useJUnitPlatform {}
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
@@ -91,9 +92,9 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 }
 
 configure([integrationTest, distributedTest, performanceTest]) {
-  useJUnit {
+  useJUnitPlatform {
     if (project.hasProperty("testCategory")) {
-      includeCategories += project.testCategory
+      includeTags += project.testCategory
     }
   }
 }
@@ -135,6 +136,7 @@ task repeatUnitTest(type: RepeatTest) {
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+  useJUnitPlatform {}
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
@@ -143,7 +145,9 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
   times = Integer.parseInt(repeat)
   forkEvery 1
-  useJUnit {}
+  useJUnitPlatform {
+    excludeTags += "org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks"
+  }
   outputs.upToDateWhen { false }
 
   if (project.hasProperty("failOnNoMatchingTests")) {
