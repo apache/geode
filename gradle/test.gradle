@@ -31,6 +31,7 @@ compileTestJava {
 }
 
 test {
+  useJUnitPlatform {}
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
@@ -90,6 +91,14 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
   outputs.upToDateWhen { false }
 }
 
+configure([integrationTest, distributedTest, performanceTest]) {
+  useJUnitPlatform {
+    if (project.hasProperty("testCategory")) {
+      includeTags += project.testCategory
+    }
+  }
+}
+
 if (project.hasProperty("forceTest")) {
   // All test facets already force rerun.  Only :test can be upToDate.
   test {
@@ -128,10 +137,14 @@ task repeatUnitTest(type: RepeatTest) {
 
 configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
            repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
-  useJUnitPlatform()
+  useJUnitPlatform {
+    // GeodeTestEngine replaces junit-vintage
+    excludeEngines 'junit-vintage'
+  }
 }
 
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+  useJUnitPlatform {}
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
@@ -152,9 +165,10 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-configure([integrationTest, distributedTest, performanceTest]) {
+configure([test, integrationTest, distributedTest, performanceTest]) {
   if (project.hasProperty("testCategory")) {
     testFramework.options.includeTags += project.testCategory
+    it.environment['GEODE_TEST_CATEGORY'] = project.testCategory
   }
 }
 
