@@ -87,10 +87,6 @@ public class HARegion extends DistributedRegion {
     return buf;
   }
 
-  // protected Object conditionalCopy(Object o) {
-  // return o;
-  // }
-
   private volatile HARegionQueue owningQueue;
 
   HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,

@@ -20,12 +20,16 @@ import static org.apache.geode.internal.cache.ha.HARegionQueue.BLOCKING_HA_QUEUE
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,6 +39,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -111,49 +116,17 @@ public class BlockingHARegionJUnitTest {
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     final Thread thread1 = new DoPuts(hrq, 2);
     thread1.start();
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return hrq.region.size() == 2;
-      }
-
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+    GeodeAwaitility.await().until(() -> hrq.region.size() == 2);
     assertTrue(thread1.isAlive()); // thread should still be alive (in wait state)
 
     Thread thread2 = new DoTake(hrq, 1);
     thread2.start(); // start take thread
-    ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return hrq.region.size() == 3;
-      }
 
-      @Override
-      public String description() {
-        return null;
-      }
-    };
     // sleep. take will proceed and so will sleeping put
-    GeodeAwaitility.await().untilAsserted(ev);
+    GeodeAwaitility.await().until(() -> hrq.region.size() == 3);
 
     // thread should have died since put should have proceeded
-    ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return !thread1.isAlive();
-      }
-
-      @Override
-      public String description() {
-        return "thread1 still alive";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+    GeodeAwaitility.await().alias("thread1 still alive").until(() -> !thread1.isAlive());
 
     join(thread1, 30 * 1000); // for completeness
     join(thread2, 30 * 1000);
@@ -175,61 +148,43 @@ public class BlockingHARegionJUnitTest {
   public void testConcurrentPutsNotExceedingLimit() throws Exception {
     exceptionOccurred = false;
     quitForLoop = false;
+    Logger logger = LogService.getLogger();
+    List<Thread> listOfThreads = new ArrayList<>();
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
     final HARegionQueue hrq = getHARegionQueueInstance(
         "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false,
         disabledClock());
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
-    Thread thread1 = new DoPuts(hrq, 20000, 1);
-    Thread thread2 = new DoPuts(hrq, 20000, 2);
-    Thread thread3 = new DoPuts(hrq, 20000, 3);
-    Thread thread4 = new DoPuts(hrq, 20000, 4);
-    Thread thread5 = new DoPuts(hrq, 20000, 5);
+    listOfThreads.add(new DoPuts(hrq, 20000, 1));
+    listOfThreads.add(new DoPuts(hrq, 20000, 2));
+    listOfThreads.add(new DoPuts(hrq, 20000, 3));
+    listOfThreads.add(new DoPuts(hrq, 20000, 4));
+    listOfThreads.add(new DoPuts(hrq, 20000, 5));
 
-    thread1.start();
-    thread2.start();
-    thread3.start();
-    thread4.start();
-    thread5.start();
+    for (Thread thread : listOfThreads) {
+      thread.start();
+    }
 
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return hrq.region.size() == 20000;
-      }
+    GeodeAwaitility.await().until(() -> hrq.region.size() == 20000);
 
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+    for (Thread thread : listOfThreads) {
+      assertThat(thread.isAlive()).isTrue();
+    }
 
-    assertTrue(thread1.isAlive());
-    assertTrue(thread2.isAlive());
-    assertTrue(thread3.isAlive());
-    assertTrue(thread4.isAlive());
-    assertTrue(thread5.isAlive());
-
-    assertTrue(hrq.region.size() == 20000);
+    assertThat(hrq.region.size()).isEqualTo(20000);
 
     quitForLoop = true;
-    sleep(20000);
 
-    thread1.interrupt();
-    thread2.interrupt();
-    thread3.interrupt();
-    thread4.interrupt();
-    thread5.interrupt();
+    for (Thread thread : listOfThreads) {
+      thread.interrupt();
+    }
 
     sleep(2000);
 
-    join(thread1, 5 * 60 * 1000);
-    join(thread2, 5 * 60 * 1000);
-    join(thread3, 5 * 60 * 1000);
-    join(thread4, 5 * 60 * 1000);
-    join(thread5, 5 * 60 * 1000);
+    for (Thread thread : listOfThreads) {
+      join(thread, 10 * 60 * 1000);
+    }
 
     cache.close();
   }
@@ -376,7 +331,6 @@ public class BlockingHARegionJUnitTest {
    * class which does specified number of puts on the queue
    */
   private static class DoPuts extends Thread {
-
     HARegionQueue regionQueue = null;
     final int numberOfPuts;
 
