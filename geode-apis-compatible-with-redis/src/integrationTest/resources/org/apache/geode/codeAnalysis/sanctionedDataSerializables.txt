@@ -12,7 +12,7 @@ toData,8
 
 org/apache/geode/redis/internal/data/RedisHash,2
 toData,90
-fromData,61
+fromData,58
 
 org/apache/geode/redis/internal/data/RedisKey,2
 fromData,22
@@ -20,11 +20,11 @@ toData,19
 
 org/apache/geode/redis/internal/data/RedisSet,2
 toData,55
-fromData,54
+fromData,51
 
 org/apache/geode/redis/internal/data/RedisSortedSet,2
 toData,93
-fromData,102
+fromData,86
 
 org/apache/geode/redis/internal/data/RedisString,2
 toData,23

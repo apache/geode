@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -44,7 +45,6 @@ import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.TestNonSizerObject;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
 import org.apache.geode.internal.cache.entries.AbstractLRURegionEntry;
-import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -89,7 +89,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     int keySize = 0;
     int valueSize =
         JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
-    valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+    valueSize = roundUpSize(valueSize);
     int entrySize = keySize + valueSize
         + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
             .getPerEntryOverhead();
@@ -117,7 +117,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       int keySize = 0;
       int valueSize =
           JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
-      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -134,7 +134,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */
           + (1024 * 1024 * 2) /* bytes */;
-      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -158,7 +158,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 0 /* bytes */;
-      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();
@@ -173,7 +173,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       int keySize = 0;
       int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 4 /* bytes */;
-      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      valueSize = roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
               .getPerEntryOverhead();

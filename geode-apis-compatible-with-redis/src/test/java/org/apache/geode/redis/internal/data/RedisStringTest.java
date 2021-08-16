@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisString.BASE_REDIS_STRING_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.longToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -356,16 +355,18 @@ public class RedisStringTest {
   @Test
   public void changingStringValue_toShorterString_shouldDecreaseSizeInBytes() {
     String baseString = "baseString";
-    String stringToRemove = "asdf";
+    String stringToRemove = "asdf1234567890";
     RedisString string = new RedisString(stringToBytes((baseString + stringToRemove)));
 
     int initialSize = string.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(reflectionObjectSizer.sizeof(string));
 
     string.set(stringToBytes(baseString));
 
     int finalSize = string.getSizeInBytes();
+    assertThat(finalSize).isEqualTo(reflectionObjectSizer.sizeof(string));
 
-    assertThat(finalSize).isEqualTo(initialSize - stringToRemove.length());
+    assertThat(finalSize).isLessThan(initialSize);
   }
 
   @Test
@@ -374,38 +375,30 @@ public class RedisStringTest {
     RedisString string = new RedisString(stringToBytes(baseString));
 
     int initialSize = string.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(reflectionObjectSizer.sizeof(string));
 
-    String addedString = "asdf";
+    String addedString = "asdf1234567890";
     string.set(stringToBytes((baseString + addedString)));
 
     int finalSize = string.getSizeInBytes();
+    assertThat(finalSize).isEqualTo(reflectionObjectSizer.sizeof(string));
 
-    assertThat(finalSize).isEqualTo(initialSize + addedString.length());
+    assertThat(finalSize).isGreaterThan(initialSize);
   }
 
   @Test
-  public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes_toBaseSize() {
-    String baseString = "baseString";
-    RedisString string = new RedisString(stringToBytes((baseString + "asdf")));
+  public void changingStringValue_toEmptyString_shouldDecreaseSizeInBytes() {
+    String baseString = "baseString1234567890";
+    final int emptySize = reflectionObjectSizer.sizeof(new RedisString(stringToBytes("")));
+    RedisString string = new RedisString(stringToBytes((baseString)));
+    int baseSize = string.getSizeInBytes();
 
     string.set(stringToBytes(""));
 
     int finalSize = string.getSizeInBytes();
 
-    assertThat(finalSize).isEqualTo(BASE_REDIS_STRING_OVERHEAD);
-  }
-
-  /******* constants *******/
-  // this test contains the math that was used to derive the constants in RedisString. If this test
-  // starts failing, it is because the overhead of RedisString has changed. If it has decreased,
-  // good job! You can change the constant in RedisString to reflect that. If it has increased,
-  // carefully consider that increase before changing the constant.
-  @Test
-  public void overheadConstants_shouldMatchCalculatedValue() {
-    RedisString redisString = new RedisString(stringToBytes(""));
-    int calculatedSize = reflectionObjectSizer.sizeof(redisString);
-
-    assertThat(BASE_REDIS_STRING_OVERHEAD).isEqualTo(calculatedSize);
+    assertThat(finalSize).isEqualTo(emptySize);
+    assertThat(finalSize).isLessThan(baseSize);
   }
 
   /******* helper methods *******/

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.size;
 
+import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -139,17 +141,6 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     }
     if (roundResult) {
       size = roundUpSize(size);
-    }
-    return size;
-  }
-
-  public static long roundUpSize(long size) {
-    // Round up to the nearest 8 bytes. Experimentally, this
-    // is what we've seen the sun 32 bit VM do with object size.
-    // See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
-    long remainder = size % 8;
-    if (remainder != 0) {
-      size = size - remainder + 8;
     }
     return size;
   }

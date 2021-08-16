@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
@@ -34,7 +36,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.DataSerializer;
@@ -51,12 +52,9 @@ import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  // The following constant was calculated using reflection. you can find the test for this value in
-  // RedisHashTest, which shows the way this number was calculated. If our internal implementation
-  // changes, these values may be incorrect. An increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_HASH_OVERHEAD = 32;
+  protected static final int REDIS_HASH_OVERHEAD = memoryOverhead(RedisHash.class);
 
-  private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash;
+  private Hash hash;
 
   @VisibleForTesting
   public RedisHash(List<byte[]> fieldsToSet) {
@@ -66,8 +64,7 @@ public class RedisHash extends AbstractRedisData {
           "fieldsToSet should have an even number of elements but was size " + numKeysAndValues);
     }
 
-    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(numKeysAndValues / 2,
-        ByteArrays.HASH_STRATEGY);
+    hash = new Hash(numKeysAndValues / 2);
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       hashPut(iterator.next(), iterator.next());
@@ -101,7 +98,7 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = DataSerializer.readInteger(in);
-    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
+    hash = new Hash(size);
     for (int i = 0; i < size; i++) {
       hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
     }
@@ -392,7 +389,37 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
+    return REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
+  }
+
+  public static class Hash
+      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> {
+
+    public Hash() {
+      super(HASH_STRATEGY);
+    }
+
+    public Hash(int expected) {
+      super(expected, HASH_STRATEGY);
+    }
+
+    public Hash(int expected, float f) {
+      super(expected, f, HASH_STRATEGY);
+    }
+
+    public Hash(Map<byte[], byte[]> m) {
+      super(m, HASH_STRATEGY);
+    }
+
+    @Override
+    protected int sizeKey(byte[] key) {
+      return memoryOverhead(key);
+    }
+
+    @Override
+    protected int sizeValue(byte[] value) {
+      return sizeKey(value);
+    }
   }
 
 }

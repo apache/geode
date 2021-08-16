@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisHash.BASE_REDIS_HASH_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisHash.REDIS_HASH_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +52,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHashTest {
@@ -224,10 +223,9 @@ public class RedisHashTest {
   @Test
   public void constantBaseRedisHashOverhead_shouldEqualCalculatedOverhead() {
     RedisHash hash = new RedisHash(Collections.emptyList());
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> backingHash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(0, ByteArrays.HASH_STRATEGY);
+    RedisHash.Hash backingHash = new RedisHash.Hash(0);
 
-    assertThat(sizer.sizeof(hash) - sizer.sizeof(backingHash)).isEqualTo(BASE_REDIS_HASH_OVERHEAD);
+    assertThat(sizer.sizeof(hash) - sizer.sizeof(backingHash)).isEqualTo(REDIS_HASH_OVERHEAD);
   }
 
   /******* constructor *******/
@@ -240,7 +238,7 @@ public class RedisHashTest {
 
     RedisHash redisHash = new RedisHash(data);
 
-    final int expected = sizer.sizeof(redisHash);
+    final int expected = sizer.sizeof(redisHash) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
     final int actual = redisHash.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
@@ -251,10 +249,14 @@ public class RedisHashTest {
     RedisHash redisHash =
         createRedisHash("aSuperLongField", "value", "field", "aSuperLongValue");
 
-    final int expected = sizer.sizeof(redisHash);
+    final int expected = expectedSize(redisHash);
     final int actual = redisHash.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
+  }
+
+  private int expectedSize(RedisHash hash) {
+    return sizer.sizeof(hash) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
   }
 
   @Test
@@ -270,7 +272,7 @@ public class RedisHashTest {
     RedisHash hash = new RedisHash(elements);
 
     Integer actual = hash.getSizeInBytes();
-    int expected = sizer.sizeof(hash);
+    int expected = expectedSize(hash);
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -343,7 +345,7 @@ public class RedisHashTest {
     hash.hset(region, key, initialData, false);
     hash.clearDelta();
 
-    long initialSize = sizer.sizeof(hash);
+    long initialSize = expectedSize(hash);
 
     List<byte[]> finalData = new ArrayList<>();
     finalData.add(stringToBytes(field));
@@ -352,7 +354,7 @@ public class RedisHashTest {
     hash.hset(region, key, finalData, false);
     hash.clearDelta();
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     long expectedSizeChange = elementSizer.sizeof(Coder.stringToBytes(finalValue))
         - elementSizer.sizeof(Coder.stringToBytes(initialValue));
@@ -477,7 +479,7 @@ public class RedisHashTest {
     int finalSize = redisHash.getSizeInBytes();
     assertThat(finalSize).isLessThan(initialSize);
 
-    assertThat(finalSize).isEqualTo(sizer.sizeof(redisHash));
+    assertThat(finalSize).isEqualTo(expectedSize(redisHash));
   }
 
   private RedisHash createRedisHash(String... keysAndValues) {

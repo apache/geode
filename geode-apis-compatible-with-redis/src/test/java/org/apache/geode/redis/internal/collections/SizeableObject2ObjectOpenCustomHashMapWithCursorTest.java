@@ -14,22 +14,20 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor.BACKING_ARRAY_LENGTH_COEFFICIENT;
-import static org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor.BACKING_ARRAY_OVERHEAD_CONSTANT;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
+import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
@@ -47,7 +45,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     }
   };
 
-  private static Hash.Strategy<Integer> COLLIDING_HASH = new Hash.Strategy<Integer>() {
+  private static final Hash.Strategy<Integer> COLLIDING_HASH = new Hash.Strategy<Integer>() {
     @Override
     public int hashCode(Integer o) {
       return o % 5;
@@ -59,10 +57,30 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     }
   };
 
+  private static class Integer2StringMap
+      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> {
+    public Integer2StringMap() {
+      super(NATURAL_HASH);
+    }
+
+    public Integer2StringMap(Hash.Strategy<Integer> hashStrategy) {
+      super(hashStrategy);
+    }
+
+    @Override
+    protected int sizeKey(Integer key) {
+      return 0;
+    }
+
+    @Override
+    protected int sizeValue(String value) {
+      return 0;
+    }
+  }
+
   @Test
   public void scanEntireMap_ReturnsExpectedElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2StringMap map = new Integer2StringMap();
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -73,8 +91,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void twoScansWithNoModifications_ReturnsExpectedElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2StringMap map = new Integer2StringMap();
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -94,8 +111,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithConcurrentRemoves_ReturnsExpectedElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2StringMap map = new Integer2StringMap();
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -116,8 +132,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithHashcodeCollisions_ReturnsExpectedElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(COLLIDING_HASH);
+    Integer2StringMap map = new Integer2StringMap(COLLIDING_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     // The colliding hash is just key % 5. So 0 and 5 will have the same hashcode, etc.
@@ -144,8 +159,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithHashcodeCollisionsAndConcurrentRemoves_ReturnsExpectedElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(COLLIDING_HASH);
+    Integer2StringMap map = new Integer2StringMap(COLLIDING_HASH);
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -166,8 +180,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithGrowingTable_DoesNotMissElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2StringMap map = new Integer2StringMap();
     IntStream.range(0, 10).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -188,8 +201,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithShrinkingTable_DoesNotMissElements() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<Integer, String> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(NATURAL_HASH);
+    Integer2StringMap map = new Integer2StringMap();
     IntStream.range(0, 500).forEach(i -> map.put(i, "value-" + i));
 
     Map<Integer, String> scanned = new HashMap<>();
@@ -213,104 +225,48 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     assertThat(SizeableObject2ObjectOpenCustomHashMapWithCursor.rev(0xFF)).isEqualTo(0xFF000000);
   }
 
-  // This test can be used to derive the formula for calculating overhead associated with resizing
-  // the backing arrays of the map. If it fails, examine the output of this test and determine if
-  // the constant or the formula needs to be adjusted. If all the assertions fail with a constant
-  // difference between the expected and actual, adjust the constant. If they fail with inconsistent
-  // differences, adjust the formula
-  @Test
-  public void backingArrayOverheadCalculationTest() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> map =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(0, ByteArrays.HASH_STRATEGY);
-    int backingArrayOverhead;
-    SoftAssertions softly = new SoftAssertions();
-    for (int i = 0; i < 250; ++i) {
-      map.put(new byte[i], new byte[250 - i]);
-
-      // Calculate the overhead associated only with the backing array
-      backingArrayOverhead = sizer.sizeof(map) - map.getArrayContentsOverhead();
-      int expected = BACKING_ARRAY_OVERHEAD_CONSTANT
-          + BACKING_ARRAY_LENGTH_COEFFICIENT * map.getTotalBackingArrayLength();
-      softly.assertThat(backingArrayOverhead)
-          .as("Expecting backing array overhead to = "
-              + "backing array constant + (backing array length coefficient * total backing array length)"
-              + " = " + BACKING_ARRAY_OVERHEAD_CONSTANT + " + (" + BACKING_ARRAY_LENGTH_COEFFICIENT
-              + " * " + map.getTotalBackingArrayLength() + ") but was off by "
-              + (expected - backingArrayOverhead))
-          .isEqualTo(expected);
-    }
-    softly.assertAll();
-  }
-
   @Test
   public void putUpdatesSizeWhenCreatingNewEntry() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(ByteArrays.HASH_STRATEGY);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    RedisHash.Hash hash = new RedisHash.Hash();
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     hash.put(new byte[] {(byte) 1}, new byte[] {(byte) 1});
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
   }
 
   @Test
   public void putUpdatesSizeWhenUpdatingExistingEntry() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(ByteArrays.HASH_STRATEGY);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    RedisHash.Hash hash = new RedisHash.Hash();
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     byte[] key = new byte[1];
     byte[] initialValue = new byte[1];
 
     hash.put(key, initialValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     byte[] largerValue = new byte[100];
     hash.put(key, largerValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     byte[] smallerValue = new byte[2];
     hash.put(key, smallerValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
   }
 
   @Test
   public void removeUpdatesSize() {
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(ByteArrays.HASH_STRATEGY);
+    RedisHash.Hash hash = new RedisHash.Hash();
     byte[] key = new byte[1];
     byte[] initialValue = new byte[100];
 
     hash.put(key, initialValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     hash.remove(key);
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
   }
 
-  @Test
-  public void calculateBackingArraysOverheadForDifferentInitialSizes() {
-    for (int i = 0; i < 1000; ++i) {
-      SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-          new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(i, ByteArrays.HASH_STRATEGY);
-      assertThat(hash.calculateBackingArraysOverhead()).isEqualTo(sizer.sizeof(hash));
-    }
-  }
-
-  @Test
-  public void calculateBackingArraysOverheadForDifferentLoadFactorsAndInitialSizes() {
-    Random random = new Random(42);
-    for (int i = 0; i < 1000; ++i) {
-      float loadFactor = random.nextFloat();
-      int initialSize = random.nextInt(1000);
-
-      // Create a map with a random initial size and load factor
-      SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-          new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(initialSize, loadFactor,
-              ByteArrays.HASH_STRATEGY);
-
-      // Confirm that the calculated value matches the actual value
-      assertThat(hash.calculateBackingArraysOverhead())
-          .as("load factor = " + loadFactor + ", initial size = " + initialSize)
-          .isEqualTo(sizer.sizeof(hash));
-    }
+  private int expectedSize(SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], ?> map) {
+    return sizer.sizeof(map) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
   }
 
   @Test
@@ -325,11 +281,9 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       byte[] value = {(byte) (initialNumberOfElements - i)};
       initialElements.put(key, value);
     }
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(initialElements,
-            ByteArrays.HASH_STRATEGY);
+    RedisHash.Hash hash = new RedisHash.Hash(initialElements);
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     // Add more elements to force a resizing of the backing arrays and confirm that size changes as
     // expected
@@ -338,7 +292,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       byte[] key = {(byte) i};
       byte[] value = {(byte) (totalNumberOfElements - i)};
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     // Update values and confirm that size changes as expected
@@ -346,7 +300,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
       byte[] key = {(byte) i};
       byte[] value = {(byte) i};
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     assertThat(hash.size()).isEqualTo(totalNumberOfElements);
@@ -354,7 +308,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     // Remove all elements and confirm that size changes as expected
     for (int i = 0; i < totalNumberOfElements; ++i) {
       hash.remove(new byte[] {(byte) i});
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     assertThat(hash.size()).isEqualTo(0);
@@ -369,37 +323,44 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     // Create a map with an initial size
     for (int i = 0; i < initialNumberOfElements; ++i) {
       byte[] key = {(byte) i};
-      byte[] member = new byte[i];
+      byte[] member = key;
       byte[] scoreBytes = String.valueOf(i).getBytes();
       RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
       initialElements.put(key, value);
     }
-    SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], RedisSortedSet.OrderedSetEntry> hash =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(initialElements,
-            ByteArrays.HASH_STRATEGY);
+    RedisSortedSet.MemberMap hash = new RedisSortedSet.MemberMap(initialElements);
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
 
     // Add more elements to force a resizing of the backing arrays and confirm that size changes as
     // expected
     int totalNumberOfElements = initialNumberOfElements + elementsToAdd;
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
-      byte[] member = new byte[i];
+      byte[] member = key;
       byte[] scoreBytes = String.valueOf(totalNumberOfElements - i).getBytes();
       RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     // Update values and confirm that size changes as expected
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
-      byte[] member = new byte[i];
+      byte[] member = key;
       byte[] scoreBytes = String.valueOf(i).getBytes();
-      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
-      hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      RedisSortedSet.OrderedSetEntry value = hash.get(key);
+      byte[] oldScoreBytes = value.getScoreBytes();
+      int scoreDelta = memoryOverhead(scoreBytes)
+          - memoryOverhead(oldScoreBytes);
+
+      int oldSize = hash.getSizeInBytes();
+      value.updateScore(scoreBytes);
+      int sizeDelta = hash.getSizeInBytes() - oldSize;
+
+      assertThat(sizeDelta).isEqualTo(scoreDelta);
+
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     assertThat(hash.size()).isEqualTo(totalNumberOfElements);
@@ -407,7 +368,7 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursorTest {
     // Remove all elements and confirm that size changes as expected
     for (int i = 0; i < totalNumberOfElements; ++i) {
       hash.remove(new byte[] {(byte) i});
-      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
     }
 
     assertThat(hash.size()).isEqualTo(0);

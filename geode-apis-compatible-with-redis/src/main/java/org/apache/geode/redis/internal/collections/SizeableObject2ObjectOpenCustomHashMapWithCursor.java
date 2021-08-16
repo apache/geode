@@ -15,31 +15,29 @@
 package org.apache.geode.redis.internal.collections;
 
 import static it.unimi.dsi.fastutil.HashCommon.mix;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.size.Sizeable;
-import org.apache.geode.redis.internal.data.SizeableObjectSizer;
 
 /**
- * An extention of {@link Object2ObjectOpenCustomHashMap} that supports
+ * An extension of {@link Object2ObjectOpenCustomHashMap} that supports
  * a method of iteration where each scan operation returns an integer cursor
  * that allows future scan operations to start from that same point.
  *
  * The scan method provides the same guarantees as Redis's HSCAN, and in fact
  * uses the same algorithm.
  */
-public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
+public abstract class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     extends Object2ObjectOpenCustomHashMap<K, V> implements Sizeable {
 
   private static final long serialVersionUID = 9079713776660851891L;
-  public static final int BACKING_ARRAY_OVERHEAD_CONSTANT = 128;
-  public static final int BACKING_ARRAY_LENGTH_COEFFICIENT = 4;
-  private static final SizeableObjectSizer elementSizer = new SizeableObjectSizer();
+  public static final int OPEN_HASH_MAP_OVERHEAD =
+      memoryOverhead(SizeableObject2ObjectOpenCustomHashMapWithCursor.class);
 
   private int arrayContentsOverhead;
 
@@ -196,46 +194,39 @@ public class SizeableObject2ObjectOpenCustomHashMapWithCursor<K, V>
     V oldValue = super.put(k, v);
     if (oldValue == null) {
       // A create
-      arrayContentsOverhead += elementSizer.sizeof(k) + elementSizer.sizeof(v);
+      arrayContentsOverhead += sizeKey(k) + sizeValue(v);
     } else {
       // An update
-      arrayContentsOverhead += elementSizer.sizeof(v) - elementSizer.sizeof(oldValue);
+      arrayContentsOverhead += sizeValue(v) - sizeValue(oldValue);
     }
     return oldValue;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public V remove(Object k) {
     V oldValue = super.remove(k);
     if (oldValue != null) {
-      arrayContentsOverhead -= elementSizer.sizeof(k) + elementSizer.sizeof(oldValue);
+      arrayContentsOverhead -= sizeKey((K) k) + sizeValue(oldValue);
     }
     return oldValue;
   }
 
   @Override
   public int getSizeInBytes() {
-    return arrayContentsOverhead + calculateBackingArraysOverhead();
-  }
+    // The size of the object referenced by the "strategy" field is not included
+    // here because in most cases it is a static singleton.
 
-  @VisibleForTesting
-  int calculateBackingArraysOverhead() {
-    // This formula determined experimentally using tests.
-    return BACKING_ARRAY_OVERHEAD_CONSTANT
-        + BACKING_ARRAY_LENGTH_COEFFICIENT * getTotalBackingArrayLength();
-  }
-
-  @VisibleForTesting
-  int getArrayContentsOverhead() {
-    return arrayContentsOverhead;
-  }
-
-  @VisibleForTesting
-  int getTotalBackingArrayLength() {
-    return key.length + value.length;
+    return OPEN_HASH_MAP_OVERHEAD + memoryOverhead(key) + memoryOverhead(value)
+        + arrayContentsOverhead;
   }
 
   public interface EntryConsumer<K, V, D> {
     void consume(D privateData, K key, V value);
   }
+
+  protected abstract int sizeKey(K key);
+
+  protected abstract int sizeValue(V value);
+
 }
