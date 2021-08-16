@@ -2459,16 +2459,12 @@ public class CacheClientProxy implements ClientSession {
             // This will reduce the number of duplicates that a client receives after
             // reconnecting.
             synchronized (_pausedLock) {
-              try {
-                logger.info("available ids = " + this._messageQueue.size() + " , isEmptyAckList ="
-                    + this._messageQueue.isEmptyAckList() + ", peekInitialized = "
-                    + this._messageQueue.isPeekInitialized());
-                while (!this._messageQueue.isEmptyAckList()
-                    && this._messageQueue.isPeekInitialized()) {
-                  this._messageQueue.remove();
-                }
-              } catch (InterruptedException ex) {
-                logger.warn("{}: sleep interrupted.", this);
+              logger.info("available ids = " + this._messageQueue.size() + " , isEmptyAckList ="
+                  + this._messageQueue.isEmptyAckList() + ", peekInitialized = "
+                  + this._messageQueue.isPeekInitialized());
+              while (!this._messageQueue.isEmptyAckList()
+                  && this._messageQueue.isPeekInitialized()) {
+                this._messageQueue.remove();
               }
             }
             waitForResumption();
@@ -2857,11 +2853,7 @@ public class CacheClientProxy implements ClientSession {
 
     protected void initializeTransients() {
       while (!this._messageQueue.isEmptyAckList() && this._messageQueue.isPeekInitialized()) {
-        try {
-          this._messageQueue.remove();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+        this._messageQueue.remove();
       }
       this._messageQueue.initializeTransients();
     }

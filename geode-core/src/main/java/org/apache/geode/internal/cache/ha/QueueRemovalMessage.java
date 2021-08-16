@@ -125,10 +125,9 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
                     "QueueRemovalMessage::process:Exception in processing the last disptached sequence ID for a HARegionQueue's DACE. The problem is with event ID,%s for HARegion with name=%s",
                     new Object[] {regionName, id}),
                     e);
-              } catch (InterruptedException ignore) {
-                return; // interrupt occurs during shutdown. this runs in an executor, so just stop
-                        // processing
-              }
+              } // interrupt occurs during shutdown. this runs in an executor, so just stop
+              // processing
+
             } catch (RejectedExecutionException ignore) {
               interrupted = true;
             } finally {

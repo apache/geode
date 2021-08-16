@@ -60,7 +60,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class HARegion extends DistributedRegion {
   private static final Logger logger = LogService.getLogger();
 
-  CachePerfStats haRegionStats;
+  final CachePerfStats haRegionStats;
 
   // Prevent this region from participating in a TX, bug 38709
   @Override
@@ -85,10 +85,6 @@ public class HARegion extends DistributedRegion {
     buf.append("[path='").append(getFullPath());
     return buf;
   }
-
-  // protected Object conditionalCopy(Object o) {
-  // return o;
-  // }
 
   private volatile HARegionQueue owningQueue;
 
@@ -176,17 +172,11 @@ public class HARegion extends DistributedRegion {
       final boolean forceNewEntry) throws EntryNotFoundException {
     Object key = event.getKey();
     if (key instanceof Long) {
-      boolean removedFromAvID = false;
-      Conflatable conflatable = null;
-      try {
-        conflatable = (Conflatable) this.get(key);
-        removedFromAvID =
-            !this.owningQueue.isPrimary() && this.owningQueue.destroyFromAvailableIDs((Long) key);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        getCancelCriterion().checkCancelInProgress(ie);
-        return;
-      }
+      boolean removedFromAvID;
+      Conflatable conflatable;
+      conflatable = (Conflatable) this.get(key);
+      removedFromAvID =
+          !this.owningQueue.isPrimary() && this.owningQueue.destroyFromAvailableIDs((Long) key);
       if (!removedFromAvID) {
         return;
       }
@@ -200,7 +190,6 @@ public class HARegion extends DistributedRegion {
       this.owningQueue.stats.incEventsExpired();
     }
     this.entries.invalidate(event, invokeCallbacks, forceNewEntry, false);
-    return;
 
   }
 
@@ -296,9 +285,6 @@ public class HARegion extends DistributedRegion {
 
   // re-implemented from LocalRegion to avoid recording the event in GemFireCache
   // before it's applied to the cache's region
-  // public boolean hasSeenClientEvent(InternalCacheEvent event) {
-  // return false;
-  // }
 
   protected void notifyGatewayHub(EnumListenerEvent operation, EntryEventImpl event) {}
 
@@ -515,8 +501,8 @@ public class HARegion extends DistributedRegion {
 
     public boolean noPrimaryOrHasRegisteredInterest() {
       Profile[] locProfiles = this.profiles; // grab current profiles
-      for (int i = 0; i < locProfiles.length; i++) {
-        HAProfile p = (HAProfile) locProfiles[i];
+      for (Profile locProfile : locProfiles) {
+        HAProfile p = (HAProfile) locProfile;
         if (p.isPrimary) {
           return p.hasRegisteredInterest;
         }
