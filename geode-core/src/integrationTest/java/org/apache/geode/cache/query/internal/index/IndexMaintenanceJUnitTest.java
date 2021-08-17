@@ -1170,7 +1170,7 @@ public class IndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void test001AddEntry() throws Exception {
+  public void numberOfIndexValuesStatIsUpdatedWhenEntryAdded() throws Exception {
     CacheUtils.log(((CompactRangeIndex) index).dump());
     IndexStatistics stats = index.getStatistics();
     assertEquals(4, stats.getNumberOfValues());
@@ -1187,7 +1187,7 @@ public class IndexMaintenanceJUnitTest {
    * invalidating the key 3
    */
   @Test
-  public void test003InvalidateEntry() throws Exception {
+  public void testInvalidatingEntry() throws Exception {
     IndexStatistics stats = index.getStatistics();
     region.invalidate("3");
     assertEquals(3, stats.getNumberOfValues());
@@ -1196,7 +1196,7 @@ public class IndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void test004DestroyEntry() throws Exception {
+  public void testDestroyEntry() throws Exception {
     IndexStatistics stats = index.getStatistics();
     region.put("4", new Portfolio(4));
     region.destroy("4");
@@ -1208,7 +1208,7 @@ public class IndexMaintenanceJUnitTest {
   // This test has a meaning only for Trunk code as it checks for Map implementation
   // Tests for Region clear operations on Index in a Local VM
   @Test
-  public void test005IndexClearanceOnMapClear() {
+  public void testIndexClearanceOnMapClear() {
     try {
       CacheUtils.getCache();
       isInitDone = false;
@@ -1245,7 +1245,7 @@ public class IndexMaintenanceJUnitTest {
   // when a clear
   // operation & region put operation occur concurrentlty
   @Test
-  public void test006ConcurrentMapClearAndRegionPutOperation() {
+  public void testConcurrentMapClearAndRegionPutOperation() {
     try {
       CacheUtils.getCache();
       isInitDone = false;
@@ -1295,7 +1295,7 @@ public class IndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void test007IndexUpdate() {
+  public void testIndexUpdate() {
     try {
       CacheUtils.getCache();
       isInitDone = false;
@@ -1330,7 +1330,7 @@ public class IndexMaintenanceJUnitTest {
    * Test to compare range and compact index. They should return the same results.
    */
   @Test
-  public void test008RangeAndCompactRangeIndex() {
+  public void testCompareRangeAndCompactIndex() {
     try {
       // CacheUtils.restartCache();
       if (!isInitDone) {
@@ -1399,10 +1399,10 @@ public class IndexMaintenanceJUnitTest {
   }
 
   /**
-   * Test to compare range and compact index. They should return the same results.
+   * Test to acquire range and compact index.
    */
   @Test
-  public void test009AcquringCompactRangeIndexEarly() {
+  public void testToAcquireCompactRangeIndexEarly() {
     try {
       // CacheUtils.restartCache();
       if (!isInitDone) {
