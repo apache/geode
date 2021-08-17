@@ -67,7 +67,6 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
-  private static final Command TERMINATE_COMMAND = new Command();
 
   private final Client client;
   private final Channel channel;
