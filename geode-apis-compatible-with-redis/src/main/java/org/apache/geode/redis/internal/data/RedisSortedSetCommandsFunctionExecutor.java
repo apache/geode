@@ -58,6 +58,18 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public List<byte[]> zpopmax(RedisKey key, int count) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zpopmax(getRegion(), key, count));
+  }
+
+  @Override
+  public List<byte[]> zpopmin(RedisKey key, int count) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, false).zpopmin(getRegion(), key, count));
+  }
+
+  @Override
   public List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, true).zrange(min, max, withScores));
@@ -110,15 +122,4 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }
 
-  @Override
-  public List<byte[]> zpopmin(RedisKey key, int count) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, false).zpopmin(getRegion(), key, count));
-  }
-
-  @Override
-  public List<byte[]> zpopmax(RedisKey key, int count) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, false).zpopmax(getRegion(), key, count));
-  }
 }

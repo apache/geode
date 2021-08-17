@@ -286,6 +286,20 @@ public class RedisSortedSet extends AbstractRedisData {
     return byteIncr;
   }
 
+  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    Iterator<AbstractOrderedSetEntry> scoresIterator =
+        scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
+
+    return zpop(scoresIterator, region, key);
+  }
+
+  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    Iterator<AbstractOrderedSetEntry> scoresIterator =
+        scoreSet.getIndexRange(0, count, false);
+
+    return zpop(scoresIterator, region, key);
+  }
+
   List<byte[]> zrange(int min, int max, boolean withScores) {
     return getRange(min, max, withScores, false);
   }
@@ -386,20 +400,6 @@ public class RedisSortedSet extends AbstractRedisData {
       return orderedSetEntry.getScoreBytes();
     }
     return null;
-  }
-
-  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
-    Iterator<AbstractOrderedSetEntry> scoresIterator =
-        scoreSet.getIndexRange(0, count, false);
-
-    return zpop(scoresIterator, region, key);
-  }
-
-  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
-    Iterator<AbstractOrderedSetEntry> scoresIterator =
-        scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
-
-    return zpop(scoresIterator, region, key);
   }
 
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,

@@ -29,6 +29,10 @@ public interface RedisSortedSetCommands {
 
   byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
 
+  List<byte[]> zpopmax(RedisKey key, int count);
+
+  List<byte[]> zpopmin(RedisKey key, int count);
+
   List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
 
   List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
@@ -49,7 +53,4 @@ public interface RedisSortedSetCommands {
 
   byte[] zscore(RedisKey key, byte[] member);
 
-  List<byte[]> zpopmin(RedisKey key, int count);
-
-  List<byte[]> zpopmax(RedisKey key, int count);
 }

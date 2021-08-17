@@ -88,7 +88,7 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void shouldReturn_lowestScore() {
+  public void shouldReturn_memberWithLowestScore() {
     jedis.zadd("key", 3, "player1");
     jedis.zadd("key", 2, "player2");
     jedis.zadd("key", 1, "player3");
@@ -127,7 +127,7 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void shouldReturn_countLowestScores() {
+  public void shouldReturn_countLowestScores_whenCountIsPassed() {
     for (int i = 0; i < 5; i++) {
       jedis.zadd("key", i, "player" + i);
     }

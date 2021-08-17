@@ -87,12 +87,12 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
