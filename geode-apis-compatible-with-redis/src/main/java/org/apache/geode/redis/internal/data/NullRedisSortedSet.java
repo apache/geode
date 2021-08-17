@@ -64,21 +64,6 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  long zlexcount(SortedSetLexRangeOptions rangeOptions) {
-    return 0;
-  }
-
-  @Override
-  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    return Collections.emptyList();
-  }
-
-  @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     List<byte[]> valuesToAdd = new ArrayList<>();
@@ -89,6 +74,11 @@ class NullRedisSortedSet extends RedisSortedSet {
     region.create(key, sortedSet);
 
     return increment;
+  }
+
+  @Override
+  long zlexcount(SortedSetLexRangeOptions rangeOptions) {
+    return 0;
   }
 
   @Override
@@ -103,6 +93,16 @@ class NullRedisSortedSet extends RedisSortedSet {
 
   @Override
   List<byte[]> zrange(int min, int max, boolean withScores) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
     return Collections.emptyList();
   }
 

@@ -279,11 +279,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeInclusiveWhenSpecified() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions =
         new SortedSetLexRangeOptions("[member1".getBytes(), "[member3".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(3);
@@ -292,11 +292,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeExclusiveWhenSpecified() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions =
         new SortedSetLexRangeOptions("(member1".getBytes(), "(member3".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(1);
@@ -305,11 +305,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeZero_whenMinIsTooGreat() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[member6".getBytes(),
         "(member8".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
@@ -318,11 +318,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeZero_whenMaxIsTooSmall() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[membeq0".getBytes(),
         "[member0".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
@@ -331,11 +331,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeZero_whenMinAndMaxAreReversed() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions =
         new SortedSetLexRangeOptions("[member5".getBytes(), "[member0".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
@@ -344,11 +344,11 @@ public class RedisSortedSetTest {
   @Test
   public void zlexcount_shouldBeAbleToCountAllEntries() {
     RedisSortedSet sortedSet = createRedisSortedSet(
-        "1.1", "member1",
-        "1.1", "member2",
-        "1.1", "member3",
-        "1.1", "member4",
-        "1.1", "member5");
+        score1, "member1",
+        score1, "member2",
+        score1, "member3",
+        score1, "member4",
+        score1, "member5");
     SortedSetLexRangeOptions lexOptions =
         new SortedSetLexRangeOptions("-".getBytes(), "+".getBytes());
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(5);

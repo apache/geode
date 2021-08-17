@@ -39,7 +39,7 @@ public class ZLexCountExecutor extends AbstractExecutor {
     }
 
     // If the range is empty, return early
-    if (rangeOptions.isEmptyRange()) {
+    if (rangeOptions.isEmptyRange(false)) {
       return RedisResponse.integer(0);
     }
 
