@@ -298,6 +298,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZremrangeByLex() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k) -> jedis.zremrangeByLex(k, "-", "+"));
+  }
+
+  @Test
   public void testZremrangeByScore() {
     runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zremrangeByScore(k, 0.0, 1.0));
   }
@@ -710,6 +715,19 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     String currentMisses = info.get(MISSES);
 
     command.accept(key, key, "42");
+    info = RedisTestHelper.getInfo(jedis);
+
+    assertThat(info.get(HITS)).isEqualTo(currentHits);
+    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
+  }
+
+  private void runCommandAndAssertNoStatUpdates(String key, String min, String max,
+      TriConsumer<String, String, String> command) {
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    String currentHits = info.get(HITS);
+    String currentMisses = info.get(MISSES);
+
+    command.accept(key, min, max);
     info = RedisTestHelper.getInfo(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);

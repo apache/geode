@@ -355,6 +355,31 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
+  int zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetLexRangeOptions rangeOptions) {
+    if (scoreSet.isEmpty()) {
+      return 0;
+    }
+
+    // Assume that all members have the same score. Behaviour is unspecified otherwise.
+    double score = scoreSet.get(0).score;
+
+    int minIndex =
+        getIndexByLex(score, rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
+
+    int maxIndex =
+        getIndexByLex(score, rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
+
+    if (minIndex == maxIndex) {
+      return 0;
+    }
+
+    return removeEntriesByRange(region, key, minIndex, maxIndex);
+  }
+
   long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetScoreRangeOptions rangeOptions) {
     return removeRange(region, key, rangeOptions);
@@ -524,6 +549,54 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
     return result;
+  }
+
+  private int removeEntriesByRange(Region<RedisKey, RedisData> region, RedisKey key, int min,
+      int max) {
+    int start = getBoundedStartIndex(min, scoreSet.size());
+    int end = getBoundedEndIndex(max, scoreSet.size());
+    int rangeSize = end - start;
+
+    if (rangeSize <= 0 || start == scoreSet.size()) {
+      return 0;
+    }
+
+    int membersRemoved = 0;
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(start, rangeSize, false);
+    RemsDeltaInfo deltaInfo = null;
+
+    while (entryIterator.hasNext()) {
+      AbstractOrderedSetEntry next = entryIterator.next();
+      if (deltaInfo == null) {
+        deltaInfo = new RemsDeltaInfo();
+      }
+      deltaInfo.add(next.member);
+      membersRemoved++;
+    }
+
+    if (deltaInfo != null) {
+      membersRemoveAll(deltaInfo);
+      storeChanges(region, key, deltaInfo);
+    }
+
+    return membersRemoved;
+  }
+
+  private int getBoundedStartIndex(int index, int size) {
+    if (index >= 0) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, 0);
+    }
+  }
+
+  private int getBoundedEndIndex(int index, int size) {
+    if (index >= 0) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, -1);
+    }
   }
 
   @Override

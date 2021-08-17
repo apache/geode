@@ -31,8 +31,11 @@ import java.util.List;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
+  @VisibleForTesting
   public SortedSetLexRangeOptions(List<byte[]> commandElements, boolean isRev) {
     super(commandElements, isRev);
   }

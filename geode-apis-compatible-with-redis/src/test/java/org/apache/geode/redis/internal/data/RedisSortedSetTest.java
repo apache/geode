@@ -63,6 +63,7 @@ import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -197,6 +198,29 @@ public class RedisSortedSetTest {
     membersToRemove.add(stringToBytes(member3));
 
     long removed = sortedSet.zrem(region, key, membersToRemove);
+
+    assertThat(removed).isEqualTo(2);
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+  }
+
+  @Test
+  public void zremrangebylex_removesMembersInRange() {
+    String member3 = "member3";
+    String member4 = "member4";
+    String member5 = "member5";
+    RedisSortedSet sortedSet = spy(createRedisSortedSet(score1, member1, score1, member2, score1,
+        member3, score1, member4, score1, member5));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    RedisKey key = new RedisKey();
+    ArrayList<byte[]> membersToRemove = new ArrayList<>();
+    membersToRemove.add(stringToBytes("nonExistent"));
+    membersToRemove.add(stringToBytes(member2));
+    membersToRemove.add(stringToBytes(member3));
+    membersToRemove.add(stringToBytes(member4));
+
+    SortedSetLexRangeOptions rangeOptions =
+        new SortedSetLexRangeOptions(stringToBytes("[" + member2), stringToBytes("(" + member4));
+    long removed = sortedSet.zremrangebylex(region, key, rangeOptions);
 
     assertThat(removed).isEqualTo(2);
     verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
