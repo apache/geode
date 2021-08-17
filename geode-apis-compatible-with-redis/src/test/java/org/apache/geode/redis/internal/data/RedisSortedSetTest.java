@@ -742,7 +742,9 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries; ++i) {
       sortedSet.zpopmin(mockRegion, mockKey, 1);
       sortedSet.clearDelta();
-      assertThat(sizer.sizeof(sortedSet)).isEqualTo(sortedSet.getSizeInBytes());
+      int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+      int actualSize = sortedSet.getSizeInBytes();
+      assertThat(actualSize).isEqualTo(expectedSize);
     }
   }
 
