@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,12 @@ public abstract class AbstractZPopMaxIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void shouldError_givenWrongNumberOfArguments() {
+  public void shouldError_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.ZPOPMAX, 1);
+  }
+
+  @Test
+  public void shouldError_givenTooManyArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMAX, "key", "1", "2"))
             .hasMessageContaining(RedisConstants.ERROR_SYNTAX);

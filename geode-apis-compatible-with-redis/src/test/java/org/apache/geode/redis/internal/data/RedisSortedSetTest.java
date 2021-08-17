@@ -491,7 +491,7 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zpopminRemovesMembersWithHighestScores_whenCountIsGreaterThanOne() {
+  public void zpopminRemovesMembersWithLowestScores_whenCountIsGreaterThanOne() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));

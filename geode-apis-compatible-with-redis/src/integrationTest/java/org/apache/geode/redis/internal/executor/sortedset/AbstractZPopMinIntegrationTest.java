@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,12 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void shouldError_givenWrongNumberOfArguments() {
+  public void shouldError_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.ZPOPMIN, 1);
+  }
+
+  @Test
+  public void shouldError_givenTooManyArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "1", "2"))
             .hasMessageContaining(RedisConstants.ERROR_SYNTAX);
@@ -96,6 +102,19 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
     assertThat(jedis.zpopmin("key").getElement()).isEqualTo("player3");
     assertThat(jedis.zrange("key", 0, 10))
         .containsExactlyInAnyOrder("player1", "player2");
+  }
+
+  @Test
+  public void shouldReturnAllEntries_whenCountGreaterThanEntries() {
+    jedis.zadd("key", 1, "player1");
+    jedis.zadd("key", 1, "player2");
+    jedis.zadd("key", 1, "player3");
+
+    assertThat(jedis.zpopmin("key", 4))
+        .containsExactly(
+            new Tuple("player1", 1D),
+            new Tuple("player2", 1D),
+            new Tuple("player3", 1D));
   }
 
   @Test
