@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
@@ -83,19 +84,35 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
   @Override
   int compareStartToEnd() {
     if (isRev) {
-      int dummyNameComparison = checkDummyMemberNames(end.value, start.value);
-      if (dummyNameComparison == 0) {
-        return javaImplementationOfAnsiCMemCmp(end.value, start.value);
-      } else {
-        return dummyNameComparison;
-      }
+      return compareMemberNames(end.value, start.value);
     } else {
-      int dummyNameComparison = checkDummyMemberNames(start.value, end.value);
-      if (dummyNameComparison == 0) {
-        return javaImplementationOfAnsiCMemCmp(start.value, end.value);
-      } else {
-        return dummyNameComparison;
-      }
+      return compareMemberNames(start.value, end.value);
+    }
+  }
+
+  @Override
+  public int getRangeIndex(RedisSortedSet.ScoreSet scoreSet, boolean isStartIndex) {
+    int index;
+    RangeLimit<byte[]> rangeLimit = isStartIndex ? start : end;
+    RedisSortedSet.AbstractOrderedSetEntry entry =
+        new RedisSortedSet.MemberDummyOrderedSetEntry(rangeLimit.value,
+            rangeLimit.isExclusive, isStartIndex ^ isRev);
+    index = scoreSet.indexOf(entry);
+    if (isRev) {
+      // Subtract 1 from the index here because when treating the set as reverse ordered, we
+      // overshoot the correct index due to the comparison in MemberDummyOrderedSetEntry assuming
+      // non-reverse ordering
+      index--;
+    }
+    return index;
+  }
+
+  private int compareMemberNames(byte[] nameOne, byte[] nameTwo) {
+    int dummyNameComparison = checkDummyMemberNames(nameOne, nameTwo);
+    if (dummyNameComparison == 0) {
+      return javaImplementationOfAnsiCMemCmp(nameOne, nameTwo);
+    } else {
+      return dummyNameComparison;
     }
   }
 }

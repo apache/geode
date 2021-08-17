@@ -252,8 +252,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   long zcount(SortedSetScoreRangeOptions rangeOptions) {
-    long minIndex = getRangeIndex(rangeOptions, true);
-    long maxIndex = getRangeIndex(rangeOptions, false);
+    long minIndex = rangeOptions.getRangeIndex(scoreSet, true);
+    long maxIndex = rangeOptions.getRangeIndex(scoreSet, false);
 
     return maxIndex - minIndex;
   }
@@ -424,57 +424,14 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private List<byte[]> getRange(AbstractSortedSetRangeOptions<?> rangeOptions) {
-    int startIndex = getRangeIndex(rangeOptions, true);
+    int startIndex = rangeOptions.getRangeIndex(scoreSet, true);
     if (startIndex >= getSortedSetSize() && !rangeOptions.isRev()
         || startIndex < 0 && rangeOptions.isRev()) {
       return Collections.emptyList();
     }
-    int endIndex = getRangeIndex(rangeOptions, false);
+    int endIndex = rangeOptions.getRangeIndex(scoreSet, false);
 
     return addLimitToRange(rangeOptions, startIndex, endIndex);
-  }
-
-  private int getRangeIndex(AbstractSortedSetRangeOptions<?> rangeOptions, boolean isStartIndex) {
-    int index;
-    Object rangeValue = isStartIndex ? rangeOptions.getStart() : rangeOptions.getEnd();
-    boolean isExclusive =
-        isStartIndex ? rangeOptions.isStartExclusive() : rangeOptions.isEndExclusive();
-    boolean isReverseRange = rangeOptions.isRev();
-
-    if (rangeOptions instanceof SortedSetRankRangeOptions) {
-      index = getBoundedRankIndex((Integer) rangeValue, scoreSet.size(), isStartIndex);
-      if (isReverseRange) {
-        // scoreSet.size() - 1 is the maximum index of elements in the sorted set, so in a reverse
-        // ordered set we count backwards from there
-        index = scoreSet.size() - 1 - index;
-      }
-    } else if (rangeOptions instanceof SortedSetScoreRangeOptions) {
-      AbstractOrderedSetEntry entry = new ScoreDummyOrderedSetEntry((Double) rangeValue,
-          isExclusive, isStartIndex ^ isReverseRange);
-      index = scoreSet.indexOf(entry);
-      if (isReverseRange) {
-        // Subtract 1 from the index here because when treating the set as reverse ordered, we
-        // overshoot the correct index due to the comparison in ScoreDummyOrderedSetEntry assuming
-        // non-reverse ordering
-        index--;
-      }
-    } else if (rangeOptions instanceof SortedSetLexRangeOptions) {
-      // Assume that all members have the same score. Behaviour is unspecified otherwise.
-      double score = scoreSet.get(0).score;
-      AbstractOrderedSetEntry entry = new MemberDummyOrderedSetEntry((byte[]) rangeValue, score,
-          isExclusive, isStartIndex ^ isReverseRange);
-      index = scoreSet.indexOf(entry);
-      if (isReverseRange) {
-        // Subtract 1 from the index here because when treating the set as reverse ordered, we
-        // overshoot the correct index due to the comparison in MemberDummyOrderedSetEntry assuming
-        // non-reverse ordering
-        index--;
-      }
-    } else {
-      throw new UnsupportedOperationException("Unknown class " + rangeOptions.getClass().getName());
-    }
-
-    return index;
   }
 
   private List<byte[]> addLimitToRange(AbstractSortedSetRangeOptions<?> rangeOptions,
@@ -514,27 +471,6 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
     return result;
-  }
-
-  private int getBoundedRankIndex(int index, int size, boolean isStartIndex) {
-    if (index >= 0) {
-      if (index > size) {
-        return size;
-      } else {
-        // Add 1 because rank ranges use inclusive maximum, so without this, we would return one
-        // element too few
-        return isStartIndex ? index : index + 1;
-      }
-    } else {
-      int offsetIndex = size + index;
-      if (offsetIndex < 0) {
-        return 0;
-      } else {
-        // Add 1 because rank ranges use inclusive maximum, so without this, we would return one
-        // element too few
-        return isStartIndex ? offsetIndex : offsetIndex + 1;
-      }
-    }
   }
 
   @Override
@@ -625,7 +561,7 @@ public class RedisSortedSet extends AbstractRedisData {
     private AbstractOrderedSetEntry() {}
 
     public int compareTo(AbstractOrderedSetEntry o) {
-      int comparison = Double.compare(score, o.score);
+      int comparison = compareScores(score, o.score);
       if (comparison == 0) {
         // Scores equal, try lexical ordering
         return compareMembers(member, o.member);
@@ -643,6 +579,10 @@ public class RedisSortedSet extends AbstractRedisData {
 
     public double getScore() {
       return score;
+    }
+
+    public int compareScores(double score1, double score2) {
+      return Double.compare(score1, score2);
     }
 
     public abstract int compareMembers(byte[] array1, byte[] array2);
@@ -683,9 +623,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
   // Dummy entry used to find the rank of an element with the given score for inclusive or
   // exclusive ranges
-  static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
+  public static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
 
-    ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+    public ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
       // this entry should act as if it is greater than the entry it's being compared to
       this.member = isExclusive ^ isMinimum ? bLEAST_MEMBER_NAME : bGREATEST_MEMBER_NAME;
@@ -707,17 +647,20 @@ public class RedisSortedSet extends AbstractRedisData {
 
   // Dummy entry used to find the rank of an element with the given member name for lexically
   // ordered sets
-  static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
+  public static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
     final boolean isExclusive;
     final boolean isMinimum;
 
-    MemberDummyOrderedSetEntry(byte[] member, double score, boolean isExclusive,
-        boolean isMinimum) {
+    public MemberDummyOrderedSetEntry(byte[] member, boolean isExclusive, boolean isMinimum) {
       this.member = member;
-      this.scoreBytes = null;
-      this.score = score;
       this.isExclusive = isExclusive;
       this.isMinimum = isMinimum;
+    }
+
+    @Override
+    public int compareScores(double score1, double score2) {
+      // Assume that all members have the same score. Behaviour is unspecified otherwise.
+      return 0;
     }
 
     @Override

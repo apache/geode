@@ -217,8 +217,8 @@ public class RedisSortedSetTest {
   @Parameters({"5,0", "13,15", "17,-2", "12,12"})
   public void zrange_ShouldReturnEmptyList_GivenInvalidRanges(int start, int end) {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
-    when(rangeOptions.getStart()).thenReturn(start);
-    when(rangeOptions.getEnd()).thenReturn(end);
+    when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(start);
+    when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(end);
     Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).isEmpty();
   }
@@ -226,70 +226,34 @@ public class RedisSortedSetTest {
   @Test
   public void zrange_ShouldReturnSimpleRanges() {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
-    when(rangeOptions.getStart()).thenReturn(0);
-    when(rangeOptions.getEnd()).thenReturn(5);
+    when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(0);
+    when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(6);
     Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
-    System.out.println(rangeList.stream().map(Coder::bytesToString).collect(Collectors.toList()));
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member1".getBytes(), "member2".getBytes(), "member3".getBytes(),
             "member4".getBytes(), "member5".getBytes(), "member6".getBytes());
 
-    when(rangeOptions.getStart()).thenReturn(5);
-    when(rangeOptions.getEnd()).thenReturn(10);
+    when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(5);
+    when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(11);
     rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(6);
     assertThat(rangeList)
         .containsExactly("member6".getBytes(), "member7".getBytes(), "member8".getBytes(),
             "member9".getBytes(), "member10".getBytes(), "member11".getBytes());
 
-    when(rangeOptions.getStart()).thenReturn(10);
-    when(rangeOptions.getEnd()).thenReturn(13);
+    when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(10);
+    when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(13);
     rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(2);
     assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
-  }
-
-  @Test
-  public void zrange_ShouldReturnRanges_SpecifiedWithNegativeOffsets() {
-    SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
-    when(rangeOptions.getStart()).thenReturn(-2);
-    when(rangeOptions.getEnd()).thenReturn(12);
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
-    assertThat(rangeList).hasSize(2);
-    assertThat(rangeList).containsExactly("member11".getBytes(), "member12".getBytes());
-
-    when(rangeOptions.getStart()).thenReturn(6);
-    when(rangeOptions.getEnd()).thenReturn(-1);
-    rangeList = rangeSortedSet.zrange(rangeOptions);
-    assertThat(rangeList).hasSize(6);
-    assertThat(rangeList)
-        .containsExactly("member7".getBytes(), "member8".getBytes(),
-            "member9".getBytes(), "member10".getBytes(), "member11".getBytes(),
-            "member12".getBytes());
-
-    when(rangeOptions.getStart()).thenReturn(-11);
-    when(rangeOptions.getEnd()).thenReturn(-5);
-    rangeList = rangeSortedSet.zrange(rangeOptions);
-    assertThat(rangeList).hasSize(7);
-    assertThat(rangeList)
-        .containsExactly("member2".getBytes(), "member3".getBytes(),
-            "member4".getBytes(), "member5".getBytes(), "member6".getBytes(),
-            "member7".getBytes(), "member8".getBytes());
-
-    when(rangeOptions.getStart()).thenReturn(-12);
-    when(rangeOptions.getEnd()).thenReturn(-11);
-    rangeList = rangeSortedSet.zrange(rangeOptions);
-    assertThat(rangeList).hasSize(2);
-    assertThat(rangeList)
-        .containsExactly("member1".getBytes(), "member2".getBytes());
   }
 
   @Test
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
-    when(rangeOptions.getStart()).thenReturn(0);
-    when(rangeOptions.getEnd()).thenReturn(5);
+    when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(0);
+    when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(6);
     when(rangeOptions.isWithScores()).thenReturn(true);
     Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(12);
@@ -496,14 +460,12 @@ public class RedisSortedSetTest {
 
   @Test
   public void memberDummyOrderedSetEntryCompareTo_handlesDummyMemberNames() {
-    double score = 1.0;
-
     RedisSortedSet.AbstractOrderedSetEntry greatest =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(bGREATEST_MEMBER_NAME, score, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(bGREATEST_MEMBER_NAME, false, false);
     RedisSortedSet.AbstractOrderedSetEntry least =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(bLEAST_MEMBER_NAME, score, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(bLEAST_MEMBER_NAME, false, false);
     RedisSortedSet.AbstractOrderedSetEntry middle =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(stringToBytes("middle"), score, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(stringToBytes("middle"), false, false);
 
     // greatest > least
     assertThat(greatest.compareTo(least)).isEqualTo(1);
@@ -527,7 +489,7 @@ public class RedisSortedSetTest {
         new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
 
     RedisSortedSet.AbstractOrderedSetEntry exclusiveMin =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, true, true);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, true, true);
 
     // exclusiveMin > realEntry
     assertThat(exclusiveMin.compareTo(realEntry)).isEqualTo(1);
@@ -541,7 +503,7 @@ public class RedisSortedSetTest {
         new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
 
     RedisSortedSet.AbstractOrderedSetEntry inclusiveMin =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, false, true);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, false, true);
 
     // inclusiveMin < realEntry
     assertThat(inclusiveMin.compareTo(realEntry)).isEqualTo(-1);
@@ -555,7 +517,7 @@ public class RedisSortedSetTest {
         new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
 
     RedisSortedSet.AbstractOrderedSetEntry exclusiveMax =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, true, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, true, false);
 
     // exclusiveMax < realEntry
     assertThat(exclusiveMax.compareTo(realEntry)).isEqualTo(-1);
@@ -569,7 +531,7 @@ public class RedisSortedSetTest {
         new RedisSortedSet.OrderedSetEntry(memberName, doubleToBytes(score));
 
     RedisSortedSet.AbstractOrderedSetEntry inclusiveMax =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, score, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(memberName, false, false);
 
     // inclusiveMax > realEntry
     assertThat(inclusiveMax.compareTo(realEntry)).isEqualTo(1);

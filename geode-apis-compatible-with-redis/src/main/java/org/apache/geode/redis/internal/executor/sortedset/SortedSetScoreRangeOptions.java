@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Double> {
 
@@ -68,5 +69,21 @@ public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Do
     } else {
       return Double.compare(start.value, end.value);
     }
+  }
+
+  @Override
+  public int getRangeIndex(RedisSortedSet.ScoreSet scoreSet, boolean isStartIndex) {
+    int index;
+    RangeLimit<Double> rangeLimit = isStartIndex ? start : end;
+    RedisSortedSet.AbstractOrderedSetEntry entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(
+        rangeLimit.value, rangeLimit.isExclusive, isStartIndex ^ isRev);
+    index = scoreSet.indexOf(entry);
+    if (isRev) {
+      // Subtract 1 from the index here because when treating the set as reverse ordered, we
+      // overshoot the correct index due to the comparison in ScoreDummyOrderedSetEntry assuming
+      // non-reverse ordering
+      index--;
+    }
+    return index;
   }
 }

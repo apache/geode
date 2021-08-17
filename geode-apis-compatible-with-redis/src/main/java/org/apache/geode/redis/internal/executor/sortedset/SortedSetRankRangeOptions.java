@@ -22,6 +22,7 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetRankRangeOptions extends AbstractSortedSetRangeOptions<Integer> {
   SortedSetRankRangeOptions(List<byte[]> commandElements, boolean isRev) {
@@ -56,7 +57,41 @@ public class SortedSetRankRangeOptions extends AbstractSortedSetRangeOptions<Int
   }
 
   @Override
+  public int getRangeIndex(RedisSortedSet.ScoreSet scoreSet, boolean isStartIndex) {
+    int index;
+    int rangeValue = isStartIndex ? start.value : end.value;
+    index = getBoundedRankIndex(rangeValue, scoreSet.size(), isStartIndex);
+    if (isRev) {
+      // scoreSet.size() - 1 is the maximum index of elements in the sorted set, so in a reverse
+      // ordered set we count backwards from there
+      index = scoreSet.size() - 1 - index;
+    }
+    return index;
+  }
+
+  @Override
   public boolean hasLimit() {
     return false;
+  }
+
+  private int getBoundedRankIndex(int index, int size, boolean isStartIndex) {
+    if (index >= 0) {
+      if (index > size) {
+        return size;
+      } else {
+        // Add 1 because rank ranges use inclusive maximum, so without this, we would return one
+        // element too few
+        return isStartIndex ? index : index + 1;
+      }
+    } else {
+      int offsetIndex = size + index;
+      if (offsetIndex < 0) {
+        return 0;
+      } else {
+        // Add 1 because rank ranges use inclusive maximum, so without this, we would return one
+        // element too few
+        return isStartIndex ? offsetIndex : offsetIndex + 1;
+      }
+    }
   }
 }

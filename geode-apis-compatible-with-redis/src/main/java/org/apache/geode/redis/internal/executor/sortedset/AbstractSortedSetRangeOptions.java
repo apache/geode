@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public abstract class AbstractSortedSetRangeOptions<T> {
   RangeLimit<T> start;
@@ -150,6 +151,8 @@ public abstract class AbstractSortedSetRangeOptions<T> {
   abstract void parseRangeArguments(List<byte[]> commandElements);
 
   abstract int compareStartToEnd();
+
+  public abstract int getRangeIndex(RedisSortedSet.ScoreSet scoreSet, boolean isStartIndex);
 
   public static class RangeLimit<T> {
     final T value;
