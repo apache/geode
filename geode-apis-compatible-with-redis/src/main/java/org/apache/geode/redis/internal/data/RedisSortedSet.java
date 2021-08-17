@@ -357,8 +357,9 @@ public class RedisSortedSet extends AbstractRedisData {
     return removeRange(region, key, rangeOptions);
   }
 
-  int zremrangebyrank(int minIndex, int maxIndex) {
-    return removeEntriesByRange(minIndex, maxIndex);
+  int zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key, int minIndex,
+      int maxIndex) {
+    return removeEntriesByRange(region, key, minIndex, maxIndex);
   }
 
   long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,

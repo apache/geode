@@ -15,20 +15,14 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_VALID_STRING;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +32,6 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.netty.Coder;
 
 @RunWith(JUnitParamsRunner.class)
 public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisIntegrationTest {
@@ -58,328 +51,140 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
     flushAll();
     jedis.close();
   }
-  
+
   @Test
   public void shouldError_givenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.ZREMRANGEBYRANK, 3);
   }
 
   @Test
-  @Parameters({"a", "--", "++", "4"})
+  @Parameters({"a", "--", "++", "4="})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
-    assertThatThrownBy(() -> jedis.zremrangeByRank("fakeKey", invalidArgument, "+"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
-    assertThatThrownBy(() -> jedis.zremrangeByRank("fakeKey", "-", invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
-    assertThatThrownBy(() -> jedis.zremrangeByRank("fakeKey", invalidArgument, invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY, "1", invalidArgument))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY, invalidArgument, "5"))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY,
+        invalidArgument, invalidArgument))
+            .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldReturnZero_givenNonExistentKey() {
     jedis.zadd(KEY, SCORE, "member1");
-    assertThat(jedis.zremrangeByRank("fakeKey", "-", "+")).isEqualTo(0);
+    assertThat(jedis.zremrangeByRank("fakeKey", 0, 1)).isEqualTo(0);
   }
 
   @Test
   public void shouldReturnZero_givenMinGreaterThanMax() {
     jedis.zadd(KEY, SCORE, "member");
 
-    // Range + <= member name <= -
-    assertThat(jedis.zrangeByLex(KEY, "+", "-")).isEmpty();
-    // Range z <= member name <= a
-    assertThat(jedis.zrangeByLex(KEY, "[z", "[a")).isEmpty();
+    assertThat(jedis.zremrangeByRank(KEY, 1, 0)).isEqualTo(0);
   }
 
   @Test
-  public void shouldReturnMember_givenMemberNameInRange() {
+  public void shouldReturnMember_givenMemberRankInRange() {
+    String memberName = "member";
+    jedis.zadd(KEY, SCORE, memberName + "0");
+    jedis.zadd(KEY, SCORE + 1, memberName + "1");
+    jedis.zadd(KEY, SCORE + 2, memberName + "2");
+
+    assertThat(jedis.zremrangeByRank(KEY, 2, 2)).isEqualTo(1);
+    assertThat(jedis.zremrangeByRank(KEY, 1, 1)).isEqualTo(1);
+    assertThat(jedis.zremrangeByRank(KEY, 0, 0)).isEqualTo(1);
+    assertThat(jedis.zcard(KEY)).isEqualTo(0);
+  }
+
+
+  @Test
+  public void shouldReturnZero_givenRangeExcludingMember() {
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range m <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "[m", "[n")).containsExactly(memberName);
-    // Range -infinity <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "-", "[n")).containsExactly(memberName);
-    // Range m <= member name <= +infinity
-    assertThat(jedis.zrangeByLex(KEY, "[m", "+")).containsExactly(memberName);
+    assertThat(jedis.zremrangeByRank(KEY, 1, 2)).isEqualTo(0);
+    assertThat(jedis.zcard(KEY)).isEqualTo(1);
   }
 
   @Test
-  public void shouldReturnMember_givenMinEqualToMemberNameAndMinInclusive() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    // Range member <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[n")).containsExactly(memberName);
-  }
-
-  @Test
-  public void shouldReturnMember_givenMaxEqualToMemberNameAndMaxInclusive() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    // Range a <= member name <= member
-    assertThat(jedis.zrangeByLex(KEY, "[a", "[" + memberName)).containsExactly(memberName);
-  }
-
-  @Test
-  public void shouldReturnMember_givenMinAndMaxEqualToMemberNameAndMinAndMaxInclusive() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[" + memberName))
-        .containsExactly(memberName);
-  }
-
-  @Test
-  @Parameters({"[", "(", "", "-", "+"})
-  public void shouldReturnMember_givenMemberNameIsSpecialCharacter(String memberName) {
-    jedis.zadd(KEY, SCORE, memberName);
-
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[" + memberName))
-        .containsExactly(memberName);
-  }
-
-  @Test
-  public void shouldReturnEmptyCollection_givenMinEqualToMemberNameAndMinExclusive() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    // Range member < member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "(" + memberName, "[n")).isEmpty();
-  }
-
-  @Test
-  public void shouldReturnEmptyCollection_givenMaxEqualToMemberNameAndMaxExclusive() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    // Range a <= member name < member
-    assertThat(jedis.zrangeByLex(KEY, "[a", "(" + memberName)).isEmpty();
-  }
-
-  @Test
-  public void shouldReturnEmptyCollection_givenRangeExcludingMember() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
-
-    // Range n <= member name <= o
-    assertThat(jedis.zrangeByLex(KEY, "[n", "[o")).isEmpty();
-  }
-
-  @Test
-  public void shouldReturnRange_givenMultipleMembersInRange_withInclusiveMinAndMax() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 3;
-    int maxLength = 6;
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(minLength - 1, maxLength);
-
-    // Range (v * 3) <= member name <= (v * 6)
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnRange_givenMultipleMembersInRange_withExclusiveMinAndMax() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 1;
-    int maxLength = 7;
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(minLength, maxLength - 1);
-
-    // Range (v * 1) < member name < (v * 7)
-    assertThat(jedis.zrangeByLex(KEY, "(" + min, "(" + max))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnRange_givenMultipleMembersInRange_withInclusiveMinAndExclusiveMax() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 5;
-    int maxLength = 8;
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(minLength - 1, maxLength - 1);
-
-    // Range (v * 5) <= member name < (v * 8)
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "(" + max))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnRange_givenMultipleMembersInRange_withExclusiveMinAndInclusiveMax() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 2;
-    int maxLength = 5;
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(minLength, maxLength);
-
-    // Range (v * 2) < member name <= (v * 5)
-    assertThat(jedis.zrangeByLex(KEY, "(" + min, "[" + max))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnRange_givenMultipleMembersInRangeUsingMinusAndPlusArguments() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 4;
-    int maxLength = 8;
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(0, maxLength);
-
-    // Range -infinity <= member name <= (v * 8)
-    assertThat(jedis.zrangeByLex(KEY, "-", "[" + max))
-        .containsExactlyElementsOf(expected);
-
-    expected = members.subList(minLength - 1, members.size());
-
-    // Range (v * 4) <= member name < +infinity
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "+"))
-        .containsExactlyElementsOf(expected);
-
-    // Range -infinity <= member name < +infinity
-    assertThat(jedis.zrangeByLex(KEY, "-", "+"))
-        .containsExactlyElementsOf(members);
-  }
-
-  @Test
-  public void shouldReturnRange_givenValidLimit() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 1;
-    int maxLength = 7;
-
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    int offset = 2;
-    int count = 3;
-
-    int sublistMin = minLength + offset - 1;
-    int sublistMax = sublistMin + count;
-
-    List<String> expected = members.subList(sublistMin, sublistMax);
-
-    // Range (v * 1) <= member name <= (v * 7), offset = 2, count = 3
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, offset, count))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnAllElementsInRange_givenNegativeCount() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 1;
-
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-
-    int offset = 2;
-
-    int sublistMin = minLength + offset - 1;
-    List<String> expected = members.subList(sublistMin, members.size());
-
-    // Range (v * 1) <= member name <= +infinity, offset = 2, count = -1
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "+", offset, -1))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnRange_givenCountLargerThanRange() {
-    List<String> members = populateSortedSet();
-
-    int minLength = 4;
-    int maxLength = 6;
-
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    List<String> expected = members.subList(minLength - 1, maxLength);
-
-    // Range (v * 4) <= member name <= (v * 6), offset = 0, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, 0, 10))
-        .containsExactlyElementsOf(expected);
-  }
-
-  @Test
-  public void shouldReturnEmptyCollection_givenNonZeroNegativeLimitOffset() {
+  public void shouldRemoveMembers_givenMultipleMembersInRange() {
     populateSortedSet();
 
-    int offset = -7;
-
-    // Range (v * 1) <= member name <= (v * 3), offset = 7, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "-", "+", offset, 10)).isEmpty();
+    assertThat(jedis.zcard(KEY)).isEqualTo(10);
+    assertThat(jedis.zremrangeByRank(KEY, 8, 9)).isEqualTo(2);
+    assertThat(jedis.zremrangeByRank(KEY, 4, 7)).isEqualTo(4);
+    assertThat(jedis.zremrangeByRank(KEY, 0, 3)).isEqualTo(4);
+    assertThat(jedis.zcard(KEY)).isEqualTo(0);
   }
 
+
   @Test
-  public void shouldReturnEmptyCollection_givenOffsetLargerThanRange() {
+  public void shouldReturnAccurateCountOfRemovedMembers_givenRangePastEndOfSet() {
     populateSortedSet();
 
-    int minLength = 1;
-    int maxLength = 3;
-
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    int offset = 7;
-
-    // Range (v * 1) <= member name <= (v * 3), offset = 7, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, offset, 10)).isEmpty();
+    assertThat(jedis.zcard(KEY)).isEqualTo(10);
+    assertThat(jedis.zremrangeByRank(KEY, 8, 15)).isEqualTo(2);
+    assertThat(jedis.zcard(KEY)).isEqualTo(8);
   }
 
   @Test
-  public void shouldUseLastLimit_givenMultipleValidLimitsProvided() {
-    List<String> members = populateSortedSet();
+  public void shouldRemoveCorrectMembers_givenNegativeValues() {
+    populateSortedSet();
 
-    int minLength = 2;
-    int maxLength = 8;
-
-    String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
-    String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
-
-    int offset = 2;
-    int count = 3;
-
-    int sublistMin = minLength + offset - 1;
-    int sublistMax = sublistMin + count;
-
-    // Add 1 to sublistMax, as subList uses exclusive maximum
-    List<String> expected = members.subList(sublistMin, sublistMax);
-
-    // Range (v * 2) <= member name <= (v * 8), offset = 2, count = 3
-    List<byte[]> result = uncheckedCast(
-        jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "[" + min, "[" + max,
-            "LIMIT", "0", "10",
-            "LIMIT", String.valueOf(offset), String.valueOf(count)));
-
-    List<String> actual = result.stream().map(Coder::bytesToString).collect(Collectors.toList());
-    assertThat(actual).containsExactlyElementsOf(expected);
+    assertThat(jedis.zcard(KEY)).isEqualTo(10);
+    assertThat(jedis.zremrangeByRank(KEY, -2, -1)).isEqualTo(2);
+    assertThat(jedis.zcard(KEY)).isEqualTo(8);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 7)).isEqualTo(8);
   }
 
-  // Add 10 members with the same score and member names consisting of 'v' repeated an increasing
-  // number of times
-  private List<String> populateSortedSet() {
-    List<String> members = new ArrayList<>();
+  @Test
+  public void shouldRemoveCorrectMembers_givenNegativeOffsetBeforeInitialIndex() {
+    populateSortedSet();
+
+    assertThat(jedis.zremrangeByRank(KEY, -15, 0)).isEqualTo(1);
+    assertThat(jedis.zcard(KEY)).isEqualTo(9);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 0)).isNull();
+  }
+
+  @Test
+  public void shouldNotRemoveMembers_givenStartAfterFinalIndex_andNegativeRangeEnd() {
+    populateSortedSet();
+
+    assertThat(jedis.zremrangeByRank(KEY, 15, -1)).isEqualTo(0);
+    assertThat(jedis.zcard(KEY)).isEqualTo(10);
+  }
+
+  @Test
+  public void shouldNotRemoveMembers_givenEndBeforeInitialIndex() {
+    populateSortedSet();
+
+    assertThat(jedis.zremrangeByRank(KEY, 0, -15)).isEqualTo(0);
+    assertThat(jedis.zcard(KEY)).isEqualTo(10);
+  }
+
+  @Test
+  public void shouldRemoveCorrectMembers_givenRangePastFinalIndex() {
+    populateSortedSet();
+
+    assertThat(jedis.zremrangeByRank(KEY, 0, 15)).isEqualTo(10);
+    assertThat(jedis.zcard(KEY)).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldDeleteSet_whenAllMembersDeleted() {
+    populateSortedSet();
+
+    assertThat(jedis.zremrangeByRank(KEY, 0, 9)).isEqualTo(10);
+    assertThat(jedis.exists(KEY)).isEqualTo(false);
+  }
+
+
+  // Add 10 members with the different scores and member names
+  private void populateSortedSet() {
     String memberName = BASE_MEMBER_NAME;
     for (int i = 0; i < 10; ++i) {
-      jedis.zadd(KEY, SCORE, memberName);
-      members.add(memberName);
-      memberName += BASE_MEMBER_NAME;
+      jedis.zadd(KEY, SCORE + i, memberName + i);
     }
-    return members;
   }
 }
