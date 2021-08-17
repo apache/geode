@@ -83,13 +83,19 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
   @Override
   int compareStartToEnd() {
     if (isRev) {
-      // TODO: implement ZREVRANGEBYLEX
-    }
-    int dummyNameComparison = checkDummyMemberNames(start.value, end.value);
-    if (dummyNameComparison == 0) {
-      return javaImplementationOfAnsiCMemCmp(start.value, end.value);
+      int dummyNameComparison = checkDummyMemberNames(end.value, start.value);
+      if (dummyNameComparison == 0) {
+        return javaImplementationOfAnsiCMemCmp(end.value, start.value);
+      } else {
+        return dummyNameComparison;
+      }
     } else {
-      return dummyNameComparison;
+      int dummyNameComparison = checkDummyMemberNames(start.value, end.value);
+      if (dummyNameComparison == 0) {
+        return javaImplementationOfAnsiCMemCmp(start.value, end.value);
+      } else {
+        return dummyNameComparison;
+      }
     }
   }
 }

@@ -362,6 +362,10 @@ public class RedisSortedSet extends AbstractRedisData {
     return getRange(rangeOptions);
   }
 
+  List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
+  }
+
   List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
@@ -445,9 +449,8 @@ public class RedisSortedSet extends AbstractRedisData {
         index = scoreSet.size() - 1 - index;
       }
     } else if (rangeOptions instanceof SortedSetScoreRangeOptions) {
-      AbstractOrderedSetEntry entry =
-          new ScoreDummyOrderedSetEntry((Double) rangeValue, isExclusive,
-              isStartIndex ^ isReverseRange);
+      AbstractOrderedSetEntry entry = new ScoreDummyOrderedSetEntry((Double) rangeValue,
+          isExclusive, isStartIndex ^ isReverseRange);
       index = scoreSet.indexOf(entry);
       if (isReverseRange) {
         // Subtract 1 from the index here because when treating the set as reverse ordered, we
@@ -458,9 +461,15 @@ public class RedisSortedSet extends AbstractRedisData {
     } else if (rangeOptions instanceof SortedSetLexRangeOptions) {
       // Assume that all members have the same score. Behaviour is unspecified otherwise.
       double score = scoreSet.get(0).score;
-      AbstractOrderedSetEntry entry =
-          new MemberDummyOrderedSetEntry((byte[]) rangeValue, score, isExclusive, isStartIndex);
+      AbstractOrderedSetEntry entry = new MemberDummyOrderedSetEntry((byte[]) rangeValue, score,
+          isExclusive, isStartIndex ^ isReverseRange);
       index = scoreSet.indexOf(entry);
+      if (isReverseRange) {
+        // Subtract 1 from the index here because when treating the set as reverse ordered, we
+        // overshoot the correct index due to the comparison in MemberDummyOrderedSetEntry assuming
+        // non-reverse ordering
+        index--;
+      }
     } else {
       throw new UnsupportedOperationException("Unknown class " + rangeOptions.getClass().getName());
     }
@@ -475,14 +484,8 @@ public class RedisSortedSet extends AbstractRedisData {
       count = rangeOptions.getCount();
       if (rangeOptions.isRev()) {
         startIndex -= rangeOptions.getOffset();
-        if (startIndex < 0) {
-          startIndex = 0;
-        }
       } else {
         startIndex += rangeOptions.getOffset();
-        if (startIndex >= getSortedSetSize()) {
-          startIndex = getSortedSetSize() - 1;
-        }
       }
     }
 

@@ -47,10 +47,11 @@ public interface RedisSortedSetCommands {
 
   List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
 
+  List<byte[]> zrevrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
+
   List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrevrank(RedisKey key, byte[] member);
 
   byte[] zscore(RedisKey key, byte[] member);
-
 }

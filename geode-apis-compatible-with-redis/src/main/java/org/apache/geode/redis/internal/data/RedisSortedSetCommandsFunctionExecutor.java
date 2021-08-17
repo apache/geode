@@ -90,12 +90,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions) {
-    return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zrevrangebyscore(rangeOptions));
-  }
-
-  @Override
   public long zrank(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zrank(member));
   }
@@ -112,6 +106,18 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public List<byte[]> zrevrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, true).zrevrangebylex(rangeOptions));
+  }
+
+  @Override
+  public List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, true).zrevrangebyscore(rangeOptions));
+  }
+
+  @Override
   public long zrevrank(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zrevrank(member));
   }
@@ -120,5 +126,4 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   public byte[] zscore(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zscore(member));
   }
-
 }
