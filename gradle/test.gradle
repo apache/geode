@@ -31,7 +31,6 @@ compileTestJava {
 }
 
 test {
-  useJUnitPlatform {}
   doFirst {
     TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
@@ -91,14 +90,6 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
   outputs.upToDateWhen { false }
 }
 
-configure([integrationTest, distributedTest, performanceTest]) {
-  useJUnitPlatform {
-    if (project.hasProperty("testCategory")) {
-      includeTags += project.testCategory
-    }
-  }
-}
-
 if (project.hasProperty("forceTest")) {
   // All test facets already force rerun.  Only :test can be upToDate.
   test {
@@ -135,8 +126,12 @@ task repeatUnitTest(type: RepeatTest) {
   // default classpath works for this one.
 }
 
+configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
+           repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
+  useJUnitPlatform()
+}
+
 configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
-  useJUnitPlatform {}
   if (project.hasProperty('excludeTest')) {
     exclude project.getProperty('excludeTest').split(',')
   }
@@ -145,15 +140,21 @@ configure([integrationTest, distributedTest, performanceTest, acceptanceTest, ui
 configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
   times = Integer.parseInt(repeat)
   forkEvery 1
-  useJUnitPlatform {
-    excludeTags += "org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks"
-  }
+
+  testFramework.options.excludeTags += "org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks"
+
   outputs.upToDateWhen { false }
 
   if (project.hasProperty("failOnNoMatchingTests")) {
     filter {
       setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
     }
+  }
+}
+
+configure([integrationTest, distributedTest, performanceTest]) {
+  if (project.hasProperty("testCategory")) {
+    testFramework.options.includeTags += project.testCategory
   }
 }
 
