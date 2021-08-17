@@ -94,7 +94,7 @@ public class GeodeRedisServer {
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor, member);
+        member);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
