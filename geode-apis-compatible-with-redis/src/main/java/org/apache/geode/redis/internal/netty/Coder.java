@@ -153,14 +153,10 @@ public class Coder {
     }
   }
 
-  @Immutable
-  private static final byte[] TWO_ASCII = intToBytes(2);
-
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
       List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
-    appendAsciiDigitsToByteBuf(2, buffer);
-    buffer.writeBytes(TWO_ASCII);
+    buffer.writeByte('2');
     buffer.writeBytes(bCRLF);
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
