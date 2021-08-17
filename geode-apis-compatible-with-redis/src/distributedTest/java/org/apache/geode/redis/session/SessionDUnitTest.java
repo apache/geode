@@ -54,7 +54,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.session.springRedisTestApplication.RedisSpringTestApplication;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -92,7 +91,6 @@ public abstract class SessionDUnitTest {
 
   @BeforeClass
   public static void setup() {
-    IgnoredException.addIgnoredException("io.netty.channel.StacklessClosedChannelException");
     setupAppPorts();
     setupGeodeRedis();
     setupRetry();
