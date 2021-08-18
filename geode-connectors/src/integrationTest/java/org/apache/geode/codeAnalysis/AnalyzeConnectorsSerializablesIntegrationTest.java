@@ -20,7 +20,8 @@ import org.apache.geode.connectors.jdbc.internal.ConnectorsSanctionedSerializabl
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
-public class AnalyzeConnectorsSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeConnectorsSerializablesIntegrationTest
+    extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
