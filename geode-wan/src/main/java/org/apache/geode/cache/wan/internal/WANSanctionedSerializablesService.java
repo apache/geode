@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.SanctionedSerializablesService;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 
-public class WANDistributedSystemService implements SanctionedSerializablesService {
+public class WANSanctionedSerializablesService implements SanctionedSerializablesService {
   @Override
   public void init(InternalDistributedSystem internalDistributedSystem) {
 
