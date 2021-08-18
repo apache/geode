@@ -176,7 +176,7 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
     populateSortedSet();
 
     assertThat(jedis.zremrangeByRank(KEY, 0, 9)).isEqualTo(10);
-    assertThat(jedis.exists(KEY)).isEqualTo(false);
+    assertThat(jedis.exists(KEY)).isFalse();
   }
 
 
