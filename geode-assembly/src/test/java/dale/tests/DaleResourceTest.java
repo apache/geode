@@ -14,10 +14,13 @@
  */
 package dale.tests;
 
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Test;
@@ -26,38 +29,17 @@ public class DaleResourceTest {
   private static final String RESOURCE_NAME = "expected-pom.xml";
 
   @Test
-  public void resourceURL_getPath() {
-    assertThat(getResourceURL().getPath()).isEmpty();
-  }
-
-  @Test
-  public void resourceURL_getFile() {
-    assertThat(getResourceURL().getFile()).isEmpty();
-  }
-
-  @Test
-  public void resourceURL_toExternalForm() {
-    assertThat(getResourceURL().toExternalForm()).isEmpty();
-  }
-
-  @Test
-  public void resourceURL_toURI() throws URISyntaxException {
-    assertThat(getResourceURL().toURI()).isNull();
-  }
-
-  @Test
-  public void resourceURL_toURI_PathsGet() throws URISyntaxException {
-    assertThat(Paths.get(getResourceURL().toURI())).isNull();
-  }
-
-  @Test
-  public void resourceURL_getPath_addProtocol_PathsGet() throws URISyntaxException {
-    assertThat(Paths.get("file://" + getResourceURL().getPath())).isNull();
-  }
-
-  private static URL getResourceURL() {
-    URL resourceURL = DaleResourceTest.class.getResource("/" + RESOURCE_NAME);
+  public void resourceURL_toURI_PathsGet_toUri() throws URISyntaxException {
+    URL resourceURL = getResource(DaleResourceTest.class, "/" + RESOURCE_NAME);
     assertThat(resourceURL).isNotNull();
-    return resourceURL;
+
+    URI resourceURI = resourceURL.toURI();
+    assertThat(resourceURI).isNotNull();
+
+    Path path = Paths.get(resourceURI);
+    assertThat(path).isNotNull();
+
+    URI pathUri = path.toUri();
+    assertThat(pathUri).isEqualTo(resourceURI);
   }
 }
