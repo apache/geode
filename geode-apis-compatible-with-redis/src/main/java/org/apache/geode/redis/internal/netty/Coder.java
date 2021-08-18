@@ -35,6 +35,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
@@ -156,7 +157,7 @@ public class Coder {
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
       List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
-    buffer.writeByte('2');
+    buffer.writeByte(digitToAscii(2));
     buffer.writeBytes(bCRLF);
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
@@ -480,7 +481,7 @@ public class Coder {
    */
   public static void appendAsciiDigitsToByteBuf(long value, ByteBuf buf) {
     if (value < 0) {
-      buf.writeByte('-');
+      buf.writeByte(bMINUS);
     } else {
       value = -value;
     }
@@ -498,9 +499,9 @@ public class Coder {
     int q = value / 10;
     int r = (q * 10) - value;
     if (q < 0) {
-      buf.writeByte((byte) ('0' - q));
+      buf.writeByte(digitToAscii(-q));
     }
-    buf.writeByte((byte) ('0' + r));
+    buf.writeByte(digitToAscii(r));
   }
 
   private static void appendLargeAsciiDigitsToByteBuf(long value, ByteBuf buf) {
@@ -533,40 +534,40 @@ public class Coder {
     // We know there are at most two digits left at this point.
     q2 = i2 / 10;
     r = (q2 * 10) - i2;
-    bytes[--charPos] = (byte) ('0' + r);
+    bytes[--charPos] = digitToAscii(r);
 
     // Whatever left is the remaining digit.
     if (q2 < 0) {
-      bytes[--charPos] = (byte) ('0' - q2);
+      bytes[--charPos] = digitToAscii(-q2);
     }
     buf.writeBytes(bytes, charPos, MAX_DIGITS - charPos);
   }
 
-  @Immutable
-  private static final byte[] DIGIT_TENS = {
-      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-      '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
-      '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
-      '3', '3', '3', '3', '3', '3', '3', '3', '3', '3',
-      '4', '4', '4', '4', '4', '4', '4', '4', '4', '4',
-      '5', '5', '5', '5', '5', '5', '5', '5', '5', '5',
-      '6', '6', '6', '6', '6', '6', '6', '6', '6', '6',
-      '7', '7', '7', '7', '7', '7', '7', '7', '7', '7',
-      '8', '8', '8', '8', '8', '8', '8', '8', '8', '8',
-      '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
-  };
+  /**
+   * Given a digit (a value in the range 0..9) return its corresponding ASCII code.
+   * NOTE: the caller is responsible for ensuring that 'digit' is in the correct range.
+   */
+  public static byte digitToAscii(int digit) {
+    return (byte) (NUMBER_0_BYTE + digit);
+  }
 
   @Immutable
-  private static final byte[] DIGIT_ONES = {
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  };
+  private static final byte[] DIGIT_TENS = new byte[10 * 10];
+  static {
+    for (byte i = 0; i < 10; i++) {
+      for (byte j = 0; j < 10; j++) {
+        DIGIT_TENS[(i * 10) + j] = digitToAscii(i);
+      }
+    }
+  }
+
+  @Immutable
+  private static final byte[] DIGIT_ONES = new byte[10 * 10];
+  static {
+    for (byte i = 0; i < 10; i++) {
+      for (byte j = 0; j < 10; j++) {
+        DIGIT_ONES[(i * 10) + j] = digitToAscii(j);
+      }
+    }
+  }
 }

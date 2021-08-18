@@ -28,7 +28,7 @@ import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromD
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -182,12 +182,24 @@ public class CoderTest {
 
   @Test
   public void verify_appendAsciiDigitsToByteBuf_conversions() {
-    verify_appendAsciiDigitsToByteBuf(Long.MAX_VALUE);
-    verify_appendAsciiDigitsToByteBuf(Long.MIN_VALUE);
-    verify_appendAsciiDigitsToByteBuf(Integer.MAX_VALUE);
-    verify_appendAsciiDigitsToByteBuf(Integer.MIN_VALUE);
-    verify_appendAsciiDigitsToByteBuf(Short.MAX_VALUE);
-    verify_appendAsciiDigitsToByteBuf(Short.MIN_VALUE);
+    for (long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Integer.MAX_VALUE + 1000; i > Integer.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Integer.MIN_VALUE + 1000; i > Integer.MIN_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Short.MAX_VALUE + 1000; i > Short.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Short.MIN_VALUE + 1000; i > Short.MIN_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
     for (long i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
       verify_appendAsciiDigitsToByteBuf(i);
     }
@@ -199,6 +211,6 @@ public class CoderTest {
 
     Coder.appendAsciiDigitsToByteBuf(value, buf);
 
-    assertThat(buf.toString(Charset.defaultCharset())).isEqualTo(expected);
+    assertThat(buf.toString(StandardCharsets.UTF_8)).isEqualTo(expected);
   }
 }
