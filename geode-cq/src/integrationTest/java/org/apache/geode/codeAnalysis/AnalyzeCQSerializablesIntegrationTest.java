@@ -20,7 +20,7 @@ import org.apache.geode.cache.query.cq.internal.CQSanctionedSerializablesService
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
-public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeCQSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
