@@ -36,7 +36,8 @@ public abstract class AbstractSortedSetRangeOptions<T> {
   boolean withScores;
   boolean hasLimit;
   int offset;
-  int count;
+  // When count it not specified, return the entire range
+  int count = Integer.MAX_VALUE;
 
   AbstractSortedSetRangeOptions(List<byte[]> commandElements, boolean isRev) {
     this.isRev = isRev;

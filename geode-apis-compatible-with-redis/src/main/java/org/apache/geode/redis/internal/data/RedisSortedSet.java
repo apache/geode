@@ -424,44 +424,52 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private List<byte[]> getRange(AbstractSortedSetRangeOptions<?> rangeOptions) {
-    int startIndex = rangeOptions.getRangeIndex(scoreSet, true);
+    int startIndex = getStartIndex(rangeOptions);
+
     if (startIndex >= getSortedSetSize() && !rangeOptions.isRev()
         || startIndex < 0 && rangeOptions.isRev()) {
       return Collections.emptyList();
     }
-    int endIndex = rangeOptions.getRangeIndex(scoreSet, false);
 
-    return addLimitToRange(rangeOptions, startIndex, endIndex);
+    int maxElementsToReturn = getMaxElementsToReturn(rangeOptions, startIndex);
+
+    if (maxElementsToReturn <= 0) {
+      return Collections.emptyList();
+    }
+
+    return getElementsFromSet(rangeOptions, startIndex, maxElementsToReturn);
   }
 
-  private List<byte[]> addLimitToRange(AbstractSortedSetRangeOptions<?> rangeOptions,
-      int startIndex, int endIndex) {
-    int count = Integer.MAX_VALUE;
+  private int getStartIndex(AbstractSortedSetRangeOptions<?> rangeOptions) {
+    int startIndex = rangeOptions.getRangeIndex(scoreSet, true);
     if (rangeOptions.hasLimit()) {
-      count = rangeOptions.getCount();
       if (rangeOptions.isRev()) {
         startIndex -= rangeOptions.getOffset();
       } else {
         startIndex += rangeOptions.getOffset();
       }
     }
+    return startIndex;
+  }
 
+  private int getMaxElementsToReturn(AbstractSortedSetRangeOptions<?> rangeOptions,
+      int startIndex) {
+    int endIndex = rangeOptions.getRangeIndex(scoreSet, false);
     int rangeSize = rangeOptions.isRev() ? startIndex - endIndex : endIndex - startIndex;
 
-    int maxElements = Math.min(count, rangeSize);
+    return Math.min(rangeOptions.getCount(), rangeSize);
+  }
 
-    if (maxElements <= 0) {
-      return Collections.emptyList();
-    }
-
+  private List<byte[]> getElementsFromSet(AbstractSortedSetRangeOptions<?> rangeOptions,
+      int startIndex, int maxElementsToReturn) {
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(startIndex, maxElements, rangeOptions.isRev());
+        scoreSet.getIndexRange(startIndex, maxElementsToReturn, rangeOptions.isRev());
 
     if (rangeOptions.isWithScores()) {
-      maxElements *= 2;
+      maxElementsToReturn *= 2;
     }
 
-    List<byte[]> result = new ArrayList<>(maxElements);
+    List<byte[]> result = new ArrayList<>(maxElementsToReturn);
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
 
