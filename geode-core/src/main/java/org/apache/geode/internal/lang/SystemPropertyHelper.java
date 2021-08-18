@@ -74,8 +74,9 @@ public class SystemPropertyHelper {
   /**
    * This property allows users to enable retrying when client application encounters
    * PdxSerializationException. The default setting is false, and PdxSerializationException will not
-   * be retried. It will cause client application to throw ServerOperationException. After turned on
-   * the retry, the client application will automatically retry the operation to another server.
+   * be retried. It will cause client application to throw ServerOperationException. When the
+   * property is set to true, the client application will automatically retry the operation to
+   * another server if encountered PdxSerializationException.
    *
    * @since Geode 1.15.0
    */
