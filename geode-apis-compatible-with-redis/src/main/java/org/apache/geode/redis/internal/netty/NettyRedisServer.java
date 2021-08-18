@@ -28,7 +28,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
 
@@ -81,7 +80,6 @@ public class NettyRedisServer {
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
-  private final ExecutorService backgroundExecutor;
   private final EventLoopGroup selectorGroup;
   private final EventLoopGroup workerGroup;
   private final InetAddress bindAddress;
@@ -90,17 +88,15 @@ public class NettyRedisServer {
   private final DistributedMember member;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
-      RegionProvider regionProvider, PubSub pubsub,
-      Supplier<Boolean> allowUnsupportedSupplier,
-      Runnable shutdownInvoker, int port, String requestedAddress,
-      RedisStats redisStats, ExecutorService backgroundExecutor, DistributedMember member) {
+      RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
+      Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
+      DistributedMember member) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.backgroundExecutor = backgroundExecutor;
     this.member = member;
 
     if (port < RANDOM_PORT_INDICATOR) {
@@ -176,8 +172,8 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, backgroundExecutor,
-                redisPasswordBytes, getPort(), member));
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisPasswordBytes,
+                getPort(), member));
       }
     };
   }
