@@ -217,6 +217,7 @@ public class RedisSortedSetTest {
   @Parameters({"5,0", "13,15", "17,-2", "12,12"})
   public void zrange_ShouldReturnEmptyList_GivenInvalidRanges(int start, int end) {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getCount()).thenReturn(Integer.MAX_VALUE);
     when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(start);
     when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(end);
     Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
@@ -226,6 +227,7 @@ public class RedisSortedSetTest {
   @Test
   public void zrange_ShouldReturnSimpleRanges() {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getCount()).thenReturn(Integer.MAX_VALUE);
     when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(0);
     when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(6);
     Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
@@ -252,6 +254,7 @@ public class RedisSortedSetTest {
   @Test
   public void zrange_shouldAlsoReturnScores_whenWithScoresSpecified() {
     SortedSetRankRangeOptions rangeOptions = mock(SortedSetRankRangeOptions.class);
+    when(rangeOptions.getCount()).thenReturn(Integer.MAX_VALUE);
     when(rangeOptions.getRangeIndex(any(), eq(true))).thenReturn(0);
     when(rangeOptions.getRangeIndex(any(), eq(false))).thenReturn(6);
     when(rangeOptions.isWithScores()).thenReturn(true);
