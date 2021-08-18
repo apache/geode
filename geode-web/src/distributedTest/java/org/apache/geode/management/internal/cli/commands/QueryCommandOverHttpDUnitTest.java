@@ -12,14 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
+
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+
+import java.util.Properties;
 
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class QueryCommandOverHttpDUnitTest extends QueryCommandDUnitTestBase {
+
   @Override
-  public void connectToLocator() throws Exception {
+  protected Properties locatorProperties(Properties configProperties) {
+    int[] ports = getRandomAvailableTCPPorts(2);
+    int httpPort = ports[0];
+    int jmxPort = ports[1];
+
+    configProperties.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+    configProperties.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    return configProperties;
+  }
+
+  @Override
+  protected void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
   }
 }
