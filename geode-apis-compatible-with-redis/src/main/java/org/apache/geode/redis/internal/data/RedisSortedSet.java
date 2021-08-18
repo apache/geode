@@ -348,9 +348,8 @@ public class RedisSortedSet extends AbstractRedisData {
     // Assume that all members have the same score. Behaviour is unspecified otherwise.
     double score = scoreSet.get(0).score;
 
-    AbstractOrderedSetEntry minEntry = new MemberDummyOrderedSetEntry(lexOptions.getStartRange(),
-        score, lexOptions.isStartExclusive(), true);
-    int minIndex = scoreSet.indexOf(minEntry);
+    int minIndex =
+        getIndexByLex(score, lexOptions.getStartRange(), lexOptions.isStartExclusive(), true);
     if (minIndex >= scoreSet.size()) {
       return 0;
     }
