@@ -16,7 +16,7 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.lucene.internal.LuceneDistributedSystemService;
+import org.apache.geode.cache.lucene.internal.LuceneSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 
@@ -30,6 +30,6 @@ public class AnalyzeLuceneSerializablesJUnitTest extends AnalyzeSerializablesJUn
 
   @Override
   protected Class getModuleClass() {
-    return LuceneDistributedSystemService.class;
+    return LuceneSanctionedSerializablesService.class;
   }
 }
