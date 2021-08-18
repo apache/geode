@@ -16,7 +16,7 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.ConnectorsDistributedSystemService;
+import org.apache.geode.connectors.jdbc.internal.ConnectorsSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
@@ -29,6 +29,6 @@ public class AnalyzeConnectorsSerializablesJUnitTest extends AnalyzeSerializable
 
   @Override
   protected Class getModuleClass() {
-    return ConnectorsDistributedSystemService.class;
+    return ConnectorsSanctionedSerializablesService.class;
   }
 }
