@@ -19,11 +19,11 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 
-public class ZPopMaxExecutor extends AbstractZPopExecutor {
+public class ZPopMinExecutor extends AbstractZPopExecutor {
 
   @Override
   protected List<byte[]> zpop(RedisSortedSetCommands sortedSetCommands, RedisKey key, int count) {
-    return sortedSetCommands.zpopmax(key, count);
+    return sortedSetCommands.zpopmin(key, count);
   }
 
 }

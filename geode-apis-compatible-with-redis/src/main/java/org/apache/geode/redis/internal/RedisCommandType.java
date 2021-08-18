@@ -101,6 +101,7 @@ import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZIncrByExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZPopMaxExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZPopMinExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRangeByLexExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRangeByScoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRangeExecutor;
@@ -216,6 +217,8 @@ public enum RedisCommandType {
   ZCOUNT(new ZCountExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   ZPOPMAX(new ZPopMaxExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
+      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
+  ZPOPMIN(new ZPopMinExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
       .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
   ZRANGE(new ZRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
       .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),

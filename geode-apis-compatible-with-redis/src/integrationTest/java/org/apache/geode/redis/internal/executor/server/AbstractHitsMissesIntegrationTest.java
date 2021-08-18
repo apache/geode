@@ -258,6 +258,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZPopMin() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zpopmin(k, 1));
+  }
+
+  @Test
   public void testZrange() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrange(k, 0, 1));
   }

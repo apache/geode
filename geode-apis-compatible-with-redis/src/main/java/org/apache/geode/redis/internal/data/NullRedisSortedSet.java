@@ -92,6 +92,11 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
+  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    return Collections.emptyList();
+  }
+
+  @Override
   List<byte[]> zrange(int min, int max, boolean withScores) {
     return Collections.emptyList();
   }
