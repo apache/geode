@@ -71,6 +71,14 @@ public class SystemPropertyHelper {
 
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
 
+  /**
+   * This property allows users to enable retrying when client application encounters
+   * PdxSerializationException. The default setting is false, and PdxSerializationException will not
+   * be retried. It will cause client application to throw ServerOperationException. After turned on
+   * the retry, the client application will automatically retry the operation to another server.
+   *
+   * @since Geode 1.15.0
+   */
   public static final String ENABLE_QUERY_RETRY_ON_PDX_SERIALIZATION_EXCEPTION =
       "enableQueryRetryOnPdxSerializationException";
 
