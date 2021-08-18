@@ -108,6 +108,17 @@ public class SystemPropertyHelperTest {
   }
 
   @Test
+  public void getBooleanPropertyReturnsEnableRetryOnPdxSerializationException() {
+    String testProperty = "enableQueryRetryOnPdxSerializationException";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    System.setProperty(gemfirePrefixProperty, "true");
+    assertThat(SystemPropertyHelper.getProductBooleanProperty(testProperty).get()).isTrue();
+    System.clearProperty(gemfirePrefixProperty);
+    assertThat(SystemPropertyHelper.getProductBooleanProperty(testProperty).orElse(false))
+        .isFalse();
+  }
+
+  @Test
   public void getBooleanPropertyParallelDiskStoreRecovery() {
     // default
     assertThat(SystemPropertyHelper
