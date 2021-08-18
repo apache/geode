@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 import java.io.IOException;
 import java.util.Collection;
 
-public interface DistributedSystemService {
+public interface SanctionedSerializablesService {
   void init(InternalDistributedSystem internalDistributedSystem);
 
   Class getInterface();

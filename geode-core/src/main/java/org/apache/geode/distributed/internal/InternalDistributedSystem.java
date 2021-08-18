@@ -195,7 +195,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * services provided by other modules
    */
-  private Map<Class, DistributedSystemService> services = new HashMap<>();
+  private Map<Class, SanctionedSerializablesService> services = new HashMap<>();
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
@@ -662,9 +662,9 @@ public class InternalDistributedSystem extends DistributedSystem
    * mechanism.
    */
   private void initializeServices() {
-    ServiceLoader<DistributedSystemService> loader =
-        ServiceLoader.load(DistributedSystemService.class);
-    for (DistributedSystemService service : loader) {
+    ServiceLoader<SanctionedSerializablesService> loader =
+        ServiceLoader.load(SanctionedSerializablesService.class);
+    for (SanctionedSerializablesService service : loader) {
       service.init(this);
       services.put(service.getInterface(), service);
     }

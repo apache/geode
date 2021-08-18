@@ -47,9 +47,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.SanctionedSerializablesService;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -319,11 +319,11 @@ public abstract class AnalyzeSerializablesJUnitTestBase extends
     }
   }
 
-  private List<DistributedSystemService> initializeServices() {
-    ServiceLoader<DistributedSystemService> loader =
-        ServiceLoader.load(DistributedSystemService.class);
-    List<DistributedSystemService> services = new ArrayList<>();
-    for (DistributedSystemService service : loader) {
+  private List<SanctionedSerializablesService> initializeServices() {
+    ServiceLoader<SanctionedSerializablesService> loader =
+        ServiceLoader.load(SanctionedSerializablesService.class);
+    List<SanctionedSerializablesService> services = new ArrayList<>();
+    for (SanctionedSerializablesService service : loader) {
       services.add(service);
     }
     return services;
