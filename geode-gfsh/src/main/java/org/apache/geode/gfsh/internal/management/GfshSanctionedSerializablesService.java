@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.SanctionedSerializablesService;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 
-public class GfshDistributedSystemService implements SanctionedSerializablesService {
+public class GfshSanctionedSerializablesService implements SanctionedSerializablesService {
   @Override
   public void init(InternalDistributedSystem internalDistributedSystem) {
 
