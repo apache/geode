@@ -253,7 +253,14 @@ public class RedisSortedSet extends AbstractRedisData {
 
   long zcount(SortedSetScoreRangeOptions rangeOptions) {
     long minIndex = rangeOptions.getRangeIndex(scoreSet, true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
+
     long maxIndex = rangeOptions.getRangeIndex(scoreSet, false);
+    if (minIndex >= maxIndex) {
+      return 0;
+    }
 
     return maxIndex - minIndex;
   }
@@ -284,6 +291,20 @@ public class RedisSortedSet extends AbstractRedisData {
     return byteIncr;
   }
 
+  long zlexcount(SortedSetLexRangeOptions lexOptions) {
+    int minIndex = lexOptions.getRangeIndex(scoreSet, true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
+
+    int maxIndex = lexOptions.getRangeIndex(scoreSet, false);
+    if (minIndex >= maxIndex) {
+      return 0;
+    }
+
+    return maxIndex - minIndex;
+  }
+
   List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     Iterator<AbstractOrderedSetEntry> scoresIterator =
         scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
@@ -308,30 +329,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
   List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return getRange(rangeOptions);
-  }
-
-  long zlexcount(SortedSetLexRangeOptions lexOptions) {
-    if (scoreSet.isEmpty()) {
-      return 0;
-    }
-
-    // Assume that all members have the same score. Behaviour is unspecified otherwise.
-    double score = scoreSet.get(0).score;
-
-    int minIndex =
-        getIndexByLex(score, lexOptions.getStartRange(), lexOptions.isStartExclusive(), true);
-    if (minIndex >= scoreSet.size()) {
-      return 0;
-    }
-
-    AbstractOrderedSetEntry maxEntry = new MemberDummyOrderedSetEntry(lexOptions.getEndRange(),
-        score, lexOptions.isEndExclusive(), false);
-    int maxIndex = scoreSet.indexOf(maxEntry);
-    if (minIndex >= maxIndex) {
-      return 0;
-    }
-
-    return maxIndex - minIndex;
   }
 
   long zrank(byte[] member) {

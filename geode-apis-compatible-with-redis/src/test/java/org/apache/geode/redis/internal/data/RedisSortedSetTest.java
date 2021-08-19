@@ -274,8 +274,10 @@ public class RedisSortedSetTest {
         score1, "member3",
         score1, "member4",
         score1, "member5");
-    SortedSetLexRangeOptions lexOptions =
-        new SortedSetLexRangeOptions("[member1".getBytes(), "[member3".getBytes());
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions(
+        Arrays.asList("command".getBytes(), "key".getBytes(), "[member1".getBytes(),
+            "[member3".getBytes()),
+        false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(3);
   }
 
@@ -287,8 +289,10 @@ public class RedisSortedSetTest {
         score1, "member3",
         score1, "member4",
         score1, "member5");
-    SortedSetLexRangeOptions lexOptions =
-        new SortedSetLexRangeOptions("(member1".getBytes(), "(member3".getBytes());
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions(
+        Arrays.asList("command".getBytes(), "key".getBytes(), "(member1".getBytes(),
+            "(member3".getBytes()),
+        false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(1);
   }
 
@@ -300,8 +304,10 @@ public class RedisSortedSetTest {
         score1, "member3",
         score1, "member4",
         score1, "member5");
-    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[member6".getBytes(),
-        "(member8".getBytes());
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions(
+        Arrays.asList("command".getBytes(), "key".getBytes(), "[member6".getBytes(),
+            "(member8".getBytes()),
+        false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
   }
 
@@ -313,8 +319,10 @@ public class RedisSortedSetTest {
         score1, "member3",
         score1, "member4",
         score1, "member5");
-    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions("[membeq0".getBytes(),
-        "[member0".getBytes());
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions(
+        Arrays.asList("command".getBytes(), "key".getBytes(), "[membeq0".getBytes(),
+            "[member0".getBytes()),
+        false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
   }
 
@@ -326,8 +334,10 @@ public class RedisSortedSetTest {
         score1, "member3",
         score1, "member4",
         score1, "member5");
-    SortedSetLexRangeOptions lexOptions =
-        new SortedSetLexRangeOptions("[member5".getBytes(), "[member0".getBytes());
+    SortedSetLexRangeOptions lexOptions = new SortedSetLexRangeOptions(
+        Arrays.asList("command".getBytes(), "key".getBytes(), "[member5".getBytes(),
+            "[member0".getBytes()),
+        false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(0);
   }
 
@@ -340,13 +350,19 @@ public class RedisSortedSetTest {
         score1, "member4",
         score1, "member5");
     SortedSetLexRangeOptions lexOptions =
-        new SortedSetLexRangeOptions("-".getBytes(), "+".getBytes());
+        new SortedSetLexRangeOptions(
+            Arrays.asList("command".getBytes(), "key".getBytes(), "-".getBytes(), "+".getBytes()),
+            false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(5);
   }
 
   @Test
   public void scoreSet_shouldNotRetainOldEntries_whenEntriesUpdated() {
-    Collection<byte[]> rangeList = rangeSortedSet.zrange(0, 100, false);
+    SortedSetRankRangeOptions rangeOptions =
+        new SortedSetRankRangeOptions(
+            Arrays.asList("command".getBytes(), "key".getBytes(), "0".getBytes(), "100".getBytes()),
+            false);
+    Collection<byte[]> rangeList = rangeSortedSet.zrange(rangeOptions);
     assertThat(rangeList).hasSize(12);
     assertThat(rangeList).containsExactly("member1".getBytes(), "member2".getBytes(),
         "member3".getBytes(), "member4".getBytes(), "member5".getBytes(),

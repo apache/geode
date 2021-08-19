@@ -33,7 +33,7 @@ import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
-  SortedSetLexRangeOptions(List<byte[]> commandElements, boolean isRev) {
+  public SortedSetLexRangeOptions(List<byte[]> commandElements, boolean isRev) {
     super(commandElements, isRev);
   }
 

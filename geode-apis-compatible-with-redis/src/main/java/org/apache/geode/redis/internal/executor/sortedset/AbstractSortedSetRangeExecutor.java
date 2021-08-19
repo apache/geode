@@ -36,7 +36,7 @@ public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSet
     }
 
     if (options.containsNoEntries()) {
-      return RedisResponse.emptyArray();
+      return getEmptyResponse();
     }
 
     return executeRangeCommand(context.getSortedSetCommands(), command.getKey(), options);
@@ -45,6 +45,8 @@ public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSet
   public abstract boolean isRev();
 
   public abstract T createRangeOptions(List<byte[]> commandElements);
+
+  public abstract RedisResponse getEmptyResponse();
 
   public abstract RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
       T options);

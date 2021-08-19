@@ -25,7 +25,7 @@ import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetRankRangeOptions extends AbstractSortedSetRangeOptions<Integer> {
-  SortedSetRankRangeOptions(List<byte[]> commandElements, boolean isRev) {
+  public SortedSetRankRangeOptions(List<byte[]> commandElements, boolean isRev) {
     super(commandElements, isRev);
   }
 

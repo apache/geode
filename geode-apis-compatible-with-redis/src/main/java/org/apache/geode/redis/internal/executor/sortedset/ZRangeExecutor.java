@@ -32,6 +32,11 @@ public class ZRangeExecutor extends AbstractSortedSetRangeExecutor<SortedSetRank
   }
 
   @Override
+  public RedisResponse getEmptyResponse() {
+    return RedisResponse.emptyArray();
+  }
+
+  @Override
   public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
       SortedSetRankRangeOptions options) {
     return RedisResponse.array(commands.zrange(key, options));
