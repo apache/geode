@@ -103,11 +103,11 @@ public class Coder {
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
       buffer.writeByte(INTEGER_ID);
-      appendAsciiDigitsToByteBuf((Integer) v, buffer);
+      convertLongToAsciiDigits((Integer) v, buffer);
       buffer.writeBytes(bCRLF);
     } else if (v instanceof Long) {
       buffer.writeByte(INTEGER_ID);
-      appendAsciiDigitsToByteBuf((Long) v, buffer);
+      convertLongToAsciiDigits((Long) v, buffer);
       buffer.writeBytes(bCRLF);
     } else {
       throw new CoderException();
@@ -118,7 +118,7 @@ public class Coder {
 
   private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
     buffer.writeByte(BULK_STRING_ID);
-    appendAsciiDigitsToByteBuf(toWrite.length, buffer);
+    convertLongToAsciiDigits(toWrite.length, buffer);
     buffer.writeBytes(bCRLF);
     buffer.writeBytes(toWrite);
     buffer.writeBytes(bCRLF);
@@ -136,7 +136,7 @@ public class Coder {
   public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
       throws CoderException {
     buffer.writeByte(ARRAY_ID);
-    appendAsciiDigitsToByteBuf(items.size(), buffer);
+    convertLongToAsciiDigits(items.size(), buffer);
     buffer.writeBytes(bCRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next);
@@ -162,7 +162,7 @@ public class Coder {
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
+    convertLongToAsciiDigits(scanResult.size(), buffer);
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
@@ -244,14 +244,14 @@ public class Coder {
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
     buffer.writeByte(INTEGER_ID);
-    appendAsciiDigitsToByteBuf(integer, buffer);
+    convertLongToAsciiDigits(integer, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
     buffer.writeByte(INTEGER_ID);
-    appendAsciiDigitsToByteBuf(l, buffer);
+    convertLongToAsciiDigits(l, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
@@ -313,12 +313,20 @@ public class Coder {
    * literal to byte
    */
 
+  /**
+   * NOTE: Canonical byte arrays may be returned so callers
+   * must never modify the returned array.
+   */
   public static byte[] intToBytes(int i) {
-    return stringToBytes(String.valueOf(i));
+    return longToBytes(i);
   }
 
+  /**
+   * NOTE: Canonical byte arrays may be returned so callers
+   * must never modify the returned array.
+   */
   public static byte[] longToBytes(long l) {
-    return stringToBytes(String.valueOf(l));
+    return convertLongToAsciiDigits(l, null);
   }
 
   public static byte[] doubleToBytes(double d) {
@@ -476,41 +484,99 @@ public class Coder {
 
   /**
    * Takes the given "value" and computes the sequence of ASCII digits it represents,
-   * appending them to the given "buf".
+   * appending them to the given "buf" or returning them as a byte[].
    * This code was adapted from the openjdk Long.java getChars methods.
+   *
+   * @param buf if not null then the bytes are added to it; otherwise they are added to a byte[]
+   *        that is returned
+   * @return if "buf" is not null then return null; otherwise return the byte[] that callers must
+   *         not modify
    */
-  public static void appendAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+  public static byte[] convertLongToAsciiDigits(long value, ByteBuf buf) {
+    boolean addMinus;
     if (value < 0) {
-      buf.writeByte(bMINUS);
+      addMinus = true;
     } else {
+      addMinus = false;
       value = -value;
     }
     // at this point value <= 0
 
     if (value > -100) {
       // it has at most two digits: [0..99]
-      appendSmallAsciiDigitsToByteBuf((int) value, buf);
+      return appendSmallAsciiDigitsToByteBuf((int) value, buf, addMinus);
     } else {
-      appendLargeAsciiDigitsToByteBuf(value, buf);
+      return appendLargeAsciiDigitsToByteBuf(value, buf, addMinus);
     }
   }
 
-  private static void appendSmallAsciiDigitsToByteBuf(int value, ByteBuf buf) {
+  /**
+   * value is in the range [-99..0].
+   * This could be done using computation but a simple
+   * table lookup allows no allocations to be done since
+   * a canonical instance is returned.
+   */
+  private static byte[] appendSmallAsciiDigitsToByteBuf(int value, ByteBuf buf, boolean addMinus) {
+    value = -value;
+    // now value is [0..99]
+    byte[] result;
+    if (addMinus) {
+      result = MINUS_TABLE[value];
+    } else {
+      result = POSITIVE_TABLE[value];
+    }
+    if (buf != null) {
+      buf.writeBytes(result);
+      return null;
+    } else {
+      return result;
+    }
+  }
+
+  private static final int TABLE_SIZE = 100;
+  @Immutable
+  private static final byte[][] MINUS_TABLE = new byte[TABLE_SIZE][];
+  @Immutable
+  private static final byte[][] POSITIVE_TABLE = new byte[TABLE_SIZE][];
+  static {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+      MINUS_TABLE[i] = createTwoDigitArray(-i, true);
+      POSITIVE_TABLE[i] = createTwoDigitArray(-i, false);
+    }
+  }
+
+  private static byte[] createTwoDigitArray(int value, boolean addMinus) {
     int q = value / 10;
     int r = (q * 10) - value;
-    if (q < 0) {
-      buf.writeByte(digitToAscii(-q));
+    int resultSize = (q < 0) ? 2 : 1;
+    if (addMinus) {
+      resultSize++;
     }
-    buf.writeByte(digitToAscii(r));
+    byte[] result = new byte[resultSize];
+    int resultIdx = 0;
+    if (addMinus) {
+      result[resultIdx++] = bMINUS;
+    }
+    if (q < 0) {
+      result[resultIdx++] = digitToAscii(-q);
+    }
+    result[resultIdx++] = digitToAscii(r);
+    return result;
   }
 
-  private static void appendLargeAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+  private static byte[] appendLargeAsciiDigitsToByteBuf(long value, ByteBuf buf, boolean addMinus) {
+    byte[] bytes;
+    if (buf != null) {
+      final int MAX_DIGITS = 20;
+      bytes = new byte[MAX_DIGITS];
+    } else {
+      int bytesLength = asciiByteLength(value, !addMinus);
+      bytes = new byte[bytesLength];
+    }
+    int charPos = bytes.length;
+
     long q;
     int r;
-    final int MAX_DIGITS = 19;
-    int charPos = MAX_DIGITS;
-    byte[] bytes = new byte[MAX_DIGITS];
-
     // Get 2 digits/iteration using longs until quotient fits into an int
     while (value <= Integer.MIN_VALUE) {
       q = value / 100;
@@ -540,7 +606,47 @@ public class Coder {
     if (q2 < 0) {
       bytes[--charPos] = digitToAscii(-q2);
     }
-    buf.writeBytes(bytes, charPos, MAX_DIGITS - charPos);
+    if (addMinus) {
+      bytes[--charPos] = bMINUS;
+    }
+    if (buf != null) {
+      buf.writeBytes(bytes, charPos, bytes.length - charPos);
+      return null;
+    } else {
+      return bytes;
+    }
+  }
+
+  /**
+   * This code was derived from openjdk Long.java stringSize
+   * Returns the string representation size for a given long value.
+   * Note that "x" has already been negated if it was positive
+   * and we are told if that happened with the "isPositive" parameter.
+   *
+   * @param x long value already canonicalized to be <= 0.
+   * @param isPositive true if the original value of x was >= 0.
+   * @return string size
+   *
+   * @implNote There are other ways to compute this: e.g. binary search,
+   *           but values are biased heavily towards zero, and therefore linear search
+   *           wins. The iteration results are also routinely inlined in the generated
+   *           code after loop unrolling.
+   */
+  private static int asciiByteLength(long x, boolean isPositive) {
+    int d = isPositive ? 0 : 1;
+    // Note since this is only called if x >= -100
+    // (see the caller of appendSmallAsciiDigitsToByteBuf)
+    // we skip the first two loops by starting
+    // p at -1000 (instead of -10)
+    // and i at 3 (instead of 1).
+    long p = -1000;
+    for (int i = 3; i < 19; i++) {
+      if (x > p) {
+        return i + d;
+      }
+      p *= 10;
+    }
+    return 19 + d;
   }
 
   /**
