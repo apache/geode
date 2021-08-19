@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -583,8 +582,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     File[] diskDirs = diskStore.getDiskDirs();
     assertThat(diskDirs.length).isEqualTo(1);
     File diskDir = diskDirs[0];
-    String absoluteDiskDirectoryName = diskDirectoryName.startsWith(File.separator)
-        ? diskDirectoryName : CURRENT_DIRECTORY + File.separator + diskDirectoryName;
+    String absoluteDiskDirectoryName = Paths.get(diskDirectoryName).toAbsolutePath().toString();
     assertThat(diskDir.getAbsolutePath()).isEqualTo(absoluteDiskDirectoryName);
   }
 
