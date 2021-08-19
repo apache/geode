@@ -35,20 +35,18 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
   // use static field for ease of testing since there is only one instance of this in each VM
   // we only need ConcurrentHashSet here, but map is only construct available in the library
   private static final Set<String> EXPIRED_USERS = ConcurrentHashMap.newKeySet();
-  private static final Map<Object, List<ResourcePermission>> AUTHORIZED_OPS =
+  private static final Map<String, List<String>> AUTHORIZED_OPS =
+      new ConcurrentHashMap<>();
+  private static final Map<String, List<String>> UNAUTHORIZED_OPS =
       new ConcurrentHashMap<>();
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
     if (EXPIRED_USERS.contains((String) principal)) {
+      addToMap(UNAUTHORIZED_OPS, principal, permission);
       throw new AuthenticationExpiredException("User authentication expired.");
     }
-    List<ResourcePermission> permissions = AUTHORIZED_OPS.get(principal);
-    if (permissions == null) {
-      permissions = new ArrayList<>();
-    }
-    permissions.add(permission);
-    AUTHORIZED_OPS.put(principal, permissions);
+    addToMap(AUTHORIZED_OPS, principal, permission);
 
     // always authorized
     return true;
@@ -62,12 +60,27 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
     return EXPIRED_USERS;
   }
 
-  public static Map<Object, List<ResourcePermission>> getAuthorizedOps() {
+  public static Map<String, List<String>> getAuthorizedOps() {
     return AUTHORIZED_OPS;
+  }
+
+  public static Map<String, List<String>> getUnAuthorizedOps() {
+    return UNAUTHORIZED_OPS;
+  }
+
+  private static void addToMap(Map<String, List<String>> maps, Object user,
+      ResourcePermission permission) {
+    List<String> list = maps.get(user);
+    if (list == null) {
+      list = new ArrayList<>();
+    }
+    list.add(permission.toString());
+    maps.put(user.toString(), list);
   }
 
   public static void reset() {
     EXPIRED_USERS.clear();
     AUTHORIZED_OPS.clear();
+    UNAUTHORIZED_OPS.clear();
   }
 }

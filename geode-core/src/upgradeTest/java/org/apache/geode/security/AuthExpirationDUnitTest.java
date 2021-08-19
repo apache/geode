@@ -48,8 +48,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationDUnitTest {
-  static RegionService regionService0;
-  static RegionService regionService1;
+  static RegionService user0Service;
+  static RegionService user1Service;
 
   @Parameterized.Parameter
   public String clientVersion;
@@ -110,9 +110,14 @@ public class AuthExpirationDUnitTest {
 
     // all put operation succeeded
     Region<Object, Object> region = server.getCache().getRegion("/region");
-    assertThat(ExpirableSecurityManager.getExpiredUsers().size()).isEqualTo(1);
-    assertThat(ExpirableSecurityManager.getExpiredUsers().contains("user1")).isTrue();
     assertThat(region.size()).isEqualTo(2);
+    Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
+    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    assertThat(authorizedOps.keySet().size()).isEqualTo(2);
+    assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:0");
+    assertThat(authorizedOps.get("user2")).asList().containsExactly("DATA:WRITE:region:1");
+    assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
+    assertThat(unAuthorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
   }
 
   @Test
@@ -125,48 +130,52 @@ public class AuthExpirationDUnitTest {
             .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("serviceUser0");
+      UpdatableUserAuthInitialize.setUser("user0");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       Properties userSecurityProperties = new Properties();
       userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
           UpdatableUserAuthInitialize.class.getName());
-      regionService0 = clientCache.createAuthenticatedView(userSecurityProperties);
-      Region<Object, Object> region = regionService0.getRegion("/region");
+      user0Service = clientCache.createAuthenticatedView(userSecurityProperties);
+      Region<Object, Object> region = user0Service.getRegion("/region");
       region.put(0, "value0");
 
-      UpdatableUserAuthInitialize.setUser("serviceUser1");
+      UpdatableUserAuthInitialize.setUser("user1");
       userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
           UpdatableUserAuthInitialize.class.getName());
-      regionService1 = clientCache.createAuthenticatedView(userSecurityProperties);
-      region = regionService1.getRegion("/region");
+      user1Service = clientCache.createAuthenticatedView(userSecurityProperties);
+      region = user1Service.getRegion("/region");
       region.put(1, "value1");
     });
 
-    ExpirableSecurityManager.addExpiredUser("serviceUser1");
+    ExpirableSecurityManager.addExpiredUser("user1");
 
     clientVM.invoke(() -> {
-      Region<Object, Object> region = regionService1.getRegion("/region");
-      UpdatableUserAuthInitialize.setUser("serviceUser2");
-      region.put(2, "value2");
 
-      region = regionService0.getRegion("/region");
-      region.put(3, "value3");
-      regionService0.close();
-      regionService1.close();
+      Region<Object, Object> region = user0Service.getRegion("/region");
+      region.put(2, "value3");
+
+      UpdatableUserAuthInitialize.setUser("user1_extended");
+      region = user1Service.getRegion("/region");
+      region.put(3, "value2");
+
+      user0Service.close();
+      user1Service.close();
     });
 
     Region<Object, Object> region = server.getCache().getRegion("/region");
-    assertThat(ExpirableSecurityManager.getExpiredUsers().size()).isEqualTo(1);
-    assertThat(ExpirableSecurityManager.getExpiredUsers().contains("serviceUser1")).isTrue();
-    Map<Object, List<ResourcePermission>> authorizedOps =
-        ExpirableSecurityManager.getAuthorizedOps();
-    assertThat(authorizedOps.size()).isEqualTo(3);
-    assertThat(authorizedOps.get("serviceUser0").size()).isEqualTo(2);
-    assertThat(authorizedOps.get("serviceUser1").size()).isEqualTo(1);
-    assertThat(authorizedOps.get("serviceUser2").size()).isEqualTo(1);
     assertThat(region.size()).isEqualTo(4);
+
+    Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
+    assertThat(authorizedOps.keySet().size()).isEqualTo(3);
+    assertThat(authorizedOps.get("user0")).asList().containsExactly("DATA:WRITE:region:0",
+        "DATA:WRITE:region:2");
+    assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
+    assertThat(authorizedOps.get("user1_extended")).asList().containsExactly("DATA:WRITE:region:3");
+
+    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
+    assertThat(unAuthorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:3");
   }
 
 }
