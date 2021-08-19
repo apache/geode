@@ -48,6 +48,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationDUnitTest {
+  static RegionService regionService0;
+  static RegionService regionService1;
 
   @Parameterized.Parameter
   public String clientVersion;
@@ -118,55 +120,40 @@ public class AuthExpirationDUnitTest {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
         c -> c.withMultiUser(true)
-            .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("serviceUser0");
-      UpdatableUserAuthInitialize.setAttempts(0);
-      UpdatableUserAuthInitialize.setAlternate(false);
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       assert clientCache != null;
       clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       Properties userSecurityProperties = new Properties();
-      userSecurityProperties.put("security-username", "serviceUser0");
-      userSecurityProperties.put("security-password", "serviceUser0");
-      RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      Region<Object, Object> region = regionService.getRegion("/region");
+      userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
+          UpdatableUserAuthInitialize.class.getName());
+      regionService0 = clientCache.createAuthenticatedView(userSecurityProperties);
+      Region<Object, Object> region = regionService0.getRegion("/region");
       region.put(0, "value0");
-      regionService.close();
 
       UpdatableUserAuthInitialize.setUser("serviceUser1");
-      userSecurityProperties.put("security-username", "serviceUser1");
-      userSecurityProperties.put("security-password", "serviceUser1");
-      regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      region = regionService.getRegion("/region");
+      userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
+          UpdatableUserAuthInitialize.class.getName());
+      regionService1 = clientCache.createAuthenticatedView(userSecurityProperties);
+      region = regionService1.getRegion("/region");
       region.put(1, "value1");
-      regionService.close();
     });
 
     ExpirableSecurityManager.addExpiredUser("serviceUser1");
 
     clientVM.invoke(() -> {
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-      Properties userSecurityProperties = new Properties();
-      userSecurityProperties.put("security-username", "serviceUser1");
-      userSecurityProperties.put("security-password", "serviceUser1");
-      assert clientCache != null;
-      RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      Region<Object, Object> region = regionService.getRegion("/region");
+      Region<Object, Object> region = regionService1.getRegion("/region");
       UpdatableUserAuthInitialize.setUser("serviceUser2");
-      UpdatableUserAuthInitialize.setAlternate(Boolean.TRUE);
       region.put(2, "value2");
-      regionService.close();
 
-      userSecurityProperties.put("security-username", "serviceUser0");
-      userSecurityProperties.put("security-password", "serviceUser0");
-      regionService = clientCache.createAuthenticatedView(userSecurityProperties);
-      region = regionService.getRegion("/region");
+      region = regionService0.getRegion("/region");
       region.put(3, "value3");
-      regionService.close();
+      regionService0.close();
+      regionService1.close();
     });
 
     Region<Object, Object> region = server.getCache().getRegion("/region");
