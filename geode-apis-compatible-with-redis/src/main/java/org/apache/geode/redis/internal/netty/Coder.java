@@ -540,20 +540,20 @@ public class Coder {
    *         not modify
    */
   public static byte[] convertLongToAsciiDigits(long value, ByteBuf buf) {
-    boolean addMinus;
+    boolean negative;
     if (value < 0) {
-      addMinus = true;
+      negative = true;
     } else {
-      addMinus = false;
+      negative = false;
       value = -value;
     }
     // at this point value <= 0
 
     if (value > -100) {
       // it has at most two digits: [0..99]
-      return appendSmallAsciiDigitsToByteBuf((int) value, buf, addMinus);
+      return convertSmallLongToAsciiDigits((int) value, buf, negative);
     } else {
-      return appendLargeAsciiDigitsToByteBuf(value, buf, addMinus);
+      return convertBigLongToAsciiDigits(value, buf, negative);
     }
   }
 
@@ -563,12 +563,12 @@ public class Coder {
    * table lookup allows no allocations to be done since
    * a canonical instance is returned.
    */
-  private static byte[] appendSmallAsciiDigitsToByteBuf(int value, ByteBuf buf, boolean addMinus) {
+  private static byte[] convertSmallLongToAsciiDigits(int value, ByteBuf buf, boolean negative) {
     value = -value;
     // now value is [0..99]
     byte[] result;
-    if (addMinus) {
-      result = MINUS_TABLE[value];
+    if (negative) {
+      result = NEGATIVE_TABLE[value];
     } else {
       result = POSITIVE_TABLE[value];
     }
@@ -582,36 +582,36 @@ public class Coder {
 
   private static final int TABLE_SIZE = 100;
   @Immutable
-  private static final byte[][] MINUS_TABLE = new byte[TABLE_SIZE][];
+  private static final byte[][] NEGATIVE_TABLE = new byte[TABLE_SIZE][];
   @Immutable
   private static final byte[][] POSITIVE_TABLE = new byte[TABLE_SIZE][];
   static {
     for (int i = 0; i < TABLE_SIZE; i++) {
-      MINUS_TABLE[i] = createTwoDigitArray(-i, true);
+      NEGATIVE_TABLE[i] = createTwoDigitArray(-i, true);
       POSITIVE_TABLE[i] = createTwoDigitArray(-i, false);
     }
   }
 
-  private static byte[] createTwoDigitArray(int value, boolean addMinus) {
-    int q = value / 10;
-    int r = (q * 10) - value;
-    int resultSize = (q < 0) ? 2 : 1;
-    if (addMinus) {
+  private static byte[] createTwoDigitArray(int value, boolean negative) {
+    int quotient = value / 10;
+    int remainder = (quotient * 10) - value;
+    int resultSize = (quotient < 0) ? 2 : 1;
+    if (negative) {
       resultSize++;
     }
     byte[] result = new byte[resultSize];
     int resultIdx = 0;
-    if (addMinus) {
+    if (negative) {
       result[resultIdx++] = bMINUS;
     }
-    if (q < 0) {
-      result[resultIdx++] = digitToAscii(-q);
+    if (quotient < 0) {
+      result[resultIdx++] = digitToAscii(-quotient);
     }
-    result[resultIdx++] = digitToAscii(r);
+    result[resultIdx] = digitToAscii(remainder);
     return result;
   }
 
-  private static byte[] appendLargeAsciiDigitsToByteBuf(long value, ByteBuf buf, boolean addMinus) {
+  private static byte[] convertBigLongToAsciiDigits(long value, ByteBuf buf, boolean addMinus) {
     byte[] bytes;
     if (buf != null) {
       final int MAX_DIGITS = 20;
@@ -620,44 +620,44 @@ public class Coder {
       int bytesLength = asciiByteLength(value, !addMinus);
       bytes = new byte[bytesLength];
     }
-    int charPos = bytes.length;
+    int bytePos = bytes.length;
 
-    long q;
-    int r;
+    long quotient;
+    int remainder;
     // Get 2 digits/iteration using longs until quotient fits into an int
     while (value <= Integer.MIN_VALUE) {
-      q = value / 100;
-      r = (int) ((q * 100) - value);
-      value = q;
-      bytes[--charPos] = DIGIT_ONES[r];
-      bytes[--charPos] = DIGIT_TENS[r];
+      quotient = value / 100;
+      remainder = (int) ((quotient * 100) - value);
+      value = quotient;
+      bytes[--bytePos] = DIGIT_ONES[remainder];
+      bytes[--bytePos] = DIGIT_TENS[remainder];
     }
 
     // Get 2 digits/iteration using ints
-    int q2;
-    int i2 = (int) value;
-    while (i2 <= -100) {
-      q2 = i2 / 100;
-      r = (q2 * 100) - i2;
-      i2 = q2;
-      bytes[--charPos] = DIGIT_ONES[r];
-      bytes[--charPos] = DIGIT_TENS[r];
+    int intQuotient;
+    int intValue = (int) value;
+    while (intValue <= -100) {
+      intQuotient = intValue / 100;
+      remainder = (intQuotient * 100) - intValue;
+      intValue = intQuotient;
+      bytes[--bytePos] = DIGIT_ONES[remainder];
+      bytes[--bytePos] = DIGIT_TENS[remainder];
     }
 
     // We know there are at most two digits left at this point.
-    q2 = i2 / 10;
-    r = (q2 * 10) - i2;
-    bytes[--charPos] = digitToAscii(r);
+    intQuotient = intValue / 10;
+    remainder = (intQuotient * 10) - intValue;
+    bytes[--bytePos] = digitToAscii(remainder);
 
     // Whatever left is the remaining digit.
-    if (q2 < 0) {
-      bytes[--charPos] = digitToAscii(-q2);
+    if (intQuotient < 0) {
+      bytes[--bytePos] = digitToAscii(-intQuotient);
     }
     if (addMinus) {
-      bytes[--charPos] = bMINUS;
+      bytes[--bytePos] = bMINUS;
     }
     if (buf != null) {
-      buf.writeBytes(bytes, charPos, bytes.length - charPos);
+      buf.writeBytes(bytes, bytePos, bytes.length - bytePos);
       return null;
     } else {
       return bytes;
@@ -666,34 +666,35 @@ public class Coder {
 
   /**
    * This code was derived from openjdk Long.java stringSize
-   * Returns the string representation size for a given long value.
-   * Note that "x" has already been negated if it was positive
+   * Returns the number of bytes needed to represent "value" as ascii bytes
+   * Note that "value" has already been negated if it was positive
    * and we are told if that happened with the "isPositive" parameter.
    *
-   * @param x long value already canonicalized to be <= 0.
-   * @param isPositive true if the original value of x was >= 0.
-   * @return string size
+   * @param value long value already normalized to be <= 0.
+   * @param isPositive true if the original "value" was >= 0.
+   * @return number of bytes needed to represent "value" as ascii bytes
    *
    * @implNote There are other ways to compute this: e.g. binary search,
    *           but values are biased heavily towards zero, and therefore linear search
    *           wins. The iteration results are also routinely inlined in the generated
    *           code after loop unrolling.
    */
-  private static int asciiByteLength(long x, boolean isPositive) {
-    int d = isPositive ? 0 : 1;
-    // Note since this is only called if x >= -100
-    // (see the caller of appendSmallAsciiDigitsToByteBuf)
+  private static int asciiByteLength(long value, boolean isPositive) {
+    final int nonDigitCount = isPositive ? 0 : 1;
+    // Note since this is only called if value >= -100
+    // (see the caller of convertSmallLongToAsciiDigits)
     // we skip the first two loops by starting
-    // p at -1000 (instead of -10)
-    // and i at 3 (instead of 1).
-    long p = -1000;
-    for (int i = 3; i < 19; i++) {
-      if (x > p) {
-        return i + d;
+    // powerOf10 at -1000 (instead of -10)
+    // and digitCount at 3 (instead of 1).
+    long powerOf10 = -1000;
+    final int MAX_DIGITS = 19;
+    for (int digitCount = 3; digitCount < MAX_DIGITS; digitCount++) {
+      if (value > powerOf10) {
+        return digitCount + nonDigitCount;
       }
-      p *= 10;
+      powerOf10 *= 10;
     }
-    return 19 + d;
+    return MAX_DIGITS + nonDigitCount;
   }
 
   /**
