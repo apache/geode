@@ -16,13 +16,20 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.rest.internal.WebApiSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({RestAPITest.class})
+@Category({RestAPITest.class, SerializationTest.class})
 public class AnalyzeWebApiSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
     return "geode-web-api";
+  }
+
+  @Override
+  protected Class<?> getModuleClass() {
+    return WebApiSanctionedSerializablesService.class;
   }
 }

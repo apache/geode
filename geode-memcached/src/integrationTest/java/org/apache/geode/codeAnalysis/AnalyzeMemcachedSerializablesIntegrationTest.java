@@ -14,9 +14,12 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.memcached.GeodeMemcachedService;
+import org.apache.geode.internal.memcached.MemcachedSanctionedSerializablesService;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
+@Category(SerializationTest.class)
 public class AnalyzeMemcachedSerializablesIntegrationTest
     extends AnalyzeSerializablesJUnitTestBase {
 
@@ -26,7 +29,7 @@ public class AnalyzeMemcachedSerializablesIntegrationTest
   }
 
   @Override
-  protected Class getModuleClass() {
-    return GeodeMemcachedService.class;
+  protected Class<?> getModuleClass() {
+    return MemcachedSanctionedSerializablesService.class;
   }
 }

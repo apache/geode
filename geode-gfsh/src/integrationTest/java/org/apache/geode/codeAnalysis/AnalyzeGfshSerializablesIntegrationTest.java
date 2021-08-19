@@ -14,9 +14,12 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.gfsh.internal.management.GfshSanctionedSerializablesService;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
+@Category(SerializationTest.class)
 public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
@@ -25,7 +28,7 @@ public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializable
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<?> getModuleClass() {
     return GfshSanctionedSerializablesService.class;
   }
 }

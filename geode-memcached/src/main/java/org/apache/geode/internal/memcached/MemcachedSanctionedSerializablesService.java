@@ -14,30 +14,14 @@
  */
 package org.apache.geode.internal.memcached;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.SanctionedSerializablesService;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 
 public class MemcachedSanctionedSerializablesService implements SanctionedSerializablesService {
-  @Override
-  public void init(InternalDistributedSystem internalDistributedSystem) {
-
-  }
 
   @Override
-  public Class getInterface() {
-    return getClass();
-  }
-
-  @Override
-  public Collection<String> getSerializationAcceptlist() throws IOException {
-    URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
-        "sanctioned-geode-memcached-serializables.txt");
-    return InternalDataSerializer.loadClassNames(sanctionedSerializables);
+  public URL getSanctionedSerializablesURL() {
+    return getClass().getResource("sanctioned-geode-memcached-serializables.txt");
   }
 }

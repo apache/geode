@@ -16,13 +16,19 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.CoreSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({SerializationTest.class})
+@Category(SerializationTest.class)
 public class AnalyzeCoreSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
     return "geode-core";
+  }
+
+  @Override
+  protected Class<?> getModuleClass() {
+    return CoreSanctionedSerializablesService.class;
   }
 }

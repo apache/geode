@@ -18,9 +18,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-
-@Category({LuceneTest.class})
+@Category({LuceneTest.class, SerializationTest.class})
 public class AnalyzeLuceneSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
@@ -29,7 +29,7 @@ public class AnalyzeLuceneSerializablesIntegrationTest extends AnalyzeSerializab
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<?> getModuleClass() {
     return LuceneSanctionedSerializablesService.class;
   }
 }

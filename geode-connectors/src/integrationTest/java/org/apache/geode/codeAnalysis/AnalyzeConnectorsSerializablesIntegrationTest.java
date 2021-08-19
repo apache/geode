@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.connectors.jdbc.internal.ConnectorsSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({SerializationTest.class})
+@Category(SerializationTest.class)
 public class AnalyzeConnectorsSerializablesIntegrationTest
     extends AnalyzeSerializablesJUnitTestBase {
 
@@ -29,7 +29,7 @@ public class AnalyzeConnectorsSerializablesIntegrationTest
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<?> getModuleClass() {
     return ConnectorsSanctionedSerializablesService.class;
   }
 }

@@ -17,10 +17,10 @@ package org.apache.geode.codeAnalysis;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.internal.WANSanctionedSerializablesService;
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-
-@Category({WanTest.class})
+@Category({WanTest.class, SerializationTest.class})
 public class AnalyzeWANSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
@@ -29,7 +29,7 @@ public class AnalyzeWANSerializablesIntegrationTest extends AnalyzeSerializables
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<?> getModuleClass() {
     return WANSanctionedSerializablesService.class;
   }
 }

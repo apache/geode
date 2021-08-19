@@ -18,8 +18,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.cq.internal.CQSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class, SerializationTest.class})
 public class AnalyzeCQSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
@@ -28,7 +29,7 @@ public class AnalyzeCQSerializablesIntegrationTest extends AnalyzeSerializablesJ
   }
 
   @Override
-  protected Class getModuleClass() {
+  protected Class<?> getModuleClass() {
     return CQSanctionedSerializablesService.class;
   }
 }
