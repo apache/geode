@@ -58,6 +58,11 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public long zlexcount(RedisKey key, SortedSetLexRangeOptions lexOptions) {
+    return stripedExecute(key, () -> getRedisSortedSet(key, true).zlexcount(lexOptions));
+  }
+
+  @Override
   public List<byte[]> zpopmax(RedisKey key, int count) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zpopmax(getRegion(), key, count));

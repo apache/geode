@@ -340,6 +340,30 @@ public class RedisSortedSet extends AbstractRedisData {
     return addLimitToRange(rangeOptions, withScores, false, minIndex, maxIndex);
   }
 
+  long zlexcount(SortedSetLexRangeOptions lexOptions) {
+    if (scoreSet.isEmpty()) {
+      return 0;
+    }
+
+    // Assume that all members have the same score. Behaviour is unspecified otherwise.
+    double score = scoreSet.get(0).score;
+
+    int minIndex =
+        getIndexByLex(score, lexOptions.getStartRange(), lexOptions.isStartExclusive(), true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
+
+    AbstractOrderedSetEntry maxEntry = new MemberDummyOrderedSetEntry(lexOptions.getEndRange(),
+        score, lexOptions.isEndExclusive(), false);
+    int maxIndex = scoreSet.indexOf(maxEntry);
+    if (minIndex >= maxIndex) {
+      return 0;
+    }
+
+    return maxIndex - minIndex;
+  }
+
   long zrank(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry == null) {
