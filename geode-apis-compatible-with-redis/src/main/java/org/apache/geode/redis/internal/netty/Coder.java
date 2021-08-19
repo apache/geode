@@ -103,13 +103,9 @@ public class Coder {
       toWrite = stringToBytes(value);
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
-      buffer.writeByte(INTEGER_ID);
-      appendAsciiDigitsToByteBuf((Integer) v, buffer);
-      buffer.writeBytes(bCRLF);
+      getIntegerResponse(buffer, (int) v);
     } else if (v instanceof Long) {
-      buffer.writeByte(INTEGER_ID);
-      appendAsciiDigitsToByteBuf((Long) v, buffer);
-      buffer.writeBytes(bCRLF);
+      getIntegerResponse(buffer, (long) v);
     } else {
       throw new CoderException();
     }
