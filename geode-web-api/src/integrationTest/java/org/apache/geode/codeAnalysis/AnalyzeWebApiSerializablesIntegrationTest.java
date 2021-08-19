@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
 @Category({RestAPITest.class})
-public class AnalyzeWebApiSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeWebApiSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
