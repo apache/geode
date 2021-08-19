@@ -20,7 +20,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
-public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeManagementSerializablesIntegrationTest
+    extends AnalyzeSerializablesJUnitTestBase {
   @Override
   protected String getModuleName() {
     return "geode-management";
