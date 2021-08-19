@@ -181,35 +181,35 @@ public class CoderTest {
   }
 
   @Test
-  public void verify_convertLongToAsciiDigits_withByteBuf() {
+  public void verify_appendAsciiDigitsToByteBuf() {
     for (long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000; i--) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Integer.MAX_VALUE + 1000; i > Integer.MAX_VALUE - 1000; i--) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Integer.MIN_VALUE + 1000; i > Integer.MIN_VALUE - 1000; i--) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Short.MAX_VALUE + 1000; i > Short.MAX_VALUE - 1000; i--) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Short.MIN_VALUE + 1000; i > Short.MIN_VALUE - 1000; i--) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
     for (long i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
-      verify_convertLongToAsciiDigits(i);
+      verify_appendAsciiDigitsToByteBuf(i);
     }
   }
 
-  private void verify_convertLongToAsciiDigits(long value) {
+  private void verify_appendAsciiDigitsToByteBuf(long value) {
     String expected = Long.toString(value);
     ByteBuf buf = ByteBufAllocator.DEFAULT.heapBuffer();
 
-    Coder.convertLongToAsciiDigits(value, buf);
+    Coder.appendAsciiDigitsToByteBuf(value, buf);
 
     assertThat(buf.toString(StandardCharsets.UTF_8)).isEqualTo(expected);
   }

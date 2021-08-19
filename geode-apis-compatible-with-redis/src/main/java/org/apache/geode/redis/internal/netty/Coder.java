@@ -104,11 +104,11 @@ public class Coder {
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
       buffer.writeByte(INTEGER_ID);
-      convertLongToAsciiDigits((Integer) v, buffer);
+      appendAsciiDigitsToByteBuf((Integer) v, buffer);
       buffer.writeBytes(bCRLF);
     } else if (v instanceof Long) {
       buffer.writeByte(INTEGER_ID);
-      convertLongToAsciiDigits((Long) v, buffer);
+      appendAsciiDigitsToByteBuf((Long) v, buffer);
       buffer.writeBytes(bCRLF);
     } else {
       throw new CoderException();
@@ -119,7 +119,7 @@ public class Coder {
 
   private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
     buffer.writeByte(BULK_STRING_ID);
-    convertLongToAsciiDigits(toWrite.length, buffer);
+    appendAsciiDigitsToByteBuf(toWrite.length, buffer);
     buffer.writeBytes(bCRLF);
     buffer.writeBytes(toWrite);
     buffer.writeBytes(bCRLF);
@@ -137,7 +137,7 @@ public class Coder {
   public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
       throws CoderException {
     buffer.writeByte(ARRAY_ID);
-    convertLongToAsciiDigits(items.size(), buffer);
+    appendAsciiDigitsToByteBuf(items.size(), buffer);
     buffer.writeBytes(bCRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next);
@@ -163,7 +163,7 @@ public class Coder {
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    convertLongToAsciiDigits(scanResult.size(), buffer);
+    appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
@@ -245,14 +245,14 @@ public class Coder {
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
     buffer.writeByte(INTEGER_ID);
-    convertLongToAsciiDigits(integer, buffer);
+    appendAsciiDigitsToByteBuf(integer, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
     buffer.writeByte(INTEGER_ID);
-    convertLongToAsciiDigits(l, buffer);
+    appendAsciiDigitsToByteBuf(l, buffer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
@@ -327,7 +327,7 @@ public class Coder {
    * must never modify the returned array.
    */
   public static byte[] longToBytes(long l) {
-    return convertLongToAsciiDigits(l, null);
+    return convertLongToAsciiDigits(l);
   }
 
   public static byte[] doubleToBytes(double d) {
@@ -531,29 +531,30 @@ public class Coder {
 
   /**
    * Takes the given "value" and computes the sequence of ASCII digits it represents,
-   * appending them to the given "buf" or returning them as a byte[].
-   * This code was adapted from the openjdk Long.java getChars methods.
-   *
-   * @param buf if not null then the bytes are added to it; otherwise they are added to a byte[]
-   *        that is returned
-   * @return if "buf" is not null then return null; otherwise return the byte[] that callers must
-   *         not modify
+   * appending them to the given "buf".
    */
-  public static byte[] convertLongToAsciiDigits(long value, ByteBuf buf) {
-    boolean negative;
-    if (value < 0) {
-      negative = true;
-    } else {
-      negative = false;
+  public static void appendAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+    buf.writeBytes(convertLongToAsciiDigits(value));
+  }
+
+  /**
+   * Convert the given "value" to a sequence of ASCII digits and
+   * returns them in a byte array. The only byte in the array that
+   * may not be a digit is the first byte will be '-' for a negative value.
+   * NOTE: the returned array's contents must not be modified by the caller.
+   */
+  private static byte[] convertLongToAsciiDigits(long value) {
+    final boolean negative = value < 0;
+    if (!negative) {
       value = -value;
     }
     // at this point value <= 0
 
     if (value > -100) {
-      // it has at most two digits: [0..99]
-      return convertSmallLongToAsciiDigits((int) value, buf, negative);
+      // it has at most two digits: [-99..0]
+      return convertSmallLongToAsciiDigits((int) value, negative);
     } else {
-      return convertBigLongToAsciiDigits(value, buf, negative);
+      return convertBigLongToAsciiDigits(value, negative);
     }
   }
 
@@ -563,20 +564,13 @@ public class Coder {
    * table lookup allows no allocations to be done since
    * a canonical instance is returned.
    */
-  private static byte[] convertSmallLongToAsciiDigits(int value, ByteBuf buf, boolean negative) {
+  private static byte[] convertSmallLongToAsciiDigits(int value, boolean negative) {
     value = -value;
-    // now value is [0..99]
-    byte[] result;
+    // value is now 0..99
     if (negative) {
-      result = NEGATIVE_TABLE[value];
+      return NEGATIVE_TABLE[value];
     } else {
-      result = POSITIVE_TABLE[value];
-    }
-    if (buf != null) {
-      buf.writeBytes(result);
-      return null;
-    } else {
-      return result;
+      return POSITIVE_TABLE[value];
     }
   }
 
@@ -611,15 +605,11 @@ public class Coder {
     return result;
   }
 
-  private static byte[] convertBigLongToAsciiDigits(long value, ByteBuf buf, boolean addMinus) {
-    byte[] bytes;
-    if (buf != null) {
-      final int MAX_DIGITS = 20;
-      bytes = new byte[MAX_DIGITS];
-    } else {
-      int bytesLength = asciiByteLength(value, !addMinus);
-      bytes = new byte[bytesLength];
-    }
+  /**
+   * This code was adapted from the openjdk Long.java getChars methods.
+   */
+  private static byte[] convertBigLongToAsciiDigits(long value, boolean negative) {
+    final byte[] bytes = new byte[asciiByteLength(value, negative)];
     int bytePos = bytes.length;
 
     long quotient;
@@ -653,25 +643,20 @@ public class Coder {
     if (intQuotient < 0) {
       bytes[--bytePos] = digitToAscii(-intQuotient);
     }
-    if (addMinus) {
+    if (negative) {
       bytes[--bytePos] = bMINUS;
     }
-    if (buf != null) {
-      buf.writeBytes(bytes, bytePos, bytes.length - bytePos);
-      return null;
-    } else {
-      return bytes;
-    }
+    return bytes;
   }
 
   /**
    * This code was derived from openjdk Long.java stringSize
    * Returns the number of bytes needed to represent "value" as ascii bytes
    * Note that "value" has already been negated if it was positive
-   * and we are told if that happened with the "isPositive" parameter.
+   * and we are told if that happened with the "negative" parameter.
    *
    * @param value long value already normalized to be <= 0.
-   * @param isPositive true if the original "value" was >= 0.
+   * @param negative true if the original "value" was < 0.
    * @return number of bytes needed to represent "value" as ascii bytes
    *
    * @implNote There are other ways to compute this: e.g. binary search,
@@ -679,8 +664,8 @@ public class Coder {
    *           wins. The iteration results are also routinely inlined in the generated
    *           code after loop unrolling.
    */
-  private static int asciiByteLength(long value, boolean isPositive) {
-    final int nonDigitCount = isPositive ? 0 : 1;
+  private static int asciiByteLength(long value, boolean negative) {
+    final int nonDigitCount = negative ? 1 : 0;
     // Note since this is only called if value >= -100
     // (see the caller of convertSmallLongToAsciiDigits)
     // we skip the first two loops by starting
