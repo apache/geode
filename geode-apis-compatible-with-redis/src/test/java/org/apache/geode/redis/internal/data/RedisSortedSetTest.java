@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -136,46 +138,43 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zadd_stores_delta_that_is_stable() throws IOException {
+  public void zadd_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
-
     List<byte[]> adds = new ArrayList<>();
     adds.add(stringToBytes("1.61803"));
     adds.add(stringToBytes("v3"));
 
     sortedSet1.zadd(region, null, adds, new ZAddOptions(ZAddOptions.Exists.NONE, false, false));
-    assertThat(sortedSet1.hasDelta()).isTrue();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    sortedSet1.toDelta(out);
+    verify(region).put(any(), any());
     assertThat(sortedSet1.hasDelta()).isFalse();
+  }
 
+  private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
+    RedisSortedSet value = invocation.getArgument(1, RedisSortedSet.class);
+    assertThat(value.hasDelta()).isTrue();
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    value.toDelta(out);
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
     RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
-    assertThat(sortedSet2).isNotEqualTo(sortedSet1);
-
+    assertThat(sortedSet2).isNotEqualTo(value);
     sortedSet2.fromDelta(in);
-    assertThat(sortedSet2).isEqualTo(sortedSet1);
+    assertThat(sortedSet2).isEqualTo(value);
+    return null;
   }
 
   @Test
-  public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
+  public void setExpirationTimestamp_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
+
     sortedSet1.setExpirationTimestamp(region, null, 999);
-    assertThat(sortedSet1.hasDelta()).isTrue();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    sortedSet1.toDelta(out);
+    verify(region).put(any(), any());
     assertThat(sortedSet1.hasDelta()).isFalse();
-
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSortedSet sortedSet2 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
-    assertThat(sortedSet2).isNotEqualTo(sortedSet1);
-
-    sortedSet2.fromDelta(in);
-    assertThat(sortedSet2).isEqualTo(sortedSet1);
   }
 
   @Test
@@ -647,7 +646,6 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i), new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
-      sortedSet.clearDelta();
       expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
@@ -671,7 +669,6 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries / 2; ++i) {
       List<byte[]> scoreAndMember = Arrays.asList(doubleToBytes(i * 2), new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, scoreAndMember, options);
-      sortedSet.clearDelta();
       int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
@@ -695,7 +692,6 @@ public class RedisSortedSetTest {
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> memberToRemove = Collections.singletonList(new byte[i]);
       sortedSet.zrem(mockRegion, mockKey, memberToRemove);
-      sortedSet.clearDelta();
       int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
@@ -718,7 +714,6 @@ public class RedisSortedSetTest {
     // Remove all members by zpopmax and ensure size is correct
     for (int i = 0; i < numberOfEntries; ++i) {
       sortedSet.zpopmax(mockRegion, mockKey, 1);
-      sortedSet.clearDelta();
       int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
@@ -741,7 +736,6 @@ public class RedisSortedSetTest {
     // Remove all members by zpopmin and ensure size is correct
     for (int i = 0; i < numberOfEntries; ++i) {
       sortedSet.zpopmin(mockRegion, mockKey, 1);
-      sortedSet.clearDelta();
       int expectedSize = sizer.sizeof(sortedSet) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
       int actualSize = sortedSet.getSizeInBytes();
       assertThat(actualSize).isEqualTo(expectedSize);
