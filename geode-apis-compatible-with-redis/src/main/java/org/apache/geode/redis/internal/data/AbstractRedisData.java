@@ -60,7 +60,7 @@ public abstract class AbstractRedisData implements RedisData {
    * (i.e. the number of milliseconds since midnight, Jan 1, 1970)
    */
   private volatile long expirationTimestamp = NO_EXPIRATION;
-  private transient DeltaInfo deltaInfo;
+  private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
 
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
@@ -168,18 +168,19 @@ public abstract class AbstractRedisData implements RedisData {
     expirationTimestamp = in.readLong();
   }
 
-  private void setDelta(DeltaInfo deltaInfo) {
-    this.deltaInfo = deltaInfo;
+  private void setDelta(DeltaInfo newDeltaInfo) {
+    deltaInfo.set(newDeltaInfo);
   }
 
   @Override
   public boolean hasDelta() {
-    return deltaInfo != null;
+    return deltaInfo.get() != null;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    deltaInfo.serializeTo(out);
+    deltaInfo.get().serializeTo(out);
+    deltaInfo.remove();
   }
 
   @Override
