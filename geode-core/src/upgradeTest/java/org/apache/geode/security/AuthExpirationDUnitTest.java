@@ -120,6 +120,7 @@ public class AuthExpirationDUnitTest {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
         c -> c.withMultiUser(true)
+            .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
