@@ -17,7 +17,8 @@ package org.apache.geode.codeAnalysis;
 
 import org.apache.geode.internal.memcached.GeodeMemcachedService;
 
-public class AnalyzeMemcachedSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeMemcachedSerializablesIntegrationTest
+    extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
