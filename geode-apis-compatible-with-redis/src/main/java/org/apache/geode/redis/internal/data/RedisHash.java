@@ -267,7 +267,7 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
+  public byte[] hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
       long increment) throws NumberFormatException, ArithmeticException {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
@@ -277,7 +277,7 @@ public class RedisHash extends AbstractRedisData {
       deltaInfo.add(field);
       deltaInfo.add(newValue);
       storeChanges(region, key, deltaInfo);
-      return increment;
+      return newValue;
     }
 
     long value;
@@ -299,7 +299,7 @@ public class RedisHash extends AbstractRedisData {
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
-    return value;
+    return modifiedValue;
   }
 
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,

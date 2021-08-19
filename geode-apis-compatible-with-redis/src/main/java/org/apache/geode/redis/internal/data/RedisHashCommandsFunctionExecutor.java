@@ -100,7 +100,7 @@ public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunction
   }
 
   @Override
-  public long hincrby(RedisKey key, byte[] field, long increment) {
+  public byte[] hincrby(RedisKey key, byte[] field, long increment) {
     return stripedExecute(key,
         () -> getRedisHash(key, false)
             .hincrby(getRegion(), key, field, increment));

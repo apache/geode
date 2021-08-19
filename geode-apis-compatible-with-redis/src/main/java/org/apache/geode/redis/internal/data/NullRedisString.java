@@ -16,11 +16,10 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_1_BYTE;
 
 import java.math.BigDecimal;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -83,20 +82,22 @@ public class NullRedisString extends RedisString {
     return 0;
   }
 
+  @Immutable
+  private static final byte[] INITIAL_INCR_VALUE = Coder.longToBytes(1);
+
   @Override
-  public long incr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
-    byte[] newValue = {NUMBER_1_BYTE};
-    region.put(key, new RedisString(newValue));
-    return 1;
+    region.put(key, new RedisString(INITIAL_INCR_VALUE));
+    return INITIAL_INCR_VALUE;
   }
 
   @Override
-  public long incrby(Region<RedisKey, RedisData> region, RedisKey key,
+  public byte[] incrby(Region<RedisKey, RedisData> region, RedisKey key,
       long increment) throws NumberFormatException, ArithmeticException {
     byte[] newValue = Coder.longToBytes(increment);
     region.put(key, new RedisString(newValue));
-    return increment;
+    return newValue;
   }
 
   @Override
@@ -107,18 +108,21 @@ public class NullRedisString extends RedisString {
     return increment;
   }
 
+  @Immutable
+  private static final byte[] INITIAL_DECR_VALUE = Coder.longToBytes(-1);
+
   @Override
-  public long decr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
-    region.put(key, new RedisString(stringToBytes("-1")));
-    return -1;
+    region.put(key, new RedisString(INITIAL_DECR_VALUE));
+    return INITIAL_DECR_VALUE;
   }
 
   @Override
-  public long decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
+  public byte[] decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
     byte[] newValue = Coder.longToBytes(-decrement);
     region.put(key, new RedisString(newValue));
-    return -decrement;
+    return newValue;
   }
 
   @Override
