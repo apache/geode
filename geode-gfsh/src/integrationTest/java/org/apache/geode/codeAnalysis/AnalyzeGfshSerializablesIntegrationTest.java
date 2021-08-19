@@ -17,7 +17,7 @@ package org.apache.geode.codeAnalysis;
 
 import org.apache.geode.gfsh.internal.management.GfshSanctionedSerializablesService;
 
-public class AnalyzeGfshSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
