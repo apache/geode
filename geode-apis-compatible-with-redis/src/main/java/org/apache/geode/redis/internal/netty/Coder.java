@@ -44,6 +44,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
@@ -342,8 +343,54 @@ public class Coder {
   }
 
   public static long bytesToLong(byte[] bytes) {
-    return Long.parseLong(bytesToString(bytes));
+    return parseLong(bytes);
   }
+
+  private static NumberFormatException createNumberFormatException(byte[] bytes) {
+    return new NumberFormatException("For input string: \"" + bytesToString(bytes) + "\"");
+  }
+
+  /**
+   * This method was derived from openjdk Long.java parseLong
+   */
+  public static long parseLong(byte[] bytes) throws NumberFormatException {
+    final int len = bytes.length;
+    if (len <= 0) {
+      throw createNumberFormatException(bytes);
+    }
+    int i = 0;
+    long limit = -Long.MAX_VALUE;
+    boolean negative = false;
+    byte firstByte = bytes[0];
+    if (firstByte < NUMBER_0_BYTE) { // Possible leading "+" or "-"
+      if (firstByte == bMINUS) {
+        negative = true;
+        limit = Long.MIN_VALUE;
+      } else if (firstByte != bPLUS) {
+        throw createNumberFormatException(bytes);
+      }
+      if (len == 1) { // Cannot have lone "+" or "-"
+        throw createNumberFormatException(bytes);
+      }
+      i++;
+    }
+    final long multmin = limit / 10;
+    long result = 0;
+    while (i < len) {
+      // Accumulating negatively avoids surprises near MAX_VALUE
+      int digit = asciiToDigit(bytes[i++]);
+      if (digit < 0 || result < multmin) {
+        throw createNumberFormatException(bytes);
+      }
+      result *= 10;
+      if (result < limit + digit) {
+        throw createNumberFormatException(bytes);
+      }
+      result -= digit;
+    }
+    return negative ? result : -result;
+  }
+
 
   /**
    * A conversion where the byte array actually represents a string, so it is converted as a string
@@ -655,6 +702,13 @@ public class Coder {
    */
   public static byte digitToAscii(int digit) {
     return (byte) (NUMBER_0_BYTE + digit);
+  }
+
+  public static int asciiToDigit(byte ascii) {
+    if (ascii >= NUMBER_0_BYTE && ascii <= NUMBER_0_BYTE + 9) {
+      return ascii - NUMBER_0_BYTE;
+    }
+    return -1;
   }
 
   @Immutable
