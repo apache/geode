@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
@@ -45,6 +46,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
@@ -55,6 +57,8 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptio
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.executor.sortedset.ZAggregator;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
@@ -383,6 +387,44 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
+  long zunionstore(RegionProvider regionProvider, RedisKey key, List<RedisKey> sourceSets,
+      List<Double> weights, ZAggregator aggregator) {
+    for (int i = 0; i < sourceSets.size(); i++) {
+      RedisSortedSet set =
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, sourceSets.get(i), false);
+      if (set == NULL_REDIS_SORTED_SET) {
+        continue;
+      }
+      double weight = weights.get(i);
+
+      Iterator<AbstractOrderedSetEntry> scoreIterator =
+          set.scoreSet.getIndexRange(0, Integer.MAX_VALUE, false);
+      while (scoreIterator.hasNext()) {
+        OrderedSetEntry entry = (OrderedSetEntry) scoreIterator.next();
+        OrderedSetEntry existingValue = members.get(entry.member);
+        if (existingValue == null) {
+          byte[] score;
+          if (weight == 1) {
+            score = entry.getScoreBytes();
+          } else {
+            score = Coder.doubleToBytes(entry.score * weight);
+          }
+          members.put(entry.member, new OrderedSetEntry(entry.member, score));
+          continue;
+        }
+
+        existingValue.updateScore(aggregator.getFunction().apply(existingValue.score,
+            entry.score * weight));
+      }
+    }
+
+    scoreSet.addAll(members.values());
+
+    regionProvider.getLocalDataRegion().put(key, this);
+
+    return getSortedSetSize();
+  }
+
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,
       Region<RedisKey, RedisData> region, RedisKey key) {
     if (!scoresIterator.hasNext()) {
@@ -623,6 +665,13 @@ public class RedisSortedSet extends AbstractRedisData {
         scoreBytes = newScore;
         score = processByteArrayAsDouble(newScore);
       }
+    }
+
+    public double updateScore(double newScore) {
+      score = newScore;
+      scoreBytes = Coder.doubleToBytes(newScore);
+
+      return score;
     }
   }
 

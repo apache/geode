@@ -25,7 +25,8 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -163,6 +164,19 @@ public class RegionProvider {
     }
   }
 
+  public <T> T execute(Object key, List<Object> keysToLock, Callable<T> callable) {
+    try {
+      return partitionedRegion.computeWithPrimaryLocked(key,
+          () -> stripedCoordinator.execute(keysToLock, 0, callable));
+    } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
+      throw createRedisDataMovedException((RedisKey) key);
+    } catch (RedisException bex) {
+      throw bex;
+    } catch (Exception ex) {
+      throw new RedisException(ex);
+    }
+  }
+
   public RedisData getRedisData(RedisKey key) {
     return getRedisData(key, NullRedisDataStructures.NULL_REDIS_DATA);
   }
@@ -192,7 +206,7 @@ public class RegionProvider {
     }
   }
 
-  private RedisDataMovedException createRedisDataMovedException(RedisKey key) {
+  public RedisDataMovedException createRedisDataMovedException(RedisKey key) {
     RedisMemberInfo memberInfo = getRedisMemberInfo(key);
     Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
     return new RedisDataMovedException(slot, memberInfo.getHostAddress(),
@@ -303,16 +317,14 @@ public class RegionProvider {
    *
    * @return the keys ordered in the sequence in which they should be locked.
    */
-  public List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
-    List<RedisKey> orderedKeys = new ArrayList<>();
-    if (stripedCoordinator.compareStripes(key1, key2) > 0) {
-      orderedKeys.add(key1);
-      orderedKeys.add(key2);
-    } else {
-      orderedKeys.add(key2);
-      orderedKeys.add(key1);
-    }
+  public List<RedisKey> orderForLocking(List<RedisKey> keys) {
+    Collections.sort(keys, stripedCoordinator::compareStripes);
 
-    return orderedKeys;
+    return keys;
   }
+
+  public List<RedisKey> orderForLocking(RedisKey... keys) {
+    return orderForLocking(Arrays.asList(keys));
+  }
+
 }

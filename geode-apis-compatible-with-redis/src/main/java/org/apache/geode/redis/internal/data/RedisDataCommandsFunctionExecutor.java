@@ -48,6 +48,10 @@ public abstract class RedisDataCommandsFunctionExecutor {
     return regionProvider.execute(key, callable);
   }
 
+  protected <T> T stripedExecute(Object key, List<Object> keysToLock, Callable<T> callable) {
+    return regionProvider.execute(key, keysToLock, callable);
+  }
+
   protected RedisData getRedisData(RedisKey key) {
     return regionProvider.getRedisData(key);
   }

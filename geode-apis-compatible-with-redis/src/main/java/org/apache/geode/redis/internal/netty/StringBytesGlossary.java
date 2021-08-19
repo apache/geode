@@ -97,6 +97,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bBUSYKEY = stringToBytes("BUSYKEY ");
 
+  @MakeImmutable
+  public static final byte[] bCROSSSLOT = stringToBytes("CROSSSLOT ");
+
   // ********** Redis Command constants **********
 
   // ClusterExecutor
@@ -162,6 +165,18 @@ public class StringBytesGlossary {
   public static final byte[] bCH = stringToBytes("CH");
   @MakeImmutable
   public static final byte[] bINCR = stringToBytes("INCR");
+
+  // ZUnionStoreExecutor
+  @MakeImmutable
+  public static final byte[] bWEIGHTS = stringToBytes("WEIGHTS");
+  @MakeImmutable
+  public static final byte[] bAGGREGATE = stringToBytes("AGGREGATE");
+  @MakeImmutable
+  public static final byte[] bSUM = stringToBytes("SUM");
+  @MakeImmutable
+  public static final byte[] bMIN = stringToBytes("MIN");
+  @MakeImmutable
+  public static final byte[] bMAX = stringToBytes("MAX");
 
   // SetExecutor
   @MakeImmutable

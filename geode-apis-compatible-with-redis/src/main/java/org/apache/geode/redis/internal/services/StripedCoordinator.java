@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.services;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 
 
@@ -34,6 +35,8 @@ public interface StripedCoordinator {
    * @param callable the unit of work to do sequentially. May be called after run returns.
    */
   <T> T execute(Object stripeId, Callable<T> callable);
+
+  <T> T execute(List<Object> stripeIds, int index, Callable<T> callable);
 
   int compareStripes(Object object1, Object object2);
 }

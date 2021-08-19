@@ -48,7 +48,6 @@ public class RedisConstants {
   public static final String ERROR_MIN_MAX_NOT_A_FLOAT = "min or max is not a float";
   public static final String ERROR_OOM_COMMAND_NOT_ALLOWED =
       "command not allowed when used memory > 'maxmemory'";
-
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
   public static final String ERROR_UNKNOWN_CLUSTER_SUBCOMMAND =
@@ -64,4 +63,8 @@ public class RedisConstants {
   public static final String ERROR_INVALID_TTL = "Invalid TTL value, must be >= 0";
   public static final String ERROR_RESTORE_INVALID_PAYLOAD =
       "DUMP payload version or checksum are wrong";
+  public static final String ERROR_WRONG_SLOT =
+      "Keys in request don't hash to the same slot";
+  public static final String ERROR_WEIGHT_NOT_A_FLOAT =
+      "weight value is not a float";
 }
