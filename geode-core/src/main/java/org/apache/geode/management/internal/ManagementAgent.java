@@ -514,6 +514,7 @@ public class ManagementAgent {
     return jmxConnectorServer;
   }
 
+  @VisibleForTesting
   void setJmxConnectorServer(JMXConnectorServer jmxConnectorServer) {
     this.jmxConnectorServer = jmxConnectorServer;
   }
