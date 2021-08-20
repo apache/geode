@@ -69,7 +69,7 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
     clientCacheRule
         .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
         .withPoolSubscription(true)
-        .withLocatorConnection(locatorPort);
+        .withServerConnection(server1.getPort());
     clientCacheRule.createCache();
     Region<Object, Object> region1 = clientCacheRule.createProxyRegion(REPLICATE_REGION);
     Region<Object, Object> region2 = clientCacheRule.createProxyRegion(PARTITION_REGION);
@@ -91,7 +91,8 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
       assertThat(unAuthorizedOps.keySet().size()).isEqualTo(0);
     });
 
-    // server1 is the first server, gets all the initial contact, authorirzation checks happens here
+    // client is connected to server1, server1 gets all the initial contact,
+    // authorization checks happens here
     server1.invoke(() -> {
       Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
       assertThat(authorizedOps.get("user1")).asList().containsExactlyInAnyOrder(
@@ -118,6 +119,11 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
       Region<Object, Object> serverRegion2 = cache.getRegion(PARTITION_REGION);
       assertThat(serverRegion2.size()).isEqualTo(2);
     }, server1, server2);
+
+    MemberVM.invokeInEveryMember(() -> {
+      ExpirableSecurityManager.reset();
+      UpdatableUserAuthInitialize.reset();
+    }, locator, server1, server2);
   }
 
   private void expireUserOnAllVms(String user) {
