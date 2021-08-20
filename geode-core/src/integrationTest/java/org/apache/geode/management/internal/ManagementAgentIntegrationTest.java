@@ -36,7 +36,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 
-public class ManagementAgentTest {
+public class ManagementAgentIntegrationTest {
 
   // private ManagementAgent managementAgent = spy(ManagementAgent.class);
   @Rule

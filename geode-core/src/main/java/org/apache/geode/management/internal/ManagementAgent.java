@@ -463,9 +463,6 @@ public class ManagementAgent {
       if (accessFile != null && accessFile.length() > 0) {
         // Rewire the mbs hierarchy to set accessController
         ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
-        if (jmxConnectorServer.getMBeanServer() == null) {
-          controller.setMBeanServer(mbs);
-        }
         jmxConnectorServer.setMBeanServerForwarder(controller);
       } else {
         // if no access control, do not allow mbean creation to prevent Mlet attack
@@ -517,7 +514,7 @@ public class ManagementAgent {
     return jmxConnectorServer;
   }
 
-  public void setJmxConnectorServer(JMXConnectorServer jmxConnectorServer) {
+  void setJmxConnectorServer(JMXConnectorServer jmxConnectorServer) {
     this.jmxConnectorServer = jmxConnectorServer;
   }
 
