@@ -15,6 +15,9 @@
 
 package org.apache.geode.security;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,12 +35,21 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
   // use static field for ease of testing since there is only one instance of this in each VM
   // we only need ConcurrentHashSet here, but map is only construct available in the library
   private static final Set<String> EXPIRED_USERS = ConcurrentHashMap.newKeySet();
+  private static final Map<Object, List<ResourcePermission>> AUTHORIZED_OPS =
+      new ConcurrentHashMap<>();
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
-    if (EXPIRED_USERS.contains(principal)) {
+    if (EXPIRED_USERS.contains((String) principal)) {
       throw new AuthenticationExpiredException("User authentication expired.");
     }
+    List<ResourcePermission> permissions = AUTHORIZED_OPS.get(principal);
+    if (permissions == null) {
+      permissions = new ArrayList<>();
+    }
+    permissions.add(permission);
+    AUTHORIZED_OPS.put(principal, permissions);
+
     // always authorized
     return true;
   }
@@ -50,7 +62,12 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
     return EXPIRED_USERS;
   }
 
+  public static Map<Object, List<ResourcePermission>> getAuthorizedOps() {
+    return AUTHORIZED_OPS;
+  }
+
   public static void reset() {
     EXPIRED_USERS.clear();
+    AUTHORIZED_OPS.clear();
   }
 }
