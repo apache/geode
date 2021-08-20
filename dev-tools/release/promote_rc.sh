@@ -423,7 +423,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Updating 'old' versions on support/$VERSION_MM"
+echo "Updating 'old' versions and Benchmarks baseline on support/$VERSION_MM"
 echo "============================================================"
 set -x
 cd ${GEODE}
@@ -435,10 +435,22 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
   -i.bak settings.gradle
 rm settings.gradle.bak
+PATCH=${VERSION##*.}
+if [ $PATCH -eq 0 ] ; then
+  #also update benchmark baseline for support branch to its new minor
+  sed \
+    -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+    -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -i.bak ci/pipelines/shared/jinja.variables.yml
+  rm ci/pipelines/shared/jinja.variables.yml.bak
+  BENCHMSG2=" and set as Benchmarks baseline"
+  set -x
+  git add ci/pipelines/shared/jinja.variables.yml
+fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions on support/$VERSION_MM"
+git commit -m "add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
 git push
 set +x
 
