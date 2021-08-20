@@ -36,14 +36,14 @@ benchmarks:
     max_in_flight: 3
     timeout: 12h
   - title: 'radish'
-    baseline_branch: ''
     # The current radish baseline version is taken from the commit:
     #   GEODE-9169: remove netty context switch (#6725)
-    baseline_version: 'ed38145379d3da05ecc79a39fa145030bbd4fb1e'
+    baseline_branch: 'ed38145379d3da05ecc79a39fa145030bbd4fb1e'
+    baseline_version: ''
     flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
     options: '--tests=org.apache.geode.benchmark.redis.tests.*'
     max_in_flight: 5
-    timeout: 4h
+    timeout: 8h
 
 build_test:
   ARTIFACT_SLUG: build
