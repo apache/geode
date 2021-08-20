@@ -355,6 +355,11 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
+  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetScoreRangeOptions rangeOptions) {
+    return removeRange(region, key, rangeOptions);
+  }
+
   List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
@@ -406,6 +411,28 @@ public class RedisSortedSet extends AbstractRedisData {
     return result;
   }
 
+  private long iteratorRangeRemove(Iterator<AbstractOrderedSetEntry> scoresIterator,
+      Region<RedisKey, RedisData> region, RedisKey key) {
+    if (!scoresIterator.hasNext()) {
+      return 0;
+    }
+
+    int entriesRemoved = 0;
+
+    RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
+    while (scoresIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = scoresIterator.next();
+      scoresIterator.remove();
+      members.remove(entry.member);
+      entriesRemoved++;
+      deltaInfo.add(entry.member);
+    }
+
+    storeChanges(region, key, deltaInfo);
+
+    return entriesRemoved;
+  }
+
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> membersToAdd, ZAddOptions options) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.
@@ -435,6 +462,27 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     return getElementsFromSet(rangeOptions, startIndex, maxElementsToReturn);
+  }
+
+  private long removeRange(Region<RedisKey, RedisData> region, RedisKey key,
+      AbstractSortedSetRangeOptions<?> rangeOptions) {
+    int startIndex = getStartIndex(rangeOptions);
+
+    if (startIndex >= getSortedSetSize() && !rangeOptions.isRev()
+        || startIndex < 0 && rangeOptions.isRev()) {
+      return 0;
+    }
+
+    int maxElementsToRemove = getMaxElementsToReturn(rangeOptions, startIndex);
+
+    if (maxElementsToRemove <= 0) {
+      return 0;
+    }
+
+    Iterator<AbstractOrderedSetEntry> entryIterator =
+        scoreSet.getIndexRange(startIndex, maxElementsToRemove, rangeOptions.isRev());
+
+    return iteratorRangeRemove(entryIterator, region, key);
   }
 
   private int getStartIndex(AbstractSortedSetRangeOptions<?> rangeOptions) {
