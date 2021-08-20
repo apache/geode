@@ -497,8 +497,8 @@ jobs:
           AWS_REGION: us-west-2
           ARTIFACT_BUCKET: ((artifact-bucket))
           BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
-          BASELINE_BRANCH: {{var_run.baseline_branch if var_run.baseline_branch is defined else benchmarks.baseline_branch_default}}
-          BASELINE_VERSION: {{var_run.baseline_version if var_run.baseline_version is defined else benchmarks.baseline_version_default}}
+          BASELINE_BRANCH: {{run_var.baseline_branch if run_var.baseline_branch is defined else benchmarks.baseline_branch_default}}
+          BASELINE_VERSION: {{run_var.baseline_version if run_var.baseline_version is defined else benchmarks.baseline_version_default}}
           FLAGS: {{ run_var.flag }}
           TAG_POSTFIX: -{{ run_var.title }}
           TEST_OPTIONS: {{ run_var.options }}
@@ -525,8 +525,8 @@ jobs:
               AWS_DEFAULT_REGION: us-west-2
               AWS_REGION: us-west-2
               ARTIFACT_BUCKET: ((artifact-bucket))
-              BASELINE_BRANCH: {{var_run.baseline_branch if var_run.baseline_branch is defined else benchmarks.baseline_branch_default}}
-              BASELINE_VERSION: {{var_run.baseline_version if var_run.baseline_version is defined else benchmarks.baseline_version_default}}
+              BASELINE_BRANCH: {{run_var.baseline_branch if run_var.baseline_branch is defined else benchmarks.baseline_branch_default}}
+              BASELINE_VERSION: {{run_var.baseline_version if run_var.baseline_version is defined else benchmarks.baseline_version_default}}
               FLAGS: {{ run_var.flag }}
               TAG_POSTFIX: -{{ run_var.title }}
               TEST_OPTIONS: {{ run_var.options }}
