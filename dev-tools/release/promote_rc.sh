@@ -406,7 +406,7 @@ fi
 rm settings.gradle.bak
 if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
-  sed -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+  sed -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
   BENCHMSG=" and set as Benchmarks baseline"
