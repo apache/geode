@@ -218,6 +218,7 @@ sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -e "s/^ENV GEODE_SHA256.*/ENV GEODE_SHA256 ${GEODE_SHA}/" \
     -e "s/ha.pool.sks-keyservers.net/keyserver.ubuntu.com/" \
+    -e '/This is a TEMPLATE/d' \
     -i.bak Dockerfile
 rm Dockerfile.bak
 set -x
@@ -423,7 +424,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Updating 'old' versions on support/$VERSION_MM"
+echo "Updating 'old' versions and Benchmarks baseline on support/$VERSION_MM"
 echo "============================================================"
 set -x
 cd ${GEODE}
@@ -435,10 +436,22 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
   -i.bak settings.gradle
 rm settings.gradle.bak
+PATCH=${VERSION##*.}
+if [ $PATCH -eq 0 ] ; then
+  #also update benchmark baseline for support branch to its new minor
+  sed \
+    -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+    -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -i.bak ci/pipelines/shared/jinja.variables.yml
+  rm ci/pipelines/shared/jinja.variables.yml.bak
+  BENCHMSG2=" and set as Benchmarks baseline"
+  set -x
+  git add ci/pipelines/shared/jinja.variables.yml
+fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions on support/$VERSION_MM"
+git commit -m "add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
 git push
 set +x
 
@@ -492,8 +505,7 @@ MAJOR="${VERSION_MM%.*}"
 MINOR="${VERSION_MM#*.}"
 PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. Ask on the dev list for a volunteer to begin the chore of updating 3rd-party dependency versions on develop (see dev-tools/dependencies/README.md)"
-M=$(date --date '+18 months' '+%a, %B %d %Y' 2>/dev/null || date -v +9m "+%a, %B %d %Y" 2>/dev/null || echo "18 months from now")
-[ "${PATCH}" -ne 0 ] || echo "11. Mark your calendar for $M (assuming we release Geode ${MAJOR}.$((MINOR + 3)) on that day) to run ${0%/*}/end_of_support.sh -v ${VERSION_MM}"
+[ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode and geode-native."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
