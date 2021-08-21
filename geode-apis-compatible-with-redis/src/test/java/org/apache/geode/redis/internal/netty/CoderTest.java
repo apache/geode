@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.doubleToString;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isNaN;
@@ -73,9 +73,12 @@ public class CoderTest {
 
   @Test
   @Parameters(method = "infinityReturnStrings")
-  public void doubleToString_processesLikeRedis(String inputString, String expectedString) {
-    byte[] bytes = stringToBytes(inputString);
-    assertThat(doubleToString(bytesToDouble(bytes))).isEqualTo(expectedString);
+  public void doubleToBytes_processesLikeRedis(String inputString, String expectedString) {
+    byte[] inputBytes = stringToBytes(inputString);
+    double inputDouble = bytesToDouble(inputBytes);
+    byte[] outputBytes = doubleToBytes(inputDouble);
+    String outputString = bytesToString(outputBytes);
+    assertThat(outputString).isEqualTo(expectedString);
   }
 
   @Test

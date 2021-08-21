@@ -37,6 +37,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCA
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNEGATIVE_ZERO;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
@@ -45,8 +46,10 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPOSITIVE_ZERO;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUPPERCASE_E;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
 
 import java.io.UnsupportedEncodingException;
@@ -58,6 +61,7 @@ import java.util.Collection;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
@@ -279,7 +283,7 @@ public class Coder {
     }
   }
 
-  public static String doubleToString(double d) {
+  private static String doubleToString(double d) {
     if (d == Double.POSITIVE_INFINITY) {
       return "inf";
     }
@@ -327,7 +331,8 @@ public class Coder {
   }
 
   public static byte[] doubleToBytes(double d) {
-    return stringToBytes(doubleToString(d));
+    return convertDoubleToAsciiBytes(d);
+    // return stringToBytes(doubleToString(d));
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -710,6 +715,1555 @@ public class Coder {
       for (byte j = 0; j < 10; j++) {
         DIGIT_ONES[(i * 10) + j] = digitToAscii(j);
       }
+    }
+  }
+
+  static final int SIGNIFICAND_WIDTH = 53;
+  static final int EXP_BIAS = 1023;
+  static final long SIGN_BIT_MASK = 0x8000000000000000L;
+  static final long SIGNIF_BIT_MASK = 0x000FFFFFFFFFFFFFL;
+  static final long EXP_BIT_MASK = 0x7FF0000000000000L;
+
+
+  static final int EXP_SHIFT = SIGNIFICAND_WIDTH - 1;
+  static final long FRACT_HOB = (1L << EXP_SHIFT); // assumed High-Order bit
+  static final long EXP_ONE = ((long) EXP_BIAS) << EXP_SHIFT; // exponent of 1.0
+  static final int MAX_SMALL_BIN_EXP = 62;
+  static final int MIN_SMALL_BIN_EXP = -(63 / 3);
+
+  /**
+   * @param d The double precision value to convert.
+   */
+  private static byte[] convertDoubleToAsciiBytes(double d) {
+    long dBits = Double.doubleToRawLongBits(d);
+    boolean isNegative = (dBits & SIGN_BIT_MASK) != 0; // discover sign
+    long fractBits = dBits & SIGNIF_BIT_MASK;
+    int binExp = (int) ((dBits & EXP_BIT_MASK) >> EXP_SHIFT);
+    // Discover obvious special cases of NaN and Infinity.
+    if (binExp == (int) (EXP_BIT_MASK >> EXP_SHIFT)) {
+      if (fractBits == 0L) {
+        return isNegative ? bN_INF : bINF;
+      } else {
+        return bNaN;
+      }
+    }
+    // Finish unpacking
+    // Normalize denormalized numbers.
+    // Insert assumed high-order bit for normalized numbers.
+    // Subtract exponent bias.
+    int nSignificantBits;
+    if (binExp == 0) {
+      if (fractBits == 0L) {
+        // not a denorm, just a 0!
+        return isNegative ? bNEGATIVE_ZERO : bPOSITIVE_ZERO;
+      }
+      int leadingZeros = Long.numberOfLeadingZeros(fractBits);
+      int shift = leadingZeros - (63 - EXP_SHIFT);
+      fractBits <<= shift;
+      binExp = 1 - shift;
+      nSignificantBits = 64 - leadingZeros; // recall binExp is - shift count.
+    } else {
+      fractBits |= FRACT_HOB;
+      nSignificantBits = EXP_SHIFT + 1;
+    }
+    binExp -= EXP_BIAS;
+    BinaryToASCIIBuffer buf = getBinaryToASCIIBuffer();
+    buf.setSign(isNegative);
+    // call the routine that actually does all the hard work.
+    buf.dtoa(binExp, fractBits, nSignificantBits);
+    return buf.getBytes();
+  }
+
+  static class BinaryToASCIIBuffer {
+    private boolean isNegative;
+    private int decExponent;
+    private int firstDigitIndex;
+    private int nDigits;
+    private final byte[] digits = new byte[20];
+    private final byte[] buffer = new byte[26];
+
+    /**
+     * Default constructor; used for non-zero values,
+     * <code>BinaryToASCIIBuffer</code> may be thread-local and reused
+     */
+    BinaryToASCIIBuffer() {}
+
+    private void setSign(boolean isNegative) {
+      this.isNegative = isNegative;
+    }
+
+    /**
+     * This is the easy subcase --
+     * all the significant bits, after scaling, are held in lvalue.
+     * negSign and decExponent tell us what processing and scaling
+     * has already been done. Exceptional cases have already been
+     * stripped out.
+     * In particular:
+     * lvalue is a finite number (not Inf, nor NaN)
+     * lvalue > 0L (not zero, nor negative).
+     *
+     * The only reason that we develop the digits here, rather than
+     * calling on Long.toString() is that we can do it a little faster,
+     * and besides want to treat trailing 0s specially. If Long.toString
+     * changes, we should re-evaluate this strategy!
+     */
+    private void developLongDigits(long lvalue, int insignificantDigits) {
+      int decExponent = 0;
+      if (insignificantDigits != 0) {
+        // Discard non-significant low-order bits, while rounding,
+        // up to insignificant value.
+        long pow10 = FDBigInteger.LONG_5_POW[insignificantDigits] << insignificantDigits; // 10^i ==
+                                                                                          // 5^i *
+                                                                                          // 2^i;
+        long residue = lvalue % pow10;
+        lvalue /= pow10;
+        decExponent += insignificantDigits;
+        if (residue >= (pow10 >> 1)) {
+          // round up based on the low-order bits we're discarding
+          lvalue++;
+        }
+      }
+      int digitno = digits.length - 1;
+      int digit;
+      if (lvalue <= Integer.MAX_VALUE) {
+        // even easier subcase!
+        // can do int arithmetic rather than long!
+        int ivalue = (int) lvalue;
+        digit = ivalue % 10;
+        ivalue /= 10;
+        while (digit == 0) {
+          decExponent++;
+          digit = ivalue % 10;
+          ivalue /= 10;
+        }
+        while (ivalue != 0) {
+          digits[digitno--] = digitToAscii(digit);
+          decExponent++;
+          digit = ivalue % 10;
+          ivalue /= 10;
+        }
+      } else {
+        // same algorithm as above (same bugs, too )
+        // but using long arithmetic.
+        digit = (int) (lvalue % 10L);
+        lvalue /= 10L;
+        while (digit == 0) {
+          decExponent++;
+          digit = (int) (lvalue % 10L);
+          lvalue /= 10L;
+        }
+        while (lvalue != 0L) {
+          digits[digitno--] = digitToAscii(digit);
+          decExponent++;
+          digit = (int) (lvalue % 10L);
+          lvalue /= 10;
+        }
+      }
+      digits[digitno] = digitToAscii(digit);
+      this.decExponent = decExponent + 1;
+      this.firstDigitIndex = digitno;
+      this.nDigits = this.digits.length - digitno;
+    }
+
+    private void dtoa(int binExp, long fractBits, int nSignificantBits) {
+      // Examine number. Determine if it is an easy case,
+      // which we can do pretty trivially using float/long conversion,
+      // or whether we must do real work.
+      final int tailZeros = Long.numberOfTrailingZeros(fractBits);
+
+      // number of significant bits of fractBits;
+      final int nFractBits = EXP_SHIFT + 1 - tailZeros;
+
+      // number of significant bits to the right of the point.
+      int nTinyBits = Math.max(0, nFractBits - binExp - 1);
+      if (binExp <= MAX_SMALL_BIN_EXP && binExp >= MIN_SMALL_BIN_EXP) {
+        // Look more closely at the number to decide if,
+        // with scaling by 10^nTinyBits, the result will fit in
+        // a long.
+        if ((nTinyBits < FDBigInteger.LONG_5_POW.length)
+            && ((nFractBits + N_5_BITS[nTinyBits]) < 64)) {
+          //
+          // We can do this:
+          // take the fraction bits, which are normalized.
+          // (a) nTinyBits == 0: Shift left or right appropriately
+          // to align the binary point at the extreme right, i.e.
+          // where a long int point is expected to be. The integer
+          // result is easily converted to a string.
+          // (b) nTinyBits > 0: Shift right by EXP_SHIFT-nFractBits,
+          // which effectively converts to long and scales by
+          // 2^nTinyBits. Then multiply by 5^nTinyBits to
+          // complete the scaling. We know this won't overflow
+          // because we just counted the number of bits necessary
+          // in the result. The integer you get from this can
+          // then be converted to a string pretty easily.
+          //
+          if (nTinyBits == 0) {
+            int insignificant;
+            if (binExp > nSignificantBits) {
+              insignificant = insignificantDigitsForPow2(binExp - nSignificantBits - 1);
+            } else {
+              insignificant = 0;
+            }
+            if (binExp >= EXP_SHIFT) {
+              fractBits <<= (binExp - EXP_SHIFT);
+            } else {
+              fractBits >>>= (EXP_SHIFT - binExp);
+            }
+            developLongDigits(fractBits, insignificant);
+            return;
+          }
+        }
+      }
+
+      int decExp = estimateDecExp(fractBits, binExp);
+      int B2, B5; // powers of 2 and powers of 5, respectively, in B
+      int S2, S5; // powers of 2 and powers of 5, respectively, in S
+      int M2, M5; // powers of 2 and powers of 5, respectively, in M
+
+      B5 = Math.max(0, -decExp);
+      B2 = B5 + nTinyBits + binExp;
+
+      S5 = Math.max(0, decExp);
+      S2 = S5 + nTinyBits;
+
+      M5 = B5;
+      M2 = B2 - nSignificantBits;
+
+      //
+      // the long integer fractBits contains the (nFractBits) interesting
+      // bits from the mantissa of d ( hidden 1 added if necessary) followed
+      // by (EXP_SHIFT+1-nFractBits) zeros. In the interest of compactness,
+      // I will shift out those zeros before turning fractBits into a
+      // FDBigInteger. The resulting whole number will be
+      // d * 2^(nFractBits-1-binExp).
+      //
+      fractBits >>>= tailZeros;
+      B2 -= nFractBits - 1;
+      int common2factor = Math.min(B2, S2);
+      B2 -= common2factor;
+      S2 -= common2factor;
+      M2 -= common2factor;
+
+      //
+      // HACK!! For exact powers of two, the next smallest number
+      // is only half as far away as we think (because the meaning of
+      // ULP changes at power-of-two bounds) for this reason, we
+      // hack M2. Hope this works.
+      //
+      if (nFractBits == 1) {
+        M2 -= 1;
+      }
+
+      if (M2 < 0) {
+        // oops.
+        // since we cannot scale M down far enough,
+        // we must scale the other values up.
+        B2 -= M2;
+        S2 -= M2;
+        M2 = 0;
+      }
+      //
+      // Construct, Scale, iterate.
+      // Some day, we'll write a stopping test that takes
+      // account of the asymmetry of the spacing of floating-point
+      // numbers below perfect powers of 2
+      // 26 Sept 96 is not that day.
+      // So we use a symmetric test.
+      //
+      int ndigit;
+      boolean low, high;
+      long lowDigitDifference;
+      int q;
+
+      //
+      // Detect the special cases where all the numbers we are about
+      // to compute will fit in int or long integers.
+      // In these cases, we will avoid doing FDBigInteger arithmetic.
+      // We use the same algorithms, except that we "normalize"
+      // our FDBigIntegers before iterating. This is to make division easier,
+      // as it makes our fist guess (quotient of high-order words)
+      // more accurate!
+      //
+      // Some day, we'll write a stopping test that takes
+      // account of the asymmetry of the spacing of floating-point
+      // numbers below perfect powers of 2
+      // 26 Sept 96 is not that day.
+      // So we use a symmetric test.
+      //
+      // binary digits needed to represent B, approx.
+      int Bbits = nFractBits + B2 + ((B5 < N_5_BITS.length) ? N_5_BITS[B5] : (B5 * 3));
+
+      // binary digits needed to represent 10*S, approx.
+      int tenSbits = S2 + 1 + (((S5 + 1) < N_5_BITS.length) ? N_5_BITS[(S5 + 1)] : ((S5 + 1) * 3));
+      if (Bbits < 64 && tenSbits < 64) {
+        if (Bbits < 32 && tenSbits < 32) {
+          // wa-hoo! They're all ints!
+          int b = ((int) fractBits * FDBigInteger.SMALL_5_POW[B5]) << B2;
+          int s = FDBigInteger.SMALL_5_POW[S5] << S2;
+          int m = FDBigInteger.SMALL_5_POW[M5] << M2;
+          int tens = s * 10;
+          //
+          // Unroll the first iteration. If our decExp estimate
+          // was too high, our first quotient will be zero. In this
+          // case, we discard it and decrement decExp.
+          //
+          ndigit = 0;
+          q = b / s;
+          b = 10 * (b % s);
+          m *= 10;
+          low = (b < m);
+          high = (b + m > tens);
+          if ((q == 0) && !high) {
+            // oops. Usually ignore leading zero.
+            decExp--;
+          } else {
+            digits[ndigit++] = digitToAscii(q);
+          }
+          //
+          // HACK! Java spec sez that we always have at least
+          // one digit after the . in either F- or E-form output.
+          // Thus we will need more than one digit if we're using
+          // E-form
+          //
+          if (decExp < -3 || decExp >= 8) {
+            high = low = false;
+          }
+          while (!low && !high) {
+            q = b / s;
+            b = 10 * (b % s);
+            m *= 10;
+            if (m > 0L) {
+              low = (b < m);
+              high = (b + m > tens);
+            } else {
+              // hack -- m might overflow!
+              // in this case, it is certainly > b,
+              // which won't
+              // and b+m > tens, too, since that has overflowed
+              // either!
+              low = true;
+              high = true;
+            }
+            digits[ndigit++] = digitToAscii(q);
+          }
+          lowDigitDifference = ((long) b << 1) - tens;
+        } else {
+          // still good! they're all longs!
+          long b = (fractBits * FDBigInteger.LONG_5_POW[B5]) << B2;
+          long s = FDBigInteger.LONG_5_POW[S5] << S2;
+          long m = FDBigInteger.LONG_5_POW[M5] << M2;
+          long tens = s * 10L;
+          //
+          // Unroll the first iteration. If our decExp estimate
+          // was too high, our first quotient will be zero. In this
+          // case, we discard it and decrement decExp.
+          //
+          ndigit = 0;
+          q = (int) (b / s);
+          b = 10L * (b % s);
+          m *= 10L;
+          low = (b < m);
+          high = (b + m > tens);
+          if ((q == 0) && !high) {
+            // oops. Usually ignore leading zero.
+            decExp--;
+          } else {
+            digits[ndigit++] = digitToAscii(q);
+          }
+          //
+          // HACK! Java spec sez that we always have at least
+          // one digit after the . in either F- or E-form output.
+          // Thus we will need more than one digit if we're using
+          // E-form
+          //
+          if (decExp < -3 || decExp >= 8) {
+            high = low = false;
+          }
+          while (!low && !high) {
+            q = (int) (b / s);
+            b = 10 * (b % s);
+            m *= 10;
+            if (m > 0L) {
+              low = (b < m);
+              high = (b + m > tens);
+            } else {
+              // hack -- m might overflow!
+              // in this case, it is certainly > b,
+              // which won't
+              // and b+m > tens, too, since that has overflowed
+              // either!
+              low = true;
+              high = true;
+            }
+            digits[ndigit++] = digitToAscii(q);
+          }
+          lowDigitDifference = (b << 1) - tens;
+        }
+      } else {
+        //
+        // We really must do FDBigInteger arithmetic.
+        // Fist, construct our FDBigInteger initial values.
+        //
+        FDBigInteger Sval = FDBigInteger.valueOfPow52(S5, S2);
+        int shiftBias = Sval.getNormalizationBias();
+        Sval = Sval.leftShift(shiftBias); // normalize so that division works better
+
+        FDBigInteger Bval = FDBigInteger.valueOfMulPow52(fractBits, B5, B2 + shiftBias);
+        FDBigInteger Mval = FDBigInteger.valueOfPow52(M5 + 1, M2 + shiftBias + 1);
+
+        FDBigInteger tenSval = FDBigInteger.valueOfPow52(S5 + 1, S2 + shiftBias + 1); // Sval.mult(
+                                                                                      // 10 );
+        //
+        // Unroll the first iteration. If our decExp estimate
+        // was too high, our first quotient will be zero. In this
+        // case, we discard it and decrement decExp.
+        //
+        ndigit = 0;
+        q = Bval.quoRemIteration(Sval);
+        low = (Bval.cmp(Mval) < 0);
+        high = tenSval.addAndCmp(Bval, Mval) <= 0;
+
+        if ((q == 0) && !high) {
+          // oops. Usually ignore leading zero.
+          decExp--;
+        } else {
+          digits[ndigit++] = digitToAscii(q);
+        }
+        //
+        // HACK! Java spec sez that we always have at least
+        // one digit after the . in either F- or E-form output.
+        // Thus we will need more than one digit if we're using
+        // E-form
+        //
+        if (decExp < -3 || decExp >= 8) {
+          high = low = false;
+        }
+        while (!low && !high) {
+          q = Bval.quoRemIteration(Sval);
+          Mval = Mval.multBy10(); // Mval = Mval.mult( 10 );
+          low = (Bval.cmp(Mval) < 0);
+          high = tenSval.addAndCmp(Bval, Mval) <= 0;
+          digits[ndigit++] = digitToAscii(q);
+        }
+        if (high && low) {
+          Bval = Bval.leftShift(1);
+          lowDigitDifference = Bval.cmp(tenSval);
+        } else {
+          lowDigitDifference = 0L; // this here only for flow analysis!
+        }
+      }
+      this.decExponent = decExp + 1;
+      this.firstDigitIndex = 0;
+      this.nDigits = ndigit;
+      //
+      // Last digit gets rounded based on stopping condition.
+      //
+      if (high) {
+        if (low) {
+          if (lowDigitDifference == 0L) {
+            // it's a tie!
+            // choose based on which digits we like.
+            if ((digits[firstDigitIndex + nDigits - 1] & 1) != 0) {
+              roundup();
+            }
+          } else if (lowDigitDifference > 0) {
+            roundup();
+          }
+        } else {
+          roundup();
+        }
+      }
+    }
+
+    // add one to the least significant digit.
+    // in the unlikely event there is a carry out, deal with it.
+    // assert that this will only happen where there
+    // is only one digit, e.g. (float)1e-44 seems to do it.
+    //
+    private void roundup() {
+      int i = (firstDigitIndex + nDigits - 1);
+      int q = digits[i];
+      if (q == digitToAscii(9)) {
+        while (q == digitToAscii(9) && i > firstDigitIndex) {
+          digits[i] = digitToAscii(0);
+          q = digits[--i];
+        }
+        if (q == digitToAscii(9)) {
+          // carryout! High-order 1, rest 0s, larger exp.
+          decExponent += 1;
+          digits[firstDigitIndex] = digitToAscii(1);
+          return;
+        }
+        // else fall through.
+      }
+      digits[i] = (byte) (q + 1);
+    }
+
+    /**
+     * Estimate decimal exponent. (If it is small-ish,
+     * we could double-check.)
+     *
+     * First, scale the mantissa bits such that 1 <= d2 < 2.
+     * We are then going to estimate
+     * log10(d2) ~=~ (d2-1.5)/1.5 + log(1.5)
+     * and so we can estimate
+     * log10(d) ~=~ log10(d2) + binExp * log10(2)
+     * take the floor and call it decExp.
+     */
+    static int estimateDecExp(long fractBits, int binExp) {
+      double d2 = Double.longBitsToDouble(EXP_ONE | (fractBits & SIGNIF_BIT_MASK));
+      double d = (d2 - 1.5D) * 0.289529654D + 0.176091259 + (double) binExp * 0.301029995663981;
+      long dBits = Double.doubleToRawLongBits(d); // can't be NaN here so use raw
+      int exponent = (int) ((dBits & EXP_BIT_MASK) >> EXP_SHIFT) - EXP_BIAS;
+      boolean isNegative = (dBits & SIGN_BIT_MASK) != 0; // discover sign
+      if (exponent >= 0 && exponent < 52) { // hot path
+        long mask = SIGNIF_BIT_MASK >> exponent;
+        int r = (int) (((dBits & SIGNIF_BIT_MASK) | FRACT_HOB) >> (EXP_SHIFT - exponent));
+        return isNegative ? (((mask & dBits) == 0L) ? -r : -r - 1) : r;
+      } else if (exponent < 0) {
+        return (((dBits & ~SIGN_BIT_MASK) == 0) ? 0 : ((isNegative) ? -1 : 0));
+      } else { // if (exponent >= 52)
+        return (int) d;
+      }
+    }
+
+    /**
+     * Calculates
+     *
+     * <pre>
+     * insignificantDigitsForPow2(v) == insignificantDigits(1L << v)
+     * </pre>
+     */
+    private static int insignificantDigitsForPow2(int p2) {
+      if (p2 > 1 && p2 < insignificantDigitsNumber.length) {
+        return insignificantDigitsNumber[p2];
+      }
+      return 0;
+    }
+
+    /**
+     * If insignificant==(1L << ixd)
+     * i = insignificantDigitsNumber[idx] is the same as:
+     * int i;
+     * for ( i = 0; insignificant >= 10L; i++ )
+     * insignificant /= 10L;
+     */
+    private static final int[] insignificantDigitsNumber = {
+        0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3,
+        4, 4, 4, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7,
+        8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 11, 11, 11,
+        12, 12, 12, 12, 13, 13, 13, 14, 14, 14,
+        15, 15, 15, 15, 16, 16, 16, 17, 17, 17,
+        18, 18, 18, 19
+    };
+
+    // approximately ceil( log2( long5pow[i] ) )
+    private static final int[] N_5_BITS = {
+        0,
+        3,
+        5,
+        7,
+        10,
+        12,
+        14,
+        17,
+        19,
+        21,
+        24,
+        26,
+        28,
+        31,
+        33,
+        35,
+        38,
+        40,
+        42,
+        45,
+        47,
+        49,
+        52,
+        54,
+        56,
+        59,
+        61,
+    };
+
+    private byte[] getBytes() {
+      int i = 0;
+      if (isNegative) {
+        buffer[0] = bMINUS;
+        i = 1;
+      }
+      if (decExponent > 0 && decExponent < 8) {
+        // print digits.digits.
+        int byteLength = Math.min(nDigits, decExponent);
+        System.arraycopy(digits, firstDigitIndex, buffer, i, byteLength);
+        i += byteLength;
+        if (byteLength < decExponent) {
+          byteLength = decExponent - byteLength;
+          Arrays.fill(buffer, i, i + byteLength, digitToAscii(0));
+          i += byteLength;
+          buffer[i++] = bPERIOD;
+          buffer[i++] = digitToAscii(0);
+        } else {
+          buffer[i++] = bPERIOD;
+          if (byteLength < nDigits) {
+            int t = nDigits - byteLength;
+            System.arraycopy(digits, firstDigitIndex + byteLength, buffer, i, t);
+            i += t;
+          } else {
+            buffer[i++] = digitToAscii(0);
+          }
+        }
+      } else if (decExponent <= 0 && decExponent > -3) {
+        buffer[i++] = digitToAscii(0);
+        buffer[i++] = bPERIOD;
+        if (decExponent != 0) {
+          Arrays.fill(buffer, i, i - decExponent, digitToAscii(0));
+          i -= decExponent;
+        }
+        System.arraycopy(digits, firstDigitIndex, buffer, i, nDigits);
+        i += nDigits;
+      } else {
+        buffer[i++] = digits[firstDigitIndex];
+        buffer[i++] = bPERIOD;
+        if (nDigits > 1) {
+          System.arraycopy(digits, firstDigitIndex + 1, buffer, i, nDigits - 1);
+          i += nDigits - 1;
+        } else {
+          buffer[i++] = digitToAscii(0);
+        }
+        buffer[i++] = bUPPERCASE_E;
+        int e;
+        if (decExponent <= 0) {
+          buffer[i++] = bMINUS;
+          e = -decExponent + 1;
+        } else {
+          e = decExponent - 1;
+        }
+        // decExponent has 1, 2, or 3, digits
+        if (e <= 9) {
+          buffer[i++] = digitToAscii(e);
+        } else if (e <= 99) {
+          buffer[i++] = digitToAscii(e / 10);
+          buffer[i++] = digitToAscii(e % 10);
+        } else {
+          buffer[i++] = digitToAscii(e / 100);
+          e %= 100;
+          buffer[i++] = digitToAscii(e / 10);
+          buffer[i++] = digitToAscii(e & 10);
+        }
+      }
+      return ByteArrays.copy(buffer, 0, i);
+    }
+  }
+
+  private static final ThreadLocal<BinaryToASCIIBuffer> threadLocalBinaryToASCIIBuffer =
+      ThreadLocal.withInitial(BinaryToASCIIBuffer::new);
+
+  private static BinaryToASCIIBuffer getBinaryToASCIIBuffer() {
+    return threadLocalBinaryToASCIIBuffer.get();
+  }
+
+  /**
+   * A simple big integer package specifically for floating point base conversion.
+   */
+  private static class FDBigInteger {
+
+    static final int[] SMALL_5_POW;
+
+    static final long[] LONG_5_POW;
+
+    // Maximum size of cache of powers of 5 as FDBigIntegers.
+    private static final int MAX_FIVE_POW = 340;
+
+    // Cache of big powers of 5 as FDBigIntegers.
+    private static final FDBigInteger[] POW_5_CACHE;
+
+    // Zero as an FDBigInteger.
+    public static final FDBigInteger ZERO;
+
+    // Initialize FDBigInteger cache of powers of 5.
+    static {
+      long[] long5pow = {
+          1L,
+          5L,
+          5L * 5,
+          5L * 5 * 5,
+          5L * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+              * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+              * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+              * 5 * 5,
+          5L * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+              * 5 * 5 * 5,
+      };
+      int[] small5pow = {
+          1,
+          5,
+          5 * 5,
+          5 * 5 * 5,
+          5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5,
+          5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5 * 5
+      };
+      FDBigInteger[] pow5cache = new FDBigInteger[MAX_FIVE_POW];
+      int i = 0;
+      while (i < small5pow.length) {
+        FDBigInteger pow5 = new FDBigInteger(new int[] {small5pow[i]}, 0);
+        pow5.makeImmutable();
+        pow5cache[i] = pow5;
+        i++;
+      }
+      FDBigInteger prev = pow5cache[i - 1];
+      while (i < MAX_FIVE_POW) {
+        pow5cache[i] = prev = prev.mult(5);
+        prev.makeImmutable();
+        i++;
+      }
+      FDBigInteger zero = new FDBigInteger(new int[0], 0);
+      zero.makeImmutable();
+      SMALL_5_POW = small5pow;
+      LONG_5_POW = long5pow;
+      POW_5_CACHE = pow5cache;
+      ZERO = zero;
+    }
+
+    // Constant for casting an int to a long via bitwise AND.
+    private static final long LONG_MASK = 0xffffffffL;
+
+    // @ spec_public non_null;
+    private int[] data; // value: data[0] is least significant
+    // @ spec_public;
+    private int offset; // number of least significant zero padding ints
+    // @ spec_public;
+    private int nWords; // data[nWords-1]!=0, all values above are zero
+    // if nWords==0 -> this FDBigInteger is zero
+    // @ spec_public;
+    private boolean isImmutable = false;
+
+    /**
+     * Constructs an <code>FDBigInteger</code> from data and padding. The
+     * <code>data</code> parameter has the least significant <code>int</code> at
+     * the zeroth index. The <code>offset</code> parameter gives the number of
+     * zero <code>int</code>s to be inferred below the least significant element
+     * of <code>data</code>.
+     *
+     * @param data An array containing all non-zero <code>int</code>s of the value.
+     * @param offset An offset indicating the number of zero <code>int</code>s to pad
+     *        below the least significant element of <code>data</code>.
+     */
+    private FDBigInteger(int[] data, int offset) {
+      this.data = data;
+      this.offset = offset;
+      this.nWords = data.length;
+      trimLeadingZeros();
+    }
+
+    /**
+     * Returns an <code>FDBigInteger</code> with the numerical value
+     * <code>5<sup>p5</sup> * 2<sup>p2</sup></code>.
+     *
+     * @param p5 The exponent of the power-of-five factor.
+     * @param p2 The exponent of the power-of-two factor.
+     * @return <code>5<sup>p5</sup> * 2<sup>p2</sup></code>
+     */
+    public static FDBigInteger valueOfPow52(int p5, int p2) {
+      if (p5 != 0) {
+        if (p2 == 0) {
+          return big5pow(p5);
+        } else if (p5 < SMALL_5_POW.length) {
+          int pow5 = SMALL_5_POW[p5];
+          int wordcount = p2 >> 5;
+          int bitcount = p2 & 0x1f;
+          if (bitcount == 0) {
+            return new FDBigInteger(new int[] {pow5}, wordcount);
+          } else {
+            return new FDBigInteger(new int[] {
+                pow5 << bitcount,
+                pow5 >>> (32 - bitcount)
+            }, wordcount);
+          }
+        } else {
+          return big5pow(p5).leftShift(p2);
+        }
+      } else {
+        return valueOfPow2(p2);
+      }
+    }
+
+    /**
+     * Returns an <code>FDBigInteger</code> with the numerical value
+     * <code>value * 5<sup>p5</sup> * 2<sup>p2</sup></code>.
+     *
+     * @param value The constant factor.
+     * @param p5 The exponent of the power-of-five factor.
+     * @param p2 The exponent of the power-of-two factor.
+     * @return <code>value * 5<sup>p5</sup> * 2<sup>p2</sup></code>
+     */
+    public static FDBigInteger valueOfMulPow52(long value, int p5, int p2) {
+      int v0 = (int) value;
+      int v1 = (int) (value >>> 32);
+      int wordcount = p2 >> 5;
+      int bitcount = p2 & 0x1f;
+      if (p5 != 0) {
+        if (p5 < SMALL_5_POW.length) {
+          long pow5 = SMALL_5_POW[p5] & LONG_MASK;
+          long carry = (v0 & LONG_MASK) * pow5;
+          v0 = (int) carry;
+          carry >>>= 32;
+          carry = (v1 & LONG_MASK) * pow5 + carry;
+          v1 = (int) carry;
+          int v2 = (int) (carry >>> 32);
+          if (bitcount == 0) {
+            return new FDBigInteger(new int[] {v0, v1, v2}, wordcount);
+          } else {
+            return new FDBigInteger(new int[] {
+                v0 << bitcount,
+                (v1 << bitcount) | (v0 >>> (32 - bitcount)),
+                (v2 << bitcount) | (v1 >>> (32 - bitcount)),
+                v2 >>> (32 - bitcount)
+            }, wordcount);
+          }
+        } else {
+          FDBigInteger pow5 = big5pow(p5);
+          int[] r;
+          if (v1 == 0) {
+            r = new int[pow5.nWords + 1 + ((p2 != 0) ? 1 : 0)];
+            mult(pow5.data, pow5.nWords, v0, r);
+          } else {
+            r = new int[pow5.nWords + 2 + ((p2 != 0) ? 1 : 0)];
+            mult(pow5.data, pow5.nWords, v0, v1, r);
+          }
+          return (new FDBigInteger(r, pow5.offset)).leftShift(p2);
+        }
+      } else if (p2 != 0) {
+        if (bitcount == 0) {
+          return new FDBigInteger(new int[] {v0, v1}, wordcount);
+        } else {
+          return new FDBigInteger(new int[] {
+              v0 << bitcount,
+              (v1 << bitcount) | (v0 >>> (32 - bitcount)),
+              v1 >>> (32 - bitcount)
+          }, wordcount);
+        }
+      }
+      return new FDBigInteger(new int[] {v0, v1}, 0);
+    }
+
+    /**
+     * Returns an <code>FDBigInteger</code> with the numerical value
+     * <code>2<sup>p2</sup></code>.
+     *
+     * @param p2 The exponent of 2.
+     * @return <code>2<sup>p2</sup></code>
+     */
+    private static FDBigInteger valueOfPow2(int p2) {
+      int wordcount = p2 >> 5;
+      int bitcount = p2 & 0x1f;
+      return new FDBigInteger(new int[] {1 << bitcount}, wordcount);
+    }
+
+    /**
+     * Removes all leading zeros from this <code>FDBigInteger</code> adjusting
+     * the offset and number of non-zero leading words accordingly.
+     */
+    private void trimLeadingZeros() {
+      int i = nWords;
+      if (i > 0 && (data[--i] == 0)) {
+        // for (; i > 0 && data[i - 1] == 0; i--) ;
+        while (i > 0 && data[i - 1] == 0) {
+          i--;
+        }
+        this.nWords = i;
+        if (i == 0) { // all words are zero
+          this.offset = 0;
+        }
+      }
+    }
+
+    /**
+     * Retrieves the normalization bias of the <code>FDBigIntger</code>. The
+     * normalization bias is a left shift such that after it the highest word
+     * of the value will have the 4 highest bits equal to zero:
+     * {@code (highestWord & 0xf0000000) == 0}, but the next bit should be 1
+     * {@code (highestWord & 0x08000000) != 0}.
+     *
+     * @return The normalization bias.
+     */
+    public int getNormalizationBias() {
+      if (nWords == 0) {
+        throw new IllegalArgumentException("Zero value cannot be normalized");
+      }
+      int zeros = Integer.numberOfLeadingZeros(data[nWords - 1]);
+      return (zeros < 4) ? 28 + zeros : zeros - 4;
+    }
+
+    // TODO: Why is anticount param needed if it is always 32 - bitcount?
+    /**
+     * Left shifts the contents of one int array into another.
+     *
+     * @param src The source array.
+     * @param idx The initial index of the source array.
+     * @param result The destination array.
+     * @param bitcount The left shift.
+     * @param anticount The left anti-shift, e.g., <code>32-bitcount</code>.
+     * @param prev The prior source value.
+     */
+    private static void leftShift(int[] src, int idx, int[] result, int bitcount, int anticount,
+        int prev) {
+      for (; idx > 0; idx--) {
+        int v = (prev << bitcount);
+        prev = src[idx - 1];
+        v |= (prev >>> anticount);
+        result[idx] = v;
+      }
+      int v = prev << bitcount;
+      result[0] = v;
+    }
+
+    /**
+     * Shifts this <code>FDBigInteger</code> to the left. The shift is performed
+     * in-place unless the <code>FDBigInteger</code> is immutable in which case
+     * a new instance of <code>FDBigInteger</code> is returned.
+     *
+     * @param shift The number of bits to shift left.
+     * @return The shifted <code>FDBigInteger</code>.
+     */
+    public FDBigInteger leftShift(int shift) {
+      if (shift == 0 || nWords == 0) {
+        return this;
+      }
+      int wordcount = shift >> 5;
+      int bitcount = shift & 0x1f;
+      if (this.isImmutable) {
+        if (bitcount == 0) {
+          return new FDBigInteger(Arrays.copyOf(data, nWords), offset + wordcount);
+        } else {
+          int anticount = 32 - bitcount;
+          int idx = nWords - 1;
+          int prev = data[idx];
+          int hi = prev >>> anticount;
+          int[] result;
+          if (hi != 0) {
+            result = new int[nWords + 1];
+            result[nWords] = hi;
+          } else {
+            result = new int[nWords];
+          }
+          leftShift(data, idx, result, bitcount, anticount, prev);
+          return new FDBigInteger(result, offset + wordcount);
+        }
+      } else {
+        if (bitcount != 0) {
+          int anticount = 32 - bitcount;
+          if ((data[0] << bitcount) == 0) {
+            int idx = 0;
+            int prev = data[idx];
+            for (; idx < nWords - 1; idx++) {
+              int v = (prev >>> anticount);
+              prev = data[idx + 1];
+              v |= (prev << bitcount);
+              data[idx] = v;
+            }
+            int v = prev >>> anticount;
+            data[idx] = v;
+            if (v == 0) {
+              nWords--;
+            }
+            offset++;
+          } else {
+            int idx = nWords - 1;
+            int prev = data[idx];
+            int hi = prev >>> anticount;
+            int[] result = data;
+            int[] src = data;
+            if (hi != 0) {
+              if (nWords == data.length) {
+                data = result = new int[nWords + 1];
+              }
+              result[nWords++] = hi;
+            }
+            leftShift(src, idx, result, bitcount, anticount, prev);
+          }
+        }
+        offset += wordcount;
+        return this;
+      }
+    }
+
+    /**
+     * Returns the number of <code>int</code>s this <code>FDBigInteger</code> represents.
+     *
+     * @return Number of <code>int</code>s required to represent this <code>FDBigInteger</code>.
+     */
+    private int size() {
+      return nWords + offset;
+    }
+
+
+    /**
+     * Computes
+     *
+     * <pre>
+     * q = (int)( this / S )
+     * this = 10 * ( this mod S )
+     * Return q.
+     * </pre>
+     *
+     * This is the iteration step of digit development for output.
+     * We assume that S has been normalized, as above, and that
+     * "this" has been left-shifted accordingly.
+     * Also assumed, of course, is that the result, q, can be expressed
+     * as an integer, {@code 0 <= q < 10}.
+     *
+     * @param S The divisor of this <code>FDBigInteger</code>.
+     * @return <code>q = (int)(this / S)</code>.
+     */
+    public int quoRemIteration(FDBigInteger S) throws IllegalArgumentException {
+      // ensure that this and S have the same number of
+      // digits. If S is properly normalized and q < 10 then
+      // this must be so.
+      int thSize = this.size();
+      int sSize = S.size();
+      if (thSize < sSize) {
+        // this value is significantly less than S, result of division is zero.
+        // just mult this by 10.
+        int p = multAndCarryBy10(this.data, this.nWords, this.data);
+        if (p != 0) {
+          this.data[nWords++] = p;
+        } else {
+          trimLeadingZeros();
+        }
+        return 0;
+      } else if (thSize > sSize) {
+        throw new IllegalArgumentException("disparate values");
+      }
+      // estimate q the obvious way. We will usually be
+      // right. If not, then we're only off by a little and
+      // will re-add.
+      long q = (this.data[this.nWords - 1] & LONG_MASK) / (S.data[S.nWords - 1] & LONG_MASK);
+      long diff = multDiffMe(q, S);
+      if (diff != 0L) {
+        // q is too big.
+        // add S back in until this turns +. This should
+        // not be very many times!
+        long sum = 0L;
+        int tStart = S.offset - this.offset;
+        int[] sd = S.data;
+        int[] td = this.data;
+        while (sum == 0L) {
+          for (int sIndex = 0, tIndex = tStart; tIndex < this.nWords; sIndex++, tIndex++) {
+            sum += (td[tIndex] & LONG_MASK) + (sd[sIndex] & LONG_MASK);
+            td[tIndex] = (int) sum;
+            sum >>>= 32; // Signed or unsigned, answer is 0 or 1
+          }
+          q -= 1;
+        }
+      }
+      // finally, we can multiply this by 10.
+      // it cannot overflow, right, as the high-order word has
+      // at least 4 high-order zeros!
+      multAndCarryBy10(this.data, this.nWords, this.data);
+      trimLeadingZeros();
+      return (int) q;
+    }
+
+    /**
+     * Multiplies this <code>FDBigInteger</code> by 10. The operation will be
+     * performed in place unless the <code>FDBigInteger</code> is immutable in
+     * which case a new <code>FDBigInteger</code> will be returned.
+     *
+     * @return The <code>FDBigInteger</code> multiplied by 10.
+     */
+    public FDBigInteger multBy10() {
+      if (nWords == 0) {
+        return this;
+      }
+      if (isImmutable) {
+        int[] res = new int[nWords + 1];
+        res[nWords] = multAndCarryBy10(data, nWords, res);
+        return new FDBigInteger(res, offset);
+      } else {
+        int p = multAndCarryBy10(this.data, this.nWords, this.data);
+        if (p != 0) {
+          if (nWords == data.length) {
+            if (data[0] == 0) {
+              System.arraycopy(data, 1, data, 0, --nWords);
+              offset++;
+            } else {
+              data = Arrays.copyOf(data, data.length + 1);
+            }
+          }
+          data[nWords++] = p;
+        } else {
+          trimLeadingZeros();
+        }
+        return this;
+      }
+    }
+
+    /**
+     * Multiplies two big integers represented as int arrays.
+     *
+     * @param s1 The first array factor.
+     * @param s1Len The number of elements of <code>s1</code> to use.
+     * @param s2 The second array factor.
+     * @param s2Len The number of elements of <code>s2</code> to use.
+     * @param dst The product array.
+     */
+    private static void mult(int[] s1, int s1Len, int[] s2, int s2Len, int[] dst) {
+      for (int i = 0; i < s1Len; i++) {
+        long v = s1[i] & LONG_MASK;
+        long p = 0L;
+        for (int j = 0; j < s2Len; j++) {
+          p += (dst[i + j] & LONG_MASK) + v * (s2[j] & LONG_MASK);
+          dst[i + j] = (int) p;
+          p >>>= 32;
+        }
+        dst[i + s2Len] = (int) p;
+      }
+    }
+
+    /**
+     * Determines whether all elements of an array are zero for all indices less
+     * than a given index.
+     *
+     * @param a The array to be examined.
+     * @param from The index strictly below which elements are to be examined.
+     * @return Zero if all elements in range are zero, 1 otherwise.
+     */
+    private static int checkZeroTail(int[] a, int from) {
+      while (from > 0) {
+        if (a[--from] != 0) {
+          return 1;
+        }
+      }
+      return 0;
+    }
+
+    /**
+     * Compares the parameter with this <code>FDBigInteger</code>. Returns an
+     * integer accordingly as:
+     *
+     * <pre>
+     * {@code
+     * > 0: this > other
+     *   0: this == other
+     * < 0: this < other
+     * }
+     * </pre>
+     *
+     * @param other The <code>FDBigInteger</code> to compare.
+     * @return A negative value, zero, or a positive value according to the
+     *         result of the comparison.
+     */
+    public int cmp(FDBigInteger other) {
+      int aSize = nWords + offset;
+      int bSize = other.nWords + other.offset;
+      if (aSize > bSize) {
+        return 1;
+      } else if (aSize < bSize) {
+        return -1;
+      }
+      int aLen = nWords;
+      int bLen = other.nWords;
+      while (aLen > 0 && bLen > 0) {
+        int a = data[--aLen];
+        int b = other.data[--bLen];
+        if (a != b) {
+          return ((a & LONG_MASK) < (b & LONG_MASK)) ? -1 : 1;
+        }
+      }
+      if (aLen > 0) {
+        return checkZeroTail(data, aLen);
+      }
+      if (bLen > 0) {
+        return -checkZeroTail(other.data, bLen);
+      }
+      return 0;
+    }
+
+    /**
+     * Compares this <code>FDBigInteger</code> with <code>x + y</code>. Returns a
+     * value according to the comparison as:
+     *
+     * <pre>
+     * {@code
+     * -1: this <  x + y
+     *  0: this == x + y
+     *  1: this >  x + y
+     * }
+     * </pre>
+     *
+     * @param x The first addend of the sum to compare.
+     * @param y The second addend of the sum to compare.
+     * @return -1, 0, or 1 according to the result of the comparison.
+     */
+    public int addAndCmp(FDBigInteger x, FDBigInteger y) {
+      FDBigInteger big;
+      FDBigInteger small;
+      int xSize = x.size();
+      int ySize = y.size();
+      int bSize;
+      int sSize;
+      if (xSize >= ySize) {
+        big = x;
+        small = y;
+        bSize = xSize;
+        sSize = ySize;
+      } else {
+        big = y;
+        small = x;
+        bSize = ySize;
+        sSize = xSize;
+      }
+      int thSize = this.size();
+      if (bSize == 0) {
+        return thSize == 0 ? 0 : 1;
+      }
+      if (sSize == 0) {
+        return this.cmp(big);
+      }
+      if (bSize > thSize) {
+        return -1;
+      }
+      if (bSize + 1 < thSize) {
+        return 1;
+      }
+      long top = (big.data[big.nWords - 1] & LONG_MASK);
+      if (sSize == bSize) {
+        top += (small.data[small.nWords - 1] & LONG_MASK);
+      }
+      if ((top >>> 32) == 0) {
+        if (((top + 1) >>> 32) == 0) {
+          // good case - no carry extension
+          if (bSize < thSize) {
+            return 1;
+          }
+          // here sum.nWords == this.nWords
+          long v = (this.data[this.nWords - 1] & LONG_MASK);
+          if (v < top) {
+            return -1;
+          }
+          if (v > top + 1) {
+            return 1;
+          }
+        }
+      } else { // (top>>>32)!=0 guaranteed carry extension
+        if (bSize + 1 > thSize) {
+          return -1;
+        }
+        // here sum.nWords == this.nWords
+        top >>>= 32;
+        long v = (this.data[this.nWords - 1] & LONG_MASK);
+        if (v < top) {
+          return -1;
+        }
+        if (v > top + 1) {
+          return 1;
+        }
+      }
+      return this.cmp(big.add(small));
+    }
+
+    /**
+     * Makes this <code>FDBigInteger</code> immutable.
+     */
+    public void makeImmutable() {
+      this.isImmutable = true;
+    }
+
+    /**
+     * Multiplies this <code>FDBigInteger</code> by an integer.
+     *
+     * @param i The factor by which to multiply this <code>FDBigInteger</code>.
+     * @return This <code>FDBigInteger</code> multiplied by an integer.
+     */
+    private FDBigInteger mult(int i) {
+      if (this.nWords == 0) {
+        return this;
+      }
+      int[] r = new int[nWords + 1];
+      mult(data, nWords, i, r);
+      return new FDBigInteger(r, offset);
+    }
+
+    /**
+     * Multiplies this <code>FDBigInteger</code> by another <code>FDBigInteger</code>.
+     *
+     * @param other The <code>FDBigInteger</code> factor by which to multiply.
+     * @return The product of this and the parameter <code>FDBigInteger</code>s.
+     */
+    private FDBigInteger mult(FDBigInteger other) {
+      if (this.nWords == 0) {
+        return this;
+      }
+      if (this.size() == 1) {
+        return other.mult(data[0]);
+      }
+      if (other.nWords == 0) {
+        return other;
+      }
+      if (other.size() == 1) {
+        return this.mult(other.data[0]);
+      }
+      int[] r = new int[nWords + other.nWords];
+      mult(this.data, this.nWords, other.data, other.nWords, r);
+      return new FDBigInteger(r, this.offset + other.offset);
+    }
+
+    /**
+     * Adds another <code>FDBigInteger</code> to this <code>FDBigInteger</code>.
+     *
+     * @param other The <code>FDBigInteger</code> to add.
+     * @return The sum of the <code>FDBigInteger</code>s.
+     */
+    private FDBigInteger add(FDBigInteger other) {
+      FDBigInteger big, small;
+      int bigLen, smallLen;
+      int tSize = this.size();
+      int oSize = other.size();
+      if (tSize >= oSize) {
+        big = this;
+        bigLen = tSize;
+        small = other;
+        smallLen = oSize;
+      } else {
+        big = other;
+        bigLen = oSize;
+        small = this;
+        smallLen = tSize;
+      }
+      int[] r = new int[bigLen + 1];
+      int i = 0;
+      long carry = 0L;
+      for (; i < smallLen; i++) {
+        carry += (i < big.offset ? 0L : (big.data[i - big.offset] & LONG_MASK))
+            + ((i < small.offset ? 0L : (small.data[i - small.offset] & LONG_MASK)));
+        r[i] = (int) carry;
+        carry >>= 32; // signed shift.
+      }
+      for (; i < bigLen; i++) {
+        carry += (i < big.offset ? 0L : (big.data[i - big.offset] & LONG_MASK));
+        r[i] = (int) carry;
+        carry >>= 32; // signed shift.
+      }
+      r[bigLen] = (int) carry;
+      return new FDBigInteger(r, 0);
+    }
+
+    /**
+     * Multiplies the parameters and subtracts them from this
+     * <code>FDBigInteger</code>.
+     *
+     * @param q The integer parameter.
+     * @param S The <code>FDBigInteger</code> parameter.
+     * @return <code>this - q*S</code>.
+     */
+    private long multDiffMe(long q, FDBigInteger S) {
+      long diff = 0L;
+      if (q != 0) {
+        int deltaSize = S.offset - this.offset;
+        if (deltaSize >= 0) {
+          int[] sd = S.data;
+          int[] td = this.data;
+          for (int sIndex = 0, tIndex = deltaSize; sIndex < S.nWords; sIndex++, tIndex++) {
+            diff += (td[tIndex] & LONG_MASK) - q * (sd[sIndex] & LONG_MASK);
+            td[tIndex] = (int) diff;
+            diff >>= 32; // N.B. SIGNED shift.
+          }
+        } else {
+          deltaSize = -deltaSize;
+          int[] rd = new int[nWords + deltaSize];
+          int sIndex = 0;
+          int rIndex = 0;
+          int[] sd = S.data;
+          for (; rIndex < deltaSize && sIndex < S.nWords; sIndex++, rIndex++) {
+            diff -= q * (sd[sIndex] & LONG_MASK);
+            rd[rIndex] = (int) diff;
+            diff >>= 32; // N.B. SIGNED shift.
+          }
+          int tIndex = 0;
+          int[] td = this.data;
+          for (; sIndex < S.nWords; sIndex++, tIndex++, rIndex++) {
+            diff += (td[tIndex] & LONG_MASK) - q * (sd[sIndex] & LONG_MASK);
+            rd[rIndex] = (int) diff;
+            diff >>= 32; // N.B. SIGNED shift.
+          }
+          this.nWords += deltaSize;
+          this.offset -= deltaSize;
+          this.data = rd;
+        }
+      }
+      return diff;
+    }
+
+
+    /**
+     * Multiplies by 10 a big integer represented as an array. The final carry
+     * is returned.
+     *
+     * @param src The array representation of the big integer.
+     * @param srcLen The number of elements of <code>src</code> to use.
+     * @param dst The product array.
+     * @return The final carry of the multiplication.
+     */
+    private static int multAndCarryBy10(int[] src, int srcLen, int[] dst) {
+      long carry = 0;
+      for (int i = 0; i < srcLen; i++) {
+        long product = (src[i] & LONG_MASK) * 10L + carry;
+        dst[i] = (int) product;
+        carry = product >>> 32;
+      }
+      return (int) carry;
+    }
+
+    /**
+     * Multiplies by a constant value a big integer represented as an array.
+     * The constant factor is an <code>int</code>.
+     *
+     * @param src The array representation of the big integer.
+     * @param srcLen The number of elements of <code>src</code> to use.
+     * @param value The constant factor by which to multiply.
+     * @param dst The product array.
+     */
+    private static void mult(int[] src, int srcLen, int value, int[] dst) {
+      long val = value & LONG_MASK;
+      long carry = 0;
+      for (int i = 0; i < srcLen; i++) {
+        long product = (src[i] & LONG_MASK) * val + carry;
+        dst[i] = (int) product;
+        carry = product >>> 32;
+      }
+      dst[srcLen] = (int) carry;
+    }
+
+    /**
+     * Multiplies by a constant value a big integer represented as an array.
+     * The constant factor is a long represent as two <code>int</code>s.
+     *
+     * @param src The array representation of the big integer.
+     * @param srcLen The number of elements of <code>src</code> to use.
+     * @param v0 The lower 32 bits of the long factor.
+     * @param v1 The upper 32 bits of the long factor.
+     * @param dst The product array.
+     */
+    private static void mult(int[] src, int srcLen, int v0, int v1, int[] dst) {
+      long v = v0 & LONG_MASK;
+      long carry = 0;
+      for (int j = 0; j < srcLen; j++) {
+        long product = v * (src[j] & LONG_MASK) + carry;
+        dst[j] = (int) product;
+        carry = product >>> 32;
+      }
+      dst[srcLen] = (int) carry;
+      v = v1 & LONG_MASK;
+      carry = 0;
+      for (int j = 0; j < srcLen; j++) {
+        long product = (dst[j + 1] & LONG_MASK) + v * (src[j] & LONG_MASK) + carry;
+        dst[j + 1] = (int) product;
+        carry = product >>> 32;
+      }
+      dst[srcLen + 1] = (int) carry;
+    }
+
+    // Fails assertion for negative exponent.
+    /**
+     * Computes <code>5</code> raised to a given power.
+     *
+     * @param p The exponent of 5.
+     * @return <code>5<sup>p</sup></code>.
+     */
+    private static FDBigInteger big5pow(int p) {
+      if (p < MAX_FIVE_POW) {
+        return POW_5_CACHE[p];
+      }
+      return big5powRec(p);
+    }
+
+    // slow path
+    /**
+     * Computes <code>5</code> raised to a given power.
+     *
+     * @param p The exponent of 5.
+     * @return <code>5<sup>p</sup></code>.
+     */
+    private static FDBigInteger big5powRec(int p) {
+      if (p < MAX_FIVE_POW) {
+        return POW_5_CACHE[p];
+      }
+      // construct the value.
+      // recursively.
+      int q, r;
+      // in order to compute 5^p,
+      // compute its square root, 5^(p/2) and square.
+      // or, let q = p / 2, r = p -q, then
+      // 5^p = 5^(q+r) = 5^q * 5^r
+      q = p >> 1;
+      r = p - q;
+      FDBigInteger bigq = big5powRec(q);
+      if (r < SMALL_5_POW.length) {
+        return bigq.mult(SMALL_5_POW[r]);
+      } else {
+        return bigq.mult(big5powRec(r));
+      }
+    }
+
+    // for debugging ...
+    /**
+     * Converts this <code>FDBigInteger</code> to a <code>BigInteger</code>.
+     *
+     * @return The <code>BigInteger</code> representation.
+     */
+    public BigInteger toBigInteger() {
+      byte[] magnitude = new byte[nWords * 4 + 1];
+      for (int i = 0; i < nWords; i++) {
+        int w = data[i];
+        magnitude[magnitude.length - 4 * i - 1] = (byte) w;
+        magnitude[magnitude.length - 4 * i - 2] = (byte) (w >> 8);
+        magnitude[magnitude.length - 4 * i - 3] = (byte) (w >> 16);
+        magnitude[magnitude.length - 4 * i - 4] = (byte) (w >> 24);
+      }
+      return new BigInteger(magnitude).shiftLeft(offset * 32);
+    }
+
+    // for debugging ...
+    /**
+     * Converts this <code>FDBigInteger</code> to a string.
+     *
+     * @return The string representation.
+     */
+    @Override
+    public String toString() {
+      return toBigInteger().toString();
     }
   }
 }

@@ -234,6 +234,8 @@ public class StringBytesGlossary {
 
   public static final byte bPERIOD = 46; // .
 
+  public static final byte bUPPERCASE_E = 69; // E
+
   public static final String PING_RESPONSE = "PONG";
 
   @MakeImmutable
@@ -259,4 +261,5 @@ public class StringBytesGlossary {
   public static final byte[] bLEAST_MEMBER_NAME = new byte[] {-2};
 
   public static final byte[] bNEGATIVE_ZERO = stringToBytes("-0");
+  public static final byte[] bPOSITIVE_ZERO = stringToBytes("0");
 }
