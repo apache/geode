@@ -369,11 +369,9 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(r1);
     for (int i = 0; i < entries; i++) {
       try {
-        System.out.println("toberal Putting " + i);
         r1.put("" + i, "" + i);
-        System.out.println("toberal Put " + i);
       } catch (Exception e) {
-        System.out.println("toberal Exception putting " + i);
+        e.printStackTrace();
       }
       try {
         Thread.sleep(1000);
@@ -390,12 +388,11 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < entries; i++) {
       try {
         Object value = r1.get("" + i, "" + i);
-        System.out.println("toberal Read " + i + " -> " + value);
         if (value != null) {
           notNullEntries++;
         }
       } catch (Exception e) {
-        System.out.println("Exception reading " + i);
+        e.printStackTrace();
       }
     }
     return notNullEntries;
