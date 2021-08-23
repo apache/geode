@@ -89,6 +89,7 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       UpdatableUserAuthInitialize.setUser("user1");
+      assertThat(clientCache).isNotNull();
       ClientRegionFactory<Object, Object> clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       Region<Object, Object> region = clientRegionFactory.create("region");
@@ -102,6 +103,7 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user2");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
+      assertThat(clientCache).isNotNull();
       Region<Object, Object> region = clientCache.getRegion("region");
       region.put(1, "value1");
     });
@@ -130,6 +132,7 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user0");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
+      assertThat(clientCache).isNotNull();
       clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       Properties userSecurityProperties = new Properties();
       userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
