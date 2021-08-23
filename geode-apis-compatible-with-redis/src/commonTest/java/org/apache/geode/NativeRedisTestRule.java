@@ -69,12 +69,15 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
                 .withCommand("redis-server --maxclients " + max_clients);
 
         redisContainer.start();
+        int mappedPort = getPort();
         logger.info("Started redis container with exposed port {} -> {}", PORT_TO_EXPOSE,
-            getPort());
+            mappedPort);
         try {
           base.evaluate(); // This will run the test.
         } finally {
           redisContainer.stop();
+          logger.info("Stopped redis container with exposed port {} -> {}", PORT_TO_EXPOSE,
+              mappedPort);
         }
       }
     };
