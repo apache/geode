@@ -52,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
@@ -429,6 +430,19 @@ public class ManagementAgent {
           }
         };
 
+    setMBeanServerForwarder(mbs, env);
+    registerAccessControlMBean();
+    registerFileUploaderMBean();
+
+    jmxConnectorServer.start();
+    if (logger.isDebugEnabled()) {
+      logger.debug("Finished starting jmx manager agent.");
+    }
+  }
+
+  @VisibleForTesting
+  void setMBeanServerForwarder(MBeanServer mbs, HashMap<String, Object> env)
+      throws IOException {
     if (securityService.isIntegratedSecurity()) {
       shiroAuthenticator = new JMXShiroAuthenticator(this.securityService);
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
@@ -449,19 +463,11 @@ public class ManagementAgent {
       if (accessFile != null && accessFile.length() > 0) {
         // Rewire the mbs hierarchy to set accessController
         ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
-        controller.setMBeanServer(mbs);
         jmxConnectorServer.setMBeanServerForwarder(controller);
       } else {
         // if no access control, do not allow mbean creation to prevent Mlet attack
         jmxConnectorServer.setMBeanServerForwarder(new BlockMBeanCreationController());
       }
-    }
-    registerAccessControlMBean();
-    registerFileUploaderMBean();
-
-    jmxConnectorServer.start();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Finished starting jmx manager agent.");
     }
   }
 
@@ -506,6 +512,11 @@ public class ManagementAgent {
 
   public JMXConnectorServer getJmxConnectorServer() {
     return jmxConnectorServer;
+  }
+
+  @VisibleForTesting
+  void setJmxConnectorServer(JMXConnectorServer jmxConnectorServer) {
+    this.jmxConnectorServer = jmxConnectorServer;
   }
 
   public synchronized RemoteStreamExporter getRemoteStreamExporter() {
