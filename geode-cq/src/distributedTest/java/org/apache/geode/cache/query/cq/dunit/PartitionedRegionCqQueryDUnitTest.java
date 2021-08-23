@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.cq.dunit;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -177,7 +178,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
           .isNotNull();
       CqQueryTestListener cqListener =
           (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
-      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
+      await().untilAsserted(
+          () -> assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1));
     });
 
     cqHelper.closeClient(client);
@@ -242,7 +244,8 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
           .isNotNull();
       CqQueryTestListener cqListener =
           (CqQueryTestListener) cqQuery.getCqAttributes().getCqListener();
-      assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1);
+      await().untilAsserted(
+          () -> assertThat(cqListener.getTotalEventCount()).isEqualTo(numObjects - 1));
     });
 
     cqHelper.closeClient(client);
