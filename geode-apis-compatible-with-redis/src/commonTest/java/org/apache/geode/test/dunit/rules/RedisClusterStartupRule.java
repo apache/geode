@@ -32,6 +32,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.redis.ClusterNode;
 import org.apache.geode.redis.ClusterNodes;
@@ -83,8 +84,9 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule) {
+    int randomPort = AvailablePortHelper.getRandomAvailableTCPPort();
     return rule.withProperty(REDIS_BIND_ADDRESS, BIND_ADDRESS)
-        .withProperty(REDIS_PORT, "0")
+        .withProperty(REDIS_PORT, String.valueOf(randomPort))
         .withProperty(REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
             "true");
