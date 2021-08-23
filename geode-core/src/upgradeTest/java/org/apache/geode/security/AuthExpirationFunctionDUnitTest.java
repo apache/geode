@@ -51,7 +51,8 @@ public class AuthExpirationFunctionDUnitTest {
   private static Function<Object> writeFunction;
 
   private static MemberVM serverVM;
-  private static ClientVM currentVersionClientVM, releaseVersionClientVM;
+  private static ClientVM currentVersionClientVM;
+  private static ClientVM releaseVersionClientVM;
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -129,12 +130,12 @@ public class AuthExpirationFunctionDUnitTest {
       assertThat(ExpirableSecurityManager.getExpiredUsers().size()).isEqualTo(1);
       assertThat(ExpirableSecurityManager.getExpiredUsers().contains("data1")).isTrue();
       Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-      assertThat(authorizedOps.get("data1").size()).isEqualTo(1);
+      assertThat(authorizedOps.get("data1")).asList().hasSize(1);
       assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
-      assertThat(authorizedOps.get("data2").size()).isEqualTo(1);
+      assertThat(authorizedOps.get("data2")).asList().hasSize(1);
       assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
       Map<String, List<String>> unauthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-      assertThat(unauthorizedOps.get("data1").size()).isEqualTo(1);
+      assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
       assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
       return authorizedOps.get("data1");
     });
