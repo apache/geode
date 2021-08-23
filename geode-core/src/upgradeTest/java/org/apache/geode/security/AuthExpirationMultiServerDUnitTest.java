@@ -38,7 +38,9 @@ import org.apache.geode.test.junit.rules.ClientCacheRule;
 public class AuthExpirationMultiServerDUnitTest implements Serializable {
   public static final String REPLICATE_REGION = "replicateRegion";
   public static final String PARTITION_REGION = "partitionRegion";
-  private MemberVM locator, server1, server2;
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
   private int locatorPort;
 
   @Rule

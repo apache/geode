@@ -48,8 +48,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationDUnitTest {
-  static RegionService user0Service;
-  static RegionService user1Service;
+  private static RegionService user0Service;
+  private static RegionService user1Service;
 
   @Parameterized.Parameter
   public String clientVersion;
@@ -89,7 +89,6 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       UpdatableUserAuthInitialize.setUser("user1");
-      assert clientCache != null;
       ClientRegionFactory<Object, Object> clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       Region<Object, Object> region = clientRegionFactory.create("region");
@@ -103,7 +102,6 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user2");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assert clientCache != null;
       Region<Object, Object> region = clientCache.getRegion("region");
       region.put(1, "value1");
     });
@@ -167,7 +165,7 @@ public class AuthExpirationDUnitTest {
     assertThat(region.size()).isEqualTo(4);
 
     Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-    assertThat(authorizedOps.keySet().size()).isEqualTo(3);
+    assertThat(authorizedOps.keySet()).isEqualTo(3);
     assertThat(authorizedOps.get("user0")).asList().containsExactly("DATA:WRITE:region:0",
         "DATA:WRITE:region:2");
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
