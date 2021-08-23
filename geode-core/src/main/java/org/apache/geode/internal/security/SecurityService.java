@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -41,19 +42,45 @@ public interface SecurityService {
 
   Callable associateWith(Callable callable);
 
-  void authorize(Resource resource, Operation operation);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(Resource resource, Operation operation) throws AuthenticationExpiredException;
 
-  void authorize(Resource resource, Operation operation, Target target);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(Resource resource, Operation operation, Target target)
+      throws AuthenticationExpiredException;
 
-  void authorize(Resource resource, Operation operation, String target);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(Resource resource, Operation operation, String target)
+      throws AuthenticationExpiredException;
 
-  void authorize(Resource resource, Operation operation, String target, Object key);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(Resource resource, Operation operation, String target, Object key)
+      throws AuthenticationExpiredException;
 
-  void authorize(Resource resource, Operation operation, Target target, String key);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(Resource resource, Operation operation, Target target, String key)
+      throws AuthenticationExpiredException;
 
-  void authorize(ResourcePermission context);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(ResourcePermission context) throws AuthenticationExpiredException;
 
-  void authorize(ResourcePermission context, Subject currentUser);
+  /**
+   * @throw AuthenticationExpiredException if the principal has expired.
+   */
+  void authorize(ResourcePermission context, Subject currentUser)
+      throws AuthenticationExpiredException;
 
   void close();
 

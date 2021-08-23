@@ -110,12 +110,11 @@ public class AuthExpirationDUnitTest {
     Region<Object, Object> region = server.getCache().getRegion("/region");
     assertThat(region.size()).isEqualTo(2);
     Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    List<String> unauthorizedUsers = ExpirableSecurityManager.getUnauthorizedUsers();
     assertThat(authorizedOps.keySet().size()).isEqualTo(2);
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:0");
     assertThat(authorizedOps.get("user2")).asList().containsExactly("DATA:WRITE:region:1");
-    assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
-    assertThat(unAuthorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
+    assertThat(unauthorizedUsers).asList().containsExactly("user1");
   }
 
   @Test
@@ -171,9 +170,8 @@ public class AuthExpirationDUnitTest {
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
     assertThat(authorizedOps.get("user1_extended")).asList().containsExactly("DATA:WRITE:region:3");
 
-    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-    assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
-    assertThat(unAuthorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:3");
+    List<String> unAuthorizedUsers = ExpirableSecurityManager.getUnauthorizedUsers();
+    assertThat(unAuthorizedUsers).asList().containsExactly("user1");
   }
 
 }

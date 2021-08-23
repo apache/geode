@@ -69,17 +69,25 @@ public interface SecurityManager {
   Object authenticate(Properties credentials) throws AuthenticationFailedException;
 
   /**
-   * Authorize the ResourcePermission for a given Principal
+   * Authorize the ResourcePermission for a given valid Principal.
+   * This method only checks permission. Principal expiration is checked by isExpired method
    *
    * @param principal The principal that's requesting the permission
    * @param permission The permission requested
    * @return true if authorized, false if not
    *
-   * @throw AuthenticationExpiredException if the principal has expired.
    */
-  default boolean authorize(Object principal, ResourcePermission permission)
-      throws AuthenticationExpiredException {
+  default boolean authorize(Object principal, ResourcePermission permission) {
     return true;
+  }
+
+  /**
+   * checks if the given principal is expired or not
+   *
+   * @return true if the given principal is expired, false if not
+   */
+  default boolean isExpired(Object principal) {
+    return false;
   }
 
   /**

@@ -32,24 +32,25 @@ import org.apache.geode.examples.SimpleSecurityManager;
  * make sure to call reset after each test to clean things up.
  */
 public class ExpirableSecurityManager extends SimpleSecurityManager {
-  // use static field for ease of testing since there is only one instance of this in each VM
-  // we only need ConcurrentHashSet here, but map is only construct available in the library
   private static final Set<String> EXPIRED_USERS = ConcurrentHashMap.newKeySet();
   private static final Map<String, List<String>> AUTHORIZED_OPS =
       new ConcurrentHashMap<>();
-  private static final Map<String, List<String>> UNAUTHORIZED_OPS =
-      new ConcurrentHashMap<>();
+  private static final List<String> UNAUTHORIZED_USERS = new ArrayList<>();
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
-    if (EXPIRED_USERS.contains((String) principal)) {
-      addToMap(UNAUTHORIZED_OPS, principal, permission);
-      throw new AuthenticationExpiredException("User authentication expired.");
-    }
     addToMap(AUTHORIZED_OPS, principal, permission);
-
     // always authorized
     return true;
+  }
+
+  @Override
+  public boolean isExpired(Object principal) {
+    boolean expired = EXPIRED_USERS.contains((String) principal);
+    if (expired) {
+      UNAUTHORIZED_USERS.add((String) principal);
+    }
+    return expired;
   }
 
   public static void addExpiredUser(String user) {
@@ -64,8 +65,8 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
     return AUTHORIZED_OPS;
   }
 
-  public static Map<String, List<String>> getUnAuthorizedOps() {
-    return UNAUTHORIZED_OPS;
+  public static List<String> getUnauthorizedUsers() {
+    return UNAUTHORIZED_USERS;
   }
 
   private static void addToMap(Map<String, List<String>> maps, Object user,
@@ -81,6 +82,6 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
   public static void reset() {
     EXPIRED_USERS.clear();
     AUTHORIZED_OPS.clear();
-    UNAUTHORIZED_OPS.clear();
+    UNAUTHORIZED_USERS.clear();
   }
 }

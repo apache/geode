@@ -89,8 +89,8 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
       Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
       assertThat(authorizedOps.keySet().contains("test")).isTrue();
       assertThat(authorizedOps.keySet().size()).isEqualTo(1);
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-      assertThat(unAuthorizedOps.keySet().size()).isEqualTo(0);
+      List<String> unAuthorizedUsers = ExpirableSecurityManager.getUnauthorizedUsers();
+      assertThat(unAuthorizedUsers).asList().hasSize(0);
     });
 
     // client is connected to server1, server1 gets all the initial contact,
@@ -101,17 +101,16 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
           "DATA:WRITE:replicateRegion:0", "DATA:WRITE:partitionRegion:0");
       assertThat(authorizedOps.get("user2")).asList().containsExactlyInAnyOrder(
           "DATA:WRITE:replicateRegion:1", "DATA:WRITE:partitionRegion:1");
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-      assertThat(unAuthorizedOps.get("user1")).asList()
-          .containsExactly("DATA:WRITE:replicateRegion:1");
+      List<String> unAuthorizedUsers = ExpirableSecurityManager.getUnauthorizedUsers();
+      assertThat(unAuthorizedUsers).asList().containsExactly("user1");
     });
 
     // server2 performs no authorization checks
     server2.invoke(() -> {
       Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
       assertThat(authorizedOps.size()).isEqualTo(0);
-      assertThat(unAuthorizedOps.size()).isEqualTo(0);
+      List<String> unAuthorizedUsers = ExpirableSecurityManager.getUnauthorizedUsers();
+      assertThat(unAuthorizedUsers).asList().hasSize(0);
     });
 
     MemberVM.invokeInEveryMember(() -> {
