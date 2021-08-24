@@ -125,9 +125,13 @@ public class PartitionedRegionLoadModel {
   private final BucketOperator operator;
   private final int requiredRedundancy;
 
-  /** The average primary load on a member */
+  /**
+   * The average primary load on a member
+   */
   private float primaryAverage = -1;
-  /** The average bucket load on a member */
+  /**
+   * The average bucket load on a member
+   */
   private float averageLoad = -1;
   /**
    * The minimum improvement in variance that we'll consider worth moving a primary
@@ -151,7 +155,8 @@ public class PartitionedRegionLoadModel {
    * @param redundancyLevel The expected redundancy level for the region
    */
   public PartitionedRegionLoadModel(BucketOperator operator, int redundancyLevel, int numBuckets,
-      AddressComparor addressComparor, Set<InternalDistributedMember> criticalMembers,
+      AddressComparor addressComparor,
+      Set<InternalDistributedMember> criticalMembers,
       PartitionedRegion region) {
     this.operator = operator;
     this.requiredRedundancy = redundancyLevel;
@@ -292,7 +297,7 @@ public class PartitionedRegionLoadModel {
               new Object[] {memberRollup, this.allColocatedRegions,
                   memberRollup.getColocatedMembers().keySet(), memberRollup.getBuckets()});
         }
-        for (Bucket bucket : new HashSet<Bucket>(memberRollup.getBuckets())) {
+        for (Bucket bucket : new HashSet<>(memberRollup.getBuckets())) {
           bucket.removeMember(memberRollup);
         }
       }
@@ -473,12 +478,14 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
-      if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
-        Move move = new Move(null, member, bucket);
-        if (!this.attemptedBucketRemoves.contains(move)) {
-          mostLoaded = newLoad;
-          bestMove = move;
+      if (member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
+        float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
+        if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
+          Move move = new Move(null, member, bucket);
+          if (!this.attemptedBucketRemoves.contains(move)) {
+            mostLoaded = newLoad;
+            bestMove = move;
+          }
         }
       }
     }
@@ -486,8 +493,8 @@ public class PartitionedRegionLoadModel {
   }
 
   public Move findBestTargetForFPR(Bucket bucket, boolean checkIPAddress) {
-    InternalDistributedMember targetMemberID = null;
-    Member targetMember = null;
+    InternalDistributedMember targetMemberID;
+    Member targetMember;
     List<FixedPartitionAttributesImpl> fpas =
         this.partitionedRegion.getFixedPartitionAttributesImpl();
 

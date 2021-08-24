@@ -19,6 +19,9 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -40,7 +43,9 @@ public class Member implements Comparable<Member> {
   private final boolean isCritical;
   private final boolean enforceLocalMaxMemory;
 
-  Member(AddressComparor addressComparor, InternalDistributedMember memberId, boolean isCritical,
+  @VisibleForTesting
+  public Member(AddressComparor addressComparor, InternalDistributedMember memberId,
+      boolean isCritical,
       boolean enforceLocalMaxMemory) {
     this.addressComparor = addressComparor;
     this.memberId = memberId;
@@ -54,6 +59,37 @@ public class Member implements Comparable<Member> {
     this.weight = weight;
     this.localMaxMemory = localMaxMemory;
   }
+
+
+
+  public RefusalReason canDelete(Bucket bucket, DistributionManager distributionManager) {
+    if (distributionManager instanceof ClusterDistributionManager) {
+      ClusterDistributionManager clusterDistributionManager =
+          (ClusterDistributionManager) distributionManager;
+      String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
+      boolean notLastMemberOfZone = false;
+
+      for (Member member : bucket.getMembersHosting()) {
+        if (!member.getMemberId().equals(this.getMemberId())) {
+          String memberRedundancyZone =
+              clusterDistributionManager.getRedundancyZone(member.memberId);
+          if (memberRedundancyZone != null) {
+            if (memberRedundancyZone.equals(myRedundancyZone)) {
+              notLastMemberOfZone = true;
+            }
+          } else {
+            // Not using redundancy zones, so...
+            return RefusalReason.NONE;
+          }
+        }
+      }
+      if (notLastMemberOfZone) {
+        return RefusalReason.NONE;
+      }
+    }
+    return RefusalReason.LAST_MEMBER_IN_ZONE;
+  }
+
 
   /**
    * @param sourceMember the member we will be moving this bucket off of
@@ -213,7 +249,7 @@ public class Member implements Comparable<Member> {
   }
 
   void changeTotalBytes(float change) {
-    totalBytes += (long) Math.round(change);
+    totalBytes += Math.round(change);
   }
 
   @Override
