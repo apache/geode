@@ -4,6 +4,7 @@ org/apache/geode/redis/internal/collections/SizeableObjectOpenCustomHashSet
 org/apache/geode/redis/internal/collections/IndexibleTreeSet
 org/apache/geode/redis/internal/data/RedisDataMovedException
 org/apache/geode/redis/internal/data/RedisDataTypeMismatchException
+org/apache/geode/redis/internal/executor/sortedset/ZAggregator
 org/apache/geode/redis/internal/RedisException
 org/apache/geode/redis/internal/data/RedisHash$Hash
 org/apache/geode/redis/internal/data/RedisRestoreKeyExistsException
