@@ -19,11 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -54,7 +55,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    dumpFiles("> beforeClass");
+    dumpFiles("> @BeforeClass");
     stagedDir = stagingTempDir.getRoot();
     JarBuilder jarBuilder = new JarBuilder();
     semanticJarVersion0 = new File(stagedDir, "def-1.0.jar");
@@ -68,7 +69,7 @@ public class DeploySemanticVersionJarDUnitTest {
     jarBuilder.buildJar(semanticJarVersion0b, createClassContent("version1b", "Def"));
     semanticJarVersion0c = new File(stagingTempDir.newFolder("v1c"), "def.jar");
     jarBuilder.buildJar(semanticJarVersion0c, createClassContent("version1c", "Def"));
-    dumpFiles("< beforeClass");
+    dumpFiles("< @BeforeClass");
   }
 
   @Rule
@@ -76,12 +77,22 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @Before
   public void before() throws Exception {
-    dumpFiles("> before");
+    dumpFiles("> @Before");
     locator0 = cluster.startLocatorVM(0);
     locator1 = cluster.startLocatorVM(1, locator0.getPort());
     server2 = cluster.startServerVM(2, locator0.getPort(), locator1.getPort());
     gfsh.connectAndVerify(locator0);
-    dumpFiles("< before");
+    dumpFiles("< @Before");
+  }
+
+  @After
+  public void after() {
+    dumpFiles("@After");
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    dumpFiles("@AfterClass");
   }
 
   private static String createClassContent(String version, String functionName) {
@@ -212,12 +223,6 @@ public class DeploySemanticVersionJarDUnitTest {
     dumpFiles("< @Test deployWithPlainWillCleanSemanticVersion");
   }
 
-  private static void dumpFiles(String context) {
-    Collection<File> files =
-        FileUtils.listFilesAndDirs(new File("."), TrueFileFilter.TRUE, TrueFileFilter.TRUE);
-    System.out.printf("DHE: %s: %s%n", context, files);
-  }
-
   static Set<String> getDeployedJarsFromClusterConfig() {
     InternalConfigurationPersistenceService cps =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService();
@@ -231,5 +236,12 @@ public class DeploySemanticVersionJarDUnitTest {
     Class<?> klass = ClassPathLoader.getLatest().forName(className);
     assertThat(klass).isNotNull();
     assertThat(klass.getMethod("getVersion").invoke(klass.newInstance())).isEqualTo(version);
+  }
+
+  private static void dumpFiles(String context) {
+    System.out.println("DHE: " + context);
+    FileUtils.listFilesAndDirs(new File("."), TrueFileFilter.TRUE, TrueFileFilter.TRUE).stream()
+        .sorted()
+        .forEach(f -> System.out.println("DHE:     " + f));
   }
 }
