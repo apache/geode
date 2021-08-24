@@ -81,8 +81,6 @@ class FileProcessController implements ProcessController {
    * Constructs an instance for controlling a local process.
    *
    * @param parameters details about the controllable process
-   *
-   * @throws IllegalArgumentException if pid is not a positive integer
    */
   FileProcessController(final FileControllerParameters parameters) {
     this(parameters, DEFAULT_STATUS_TIMEOUT_MILLIS, MILLISECONDS);
@@ -94,8 +92,6 @@ class FileProcessController implements ProcessController {
    * @param parameters details about the controllable process
    * @param timeout the timeout that operations must complete within
    * @param units the units of the timeout
-   *
-   * @throws IllegalArgumentException if pid is not a positive integer
    */
   FileProcessController(final FileControllerParameters parameters,
       final long timeout, final TimeUnit units) {
