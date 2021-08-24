@@ -19,13 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -33,8 +37,10 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
+@Category(GfshTest.class)
 public class DeploySemanticVersionJarDUnitTest {
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
@@ -48,6 +54,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    dumpFiles("> beforeClass");
     stagedDir = stagingTempDir.getRoot();
     JarBuilder jarBuilder = new JarBuilder();
     semanticJarVersion0 = new File(stagedDir, "def-1.0.jar");
@@ -61,6 +68,7 @@ public class DeploySemanticVersionJarDUnitTest {
     jarBuilder.buildJar(semanticJarVersion0b, createClassContent("version1b", "Def"));
     semanticJarVersion0c = new File(stagingTempDir.newFolder("v1c"), "def.jar");
     jarBuilder.buildJar(semanticJarVersion0c, createClassContent("version1c", "Def"));
+    dumpFiles("< beforeClass");
   }
 
   @Rule
@@ -68,10 +76,12 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @Before
   public void before() throws Exception {
+    dumpFiles("> before");
     locator0 = cluster.startLocatorVM(0);
     locator1 = cluster.startLocatorVM(1, locator0.getPort());
     server2 = cluster.startServerVM(2, locator0.getPort(), locator1.getPort());
     gfsh.connectAndVerify(locator0);
+    dumpFiles("< before");
   }
 
   private static String createClassContent(String version, String functionName) {
@@ -86,6 +96,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @Test
   public void deploy() {
+    dumpFiles("> @Test deploy");
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
         .statusIsSuccess();
     MemberVM.invokeInEveryMember(() -> {
@@ -144,19 +155,23 @@ public class DeploySemanticVersionJarDUnitTest {
       Set<String> deployedJars = getDeployedJarsFromClusterConfig();
       assertThat(deployedJars).containsExactly("def-1.2.jar");
     }, locator0, locator1);
+    dumpFiles("< @Test deploy");
   }
 
   @Test
   public void deploySameJarNameWithDifferentContent() throws Exception {
+    dumpFiles("> @Test deploySameJarNameWithDifferentContent");
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
         .statusIsSuccess();
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0b.getAbsolutePath())
         .statusIsSuccess()
         .containsOutput("def-1.0.v2.jar");
+    dumpFiles("< @Test deploySameJarNameWithDifferentContent");
   }
 
   @Test
   public void deployWithPlainWillCleanSemanticVersion() throws Exception {
+    dumpFiles("> @Test deployWithPlainWillCleanSemanticVersion");
     // deploy def-1.0.jar
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
         .statusIsSuccess();
@@ -194,6 +209,13 @@ public class DeploySemanticVersionJarDUnitTest {
       assertThat(deployedJars).isEmpty();
     }, locator0, locator1);
     assertThat(server2.getWorkingDir().list()).isEmpty();
+    dumpFiles("< @Test deployWithPlainWillCleanSemanticVersion");
+  }
+
+  private static void dumpFiles(String context) {
+    Collection<File> files =
+        FileUtils.listFilesAndDirs(new File("."), TrueFileFilter.TRUE, TrueFileFilter.TRUE);
+    System.out.printf("DHE: %s: %s%n", context, files);
   }
 
   static Set<String> getDeployedJarsFromClusterConfig() {
