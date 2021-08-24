@@ -84,9 +84,8 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule) {
-    int randomPort = AvailablePortHelper.getRandomAvailableTCPPort();
     return rule.withProperty(REDIS_BIND_ADDRESS, BIND_ADDRESS)
-        .withProperty(REDIS_PORT, String.valueOf(randomPort))
+        .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
             "true");
