@@ -62,11 +62,9 @@ public class SessionsAndCrashesDUnitTest {
   private static final int NUM_SESSIONS = 100;
   private static final List<String> sessionIds = new ArrayList<>(NUM_SESSIONS);
   private static MemberVM locator;
-  private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
   private static int[] redisPorts;
-  private static JedisCluster jedis;
 
   private SessionRepository<Session> sessionRepository;
   private ConfigurableApplicationContext springContext;
@@ -75,16 +73,13 @@ public class SessionsAndCrashesDUnitTest {
   public static void classSetup() {
     locator = cluster.startLocatorVM(0);
 
-    server1 = startRedisVM(1, 0);
-    server2 = startRedisVM(2, 0);
-    server3 = startRedisVM(3, 0);
+    redisPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
-    redisPorts = new int[] {
-        cluster.getRedisPort(1),
-        cluster.getRedisPort(2),
-        cluster.getRedisPort(3)};
+    startRedisVM(1, redisPorts[0]);
+    server2 = startRedisVM(2, redisPorts[1]);
+    server3 = startRedisVM(3, redisPorts[2]);
 
-    jedis = new JedisCluster(new HostAndPort("localhost", redisPorts[0]), JEDIS_TIMEOUT);
+    new JedisCluster(new HostAndPort("localhost", redisPorts[0]), JEDIS_TIMEOUT);
   }
 
   private static MemberVM startRedisVM(int vmId, Integer redisPort) {
