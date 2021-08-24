@@ -1339,13 +1339,13 @@ public class WANTestBase extends DistributedTestCase {
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
   }
 
-  public static List<Integer> getReceiverStats() {
+  public static List<Long> getReceiverStats() {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
     assertTrue(stats instanceof GatewayReceiverStats);
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
-    ArrayList<Integer> statsList = new ArrayList<>();
+    ArrayList<Long> statsList = new ArrayList<>();
     statsList.add(gatewayReceiverStats.getEventsReceived());
     statsList.add(gatewayReceiverStats.getEventsRetried());
     statsList.add(gatewayReceiverStats.getProcessBatchRequests());

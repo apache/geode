@@ -993,7 +993,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     checkEqualRegionData(regionName, serversInA.get(0), serverInB);
 
     // Check that wanCopyRegionBatchSize is correctly used by the command
-    int receivedBatches = serverInB.invoke(() -> WANTestBase.getReceiverStats().get(2));
+    long receivedBatches = serverInB.invoke(() -> WANTestBase.getReceiverStats().get(2));
     if (isPartitionedRegion && isParallelGatewaySender) {
       assertThat(receivedBatches).isEqualTo(6);
     } else {
