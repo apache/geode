@@ -54,6 +54,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -76,6 +77,7 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.control.RebalanceOperation;
@@ -108,6 +110,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -130,6 +133,9 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public DistributedDiskDirRule diskDirRule = new DistributedDiskDirRule();
 
   @After
   public void tearDown() {
@@ -366,6 +372,89 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       vm1.invoke(() -> validateBucketCount("region1", 3));
       vm2.invoke(() -> validateBucketCount("region1", 6));
     }
+  }
+
+  /**
+   * Test that we correctly use the redundancy-zone property to determine where to place redundant
+   * copies of a buckets.
+   */
+  @Test
+  public void testEnforceZoneWithSixServersAndTwoZones() throws InterruptedException {
+    VM vm0 = getVM(0);
+    VM vm1 = getVM(1);
+    VM vm2 = getVM(2);
+    VM vm3 = getVM(3);
+    VM vm4 = getVM(4);
+    VM vm5 = getVM(5);
+    Stream.of(vm0, vm1, vm2).forEach(vm -> vm.invoke(() -> setRedundancyZone("A")));
+    Stream.of(vm3, vm4, vm5).forEach(vm -> vm.invoke(() -> setRedundancyZone("B")));
+
+    Stream.of(vm0, vm1, vm2, vm3, vm4, vm5).forEach(vm -> {
+      vm.invoke(() -> createPartitionedRegion("region1", 1, 113));
+      vm.invoke(() -> createPartitionedRegion("region1Ancillary", 1, 113));
+
+    });
+
+    // Create some buckets
+    vm0.invoke(() -> {
+      Map<Integer, String> mapOfData = new HashMap<>();
+      for (int i = 0; i < 100000; i++) {
+        mapOfData.put(i, "A");
+      }
+      Region<Integer, String> region = getCache().getRegion("region1");
+      region.putAll(mapOfData);
+      Region<Integer, String> region2 = getCache().getRegion("region1Ancillary");
+      region2.putAll(mapOfData);
+    });
+
+    // make sure we can tell that the buckets have low redundancy
+    // vm0.invoke(() -> validateRedundancy("region1", 113, 0, 113));
+
+    // Make sure we still have low redundancy
+    vm0.invoke(() -> validateRedundancy("region1", 113, 1, 0));
+
+    vm0.invoke(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, manager);
+      logger.info("Rebalance 1 Results = " + results);
+      validateStatistics(manager, results);
+    });
+
+    vm2.bounceForcibly();
+
+    vm0.invoke(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, manager);
+      logger.info("Rebalance 2 Results = " + results);
+    });
+    // Thread.sleep(2000);
+
+    vm2.invoke(() -> {
+      setRedundancyZone("A");
+      createPartitionedRegion("region1", 1, 113);
+    });
+
+    vm0.invoke(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, manager);
+      logger.info("Rebalance 3 Results = " + results);
+    });
+
+    int zoneA = vm0.invoke(() -> getBucketCount("region1"));
+    zoneA += vm1.invoke(() -> getBucketCount("region1"));
+    zoneA += vm2.invoke(() -> getBucketCount("region1"));
+
+    int zoneB = vm3.invoke(() -> getBucketCount("region1"));
+    zoneB += vm4.invoke(() -> getBucketCount("region1"));
+    zoneB += vm5.invoke(() -> getBucketCount("region1"));
+
+    assertThat(zoneA).isEqualTo(zoneB).isEqualTo(113);
+    vm0.invoke(() -> validateBucketCountLessThan("region1", 38));
+    vm1.invoke(() -> validateBucketCountLessThan("region1", 38));
+    vm2.invoke(() -> validateBucketCountLessThan("region1", 38));
+    vm3.invoke(() -> validateBucketCountLessThan("region1", 38));
+    vm4.invoke(() -> validateBucketCountLessThan("region1", 38));
+    vm5.invoke(() -> validateBucketCountLessThan("region1", 38));
   }
 
   @Test
@@ -2349,6 +2438,19 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     regionFactory.create(regionName);
   }
 
+  private void createPartitionedRegion(String regionName, int redundantCopies, final int numBuckets,
+                                       final RegionShortcut regionShortcut) {
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(redundantCopies);
+    partitionAttributesFactory.setRecoveryDelay(-1);
+    partitionAttributesFactory.setStartupRecoveryDelay(-1);
+    partitionAttributesFactory.setTotalNumBuckets(numBuckets);
+    RegionFactory regionFactory = getCache().createRegionFactory(regionShortcut);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    regionFactory.create(regionName);
+  }
+
   private void createPartitionedRegion(String regionName, int redundantCopies) {
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(redundantCopies);
@@ -2648,10 +2750,21 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     assertThat(details.getLowRedundancyBucketCount()).isEqualTo(expectedLowRedundancyBucketCount);
   }
 
+  private int getBucketCount(String regionName) {
+    PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
+    return region.getLocalBucketsListTestOnly().size();
+  }
+
   private void validateBucketCount(String regionName, int numLocalBuckets) {
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
 
     assertThat(region.getLocalBucketsListTestOnly()).hasSize(numLocalBuckets);
+  }
+
+  private void validateBucketCountLessThan(String regionName, int numLocalBuckets) {
+    PartitionedRegion region = (PartitionedRegion) getCache().getRegion(regionName);
+
+    assertThat(region.getLocalBucketsListTestOnly().size()).isLessThanOrEqualTo(numLocalBuckets);
   }
 
   private void validateStatistics(InternalResourceManager manager, RebalanceResults results) {

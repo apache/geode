@@ -215,6 +215,30 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(), pr,
             pr.getCache().getMeterRegistry(), statisticsClock);
     this.keysOfInterest = new ConcurrentHashMap();
+    launchBucketIdsLogThread();
+  }
+
+  private void launchBucketIdsLogThread() {
+    new Thread(() -> logBucketIds()).start();
+  }
+
+  private void logBucketIds() {
+    List<Integer> previousBucketIdsList = Collections.emptyList(), currentBucketIdsList;
+    while (true) {
+      currentBucketIdsList = new ArrayList<>(getAllLocalBucketIds());
+      Collections.sort(currentBucketIdsList);
+      if (!currentBucketIdsList.equals(previousBucketIdsList)) {
+        String message = "region=" + getName() + "; bucketIdsSize=" + currentBucketIdsList.size()
+            + "; bucketIds=" + currentBucketIdsList;
+        System.out.println(message);
+        logger.warn("XXX " + message);
+        previousBucketIdsList = currentBucketIdsList;
+      }
+      try {
+        Thread.sleep(2000);
+      } catch (Exception e) {
+      }
+    }
   }
 
   /**
@@ -793,6 +817,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               .setPartitionedRegion(this.partitionedRegion)
               .setIndexes(getIndexes(rootRegion.getFullPath(), bucketRegionName)));
       this.partitionedRegion.getPrStats().incBucketCount(1);
+      System.out.println(Thread.currentThread().getName()
+          + ": PartitionedRegionDataStore.createBucketRegion region=" + bucketRegion.getName());
+      logger.warn(
+          "XXX PartitionedRegionDataStore.createBucketRegion region=" + bucketRegion.getName());
+      // new Exception());
     } catch (RegionExistsException ex) {
       // Bucket Region is already created, so do nothing.
       if (logger.isDebugEnabled()) {
@@ -1644,6 +1673,10 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       this.localBucket2RegionMap.remove(Integer.valueOf(bucketId));
       this.partitionedRegion.getPrStats().incBucketCount(-1);
+      System.out.println(Thread.currentThread().getName()
+          + ": PartitionedRegionDataStore.removeBucket region=" + bucketRegion.getName());
+      logger.warn("XXX PartitionedRegionDataStore.removeBucket region=" + bucketRegion.getName());
+      // new Exception());
       return true;
     } finally {
       lock.unlock();

@@ -528,6 +528,10 @@ public class PartitionedRegionRebalanceOp {
       removed = getLeaderRegion().getDataStore().removeBucket(bucketId, false);
     } else {
       // send message to remote member...
+      String message = "XXX PartitionedRegionRebalanceOp.removeRedundantBucketForRegion target="
+          + target + "; region=" + getLeaderRegion() + "; bucketId=" + bucketId;
+      System.out.println(Thread.currentThread().getName() + ": " + message);
+      logger.warn(message, new Exception());
       RemoveBucketResponse response =
           RemoveBucketMessage.send(target, getLeaderRegion(), bucketId, false);
       if (response != null) {
