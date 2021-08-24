@@ -379,7 +379,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
    * copies of a buckets.
    */
   @Test
-  public void testEnforceZoneWithSixServersAndTwoZones() throws InterruptedException {
+  public void testEnforceZoneWithSixServersAndTwoZones() {
     VM vm0 = getVM(0);
     VM vm1 = getVM(1);
     VM vm2 = getVM(2);
@@ -392,7 +392,6 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     Stream.of(vm0, vm1, vm2, vm3, vm4, vm5).forEach(vm -> {
       vm.invoke(() -> createPartitionedRegion("region1", 1, 113));
       vm.invoke(() -> createPartitionedRegion("region1Ancillary", 1, 113));
-
     });
 
     // Create some buckets
@@ -420,21 +419,20 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       validateStatistics(manager, results);
     });
 
-    vm2.bounceForcibly();
+    vm0.bounceForcibly();
 
-    vm0.invoke(() -> {
+    vm1.invoke(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
       RebalanceResults results = doRebalance(false, manager);
       logger.info("Rebalance 2 Results = " + results);
     });
-    // Thread.sleep(2000);
 
-    vm2.invoke(() -> {
+    vm0.invoke(() -> {
       setRedundancyZone("A");
       createPartitionedRegion("region1", 1, 113);
     });
 
-    vm0.invoke(() -> {
+    vm2.invoke(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
       RebalanceResults results = doRebalance(false, manager);
       logger.info("Rebalance 3 Results = " + results);
@@ -2439,7 +2437,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   }
 
   private void createPartitionedRegion(String regionName, int redundantCopies, final int numBuckets,
-                                       final RegionShortcut regionShortcut) {
+      final RegionShortcut regionShortcut) {
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(redundantCopies);
     partitionAttributesFactory.setRecoveryDelay(-1);
