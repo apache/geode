@@ -470,12 +470,14 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
-      if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
-        Move move = new Move(null, member, bucket);
-        if (!this.attemptedBucketRemoves.contains(move)) {
-          mostLoaded = newLoad;
-          bestMove = move;
+      if (member.canDelete(bucket, this.partitionedRegion.getMyId(), true).willAccept()) {
+        float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
+        if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
+          Move move = new Move(null, member, bucket);
+          if (!this.attemptedBucketRemoves.contains(move)) {
+            mostLoaded = newLoad;
+            bestMove = move;
+          }
         }
       }
     }

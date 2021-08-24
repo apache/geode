@@ -15,7 +15,13 @@
 package org.apache.geode.internal.cache.partitioned.rebalance.model;
 
 public enum RefusalReason {
-  NONE, ALREADY_HOSTING, UNITIALIZED_MEMBER, SAME_ZONE, LOCAL_MAX_MEMORY_FULL, CRITICAL_HEAP;
+  NONE,
+  ALREADY_HOSTING,
+  UNITIALIZED_MEMBER,
+  SAME_ZONE,
+  DIFFERENT_ZONE,
+  LOCAL_MAX_MEMORY_FULL,
+  CRITICAL_HEAP;
 
   public boolean willAccept() {
     return this == NONE;
@@ -42,6 +48,11 @@ public enum RefusalReason {
       case CRITICAL_HEAP:
         return "Target member " + target.getMemberId()
             + " has reached its critical heap percentage, and cannot accept more data";
+      case DIFFERENT_ZONE:
+        return "Target member " + target.getMemberId()
+            + " is in a different redundancy zone than other members hosting bucket "
+            + bucket.getId()
+            + ": " + bucket.getMembersHosting();
       default:
         return this.toString();
     }

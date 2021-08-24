@@ -60,6 +60,31 @@ public class Member implements Comparable<Member> {
    * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
    *        IP address.
    */
+  public RefusalReason canDelete(Bucket bucket, InternalDistributedMember sourceMember,
+      boolean checkZone) {
+    // Check the ip address
+    if (checkZone) {
+      if (addressComparor.enforceUniqueZones()
+          && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
+        logger.debug(
+            "Member {} would prefer not to delete {} because on {}",
+            getMemberId(), bucket, sourceMember);
+        return RefusalReason.DIFFERENT_ZONE;
+      } else {
+        logger.debug(
+            "Member {} will delete  {} because it is already on another member with the same redundancy zone",
+            this, bucket);
+      }
+    }
+    return RefusalReason.NONE;
+  }
+
+
+  /**
+   * @param sourceMember the member we will be moving this bucket off of
+   * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
+   *        IP address.
+   */
   public RefusalReason willAcceptBucket(Bucket bucket, Member sourceMember, boolean checkZone) {
     // make sure this member is not already hosting this bucket
     if (getBuckets().contains(bucket)) {
