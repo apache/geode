@@ -14,37 +14,20 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_VALID_STRING;
 
-import java.util.List;
-
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZLexCountExecutor extends AbstractExecutor {
+public class ZLexCountExecutor extends ZRangeByLexExecutor {
+
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElements = command.getProcessedCommand();
+  public RedisResponse getEmptyResponse() {
+    return RedisResponse.integer(0);
+  }
 
-    SortedSetLexRangeOptions rangeOptions;
-
-    try {
-      byte[] minBytes = commandElements.get(2);
-      byte[] maxBytes = commandElements.get(3);
-      rangeOptions = new SortedSetLexRangeOptions(minBytes, maxBytes);
-    } catch (IllegalArgumentException ex) {
-      return RedisResponse.error(ERROR_MIN_MAX_NOT_A_VALID_STRING);
-    }
-
-    // If the range is empty, return early
-    if (rangeOptions.isEmptyRange(false)) {
-      return RedisResponse.integer(0);
-    }
-
-    long result = context.getSortedSetCommands().zlexcount(command.getKey(), rangeOptions);
-
-    return RedisResponse.integer(result);
+  @Override
+  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+      SortedSetLexRangeOptions options) {
+    return RedisResponse.integer(commands.zlexcount(key, options));
   }
 }

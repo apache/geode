@@ -43,7 +43,7 @@ import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.netty.Coder;
 
 @RunWith(JUnitParamsRunner.class)
-public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractZRevRangeByLexIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
   public static final int SCORE = 1;
   public static final String BASE_MEMBER_NAME = "v";
@@ -61,63 +61,64 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     jedis.close();
   }
 
+
   @Test
   public void shouldError_givenWrongNumberOfArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.ZRANGEBYLEX, 3);
+    assertAtLeastNArgs(jedis, Protocol.Command.ZREVRANGEBYLEX, 3);
   }
 
   @Test
   @Parameters({"a", "--", "++"})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
-    assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", invalidArgument, "+"))
+    assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", invalidArgument, "-"))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
-    assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", "-", invalidArgument))
+    assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", "+", invalidArgument))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
-    assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", invalidArgument, invalidArgument))
+    assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", invalidArgument, invalidArgument))
         .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
   }
 
   @Test
   public void shouldError_givenInvalidLimitFormat() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT"))
             .hasMessageContaining(ERROR_SYNTAX);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0"))
             .hasMessageContaining(ERROR_SYNTAX);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LAMAT", "0", "10"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNonIntegerLimitArguments() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "invalid"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "invalid", "10"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenNegativeZeroLimitOffset() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "-0", "10"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenMultipleLimits_withFirstLimitIncorrectlySpecified() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "invalid",
         "LIMIT", "0", "10"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0",
         "LIMIT", "0", "10"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
@@ -125,12 +126,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenMultipleLimits_withLastLimitIncorrectlySpecified() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "10",
         "LIMIT", "0", "invalid"))
             .hasMessageContaining(ERROR_NOT_INTEGER);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "10",
         "LIMIT", "0"))
             .hasMessageContaining(ERROR_SYNTAX);
@@ -138,17 +139,17 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldReturnEmptyCollection_givenNonExistentKey() {
-    assertThat(jedis.zrangeByLex("fakeKey", "-", "+")).isEmpty();
+    assertThat(jedis.zrevrangeByLex("fakeKey", "+", "-")).isEmpty();
   }
 
   @Test
   public void shouldReturnEmptyCollection_givenMinGreaterThanMax() {
     jedis.zadd(KEY, SCORE, "member");
 
-    // Range + <= member name <= -
-    assertThat(jedis.zrangeByLex(KEY, "+", "-")).isEmpty();
-    // Range z <= member name <= a
-    assertThat(jedis.zrangeByLex(KEY, "[z", "[a")).isEmpty();
+    // Range - >= member name >= +
+    assertThat(jedis.zrevrangeByLex(KEY, "-", "+")).isEmpty();
+    // Range a >= member name >= z
+    assertThat(jedis.zrevrangeByLex(KEY, "[a", "[z")).isEmpty();
   }
 
   @Test
@@ -156,12 +157,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range m <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "[m", "[n")).containsExactly(memberName);
-    // Range -infinity <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "-", "[n")).containsExactly(memberName);
-    // Range m <= member name <= +infinity
-    assertThat(jedis.zrangeByLex(KEY, "[m", "+")).containsExactly(memberName);
+    // Range n >= member name >= m
+    assertThat(jedis.zrevrangeByLex(KEY, "[n", "[m")).containsExactly(memberName);
+    // Range n >= member name >= -
+    assertThat(jedis.zrevrangeByLex(KEY, "[n", "-")).containsExactly(memberName);
+    // Range + >= member name >= m
+    assertThat(jedis.zrevrangeByLex(KEY, "+", "[m")).containsExactly(memberName);
   }
 
   @Test
@@ -169,8 +170,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range member <= member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[n")).containsExactly(memberName);
+    // Range n >= member name >= member
+    assertThat(jedis.zrevrangeByLex(KEY, "[n", "[" + memberName)).containsExactly(memberName);
   }
 
   @Test
@@ -178,8 +179,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range a <= member name <= member
-    assertThat(jedis.zrangeByLex(KEY, "[a", "[" + memberName)).containsExactly(memberName);
+    // Range member >= member name >= a
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + memberName, "[a")).containsExactly(memberName);
   }
 
   @Test
@@ -187,16 +188,17 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[" + memberName))
+    // Range member >= member name >= member
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + memberName, "[" + memberName))
         .containsExactly(memberName);
   }
 
   @Test
-  @Parameters({"[", "(", "", "-", "+"})
+  @Parameters({"[", "(", "", "+", "-"})
   public void shouldReturnMember_givenMemberNameIsSpecialCharacter(String memberName) {
     jedis.zadd(KEY, SCORE, memberName);
 
-    assertThat(jedis.zrangeByLex(KEY, "[" + memberName, "[" + memberName))
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + memberName, "[" + memberName))
         .containsExactly(memberName);
   }
 
@@ -205,8 +207,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range member < member name <= n
-    assertThat(jedis.zrangeByLex(KEY, "(" + memberName, "[n")).isEmpty();
+    // Range n >= member name > member
+    assertThat(jedis.zrevrangeByLex(KEY, "[n", "(" + memberName)).isEmpty();
   }
 
   @Test
@@ -214,8 +216,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range a <= member name < member
-    assertThat(jedis.zrangeByLex(KEY, "[a", "(" + memberName)).isEmpty();
+    // Range member > member name >= a
+    assertThat(jedis.zrevrangeByLex(KEY, "(" + memberName, "[a")).isEmpty();
   }
 
   @Test
@@ -223,8 +225,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    // Range n <= member name <= o
-    assertThat(jedis.zrangeByLex(KEY, "[n", "[o")).isEmpty();
+    // Range o >= member name >= n
+    assertThat(jedis.zrevrangeByLex(KEY, "[o", "[n")).isEmpty();
   }
 
   @Test
@@ -236,10 +238,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(minLength - 1, maxLength);
+    int sublistMin = members.size() - maxLength;
+    int sublistMax = members.size() - minLength + 1;
+    List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 3) <= member name <= (v * 6)
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max))
+    // Range (v * 6) >= member name >= (v * 3)
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "[" + min))
         .containsExactlyElementsOf(expected);
   }
 
@@ -252,10 +256,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(minLength, maxLength - 1);
+    int sublistMin = members.size() - maxLength + 1;
+    int sublistMax = members.size() - minLength;
+    List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 1) < member name < (v * 7)
-    assertThat(jedis.zrangeByLex(KEY, "(" + min, "(" + max))
+    // Range (v * 7) > member name > (v * 1)
+    assertThat(jedis.zrevrangeByLex(KEY, "(" + max, "(" + min))
         .containsExactlyElementsOf(expected);
   }
 
@@ -268,10 +274,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(minLength - 1, maxLength - 1);
+    int sublistMin = members.size() - maxLength + 1;
+    int sublistMax = members.size() - minLength + 1;
+    List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 5) <= member name < (v * 8)
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "(" + max))
+    // Range (v * 8) > member name >= (v * 5)
+    assertThat(jedis.zrevrangeByLex(KEY, "(" + max, "[" + min))
         .containsExactlyElementsOf(expected);
   }
 
@@ -284,10 +292,10 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(minLength, maxLength);
+    List<String> expected = members.subList(members.size() - maxLength, members.size() - minLength);
 
-    // Range (v * 2) < member name <= (v * 5)
-    assertThat(jedis.zrangeByLex(KEY, "(" + min, "[" + max))
+    // Range (v * 5) >= member name > (v * 2)
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "(" + min))
         .containsExactlyElementsOf(expected);
   }
 
@@ -300,20 +308,20 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(0, maxLength);
+    List<String> expected = members.subList(members.size() - maxLength, members.size());
 
-    // Range -infinity <= member name <= (v * 8)
-    assertThat(jedis.zrangeByLex(KEY, "-", "[" + max))
+    // Range (v * 8) >= member name >= -infinity
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "-"))
         .containsExactlyElementsOf(expected);
 
-    expected = members.subList(minLength - 1, members.size());
+    expected = members.subList(0, members.size() - minLength + 1);
 
-    // Range (v * 4) <= member name < +infinity
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "+"))
+    // Range +infinity > member name >= (v * 4)
+    assertThat(jedis.zrevrangeByLex(KEY, "+", "[" + min))
         .containsExactlyElementsOf(expected);
 
-    // Range -infinity <= member name < +infinity
-    assertThat(jedis.zrangeByLex(KEY, "-", "+"))
+    // Range +infinity >= member name >= -infinity
+    assertThat(jedis.zrevrangeByLex(KEY, "+", "-"))
         .containsExactlyElementsOf(members);
   }
 
@@ -330,13 +338,13 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     int offset = 2;
     int count = 3;
 
-    int sublistMin = minLength + offset - 1;
+    int sublistMin = members.size() - maxLength + offset;
     int sublistMax = sublistMin + count;
 
     List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 1) <= member name <= (v * 7), offset = 2, count = 3
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, offset, count))
+    // Range (v * 7) >= member name >= (v * 1), offset = 2, count = 3
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "[" + min, offset, count))
         .containsExactlyElementsOf(expected);
   }
 
@@ -353,8 +361,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     int sublistMin = minLength + offset - 1;
     List<String> expected = members.subList(sublistMin, members.size());
 
-    // Range (v * 1) <= member name <= +infinity, offset = 2, count = -1
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "+", offset, -1))
+    // Range +infinity >= member name >= (v * 1), offset = 2, count = -1
+    assertThat(jedis.zrevrangeByLex(KEY, "+", "[" + min, offset, -1))
         .containsExactlyElementsOf(expected);
   }
 
@@ -368,10 +376,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> expected = members.subList(minLength - 1, maxLength);
+    int sublistMin = members.size() - maxLength;
+    int sublistMax = members.size() - minLength + 1;
+    List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 4) <= member name <= (v * 6), offset = 0, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, 0, 10))
+    // Range (v * 6) >= member name >= (v * 4), offset = 0, count = 10
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "[" + min, 0, 10))
         .containsExactlyElementsOf(expected);
   }
 
@@ -379,7 +389,7 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
   public void shouldReturnEmptyCollection_givenNonZeroNegativeLimitOffset() {
     populateSortedSet();
 
-    assertThat(jedis.zrangeByLex(KEY, "-", "+", -7, 10)).isEmpty();
+    assertThat(jedis.zrevrangeByLex(KEY, "+", "-", -7, 10)).isEmpty();
   }
 
   @Test
@@ -394,8 +404,8 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
 
     int offset = 7;
 
-    // Range (v * 1) <= member name <= (v * 3), offset = 7, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "[" + min, "[" + max, offset, 10)).isEmpty();
+    // Range (v * 3) >= member name >= (v * 1), offset = 7, count = 10
+    assertThat(jedis.zrevrangeByLex(KEY, "[" + max, "[" + min, offset, 10)).isEmpty();
   }
 
   @Test
@@ -411,15 +421,15 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     int offset = 2;
     int count = 3;
 
-    int sublistMin = minLength + offset - 1;
+    int sublistMin = members.size() - maxLength + offset;
     int sublistMax = sublistMin + count;
 
     // Add 1 to sublistMax, as subList uses exclusive maximum
     List<String> expected = members.subList(sublistMin, sublistMax);
 
-    // Range (v * 2) <= member name <= (v * 8), offset = 2, count = 3
+    // Range (v * 8) >= member name >= (v * 2), offset = 2, count = 3
     List<byte[]> result = uncheckedCast(
-        jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "[" + min, "[" + max,
+        jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "[" + max, "[" + min,
             "LIMIT", "0", "10",
             "LIMIT", String.valueOf(offset), String.valueOf(count)));
 
@@ -427,15 +437,14 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     assertThat(actual).containsExactlyElementsOf(expected);
   }
 
-  // Add 10 members with the same score and member names consisting of 'v' repeated an increasing
+  // Add 10 members with the same score and member names consisting of 'v' repeated a decreasing
   // number of times
   private List<String> populateSortedSet() {
     List<String> members = new ArrayList<>();
-    String memberName = BASE_MEMBER_NAME;
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 10; i > 0; --i) {
+      String memberName = StringUtils.repeat("v", i);
       jedis.zadd(KEY, SCORE, memberName);
       members.add(memberName);
-      memberName += BASE_MEMBER_NAME;
     }
     return members;
   }

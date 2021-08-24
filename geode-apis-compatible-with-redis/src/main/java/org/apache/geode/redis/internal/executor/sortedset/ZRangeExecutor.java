@@ -14,21 +14,31 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.List;
 
-
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRangeExecutor extends AbstractZRangeExecutor {
-
-  @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    return super.executeCommand(command, context);
-  }
+public class ZRangeExecutor extends AbstractSortedSetRangeExecutor<SortedSetRankRangeOptions> {
 
   @Override
   public boolean isRev() {
     return false;
+  }
+
+  @Override
+  public SortedSetRankRangeOptions createRangeOptions(List<byte[]> commandElements) {
+    return new SortedSetRankRangeOptions(commandElements, isRev());
+  }
+
+  @Override
+  public RedisResponse getEmptyResponse() {
+    return RedisResponse.emptyArray();
+  }
+
+  @Override
+  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+      SortedSetRankRangeOptions options) {
+    return RedisResponse.array(commands.zrange(key, options));
   }
 }

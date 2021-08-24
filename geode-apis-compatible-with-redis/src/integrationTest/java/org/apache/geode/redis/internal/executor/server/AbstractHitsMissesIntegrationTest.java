@@ -318,6 +318,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZrevrangeByLex() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByLex(k, "+", "-"));
+  }
+
+  @Test
   public void testZrevrangeByScore() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByScore(k, 1, 0));
   }

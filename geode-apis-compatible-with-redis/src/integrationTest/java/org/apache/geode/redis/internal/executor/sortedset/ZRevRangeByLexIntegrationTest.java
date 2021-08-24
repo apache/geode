@@ -14,21 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.junit.ClassRule;
 
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+public class ZRevRangeByLexIntegrationTest extends AbstractZRevRangeByLexIntegrationTest {
 
-public class ZCountExecutor extends ZRangeByScoreExecutor {
-
-  @Override
-  public RedisResponse getEmptyResponse() {
-    return RedisResponse.integer(0);
-  }
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
-      SortedSetScoreRangeOptions options) {
-    return RedisResponse.integer(commands.zcount(key, options));
+  public int getPort() {
+    return server.getPort();
   }
 }
