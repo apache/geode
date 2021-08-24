@@ -389,6 +389,15 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     testDetectOngoingExecution(true, true);
   }
 
+  private void addIgnoredExceptionsForClosingAfterCancelCommand() {
+    IgnoredException.addIgnoredException(
+        "Error closing the connection used to wan-copy region entries");
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying");
+    IgnoredException.addIgnoredException(
+        "Exception org.apache.geode.cache.client.ServerConnectivityException in sendBatch. Retrying");
+  }
+
   private void addIgnoredExceptionsForSenderInUseWentDown() {
     IgnoredException.addIgnoredException(
         "Exception org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException in sendBatch. Retrying");
@@ -638,7 +647,6 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testDetectOngoingExecution(boolean useParallel,
       boolean usePartitionedRegion)
       throws Exception {
-
     final int wanCopyRegionBatchSize = 10;
     final int entries = 1000;
 
@@ -748,6 +756,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
     gfsh1.executeAndAssertThat(commandString1);
     wanCopyCommandFuture.get();
+    addIgnoredExceptionsForClosingAfterCancelCommand();
   }
 
   private void stopReceiverAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
@@ -1228,6 +1237,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED, msg1,
               msg1);
     }
+    addIgnoredExceptionsForClosingAfterCancelCommand();
   }
 
   private void createSenders(boolean isParallelGatewaySender, List<VM> serversInA,
