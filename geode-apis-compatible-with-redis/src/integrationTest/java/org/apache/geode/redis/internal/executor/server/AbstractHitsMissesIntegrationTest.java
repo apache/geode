@@ -330,8 +330,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testZUnionStore() {
-    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k ->
-        jedis.zunionstore(k, new ZParams().weights(1, 2), k, k));
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY,
+        k -> jedis.zunionstore(k, new ZParams().weights(1, 2), k, k));
   }
 
   /************* Set related commands *************/
