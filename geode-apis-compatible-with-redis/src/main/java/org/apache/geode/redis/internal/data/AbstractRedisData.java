@@ -180,7 +180,6 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public void toDelta(DataOutput out) throws IOException {
     deltaInfo.get().serializeTo(out);
-    deltaInfo.remove();
   }
 
   @Override
