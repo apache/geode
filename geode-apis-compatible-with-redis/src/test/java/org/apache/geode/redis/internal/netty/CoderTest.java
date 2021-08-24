@@ -72,7 +72,7 @@ public class CoderTest {
   }
 
   @Test
-  @Parameters(method = "infinityReturnStrings")
+  @Parameters(method = "doubleToBytesStrings")
   public void doubleToBytes_processesLikeRedis(String inputString, String expectedString) {
     byte[] inputBytes = stringToBytes(inputString);
     double inputDouble = bytesToDouble(inputBytes);
@@ -171,7 +171,7 @@ public class CoderTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] infinityReturnStrings() {
+  private Object[] doubleToBytesStrings() {
     // string, expectedString
     return new Object[] {
         new Object[] {"inf", "inf"},
@@ -179,7 +179,7 @@ public class CoderTest {
         new Object[] {"Infinity", "inf"},
         new Object[] {"+Infinity", "inf"},
         new Object[] {"-inf", "-inf"},
-        new Object[] {"-Infinity", "-inf"},
+        new Object[] {"-Infinity", "-inf"}, new Object[] {"1.0", "1"},
     };
   }
 

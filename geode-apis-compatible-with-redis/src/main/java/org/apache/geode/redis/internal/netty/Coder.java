@@ -283,20 +283,20 @@ public class Coder {
     }
   }
 
-  private static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY) {
-      return "inf";
-    }
-    if (d == Double.NEGATIVE_INFINITY) {
-      return "-inf";
-    }
-
-    String stringValue = String.valueOf(d);
-    if (stringValue.endsWith(".0")) {
-      return (stringValue.substring(0, stringValue.length() - 2));
-    }
-    return stringValue;
-  }
+  // private static String doubleToString(double d) {
+  // if (d == Double.POSITIVE_INFINITY) {
+  // return "inf";
+  // }
+  // if (d == Double.NEGATIVE_INFINITY) {
+  // return "-inf";
+  // }
+  //
+  // String stringValue = String.valueOf(d);
+  // if (stringValue.endsWith(".0")) {
+  // return (stringValue.substring(0, stringValue.length() - 2));
+  // }
+  // return stringValue;
+  // }
 
   public static byte[] stringToBytes(String string) {
     if (string == null) {
@@ -1352,6 +1352,12 @@ public class Coder {
           e %= 100;
           buffer[i++] = digitToAscii(e / 10);
           buffer[i++] = digitToAscii(e & 10);
+        }
+      }
+      if (i >= 2) {
+        // if it ends with ".0" strip it off
+        if (buffer[i - 2] == bPERIOD && buffer[i - 1] == digitToAscii(0)) {
+          i -= 2;
         }
       }
       return ByteArrays.copy(buffer, 0, i);
