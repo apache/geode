@@ -21,16 +21,20 @@ import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
 import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -43,22 +47,33 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({SecurityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationFunctionDUnitTest {
   private static final String RELEASE_VERSION = "1.13.3";
 
   private static Function<Object> writeFunction;
 
-  private static MemberVM serverVM;
-  private static ClientVM currentVersionClientVM;
-  private static ClientVM releaseVersionClientVM;
+  @Parameterized.Parameter
+  public String clientVersion;
 
-  @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<String> data() {
+    // only test the current version and the latest released version
+    return Arrays.asList(CURRENT_VERSION, RELEASE_VERSION);
+  }
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
+  private MemberVM serverVM;
+  private ClientVM clientVM;
+
+  @Rule
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
+
+  @Before
+  public void setup() throws Exception {
     Properties properties = new Properties();
     properties.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
     properties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
@@ -70,17 +85,13 @@ public class AuthExpirationFunctionDUnitTest {
           .createRegionFactory(RegionShortcut.REPLICATE).create("region");
     });
     int serverPort = serverVM.getPort();
-    currentVersionClientVM = lsRule.startClientVM(1, CURRENT_VERSION, c1 -> c1
+    clientVM = lsRule.startClientVM(1, clientVersion, c1 -> c1
         .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
         .withPoolSubscription(true)
         .withServerConnection(serverPort));
-    releaseVersionClientVM = lsRule.startClientVM(2, RELEASE_VERSION,
-        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
-            .withPoolSubscription(true)
-            .withServerConnection(serverPort));
 
     VMProvider.invokeInEveryMember(() -> writeFunction = new TestFunctions.WriteFunction(),
-        serverVM, currentVersionClientVM, releaseVersionClientVM);
+        serverVM, clientVM);
   }
 
   @After
@@ -90,19 +101,7 @@ public class AuthExpirationFunctionDUnitTest {
   }
 
   @Test
-  public void currentClientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed() {
-    clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed(
-        currentVersionClientVM);
-  }
-
-  @Test
-  public void releaseClientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed() {
-    clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed(
-        releaseVersionClientVM);
-  }
-
-  private void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed(
-      ClientVM clientVM) {
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed() {
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       assertThat(clientCache).isNotNull();
