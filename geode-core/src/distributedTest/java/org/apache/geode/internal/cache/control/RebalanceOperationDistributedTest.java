@@ -19,6 +19,7 @@ import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
@@ -379,7 +380,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
    * copies of a buckets.
    */
   @Test
-  public void testEnforceZoneWithSixServersAndTwoZones() {
+  public void testEnforceZoneWithSixServersAndTwoZones() throws InterruptedException {
     VM vm0 = getVM(0);
     VM vm1 = getVM(1);
     VM vm2 = getVM(2);
@@ -390,8 +391,9 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     Stream.of(vm3, vm4, vm5).forEach(vm -> vm.invoke(() -> setRedundancyZone("B")));
 
     Stream.of(vm0, vm1, vm2, vm3, vm4, vm5).forEach(vm -> {
-      vm.invoke(() -> createPartitionedRegion("region1", 1, 113));
-      vm.invoke(() -> createPartitionedRegion("region1Ancillary", 1, 113));
+      vm.invoke(() -> createPartitionedRegion("region1", 1, 113, PARTITION_REDUNDANT_PERSISTENT));
+      vm.invoke(() -> createPartitionedRegion("region1Ancillary", 1, 113,
+          PARTITION_REDUNDANT_PERSISTENT, "region1"));
     });
 
     // Create some buckets
@@ -411,6 +413,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Make sure we still have low redundancy
     vm0.invoke(() -> validateRedundancy("region1", 113, 1, 0));
+    logger.info(
+        "1 ******************* ******************* ******************* ******************* ******************* ");
 
     vm0.invoke(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
@@ -419,23 +423,38 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       validateStatistics(manager, results);
     });
 
-    vm0.bounceForcibly();
+    vm3.invoke(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, manager);
+      logger.info("Rebalance zone b 1 Results = " + results);
+      validateStatistics(manager, results);
+    });
 
-    vm1.invoke(() -> {
+    vm2.bounceForcibly();
+    logger.info(
+        "2 ******************* ******************* ******************* ******************* ******************* ");
+    vm0.invoke(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
       RebalanceResults results = doRebalance(false, manager);
       logger.info("Rebalance 2 Results = " + results);
     });
-
-    vm0.invoke(() -> {
-      setRedundancyZone("A");
-      createPartitionedRegion("region1", 1, 113);
-    });
+    Thread.sleep(30000);
 
     vm2.invoke(() -> {
+      setRedundancyZone("A");
+      createPartitionedRegion("region1", 1, 113, PARTITION_REDUNDANT_PERSISTENT);
+      createPartitionedRegion("region1Ancillary", 1, 113,
+          PARTITION_REDUNDANT_PERSISTENT, "region1");
+
+    });
+    Thread.sleep(10000);
+    logger.info(
+        "3 ******************* ******************* ******************* ******************* ******************* ");
+
+    vm0.invoke(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
       RebalanceResults results = doRebalance(false, manager);
-      logger.info("Rebalance 3 Results = " + results);
+      logger.info("******************* Rebalance 3 Results = " + results);
     });
 
     int zoneA = vm0.invoke(() -> getBucketCount("region1"));
@@ -447,12 +466,9 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     zoneB += vm5.invoke(() -> getBucketCount("region1"));
 
     assertThat(zoneA).isEqualTo(zoneB).isEqualTo(113);
-    vm0.invoke(() -> validateBucketCountLessThan("region1", 38));
-    vm1.invoke(() -> validateBucketCountLessThan("region1", 38));
-    vm2.invoke(() -> validateBucketCountLessThan("region1", 38));
-    vm3.invoke(() -> validateBucketCountLessThan("region1", 38));
-    vm4.invoke(() -> validateBucketCountLessThan("region1", 38));
-    vm5.invoke(() -> validateBucketCountLessThan("region1", 38));
+
+    Stream.of(vm0, vm1, vm2, vm3, vm4, vm5)
+        .forEach(vm -> vm.invoke(() -> validateBucketCountLessThan("region1", 38)));
   }
 
   @Test
@@ -2443,6 +2459,20 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     partitionAttributesFactory.setRecoveryDelay(-1);
     partitionAttributesFactory.setStartupRecoveryDelay(-1);
     partitionAttributesFactory.setTotalNumBuckets(numBuckets);
+    RegionFactory regionFactory = getCache().createRegionFactory(regionShortcut);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    regionFactory.create(regionName);
+  }
+
+  private void createPartitionedRegion(String regionName, int redundantCopies, final int numBuckets,
+      final RegionShortcut regionShortcut, final String colocatedWith) {
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(redundantCopies);
+    partitionAttributesFactory.setRecoveryDelay(-1);
+    partitionAttributesFactory.setStartupRecoveryDelay(-1);
+    partitionAttributesFactory.setTotalNumBuckets(numBuckets);
+    partitionAttributesFactory.setColocatedWith(colocatedWith);
     RegionFactory regionFactory = getCache().createRegionFactory(regionShortcut);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
