@@ -1077,7 +1077,7 @@ public class IndexMaintenanceJUnitTest {
    */
 
   @Test
-  public void test000BUG32452()
+  public void fromClausesAndIndexedExpressionsMatchExpectedValues()
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     Index i1 = qs.createIndex("tIndex", IndexType.FUNCTIONAL, "vals.secId",
         SEPARATOR + "portfolio pf, pf.positions.values vals");
@@ -1187,7 +1187,7 @@ public class IndexMaintenanceJUnitTest {
    * invalidating the key 3
    */
   @Test
-  public void testInvalidatingEntry() throws Exception {
+  public void numberOfIndexValuesStatIsUpdatedWhenEntryInvalidated() throws Exception {
     IndexStatistics stats = index.getStatistics();
     region.invalidate("3");
     assertEquals(3, stats.getNumberOfValues());
@@ -1196,7 +1196,7 @@ public class IndexMaintenanceJUnitTest {
   }
 
   @Test
-  public void testDestroyEntry() throws Exception {
+  public void numberOfIndexValuesStatIsUpdatedWhenEntryDestroyed() throws Exception {
     IndexStatistics stats = index.getStatistics();
     region.put("4", new Portfolio(4));
     region.destroy("4");
@@ -1208,7 +1208,7 @@ public class IndexMaintenanceJUnitTest {
   // This test has a meaning only for Trunk code as it checks for Map implementation
   // Tests for Region clear operations on Index in a Local VM
   @Test
-  public void testIndexClearanceOnMapClear() {
+  public void indexIsUsedForQueryWhenRegionIsEmpty() {
     try {
       CacheUtils.getCache();
       isInitDone = false;
@@ -1294,43 +1294,11 @@ public class IndexMaintenanceJUnitTest {
     }
   }
 
-  @Test
-  public void testIndexUpdate() {
-    try {
-      CacheUtils.getCache();
-      isInitDone = false;
-      qs.removeIndexes();
-
-      index = (IndexProtocol) qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pos.secId",
-          SEPARATOR + "portfolio p , p.positions.values pos");
-      String queryStr =
-          "Select distinct pf from " + SEPARATOR
-              + "portfolio pf , pf.positions.values ps where ps.secId='SUN'";
-
-      Query query = qs.newQuery(queryStr);
-      SelectResults rs = (SelectResults) query.execute();
-      int size1 = rs.size();
-      for (int i = 4; i < 50; ++i) {
-        region.put("" + i, new Portfolio(i));
-      }
-      rs = (SelectResults) query.execute();
-      int size2 = rs.size();
-      assertTrue(size2 > size1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Test failed due to exception=" + e);
-    } finally {
-      isInitDone = false;
-      CacheUtils.restartCache();
-    }
-
-  }
-
   /**
    * Test to compare range and compact index. They should return the same results.
    */
   @Test
-  public void testCompareRangeAndCompactIndex() {
+  public void rangeAndCompactIndexesShouldReturnTheSameResults() {
     try {
       // CacheUtils.restartCache();
       if (!isInitDone) {
@@ -1393,63 +1361,6 @@ public class IndexMaintenanceJUnitTest {
       fail("Test failed due to exception=" + e);
     } finally {
       IndexManager.TEST_RANGEINDEX_ONLY = false;
-      isInitDone = false;
-      CacheUtils.restartCache();
-    }
-  }
-
-  /**
-   * Test to acquire range and compact index.
-   */
-  @Test
-  public void testToAcquireCompactRangeIndexEarly() {
-    try {
-      // CacheUtils.restartCache();
-      if (!isInitDone) {
-        isInitDone = true;
-      }
-      qs.removeIndexes();
-
-      String[] queryStr =
-          new String[] {"Select status from " + SEPARATOR + "portfolio pf where status='active'",
-              "Select * from " + SEPARATOR
-                  + "portfolio pf, pf.positions.values pos where pf.ID > 10 and pf.status='active'",
-              "Select pf.ID from " + SEPARATOR + "portfolio pf where pf.ID > 2 and pf.ID < 100",
-              "Select * from " + SEPARATOR + "portfolio pf where pf.position1.secId > '2'",
-              "Select * from " + SEPARATOR
-                  + "portfolio pf, pf.positions.values pos where pos.secId > '2'",};
-
-      // initialize region.
-      region.clear();
-      for (int k = 0; k < 10; k++) {
-        region.put("" + k, new Portfolio(k));
-      }
-
-      // Create range and compact-range indexes.
-      qs.createIndex("id2Index ", IndexType.FUNCTIONAL, "pf.ID", SEPARATOR + "portfolio pf");
-      qs.createIndex("id2PosIndex ", IndexType.FUNCTIONAL, "pf.ID",
-          SEPARATOR + "portfolio pf, pf.positions.values");
-      qs.createIndex("status2PosIndex ", IndexType.FUNCTIONAL, "pos.secId",
-          SEPARATOR + "portfolio pf, pf.positions.values pos");
-
-      // Set the acquire compact range index flag to true
-      // IndexManager.TEST_ACQUIRE_COMPACTINDEX_LOCKS_EARLY = true;
-      // Update Region.
-      for (int k = 0; k < 100; k++) {
-        region.put("" + k, new Portfolio(k));
-      }
-      for (int i = 0; i < queryStr.length; i++) {
-        // Execute Query.
-        SelectResults[][] rs = new SelectResults[1][2];
-        Query query = qs.newQuery(queryStr[i]);
-        rs[0][0] = (SelectResults) query.execute();
-      }
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Test failed due to exception=" + e);
-    } finally {
-      // IndexManager.TEST_ACQUIRE_COMPACTINDEX_LOCKS_EARLY = false;
       isInitDone = false;
       CacheUtils.restartCache();
     }
