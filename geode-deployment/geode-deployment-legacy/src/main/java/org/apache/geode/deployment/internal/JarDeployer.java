@@ -341,7 +341,8 @@ public class JarDeployer implements Serializable {
             JarFileUtils.toArtifactId(file.getName()));
         if (artifactId.equals(JarFileUtils.toArtifactId(file.getName()))) {
           logger.info("Deleting: {}", file.getAbsolutePath());
-          FileUtils.deleteQuietly(file);
+          boolean deleted = FileUtils.deleteQuietly(file);
+          System.out.printf("DHE: Deleted %s: %s%n", file, deleted);
         }
       }
     } finally {
