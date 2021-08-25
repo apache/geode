@@ -117,7 +117,7 @@ public class ZRemRangeByRankDUnitTest {
   }
 
   private void doZRemRangeByRankOnMembersInDifferentOrder(int i, AtomicInteger total) {
-    long count = jedis.zremrangeByRank(sortedSetKey, setSize - i - 1,setSize - i - 1);
+    long count = jedis.zremrangeByRank(sortedSetKey, setSize - i - 1, setSize - i - 1);
     total.addAndGet((int) count);
   }
 
@@ -164,7 +164,8 @@ public class ZRemRangeByRankDUnitTest {
 
   @Test
   @Ignore("Fails due to GEODE-9310")
-  public void zRemRangeByRankCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed() throws Exception {
+  public void zRemRangeByRankCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed()
+      throws Exception {
     int mapSize = 300;
     Map<String, Double> memberScoreMap = makeMemberScoreMap(mapSize);
 
