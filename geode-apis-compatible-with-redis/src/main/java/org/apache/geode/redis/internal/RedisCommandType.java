@@ -101,6 +101,7 @@ import org.apache.geode.redis.internal.executor.sortedset.ZRemExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByScoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByLexExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByLexExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByLexExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByScoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;

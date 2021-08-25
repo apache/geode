@@ -63,7 +63,6 @@ import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 

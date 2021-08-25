@@ -361,17 +361,12 @@ public class RedisSortedSet extends AbstractRedisData {
       return 0;
     }
 
-    // Assume that all members have the same score. Behaviour is unspecified otherwise.
-    double score = scoreSet.get(0).score;
-
-    int minIndex =
-        getIndexByLex(score, rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
+    int minIndex = rangeOptions.getRangeIndex(scoreSet, true);
     if (minIndex >= scoreSet.size()) {
       return 0;
     }
 
-    int maxIndex =
-        getIndexByLex(score, rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
+    int maxIndex = rangeOptions.getRangeIndex(scoreSet, false);
 
     if (minIndex == maxIndex) {
       return 0;
