@@ -21,9 +21,9 @@ import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -33,9 +33,9 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -44,7 +44,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * Authenticates this client (or a user) on a server. This op ideally should get executed
  * once-per-server.
  *
- * When multiuser-authentication is set to false, this op gets executed immedialtely after a
+ * When multiuser-authentication is set to false, this op gets executed immediately after a
  * client-to-server connection is established.
  *
  * When multiuser-authentication is set to true, this op gets executed before the user attempts to
@@ -55,6 +55,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * @since GemFire 6.5
  */
 public class AuthenticateUserOp {
+  public static final long NOT_A_USER_ID = -1L;
 
   /**
    * Sends the auth credentials to the server. Used in single user mode of authentication.
@@ -63,9 +64,22 @@ public class AuthenticateUserOp {
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
    */
-  public static Object executeOn(Connection con, ExecutablePool pool) {
-    AbstractOp op = new AuthenticateUserOpImpl(con);
-    return pool.executeOn(con, op);
+  public static Long executeOn(Connection con, ExecutablePool pool) {
+    AbstractOp op = new AuthenticateUserOpImpl();
+    return (Long) pool.executeOn(con, op);
+  }
+
+  /**
+   * Sends the auth credentials to the server. Used in single user mode of authentication.
+   *
+   * @param location The ServerLocation instance whose connection instance will be used to perform
+   *        the operation.
+   * @param pool The connection pool to use for this operation.
+   * @return Object unique user-id.
+   */
+  public static Long executeOn(ServerLocation location, ExecutablePool pool) {
+    AbstractOp op = new AuthenticateUserOpImpl();
+    return (Long) pool.executeOn(location, op);
   }
 
   /**
@@ -77,10 +91,10 @@ public class AuthenticateUserOp {
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
    */
-  public static Object executeOn(ServerLocation location, ExecutablePool pool,
+  public static Long executeOn(ServerLocation location, ExecutablePool pool,
       Properties securityProps) {
     AbstractOp op = new AuthenticateUserOpImpl(securityProps);
-    return pool.executeOn(location, op);
+    return (Long) pool.executeOn(location, op);
   }
 
   private AuthenticateUserOp() {
@@ -88,32 +102,12 @@ public class AuthenticateUserOp {
   }
 
   static class AuthenticateUserOpImpl extends AbstractOp {
-
     private Properties securityProperties = null;
     private boolean needsServerLocation = false;
 
-    AuthenticateUserOpImpl(Connection con) {
+    AuthenticateUserOpImpl() {
       super(MessageType.USER_CREDENTIAL_MESSAGE, 1);
-      byte[] credentialBytes;
-      DistributedMember server = new InternalDistributedMember(con.getSocket().getInetAddress(),
-          con.getSocket().getPort(), false);
-      DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
-      String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
-      Properties tmpSecurityProperties = sys.getSecurityProperties();
-
-      // LOG: following passes the DS API LogWriters into the security API
-      Properties credentials = Handshake.getCredentials(authInitMethod, tmpSecurityProperties,
-          server, false, (InternalLogWriter) sys.getLogWriter(),
-          (InternalLogWriter) sys.getSecurityLogWriter());
-
       getMessage().setMessageHasSecurePartFlag();
-      try (HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT)) {
-        DataSerializer.writeProperties(credentials, heapdos);
-        credentialBytes = ((ConnectionImpl) con).encryptBytes(heapdos.toByteArray());
-      } catch (Exception e) {
-        throw new ServerOperationException(e);
-      }
-      getMessage().addBytesPart(credentialBytes);
     }
 
     AuthenticateUserOpImpl(Properties securityProps) {
@@ -125,51 +119,93 @@ public class AuthenticateUserOp {
       super(MessageType.USER_CREDENTIAL_MESSAGE, 1);
       securityProperties = securityProps;
       needsServerLocation = needsServer;
-
       getMessage().setMessageHasSecurePartFlag();
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-      byte[] secureBytes;
-      hdos.writeLong(cnx.getConnectionID());
-      if (securityProperties != null) {
-        DistributedMember server = new InternalDistributedMember(cnx.getSocket().getInetAddress(),
-            cnx.getSocket().getPort(), false);
-        DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
-        String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
+    protected void sendMessage(Connection connection) throws Exception {
+      if (securityProperties == null) {
+        securityProperties = getConnectedSystem().getSecurityProperties();
+      }
+      byte[] credentialBytes = getCredentialBytes(connection, securityProperties);
+      getMessage().addBytesPart(credentialBytes);
 
-        Properties credentials = Handshake.getCredentials(authInitMethod, securityProperties,
-            server, false, (InternalLogWriter) sys.getLogWriter(),
-            (InternalLogWriter) sys.getSecurityLogWriter());
-        byte[] credentialBytes;
-        try (HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT)) {
-          DataSerializer.writeProperties(credentials, heapdos);
-          credentialBytes = ((ConnectionImpl) cnx).encryptBytes(heapdos.toByteArray());
-        }
-        getMessage().addBytesPart(credentialBytes);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(16, Version.CURRENT)) {
+        hdos.writeLong(connection.getConnectionID());
+        long userId = getUserId(connection);
+        // secureLogger.debug("AuthenticateUserOp with uniqueId {}", userId);
+        hdos.writeLong(userId);
+        getMessage().setSecurePart(((ConnectionImpl) connection).encryptBytes(hdos.toByteArray()));
       }
-      try {
-        secureBytes = ((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray());
-      } finally {
-        hdos.close();
-      }
-      getMessage().setSecurePart(secureBytes);
       getMessage().send(false);
     }
 
+    protected long getUserId(Connection connection) {
+      // single user mode
+      if (UserAttributes.userAttributes.get() == null) {
+        return connection.getServer().getUserId();
+      }
+      // multi user mode
+      Long id = UserAttributes.userAttributes.get().getServerToId().get(connection.getServer());
+      if (id == null) {
+        return NOT_A_USER_ID;
+      }
+      return id;
+    }
+
+    protected InternalDistributedSystem getConnectedSystem() {
+      return InternalDistributedSystem.getConnectedInstance();
+    }
+
+    protected byte[] getCredentialBytes(Connection connection, Properties securityProperties)
+        throws Exception {
+      InternalDistributedSystem distributedSystem = getConnectedSystem();
+      DistributedMember server =
+          new InternalDistributedMember(connection.getSocket().getInetAddress(),
+              connection.getSocket().getPort(), false);
+      String authInitMethod =
+          distributedSystem.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
+
+      Properties credentials = Handshake.getCredentials(authInitMethod, securityProperties,
+          server, false, distributedSystem.getLogWriter(),
+          distributedSystem.getSecurityLogWriter());
+      byte[] credentialBytes;
+      try (HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT)) {
+        DataSerializer.writeProperties(credentials, heapdos);
+        credentialBytes = ((ConnectionImpl) connection).encryptBytes(heapdos.toByteArray());
+      }
+      return credentialBytes;
+    }
+
+
     @Override
-    public Object attempt(Connection cnx) throws Exception {
-      if (cnx.getServer().getRequiresCredentials()) {
-        return super.attempt(cnx);
-      } else {
+    public Object attempt(Connection connection) throws Exception {
+      if (!connection.getServer().getRequiresCredentials()) {
         return null;
+      }
+
+      try {
+        return parentAttempt(connection);
+      }
+      // if login failed for auth expired reason, try again once more
+      catch (AuthenticationExpiredException first) {
+        getMessage().clear();
+        try {
+          return parentAttempt(connection);
+        } catch (AuthenticationExpiredException second) {
+          throw new AuthenticationFailedException(second.getMessage(), second);
+        }
       }
     }
 
+    @VisibleForTesting
+    Object parentAttempt(Connection connection) throws Exception {
+      return super.attempt(connection);
+    }
+
+
     @Override
-    protected Object processResponse(Message msg, Connection cnx) throws Exception {
+    protected Object processResponse(Message msg, Connection connection) throws Exception {
       byte[] bytes;
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
@@ -177,15 +213,16 @@ public class AuthenticateUserOp {
       if (msgType == MessageType.RESPONSE) {
         bytes = (byte[]) part.getObject();
         if (bytes.length == 0) {
-          cnx.getServer().setRequiresCredentials(false);
+          connection.getServer().setRequiresCredentials(false);
         } else {
-          cnx.getServer().setRequiresCredentials(true);
-          byte[] decrypted = ((ConnectionImpl) cnx).decryptBytes(bytes);
-          ByteArrayDataInput dis = new ByteArrayDataInput(decrypted);
-          userId = dis.readLong();
+          connection.getServer().setRequiresCredentials(true);
+          byte[] decrypted = ((ConnectionImpl) connection).decryptBytes(bytes);
+          try (ByteArrayDataInput dis = new ByteArrayDataInput(decrypted)) {
+            userId = dis.readLong();
+          }
         }
         if (needsServerLocation) {
-          return new Object[] {cnx.getServer(), userId};
+          return new Object[] {connection.getServer(), userId};
         } else {
           return userId;
         }
@@ -199,6 +236,8 @@ public class AuthenticateUserOp {
           } else {
             throw new AuthenticationFailedException(s, afe);
           }
+        } else if (result instanceof AuthenticationExpiredException) {
+          throw (AuthenticationExpiredException) result;
         } else if (result instanceof AuthenticationRequiredException) {
           throw new AuthenticationRequiredException(s, (AuthenticationRequiredException) result);
         } else if (result instanceof NotAuthorizedException) {

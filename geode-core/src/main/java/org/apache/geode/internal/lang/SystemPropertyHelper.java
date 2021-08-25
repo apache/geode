@@ -16,6 +16,8 @@ package org.apache.geode.internal.lang;
 
 import static org.apache.geode.internal.lang.SystemProperty.getProductBooleanProperty;
 
+import java.util.Optional;
+
 import org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting;
 
 /**
@@ -25,6 +27,9 @@ import org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting;
  * @since Geode 1.4.0
  */
 public class SystemPropertyHelper {
+
+  public static final String GEODE_PREFIX = "geode.";
+  public static final String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
@@ -100,6 +105,13 @@ public class SystemPropertyHelper {
   public static final String PARALLEL_DISK_STORE_RECOVERY = "parallelDiskStoreRecovery";
 
   /**
+   * Milliseconds to wait for the client to re-authenticate back before unregister this client
+   * proxy. If client re-authenticate back successfully within this period, messages will continue
+   * to be delivered to the client
+   */
+  public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
+
+  /**
    * Milliseconds to wait before retrying to get events for a transaction from the
    * gateway sender queue when group-transaction-events is true.
    */
@@ -107,11 +119,28 @@ public class SystemPropertyHelper {
       "get-transaction-events-from-queue-wait-time-ms";
 
   /**
-   * Milliseconds to wait for the client to re-authenticate back before unregister this client
-   * proxy. If client re-authenticate back successfully within this period, messages will continue
-   * to be delivered to the client
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the Long value of the system property
    */
-  public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
+  public static Optional<Long> getProductLongProperty(String name) {
+    Long propertyValue = Long.getLong(GEODE_PREFIX + name);
+    if (propertyValue == null) {
+      propertyValue = Long.getLong(GEMFIRE_PREFIX + name);
+    }
+
+    if (propertyValue != null) {
+      return Optional.of(propertyValue);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public static Long getProductLongProperty(String name, long defaultValue) {
+    return getProductLongProperty(name).orElse(defaultValue);
+  }
 
   /**
    * As of Geode 1.4.0, a region set operation will be in a transaction even if it is the first

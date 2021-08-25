@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -64,6 +65,7 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
+import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
@@ -72,6 +74,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -87,6 +90,7 @@ import org.apache.geode.security.NotAuthorizedException;
 public abstract class ServerConnection implements Runnable {
 
   protected static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   /**
    * This is a buffer that we add to client readTimeout value before we cleanup the connection. This
@@ -97,6 +101,8 @@ public abstract class ServerConnection implements Runnable {
   private static final String DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME =
       "geode.disallow-internal-messages-without-credentials";
 
+  public static final String USER_NOT_FOUND = "User authorization attributes not found.";
+
   /**
    * When true requires some formerly credential-less messages to carry credentials. See GEODE-3249
    * and ServerConnection.isInternalMessage()
@@ -105,7 +111,7 @@ public abstract class ServerConnection implements Runnable {
   public static boolean allowInternalMessagesWithoutCredentials =
       !Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME);
 
-  private Map commands;
+  private Map<Integer, Command> commands;
 
   protected final SecurityService securityService;
 
@@ -235,6 +241,7 @@ public abstract class ServerConnection implements Runnable {
 
 
   private ClientUserAuths clientUserAuths;
+  private final Object clientUserAuthsLock = new Object();
 
   // this is constant(server and client) for first user request, after that it is random
   // this also need to send in handshake
@@ -320,6 +327,12 @@ public abstract class ServerConnection implements Runnable {
 
   public static Byte isExecuteFunctionOnLocalNodeOnly() {
     return executeFunctionOnLocalNodeOnly.get();
+  }
+
+  @VisibleForTesting
+  void setServerConnectionCollection(
+      ServerConnectionCollection serverConnectionCollection) {
+    this.serverConnectionCollection = serverConnectionCollection;
   }
 
   private boolean verifyClientConnection() {
@@ -443,7 +456,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  protected Map getCommands() {
+  protected Map<Integer, Command> getCommands() {
     return commands;
   }
 
@@ -502,18 +515,13 @@ public abstract class ServerConnection implements Runnable {
   }
 
   private long setUserAuthorizeAndPostAuthorizeRequest(AuthorizeRequest authzRequest,
-      AuthorizeRequestPP postAuthzRequest) throws IOException {
+      AuthorizeRequestPP postAuthzRequest) {
     UserAuthAttributes userAuthAttr = new UserAuthAttributes(authzRequest, postAuthzRequest);
-    if (clientUserAuths == null) {
-      initializeClientUserAuths();
-    }
-    try {
-      return clientUserAuths.putUserAuth(userAuthAttr);
-    } catch (NullPointerException exception) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths == null) {
+        initializeClientUserAuths();
       }
-      throw exception;
+      return clientUserAuths.putUserAuth(userAuthAttr);
     }
   }
 
@@ -754,7 +762,9 @@ public abstract class ServerConnection implements Runnable {
     if (verifyClientConnection()) {
       initializeCommands();
       if (!getCommunicationMode().isWAN()) {
-        initializeClientUserAuths();
+        synchronized (clientUserAuthsLock) {
+          initializeClientUserAuths();
+        }
       }
     }
     if (TEST_VERSION_AFTER_HANDSHAKE_FLAG) {
@@ -771,9 +781,16 @@ public abstract class ServerConnection implements Runnable {
       processMessages = false;
       return;
     }
-    Message message = BaseCommand.readRequest(this);
+
+    Message message = getMessage();
     if (!serverConnectionCollection.incrementConnectionsProcessing()) {
       // Client is being disconnected, don't try to process message.
+      processMessages = false;
+      return;
+    }
+
+    if (isTerminated()) {
+      // Client is being terminated, don't try to process message.
       processMessages = false;
       return;
     }
@@ -825,26 +842,7 @@ public abstract class ServerConnection implements Runnable {
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
-        if (securityService.isIntegratedSecurity()
-            && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)
-            && !communicationMode.isWAN()) {
-          long uniqueId = getUniqueId();
-          String messageType = MessageType.getString(requestMessage.getMessageType());
-          Subject subject = clientUserAuths.getSubject(uniqueId);
-          if (subject != null) {
-            threadState = securityService.bindSubject(subject);
-            logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
-                uniqueId, messageType, getName());
-          } else if (uniqueId == 0) {
-            logger.debug("No unique ID yet. {}, {}", messageType, getName());
-          } else {
-            logger.warn(
-                "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-                uniqueId, messageType, this.getName());
-            throw new AuthenticationRequiredException("Failed to find the authenticated user.");
-          }
-        }
-
+        threadState = bindSubject(command);
         command.execute(message, this, securityService);
       }
     } finally {
@@ -859,6 +857,50 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  ThreadState bindSubject(Command command) {
+    if (!securityService.isIntegratedSecurity()) {
+      return null;
+    }
+
+    if (communicationMode.isWAN()) {
+      return null;
+    }
+
+    if (command instanceof PutUserCredentials) {
+      return null;
+    }
+
+    if (isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
+      return null;
+    }
+
+    long uniqueId = getUniqueId();
+    String messageType = MessageType.getString(requestMessage.getMessageType());
+    if (uniqueId == 0 || uniqueId == -1) {
+      logger.debug("No unique ID yet. {}, {}", messageType, getName());
+      return null;
+    }
+
+    Subject subject = clientUserAuths.getSubject(uniqueId);
+    if (subject == null) {
+      secureLogger.warn(
+          "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
+          uniqueId, messageType, getName());
+      throw new AuthenticationRequiredException("Failed to find the authenticated user.");
+    }
+
+    ThreadState threadState = securityService.bindSubject(subject);
+    secureLogger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+        uniqueId, messageType, getName());
+
+    return threadState;
+  }
+
+  @VisibleForTesting
+  Message getMessage() {
+    return BaseCommand.readRequest(this);
+  }
+
   private final Object terminationLock = new Object();
   private boolean terminated;
 
@@ -868,9 +910,13 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  // this needs to be synchronized to avoid NPE between null check and cleanup
   private void cleanClientAuths() {
-    if (clientUserAuths != null) {
-      clientUserAuths.cleanup(false);
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        clientUserAuths.cleanup(false);
+        clientUserAuths = null;
+      }
     }
   }
 
@@ -889,6 +935,7 @@ public abstract class ServerConnection implements Runnable {
       }
       terminated = true;
     }
+
     setNotProcessingMessage();
     boolean clientDeparted = false;
     boolean cleanupStats = false;
@@ -950,17 +997,19 @@ public abstract class ServerConnection implements Runnable {
         chmRegistered = false;
       }
     }
-    if (unregisterClient) {
-      // last serverconnection call all close on auth objects
-      cleanClientAuths();
-    }
-    clientUserAuths = null;
+
     if (needsUnregister) {
       acceptor.getClientHealthMonitor().removeConnection(proxyId, this);
       if (unregisterClient) {
         acceptor.getClientHealthMonitor().unregisterClient(proxyId, getAcceptor(),
             clientDisconnectedCleanly, clientDisconnectedException);
       }
+    }
+
+    if (unregisterClient) {
+      // last server connection call all close on auth objects
+      secureLogger.debug("ServerConnection.handleTermination clean client auths");
+      cleanClientAuths();
     }
 
     if (cleanupStats) {
@@ -992,7 +1041,7 @@ public abstract class ServerConnection implements Runnable {
   }
 
   private Command getCommand(Integer messageType) {
-    return (Command) commands.get(messageType);
+    return commands.get(messageType);
   }
 
   public void removeUserAuth(Message message, boolean keepAlive) {
@@ -1010,23 +1059,20 @@ public abstract class ServerConnection implements Runnable {
         throw new AuthenticationFailedException("Authentication failed");
       }
 
-      try {
-        // first try integrated security
-        boolean removed = clientUserAuths.removeSubject(aIds.getUniqueId());
-
-        // if not successful, try the old way
-        if (!removed) {
+      synchronized (clientUserAuthsLock) {
+        if (clientUserAuths != null) {
+          // first try integrated security
+          clientUserAuths.removeSubject(aIds.getUniqueId());
+          // then, try the old way
           clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
         }
-      } catch (NullPointerException exception) {
-        logger.debug("Exception", exception);
       }
     } catch (Exception exception) {
       throw new AuthenticationFailedException("Authentication failed", exception);
     }
   }
 
-  public byte[] setCredentials(Message message) {
+  public byte[] setCredentials(Message message, long existingUniqueId) {
     try {
       // need to get connection id from secure part of message, before that need to insure
       // encryption of id
@@ -1085,8 +1131,7 @@ public abstract class ServerConnection implements Runnable {
           (InternalLogWriter) system.getSecurityLogWriter(), proxyId.getDistributedMember(),
           securityService);
       if (principal instanceof Subject) {
-        Subject subject = (Subject) principal;
-        uniqueId = clientUserAuths.putSubject(subject);
+        uniqueId = putSubject((Subject) principal, existingUniqueId);
       } else {
         // this sets principal in map as well....
         uniqueId = getUniqueId((Principal) principal);
@@ -1094,7 +1139,8 @@ public abstract class ServerConnection implements Runnable {
 
       // create secure part which will be send in response
       return encryptId(uniqueId);
-    } catch (AuthenticationFailedException | AuthenticationRequiredException exception) {
+    } catch (AuthenticationFailedException | AuthenticationRequiredException
+        | AuthenticationExpiredException exception) {
       throw exception;
     } catch (Exception exception) {
       throw new AuthenticationFailedException("REPLY_REFUSED", exception);
@@ -1102,8 +1148,29 @@ public abstract class ServerConnection implements Runnable {
   }
 
   @VisibleForTesting
+  long putSubject(Subject subject, long existingUniqueId) {
+    final long uniqueId = clientUserAuths.putSubject(subject, existingUniqueId);
+    // also update the subject in the CacheClientProxy if it's in single user mode
+    CacheClientProxy clientProxy =
+        getAcceptor().getCacheClientNotifier().getClientProxy(getProxyID());
+    // update the subject (in single user mode) in clientProxy if exists
+    if (clientProxy != null && clientProxy.getSubject() != null
+        && clientProxy.isWaitingForReAuthentication()) {
+      secureLogger.debug("update subject on client proxy {} with uniqueId {}", clientProxy,
+          uniqueId);
+      clientProxy.setSubject(subject);
+    }
+    return uniqueId;
+  }
+
   protected ClientUserAuths getClientUserAuths() {
     return clientUserAuths;
+  }
+
+  protected void setClientUserAuths(ClientUserAuths clientUserAuths) {
+    synchronized (clientUserAuthsLock) {
+      this.clientUserAuths = clientUserAuths;
+    }
   }
 
   private void setSecurityPart() {
@@ -1663,7 +1730,7 @@ public abstract class ServerConnection implements Runnable {
   public long getUniqueId() {
     long uniqueId;
 
-    if (handshake.getVersion().isPre65() || communicationMode.isWAN()) {
+    if (communicationMode.isWAN()) {
       uniqueId = userAuthId;
     } else if (requestMessage.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,
@@ -1690,16 +1757,13 @@ public abstract class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception {}", npe);
     }
     if (uaa == null) {
-      throw new AuthenticationRequiredException("User authorization attributes not found.");
+      throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }
     return uaa;
   }
@@ -1734,16 +1798,14 @@ public abstract class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception", npe);
     }
+
     if (uaa == null) {
-      throw new AuthenticationRequiredException("User authorization attributes not found.");
+      throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }
 
     return uaa.getPostAuthzRequest();
@@ -1776,7 +1838,7 @@ public abstract class ServerConnection implements Runnable {
 
     long uniqueId;
     if (principal instanceof Subject) {
-      uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal);
+      uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal, -1);
     } else {
       // this sets principal in map as well....
       uniqueId = getUniqueId((Principal) principal);
@@ -1786,7 +1848,7 @@ public abstract class ServerConnection implements Runnable {
   }
 
   /**
-   * For legacy auth?
+   * For legacy auth
    */
   private long getUniqueId(Principal principal)
       throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,

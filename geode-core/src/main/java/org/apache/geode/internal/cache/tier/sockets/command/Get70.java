@@ -439,7 +439,7 @@ public class Get70 extends BaseCommand {
     origMsg.clearParts();
   }
 
-  protected static void writeResponse(Object data, Object callbackArg, Message origMsg,
+  public void writeResponse(Object data, Object callbackArg, Message origMsg,
       boolean isObject, ServerConnection servConn) throws IOException {
     throw new UnsupportedOperationException();
   }

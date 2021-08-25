@@ -133,6 +133,14 @@ public class VersionManager {
     return Collections.unmodifiableList(testVersions);
   }
 
+  public List<String> getVersionsLaterThanAndEqualTo(String version) {
+    checkForLoadFailure();
+    List<String> result = new ArrayList<>(testVersions);
+    result.removeIf(s -> TestVersion.compare(s, version) < 0);
+    result.add(CURRENT_VERSION);
+    return result;
+  }
+
   /**
    * returns a list of testable versions sorted from oldest to newest<br>
    * Note: if you need to compare version strings use TestVersion.compare() or TestVersion.equals()

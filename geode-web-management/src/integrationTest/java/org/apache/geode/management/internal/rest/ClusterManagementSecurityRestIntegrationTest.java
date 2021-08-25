@@ -159,7 +159,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Authentication error. Please check your credentials.")));
+            is("Invalid username/password.")));
   }
 
   @Test

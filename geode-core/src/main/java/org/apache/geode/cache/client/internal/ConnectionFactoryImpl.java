@@ -23,8 +23,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.GatewayConfigurationException;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -128,8 +130,9 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       testFailedConnectionToServer = true;
       throw src;
     } catch (Exception e) {
-      if (e.getMessage() != null && (e.getMessage().equals("Connection refused")
-          || e.getMessage().equals("Connection reset"))) {
+      String message = e.getMessage();
+      if (message != null && (message.contains("Connection refused")
+          || message.contains("Connection reset"))) {
         // this is the most common case, so don't print an exception
         if (logger.isDebugEnabled()) {
           logger.debug("Unable to connect to {}: connection refused", location);
@@ -143,19 +146,36 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     return connection;
   }
 
-  private void authenticateIfRequired(Connection conn) {
+  @VisibleForTesting
+  void authenticateIfRequired(Connection conn) {
     cancelCriterion.checkCancelInProgress(null);
-    if (!pool.isUsedByGateway() && !pool.getMultiuserAuthentication()) {
-      ServerLocation server = conn.getServer();
-      if (server.getRequiresCredentials()) {
-        if (server.getUserId() == -1) {
-          Long uniqueID = (Long) AuthenticateUserOp.executeOn(conn, pool);
-          server.setUserId(uniqueID);
-          if (logger.isDebugEnabled()) {
-            logger.debug("CFI.authenticateIfRequired() Completed authentication on {}", conn);
-          }
-        }
+
+    if (pool.isUsedByGateway() || pool.getMultiuserAuthentication()) {
+      return;
+    }
+
+    ServerLocation server = conn.getServer();
+    if (!server.getRequiresCredentials()) {
+      return;
+    }
+
+    // make this block synchronized so that when a AuthenticateUserOp is already in progress,
+    // another thread won't try to authenticate again.
+    synchronized (server) {
+      if (server.getUserId() != -1) {
+        return;
       }
+      Long uniqueID = AuthenticateUserOp.executeOn(conn, pool);
+      // if connection failed, this would return null, instead of throwing a NPE, we should throw
+      // this
+      if (uniqueID == null) {
+        throw new ServerConnectivityException("Connection refused");
+      }
+      server.setUserId(uniqueID);
+    }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("CFI.authenticateIfRequired() Completed authentication on {}", conn);
     }
   }
 

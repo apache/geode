@@ -52,7 +52,7 @@ public class Version extends VersionOrdinalImpl {
   private final byte release;
   private final byte patch;
 
-  public static final int HIGHEST_VERSION = 121;
+  public static final int HIGHEST_VERSION = 126;
 
   @Immutable
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
@@ -293,8 +293,15 @@ public class Version extends VersionOrdinalImpl {
 
   @Immutable
   public static final Version GEODE_1_13_2 =
-      new Version("GEODE", "1.13.2", (byte) 1, (byte) 13, (byte) 1, (byte) 0, GEODE_1_13_2_ORDINAL);
+      new Version("GEODE", "1.13.2", (byte) 1, (byte) 13, (byte) 2, (byte) 0, GEODE_1_13_2_ORDINAL);
 
+
+  private static final short GEODE_1_13_10_ORDINAL = 126;
+
+  @Immutable
+  public static final Version GEODE_1_13_10 =
+      new Version("GEODE", "1.13.10", (byte) 1, (byte) 13, (byte) 10, (byte) 0,
+          GEODE_1_13_10_ORDINAL);
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
   /* NOTE: when adding a new version bump the ordinal by 2. Ordinals can be short ints */
@@ -304,7 +311,7 @@ public class Version extends VersionOrdinalImpl {
    * HIGHEST_VERSION when changing CURRENT !!!
    */
   @Immutable
-  public static final Version CURRENT = GEODE_1_13_2;
+  public static final Version CURRENT = GEODE_1_13_10;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
