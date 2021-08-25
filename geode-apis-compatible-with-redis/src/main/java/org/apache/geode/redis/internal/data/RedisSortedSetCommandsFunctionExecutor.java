@@ -113,7 +113,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zremrangebyrank(RedisKey key, SortedSetRankRangeOptions options) {
     return stripedExecute(key,
-        () -> getRedisSortedSet(key, true).zremrangebyrank(getRegion(), key, options));
+        () -> getRedisSortedSet(key, false).zremrangebyrank(getRegion(), key, options));
   }
 
   @Override
