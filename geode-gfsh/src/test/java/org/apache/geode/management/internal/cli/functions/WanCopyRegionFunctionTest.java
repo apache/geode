@@ -562,13 +562,13 @@ public class WanCopyRegionFunctionTest {
   public void executeWanCopyRegionFunctionInNewThread_verifyErrorWhenAlreadyRunningCommand()
       throws BatchException70, InterruptedException, ExecutionException {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 1};
-    Future<CliFunctionResult> future = executeAsyncWanCopyRegionFunction(options);
+    Future<CliFunctionResult> future = executeAsyncWanCopyRegionFunction(options, 1000);
 
     // Wait for the execute function to start
-    Thread.sleep(100);
+    Thread.sleep(500L);
 
     // Execute another function instance for the same region and sender-id
-    Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options);
+    Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options, 1000);
     CliFunctionResult result1 = future2.get();
 
     assertThat(result1.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
@@ -580,16 +580,41 @@ public class WanCopyRegionFunctionTest {
   }
 
   @Test
+  public void executeWanCopyRegionFunctionInNewThread_cancelExecution()
+      throws ExecutionException, InterruptedException, BatchException70 {
+    Object[] options1 = new Object[] {"myRegion", "mySender", false, 1L, 1};
+    Future<CliFunctionResult> future1 = executeAsyncWanCopyRegionFunction(options1, 10000);
+
+    // Wait for the function to start execution
+    Thread.sleep(1000L);
+
+    // Cancel the function execution
+    Object[] cancelOptions = new Object[] {"myRegion", "mySender", true, 1L, 1};
+    final FunctionContext<Object[]> cancelContextMock =
+        uncheckedCast(mock(FunctionContext.class));
+    when(cancelContextMock.getArguments()).thenReturn(cancelOptions);
+
+    WanCopyRegionFunction function2 = new WanCopyRegionFunction();
+    CliFunctionResult result1 = function2.executeFunction(cancelContextMock);
+
+    assertThat(result1.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result1.getStatusMessage())
+        .isEqualTo("Execution canceled");
+
+    future1.get();
+  }
+
+  @Test
   public void executeWanCopyRegionFunctionInNewThread_cancelAllExecutions()
       throws ExecutionException, InterruptedException, BatchException70 {
     Object[] options1 = new Object[] {"myRegion", "mySender", false, 1L, 1};
-    Future<CliFunctionResult> future1 = executeAsyncWanCopyRegionFunction(options1);
+    Future<CliFunctionResult> future1 = executeAsyncWanCopyRegionFunction(options1, 10000);
 
     Object[] options2 = new Object[] {"myRegion", "mySender1", false, 1L, 1};
-    Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options2);
+    Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options2, 10000);
 
     // Wait for the functions to start execution
-    Thread.sleep(100);
+    Thread.sleep(2000L);
 
     // Cancel the function executions
     Object[] cancelAllOptions = new Object[] {"*", "*", true, 1L, 1};
@@ -608,7 +633,8 @@ public class WanCopyRegionFunctionTest {
     future2.get();
   }
 
-  private Future<CliFunctionResult> executeAsyncWanCopyRegionFunction(Object[] options)
+  private Future<CliFunctionResult> executeAsyncWanCopyRegionFunction(Object[] options,
+      long timeToSleep)
       throws BatchException70 {
     AbstractGatewaySender gatewaySenderMock = mock(AbstractGatewaySender.class, RETURNS_DEEP_STUBS);
     Region<Object, Object> regionMock =
@@ -633,6 +659,7 @@ public class WanCopyRegionFunctionTest {
     when(gatewaySenderMock.getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+    GatewaySenderEventDispatcher dispatcherMock = mock(GatewaySenderEventDispatcher.class);
     when(gatewaySenderMock.getEventProcessor().getDispatcher())
         .thenReturn(dispatcherMock);
     Set<Region.Entry<String, String>> entries = new HashSet<>();
@@ -642,8 +669,7 @@ public class WanCopyRegionFunctionTest {
     doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
         any(), any());
     doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
-    long expectedMsToSleep = 1000L;
-    doReturn(expectedMsToSleep).when(functionSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
+    doReturn(timeToSleep).when(functionSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
 
     return CompletableFuture.supplyAsync(() -> functionSpy.executeFunction(contextMock));
   }
