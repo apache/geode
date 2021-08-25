@@ -413,7 +413,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String hintArgument = "data";
     String hintsProvided = gfshParserRule.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split(lineSeparator());
-    assertThat(hintsProvidedArray.length).isEqualTo(17);
+    assertThat(hintsProvidedArray).hasSize(18);
     assertThat(hintsProvidedArray[0])
         .isEqualTo("User data as stored in regions of the Geode distributed system.");
   }
@@ -423,7 +423,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String hintArgument = "";
     String hintsProvided = gfshParserRule.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split(lineSeparator());
-    assertThat(hintsProvidedArray.length).isEqualTo(21);
+    assertThat(hintsProvidedArray).hasSize(21);
     assertThat(hintsProvidedArray[0]).isEqualTo(
         "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
   }
@@ -433,7 +433,7 @@ public class GfshParserAutoCompletionIntegrationTest {
     String hintArgument = "fortytwo";
     String hintsProvided = gfshParserRule.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split(lineSeparator());
-    assertThat(hintsProvidedArray.length).isEqualTo(1);
+    assertThat(hintsProvidedArray).hasSize(1);
     assertThat(hintsProvidedArray[0]).isEqualTo(
         "Unknown topic: " + hintArgument + ". Use hint to view the list of available topics.");
   }
@@ -594,6 +594,23 @@ public class GfshParserAutoCompletionIntegrationTest {
   @Test
   public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForRemoveWithDash() {
     String buffer = "remove --";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "region");
+  }
+
+  @Test
+  public void testCompletionOffersMandatoryOptionsInAlphabeticalOrderForWanCopyRegionWithSpace() {
+    String buffer = "wan-copy region ";
+    CommandCandidate candidate = gfshParserRule.complete(buffer);
+    assertThat(candidate.getCandidates()).hasSize(2);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--region");
+    assertThat(candidate.getCandidate(1)).isEqualTo(buffer + "--sender-id");
+  }
+
+  @Test
+  public void testCompletionOffersTheFirstMandatoryOptionInAlphabeticalOrderForWanCopyRegionWithDash() {
+    String buffer = "wan-copy region --";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "region");

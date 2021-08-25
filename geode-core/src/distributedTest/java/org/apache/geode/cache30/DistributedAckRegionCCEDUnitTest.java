@@ -420,7 +420,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       VersionTagHolder holder = new VersionTagHolder(tag);
       ClientProxyMembershipID id = ClientProxyMembershipID
           .getNewProxyMembership(CCRegion.getDistributionManager().getSystem());
-      CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder);
+      CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, holder, true);
       vm0.invoke("check conflation count", () -> {
         // after changed the 3rd try of AUO.doPutOrCreate to be ifOld=false ifNew=false
         // ARM.updateEntry will be called one more time, so there will be 2 conflicted events

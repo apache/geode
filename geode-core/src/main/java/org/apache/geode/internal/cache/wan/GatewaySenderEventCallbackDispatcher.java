@@ -23,6 +23,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ExecutablePool;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -183,5 +186,11 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
   @Override
   public void shutDownAckReaderConnection() {
     // no op
+  }
+
+  @Override
+  public void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
+      ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException) {
+    throw new UnsupportedOperationException();
   }
 }
