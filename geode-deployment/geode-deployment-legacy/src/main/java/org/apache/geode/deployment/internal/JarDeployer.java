@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -341,8 +342,11 @@ public class JarDeployer implements Serializable {
             JarFileUtils.toArtifactId(file.getName()));
         if (artifactId.equals(JarFileUtils.toArtifactId(file.getName()))) {
           logger.info("Deleting: {}", file.getAbsolutePath());
-          boolean deleted = FileUtils.deleteQuietly(file);
-          System.out.printf("DHE: Deleted %s: %s%n", file, deleted);
+          try {
+            Files.delete(file.toPath());
+          } catch (IOException e) {
+            System.out.printf("DHE: Unable to delete %s: %s%n", file, e);
+          }
         }
       }
     } finally {
