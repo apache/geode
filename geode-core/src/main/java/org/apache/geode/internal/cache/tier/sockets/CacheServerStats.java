@@ -992,8 +992,8 @@ public class CacheServerStats implements MessageStats {
     return this.stats.getDouble(loadPerConnectionId);
   }
 
-  public int getProcessBatchRequests() {
-    return this.stats.getInt(processBatchRequestsId);
+  public long getProcessBatchRequests() {
+    return this.stats.getLong(processBatchRequestsId);
   }
 
   public void close() {
