@@ -14,12 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.function.BooleanSupplier;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
@@ -64,8 +67,9 @@ public class RegionCreateFunction implements InternalFunction {
 
     InternalCache cache =
         ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
-    String memberNameOrId = context.getMemberName();
+    waitUntilConditionIsMet(() -> cache.getPdxRegistry() != null, 2000);
 
+    String memberNameOrId = context.getMemberName();
     CreateRegionFunctionArgs regionCreateArgs = (CreateRegionFunctionArgs) context.getArguments();
 
     try {
@@ -126,6 +130,16 @@ public class RegionCreateFunction implements InternalFunction {
   @Override
   public String getId() {
     return ID;
+  }
+
+  private void waitUntilConditionIsMet(BooleanSupplier awaitedCondition, int timeoutInMs) {
+    long startTime = System.currentTimeMillis();
+    while (!awaitedCondition.getAsBoolean()) {
+      if (System.currentTimeMillis() - startTime > timeoutInMs) {
+        throw new TimeoutException(
+            String.format("The pdxRegistry is not created within %s ms", timeoutInMs));
+      }
+    }
   }
 
   @VisibleForTesting
