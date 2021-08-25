@@ -32,6 +32,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
@@ -180,6 +181,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     } else if (rootCause instanceof InterruptedException
         || rootCause instanceof CacheClosedException) {
       return RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
+    } else if (rootCause instanceof ForcedDisconnectException) {
+      // This indicates a member departed or got disconnected
+      logger.warn(
+          "Closing client connection because one of the servers doing this operation departed.");
+      channelInactive(ctx);
+      return null;
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), rootCause);
