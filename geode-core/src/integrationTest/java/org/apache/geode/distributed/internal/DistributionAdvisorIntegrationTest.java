@@ -16,6 +16,7 @@
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
@@ -29,7 +30,8 @@ public class DistributionAdvisorIntegrationTest {
 
   @Rule
   // The embedded locator causes a ClusterDistributionManager to be created rather than a
-  // LonerDistributionManager which is necessary for this test
+  // LonerDistributionManager which is necessary for this test. Disabling auto-reconnect prevents
+  // the DistributedSystem from being recreated and causing issues with repeatIntegrationTest
   public ServerStarterRule server =
       new ServerStarterRule().withProperty(DISABLE_AUTO_RECONNECT, "true").withNoCacheServer()
           .withEmbeddedLocator().withAutoStart();
@@ -54,6 +56,7 @@ public class DistributionAdvisorIntegrationTest {
     server.forceDisconnectMember();
 
     // Verify the MembershipListener is removed from the DistributionManager
-    assertThat(manager.getMembershipListeners().contains(listener)).isFalse();
+    await().untilAsserted(
+        () -> assertThat(manager.getMembershipListeners().contains(listener)).isFalse());
   }
 }
