@@ -589,7 +589,7 @@ public class WanCopyRegionFunctionTest {
     Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options2);
 
     // Wait for the functions to start execution
-    Thread.sleep(100);
+    Thread.sleep(1000);
 
     // Cancel the function executions
     Object[] cancelAllOptions = new Object[] {"*", "*", true, 1L, 1};
