@@ -143,6 +143,14 @@ public class VersionManager {
     return unmodifiableList(testVersions);
   }
 
+  public List<String> getVersionsLaterThanAndEqualTo(String version) {
+    checkForLoadFailure();
+    List<String> result = new ArrayList<>(testVersions);
+    result.removeIf(s -> TestVersion.compare(s, version) < 0);
+    result.add(CURRENT_VERSION);
+    return result;
+  }
+
   /**
    * Returns a list of testable versions sorted from oldest to newest
    *

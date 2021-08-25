@@ -54,4 +54,9 @@ public class RedisConstants {
 
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
+
+  public static final String ERROR_INVALID_USERNAME_OR_PASSWORD =
+      "WRONGPASS invalid username-password pair or user is disabled.";
+  public static final String ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED =
+      "ERR AUTH called without a Security Manager configured.";
 }

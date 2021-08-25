@@ -58,7 +58,7 @@ public class StartServerAuthorizationTest {
 
     assertThatThrownBy(() -> serverStarter.startServer(props, locator.getPort()))
         .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(
-            "Security check failed. Authentication error. Please check your credentials");
+            "Security check failed. invalid username/password");
   }
 
   @Test

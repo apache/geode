@@ -951,6 +951,7 @@ javadoc/org/apache/geode/ra/package-tree.html
 javadoc/org/apache/geode/security/AccessControl.html
 javadoc/org/apache/geode/security/AuthInitialize.html
 javadoc/org/apache/geode/security/AuthTokenEnabledComponents.html
+javadoc/org/apache/geode/security/AuthenticationExpiredException.html
 javadoc/org/apache/geode/security/AuthenticationFailedException.html
 javadoc/org/apache/geode/security/AuthenticationRequiredException.html
 javadoc/org/apache/geode/security/Authenticator.html
@@ -990,6 +991,7 @@ lib/commons-validator-1.7.jar
 lib/fastutil-8.5.2.jar
 lib/findbugs-annotations-1.3.9-1.jar
 lib/geo-0.7.7.jar
+lib/geode-apis-compatible-with-redis-0.0.0.jar
 lib/geode-common-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
@@ -1008,7 +1010,6 @@ lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
-lib/geode-apis-compatible-with-redis-0.0.0.jar
 lib/geode-serialization-0.0.0.jar
 lib/geode-tcp-server-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar

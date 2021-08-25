@@ -15,14 +15,18 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.security.SecurityManager;
 
 public class AuthExecutor implements Executor {
 
@@ -44,6 +48,19 @@ public class AuthExecutor implements Executor {
     } else {
       return RedisResponse.error(RedisConstants.ERROR_INVALID_PWD);
     }
+  }
+
+  Properties getSecurityProperties(Command command, ExecutionHandlerContext context) {
+    Properties properties = new Properties();
+    List<byte[]> commandElems = command.getProcessedCommand();
+    if (commandElems.size() == 2) {
+      properties.setProperty(SecurityManager.USER_NAME, "user");
+      properties.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(1)));
+    } else {
+      properties.setProperty(SecurityManager.USER_NAME, bytesToString(commandElems.get(1)));
+      properties.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(2)));
+    }
+    return properties;
   }
 
 }

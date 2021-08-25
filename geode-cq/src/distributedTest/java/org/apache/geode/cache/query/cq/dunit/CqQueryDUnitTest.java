@@ -872,27 +872,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private void validateCQError(VM vm, final String cqName, final int numError) {
-    vm.invoke(() -> {
-      QueryService cqService = getCache().getQueryService();
-      CqQuery cQuery = cqService.getCq(cqName);
-      assertThat(cQuery).describedAs("Failed to get CqQuery for CQ : " + cqName).isNotNull();
-
-      CqAttributes cqAttr = cQuery.getCqAttributes();
-      CqListener cqListener = cqAttr.getCqListener();
-      CqQueryTestListener listener = (CqQueryTestListener) cqListener;
-      listener.printInfo(false);
-
-      // Check for totalEvents count.
-      if (numError != noTest) {
-        // Result size validation.
-        listener.printInfo(true);
-        assertThat(listener.getErrorEventCount()).describedAs("Total Event Count mismatch")
-            .isEqualTo(numError);
-      }
-    });
-  }
-
   public void validateCQ(VM vm, final String cqName, final int resultSize, final int creates,
       final int updates, final int deletes) {
     validateCQ(vm, cqName, resultSize, creates, updates, deletes, noTest, noTest, noTest, noTest);

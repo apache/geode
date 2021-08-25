@@ -94,6 +94,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientUserAuths;
 import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -1612,7 +1613,8 @@ public class DeltaPropagationDUnitTest implements Serializable {
           clientVersion, acceptorId, notifyBySubscription, securityService, subject,
           statisticsClock,
           notifier.getCache().getInternalDistributedSystem().getStatisticsManager(),
-          DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new);
+          DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new,
+          new ClientUserAuths(proxyId.hashCode()));
     }
   }
 

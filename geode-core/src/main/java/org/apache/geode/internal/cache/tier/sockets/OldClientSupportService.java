@@ -25,7 +25,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
  * Support for old GemFire clients
  */
 public interface OldClientSupportService extends CacheService {
-
   /**
    * translates the given throwable into one that can be sent to an old GemFire client
    *
