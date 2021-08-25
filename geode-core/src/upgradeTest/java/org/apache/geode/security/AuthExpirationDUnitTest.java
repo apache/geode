@@ -17,6 +17,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -57,7 +59,7 @@ public class AuthExpirationDUnitTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     // only test the current version and the latest released version
-    return Arrays.asList(CURRENT_VERSION, "1.13.3");
+    return Arrays.asList(CURRENT_VERSION);
   }
 
   @Rule
@@ -75,6 +77,54 @@ public class AuthExpirationDUnitTest {
   public void after() {
     // make sure after each test, the values of the ExpirationManager are reset
     ExpirableSecurityManager.reset();
+  }
+
+  @Test
+  public void clientWithNoUserRefreshWillNotSucceed() throws Exception {
+    int serverPort = server.getPort();
+    ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      ClientRegionFactory<Object, Object> clientRegionFactory =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      Region<Object, Object> region = clientRegionFactory.create("region");
+      region.put(0, "value0");
+    });
+
+    // expire the current user
+    ExpirableSecurityManager.addExpiredUser("user1");
+
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> region = clientCache.getRegion("region");
+      doPutAndExpectFailure(region, 100);
+    });
+
+    Region<Object, Object> region = server.getCache().getRegion("/region");
+    assertThat(region.size()).isEqualTo(1);
+    Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
+    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    assertThat(authorizedOps.keySet().size()).isEqualTo(1);
+    assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:0");
+    assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
+  }
+
+  private static void doPutAndExpectFailure(Region<Object, Object> region, int times) {
+    for (int i = 1; i < times; i++) {
+      try {
+        region.put(1, "value1");
+        fail("Exception expected");
+      } catch (Exception e) {
+        assertThat(e).isInstanceOf(ServerOperationException.class);
+        assertThat(e.getCause()).isInstanceOfAny(AuthenticationFailedException.class,
+            AuthenticationRequiredException.class);
+      }
+    }
   }
 
   @Test

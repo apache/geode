@@ -18,6 +18,7 @@ package org.apache.geode.security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,6 +40,15 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
       new ConcurrentHashMap<>();
   private static final Map<String, List<String>> UNAUTHORIZED_OPS =
       new ConcurrentHashMap<>();
+
+  @Override
+  public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
+    Object user = super.authenticate(credentials);
+    if (EXPIRED_USERS.contains((String) user)) {
+      throw new AuthenticationFailedException("User already expired.");
+    }
+    return user;
+  }
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {

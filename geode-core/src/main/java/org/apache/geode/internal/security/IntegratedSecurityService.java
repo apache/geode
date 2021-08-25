@@ -42,6 +42,7 @@ import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -246,21 +247,8 @@ public class IntegratedSecurityService implements SecurityService {
 
   @Override
   public void authorize(final ResourcePermission context) {
-    if (context == null) {
-      return;
-    }
-    if (context.getResource() == Resource.NULL && context.getOperation() == Operation.NULL) {
-      return;
-    }
-
     Subject currentUser = getSubject();
-    try {
-      currentUser.checkPermission(context);
-    } catch (ShiroException e) {
-      String message = currentUser.getPrincipal() + " not authorized for " + context;
-      logger.info("NotAuthorizedException: {}", message);
-      throw new NotAuthorizedException(message, e);
-    }
+    authorize(context, currentUser);
   }
 
   @Override
@@ -278,6 +266,12 @@ public class IntegratedSecurityService implements SecurityService {
       String message = currentUser.getPrincipal() + " not authorized for " + context;
       logger.info("NotAuthorizedException: {}", message);
       throw new NotAuthorizedException(message, e);
+    } catch (AuthenticationExpiredException expired) {
+      // log out the user and clean thread context
+
+      logout();
+      // still throw it upstream so that caller can react to re-authenticate
+      throw expired;
     }
   }
 
