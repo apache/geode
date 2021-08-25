@@ -464,7 +464,6 @@ org/apache/geode/management/internal/functions/RebalanceFunction,true,1
 org/apache/geode/management/internal/functions/RestoreRedundancyFunction,true,-8991672237560920252
 org/apache/geode/management/internal/operation/OperationState,true,8212319653561969588,locator:java/lang/String,opId:java/lang/String,operation:org/apache/geode/management/api/ClusterManagementOperation,operationEnd:java/util/Date,operationStart:java/util/Date,result:org/apache/geode/management/runtime/OperationResult,throwable:java/lang/Throwable
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
-org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/pdx/FieldType,false,defaultSerializedValue:java/nio/ByteBuffer,defaultValue:java/lang/Object,isFixedWidth:boolean,name:java/lang/String,width:int
 org/apache/geode/pdx/JSONFormatter$states,false
 org/apache/geode/pdx/JSONFormatterException,true,1
@@ -480,6 +479,7 @@ org/apache/geode/pdx/internal/EnumInfo$PdxInstanceEnumInfo,true,7907582104525106
 org/apache/geode/pdx/internal/PdxInputStream,false
 org/apache/geode/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobType:org/apache/geode/pdx/internal/PdxType,dis:org/apache/geode/pdx/internal/PdxInputStream
 org/apache/geode/security/AuthTokenEnabledComponents,false
+org/apache/geode/security/AuthenticationExpiredException,true,1771792091260325297
 org/apache/geode/security/AuthenticationFailedException,true,-8202866472279088879
 org/apache/geode/security/AuthenticationRequiredException,true,4675976651103154919
 org/apache/geode/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable
