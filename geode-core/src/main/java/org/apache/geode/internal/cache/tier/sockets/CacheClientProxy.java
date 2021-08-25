@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -95,6 +97,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("synthetic-access")
 public class CacheClientProxy implements ClientSession {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   @Immutable
   @VisibleForTesting
@@ -229,11 +232,14 @@ public class CacheClientProxy implements ClientSession {
    */
   boolean keepalive = false;
 
+  /**
+   * for single user environment
+   */
   private AccessControl postAuthzCallback;
   private Subject subject;
 
   /**
-   * For multiuser environment..
+   * used for cq name to subject/auth mapping, always initialized in single/multi user cases
    */
   private ClientUserAuths clientUserAuths;
 
@@ -320,7 +326,7 @@ public class CacheClientProxy implements ClientSession {
         acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
         ccn.getCache().getInternalDistributedSystem().getStatisticsManager(),
         DEFAULT_CACHECLIENTPROXYSTATSFACTORY,
-        DEFAULT_MESSAGEDISPATCHERFACTORY);
+        DEFAULT_MESSAGEDISPATCHERFACTORY, ServerConnection.getClientUserAuths(proxyID));
   }
 
   @VisibleForTesting
@@ -330,7 +336,7 @@ public class CacheClientProxy implements ClientSession {
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
-      MessageDispatcherFactory messageDispatcherFactory)
+      MessageDispatcherFactory messageDispatcherFactory, ClientUserAuths clientUserAuths)
       throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -355,26 +361,14 @@ public class CacheClientProxy implements ClientSession {
     this._cacheClientNotifier.getAcceptorStats().incCurrentQueueConnections();
     this.creationDate = new Date();
     this.messageDispatcherFactory = messageDispatcherFactory;
-    initializeClientAuths();
-  }
-
-  Version getClientVersion() {
-    return clientVersion;
-  }
-
-  private void initializeClientAuths() {
-    if (AcceptorImpl.isPostAuthzCallbackPresent()) {
-      this.clientUserAuths = ServerConnection.getClientUserAuths(this.proxyID);
-    }
+    this.clientUserAuths = clientUserAuths;
   }
 
   private void reinitializeClientAuths() {
-    if (this.clientUserAuths != null && AcceptorImpl.isPostAuthzCallbackPresent()) {
-      synchronized (this.clientUserAuthsLock) {
-        ClientUserAuths newClientAuth = ServerConnection.getClientUserAuths(this.proxyID);
-        newClientAuth.fillPreviousCQAuth(this.clientUserAuths);
-        this.clientUserAuths = newClientAuth;
-      }
+    synchronized (clientUserAuthsLock) {
+      ClientUserAuths newClientAuth = ServerConnection.getClientUserAuths(proxyID);
+      newClientAuth.fillPreviousCQAuth(clientUserAuths);
+      clientUserAuths = newClientAuth;
     }
   }
 
@@ -389,22 +383,21 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public void setSubject(Subject subject) {
-    // TODO:hitesh synchronization
-    synchronized (this.clientUserAuthsLock) {
-      if (this.subject != null) {
-        this.subject.logout();
-      }
+    // if we are replacing a subject here, the old subject's logout should be handled
+    // by the ClientUserAuths already
+    synchronized (clientUserAuthsLock) {
       this.subject = subject;
     }
   }
 
-  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
-    if (postAuthzCallback == null) // only for multiuser
-    {
-      if (this.clientUserAuths != null) {
-        this.clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
-      }
+  protected Subject getSubject(String cqName) {
+    synchronized (clientUserAuthsLock) {
+      return clientUserAuths.getSubject(cqName);
     }
+  }
+
+  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
+    clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
   }
 
   private void initializeTransientFields(Socket socket, ClientProxyMembershipID pid, boolean ip,
@@ -738,6 +731,14 @@ public class CacheClientProxy implements ClientSession {
     return !this._messageDispatcher.isStopped();
   }
 
+
+  public boolean isWaitingForReAuthentication() {
+    if (_messageDispatcher == null) {
+      return false;
+    }
+    return _messageDispatcher.isWaitingForReAuthentication();
+  }
+
   /**
    * Returns whether the proxy is paused. It is paused if its message dispatcher is paused. This
    * only applies to durable clients.
@@ -799,16 +800,10 @@ public class CacheClientProxy implements ClientSession {
 
     this.connected = false;
 
-    // Close the Authorization callback (if any)
+    // Close the Authorization callback or subject if we are not keeping the proxy
     try {
       if (!pauseDurable) {
-        if (this.postAuthzCallback != null) {// for single user
-          this.postAuthzCallback.close();
-          this.postAuthzCallback = null;
-        } else if (this.clientUserAuths != null) {// for multiple users
-          this.clientUserAuths.cleanup(true);
-          this.clientUserAuths = null;
-        }
+        cleanClientAuths();
       }
     } catch (Exception ex) {
       if (this._cache.getSecurityLogger().warningEnabled()) {
@@ -819,6 +814,30 @@ public class CacheClientProxy implements ClientSession {
     // Notify the caller whether to keep this proxy. If the proxy is durable
     // and should be paused, then return true; otherwise return false.
     return keepProxy;
+  }
+
+  // this needs to synchronized to avoid NPE between null check and operations
+  private void cleanClientAuths() {
+    synchronized (clientUserAuthsLock) {
+      // single user case -- old security
+      if (postAuthzCallback != null) {
+        postAuthzCallback.close();
+        postAuthzCallback = null;
+      }
+      // single user case -- integrated security
+      // connection is closed, so we can log out this subject
+      else if (subject != null) {
+        secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
+        subject.logout();
+        subject = null;
+      }
+      // for multiUser case, in non-durable case, we are closing the connection
+      else if (clientUserAuths != null) {
+        secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
+        clientUserAuths.cleanup(true);
+        clientUserAuths = null;
+      }
+    }
   }
 
   protected void pauseDispatching() {
@@ -868,7 +887,6 @@ public class CacheClientProxy implements ClientSession {
       return;
     }
 
-    boolean closedSocket = false;
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Terminating processing", this);
@@ -915,8 +933,8 @@ public class CacheClientProxy implements ClientSession {
 
         // to fix bug 37684
         // 1. check to see if dispatcher is still alive
-        if (this._messageDispatcher.isAlive()) {
-          closedSocket = closeSocket();
+        if (_messageDispatcher.isAlive()) {
+          closeSocket();
           destroyRQ();
           alreadyDestroyed = true;
           this._messageDispatcher.interrupt();
@@ -944,12 +962,8 @@ public class CacheClientProxy implements ClientSession {
       }
     } finally {
       // Close the statistics
-      this._statistics.close(); // fix for bug 40105
-      if (closedSocket) {
-        closeOtherTransientFields();
-      } else {
-        closeTransientFields(); // make sure this happens
-      }
+      _statistics.close(); // fix for bug 40105
+      closeTransientFields(); // make sure this happens
     }
   }
 
@@ -964,17 +978,14 @@ public class CacheClientProxy implements ClientSession {
     return false;
   }
 
-  private void closeTransientFields() {
+  @VisibleForTesting
+  protected void closeTransientFields() {
     if (!closeSocket()) {
       // The thread who closed the socket will be responsible to
       // releaseResourcesForAddress and clearClientInterestList
       return;
     }
 
-    closeOtherTransientFields();
-  }
-
-  private void closeOtherTransientFields() {
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
     releaseCommBuffer();
@@ -993,11 +1004,6 @@ public class CacheClientProxy implements ClientSession {
     // Commented to fix bug 40259
     // this.clientVersion = null;
     closeNonDurableCqs();
-
-    // Logout the subject
-    if (this.subject != null) {
-      this.subject.logout();
-    }
   }
 
   private void releaseCommBuffer() {
@@ -1259,14 +1265,6 @@ public class CacheClientProxy implements ClientSession {
     }
     this._cacheClientNotifier.deliverInterestChange(this.proxyID, message);
   }
-
-  /*
-   * protected void addFilterRegisteredClients(String regionName, Object keyOfInterest) { try {
-   * this._cacheClientNotifier.addFilterRegisteredClients(regionName, this.proxyID); } catch
-   * (RegionDestroyedException e) {
-   * logger.warn(LocalizedStrings.CacheClientProxy_0_INTEREST_REG_FOR_0_FAILED, regionName + "->" +
-   * keyOfInterest, e); } }
-   */
 
   /**
    * Registers interest in the input region name and key
@@ -1570,9 +1568,7 @@ public class CacheClientProxy implements ClientSession {
    *
    */
   protected void deliverMessage(Conflatable conflatable) {
-    ThreadState state = this.securityService.bindSubject(this.subject);
-    ClientUpdateMessage clientMessage = null;
-
+    final ClientUpdateMessage clientMessage;
     if (conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper) conflatable).getClientUpdateMessage();
     } else {
@@ -1581,12 +1577,21 @@ public class CacheClientProxy implements ClientSession {
 
     this._statistics.incMessagesReceived();
 
-    // post process
-    if (this.securityService.needPostProcess()) {
-      Object oldValue = clientMessage.getValue();
-      Object newValue = securityService.postProcess(clientMessage.getRegionName(),
-          clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
-      clientMessage.setLatestValue(newValue);
+    // post process for single-user mode. We don't do post process for multi-user mode
+    if (subject != null) {
+      ThreadState state = securityService.bindSubject(subject);
+      try {
+        if (securityService.needPostProcess()) {
+          Object oldValue = clientMessage.getValue();
+          Object newValue = securityService.postProcess(clientMessage.getRegionName(),
+              clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+          clientMessage.setLatestValue(newValue);
+        }
+      } finally {
+        if (state != null) {
+          state.clear();
+        }
+      }
     }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {
@@ -1613,10 +1618,6 @@ public class CacheClientProxy implements ClientSession {
       }
 
       this._statistics.incMessagesFailedQueued();
-    }
-
-    if (state != null) {
-      state.clear();
     }
   }
 

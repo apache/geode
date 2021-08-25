@@ -415,9 +415,9 @@ public class QueryMonitorDUnitTest {
 
   private static void executeQueries() {
     QueryService queryService;
-    if (ClusterStartupRule.getClientCache() == null) {
+    try {
       queryService = ClusterStartupRule.getCache().getQueryService();
-    } else {
+    } catch (Exception e) {
       queryService = ClusterStartupRule.getClientCache().getQueryService();
     }
     for (int k = 0; k < queryStr.length; k++) {

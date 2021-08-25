@@ -77,21 +77,21 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   public static InternalCache getCache() {
     if (memberStarter == null) {
-      return null;
+      throw new RuntimeException("no cache");
     }
     return memberStarter.getCache();
   }
 
   public static InternalLocator getLocator() {
-    if (memberStarter == null || !(memberStarter instanceof LocatorStarterRule)) {
-      return null;
+    if (!(memberStarter instanceof LocatorStarterRule)) {
+      throw new RuntimeException("no locator");
     }
     return ((LocatorStarterRule) memberStarter).getLocator();
   }
 
   public static CacheServer getServer() {
-    if (memberStarter == null || !(memberStarter instanceof ServerStarterRule)) {
-      return null;
+    if (!(memberStarter instanceof ServerStarterRule)) {
+      throw new RuntimeException("no server");
     }
     return ((ServerStarterRule) memberStarter).getServer();
   }
@@ -115,7 +115,7 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   public static ClientCache getClientCache() {
     if (clientCacheRule == null) {
-      return null;
+      throw new RuntimeException("no client cache");
     }
     return clientCacheRule.getCache();
   }

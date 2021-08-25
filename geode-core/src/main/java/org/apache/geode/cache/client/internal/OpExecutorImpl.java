@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
+
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.SocketException;
@@ -32,6 +34,7 @@ import org.apache.geode.CopyException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
@@ -57,6 +60,7 @@ import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -134,7 +138,8 @@ public class OpExecutorImpl implements ExecutablePool {
           absOp.getMessage().setIsRetry();
         }
         try {
-          authenticateIfRequired(conn, op);
+          // for single user, it's already authenticated when opening the connection
+          authenticateIfMultiUser(conn, op);
           return executeWithPossibleReAuthentication(conn, op);
         } catch (MessageTooLargeException e) {
           throw new GemFireIOException("unable to transmit message to server", e);
@@ -683,8 +688,9 @@ public class OpExecutorImpl implements ExecutablePool {
     return message;
   }
 
-  private void authenticateIfRequired(Connection conn, Op op) {
-    if (!conn.getServer().getRequiresCredentials()) {
+  @VisibleForTesting
+  void authenticateIfMultiUser(final Connection connection, final Op op) {
+    if (!connection.getServer().getRequiresCredentials()) {
       return;
     }
 
@@ -696,30 +702,36 @@ public class OpExecutorImpl implements ExecutablePool {
       }
       pool = poolImpl;
     }
-    if (pool.getMultiuserAuthentication()) {
-      if (((AbstractOp) op).needsUserId()) {
-        UserAttributes ua = UserAttributes.userAttributes.get();
-        if (ua != null) {
-          if (!ua.getServerToId().containsKey(conn.getServer())) {
-            authenticateMultiuser(pool, conn, ua);
-          }
-        }
+
+    if (!((AbstractOp) op).needsUserId()) {
+      return;
+    }
+
+    if (!pool.getMultiuserAuthentication()) {
+      return;
+    }
+
+    final UserAttributes ua = getUserAttributesFromThreadLocal();
+    if (ua == null) {
+      return;
+    }
+
+    synchronized (ua) {
+      if (ua.getServerToId().containsKey(connection.getServer())) {
+        return;
       }
-    } else if (((AbstractOp) op).needsUserId()) {
-      // This should not be reached, but keeping this code here in case it is
-      // reached.
-      if (conn.getServer().getUserId() == -1) {
-        Connection connImpl = conn.getWrappedConnection();
-        conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, pool));
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "OpExecutorImpl.execute() - single user mode - authenticated this user on {}", conn);
-        }
-      }
+      authenticateMultiuser(pool, connection, ua);
     }
   }
 
-  private void authenticateMultiuser(PoolImpl pool, Connection conn, UserAttributes ua) {
+  @VisibleForTesting
+  UserAttributes getUserAttributesFromThreadLocal() {
+    return UserAttributes.userAttributes.get();
+  }
+
+  @VisibleForTesting
+  void authenticateMultiuser(final PoolImpl pool, final Connection conn,
+      final UserAttributes ua) {
     try {
       Long userId =
           (Long) AuthenticateUserOp.executeOn(conn.getServer(), pool, ua.getCredentials());
@@ -748,33 +760,27 @@ public class OpExecutorImpl implements ExecutablePool {
   private Object executeWithPossibleReAuthentication(Connection conn, Op op) throws Exception {
     try {
       return conn.execute(op);
-
     } catch (ServerConnectivityException sce) {
       Throwable cause = sce.getCause();
       if ((cause instanceof AuthenticationRequiredException
-          && "User authorization attributes not found.".equals(cause.getMessage()))
-          || sce.getMessage().contains("Connection error while authenticating user")) {
-        // (ashetkar) Need a cleaner way of doing above check.
+          && USER_NOT_FOUND.equals(cause.getMessage()))
+          || sce.getMessage().contains("Connection error while authenticating user")
+          || cause instanceof AuthenticationExpiredException) {
         // 2nd exception-message above is from AbstractOp.sendMessage()
-
-        PoolImpl pool =
-            (PoolImpl) PoolManagerImpl.getPMI().find(endpointManager.getPoolName());
-        if (!pool.getMultiuserAuthentication()) {
-          Connection connImpl = conn.getWrappedConnection();
-          conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this));
-          return conn.execute(op);
-        } else {
-          UserAttributes ua = UserAttributes.userAttributes.get();
+        if (pool.getMultiuserAuthentication()) {
+          final UserAttributes ua = getUserAttributesFromThreadLocal();
           if (ua != null) {
             authenticateMultiuser(pool, conn, ua);
           }
-          return conn.execute(op);
+        } else {
+          final Connection wrappedConnection = conn.getWrappedConnection();
+          conn.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, this));
         }
 
+        return conn.execute(op);
       } else {
         throw sce;
       }
     }
   }
-
 }

@@ -14,34 +14,52 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.client.internal.AuthenticateUserOp.NOT_A_USER_ID;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * This is per ServerConnection or per CacheClientProxy, corresponding to only one client
+ * connection.
+ * Credentials should usually be just one, only multiple in multi-user case.
+ */
 public class ClientUserAuths {
   private static final Logger logger = LogService.getLogger();
-  // private AtomicLong counter = new AtomicLong(1);
-  private Random uniqueIdGenerator = null;
-  private int m_seed;
-  private long m_firstId;
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
-  private ConcurrentHashMap<Long, UserAuthAttributes> uniqueIdVsUserAuth =
-      new ConcurrentHashMap<Long, UserAuthAttributes>();
-  private ConcurrentHashMap<String, UserAuthAttributes> cqNameVsUserAuth =
-      new ConcurrentHashMap<String, UserAuthAttributes>();
-  private ConcurrentHashMap<Long, Subject> uniqueIdVsSubject =
-      new ConcurrentHashMap<Long, Subject>();
+  private final ConcurrentMap<Long, UserAuthAttributes> uniqueIdVsUserAuth =
+      new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, UserAuthAttributes> cqNameVsUserAuth =
+      new ConcurrentHashMap<>();
+  // use a list to store all the subjects that's created for this uniqueId
+  // In the expirable credential case, there will be multiple
+  // subjects created associated with one uniqueId. We always save the current subject to the top of
+  // the list. The rest are "to-be-retired".
+  private final ConcurrentMap<Long, List<Subject>> uniqueIdVsSubjects =
+      new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
+
+  private final int m_seed;
+
+  private Random uniqueIdGenerator;
+  private long m_firstId;
 
   public long putUserAuth(UserAuthAttributes userAuthAttr) {
     // TODO:hitesh should we do random here
@@ -51,10 +69,32 @@ public class ClientUserAuths {
     return newId;
   }
 
-  public long putSubject(Subject subject) {
-    long newId = getNextID();
-    uniqueIdVsSubject.put(newId, subject);
-    logger.debug("Subject of {} added.", newId);
+
+  public long putSubject(Subject subject, long existingUniqueId) {
+    final long newId;
+    if (existingUniqueId == 0 || existingUniqueId == NOT_A_USER_ID) {
+      newId = getNextID();
+    } else {
+      newId = existingUniqueId;
+    }
+
+    // we are saving all the subjects that's related to this uniqueId
+    // we cannot immediately log out the old subject of this uniqueId because
+    // it might already be bound to another thread and doing operations. If
+    // we log out that subject immediately, that thread "authorize" would get null principal.
+    synchronized (this) {
+      List<Subject> subjects;
+      if (!uniqueIdVsSubjects.containsKey(newId)) {
+        secureLogger.debug("Subject of {} added.", newId);
+        subjects = new ArrayList<>();
+        uniqueIdVsSubjects.put(newId, subjects);
+      } else {
+        secureLogger.debug("Subject of {} replaced.", newId);
+        subjects = uniqueIdVsSubjects.get(newId);
+      }
+      // always add the latest subject to the top of the list;
+      subjects.add(0, subject);
+    }
     return newId;
   }
 
@@ -64,8 +104,8 @@ public class ClientUserAuths {
     m_firstId = uniqueIdGenerator.nextLong();
   }
 
-  private synchronized long getNextID() {
-    long uniqueId = uniqueIdGenerator.nextLong();
+  synchronized long getNextID() {
+    final long uniqueId = uniqueIdGenerator.nextLong();
     if (uniqueId == m_firstId) {
       uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
       m_firstId = uniqueIdGenerator.nextLong();
@@ -81,24 +121,28 @@ public class ClientUserAuths {
     return uniqueIdVsUserAuth.get(userId);
   }
 
-  @VisibleForTesting
-  protected Collection<Subject> getSubjects() {
-    return Collections.unmodifiableCollection(this.uniqueIdVsSubject.values());
+  protected synchronized Collection<Subject> getAllSubjects() {
+    List<Subject> all = uniqueIdVsSubjects.values().stream()
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    return Collections.unmodifiableCollection(all);
   }
 
-  public Subject getSubject(long userId) {
-    return uniqueIdVsSubject.get(userId);
-  }
-
-  public boolean removeSubject(long userId) {
-    Subject subject = uniqueIdVsSubject.remove(userId);
-    logger.debug("Subject of {} removed.", userId);
-    if (subject == null) {
-      return false;
+  public synchronized Subject getSubject(final Long userId) {
+    List<Subject> subjects = uniqueIdVsSubjects.get(userId);
+    if (subjects == null || subjects.isEmpty()) {
+      return null;
     }
+    return subjects.get(0);
+  }
 
-    subject.logout();
-    return true;
+  public synchronized void removeSubject(final Long userId) {
+    List<Subject> subjects = uniqueIdVsSubjects.remove(userId);
+    if (subjects == null) {
+      return;
+    }
+    secureLogger.debug("{} Subjects of {} removed.", subjects.size(), userId);
+    subjects.forEach(Subject::logout);
   }
 
   public UserAuthAttributes getUserAuthAttributes(String cqName) {
@@ -107,8 +151,17 @@ public class ClientUserAuths {
     return cqNameVsUserAuth.get(cqName);
   }
 
-  public void setUserAuthAttributesForCq(String cqName, long uniqueId, boolean isDurable) {
-    UserAuthAttributes uaa = this.uniqueIdVsUserAuth.get(uniqueId);
+  public Subject getSubject(final String cqName) {
+    Long uniqueId = cqNameVsUniqueId.get(cqName);
+    if (uniqueId == null) {
+      return null;
+    }
+    return getSubject(uniqueId);
+  }
+
+  public void setUserAuthAttributesForCq(final String cqName, final Long uniqueId,
+      final boolean isDurable) {
+    final UserAuthAttributes uaa = uniqueIdVsUserAuth.get(uniqueId);
 
     if (uaa != null) {
       if (!isDurable) {
@@ -129,6 +182,7 @@ public class ClientUserAuths {
         }
       }
     }
+    cqNameVsUniqueId.put(cqName, uniqueId);
   }
 
   public void removeUserAuthAttributesForCq(String cqName, boolean isDurable) {
@@ -136,6 +190,7 @@ public class ClientUserAuths {
     if (uaa != null && isDurable) {
       uaa.unsetDurable();
     }
+    cqNameVsUniqueId.remove(cqName);
   }
 
   public boolean removeUserId(long userId, boolean keepAlive) {
@@ -191,18 +246,23 @@ public class ClientUserAuths {
   }
 
   public void cleanup(boolean fromCacheClientProxy) {
-    for (UserAuthAttributes userAuth : this.uniqueIdVsUserAuth.values()) {
+    // for old security model
+    for (UserAuthAttributes userAuth : uniqueIdVsUserAuth.values()) {
       // isDurable is checked for multiuser in CQ
       if (!fromCacheClientProxy && !userAuth.isDurable()) {// from serverConnection class
         cleanUserAuth(userAuth);
-      } else if (fromCacheClientProxy && userAuth.isDurable()) {// from cacheclientProxy class
+      } else if (fromCacheClientProxy && userAuth.isDurable()) {
+        // from CacheClientProxy class
         cleanUserAuth(userAuth);
       }
     }
 
-    // Logout the subjects
-    for (Long subjectId : uniqueIdVsSubject.keySet()) {
-      removeSubject(subjectId);
+    // for integrated security, doesn't matter if this is called from proxy
+    // or from the connection, we are closing the client connection
+    synchronized (this) {
+      for (final Long subjectId : uniqueIdVsSubjects.keySet()) {
+        removeSubject(subjectId);
+      }
     }
   }
 

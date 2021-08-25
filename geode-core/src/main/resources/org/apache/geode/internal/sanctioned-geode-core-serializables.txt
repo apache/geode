@@ -354,7 +354,7 @@ org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedArgs,true,1,ex
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedExportFunction,true,1
 org/apache/geode/internal/cache/tier/BatchException,true,-6707074107791305564,_index:int
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
-org/apache/geode/internal/cache/tier/sockets/MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/MessageDispatcher
+org/apache/geode/internal/cache/tier/sockets/MessageDispatcher$1,true,0
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
 org/apache/geode/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 org/apache/geode/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false
@@ -464,7 +464,6 @@ org/apache/geode/management/internal/functions/CliFunctionResult$StatusState,fal
 org/apache/geode/management/internal/functions/GetMemberInformationFunction,true,1404642539058875565
 org/apache/geode/management/internal/functions/RebalanceFunction,true,1
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
-org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/pdx/FieldType,false,defaultSerializedValue:java/nio/ByteBuffer,defaultValue:java/lang/Object,isFixedWidth:boolean,name:java/lang/String,width:int
 org/apache/geode/pdx/JSONFormatter$states,false
 org/apache/geode/pdx/JSONFormatterException,true,1
@@ -480,6 +479,7 @@ org/apache/geode/pdx/internal/EnumInfo$PdxInstanceEnumInfo,true,7907582104525106
 org/apache/geode/pdx/internal/PdxInputStream,false
 org/apache/geode/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobType:org/apache/geode/pdx/internal/PdxType,dis:org/apache/geode/pdx/internal/PdxInputStream
 org/apache/geode/security/AuthTokenEnabledComponents,false
+org/apache/geode/security/AuthenticationExpiredException,true,1771792091260325297
 org/apache/geode/security/AuthenticationFailedException,true,-8202866472279088879
 org/apache/geode/security/AuthenticationRequiredException,true,4675976651103154919
 org/apache/geode/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable

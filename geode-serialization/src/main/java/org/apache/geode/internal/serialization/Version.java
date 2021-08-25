@@ -554,4 +554,12 @@ public class Version extends VersionOrdinalImpl {
         .collect(Collectors.toList());
   }
 
+  public final boolean isNotOlderThan(final Version version) {
+    return compareTo(version) >= 0;
+  }
+
+  public final boolean isNewerThanOrEqualTo(final Version version) {
+    return isNotOlderThan(version);
+  }
+
 }

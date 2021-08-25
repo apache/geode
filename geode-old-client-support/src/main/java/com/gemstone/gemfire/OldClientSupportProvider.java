@@ -14,6 +14,8 @@
  */
 package com.gemstone.gemfire;
 
+import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.Map;
@@ -23,10 +25,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.security.AuthenticationExpiredException;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
@@ -121,12 +126,23 @@ public class OldClientSupportProvider implements OldClientSupportService {
     if (theThrowable == null) {
       return theThrowable;
     }
-    if (clientVersion.compareTo(Version.GFE_90) >= 0) {
+
+    // backward compatibility for authentication expiration
+    if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)) {
+      if (theThrowable instanceof AuthenticationExpiredException) {
+        return new AuthenticationRequiredException(USER_NOT_FOUND);
+      }
+      Throwable cause = theThrowable.getCause();
+      if (cause instanceof AuthenticationExpiredException) {
+        return new AuthenticationRequiredException(USER_NOT_FOUND);
+      }
+    }
+
+    if (clientVersion.isNotOlderThan(Version.GFE_90)) {
       return theThrowable;
     }
 
     String className = theThrowable.getClass().getName();
-
     // this class has been renamed, so it cannot be automatically translated
     // during java deserialization
     if (className.equals("org.apache.geode.cache.execute.EmptyRegionFunctionException")) {

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -120,6 +121,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class CacheClientNotifier {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   @MakeNotStatic
   private static volatile CacheClientNotifier ccnSingleton;
@@ -142,7 +144,7 @@ public class CacheClientNotifier {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
           statisticsClock, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
-          isGatewayReceiver, new CacheClientProxyFactory());
+          isGatewayReceiver, new CacheClientProxyFactory(), socketMessageWriter);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -269,6 +271,7 @@ public class CacheClientNotifier {
     DistributedSystem system = getCache().getDistributedSystem();
     Properties sysProps = system.getProperties();
     String authenticator = sysProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    // in multi-user case, this would return null
     Object subjectOrPrincipal =
         getSubjectOrPrincipal(clientRegistrationMetadata, member, system, authenticator);
     Subject subject = subjectOrPrincipal instanceof Subject ? (Subject) subjectOrPrincipal : null;
@@ -277,6 +280,7 @@ public class CacheClientNotifier {
     socket.setTcpNoDelay(true);
     socket.setSendBufferSize(CacheClientNotifier.socketBufferSize);
     socket.setReceiveBufferSize(CacheClientNotifier.socketBufferSize);
+
 
     if (logger.isDebugEnabled()) {
       logger.debug(
@@ -404,6 +408,9 @@ public class CacheClientNotifier {
               "A previous connection attempt from this client is still being processed: %s",
               clientProxyMembershipID);
       logger.warn(unsuccessfulMsg);
+    } else if (subject != null) {
+      secureLogger.debug("CacheClientProxy {} using subject {} {} ", cacheClientProxy,
+          subject.getPrincipal(), subject);
     }
 
     // Tell the client that the proxy has been registered using the response
@@ -866,12 +873,10 @@ public class CacheClientNotifier {
       final DistributedMember member, final DistributedSystem system, final String authenticator) {
     final Object subjectOrPrincipal;
 
+    // in multi-user case, this would be null
     if (clientRegistrationMetadata.getClientCredentials() != null) {
-      if (securityLogWriter.fineEnabled()) {
-        securityLogWriter
-            .fine("CacheClientNotifier: verifying credentials for proxyID: "
-                + clientRegistrationMetadata.getClientProxyMembershipID());
-      }
+      secureLogger.debug("CacheClientNotifier: verifying credentials for proxyID: "
+          + clientRegistrationMetadata.getClientProxyMembershipID());
       subjectOrPrincipal = Handshake
           .verifyCredentials(authenticator,
               clientRegistrationMetadata.getClientCredentials(),
@@ -1728,7 +1733,8 @@ public class CacheClientNotifier {
       int messageTimeToLive,
       ConnectionListener listener,
       boolean isGatewayReceiver,
-      CacheClientProxyFactory cacheClientProxyFactory) {
+      CacheClientProxyFactory cacheClientProxyFactory, SocketMessageWriter socketMessageWriter) {
+    this.socketMessageWriter = socketMessageWriter;
     this.cacheClientProxyFactory = cacheClientProxyFactory;
     // Set the Cache
     setCache(cache);

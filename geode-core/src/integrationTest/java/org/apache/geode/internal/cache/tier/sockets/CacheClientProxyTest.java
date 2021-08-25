@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,8 +26,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.Rule;
@@ -43,7 +47,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class CacheClientProxyTest {
 
   @Rule
-  public ServerStarterRule serverRule = new ServerStarterRule().withAutoStart();
+  public ServerStarterRule serverRule = new ServerStarterRule().withLogFile().withAutoStart();
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
@@ -87,10 +91,19 @@ public class CacheClientProxyTest {
   }
 
   @Test
-  public void closeSocket1000Times() {
+  public void closeSocket1000Times() throws FileNotFoundException {
     // run it for 1000 times to introduce conflicts between threads
     for (int i = 0; i < 1000; i++) {
       closeSocketShouldBeAtomic();
+    }
+
+    // make sure there is no NPE warning in the log file
+    File logFile = new File(serverRule.getWorkingDir(), "server.log");
+    Scanner scanner = new Scanner(logFile);
+    while (scanner.hasNextLine()) {
+      String line = scanner.nextLine();
+      assertThat(line).describedAs("File: %s, Line: %s", logFile.getAbsolutePath(), line)
+          .doesNotContain("NullPointerException");
     }
   }
 }
