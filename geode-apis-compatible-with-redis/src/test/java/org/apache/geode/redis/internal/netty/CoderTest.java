@@ -82,6 +82,42 @@ public class CoderTest {
   }
 
   @Test
+  @Parameters(method = "bytesToDoubleStrings")
+  public void bytesToDouble_likeJDK(String inputString) {
+    double coderDouble = bytesToDouble(stringToBytes(inputString));
+    double jdkDouble = Double.parseDouble(inputString);
+    assertThat(coderDouble).isEqualTo(jdkDouble);
+    String coderString = bytesToString(doubleToBytes(coderDouble));
+    String jdkString = Double.toString(coderDouble);
+    assertThat(coderString).isEqualTo(jdkString);
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] bytesToDoubleStrings() {
+    // string
+    return new Object[] {
+            new Object[] {"Infinity"},
+            new Object[] {"+Infinity"},
+            new Object[] {"-Infinity"},
+            new Object[] {"1.0"},
+            new Object[] {"-1.0"},
+            new Object[] {"0"},
+            new Object[] {"1.2345678901234567"},
+            new Object[] {"-1.2345678901234567"},
+            new Object[] {"12345678901234.567"},
+            new Object[] {"123456789012345.6"},
+            new Object[] {"12345678901234.5"},
+            new Object[] {"1234567890123.4"},
+            new Object[] {"123456789012.3"},
+            new Object[] {"12345678901.2"},
+            new Object[] {"0.67921999221631324"},
+            new Object[] {Double.toString(Double.MAX_VALUE)},
+            new Object[] {Double.toString(Double.MIN_NORMAL)},
+            new Object[] {Double.toString(Double.MIN_VALUE)},
+    };
+  }
+
+  @Test
   public void narrowLongToInt_correctlyConvertsLongToIntMinValue() {
     for (long i = Integer.MIN_VALUE; i > Integer.MIN_VALUE - 10L; --i) {
       assertThat(narrowLongToInt(i)).isEqualTo(Integer.MIN_VALUE);
@@ -180,6 +216,17 @@ public class CoderTest {
         new Object[] {"+Infinity", "inf"},
         new Object[] {"-inf", "-inf"},
         new Object[] {"-Infinity", "-inf"}, new Object[] {"1.0", "1"},
+        new Object[] {"1.2345678901234567", "1.2345678901234567"},
+        new Object[] {"-1.2345678901234567", "-1.2345678901234567"},
+        new Object[] {"12345678901234.567", "12345678901234.567"},
+            new Object[] {"123456789012345.6", "123456789012345.6"},
+            new Object[] {"12345678901234.5", "12345678901234.5"},
+            new Object[] {"1234567890123.4", "1234567890123.4"},
+            new Object[] {"123456789012.3", "123456789012.3"},
+            new Object[] {"12345678901.2", "12345678901.2"},
+            new Object[] {"0.67921999221631324", "0.67921999221631324"},
+            new Object[] {Double.toString(Double.MAX_VALUE), Double.toString(Double.MAX_VALUE)},
+
     };
   }
 

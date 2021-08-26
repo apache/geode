@@ -235,6 +235,7 @@ public class StringBytesGlossary {
   public static final byte bPERIOD = 46; // .
 
   public static final byte bUPPERCASE_E = 69; // E
+  public static final byte bLOWERCASE_E = 101; // e
 
   public static final String PING_RESPONSE = "PONG";
 
@@ -262,4 +263,7 @@ public class StringBytesGlossary {
 
   public static final byte[] bNEGATIVE_ZERO = stringToBytes("-0");
   public static final byte[] bPOSITIVE_ZERO = stringToBytes("0");
+  public static final byte[] bINTEGER_MIN = stringToBytes("-2147483648");
+  public static final byte[] bLONG_MIN = stringToBytes("-9223372036854775808");
+
 }

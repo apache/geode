@@ -33,7 +33,10 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_S
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bERR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINTEGER_MIN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLONG_MIN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_E;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
@@ -283,20 +286,20 @@ public class Coder {
     }
   }
 
-  // private static String doubleToString(double d) {
-  // if (d == Double.POSITIVE_INFINITY) {
-  // return "inf";
-  // }
-  // if (d == Double.NEGATIVE_INFINITY) {
-  // return "-inf";
-  // }
-  //
-  // String stringValue = String.valueOf(d);
-  // if (stringValue.endsWith(".0")) {
-  // return (stringValue.substring(0, stringValue.length() - 2));
-  // }
-  // return stringValue;
-  // }
+  private static String doubleToString(double d) {
+    if (d == Double.POSITIVE_INFINITY) {
+      return "inf";
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
+      return "-inf";
+    }
+
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      return (stringValue.substring(0, stringValue.length() - 2));
+    }
+    return stringValue;
+  }
 
   public static byte[] stringToBytes(String string) {
     if (string == null) {
@@ -332,7 +335,7 @@ public class Coder {
 
   public static byte[] doubleToBytes(double d) {
     return convertDoubleToAsciiBytes(d);
-    // return stringToBytes(doubleToString(d));
+    //return stringToBytes(doubleToString(d));
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -402,16 +405,7 @@ public class Coder {
    * @throws NumberFormatException if bytes to string does not yield a convertible double
    */
   public static double bytesToDouble(byte[] bytes) {
-    if (isPositiveInfinity(bytes)) {
-      return POSITIVE_INFINITY;
-    }
-    if (isNegativeInfinity(bytes)) {
-      return NEGATIVE_INFINITY;
-    }
-    if (isNaN(bytes)) {
-      return NaN;
-    }
-    return stringToDouble(bytesToString(bytes));
+    return parseDouble(bytes);
   }
 
   /**
@@ -421,7 +415,7 @@ public class Coder {
    * @return Value of string
    * @throws NumberFormatException if the double cannot be parsed
    */
-  public static double stringToDouble(String d) {
+  private static double stringToDouble(String d) {
     if (d.equalsIgnoreCase(P_INF)) {
       return Double.POSITIVE_INFINITY;
     } else if (d.equalsIgnoreCase(N_INF)) {
@@ -430,6 +424,109 @@ public class Coder {
       return Double.parseDouble(d);
     }
   }
+
+  private static final int INT_MAX_DIV10 = Integer.MAX_VALUE / 10;
+  private static final long LONG_MAX_DIV10 = Long.MAX_VALUE / 10;
+
+  /**
+   * Derived from javolution.text.TypeFormat.parseDouble.
+   * Improved overflow detection in decimal value
+   * with conversion to exponent (99999999999999.99999 is handled).
+   */
+  static double parseDouble(final byte[] bytes) throws NumberFormatException {
+
+    if (isPositiveInfinity(bytes)) {
+      return POSITIVE_INFINITY;
+    }
+    if (isNegativeInfinity(bytes)) {
+      return NEGATIVE_INFINITY;
+    }
+    if (isNaN(bytes)) {
+      return NaN;
+    }
+    if (false) // use jdk
+      return stringToDouble(bytesToString(bytes));
+
+    final int offset = 0;
+    final int end = bytes.length;
+    int i = offset;
+    byte b = bytes[i];
+    // Reads sign.
+    boolean isNegative = (b == bMINUS);
+    if ((isNegative || (b == bPLUS)) && (++i < end)) {
+      b = bytes[i];
+    }
+
+    int digit = asciiToDigit(b);
+    if (digit == -1 && (b != bPERIOD)) {
+      throw new NumberFormatException("Digit or '.' required");
+    }
+
+    // Reads decimal and fraction (both merged to a long).
+    long decimal = 0;
+    int decimalPoint = -1;
+    int decimalExp = 0;
+    while (true) {
+      if (digit >= 0) {
+        long tmp = decimal * 10 + digit;
+        if ((decimal > LONG_MAX_DIV10) || (tmp < decimal)) {
+          decimalExp++;
+        } else {
+          decimal = tmp;
+        }
+      } else if ((b == bPERIOD) && (decimalPoint < 0)) {
+        decimalPoint = i;
+      } else {
+        break;
+      }
+      if (++i >= end) {
+        break;
+      }
+      b = bytes[i];
+      digit = asciiToDigit(b);
+    }
+    if (isNegative) {
+      decimal = -decimal;
+    }
+    int fractionLength = (decimalPoint >= 0) ? i - decimalPoint - 1 : 0;
+
+    // Reads exponent.
+    int exp = 0;
+    if ((i < end) && ((b == bUPPERCASE_E) || (b == bLOWERCASE_E))) {
+      b = bytes[++i];
+      boolean isNegativeExp = (b == bMINUS);
+      if ((isNegativeExp || (b == bPLUS)) && (++i < end)) {
+        b = bytes[i];
+      }
+      digit = asciiToDigit(b);
+      while (digit != -1) {
+        int tmp = exp * 10 + digit;
+        if ((exp > INT_MAX_DIV10) || (tmp < exp))
+          throw new NumberFormatException("Exponent Overflow");
+        exp = tmp;
+        if (++i >= end) {
+          break;
+        }
+        b = bytes[i];
+        digit = asciiToDigit(b);
+      }
+      if (digit == -1) {
+        throw new NumberFormatException("Invalid exponent");
+      }
+      if (isNegativeExp) {
+        exp = -exp;
+      }
+    }
+
+    if (i < end) {
+      throw new NumberFormatException("Invalid characters in input");
+    }
+
+    exp += decimalExp;
+
+    return toDoublePow10(decimal, exp - fractionLength);
+  }
+
 
   /**
    * This method allows comparison of byte array representations of Strings, ignoring case, allowing
@@ -718,6 +815,624 @@ public class Coder {
     }
   }
 
+  private static final long TEN_TO_7TH = (long)Math.pow(10, 7);
+  private static final long TEN_TO_MINUS_3RD = (long)Math.pow(10, -3);
+
+
+  /**
+   * @param d The double precision value to convert.
+   */
+  private static byte[] convertDoubleToAsciiBytes(double d) {
+    if (d != d) { // NaN
+      return bNaN;
+    }
+    if (d == Double.POSITIVE_INFINITY) {
+      return bINF;
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
+      return bN_INF;
+    }
+    if (d == 0.0) { // Zero.
+      return bPOSITIVE_ZERO;
+    }
+    final int MAX_RESULT_SIZE = 26;
+    int resultPos = 0;
+    byte[] result = new byte[MAX_RESULT_SIZE];
+    if (d < 0) { // Work with positive number.
+      d = -d;
+      result[resultPos++] = bMINUS;
+    }
+
+    // Find the exponent e such as: value == x.xxx * 10^e
+    int e = floorLog10(d);
+
+    long m;
+    final int digits; // 16 or 17 digits
+    // Try 17 digits.
+    long m17 = toLongPow10(d, (17 - 1) - e);
+    // Check if we can use 16 digits.
+    long m16 = m17 / 10;
+    double dd = toDoublePow10(m16, e - 16 + 1);
+    if (dd == d) { // 16 digits is enough.
+      digits = 16;
+      m = m16;
+    } else { // We cannot remove the last digit.
+      digits = 17;
+      m = m17;
+    }
+
+    // Formats.
+    if (e >= digits) {
+      // Scientific notation has to be used ("x.xxxEyy").
+      long pow10 = POW10_LONG[digits - 1];
+      int k = (int) (m / pow10); // Single digit.
+      resultPos = appendDigit(result, resultPos, k);
+      m = m - pow10 * k;
+      resultPos = appendFraction(result, resultPos, m, digits - 1, true);
+      result[resultPos++] = bUPPERCASE_E;
+      resultPos = append(result, resultPos, e);
+    } else { // Dot within the string ("xxxx.xxxxx").
+      int exp = digits - e - 1;
+      if (exp < POW10_LONG.length) {
+        long pow10 = POW10_LONG[exp];
+        long l = m / pow10;
+        resultPos = append(result, resultPos, l);
+        m = m - pow10 * l;
+      } else {
+        // Result of the division by a power of 10 larger than any long.
+        resultPos = appendDigit(result, resultPos, 0);
+      }
+      resultPos = appendFraction(result, resultPos, m, exp, false);
+    }
+    return ByteArrays.copy(result, 0, resultPos);
+  }
+
+  /**
+   * digit must be in the range [0..9]
+   */
+  private static int appendDigit(byte[] result, int resultPos, int digit) {
+    result[resultPos++] = digitToAscii(digit);
+    return resultPos;
+  }
+
+  /**
+   * Append "count" copies of "digit" to the byte array.
+   * digit must be in the range [0..9]
+   */
+  private static int appendDigits(byte[] result, int resultPos, int digit, int count) {
+    while (count > 0) {
+      resultPos = appendDigit(result, resultPos, digit); // Add leading zeros.
+      count--;
+    }
+    return resultPos;
+  }
+
+  private static int append(byte[] result, int resultPos, byte[] src) {
+    System.arraycopy(src, 0, result, resultPos, src.length);
+    resultPos += src.length;
+    return resultPos;
+  }
+
+  /**
+   * Appends the decimal representation of the specified <code>int</code>
+   * argument.
+   *
+   * @param result the byte array to append to
+   * @param resultPos the index of the first byte in the array to target
+   * @param i the <code>int</code> to format.
+   * @return returns updated resultPos
+   */
+  private static int append(byte[] result, int resultPos, int i) {
+    if (i <= 0) {
+      if (i == 0) {
+        return appendDigit(result, resultPos, 0);
+      }
+      if (i == Integer.MIN_VALUE) {// Negation would overflow.
+        return append(result, resultPos, bINTEGER_MIN);
+      }
+      result[resultPos++] = bMINUS;
+      i = -i;
+    }
+    int digits = digitLength(i);
+    resultPos += digits;
+    for (int index = resultPos - 1;; index--) {
+      int j = i / 10;
+      result[index] = digitToAscii(i - (j * 10));
+      if (j == 0) {
+        return resultPos;
+      }
+      i = j;
+    }
+  }
+
+  /**
+   * Appends the decimal representation of the specified <code>int</code>
+   * argument.
+   *
+   * @param result the byte array to append to
+   * @param resultPos the index of the first byte in the array to target
+   * @param l the <code>long</code> to format.
+   * @return returns updated resultPos
+   */
+  private static int append(byte[] result, int resultPos, long l) {
+    if (l <= 0) {
+      if (l == 0) {
+        return appendDigit(result, resultPos, 0);
+      }
+      if (l == Long.MIN_VALUE) {// Negation would overflow.
+        return append(result, resultPos, bLONG_MIN);
+      }
+      result[resultPos++] = bMINUS;
+      l = -l;
+    }
+    if (l <= Integer.MAX_VALUE) {
+      return append(result, resultPos, (int) l);
+    }
+    resultPos = append(result, resultPos, l / 1000000000);
+    int i = (int) (l % 1000000000);
+    int digits = digitLength(i);
+    resultPos = appendDigits(result, resultPos, 0, 9 - digits);
+    return append(result, resultPos, i);
+  }
+
+
+  private static int appendFraction(byte[] result, int resultPos, long l, int digits,
+      boolean forceDotZero) {
+    if (l == 0) {
+      if (forceDotZero) {
+        result[resultPos++] = bPERIOD;
+        resultPos = appendDigit(result, resultPos, 0);
+      }
+    } else { // l is different from zero.
+      result[resultPos++] = bPERIOD;
+      int length = digitLength(l);
+      resultPos = appendDigits(result, resultPos, 0, digits - length); // Add leading zeros.
+      while (l % 10 == 0) {
+        l /= 10; // Remove trailing zeros.
+      }
+      resultPos = append(result, resultPos, l);
+    }
+    return resultPos;
+  }
+
+  /**
+   * Returns the number of digits of the decimal representation of the specified <code>int</code>
+   * value,
+   * excluding the sign character if any.
+   *
+   * @param i the <code>int</code> value for which the digit length is returned.
+   * @return <code>String.valueOf(i).length()</code> for zero or positive values;
+   *         <code>String.valueOf(i).length() - 1</code> for negative values.
+   */
+  private static int digitLength(int i) {
+    if (i >= 0) {
+      return (i >= 100000) ? (i >= 10000000) ? (i >= 1000000000) ? 10
+          : (i >= 100000000) ? 9 : 8 : (i >= 1000000) ? 7 : 6
+          : (i >= 100) ? (i >= 10000) ? 5 : (i >= 1000) ? 4 : 3
+              : (i >= 10) ? 2 : 1;
+    }
+    if (i == Integer.MIN_VALUE) {
+      return 10; // "2147483648".length()
+    }
+    return digitLength(-i); // No overflow possible.
+  }
+
+  /**
+   * Returns the number of digits of the decimal representation of the the specified
+   * <code>long</code>,
+   * excluding the sign character if any.
+   *
+   * @param l the <code>long</code> value for which the digit length is returned.
+   * @return <code>String.valueOf(l).length()</code> for zero or positive values;
+   *         <code>String.valueOf(l).length() - 1</code> for negative values.
+   */
+  private static int digitLength(long l) {
+    if (l >= 0) {
+      return (l <= Integer.MAX_VALUE) ? digitLength((int) l)
+          : // At least 10 digits or more.
+          (l >= 100000000000000L) ? (l >= 10000000000000000L) ? (l >= 1000000000000000000L) ? 19
+              : (l >= 100000000000000000L) ? 18 : 17
+              : (l >= 1000000000000000L) ? 16 : 15
+              : (l >= 100000000000L) ? (l >= 10000000000000L) ? 14
+                  : (l >= 1000000000000L) ? 13 : 12
+                  : (l >= 10000000000L) ? 11 : 10;
+    }
+    if (l == Long.MIN_VALUE) {
+      return 19; // "9223372036854775808".length()
+    }
+    return digitLength(-l);
+  }
+
+
+  private static final long[] POW10_LONG = new long[] {1L, 10L, 100L, 1000L,
+      10000L, 100000L, 1000000L, 10000000L, 100000000L, 1000000000L,
+      10000000000L, 100000000000L, 1000000000000L, 10000000000000L,
+      100000000000000L, 1000000000000000L, 10000000000000000L,
+      100000000000000000L, 1000000000000000000L};
+
+  /**
+   * Returns the largest power of 10 that is less than or equal to the the specified positive value.
+   *
+   * @param d the <code>double</code> number.
+   * @return <code>floor(Log10(abs(d)))</code>
+   * @throws ArithmeticException if <code>d &lt;= 0</code> or <code>d</code>
+   *         is <code>NaN</code> or <code>Infinity</code>.
+   **/
+  private static int floorLog10(double d) {
+    int guess = (int) (LOG2_DIV_LOG10 * floorLog2(d));
+    double pow10 = toDoublePow10(1, guess);
+    if ((pow10 <= d) && (pow10 * 10 > d))
+      return guess;
+    if (pow10 > d)
+      return guess - 1;
+    return guess + 1;
+  }
+
+  /**
+   * Returns the largest power of 2 that is less than or equal to the the specified positive value.
+   *
+   * @param d the <code>double</code> number.
+   * @return <code>floor(Log2(abs(d)))</code>
+   * @throws ArithmeticException if <code>d &lt;= 0</code> or <code>d</code>
+   *         is <code>NaN</code> or <code>Infinity</code>.
+   **/
+  private static int floorLog2(double d) {
+    if (d <= 0)
+      throw new ArithmeticException("Negative number or zero");
+    long bits = Double.doubleToLongBits(d);
+    int exp = ((int) (bits >> 52)) & 0x7FF;
+    if (exp == 0x7FF)
+      throw new ArithmeticException("Infinity or NaN");
+    if (exp == 0)
+      return floorLog2(d * 18014398509481984L) - 54; // 2^54 Exact.
+    return exp - 1023;
+  }
+
+  /**
+   * Returns the closest <code>long</code> representation of the specified <code>double</code>
+   * number multiplied
+   * by a power of ten.
+   *
+   * @param d the <code>double</code> multiplier.
+   * @param n the power of two exponent.
+   * @return <code>d * 10<sup>n</sup></code>.
+   */
+  private static long toLongPow10(double d, int n) {
+    long bits = Double.doubleToLongBits(d);
+    boolean isNegative = (bits >> 63) != 0;
+    int exp = ((int) (bits >> 52)) & 0x7FF;
+    long m = bits & 0x000fffffffffffffL;
+    if (exp == 0x7FF)
+      throw new ArithmeticException(
+          "Cannot convert to long (Infinity or NaN)");
+    if (exp == 0) {
+      if (m == 0)
+        return 0L;
+      return toLongPow10(d * 1E16, n - 16);
+    }
+    m |= 0x0010000000000000L; // Sets MSB (bit 52)
+    int pow2 = exp - 1023 - 52;
+    // Retrieves 63 bits m with n == 0.
+    if (n >= 0) {
+      // Works with 4 x 32 bits registers (x3:x2:x1:x0)
+      long x0 = 0; // 32 bits.
+      long x1 = 0; // 32 bits.
+      long x2 = m & MASK_32; // 32 bits.
+      long x3 = m >>> 32; // 32 bits.
+      while (n != 0) {
+        int i = (n >= POW5_INT.length) ? POW5_INT.length - 1 : n;
+        int coef = POW5_INT[i]; // 31 bits max.
+
+        if (((int) x0) != 0)
+          x0 *= coef; // 63 bits max.
+        if (((int) x1) != 0)
+          x1 *= coef; // 63 bits max.
+        x2 *= coef; // 63 bits max.
+        x3 *= coef; // 63 bits max.
+
+        x1 += x0 >>> 32;
+        x0 &= MASK_32;
+
+        x2 += x1 >>> 32;
+        x1 &= MASK_32;
+
+        x3 += x2 >>> 32;
+        x2 &= MASK_32;
+
+        // Adjusts powers.
+        pow2 += i;
+        n -= i;
+
+        // Normalizes (x3 should be 32 bits max).
+        long carry = x3 >>> 32;
+        if (carry != 0) { // Shift.
+          x0 = x1;
+          x1 = x2;
+          x2 = x3 & MASK_32;
+          x3 = carry;
+          pow2 += 32;
+        }
+      }
+
+      // Merges registers to a 63 bits mantissa.
+      int shift = 31 - bitLength(x3); // -1..30
+      pow2 -= shift;
+      m = (shift < 0) ? (x3 << 31) | (x2 >>> 1) : // x3 is 32 bits.
+          (((x3 << 32) | x2) << shift) | (x1 >>> (32 - shift));
+
+    } else { // n < 0
+
+      // Works with x1:x0 126 bits register.
+      long x1 = m; // 63 bits.
+      long x0 = 0; // 63 bits.
+      while (true) {
+
+        // Normalizes x1:x0
+        int shift = 63 - bitLength(x1);
+        x1 <<= shift;
+        x1 |= x0 >>> (63 - shift);
+        x0 = (x0 << shift) & MASK_63;
+        pow2 -= shift;
+
+        // Checks if division has to be performed.
+        if (n == 0)
+          break; // Done.
+
+        // Retrieves power of 5 divisor.
+        int i = (-n >= POW5_INT.length) ? POW5_INT.length - 1 : -n;
+        int divisor = POW5_INT[i];
+
+        // Performs the division (126 bits by 31 bits).
+        long wh = (x1 >>> 32);
+        long qh = wh / divisor;
+        long r = wh - qh * divisor;
+        long wl = (r << 32) | (x1 & MASK_32);
+        long ql = wl / divisor;
+        r = wl - ql * divisor;
+        x1 = (qh << 32) | ql;
+
+        wh = (r << 31) | (x0 >>> 32);
+        qh = wh / divisor;
+        r = wh - qh * divisor;
+        wl = (r << 32) | (x0 & MASK_32);
+        ql = wl / divisor;
+        x0 = (qh << 32) | ql;
+
+        // Adjusts powers.
+        n += i;
+        pow2 -= i;
+      }
+      m = x1;
+    }
+    if (pow2 > 0)
+      throw new ArithmeticException("Overflow");
+    if (pow2 < -63)
+      return 0;
+    m = (m >> -pow2) + ((m >> -(pow2 + 1)) & 1); // Rounding.
+    return isNegative ? -m : m;
+  }
+
+  /**
+   * Returns the closest <code>double</code> representation of the specified <code>long</code>
+   * number multiplied by
+   * a power of ten.
+   *
+   * @param m the <code>long</code> multiplier.
+   * @param n the power of ten exponent.
+   * @return <code>multiplier * 10<sup>n</sup></code>.
+   **/
+  private static double toDoublePow10(long m, int n) {
+    if (m == 0)
+      return 0.0;
+    if (m == Long.MIN_VALUE)
+      return toDoublePow10(Long.MIN_VALUE / 10, n + 1);
+    if (m < 0)
+      return -toDoublePow10(-m, n);
+    if (n >= 0) { // Positive power.
+      if (n > 308)
+        return Double.POSITIVE_INFINITY;
+      // Works with 4 x 32 bits registers (x3:x2:x1:x0)
+      long x0 = 0; // 32 bits.
+      long x1 = 0; // 32 bits.
+      long x2 = m & MASK_32; // 32 bits.
+      long x3 = m >>> 32; // 32 bits.
+      int pow2 = 0;
+      while (n != 0) {
+        int i = (n >= POW5_INT.length) ? POW5_INT.length - 1 : n;
+        int coef = POW5_INT[i]; // 31 bits max.
+
+        if (((int) x0) != 0)
+          x0 *= coef; // 63 bits max.
+        if (((int) x1) != 0)
+          x1 *= coef; // 63 bits max.
+        x2 *= coef; // 63 bits max.
+        x3 *= coef; // 63 bits max.
+
+        x1 += x0 >>> 32;
+        x0 &= MASK_32;
+
+        x2 += x1 >>> 32;
+        x1 &= MASK_32;
+
+        x3 += x2 >>> 32;
+        x2 &= MASK_32;
+
+        // Adjusts powers.
+        pow2 += i;
+        n -= i;
+
+        // Normalizes (x3 should be 32 bits max).
+        long carry = x3 >>> 32;
+        if (carry != 0) { // Shift.
+          x0 = x1;
+          x1 = x2;
+          x2 = x3 & MASK_32;
+          x3 = carry;
+          pow2 += 32;
+        }
+      }
+
+      // Merges registers to a 63 bits mantissa.
+      int shift = 31 - bitLength(x3); // -1..30
+      pow2 -= shift;
+      long mantissa = (shift < 0) ? (x3 << 31) | (x2 >>> 1) : // x3 is 32 bits.
+          (((x3 << 32) | x2) << shift) | (x1 >>> (32 - shift));
+      return toDoublePow2(mantissa, pow2);
+
+    } else { // n < 0
+      if (n < -324 - 20)
+        return 0.0;
+
+      // Works with x1:x0 126 bits register.
+      long x1 = m; // 63 bits.
+      long x0 = 0; // 63 bits.
+      int pow2 = 0;
+      while (true) {
+
+        // Normalizes x1:x0
+        int shift = 63 - bitLength(x1);
+        x1 <<= shift;
+        x1 |= x0 >>> (63 - shift);
+        x0 = (x0 << shift) & MASK_63;
+        pow2 -= shift;
+
+        // Checks if division has to be performed.
+        if (n == 0)
+          break; // Done.
+
+        // Retrieves power of 5 divisor.
+        int i = (-n >= POW5_INT.length) ? POW5_INT.length - 1 : -n;
+        int divisor = POW5_INT[i];
+
+        // Performs the division (126 bits by 31 bits).
+        long wh = (x1 >>> 32);
+        long qh = wh / divisor;
+        long r = wh - qh * divisor;
+        long wl = (r << 32) | (x1 & MASK_32);
+        long ql = wl / divisor;
+        r = wl - ql * divisor;
+        x1 = (qh << 32) | ql;
+
+        wh = (r << 31) | (x0 >>> 32);
+        qh = wh / divisor;
+        r = wh - qh * divisor;
+        wl = (r << 32) | (x0 & MASK_32);
+        ql = wl / divisor;
+        x0 = (qh << 32) | ql;
+
+        // Adjusts powers.
+        n += i;
+        pow2 -= i;
+      }
+      return toDoublePow2(x1, pow2);
+    }
+  }
+
+  /**
+   * Returns the closest <code>double</code> representation of the specified <code>long</code>
+   * number
+   * multiplied by a power of two.
+   *
+   * @param m the <code>long</code> multiplier.
+   * @param n the power of two exponent.
+   * @return <code>m * 2<sup>n</sup></code>.
+   */
+  private static double toDoublePow2(long m, int n) {
+    if (m == 0)
+      return 0.0;
+    if (m == Long.MIN_VALUE)
+      return toDoublePow2(Long.MIN_VALUE >> 1, n + 1);
+    if (m < 0)
+      return -toDoublePow2(-m, n);
+    int bitLength = bitLength(m);
+    int shift = bitLength - 53;
+    long exp = 1023L + 52 + n + shift; // Use long to avoid overflow.
+    if (exp >= 0x7FF)
+      return Double.POSITIVE_INFINITY;
+    if (exp <= 0) { // Degenerated number (subnormal, assume 0 for bit 52)
+      if (exp <= -54)
+        return 0.0;
+      return toDoublePow2(m, n + 54) / 18014398509481984L; // 2^54 Exact.
+    }
+    // Normal number.
+    long bits = (shift > 0) ? (m >> shift) + ((m >> (shift - 1)) & 1) : // Rounding.
+        m << -shift;
+    if (((bits >> 52) != 1) && (++exp >= 0x7FF))
+      return Double.POSITIVE_INFINITY;
+    bits &= 0x000fffffffffffffL; // Clears MSB (bit 52)
+    bits |= exp << 52;
+    return Double.longBitsToDouble(bits);
+  }
+
+  /**
+   * Returns the number of bits in the minimal two's-complement representation of the specified
+   * <code>long</code>,
+   * excluding a sign bit. For positive <code>long</code>, this is equivalent to the number of bits
+   * in the ordinary binary representation. For negative <code>long</code>, it is equivalent to the
+   * number of bits
+   * of the positive value <code>-(l + 1)</code>.
+   *
+   * @param l the <code>long</code> value for which the bit length is returned.
+   * @return the bit length of <code>l</code>.
+   */
+  private static int bitLength(long l) {
+    if (l < 0)
+      l = -(l + 1);
+    return 64 - numberOfLeadingZeros(l);
+  }
+
+  /**
+   * Returns the number of zero bits preceding the highest-order ("leftmost") one-bit in the two's
+   * complement binary
+   * representation of the specified 64 bits unsigned value. Returns 64 if the specified value is
+   * zero.
+   *
+   * @param unsigned the unsigned 64 bits value.
+   * @return the number of leading zero bits.
+   */
+  private static int numberOfLeadingZeros(long unsigned) { // From Hacker's Delight
+    if (unsigned == 0) {
+      return 64;
+    }
+    int n = 1;
+    int x = (int) (unsigned >>> 32);
+    if (x == 0) {
+      n += 32;
+      x = (int) unsigned;
+    }
+    if (x >>> 16 == 0) {
+      n += 16;
+      x <<= 16;
+    }
+    if (x >>> 24 == 0) {
+      n += 8;
+      x <<= 8;
+    }
+    if (x >>> 28 == 0) {
+      n += 4;
+      x <<= 4;
+    }
+    if (x >>> 30 == 0) {
+      n += 2;
+      x <<= 2;
+    }
+    n -= x >>> 31;
+    return n;
+  }
+
+
+  private static final long MASK_63 = 0x7FFFFFFFFFFFFFFFL;
+
+  private static final long MASK_32 = 0xFFFFFFFFL;
+
+  private static final int[] POW5_INT = {1, 5, 25, 125, 625, 3125, 15625,
+      78125, 390625, 1953125, 9765625, 48828125, 244140625, 1220703125};
+
+
+
+  private static final double LOG2_DIV_LOG10 = 0.3010299956639811952137388947;
+
+
   static final int SIGNIFICAND_WIDTH = 53;
   static final int EXP_BIAS = 1023;
   static final long SIGN_BIT_MASK = 0x8000000000000000L;
@@ -734,7 +1449,7 @@ public class Coder {
   /**
    * @param d The double precision value to convert.
    */
-  private static byte[] convertDoubleToAsciiBytes(double d) {
+  private static byte[] OPENJDKconvertDoubleToAsciiBytes(double d) {
     long dBits = Double.doubleToRawLongBits(d);
     boolean isNegative = (dBits & SIGN_BIT_MASK) != 0; // discover sign
     long fractBits = dBits & SIGNIF_BIT_MASK;
