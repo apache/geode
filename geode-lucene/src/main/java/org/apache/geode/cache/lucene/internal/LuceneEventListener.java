@@ -83,6 +83,7 @@ public class LuceneEventListener implements AsyncEventListener {
     cache.setPdxReadSerializedOverride(true);
 
     if (cache.hasMemberOlderThan(KnownVersion.GEODE_1_15_0)) {
+      logger.info("Some members are older than " + KnownVersion.GEODE_1_15_0.getName());
       return false;
     }
 
