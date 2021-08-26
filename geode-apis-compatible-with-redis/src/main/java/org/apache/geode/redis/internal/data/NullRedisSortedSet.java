@@ -92,6 +92,7 @@ class NullRedisSortedSet extends RedisSortedSet {
     return Collections.emptyList();
   }
 
+  @Override
   List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
@@ -106,6 +107,13 @@ class NullRedisSortedSet extends RedisSortedSet {
     return Collections.emptyList();
   }
 
+  @Override
+  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetScoreRangeOptions rangeOptions) {
+    return 0;
+  }
+
+  @Override
   List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }

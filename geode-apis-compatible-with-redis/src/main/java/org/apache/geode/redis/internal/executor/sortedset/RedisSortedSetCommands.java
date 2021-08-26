@@ -45,6 +45,8 @@ public interface RedisSortedSetCommands {
 
   long zrem(RedisKey key, List<byte[]> membersToRemove);
 
+  long zremrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
+
   List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
 
   List<byte[]> zrevrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
