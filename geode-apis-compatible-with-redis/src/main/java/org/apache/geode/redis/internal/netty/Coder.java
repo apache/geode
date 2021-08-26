@@ -335,7 +335,7 @@ public class Coder {
 
   public static byte[] doubleToBytes(double d) {
     return convertDoubleToAsciiBytes(d);
-    //return stringToBytes(doubleToString(d));
+    // return stringToBytes(doubleToString(d));
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -815,8 +815,8 @@ public class Coder {
     }
   }
 
-  private static final long TEN_TO_7TH = (long)Math.pow(10, 7);
-  private static final long TEN_TO_MINUS_3RD = (long)Math.pow(10, -3);
+  private static final long TEN_TO_7TH = (long) Math.pow(10, 7);
+  private static final long TEN_TO_MINUS_3RD = (long) Math.pow(10, -3);
 
 
   /**
