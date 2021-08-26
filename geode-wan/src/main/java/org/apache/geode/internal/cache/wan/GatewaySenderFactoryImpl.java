@@ -75,6 +75,12 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
+  public GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries) {
+    this.attrs.retriesToGetTransactionEventsFromQueue = retries;
+    return this;
+  }
+
+  @Override
   public GatewaySenderFactory setForInternalUse(boolean isForInternalUse) {
     this.attrs.isForInternalUse = isForInternalUse;
     return this;

@@ -50,6 +50,14 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
 
   /**
+   * Sets the maximum number of retries to get events from the queue
+   * to complete a transaction when groupTransactionEvents is true.
+   *
+   * @param retries the maximum number of retries.
+   */
+  GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries);
+
+  /**
    * Adds a <code>GatewayEventFilter</code>
    *
    * @param filter GatewayEventFilter
