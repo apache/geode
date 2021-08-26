@@ -210,7 +210,7 @@ public class PartitionedRegionRebalanceOp {
           membershipChange = false;
           // refetch the partitioned region details after
           // a membership change.
-          logger.debug("Rebalancing {} detected membership changes. Refetching details",
+          debug("Rebalancing {} detected membership changes. Refetching details",
               leaderRegion);
           if (this.stats != null) {
             this.stats.incRebalanceMembershipChanges(1);

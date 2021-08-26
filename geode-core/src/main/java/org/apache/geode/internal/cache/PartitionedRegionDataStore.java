@@ -215,26 +215,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(), pr,
             pr.getCache().getMeterRegistry(), statisticsClock);
     this.keysOfInterest = new ConcurrentHashMap();
-    launchBucketIdsLogThread();
-  }
-
-  private void launchBucketIdsLogThread() {
-    new Thread(() -> logBucketIds()).start();
-  }
-
-  private void logBucketIds() {
-    List<Integer> previousBucketIdsList = Collections.emptyList(), currentBucketIdsList;
-    while (true) {
-      currentBucketIdsList = new ArrayList<>(getAllLocalBucketIds());
-      Collections.sort(currentBucketIdsList);
-      if (!currentBucketIdsList.equals(previousBucketIdsList)) {
-        previousBucketIdsList = currentBucketIdsList;
-      }
-      try {
-        Thread.sleep(2000);
-      } catch (Exception e) {
-      }
-    }
   }
 
   /**
@@ -813,7 +793,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
               .setPartitionedRegion(this.partitionedRegion)
               .setIndexes(getIndexes(rootRegion.getFullPath(), bucketRegionName)));
       this.partitionedRegion.getPrStats().incBucketCount(1);
-      // new Exception());
     } catch (RegionExistsException ex) {
       // Bucket Region is already created, so do nothing.
       if (logger.isDebugEnabled()) {
@@ -845,15 +824,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       dumpBuckets();
       dumpBucket(bucketId, bucketRegion);
     }
-
-    // Iterator i = localRegion.entrySet().iterator();
-    // while (i.hasNext()) {
-    // try {
-    // NonTXEntry nte = (NonTXEntry) i.next();
-    // // updateBucket2Size(bucketId.longValue(), localRegion, null);
-    // // nte.getRegionEntry().getValueInVM();
-    // } catch (EntryDestroyedException ignore) {}
-    // }
 
     return bucketRegion;
   }
@@ -1665,7 +1635,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       this.localBucket2RegionMap.remove(Integer.valueOf(bucketId));
       this.partitionedRegion.getPrStats().incBucketCount(-1);
-      // new Exception());
       return true;
     } finally {
       lock.unlock();
