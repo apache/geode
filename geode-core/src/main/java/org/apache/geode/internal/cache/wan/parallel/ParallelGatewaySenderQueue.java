@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
+import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
 import java.util.ArrayList;
@@ -1404,19 +1404,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
       }
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
+          retries++ == GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES) {
         break;
-      }
-      retries++;
-      try {
-        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
       }
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
-      logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
-          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+      logger.warn("Not able to retrieve all events for transactions: {} after {} retries",
+          incompleteTransactionIdsInBatch, retries);
       stats.incBatchesWithIncompleteTransactions();
     }
   }

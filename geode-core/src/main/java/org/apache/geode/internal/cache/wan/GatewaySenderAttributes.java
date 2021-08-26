@@ -77,9 +77,6 @@ public class GatewaySenderAttributes {
 
   private boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
-  private int retriesToGetTransactionEventsFromQueue =
-      GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
-
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
   private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
@@ -171,10 +168,6 @@ public class GatewaySenderAttributes {
     groupTransactionEvents = groupTransEvents;
   }
 
-  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
-    retriesToGetTransactionEventsFromQueue = retries;
-  }
-
   public void setForInternalUse(boolean forInternalUse) {
     isForInternalUse = forInternalUse;
   }
@@ -261,10 +254,6 @@ public class GatewaySenderAttributes {
 
   public boolean mustGroupTransactionEvents() {
     return this.groupTransactionEvents;
-  }
-
-  public int getRetriesToGetTransactionEventsFromQueue() {
-    return this.retriesToGetTransactionEventsFromQueue;
   }
 
   public boolean isForInternalUse() {
