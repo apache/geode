@@ -23,8 +23,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STR
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
@@ -279,21 +277,6 @@ public class Coder {
     }
   }
 
-  public static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY) {
-      return "inf";
-    }
-    if (d == Double.NEGATIVE_INFINITY) {
-      return "-inf";
-    }
-
-    String stringValue = String.valueOf(d);
-    if (stringValue.endsWith(".0")) {
-      return (stringValue.substring(0, stringValue.length() - 2));
-    }
-    return stringValue;
-  }
-
   public static byte[] stringToBytes(String string) {
     if (string == null) {
       return null;
@@ -327,7 +310,22 @@ public class Coder {
   }
 
   public static byte[] doubleToBytes(double d) {
-    return stringToBytes(doubleToString(d));
+    if (d == Double.POSITIVE_INFINITY) {
+      return bINF;
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
+      return bN_INF;
+    }
+    if (Double.isNaN(d)) {
+      return bNaN;
+    }
+
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      stringValue = (stringValue.substring(0, stringValue.length() - 2));
+    }
+
+    return stringToBytes(stringValue);
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -410,24 +408,7 @@ public class Coder {
     if (isNaN(bytes)) {
       return NaN;
     }
-    return stringToDouble(bytesToString(bytes));
-  }
-
-  /**
-   * Redis specific manner to parse floats
-   *
-   * @param d String holding double
-   * @return Value of string
-   * @throws NumberFormatException if the double cannot be parsed
-   */
-  public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF)) {
-      return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF)) {
-      return Double.NEGATIVE_INFINITY;
-    } else {
-      return Double.parseDouble(d);
-    }
+    return Double.parseDouble(bytesToString(bytes));
   }
 
   /**
