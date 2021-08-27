@@ -358,8 +358,8 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
-      SortedSetRankRangeOptions options) {
-    return removeRange(region, key, options);
+      SortedSetRankRangeOptions rangeOptions) {
+    return removeRange(region, key, rangeOptions);
   }
 
   long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
