@@ -32,11 +32,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.client.locator.GatewaySenderBatchOp;
 import org.apache.geode.cache.wan.internal.client.locator.SenderProxy;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
@@ -979,23 +976,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       return t instanceof IOException
           || t instanceof ConnectionDestroyedException
           || t instanceof GemFireSecurityException;
-    }
-  }
-
-  @Override
-  public void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
-      ExecutablePool senderPool, int batchId, boolean removeFromQueueOnException)
-      throws BatchException70 {
-    GatewaySenderBatchOp.executeOn(connection, senderPool, events, batchId,
-        removeFromQueueOnException, false);
-    GatewaySenderEventRemoteDispatcher.GatewayAck ack =
-        (GatewaySenderEventRemoteDispatcher.GatewayAck) GatewaySenderBatchOp.executeOn(connection,
-            senderPool);
-    if (ack == null) {
-      throw new BatchException70("Unknown error sending batch", null, 0, batchId);
-    }
-    if (ack.getBatchException() != null) {
-      throw ack.getBatchException();
     }
   }
 }

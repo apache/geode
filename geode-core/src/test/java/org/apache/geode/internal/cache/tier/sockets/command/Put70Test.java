@@ -138,7 +138,7 @@ public class Put70Test {
     when(keyPart.getStringOrObject()).thenReturn(KEY);
 
     when(localRegion.basicBridgePut(eq(KEY), eq(VALUE), eq(null), eq(true), eq(CALLBACK_ARG),
-        any(), any(), eq(true))).thenReturn(true);
+        any(), eq(true), any())).thenReturn(true);
 
     when(message.getNumberOfParts()).thenReturn(8);
     when(message.getPart(eq(0))).thenReturn(regionNamePart);

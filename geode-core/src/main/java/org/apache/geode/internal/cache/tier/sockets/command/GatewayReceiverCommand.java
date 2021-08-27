@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.BlobHelper;
@@ -309,7 +308,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                     // attempt to update the entry
                     if (!result) {
                       result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                          serverConnection.getProxyID(), clientEvent, true);
+                          serverConnection.getProxyID(), false, clientEvent);
                     }
                   }
 
@@ -334,7 +333,6 @@ public class GatewayReceiverCommand extends BaseCommand {
               break;
 
             case 1: // Update
-            case GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS:
               try {
                 // Retrieve the value from the message parts (do not deserialize it)
                 valuePart = clientMessage.getPart(partNumber + 5);
@@ -407,10 +405,8 @@ public class GatewayReceiverCommand extends BaseCommand {
                   if (isPdxEvent) {
                     result = addPdxType(crHelper, key, value);
                   } else {
-                    boolean generateCallbacks =
-                        actionType != GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS;
                     result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                        serverConnection.getProxyID(), clientEvent, generateCallbacks);
+                        serverConnection.getProxyID(), false, clientEvent);
                   }
                   if (result || clientEvent.isConcurrencyConflict()) {
                     serverConnection.setModificationInfo(true, regionName, key);
@@ -641,8 +637,7 @@ public class GatewayReceiverCommand extends BaseCommand {
         exceptions.add(be);
       } finally {
         // Increment the partNumber
-        if (actionType == 0 /* create */ || actionType == 1 /* update */
-            || actionType == GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
+        if (actionType == 0 /* create */ || actionType == 1 /* update */) {
           if (callbackArgExists) {
             partNumber += 9;
           } else {
