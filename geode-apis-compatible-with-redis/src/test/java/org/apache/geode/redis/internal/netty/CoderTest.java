@@ -27,6 +27,7 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 
@@ -246,6 +247,24 @@ public class CoderTest {
     byte[] lBytes = Coder.longToBytes(l);
     long l2 = Coder.bytesToLong(lBytes);
     assertThat(l2).isEqualTo(l);
+  }
+
+  @Test
+  public void bytesToLong_fails_if_MINUS_ZERO_start() {
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("-01234")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("-0")))
+        .isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
+  public void bytesToLong_fails_if_PLUS_start() {
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+0")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+1")))
+        .isInstanceOf(NumberFormatException.class);
   }
 
 }

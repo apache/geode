@@ -362,12 +362,11 @@ public class Coder {
       i++;
       if (length == 1) {
         throw createNumberFormatException(bytes); // need a digit
+      } else if (bytes[1] == digitToAscii(0)) {
+        throw createNumberFormatException(bytes); // redis does not allow -0*
       }
     } else if (bytes[0] == bPLUS) {
-      i++;
-      if (length == 1) {
-        throw createNumberFormatException(bytes); // need a digit
-      }
+      throw createNumberFormatException(bytes); // redis does not allow +*
     }
     while (i < length) {
       int digit = asciiToDigit(bytes[i++]);
