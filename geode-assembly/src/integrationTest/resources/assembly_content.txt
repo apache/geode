@@ -966,7 +966,7 @@ lib/HdrHistogram-2.1.12.jar
 lib/HikariCP-4.0.3.jar
 lib/LatencyUtils-2.0.3.jar
 lib/antlr-2.7.7.jar
-lib/classgraph-4.8.110.jar
+lib/classgraph-4.8.115.jar
 lib/commons-beanutils-1.9.4.jar
 lib/commons-codec-1.15.jar
 lib/commons-collections-3.2.2.jar
