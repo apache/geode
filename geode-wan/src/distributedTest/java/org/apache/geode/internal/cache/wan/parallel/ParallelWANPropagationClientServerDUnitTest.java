@@ -38,7 +38,7 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
         isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.createClientWithLocatorAndRegion(nyPort, "localhost",
+    vm4.invoke(() -> WANTestBase.createClientWithLocator(nyPort, "localhost",
         getTestMethodName() + "_PR"));
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
 
@@ -51,7 +51,7 @@ public class ParallelWANPropagationClientServerDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
         isOffHeap()));
 
-    vm7.invoke(() -> WANTestBase.createClientWithLocatorAndRegion(lnPort, "localhost",
+    vm7.invoke(() -> WANTestBase.createClientWithLocator(lnPort, "localhost",
         getTestMethodName() + "_PR"));
 
     startSenderInVMsAsync("ln", vm5, vm6);
