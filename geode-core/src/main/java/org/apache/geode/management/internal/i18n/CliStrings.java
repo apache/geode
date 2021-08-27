@@ -1466,8 +1466,8 @@ public class CliStrings {
       "No connection available to receiver after having copied {0} entries";
   public static final String WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED =
       "Error ({0}) in operation after having copied {1} entries";
-  public static final String WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED =
-      "Operation canceled before having copied all entries";
+  public static final String WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED =
+      "Operation canceled after having copied {0} entries";
   public static final String WAN_COPY_REGION__MSG__COPIED__ENTRIES = "Entries copied: {0}";
   public static final String WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND =
       "No running command to be canceled for region {0} and sender {1}";

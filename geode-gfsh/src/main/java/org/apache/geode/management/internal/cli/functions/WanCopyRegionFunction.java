@@ -25,12 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -65,7 +60,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -102,18 +96,15 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   private static final int MAX_BATCH_SEND_RETRIES = 1;
 
-  private static final int THREAD_POOL_SIZE = 10;
-
   private final Clock clock;
   private final ThreadSleeper threadSleeper;
 
-  private static final ExecutorService executor = LoggingExecutors
-      .newFixedThreadPool(THREAD_POOL_SIZE, "wanCopyRegionFunctionThread_", true);
-
   /**
-   * Contains the ongoing executions of this function
+   * Contains the ongoing executions of this function. For each entry, the
+   * key identifies the execution by means of the region name and sender name.
+   * If the value for the entry is true, it means that the execution is to be canceled.
    */
-  private static final Map<String, Future<CliFunctionResult>> executions =
+  private static final Map<String, Boolean> executions =
       new ConcurrentHashMap<>();
 
   private int batchId = 0;
@@ -150,13 +141,17 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       throw new IllegalStateException(
           "Arguments length does not match required length.");
     }
-    final String regionName = (String) args[0];
+    String regionName = (String) args[0];
     final String senderId = (String) args[1];
     final boolean isCancel = (Boolean) args[2];
     long maxRate = (Long) args[3];
     int batchSize = (Integer) args[4];
 
-    if ((regionName.equals("*") || regionName.equals(SEPARATOR + "*")) && senderId.equals("*")
+    if (regionName.startsWith(SEPARATOR)) {
+      regionName = regionName.substring(1);
+    }
+
+    if ((regionName.equals("*") && senderId.equals("*"))
         && isCancel) {
       return cancelAllWanCopyRegion(context);
     }
@@ -191,45 +186,29 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
               senderId));
     }
 
-    try {
-      return executeWanCopyRegionFunctionInNewThread(context, region, regionName, sender, maxRate,
-          batchSize);
-    } catch (InterruptedException | CancellationException e) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
-    } catch (ExecutionException e) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTION__FAILED, e.getMessage()));
-    }
+    return executeWanCopyRegionFunction(context, region, sender, maxRate,
+        batchSize);
   }
 
-  private CliFunctionResult executeWanCopyRegionFunctionInNewThread(
+  private CliFunctionResult executeWanCopyRegionFunction(
       FunctionContext<Object[]> context,
-      Region<?, ?> region, String regionName, GatewaySender sender, long maxRate, int batchSize)
-      throws InterruptedException, ExecutionException, CancellationException {
+      Region<?, ?> region, GatewaySender sender, long maxRate, int batchSize) {
+    String regionName = region.getName();
     String executionName = getExecutionName(regionName, sender.getId());
-    CompletableFuture<CliFunctionResult> future = null;
+    boolean alreadyRunning = false;
     try {
       synchronized (executions) {
         if (executions.containsKey(executionName)) {
+          alreadyRunning = true;
           return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
               CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
                   regionName, sender.getId()));
         }
-        future = CompletableFuture.supplyAsync(() -> {
-          try {
-            return wanCopyRegion(context, region, sender, maxRate, batchSize);
-          } catch (InterruptedException e) {
-            return new CliFunctionResult(context.getMemberName(),
-                CliFunctionResult.StatusState.ERROR,
-                CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
-          }
-        }, executor);
-        executions.put(executionName, future);
+        executions.put(executionName, false);
       }
-      return future.get();
+      return wanCopyRegion(context, region, sender, maxRate, batchSize);
     } finally {
-      if (future != null) {
+      if (!alreadyRunning) {
         executions.remove(executionName);
       }
     }
@@ -237,7 +216,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   @VisibleForTesting
   CliFunctionResult wanCopyRegion(FunctionContext<Object[]> context, Region<?, ?> region,
-      GatewaySender sender, long maxRate, int batchSize) throws InterruptedException {
+      GatewaySender sender, long maxRate, int batchSize) {
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
     final InternalCache cache = (InternalCache) context.getCache();
@@ -262,7 +241,15 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
           return error.get();
         }
         copiedEntries += batch.size();
-        doPostSendBatchActions(startTime, copiedEntries, maxRate);
+        try {
+          doPostSendBatchActions(startTime, copiedEntries, maxRate, region.getName(),
+              sender.getId());
+        } catch (InterruptedException e) {
+          return new CliFunctionResult(context.getMemberName(),
+              CliFunctionResult.StatusState.ERROR,
+              CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__CANCELED__AFTER__HAVING__COPIED,
+                  copiedEntries));
+        }
       }
     } finally {
       connectionState.close();
@@ -357,25 +344,27 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   final CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
-    Future<CliFunctionResult> execution = executions.remove(getExecutionName(regionName, senderId));
-    if (execution == null) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
-              regionName, senderId));
+    String executionName = getExecutionName(regionName, senderId);
+    synchronized (executions) {
+      if (Boolean.valueOf(false).equals(executions.get(executionName))) {
+        executions.put(executionName, true);
+        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+            CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
+      }
     }
-    execution.cancel(true);
-    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-        CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
+    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
+            regionName, senderId));
   }
 
   final CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
-    String executionsString = executions.keySet().toString();
-    for (Future<CliFunctionResult> execution : executions.values()) {
-      execution.cancel(true);
+    synchronized (executions) {
+      String executionsString = executions.keySet().toString();
+      executions.replaceAll((e, v) -> true);
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED,
+              executionsString));
     }
-    executions.clear();
-    return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-        CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED, executionsString));
   }
 
   public static String getExecutionName(String regionName, String senderId) {
@@ -390,18 +379,25 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
    * @param startTime time at which the entries started to be copied
    * @param copiedEntries number of entries copied so far
    * @param maxRate maximum copying rate
+   * @param regionName the region name
+   * @param senderId the sender id
    */
-  void doPostSendBatchActions(long startTime, int copiedEntries, long maxRate)
+  void doPostSendBatchActions(long startTime, int copiedEntries, long maxRate, String regionName,
+      String senderId)
       throws InterruptedException {
+    if (Boolean.valueOf(true).equals(executions.get(getExecutionName(regionName, senderId)))) {
+      throw new InterruptedException();
+    }
     long sleepMs = getTimeToSleep(startTime, copiedEntries, maxRate);
-    if (sleepMs > 0) {
-      logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
-          this.getClass().getSimpleName(), sleepMs);
-      threadSleeper.millis(sleepMs);
-    } else {
-      if (Thread.currentThread().isInterrupted()) {
+    logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
+        this.getClass().getSimpleName(), sleepMs);
+    while (sleepMs > 0) {
+      long timeToSleep = sleepMs < 1000 ? sleepMs : 1000;
+      threadSleeper.millis(timeToSleep);
+      if (Boolean.valueOf(true).equals(executions.get(getExecutionName(regionName, senderId)))) {
         throw new InterruptedException();
       }
+      sleepMs -= 1000;
     }
   }
 
