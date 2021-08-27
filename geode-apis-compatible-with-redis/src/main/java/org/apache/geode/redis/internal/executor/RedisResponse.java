@@ -59,6 +59,10 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
   }
 
+  public static RedisResponse integer(byte[] numericValue) {
+    return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
+  }
+
   public static RedisResponse integer(boolean exists) {
     return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, exists ? 1 : 0));
   }

@@ -68,7 +68,7 @@ public class RedisString extends AbstractRedisData {
     return value.length;
   }
 
-  public long incr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MAX_VALUE) {
@@ -78,10 +78,10 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
-  public long incrby(Region<RedisKey, RedisData> region, RedisKey key, long increment)
+  public byte[] incrby(Region<RedisKey, RedisData> region, RedisKey key, long increment)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue >= 0 && increment > (Long.MAX_VALUE - longValue)) {
@@ -91,7 +91,7 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
   public BigDecimal incrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
@@ -106,7 +106,7 @@ public class RedisString extends AbstractRedisData {
     return bigDecimalValue;
   }
 
-  public long decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
+  public byte[] decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
     long longValue = parseValueAsLong();
     if (longValue <= 0 && -decrement < (Long.MIN_VALUE - longValue)) {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
@@ -115,10 +115,10 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
-  public long decr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MIN_VALUE) {
@@ -128,7 +128,7 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
   private long parseValueAsLong() {

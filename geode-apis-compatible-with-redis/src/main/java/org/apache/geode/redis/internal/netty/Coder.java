@@ -240,15 +240,16 @@ public class Coder {
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
-    buffer.writeByte(INTEGER_ID);
-    appendAsciiDigitsToByteBuf(integer, buffer);
-    buffer.writeBytes(bCRLF);
-    return buffer;
+    return getIntegerResponse(buffer, intToBytes(integer));
   }
 
-  public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, long integer) {
+    return getIntegerResponse(buffer, longToBytes(integer));
+  }
+
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, byte[] integer) {
     buffer.writeByte(INTEGER_ID);
-    appendAsciiDigitsToByteBuf(l, buffer);
+    buffer.writeBytes(integer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }

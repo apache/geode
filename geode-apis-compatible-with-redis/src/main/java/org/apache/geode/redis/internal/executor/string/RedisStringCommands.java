@@ -26,15 +26,15 @@ public interface RedisStringCommands {
 
   boolean set(RedisKey key, byte[] value, SetOptions options);
 
-  long incr(RedisKey key);
+  byte[] incr(RedisKey key);
 
-  long decr(RedisKey key);
+  byte[] decr(RedisKey key);
 
   byte[] getset(RedisKey key, byte[] value);
 
-  long incrby(RedisKey key, long increment);
+  byte[] incrby(RedisKey key, long increment);
 
-  long decrby(RedisKey key, long decrement);
+  byte[] decrby(RedisKey key, long decrement);
 
   byte[] getrange(RedisKey key, long start, long end);
 

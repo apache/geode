@@ -28,7 +28,7 @@ public class DecrExecutor extends AbstractExecutor {
     RedisKey key = command.getKey();
     RedisStringCommands stringCommands = context.getStringCommands();
 
-    long value = stringCommands.decr(key);
+    byte[] value = stringCommands.decr(key);
     return RedisResponse.integer(value);
   }
 }
