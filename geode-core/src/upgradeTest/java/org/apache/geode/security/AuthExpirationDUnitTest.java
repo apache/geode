@@ -99,6 +99,9 @@ public class AuthExpirationDUnitTest {
     // expire the current user
     ExpirableSecurityManager.addExpiredUser("user1");
 
+    // if client, even after getting AuthExpiredExpiration, still sends in
+    // old credentials, the operation will fail (we only try re-authenticate once)
+    // this test makes sure no lingering old credentials will allow the operations to succeed.
     clientVM.invoke(() -> {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region<Object, Object> region = clientCache.getRegion("region");
@@ -128,7 +131,7 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
+  public void singleUserModeShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
       throws Exception {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
@@ -169,7 +172,8 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void userShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed() throws Exception {
+  public void multiUserModeShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
+      throws Exception {
     int serverPort = server.getPort();
     ClientVM clientVM = lsRule.startClientVM(0, clientVersion,
         c -> c.withMultiUser(true)

@@ -17,7 +17,9 @@ package org.apache.geode.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
@@ -33,8 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 
 public class IntegratedSecurityServiceTest {
@@ -161,5 +165,23 @@ public class IntegratedSecurityServiceTest {
   public void getPostProcessor_returnsNull() throws Exception {
     PostProcessor postProcessor = this.securityService.getPostProcessor();
     assertThat(postProcessor).isNull();
+  }
+
+  @Test
+  public void authorizeWillLogoutSubjectIfAuthencationExpired() {
+    ResourcePermission permission = mock(ResourcePermission.class);
+    doThrow(AuthenticationExpiredException.class).when(mockSubject).checkPermission(permission);
+    assertThatThrownBy(() -> securityService.authorize(permission))
+        .isInstanceOf(AuthenticationExpiredException.class);
+    verify(mockSubject).logout();
+  }
+
+  @Test
+  public void authorizeWithSpecificUserWillLogoutSubjectIfAuthencationExpired() {
+    ResourcePermission permission = mock(ResourcePermission.class);
+    doThrow(AuthenticationExpiredException.class).when(mockSubject).checkPermission(permission);
+    assertThatThrownBy(() -> securityService.authorize(permission, mockSubject))
+        .isInstanceOf(AuthenticationExpiredException.class);
+    verify(mockSubject).logout();
   }
 }

@@ -268,7 +268,6 @@ public class IntegratedSecurityService implements SecurityService {
       throw new NotAuthorizedException(message, e);
     } catch (AuthenticationExpiredException expired) {
       // log out the user and clean thread context
-
       logout();
       // still throw it upstream so that caller can react to re-authenticate
       throw expired;
