@@ -65,6 +65,7 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
+import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
@@ -387,7 +388,6 @@ public class ServerConnection implements Runnable {
         if (getCommunicationMode().isWAN()) {
           try {
             setAuthAttributes();
-
           } catch (AuthenticationRequiredException | AuthenticationFailedException ex) {
             handleHandshakeAuthenticationException(ex);
             return false;
@@ -804,7 +804,8 @@ public class ServerConnection implements Runnable {
       processMessages = false;
       return;
     }
-    Message message = BaseCommand.readRequest(this);
+
+    Message message = getMessage();
     if (!serverConnectionCollection.incrementConnectionsProcessing()) {
       // Client is being disconnected, don't try to process message.
       processMessages = false;
@@ -859,26 +860,7 @@ public class ServerConnection implements Runnable {
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
-        if (securityService.isIntegratedSecurity()
-            && !isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)
-            && !communicationMode.isWAN()) {
-          long uniqueId = getUniqueId();
-          String messageType = MessageType.getString(requestMessage.getMessageType());
-          Subject subject = clientUserAuths.getSubject(uniqueId);
-          if (subject != null) {
-            threadState = securityService.bindSubject(subject);
-            logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
-                uniqueId, messageType, getName());
-          } else if (uniqueId == 0) {
-            logger.debug("No unique ID yet. {}, {}", messageType, getName());
-          } else {
-            logger.warn(
-                "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-                uniqueId, messageType, getName());
-            throw new AuthenticationRequiredException("Failed to find the authenticated user.");
-          }
-        }
-
+        threadState = bindSubject(command);
         command.execute(message, this, securityService);
       }
     } finally {
@@ -892,6 +874,50 @@ public class ServerConnection implements Runnable {
         threadState.clear();
       }
     }
+  }
+
+  ThreadState bindSubject(Command command) {
+    if (!securityService.isIntegratedSecurity()) {
+      return null;
+    }
+
+    if (communicationMode.isWAN()) {
+      return null;
+    }
+
+    if (command instanceof PutUserCredentials) {
+      return null;
+    }
+
+    if (isInternalMessage(requestMessage, allowInternalMessagesWithoutCredentials)) {
+      return null;
+    }
+
+    long uniqueId = getUniqueId();
+    String messageType = MessageType.getString(requestMessage.getMessageType());
+    if (uniqueId == 0 || uniqueId == -1) {
+      logger.debug("No unique ID yet. {}, {}", messageType, getName());
+      return null;
+    }
+
+    Subject subject = clientUserAuths.getSubject(uniqueId);
+    if (subject == null) {
+      logger.warn(
+          "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
+          uniqueId, messageType, getName());
+      throw new AuthenticationRequiredException("Failed to find the authenticated user.");
+    }
+
+    ThreadState threadState = securityService.bindSubject(subject);
+    logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+        uniqueId, messageType, getName());
+
+    return threadState;
+  }
+
+  @VisibleForTesting
+  Message getMessage() {
+    return BaseCommand.readRequest(this);
   }
 
   private void suspendThreadMonitoring() {
@@ -1087,7 +1113,7 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  public byte[] setCredentials(Message message) {
+  public byte[] setCredentials(Message message, long existingUniqueId) {
     try {
       // need to get connection id from secure part of message, before that need to insure
       // encryption of id
@@ -1149,7 +1175,7 @@ public class ServerConnection implements Runnable {
           securityService);
       if (principal instanceof Subject) {
         Subject subject = (Subject) principal;
-        uniqueId = clientUserAuths.putSubject(subject);
+        uniqueId = putSubject(subject, existingUniqueId);
       } else {
         // this sets principal in map as well....
         uniqueId = getUniqueId((Principal) principal);
@@ -1162,6 +1188,19 @@ public class ServerConnection implements Runnable {
     } catch (Exception exception) {
       throw new AuthenticationFailedException("REPLY_REFUSED", exception);
     }
+  }
+
+  @VisibleForTesting
+  long putSubject(Subject subject, long existingUniqueId) {
+    final long uniqueId = clientUserAuths.putSubject(subject, existingUniqueId);
+    // also update the subject in the CacheClientProxy if it's in single user mode
+    CacheClientProxy clientProxy =
+        getAcceptor().getCacheClientNotifier().getClientProxy(getProxyID());
+    // update the subject (in single user mode) in clientProxy if exists
+    if (clientProxy != null && clientProxy.getSubject() != null) {
+      clientProxy.setSubject(subject);
+    }
+    return uniqueId;
   }
 
   @VisibleForTesting
@@ -1853,7 +1892,7 @@ public class ServerConnection implements Runnable {
 
     long uniqueId;
     if (principal instanceof Subject) {
-      uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal);
+      uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal, -1);
     } else {
       // this sets principal in map as well....
       uniqueId = getUniqueId((Principal) principal);

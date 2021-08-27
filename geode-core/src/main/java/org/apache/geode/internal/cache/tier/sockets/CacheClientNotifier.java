@@ -254,6 +254,7 @@ public class CacheClientNotifier {
     DistributedSystem system = getCache().getDistributedSystem();
     Properties sysProps = system.getProperties();
     String authenticator = sysProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    // in multi-user case, this would return null
     Object subjectOrPrincipal =
         getSubjectOrPrincipal(clientRegistrationMetadata, member, system, authenticator);
     Subject subject = subjectOrPrincipal instanceof Subject ? (Subject) subjectOrPrincipal : null;
@@ -839,6 +840,7 @@ public class CacheClientNotifier {
       final DistributedMember member, final DistributedSystem system, final String authenticator) {
     final Object subjectOrPrincipal;
 
+    // in multi-user case, this would be null
     if (clientRegistrationMetadata.getClientCredentials() != null) {
       if (securityLogWriter.fineEnabled()) {
         securityLogWriter

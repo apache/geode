@@ -166,11 +166,14 @@ public abstract class AbstractOp implements Op {
   }
 
   /**
-   * New implementations of AbstractOp should override this method to return false if the
-   * implementation should be excluded from client authentication. e.g. PingOp#needsUserId()
-   * <P/>
-   * Also, such an operation's <code>MessageType</code> must be added in the 'if' condition in
-   * {@link ServerConnection#updateAndGetSecurityPart()}
+   * @return true if this operation needs to be authenticated first
+   *
+   *         New implementations of AbstractOp should override this method to return false if the
+   *         implementation should be excluded from client authentication. e.g. PingOp#needsUserId()
+   *         <P/>
+   *         Also, such an operation's <code>MessageType</code> must be added in the 'if' condition
+   *         in
+   *         {@link ServerConnection#updateAndGetSecurityPart()}
    *
    * @see AbstractOp#sendMessage(Connection)
    * @see ServerConnection#updateAndGetSecurityPart()

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +41,15 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
       new ConcurrentHashMap<>();
   private final Map<String, List<String>> unauthorizedOps =
       new ConcurrentHashMap<>();
+
+  @Override
+  public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
+    Object user = super.authenticate(credentials);
+    if (expired_users.contains((String) user)) {
+      throw new AuthenticationFailedException("User already expired.");
+    }
+    return user;
+  }
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
@@ -75,7 +85,9 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
     if (list == null) {
       list = new ArrayList<>();
     }
-    list.add(permission.toString());
+    if (!list.contains(permission.toString())) {
+      list.add(permission.toString());
+    }
     maps.put(user.toString(), list);
   }
 }

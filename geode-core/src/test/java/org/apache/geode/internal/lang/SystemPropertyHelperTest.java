@@ -75,6 +75,27 @@ public class SystemPropertyHelperTest {
   }
 
   @Test
+  public void getIntegerPropertyWithDefaultValue() {
+    String testProperty = "testIntegerProperty";
+    assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty, 1000)).isEqualTo(1000);
+  }
+
+  @Test
+  public void getLongPropertyWithoutDefaultReturnsGemfirePrefixIfGeodeMissing() {
+    String testProperty = "testLongProperty";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    System.setProperty(gemfirePrefixProperty, "1");
+    assertThat(SystemPropertyHelper.getProductLongProperty(testProperty).get()).isEqualTo(1);
+    System.clearProperty(gemfirePrefixProperty);
+  }
+
+  @Test
+  public void getLongPropertyWithDefaultValue() {
+    String testProperty = "testIntegerProperty";
+    assertThat(SystemPropertyHelper.getProductLongProperty(testProperty, 1000)).isEqualTo(1000);
+  }
+
+  @Test
   public void getIntegerPropertyReturnsEmptyOptionalIfPropertiesMissing() {
     String testProperty = "notSetProperty";
     assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty).isPresent()).isFalse();

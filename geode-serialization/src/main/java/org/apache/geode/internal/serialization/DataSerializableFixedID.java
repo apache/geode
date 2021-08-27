@@ -178,7 +178,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte COLLECTION_TYPE_IMPL = -59;
   byte TX_LOCK_BATCH = -58;
   byte STORE_ALL_CACHED_DESERIALIZABLE = -57;
-  // -56 unused
+  byte CLIENT_RE_AUTHENTICATE = -56;
   byte MAP_TYPE_IMPL = -55;
   byte LOCATOR_LIST_REQUEST = -54;
   byte CLIENT_CONNECTION_REQUEST = -53;

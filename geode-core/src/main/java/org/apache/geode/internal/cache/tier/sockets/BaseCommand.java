@@ -202,7 +202,7 @@ public abstract class BaseCommand implements Command {
       // now, so don't let this thread continue.
       throw err;
     } catch (Throwable e) {
-      BaseCommand.handleThrowable(clientMessage, serverConnection, e);
+      handleThrowable(clientMessage, serverConnection, e);
     } finally {
       EntryLogger.clearSource();
     }
@@ -612,7 +612,7 @@ public abstract class BaseCommand implements Command {
     }
   }
 
-  protected static void writeResponse(Object data, Object callbackArg, Message origMsg,
+  public void writeResponse(Object data, Object callbackArg, Message origMsg,
       boolean isObject, ServerConnection serverConnection) throws IOException {
     Message responseMsg = serverConnection.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
