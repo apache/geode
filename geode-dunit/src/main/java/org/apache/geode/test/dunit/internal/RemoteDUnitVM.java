@@ -49,13 +49,13 @@ class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   }
 
   protected long start(String name) {
-    logger.info("Received method: {}", name);
+    logger.debug("Received method: {}", name);
     return System.nanoTime();
   }
 
   private void logDelta(String name, long start, MethodInvokerResult result) {
     long delta = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-    logger.info("Got result: {} from {} (took {} ms)", result, name, delta);
+    logger.debug("Got result: {} from {} (took {} ms)", result, name, delta);
   }
 
   /**

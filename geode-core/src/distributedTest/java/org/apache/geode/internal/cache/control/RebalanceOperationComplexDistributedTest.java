@@ -135,6 +135,74 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     compareZoneBucketCounts(REGION_NAME);
   }
 
+
+  /**
+   * Test that we correctly use the redundancy-zone property to determine where to place redundant
+   * copies of a buckets and doesn't allow cross redundancy zone deletes.
+   */
+  @Test
+  public void testEnforceZoneWithSixServersAndTwoZonesWithZoneBServerStop() throws Exception {
+    MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
+
+    // So startup six servers 3 in each redundancy zone
+    startServer(1, "zoneA", locatorVM.getPort());
+    startServer(2, "zoneA", locatorVM.getPort());
+    startServer(3, "zoneA", locatorVM.getPort());
+    MemberVM server1 = startServer(4, "zoneB", locatorVM.getPort());
+    startServer(5, "zoneB", locatorVM.getPort());
+    startServer(6, "zoneB", locatorVM.getPort());
+
+
+    // startup a client to put all the data.
+    Properties properties2 = new Properties();
+    properties2.setProperty("cache-xml-file", CLIENT_XML);
+    ClientVM clientVM =
+        clusterStartupRule.startClientVM(7, properties2,
+            ccf -> ccf.addPoolLocator("localhost", locatorVM.getPort()));
+
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Map<Integer, String> map = new HashMap<>();
+      for (int i = 0; i < 1000; i++) {
+        map.put(i, "A");
+      }
+      Region<Integer, String> region = clientCache.getRegion(REGION_NAME);
+      region.putAll(map);
+
+      Region<Integer, String> region2 = clientCache.getRegion(COLOCATED_REGION_NAME);
+      region2.putAll(map);
+    });
+
+    // Baseline rebalance with everything up
+    server1.invoke(() -> {
+      doRebalance(false, ClusterStartupRule.getCache().getResourceManager());
+    });
+
+    // knock server 4 offline
+    clusterStartupRule.stop(5);
+
+    // rebalance so that now all the buckets are one server 1 and server 3 reduncancy zone b servers
+    // should not be touched.
+    server1.invoke(() -> {
+      doRebalance(false, ClusterStartupRule.getCache().getResourceManager());
+    });
+
+    // bring server 4 backonline
+    startServer(5, "zoneA", locatorVM.getPort());
+    Thread.sleep(10000);
+    // do another rebalance to make sure all the buckets are distributed evenly(ish) and there is no
+    // cross redundancy zone bucket deletions.
+    server1.invoke(() -> {
+      doRebalance(false, ClusterStartupRule.getCache().getResourceManager());
+    });
+
+    // Verify that all bucket counts add up to what they should
+    compareZoneBucketCounts(COLOCATED_REGION_NAME);
+    compareZoneBucketCounts(REGION_NAME);
+  }
+
+
+
   private void compareZoneBucketCounts(final String regionName) {
     int zoneA = clusterStartupRule.getVM(1).invoke(() -> getBucketCount(regionName));
     zoneA += clusterStartupRule.getVM(2).invoke(() -> getBucketCount(regionName));
