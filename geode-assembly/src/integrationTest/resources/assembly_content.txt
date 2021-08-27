@@ -1028,8 +1028,8 @@ lib/jetty-webapp-9.4.43.v20210629.jar
 lib/jetty-xml-9.4.43.v20210629.jar
 lib/jgroups-3.6.14.Final.jar
 lib/jline-2.12.jar
-lib/jna-5.8.0.jar
-lib/jna-platform-5.8.0.jar
+lib/jna-5.9.0.jar
+lib/jna-platform-5.9.0.jar
 lib/jopt-simple-5.0.4.jar
 lib/log4j-api-2.14.1.jar
 lib/log4j-core-2.14.1.jar
