@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -84,21 +83,8 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
+    hash.toData(out);
     DataSerializer.writePrimitiveInt(hash.size(), out);
-    try {
-      hash.fastForEach(entry -> {
-        byte[] key = entry.getKey();
-        byte[] value = entry.getValue();
-        try {
-          DataSerializer.writeByteArray(key, out);
-          DataSerializer.writeByteArray(value, out);
-        } catch (IOException e) {
-          throw new GemFireIOException("", e);
-        }
-      });
-    } catch (GemFireIOException ex) {
-      throw (IOException) (ex.getCause());
-    }
   }
 
   @Override
@@ -237,13 +223,13 @@ public class RedisHash extends AbstractRedisData {
 
   public Collection<byte[]> hvals() {
     ArrayList<byte[]> result = new ArrayList<>(hlen());
-    hash.fastForEachValue(value -> result.add(value));
+    hash.fastForEachValue(result::add);
     return result;
   }
 
   public Collection<byte[]> hkeys() {
     ArrayList<byte[]> result = new ArrayList<>(hlen());
-    hash.fastForEachKey(key -> result.add(key));
+    hash.fastForEachKey(result::add);
     return result;
   }
 
@@ -419,6 +405,14 @@ public class RedisHash extends AbstractRedisData {
     protected int sizeValue(byte[] value) {
       return sizeKey(value);
     }
-  }
 
+    public void toData(DataOutput out) throws IOException {
+      for (int pos = n; pos-- != 0;) {
+        if (key[pos] != null) {
+          DataSerializer.writeByteArray(key[pos], out);
+          DataSerializer.writeByteArray(value[pos], out);
+        }
+      }
+    }
+  }
 }

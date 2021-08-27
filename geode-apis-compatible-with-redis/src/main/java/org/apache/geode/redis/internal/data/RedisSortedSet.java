@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -106,21 +106,7 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.writePrimitiveInt(members.size(), out);
-    try {
-      members.fastForEach(entry -> {
-        byte[] member = entry.getKey();
-        byte[] score = entry.getValue().getScoreBytes();
-        try {
-          InternalDataSerializer.writeByteArray(member, out);
-          InternalDataSerializer.writeByteArray(score, out);
-        } catch (IOException e) {
-          throw new GemFireIOException("", e);
-        }
-      });
-    } catch (GemFireIOException ex) {
-      throw (IOException) ex.getCause();
-    }
+    members.toData(out);
   }
 
   @Override
@@ -154,15 +140,12 @@ public class RedisSortedSet extends AbstractRedisData {
       return false;
     }
 
-    return members.fastWhileEach(entry -> {
-      OrderedSetEntry otherEntry = other.members.get(entry.getKey());
+    return members.fastWhileEachValue(entry -> {
+      OrderedSetEntry otherEntry = other.members.get(entry.getMember());
       if (otherEntry == null) {
         return false;
       }
-      if (Double.compare(otherEntry.getScore(), entry.getValue().getScore()) != 0) {
-        return false;
-      }
-      return true;
+      return compare(otherEntry.getScore(), entry.getScore()) == 0;
     });
   }
 
@@ -643,7 +626,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     public int compareScores(double score1, double score2) {
-      return Double.compare(score1, score2);
+      return compare(score1, score2);
     }
 
     public abstract int compareMembers(byte[] array1, byte[] array2);
@@ -763,6 +746,18 @@ public class RedisSortedSet extends AbstractRedisData {
     @Override
     protected int sizeValue(OrderedSetEntry value) {
       return value.getSizeInBytes();
+    }
+
+    public void toData(DataOutput out) throws IOException {
+      InternalDataSerializer.writePrimitiveInt(size(), out);
+      for (int pos = n; pos-- != 0;) {
+        if (value[pos] != null) {
+          byte[] member = value[pos].getMember();
+          byte[] score = value[pos].getScoreBytes();
+          InternalDataSerializer.writeByteArray(member, out);
+          InternalDataSerializer.writeByteArray(score, out);
+        }
+      }
     }
   }
 

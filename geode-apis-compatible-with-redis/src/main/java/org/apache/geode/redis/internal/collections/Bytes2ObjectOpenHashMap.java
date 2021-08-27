@@ -42,7 +42,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSpliterators;
  * This class was derived from Object2ObjectOpenCustomHashMap.
  * The differences are:
  * 1. the keys are always a byte[] so no need for "strategy" field
- * 2. the load factory is always the default so no need for the "f" field.
+ * 2. the load factor is always the default so no need for the "f" field.
  * 3. no support for the "null" key so no need for the boolean field that signifies a null key
  * exists
  * 4. the fields that cache a singleton instance for entrySet, keySet, and values
@@ -52,7 +52,7 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     implements java.io.Serializable, Cloneable, Hash {
   private static final Strategy<byte[]> strategy = ByteArrays.HASH_STRATEGY;
   private static final long serialVersionUID = 0L;
-  private static final boolean ASSERTS = false;
+
   /** The array of keys. */
   protected transient byte[][] key;
   /** The array of values. */
@@ -78,8 +78,9 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
    */
   @SuppressWarnings("unchecked")
   public Bytes2ObjectOpenHashMap(final int expected) {
-    if (expected < 0)
+    if (expected < 0) {
       throw new IllegalArgumentException("The expected number of elements must be non-negative");
+    }
     minN = n = arraySize(expected, getLoadFactor());
     mask = n - 1;
     maxFill = maxFill(n, getLoadFactor());
@@ -115,21 +116,19 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     return strategy;
   }
 
-  private int realSize() {
-    return size;
-  }
-
   private void ensureCapacity(final int capacity) {
     final int needed = arraySize(capacity, getLoadFactor());
-    if (needed > n)
+    if (needed > n) {
       rehash(needed);
+    }
   }
 
   private void tryCapacity(final long capacity) {
     final int needed = (int) Math.min(1 << 30,
         Math.max(2, HashCommon.nextPowerOfTwo((long) Math.ceil(capacity / getLoadFactor()))));
-    if (needed > n)
+    if (needed > n) {
       rehash(needed);
+    }
   }
 
   private V removeEntry(final int pos) {
@@ -137,18 +136,20 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     value[pos] = null;
     size--;
     shiftKeys(pos);
-    if (n > minN && size < maxFill / 4 && n > DEFAULT_INITIAL_SIZE)
+    if (n > minN && size < maxFill / 4 && n > DEFAULT_INITIAL_SIZE) {
       rehash(n / 2);
+    }
     return oldValue;
   }
 
   @Override
   public void putAll(Map<? extends byte[], ? extends V> m) {
-    if (getLoadFactor() <= .5)
+    if (getLoadFactor() <= .5) {
       ensureCapacity(m.size()); // The resulting map will be sized for m.size() elements
-    else
+    } else {
       tryCapacity(size() + m.size()); // The resulting map will be tentatively sized for size() +
-                                      // m.size() elements
+    }
+    // m.size() elements
     super.putAll(m);
   }
 
@@ -157,27 +158,30 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     final byte[][] key = this.key;
     int pos;
     // The starting point.
-    if (((curr =
-        key[pos = (HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
+    if ((curr =
+        key[pos = HashCommon.mix(strategy().hashCode(k)) & mask]) == null) {
       return -(pos + 1);
-    if ((strategy().equals((k), (curr))))
+    }
+    if (strategy().equals(k, curr)) {
       return pos;
+    }
     // There's always an unused entry.
     while (true) {
-      if (((curr = key[pos = (pos + 1) & mask]) == null))
+      if ((curr = key[pos = pos + 1 & mask]) == null) {
         return -(pos + 1);
-      if ((strategy().equals((k), (curr))))
+      }
+      if (strategy().equals(k, curr)) {
         return pos;
+      }
     }
   }
 
   private void insert(final int pos, final byte[] k, final V v) {
     key[pos] = k;
     value[pos] = v;
-    if (size++ >= maxFill)
+    if (size++ >= maxFill) {
       rehash(arraySize(size + 1, getLoadFactor()));
-    if (ASSERTS)
-      checkTable();
+    }
   }
 
   @Override
@@ -203,18 +207,19 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     int last, slot;
     byte[] curr;
     final byte[][] key = this.key;
-    for (;;) {
-      pos = ((last = pos) + 1) & mask;
-      for (;;) {
-        if (((curr = key[pos]) == null)) {
-          key[last] = (null);
+    while (true) {
+      pos = (last = pos) + 1 & mask;
+      while (true) {
+        if ((curr = key[pos]) == null) {
+          key[last] = null;
           value[last] = null;
           return;
         }
-        slot = (HashCommon.mix(strategy().hashCode(curr))) & mask;
-        if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos)
+        slot = HashCommon.mix(strategy().hashCode(curr)) & mask;
+        if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos) {
           break;
-        pos = (pos + 1) & mask;
+        }
+        pos = pos + 1 & mask;
       }
       key[last] = curr;
       value[last] = value[pos];
@@ -227,16 +232,20 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     final byte[][] key = this.key;
     int pos;
     // The starting point.
-    if (((curr = key[pos =
-        (HashCommon.mix(strategy().hashCode((byte[]) k))) & mask]) == null))
+    if ((curr = key[pos =
+        HashCommon.mix(strategy().hashCode((byte[]) k)) & mask]) == null) {
       return defRetValue;
-    if ((strategy().equals((byte[]) k, curr)))
+    }
+    if (strategy().equals((byte[]) k, curr)) {
       return removeEntry(pos);
+    }
     while (true) {
-      if (((curr = key[pos = (pos + 1) & mask]) == null))
+      if ((curr = key[pos = pos + 1 & mask]) == null) {
         return defRetValue;
-      if ((strategy().equals((byte[]) k, curr)))
+      }
+      if (strategy().equals((byte[]) k, curr)) {
         return removeEntry(pos);
+      }
     }
   }
 
@@ -246,17 +255,21 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     final byte[][] key = this.key;
     int pos;
     // The starting point.
-    if (((curr = key[pos =
-        (HashCommon.mix(strategy().hashCode((byte[]) k))) & mask]) == null))
+    if ((curr = key[pos =
+        HashCommon.mix(strategy().hashCode((byte[]) k)) & mask]) == null) {
       return defRetValue;
-    if ((strategy().equals((byte[]) (k), (curr))))
+    }
+    if (strategy().equals((byte[]) k, curr)) {
       return value[pos];
+    }
     // There's always an unused entry.
     while (true) {
-      if (((curr = key[pos = (pos + 1) & mask]) == null))
+      if ((curr = key[pos = pos + 1 & mask]) == null) {
         return defRetValue;
-      if ((strategy().equals((byte[]) (k), (curr))))
+      }
+      if (strategy().equals((byte[]) k, curr)) {
         return value[pos];
+      }
     }
   }
 
@@ -266,17 +279,21 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     final byte[][] key = this.key;
     int pos;
     // The starting point.
-    if (((curr = key[pos =
-        (HashCommon.mix(strategy().hashCode((byte[]) k))) & mask]) == null))
+    if ((curr = key[pos =
+        HashCommon.mix(strategy().hashCode((byte[]) k)) & mask]) == null) {
       return false;
-    if ((strategy().equals((byte[]) (k), (curr))))
+    }
+    if (strategy().equals((byte[]) k, curr)) {
       return true;
+    }
     // There's always an unused entry.
     while (true) {
-      if (((curr = key[pos = (pos + 1) & mask]) == null))
+      if ((curr = key[pos = pos + 1 & mask]) == null) {
         return false;
-      if ((strategy().equals((byte[]) (k), (curr))))
+      }
+      if (strategy().equals((byte[]) k, curr)) {
         return true;
+      }
     }
   }
 
@@ -284,9 +301,11 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
   public boolean containsValue(final Object v) {
     final V[] value = this.value;
     final byte[][] key = this.key;
-    for (int i = n; i-- != 0;)
-      if (!((key[i]) == null) && java.util.Objects.equals(value[i], v))
+    for (int i = n; i-- != 0;) {
+      if (!(key[i] == null) && java.util.Objects.equals(value[i], v)) {
         return true;
+      }
+    }
     return false;
   }
 
@@ -299,10 +318,11 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
    */
   @Override
   public void clear() {
-    if (size == 0)
+    if (size == 0) {
       return;
+    }
     size = 0;
-    Arrays.fill(key, (null));
+    Arrays.fill(key, null);
     Arrays.fill(value, null);
   }
 
@@ -374,17 +394,18 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(final Object o) {
-      if (!(o instanceof Map.Entry))
+      if (!(o instanceof Map.Entry)) {
         return false;
+      }
       Map.Entry<byte[], V> e = (Map.Entry<byte[], V>) o;
-      return (strategy().equals((key[index]), ((e.getKey()))))
-          && java.util.Objects.equals(value[index], (e.getValue()));
+      return strategy().equals(key[index], e.getKey())
+          && java.util.Objects.equals(value[index], e.getValue());
     }
 
     @Override
     public int hashCode() {
-      return (strategy().hashCode(key[index]))
-          ^ ((value[index]) == null ? 0 : (value[index]).hashCode());
+      return strategy().hashCode(key[index])
+          ^ (value[index] == null ? 0 : value[index].hashCode());
     }
 
     @Override
@@ -415,7 +436,6 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
      */
     ObjectArrayList<byte[]> wrapped;
 
-    @SuppressWarnings("unused")
     abstract void acceptOnIndex(final ConsumerType action, final int index);
 
     public boolean hasNext() {
@@ -423,22 +443,25 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
 
     public int nextEntry() {
-      if (!hasNext())
+      if (!hasNext()) {
         throw new NoSuchElementException();
+      }
       c--;
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
-      for (;;) {
+      while (true) {
         if (--pos < 0) {
           // We are just enumerating elements from the wrapped list.
           last = Integer.MIN_VALUE;
           final byte[] k = wrapped.get(-pos - 1);
-          int p = (HashCommon.mix(strategy().hashCode(k))) & mask;
-          while (!(strategy().equals((k), (key[p]))))
-            p = (p + 1) & mask;
+          int p = HashCommon.mix(strategy().hashCode(k)) & mask;
+          while (!strategy().equals(k, key[p])) {
+            p = p + 1 & mask;
+          }
           return p;
         }
-        if (!((key[pos]) == null))
+        if (!(key[pos] == null)) {
           return last = pos;
+        }
       }
     }
 
@@ -449,12 +472,13 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
           // We are just enumerating elements from the wrapped list.
           last = Integer.MIN_VALUE;
           final byte[] k = wrapped.get(-pos - 1);
-          int p = (HashCommon.mix(strategy().hashCode(k))) & mask;
-          while (!(strategy().equals((k), (key[p]))))
-            p = (p + 1) & mask;
+          int p = HashCommon.mix(strategy().hashCode(k)) & mask;
+          while (!strategy().equals(k, key[p])) {
+            p = p + 1 & mask;
+          }
           acceptOnIndex(action, p);
           c--;
-        } else if (!((key[pos]) == null)) {
+        } else if (!(key[pos] == null)) {
           acceptOnIndex(action, last = pos);
           c--;
         }
@@ -472,22 +496,24 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       int last, slot;
       byte[] curr;
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
-      for (;;) {
-        pos = ((last = pos) + 1) & mask;
-        for (;;) {
-          if (((curr = key[pos]) == null)) {
-            key[last] = (null);
+      while (true) {
+        pos = (last = pos) + 1 & mask;
+        while (true) {
+          if ((curr = key[pos]) == null) {
+            key[last] = null;
             value[last] = null;
             return;
           }
-          slot = (HashCommon.mix(strategy().hashCode(curr))) & mask;
-          if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos)
+          slot = HashCommon.mix(strategy().hashCode(curr)) & mask;
+          if (last <= pos ? last >= slot || slot > pos : last >= slot && slot > pos) {
             break;
-          pos = (pos + 1) & mask;
+          }
+          pos = pos + 1 & mask;
         }
         if (pos < last) { // Wrapped entry.
-          if (wrapped == null)
+          if (wrapped == null) {
             wrapped = new ObjectArrayList<>(2);
+          }
           wrapped.add(key[pos]);
         }
         key[last] = curr;
@@ -496,14 +522,15 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
 
     public void remove() {
-      if (last == -1)
+      if (last == -1) {
         throw new IllegalStateException();
+      }
       if (last == n) {
         key[n] = null;
         value[n] = null;
-      } else if (pos >= 0)
+      } else if (pos >= 0) {
         shiftKeys(last);
-      else {
+      } else {
         // We're removing wrapped entries.
         Bytes2ObjectOpenHashMap.this.remove(wrapped.set(-pos - 1, null));
         last = -1; // Note that we must not decrement size
@@ -511,14 +538,13 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       }
       size--;
       last = -1; // You can no longer remove this entry.
-      if (ASSERTS)
-        checkTable();
     }
 
     public int skip(final int n) {
       int i = n;
-      while (i-- != 0 && hasNext())
+      while (i-- != 0 && hasNext()) {
         nextEntry();
+      }
       return n - i - 1;
     }
   }
@@ -589,7 +615,7 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     public boolean tryAdvance(final ConsumerType action) {
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
       while (pos < max) {
-        if (!((key[pos]) == null)) {
+        if (!(key[pos] == null)) {
           ++c;
           acceptOnIndex(action, pos++);
           return true;
@@ -602,7 +628,7 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     public void forEachRemaining(final ConsumerType action) {
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
       while (pos < max) {
-        if (!((key[pos]) == null)) {
+        if (!(key[pos] == null)) {
           acceptOnIndex(action, pos);
           ++c;
         }
@@ -620,16 +646,18 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
         // (size / n) * (max - pos) aka currentTableDensity * numberOfBucketsLeft seems like a good
         // estimate.
         return Math.min(size - c,
-            (long) (((double) realSize() / n) * (max - pos)));
+            (long) ((double) size() / n * (max - pos)));
       }
     }
 
     public SplitType trySplit() {
-      if (pos >= max - 1)
+      if (pos >= max - 1) {
         return null;
-      int retLen = (max - pos) >> 1;
-      if (retLen <= 1)
+      }
+      int retLen = max - pos >> 1;
+      if (retLen <= 1) {
         return null;
+      }
       int myNewPos = pos + retLen;
       int retPos = pos;
       // Since null is returned first, and the convention is that the returned split is the prefix
@@ -642,14 +670,16 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
 
     public long skip(long n) {
-      if (n < 0)
+      if (n < 0) {
         throw new IllegalArgumentException("Argument must be non-negative: " + n);
-      if (n == 0)
+      }
+      if (n == 0) {
         return 0;
+      }
       long skipped = 0;
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
       while (pos < max && n > 0) {
-        if (!((key[pos++]) == null)) {
+        if (!(key[pos++] == null)) {
           ++skipped;
           --n;
         }
@@ -709,51 +739,57 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       return new EntrySpliterator();
     }
 
-    //
     @Override
     @SuppressWarnings("unchecked")
     public boolean contains(final Object o) {
-      if (!(o instanceof Map.Entry))
+      if (!(o instanceof Map.Entry)) {
         return false;
+      }
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-      final byte[] k = ((byte[]) e.getKey());
-      final V v = ((V) e.getValue());
+      final byte[] k = (byte[]) e.getKey();
+      final V v = (V) e.getValue();
       byte[] curr;
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
       int pos;
       // The starting point.
-      if (((curr =
+      if ((curr =
           key[pos =
-              (HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
+              HashCommon.mix(strategy().hashCode(k)) & mask]) == null) {
         return false;
-      if ((strategy().equals((k), (curr))))
+      }
+      if (strategy().equals(k, curr)) {
         return java.util.Objects.equals(value[pos], v);
+      }
       // There's always an unused entry.
       while (true) {
-        if (((curr = key[pos = (pos + 1) & mask]) == null))
+        if ((curr = key[pos = pos + 1 & mask]) == null) {
           return false;
-        if ((strategy().equals((k), (curr))))
+        }
+        if (strategy().equals(k, curr)) {
           return java.util.Objects.equals(value[pos], v);
+        }
       }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public boolean remove(final Object o) {
-      if (!(o instanceof Map.Entry))
+      if (!(o instanceof Map.Entry)) {
         return false;
+      }
       final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-      final byte[] k = ((byte[]) e.getKey());
-      final V v = ((V) e.getValue());
+      final byte[] k = (byte[]) e.getKey();
+      final V v = (V) e.getValue();
       byte[] curr;
       final byte[][] key = Bytes2ObjectOpenHashMap.this.key;
       int pos;
       // The starting point.
-      if (((curr =
+      if ((curr =
           key[pos =
-              (HashCommon.mix(strategy().hashCode(k))) & mask]) == null))
+              HashCommon.mix(strategy().hashCode(k)) & mask]) == null) {
         return false;
-      if ((strategy().equals((curr), (k)))) {
+      }
+      if (strategy().equals(curr, k)) {
         if (java.util.Objects.equals(value[pos], v)) {
           removeEntry(pos);
           return true;
@@ -761,9 +797,10 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
         return false;
       }
       while (true) {
-        if (((curr = key[pos = (pos + 1) & mask]) == null))
+        if ((curr = key[pos = pos + 1 & mask]) == null) {
           return false;
-        if ((strategy().equals((curr), (k)))) {
+        }
+        if (strategy().equals(curr, k)) {
           if (java.util.Objects.equals(value[pos], v)) {
             removeEntry(pos);
             return true;
@@ -785,20 +822,23 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     /** {@inheritDoc} */
     @Override
     public void forEach(final Consumer<? super Object2ObjectMap.Entry<byte[], V>> consumer) {
-      for (int pos = n; pos-- != 0;)
-        if (!((key[pos]) == null))
-          consumer.accept(new AbstractObject2ObjectMap.BasicEntry<>(key[pos], value[pos]));
+      for (int pos = n; pos-- != 0;) {
+        if (!(key[pos] == null)) {
+          consumer.accept(new BasicEntry<>(key[pos], value[pos]));
+        }
+      }
     }
 
     /** {@inheritDoc} */
     @Override
     public void fastForEach(final Consumer<? super Object2ObjectMap.Entry<byte[], V>> consumer) {
       final MyBasicEntry<V> entry = new MyBasicEntry<>();
-      for (int pos = n; pos-- != 0;)
-        if (!((key[pos]) == null)) {
+      for (int pos = n; pos-- != 0;) {
+        if (!(key[pos] == null)) {
           entry.setKeyAndValue(key[pos], value[pos]);
           consumer.accept(entry);
         }
+      }
     }
   }
 
@@ -879,8 +919,9 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     public void forEach(final Consumer<? super byte[]> consumer) {
       for (int pos = n; pos-- != 0;) {
         final byte[] k = key[pos];
-        if (!((k) == null))
+        if (!(k == null)) {
           consumer.accept(k);
+        }
       }
     }
 
@@ -986,9 +1027,11 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       /** {@inheritDoc} */
       @Override
       public void forEach(final Consumer<? super V> consumer) {
-        for (int pos = n; pos-- != 0;)
-          if (!((key[pos]) == null))
+        for (int pos = n; pos-- != 0;) {
+          if (!(key[pos] == null)) {
             consumer.accept(value[pos]);
+          }
+        }
       }
 
       @Override
@@ -1051,8 +1094,9 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
    */
   public boolean trim(final int n) {
     final int l = HashCommon.nextPowerOfTwo((int) Math.ceil(n / getLoadFactor()));
-    if (l >= this.n || size > maxFill(l, getLoadFactor()))
+    if (l >= this.n || size > maxFill(l, getLoadFactor())) {
       return true;
+    }
     try {
       rehash(l);
     } catch (OutOfMemoryError cantDoIt) {
@@ -1080,13 +1124,16 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     final byte[][] newKey = new byte[newN + 1][];
     final V[] newValue = (V[]) new Object[newN + 1];
     int i = n, pos;
-    for (int j = realSize(); j-- != 0;) {
+    for (int j = size(); j-- != 0;) {
       // noinspection StatementWithEmptyBody
-      while (((key[--i]) == null));
-      if (!((newKey[pos =
-          (HashCommon.mix(strategy().hashCode(key[i]))) & mask]) == null))
+      while (key[--i] == null) {
+      }
+      if (!(newKey[pos =
+          HashCommon.mix(strategy().hashCode(key[i])) & mask] == null)) {
         // noinspection StatementWithEmptyBody
-        while (!((newKey[pos = (pos + 1) & mask]) == null));
+        while (!(newKey[pos = pos + 1 & mask] == null)) {
+        }
+      }
       newKey[pos] = key[i];
       newValue[pos] = value[i];
     }
@@ -1134,12 +1181,14 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
   @Override
   public int hashCode() {
     int h = 0;
-    for (int j = realSize(), i = 0; j-- != 0;) {
-      while (((key[i]) == null))
+    for (int j = size(), i = 0; j-- != 0;) {
+      while (key[i] == null) {
         i++;
-      int t = (strategy().hashCode(key[i]));
-      if (this != value[i])
-        t ^= ((value[i]) == null ? 0 : (value[i]).hashCode());
+      }
+      int t = strategy().hashCode(key[i]);
+      if (this != value[i]) {
+        t ^= value[i] == null ? 0 : value[i].hashCode();
+      }
       h += t;
       i++;
     }
@@ -1177,17 +1226,14 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     for (int i = size, pos; i-- != 0;) {
       k = (byte[]) s.readObject();
       v = (V) s.readObject();
-      pos = (HashCommon.mix(strategy().hashCode(k))) & mask;
-      while (!((key[pos]) == null))
-        pos = (pos + 1) & mask;
+      pos = HashCommon.mix(strategy().hashCode(k)) & mask;
+      while (!(key[pos] == null)) {
+        pos = pos + 1 & mask;
+      }
       key[pos] = k;
       value[pos] = v;
     }
-    if (ASSERTS)
-      checkTable();
   }
-
-  private void checkTable() {}
 
   public void fastForEach(final Consumer<? super Map.Entry<byte[], V>> consumer) {
     final MyBasicEntry<V> entry = new MyBasicEntry<>();
@@ -1221,6 +1267,17 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       if (key[pos] != null) {
         entry.setKeyAndValue(key[pos], value[pos]);
         if (!predicate.test(entry)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  public boolean fastWhileEachValue(final Predicate<V> predicate) {
+    for (int pos = n; pos-- != 0;) {
+      if (value[pos] != null) {
+        if (!predicate.test(value[pos])) {
           return false;
         }
       }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -106,7 +107,6 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
         hashesAdded.add(keyHash);
         map.put(key, "value-" + keyCounter);
         keysToAdd--;
-        System.out.println("adding key " + keyCounter);
       }
       keyCounter++;
     }
@@ -206,7 +206,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     Bytes2StringMap map = new Bytes2StringMap(MAP_SIZE * 2); // *2 to prevent rehash
     fillMapWithUniqueHashKeys(map, MAP_SIZE);
     Map<byte[], String> scanned = new Object2ObjectOpenCustomHashMap<>(ByteArrays.HASH_STRATEGY);
-    ArrayList<byte[]> initialKeys = new ArrayList<>(map.keySet());
+    List<byte[]> initialKeys = new ArrayList<>(map.keySet());
 
     int cursor = map.scan(0, MAP_SIZE / 2, Map::put, scanned);
     assertThat(scanned).hasSize(MAP_SIZE / 2);
@@ -258,28 +258,28 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
   @Test
   public void putUpdatesSizeWhenCreatingNewEntry() {
     RedisHash.Hash hash = new RedisHash.Hash();
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     hash.put(new byte[] {(byte) 1}, new byte[] {(byte) 1});
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
   }
 
   @Test
   public void putUpdatesSizeWhenUpdatingExistingEntry() {
     RedisHash.Hash hash = new RedisHash.Hash();
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     byte[] key = new byte[1];
     byte[] initialValue = new byte[1];
 
     hash.put(key, initialValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
     byte[] largerValue = new byte[100];
     hash.put(key, largerValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
     byte[] smallerValue = new byte[2];
     hash.put(key, smallerValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
   }
 
   @Test
@@ -289,14 +289,10 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     byte[] initialValue = new byte[100];
 
     hash.put(key, initialValue);
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
     hash.remove(key);
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
-  }
-
-  private int expectedSize(SizeableBytes2ObjectOpenCustomHashMapWithCursor<?> map) {
-    return sizer.sizeof(map);
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
   }
 
   @Test
@@ -313,7 +309,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     }
     RedisHash.Hash hash = new RedisHash.Hash(initialElements);
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
     // Add more elements to force a resizing of the backing arrays and confirm that size changes as
     // expected
@@ -322,7 +318,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
       byte[] key = {(byte) i};
       byte[] value = {(byte) (totalNumberOfElements - i)};
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     // Update values and confirm that size changes as expected
@@ -330,7 +326,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
       byte[] key = {(byte) i};
       byte[] value = {(byte) i};
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     assertThat(hash.size()).isEqualTo(totalNumberOfElements);
@@ -338,7 +334,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     // Remove all elements and confirm that size changes as expected
     for (int i = 0; i < totalNumberOfElements; ++i) {
       hash.remove(new byte[] {(byte) i});
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     assertThat(hash.size()).isEqualTo(0);
@@ -360,7 +356,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     }
     RedisSortedSet.MemberMap hash = new RedisSortedSet.MemberMap(initialElements);
 
-    assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+    assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
 
     // Add more elements to force a resizing of the backing arrays and confirm that size changes as
     // expected
@@ -371,7 +367,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
       byte[] scoreBytes = String.valueOf(totalNumberOfElements - i).getBytes();
       RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
       hash.put(key, value);
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     // Update values and confirm that size changes as expected
@@ -390,7 +386,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
 
       assertThat(sizeDelta).isEqualTo(scoreDelta);
 
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     assertThat(hash.size()).isEqualTo(totalNumberOfElements);
@@ -398,7 +394,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     // Remove all elements and confirm that size changes as expected
     for (int i = 0; i < totalNumberOfElements; ++i) {
       hash.remove(new byte[] {(byte) i});
-      assertThat(hash.getSizeInBytes()).isEqualTo(expectedSize(hash));
+      assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
 
     assertThat(hash.size()).isEqualTo(0);
