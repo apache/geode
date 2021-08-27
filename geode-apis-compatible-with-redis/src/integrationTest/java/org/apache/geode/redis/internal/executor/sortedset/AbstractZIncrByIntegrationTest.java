@@ -90,6 +90,23 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
             .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
   }
 
+  @Test
+  public void shouldError_ifResultWouldBeNaN() {
+    String increment = "-inf";
+    jedis.zadd(STRING_KEY, 10.0, STRING_MEMBER);
+    jedis.zincrby(STRING_KEY, POSITIVE_INFINITY, STRING_MEMBER);
+
+    assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
+        increment, STRING_MEMBER))
+            .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+  }
+
+  @Test
+  public void shouldError_whenSettingNewScoreToNaN() {
+    assertThatThrownBy(() -> jedis.zincrby(STRING_KEY, Double.NaN, STRING_MEMBER))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+  }
+
   /************* infinity *************/
   @Test
   public void shouldSetScoreToInfinity_ifIncrementWouldExceedMaxValue() {

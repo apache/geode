@@ -715,7 +715,7 @@ public class OrderStatisticsTreeTest {
   public void testGetSizeInBytesWithOrderedSetEntry() {
     Random random = new Random();
     byte[] member;
-    byte[] scoreBytes;
+    double score;
     List<RedisSortedSet.OrderedSetEntry> entries = new ArrayList<>();
     RedisSortedSet.ScoreSet tree = new RedisSortedSet.ScoreSet();
 
@@ -726,8 +726,8 @@ public class OrderStatisticsTreeTest {
     int sizeOfEntries = 0;
     for (int i = 0; i < 100; ++i) {
       member = new byte[random.nextInt(50_000)];
-      scoreBytes = String.valueOf(random.nextDouble()).getBytes();
-      RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      score = random.nextDouble();
+      RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, score);
       sizeOfEntries += sizer.sizeof(entry);
       entries.add(entry);
       tree.add(entry);
@@ -773,8 +773,7 @@ public class OrderStatisticsTreeTest {
     int beforeSize = sizer.sizeof(tree);
     for (int i = 0; i < 100; ++i) {
       byte[] member = new byte[i];
-      byte[] score = String.valueOf(i).getBytes();
-      RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, score);
+      RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, i);
       tree.add(entry);
       int afterSize = sizer.sizeof(tree);
       int perMemberOverhead = afterSize - beforeSize - sizer.sizeof(entry);

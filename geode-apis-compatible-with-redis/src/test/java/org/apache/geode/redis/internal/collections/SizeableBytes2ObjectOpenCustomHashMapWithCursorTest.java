@@ -35,6 +35,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
@@ -350,8 +351,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     for (int i = 0; i < initialNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       byte[] member = key;
-      byte[] scoreBytes = String.valueOf(i).getBytes();
-      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, i);
       initialElements.put(key, value);
     }
     RedisSortedSet.MemberMap hash = new RedisSortedSet.MemberMap(initialElements);
@@ -364,8 +364,8 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       byte[] member = key;
-      byte[] scoreBytes = String.valueOf(totalNumberOfElements - i).getBytes();
-      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      double score = totalNumberOfElements - i;
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, score);
       hash.put(key, value);
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
@@ -373,15 +373,13 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     // Update values and confirm that size changes as expected
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
-      byte[] member = key;
-      byte[] scoreBytes = String.valueOf(i).getBytes();
       RedisSortedSet.OrderedSetEntry value = hash.get(key);
-      byte[] oldScoreBytes = value.getScoreBytes();
-      int scoreDelta = memoryOverhead(scoreBytes)
-          - memoryOverhead(oldScoreBytes);
+      double oldScore = value.getScore();
+      int scoreDelta =
+          memoryOverhead(Coder.doubleToBytes(i)) - memoryOverhead(Coder.doubleToBytes(oldScore));
 
       int oldSize = hash.getSizeInBytes();
-      value.updateScore(scoreBytes);
+      value.updateScore(i);
       int sizeDelta = hash.getSizeInBytes() - oldSize;
 
       assertThat(sizeDelta).isEqualTo(scoreDelta);

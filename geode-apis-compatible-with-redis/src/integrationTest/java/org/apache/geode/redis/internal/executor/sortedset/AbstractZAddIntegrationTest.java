@@ -126,6 +126,15 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
             .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+    assertThatThrownBy(
+        () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "nan", member))
+            .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
+  }
+
+  @Test
+  public void shouldError_givenNaN() {
+    assertThatThrownBy(() -> jedis.zadd(SORTED_SET_KEY, Double.NaN, "member"))
+        .hasMessageContaining(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test

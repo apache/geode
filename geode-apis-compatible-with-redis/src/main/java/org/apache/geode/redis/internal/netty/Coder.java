@@ -16,13 +16,14 @@
 package org.apache.geode.redis.internal.netty;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.NaN;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
@@ -60,6 +61,7 @@ import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
@@ -411,9 +413,31 @@ public class Coder {
       return NEGATIVE_INFINITY;
     }
     if (isNaN(bytes)) {
-      return NaN;
+      throw new NumberFormatException();
     }
-    return Double.parseDouble(bytesToString(bytes));
+
+    try {
+      return stringToDouble(bytesToString(bytes));
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+    }
+  }
+
+  /**
+   * Redis specific manner to parse floats
+   *
+   * @param d String holding double
+   * @return Value of string
+   * @throws NumberFormatException if the double cannot be parsed
+   */
+  public static double stringToDouble(String d) {
+    if (d.equalsIgnoreCase(P_INF)) {
+      return Double.POSITIVE_INFINITY;
+    } else if (d.equalsIgnoreCase(N_INF)) {
+      return Double.NEGATIVE_INFINITY;
+    } else {
+      return Double.parseDouble(d);
+    }
   }
 
   /**

@@ -15,9 +15,11 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
+import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINCR;
@@ -31,6 +33,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -50,8 +53,17 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    Object retVal = redisSortedSetCommands.zadd(command.getKey(),
-        new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+    List<byte[]> members = new ArrayList<>();
+    List<Double> scores = new ArrayList<>();
+    for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2) {
+      try {
+        scores.add(Coder.bytesToDouble(commandElements.get(i)));
+      } catch (NumberFormatException e) {
+        throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+      }
+      members.add(commandElements.get(i + 1));
+    }
+    Object retVal = redisSortedSetCommands.zadd(command.getKey(), members, scores,
         makeOptions(zAddExecutorState));
     if (zAddExecutorState.incrFound) {
       if (retVal == null) {
@@ -89,6 +101,9 @@ public class ZAddExecutor extends AbstractExecutor {
         optionsFoundCount++;
       } else if (isInfinity(subCommand)) {
         scoreFound = true;
+      } else if (isNaN(subCommand)) {
+        executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
+        return 0;
       } else {
         // assume it's a double; if not, this will throw exception later
         scoreFound = true;

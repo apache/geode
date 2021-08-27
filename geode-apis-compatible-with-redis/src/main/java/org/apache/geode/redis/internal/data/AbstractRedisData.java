@@ -25,6 +25,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
@@ -33,6 +34,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -45,6 +47,7 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaType;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.TimestampDeltaInfo;
+import org.apache.geode.redis.internal.delta.ZaddsDeltaInfo;
 
 public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
@@ -200,6 +203,15 @@ public abstract class AbstractRedisData implements RedisData {
         byte[] byteArray = DataSerializer.readByteArray(in);
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
+      case ZADDS:
+        int numMembers = InternalDataSerializer.readArrayLength(in);
+        List<byte[]> members = new ArrayList<>();
+        List<Double> scores = new ArrayList<>();
+        for (int i = 0; i < numMembers; i++) {
+          members.add(DataSerializer.readByteArray(in));
+          scores.add(DataSerializer.readDouble(in));
+        }
+        applyDelta(new ZaddsDeltaInfo(members, scores));
     }
   }
 

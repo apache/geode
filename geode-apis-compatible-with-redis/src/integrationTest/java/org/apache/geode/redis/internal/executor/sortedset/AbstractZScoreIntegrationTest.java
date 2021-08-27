@@ -27,6 +27,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
@@ -62,5 +63,35 @@ public abstract class AbstractZScoreIntegrationTest implements RedisIntegrationT
   public void shouldReturnScore_givenExistingKeyAndMember() {
     jedis.zadd("key", 1.0, "member");
     assertThat(jedis.zscore("key", "member")).isEqualTo(1.0);
+  }
+
+  @Test
+  public void shouldReturnScoreWithSamePrecision() {
+    String key = "key";
+    String member = "member";
+    double score = 0.6792199922163132d;
+    byte[] byteScore = "0.6792199922163132".getBytes();
+
+    jedis.zadd(key, score, member);
+
+    double retScore = jedis.zscore(key, member);
+    assertThat(retScore).isEqualTo(score);
+
+    assertThat(Coder.doubleToBytes(retScore)).isEqualTo(byteScore);
+  }
+
+  @Test
+  public void shouldReturnScoreWithCloseToSamePrecision_givenTooPreciseAScore() {
+    String key = "key";
+    String member = "member";
+    double score = 0.6792199922163132456d;
+    byte[] byteScore = "0.6792199922163132".getBytes();
+
+    jedis.zadd(key, score, member);
+
+    double retScore = jedis.zscore(key, member);
+    assertThat(retScore).isEqualTo(score);
+
+    assertThat(Coder.doubleToBytes(retScore)).isEqualTo(byteScore);
   }
 }

@@ -26,8 +26,9 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 
@@ -80,6 +81,11 @@ public class CoderTest {
     byte[] convertedBytes = doubleToBytes(d);
     String convertedString = bytesToString(convertedBytes);
     assertThat(convertedString).isEqualTo(expectedString);
+  }
+
+  @Test
+  public void bytesToDouble_errorsWhenGivenNaNAsBytes() {
+    assertThatThrownBy(() -> Coder.bytesToDouble(bNaN)).isInstanceOf(NumberFormatException.class);
   }
 
   @Test
