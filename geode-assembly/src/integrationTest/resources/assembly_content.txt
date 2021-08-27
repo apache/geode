@@ -1045,7 +1045,7 @@ lib/micrometer-core-1.7.3.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
-lib/netty-all-4.1.66.Final.jar
+lib/netty-all-4.1.67.Final.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
 lib/shiro-cache-1.7.1.jar
