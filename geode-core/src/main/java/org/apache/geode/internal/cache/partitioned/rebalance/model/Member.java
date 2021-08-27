@@ -19,6 +19,7 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -40,7 +41,9 @@ public class Member implements Comparable<Member> {
   private final boolean isCritical;
   private final boolean enforceLocalMaxMemory;
 
-  Member(AddressComparor addressComparor, InternalDistributedMember memberId, boolean isCritical,
+  @VisibleForTesting
+  public Member(AddressComparor addressComparor, InternalDistributedMember memberId,
+      boolean isCritical,
       boolean enforceLocalMaxMemory) {
     this.addressComparor = addressComparor;
     this.memberId = memberId;
@@ -67,7 +70,7 @@ public class Member implements Comparable<Member> {
       if (addressComparor.enforceUniqueZones()
           && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
         logger.debug(
-            "Member {} would prefer not to delete {} because on {}",
+            "Member {} cannot delete {} because it is in a different redundancy zone than {}",
             getMemberId(), bucket, sourceMember);
         return RefusalReason.DIFFERENT_ZONE;
       } else {
