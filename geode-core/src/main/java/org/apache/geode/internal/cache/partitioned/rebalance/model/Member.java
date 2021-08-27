@@ -67,7 +67,7 @@ public class Member implements Comparable<Member> {
       if (addressComparor.enforceUniqueZones()
           && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
         logger.debug(
-            "Member {} would prefer not to delete {} because on {}",
+            "Member {} cannot delete {} because it is in a different redundancy zone than {}",
             getMemberId(), bucket, sourceMember);
         return RefusalReason.DIFFERENT_ZONE;
       } else {
