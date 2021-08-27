@@ -43,10 +43,9 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
- * TODO test colocated regions where buckets aren't created for all subregions
- *
- * <p>
- * TODO test colocated regions where members aren't consistent in which regions they have
+ * The purpose of RebalanceOperationComplexDistributedTest is to test rebalances
+ * across zones and to ensure that enforceUniqueZone behavior of redundancy zones
+ * is working correctly.
  */
 @RunWith(JUnitParamsRunner.class)
 public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
@@ -77,19 +76,17 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
-
   @Before
   public void setup() throws Exception {
-
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
 
     // Startup the servers
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      startServer(entry.getKey(), entry.getValue());
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
     }
 
-    // Startup a client to put all the data.
+    // Startup a client to put all the data in the server regions
     Properties properties2 = new Properties();
     properties2.setProperty("cache-xml-file", CLIENT_XML);
     ClientVM clientVM =
@@ -132,7 +129,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
     // Restart the shutdownServer
-    startServer(shutdownServer, SERVER_ZONE_MAP.get(shutdownServer));
+    startServerInRedundancyZone(shutdownServer, SERVER_ZONE_MAP.get(shutdownServer));
 
     // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there are
     // no cross redundancy zone bucket deletions.
@@ -144,7 +141,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   }
 
 
-  private void startServer(int index, final String zone) {
+  private void startServerInRedundancyZone(int index, final String zone) {
     clusterStartupRule.startServerVM(index, s -> s.withProperty("cache-xml-file",
         SERVER_XML)
         .withProperty(REDUNDANCY_ZONE, zone)
