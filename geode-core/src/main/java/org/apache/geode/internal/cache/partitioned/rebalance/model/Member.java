@@ -66,12 +66,12 @@ public class Member implements Comparable<Member> {
     if (checkZone) {
       if (addressComparor.enforceUniqueZones()
           && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
-        logger.info(
+        logger.debug(
             "Member {} cannot delete {} because it is in a different redundancy zone than {}",
             getMemberId(), bucket, sourceMember);
         return RefusalReason.DIFFERENT_ZONE;
       } else {
-        logger.info(
+        logger.debug(
             "Member {} will delete  {} because it is already on another member with the same redundancy zone",
             this, bucket);
       }

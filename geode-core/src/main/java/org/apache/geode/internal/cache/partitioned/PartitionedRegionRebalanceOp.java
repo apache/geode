@@ -224,7 +224,9 @@ public class PartitionedRegionRebalanceOp {
         leaderRegion.checkClosed();
         cache.getCancelCriterion().checkCancelInProgress(null);
 
-        logger.info("Rebalancing {} Model:{}\n", leaderRegion, model);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Rebalancing {} Model:{}\n", leaderRegion, model);
+        }
 
         if (!director.nextStep()) {
           // Stop when the director says we can't rebalance any more.
@@ -232,7 +234,7 @@ public class PartitionedRegionRebalanceOp {
         }
       }
 
-      logger.info("Rebalancing {} complete. Model:{}\n", leaderRegion, model);
+      debug("Rebalancing {} complete. Model:{}\n", leaderRegion, model);
       long end = System.nanoTime();
 
       for (PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
@@ -486,7 +488,7 @@ public class PartitionedRegionRebalanceOp {
 
     model.initialize();
 
-    logger.info("Rebalancing {} starting. Model:\n{}", leaderRegion, model);
+    debug("Rebalancing {} starting. Model:\n{}", leaderRegion, model);
 
     return model;
   }
@@ -526,9 +528,6 @@ public class PartitionedRegionRebalanceOp {
       removed = getLeaderRegion().getDataStore().removeBucket(bucketId, false);
     } else {
       // send message to remote member...
-      String message = "XXX PartitionedRegionRebalanceOp.removeRedundantBucketForRegion target="
-          + target + "; region=" + getLeaderRegion() + "; bucketId=" + bucketId;
-      logger.warn(message);
       RemoveBucketResponse response =
           RemoveBucketMessage.send(target, getLeaderRegion(), bucketId, false);
       if (response != null) {

@@ -61,7 +61,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   public int locatorPort;
 
-  //6 servers distributed evenly across 2 zones
+  // 6 servers distributed evenly across 2 zones
   public static final Map<Integer, String> SERVER_ZONE_MAP = new HashMap<Integer, String>() {
     {
       put(1, ZONE_A);
@@ -107,6 +107,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
       });
     });
   }
+
 
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
@@ -169,7 +170,8 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       if (entry.getValue().compareTo(zoneName) == 0) {
-        bucketCount += clusterStartupRule.getVM(entry.getKey()).invoke(() -> getBucketCount(regionName));
+        bucketCount +=
+            clusterStartupRule.getVM(entry.getKey()).invoke(() -> getBucketCount(regionName));
       }
     }
     return bucketCount;
