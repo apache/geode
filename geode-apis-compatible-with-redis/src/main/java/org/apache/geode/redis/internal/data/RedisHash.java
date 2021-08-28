@@ -407,7 +407,8 @@ public class RedisHash extends AbstractRedisData {
 
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(size(), out);
-      for (int pos = getMaxIndex(); pos-- != 0;) {
+      final int maxIndex = getMaxIndex();
+      for (int pos = 0; pos < maxIndex; ++pos) {
         byte[] key = getKeyAtIndex(pos);
         if (key != null) {
           DataSerializer.writeByteArray(key, out);

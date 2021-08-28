@@ -750,7 +750,8 @@ public class RedisSortedSet extends AbstractRedisData {
 
     public void toData(DataOutput out) throws IOException {
       InternalDataSerializer.writePrimitiveInt(size(), out);
-      for (int pos = getMaxIndex(); pos-- != 0;) {
+      final int maxIndex = getMaxIndex();
+      for (int pos = 0; pos < maxIndex; ++pos) {
         OrderedSetEntry value = getValueAtIndex(pos);
         if (value != null) {
           byte[] member = value.getMember();

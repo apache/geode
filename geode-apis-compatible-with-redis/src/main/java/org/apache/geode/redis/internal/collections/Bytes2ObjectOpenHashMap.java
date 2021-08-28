@@ -47,6 +47,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSpliterators;
  * exists
  * 4. the fields that cache a singleton instance for entrySet, keySet, and values
  * no longer exist.
+ * 5. some additional helper methods added to the end of the class
  */
 public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[], V>
     implements java.io.Serializable, Cloneable, Hash {
@@ -1234,6 +1235,8 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       value[pos] = v;
     }
   }
+
+  //////////////////////////// additional helper methods ///////////////////////////
 
   public void fastForEach(final Consumer<? super Map.Entry<byte[], V>> consumer) {
     final MyBasicEntry<V> entry = new MyBasicEntry<>();
