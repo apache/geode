@@ -23,8 +23,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STR
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
@@ -280,21 +278,6 @@ public class Coder {
     }
   }
 
-  public static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY) {
-      return "inf";
-    }
-    if (d == Double.NEGATIVE_INFINITY) {
-      return "-inf";
-    }
-
-    String stringValue = String.valueOf(d);
-    if (stringValue.endsWith(".0")) {
-      return (stringValue.substring(0, stringValue.length() - 2));
-    }
-    return stringValue;
-  }
-
   public static byte[] stringToBytes(String string) {
     if (string == null) {
       return null;
@@ -328,7 +311,22 @@ public class Coder {
   }
 
   public static byte[] doubleToBytes(double d) {
-    return stringToBytes(doubleToString(d));
+    if (d == Double.POSITIVE_INFINITY) {
+      return bINF;
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
+      return bN_INF;
+    }
+    if (Double.isNaN(d)) {
+      return bNaN;
+    }
+
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      stringValue = (stringValue.substring(0, stringValue.length() - 2));
+    }
+
+    return stringToBytes(stringValue);
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -348,46 +346,49 @@ public class Coder {
   }
 
   /**
-   * This method was derived from openjdk Long.java parseLong
+   * The following was derived from javolution parseLong.
+   * It has been changed to work on bytes instead of chars.
    */
-  public static long parseLong(byte[] bytes) throws NumberFormatException {
-    final int len = bytes.length;
-    if (len <= 0) {
+  public static long parseLong(final byte[] bytes) throws NumberFormatException {
+    final int length = bytes.length;
+    if (length == 0) {
       throw createNumberFormatException(bytes);
     }
+    final long limit = Long.MIN_VALUE / 10;
+    boolean isNegative = false;
+    long result = 0; // Accumulates negatively (avoid MIN_VALUE overflow).
     int i = 0;
-    long limit = -Long.MAX_VALUE;
-    boolean negative = false;
-    byte firstByte = bytes[0];
-    if (firstByte < NUMBER_0_BYTE) { // Possible leading "+" or "-"
-      if (firstByte == bMINUS) {
-        negative = true;
-        limit = Long.MIN_VALUE;
-      } else if (firstByte != bPLUS) {
-        throw createNumberFormatException(bytes);
-      }
-      if (len == 1) { // Cannot have lone "+" or "-"
-        throw createNumberFormatException(bytes);
-      }
+    if (bytes[0] == bMINUS) {
+      isNegative = true;
       i++;
+      if (length == 1) {
+        throw createNumberFormatException(bytes); // need a digit
+      } else if (bytes[1] == digitToAscii(0)) {
+        throw createNumberFormatException(bytes); // redis does not allow -0*
+      }
+    } else if (bytes[0] == bPLUS) {
+      throw createNumberFormatException(bytes); // redis does not allow +*
     }
-    final long multmin = limit / 10;
-    long result = 0;
-    while (i < len) {
-      // Accumulating negatively avoids surprises near MAX_VALUE
+    while (i < length) {
       int digit = asciiToDigit(bytes[i++]);
-      if (digit < 0 || result < multmin) {
-        throw createNumberFormatException(bytes);
+      if (digit == -1) {
+        throw createNumberFormatException(bytes); // invalid byte
       }
-      result *= 10;
-      if (result < limit + digit) {
-        throw createNumberFormatException(bytes);
+      if (result < limit) {
+        throw createNumberFormatException(bytes); // overflow
       }
-      result -= digit;
+      final long newResult = result * 10 - digit;
+      if (newResult > result) {
+        throw createNumberFormatException(bytes); // overflow
+      }
+      result = newResult;
     }
-    return negative ? result : -result;
+    // check for opposite overflow.
+    if ((result == Long.MIN_VALUE) && !isNegative) {
+      throw createNumberFormatException(bytes); // overflow
+    }
+    return isNegative ? result : -result;
   }
-
 
   /**
    * A conversion where the byte array actually represents a string, so it is converted as a string
@@ -407,24 +408,7 @@ public class Coder {
     if (isNaN(bytes)) {
       return NaN;
     }
-    return stringToDouble(bytesToString(bytes));
-  }
-
-  /**
-   * Redis specific manner to parse floats
-   *
-   * @param d String holding double
-   * @return Value of string
-   * @throws NumberFormatException if the double cannot be parsed
-   */
-  public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF)) {
-      return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF)) {
-      return Double.NEGATIVE_INFINITY;
-    } else {
-      return Double.parseDouble(d);
-    }
+    return Double.parseDouble(bytesToString(bytes));
   }
 
   /**
@@ -558,7 +542,7 @@ public class Coder {
   /**
    * value is in the range [-99..0].
    * This could be done using computation but a simple
-   * table lookup allows no allocations to be done since
+   * table lookup allows no garbage to be produced since
    * a canonical instance is returned.
    */
   private static byte[] convertSmallLongToAsciiDigits(int value, boolean negative) {
@@ -602,9 +586,6 @@ public class Coder {
     return result;
   }
 
-  /**
-   * This code was adapted from the openjdk Long.java getChars methods.
-   */
   private static byte[] convertBigLongToAsciiDigits(long value, boolean negative) {
     final byte[] bytes = new byte[asciiByteLength(value, negative)];
     int bytePos = bytes.length;
@@ -647,7 +628,6 @@ public class Coder {
   }
 
   /**
-   * This code was derived from openjdk Long.java stringSize
    * Returns the number of bytes needed to represent "value" as ascii bytes
    * Note that "value" has already been negated if it was positive
    * and we are told if that happened with the "negative" parameter.
@@ -655,11 +635,6 @@ public class Coder {
    * @param value long value already normalized to be <= 0.
    * @param negative true if the original "value" was < 0.
    * @return number of bytes needed to represent "value" as ascii bytes
-   *
-   * @implNote There are other ways to compute this: e.g. binary search,
-   *           but values are biased heavily towards zero, and therefore linear search
-   *           wins. The iteration results are also routinely inlined in the generated
-   *           code after loop unrolling.
    */
   private static int asciiByteLength(long value, boolean negative) {
     final int nonDigitCount = negative ? 1 : 0;
