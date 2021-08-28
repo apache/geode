@@ -1284,4 +1284,16 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
     return true;
   }
+
+  protected int getMaxIndex() {
+    return n;
+  }
+
+  protected byte[] getKeyAtIndex(int index) {
+    return key[index];
+  }
+
+  protected V getValueAtIndex(int index) {
+    return value[index];
+  }
 }

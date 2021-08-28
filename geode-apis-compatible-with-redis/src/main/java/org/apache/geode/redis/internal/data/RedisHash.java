@@ -84,7 +84,6 @@ public class RedisHash extends AbstractRedisData {
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
     hash.toData(out);
-    DataSerializer.writePrimitiveInt(hash.size(), out);
   }
 
   @Override
@@ -407,10 +406,12 @@ public class RedisHash extends AbstractRedisData {
     }
 
     public void toData(DataOutput out) throws IOException {
-      for (int pos = n; pos-- != 0;) {
-        if (key[pos] != null) {
-          DataSerializer.writeByteArray(key[pos], out);
-          DataSerializer.writeByteArray(value[pos], out);
+      DataSerializer.writePrimitiveInt(size(), out);
+      for (int pos = getMaxIndex(); pos-- != 0;) {
+        byte[] key = getKeyAtIndex(pos);
+        if (key != null) {
+          DataSerializer.writeByteArray(key, out);
+          DataSerializer.writeByteArray(getValueAtIndex(pos), out);
         }
       }
     }
