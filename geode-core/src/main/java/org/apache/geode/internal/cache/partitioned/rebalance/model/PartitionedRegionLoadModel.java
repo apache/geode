@@ -125,9 +125,13 @@ public class PartitionedRegionLoadModel {
   private final BucketOperator operator;
   private final int requiredRedundancy;
 
-  /** The average primary load on a member */
+  /**
+   * The average primary load on a member
+   */
   private float primaryAverage = -1;
-  /** The average bucket load on a member */
+  /**
+   * The average bucket load on a member
+   */
   private float averageLoad = -1;
   /**
    * The minimum improvement in variance that we'll consider worth moving a primary
@@ -151,7 +155,8 @@ public class PartitionedRegionLoadModel {
    * @param redundancyLevel The expected redundancy level for the region
    */
   public PartitionedRegionLoadModel(BucketOperator operator, int redundancyLevel, int numBuckets,
-      AddressComparor addressComparor, Set<InternalDistributedMember> criticalMembers,
+      AddressComparor addressComparor,
+      Set<InternalDistributedMember> criticalMembers,
       PartitionedRegion region) {
     this.operator = operator;
     this.requiredRedundancy = redundancyLevel;
@@ -360,8 +365,8 @@ public class PartitionedRegionLoadModel {
    *
    * This method will find the best node to create a redundant bucket and invoke the bucket operator
    * to create a bucket on that node. Because the bucket operator is asynchronous, the bucket may
-   * not be created immediately, but the model will be updated regardless. Invoke
-   * {@link #waitForOperations()} to wait for those operations to actually complete
+   * not be created immediately, but the model will be updated regardless. Invoke {@link
+   * #waitForOperations()} to wait for those operations to actually complete
    */
   public void createRedundantBucket(final BucketRollup bucket, final Member targetMember) {
     Map<String, Long> colocatedRegionSizes = getColocatedRegionSizes(bucket);
