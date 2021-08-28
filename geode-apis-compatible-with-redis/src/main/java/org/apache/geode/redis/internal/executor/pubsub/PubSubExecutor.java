@@ -50,7 +50,7 @@ public class PubSubExecutor implements Executor {
           .findNumberOfSubscribersPerChannel(commands.subList(2, commands.size()));
       return RedisResponse.array(numSubresponse);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMPAT)) {
-      Long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
+      long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
       return RedisResponse.integer(numPatResponse);
     }
 

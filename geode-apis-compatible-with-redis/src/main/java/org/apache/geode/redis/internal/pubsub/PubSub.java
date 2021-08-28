@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -81,23 +80,7 @@ public interface PubSub {
    * @param client the Client which is to be unsubscribed
    * @return the number of channels still subscribed to by the client
    */
-  long punsubscribe(GlobPattern pattern, Client client);
-
-  /**
-   * Return a list of channel names or patterns that a client has subscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels or patterns
-   */
-  List<byte[]> findSubscriptionNames(Client client, Subscription.Type type);
-
-  /**
-   * Return a list of channel names and patterns that a client has subscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels and patterns
-   */
-  List<byte[]> findSubscriptionNames(Client client);
+  long punsubscribe(byte[] pattern, Client client);
 
   /**
    * Return a list of all subscribed channel names (not including subscribed patterns).
@@ -124,5 +107,5 @@ public interface PubSub {
   /**
    * Return a count of all pattern subscriptions including duplicates.
    */
-  Long findNumberOfSubscribedPatterns();
+  long findNumberOfSubscribedPatterns();
 }

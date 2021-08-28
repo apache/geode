@@ -16,9 +16,10 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * A class for POSIX glob pattern with brace expansions.
@@ -26,17 +27,10 @@ import java.util.regex.PatternSyntaxException;
 public class GlobPattern {
   private static final char BACKSLASH = '\\';
   private final Pattern compiled;
-  private final String globPattern;
   private boolean hasWildcard = false;
 
-  /**
-   * Construct the glob pattern object with a glob pattern string
-   *
-   * @param globPattern the glob pattern string
-   */
-  public GlobPattern(String globPattern) {
+  public GlobPattern(byte[] globPattern) {
     this.compiled = createPattern(globPattern);
-    this.globPattern = globPattern;
   }
 
   /**
@@ -47,19 +41,12 @@ public class GlobPattern {
   }
 
   /**
-   * @return the original glob pattern
-   */
-  public String globPattern() {
-    return globPattern;
-  }
-
-  /**
    * Compile glob pattern string
    *
    * @param globPattern the glob pattern
    * @return the pattern object
    */
-  public static Pattern compile(String globPattern) {
+  public static Pattern compile(byte[] globPattern) {
     return new GlobPattern(globPattern).compiled();
   }
 
@@ -73,12 +60,17 @@ public class GlobPattern {
     return compiled.matcher(s).matches();
   }
 
+  public boolean matches(byte[] bytes) {
+    return matches(bytesToString(bytes));
+  }
+
   /**
    * Set and compile a glob pattern
    *
-   * @param glob the glob pattern string
+   * @param globBytes the glob pattern bytes
    */
-  private Pattern createPattern(String glob) {
+  private Pattern createPattern(byte[] globBytes) {
+    String glob = bytesToString(globBytes);
     StringBuilder regex = new StringBuilder();
     int setOpen = 0;
     int len = glob.length();
@@ -157,7 +149,4 @@ public class GlobPattern {
     return Objects.hash(compiled, hasWildcard);
   }
 
-  private static void error(String message, String pattern, int pos) {
-    throw new PatternSyntaxException(message, pattern, pos);
-  }
 }

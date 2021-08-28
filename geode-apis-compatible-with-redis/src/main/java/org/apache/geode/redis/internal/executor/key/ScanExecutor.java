@@ -19,7 +19,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
@@ -50,7 +49,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     String cursorString = command.getStringKey();
     BigInteger cursor;
     Pattern matchPattern;
-    String globPattern = null;
+    byte[] globPattern = null;
     int count = DEFAULT_COUNT;
 
     try {
@@ -71,7 +70,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       byte[] commandElemBytes = commandElems.get(i);
       if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
         commandElemBytes = commandElems.get(i + 1);
-        globPattern = bytesToString(commandElemBytes);
+        globPattern = commandElemBytes;
 
       } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
         commandElemBytes = commandElems.get(i + 1);

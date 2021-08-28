@@ -16,55 +16,26 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.GlobPattern;
-import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * This class represents a pattern subscription as created by the PSUBSCRIBE command
  */
 class PatternSubscription extends AbstractSubscription {
-  final GlobPattern pattern;
 
-  public PatternSubscription(Client client, GlobPattern pattern, ExecutionHandlerContext context,
+  public PatternSubscription(byte[] pattern, ExecutionHandlerContext context,
       Subscriptions subscriptions) {
-    super(client, context, subscriptions);
-
-    if (pattern == null) {
-      throw new IllegalArgumentException("pattern cannot be null");
-    }
-    this.pattern = pattern;
+    super(context, subscriptions, pattern);
   }
 
   @Override
-  public Type getType() {
-    return Type.PATTERN;
+  protected List<Object> createResponse(byte[] channel, byte[] message) {
+    return Arrays.asList(bPMESSAGE, getSubscriptionName(), channel, message);
   }
 
-  @Override
-  public List<Object> createResponse(byte[] channel, byte[] message) {
-    return Arrays.asList("pmessage", pattern.globPattern(), channel, message);
-  }
-
-  @Override
-  public boolean isEqualTo(Object channelOrPattern, Client client) {
-    return this.pattern != null && this.pattern.equals(channelOrPattern)
-        && this.getClient().equals(client);
-  }
-
-  @Override
-  public boolean matches(byte[] channel) {
-    return pattern.matches(bytesToString(channel));
-  }
-
-  @Override
-  public byte[] getSubscriptionName() {
-    return stringToBytes(pattern.globPattern());
-  }
 }

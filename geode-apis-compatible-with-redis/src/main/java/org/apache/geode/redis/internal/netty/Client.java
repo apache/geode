@@ -16,15 +16,25 @@
 
 package org.apache.geode.redis.internal.netty;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 
 public class Client {
-  private Channel channel;
+  private final Channel channel;
+  private final Set<byte[]> channelSubscriptions =
+      new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+  private final Set<byte[]> patternSubscriptions =
+      new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
 
   public Client(Channel remoteAddress) {
     this.channel = remoteAddress;
@@ -52,11 +62,50 @@ public class Client {
     channel.closeFuture().addListener(shutdownListener);
   }
 
-  public boolean isDead() {
-    return !this.channel.isOpen();
-  }
-
   public String toString() {
     return channel.toString();
+  }
+
+  public boolean hasSubscriptions() {
+    return !channelSubscriptions.isEmpty() || !patternSubscriptions.isEmpty();
+  }
+
+  public long getSubscriptionCount() {
+    return channelSubscriptions.size() + patternSubscriptions.size();
+  }
+
+  public void clearSubscriptions() {
+    channelSubscriptions.clear();
+    patternSubscriptions.clear();
+  }
+
+  public boolean addChannelSubscription(byte[] channel) {
+    return channelSubscriptions.add(channel);
+  }
+
+  public boolean addPatternSubscription(byte[] pattern) {
+    return patternSubscriptions.add(pattern);
+  }
+
+  public boolean removeChannelSubscription(byte[] channel) {
+    return channelSubscriptions.remove(channel);
+  }
+
+  public boolean removePatternSubscription(byte[] pattern) {
+    return patternSubscriptions.remove(pattern);
+  }
+
+  public List<byte[]> getChannelSubscriptions() {
+    if (channelSubscriptions.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new ArrayList<>(channelSubscriptions);
+  }
+
+  public List<byte[]> getPatternSubscriptions() {
+    if (patternSubscriptions.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new ArrayList<>(patternSubscriptions);
   }
 }

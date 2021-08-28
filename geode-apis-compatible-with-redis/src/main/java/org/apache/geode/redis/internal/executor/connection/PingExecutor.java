@@ -34,7 +34,7 @@ public class PingExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisResponse redisResponse;
 
-    if (context.getPubSub().findSubscriptionNames(context.getClient()).isEmpty()) {
+    if (!context.getClient().hasSubscriptions()) {
       byte[] result;
       if (commandElems.size() > 1) {
         result = commandElems.get(1);

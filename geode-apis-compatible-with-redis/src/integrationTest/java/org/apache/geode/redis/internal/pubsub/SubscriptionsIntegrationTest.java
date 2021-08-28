@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +35,6 @@ import org.junit.Test;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.mocks.DummySubscription;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SubscriptionsIntegrationTest {
@@ -53,49 +54,53 @@ public class SubscriptionsIntegrationTest {
     };
   }
 
+  final Subscriptions subscriptions = new Subscriptions();
+
+  private int dummyCount;
+
+  private ChannelSubscription createDummy() {
+    dummyCount++;
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    Client client = mock(Client.class);
+    when(context.getClient()).thenReturn(client);
+    return new ChannelSubscription(stringToBytes("dummy-" + dummyCount), context, subscriptions);
+  }
+
   @Test
   public void add_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
-
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.add(new DummySubscription()))
+        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.add(createDummy()))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS * 2);
   }
 
   @Test
-  public void exists_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
-
+  public void getChannelSubscriptionCount_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.exists("channel", mock(Client.class)))
+        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.getChannelSubscriptionCount(stringToBytes("dummy-" + dummyCount)))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
 
   @Test
-  public void findSubscriptionsByClient_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
-
+  public void findChannelNames_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.findSubscriptions(mock(Client.class)))
+        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.findChannelNames())
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
 
   @Test
-  public void findSubscriptionsByChannel_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
-
+  public void findChannelNames_withPattern_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(new DummySubscription()),
-        i -> subscriptions.findSubscriptions("channel".getBytes()))
+        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.findChannelNames(stringToBytes("dummy-*")))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
@@ -106,45 +111,46 @@ public class SubscriptionsIntegrationTest {
     final Subscriptions subscriptions = new Subscriptions();
 
     List<Client> clients = new LinkedList<>();
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     for (int i = 0; i < ITERATIONS; i++) {
       Channel channel = mock(Channel.class);
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel);
       clients.add(client);
-      subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context,
-              subscriptions));
+      ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+      when(context.getClient()).thenReturn(client);
+      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), context,
+          subscriptions);
+      client.addChannelSubscription(subscription.getSubscriptionName());
+      subscriptions.add(subscription);
     }
 
     new ConcurrentLoopingThreads(1,
         i -> clients.forEach(subscriptions::remove),
-        i -> clients.forEach(c -> subscriptions.exists("channel", c)))
+        i -> subscriptions.getChannelSubscriptionCount(stringToBytes("channel")))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);
   }
 
   @Test
-  public void removeByChannelAndClient_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
-
+  public void unsubscribeByChannelAndClient_doesNotThrowException_whenListIsConcurrentlyModified() {
     List<Client> clients = new LinkedList<>();
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     for (int i = 0; i < ITERATIONS; i++) {
       Channel channel = mock(Channel.class);
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel);
-
       clients.add(client);
-      subscriptions
-          .add(new ChannelSubscription(client, "channel".getBytes(), context,
-              subscriptions));
+      ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+      when(context.getClient()).thenReturn(client);
+      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), context,
+          subscriptions);
+      client.addChannelSubscription(subscription.getSubscriptionName());
+      subscriptions.add(subscription);
     }
 
     new ConcurrentLoopingThreads(1,
-        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)),
-        i -> clients.forEach(c -> subscriptions.remove("channel".getBytes(), c)))
+        i -> clients.forEach(c -> subscriptions.unsubscribe(stringToBytes("channel"), c)),
+        i -> clients.forEach(c -> subscriptions.unsubscribe(stringToBytes("channel"), c)))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);

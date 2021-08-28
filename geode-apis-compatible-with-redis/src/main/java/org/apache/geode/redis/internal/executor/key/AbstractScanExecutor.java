@@ -30,7 +30,7 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
    * @param pattern A glob pattern.
    * @return A regex pattern to recognize the given glob pattern.
    */
-  protected Pattern convertGlobToRegex(String pattern) {
+  protected Pattern convertGlobToRegex(byte[] pattern) {
     if (pattern == null) {
       return null;
     }

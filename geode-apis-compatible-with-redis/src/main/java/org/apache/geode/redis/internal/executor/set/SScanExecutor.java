@@ -52,7 +52,7 @@ public class SScanExecutor extends AbstractScanExecutor {
     String cursorString = bytesToString(commandElems.get(2));
     BigInteger cursor;
     Pattern matchPattern;
-    String globPattern = null;
+    byte[] globPattern = null;
     int count = DEFAULT_COUNT;
 
     try {
@@ -87,7 +87,7 @@ public class SScanExecutor extends AbstractScanExecutor {
       byte[] commandElemBytes = commandElems.get(i);
       if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
         commandElemBytes = commandElems.get(i + 1);
-        globPattern = bytesToString(commandElemBytes);
+        globPattern = commandElemBytes;
 
       } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
         commandElemBytes = commandElems.get(i + 1);

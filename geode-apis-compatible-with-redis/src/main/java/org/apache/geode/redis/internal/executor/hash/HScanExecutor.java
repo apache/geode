@@ -85,13 +85,13 @@ public class HScanExecutor extends AbstractScanExecutor {
 
       command.getCommandType().checkDeferredParameters(command, context);
       int count = DEFAULT_COUNT;
-      String globPattern = null;
+      byte[] globPattern = null;
 
       for (int i = 3; i < commandElems.size(); i = i + 2) {
         byte[] commandElemBytes = commandElems.get(i);
         if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
           commandElemBytes = commandElems.get(i + 1);
-          globPattern = bytesToString(commandElemBytes);
+          globPattern = commandElemBytes;
 
         } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
           commandElemBytes = commandElems.get(i + 1);

@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
@@ -259,4 +260,17 @@ public class StringBytesGlossary {
   public static final byte[] bLEAST_MEMBER_NAME = new byte[] {-2};
 
   public static final byte[] bNEGATIVE_ZERO = stringToBytes("-0");
+
+  @Immutable
+  public static final byte[] bMESSAGE = Coder.stringToBytes("message");
+
+  @Immutable
+  public static final byte[] bPMESSAGE = Coder.stringToBytes("pmessage");
+
+  @Immutable
+  public static final byte[] bUNSUBSCRIBE = Coder.stringToBytes("unsubscribe");
+
+  @Immutable
+  public static final byte[] bPUNSUBSCRIBE = Coder.stringToBytes("punsubscribe");
+
 }

@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
@@ -209,11 +210,14 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
+  @Immutable
+  private static final ResultCollector NO_RESULT = new NoResult();
+
   @Override
   public ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
     if (!function.hasResult()) /* NO RESULT:fire-n-forget */ {
       this.pr.executeFunction(function, this, null, this.executeOnBucketSet);
-      return new NoResult();
+      return NO_RESULT;
     }
     ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
     ResultCollector rcToReturn =

@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import io.netty.channel.ChannelFutureListener;
@@ -26,33 +28,34 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
+
+
 public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();
-  private final Client client;
-  private final ExecutionHandlerContext context;
 
+  private final ExecutionHandlerContext context;
+  private final byte[] subscriptionName;
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
-  private final Subscriptions subscriptions;
   private boolean running = true;
 
-  AbstractSubscription(Client client, ExecutionHandlerContext context,
-      Subscriptions subscriptions) {
-    if (client == null) {
-      throw new IllegalArgumentException("client cannot be null");
-    }
+  AbstractSubscription(ExecutionHandlerContext context,
+      Subscriptions subscriptions, byte[] subscriptionName) {
     if (context == null) {
       throw new IllegalArgumentException("context cannot be null");
     }
     if (subscriptions == null) {
       throw new IllegalArgumentException("subscriptions cannot be null");
     }
-    this.client = client;
-    this.context = context;
-    this.subscriptions = subscriptions;
+    if (subscriptionName == null) {
+      throw new IllegalArgumentException("subscriptionName cannot be null");
+    }
 
-    client.addShutdownListener(future -> shutdown());
+    this.context = context;
+    this.subscriptionName = subscriptionName;
+
+    getClient().addShutdownListener(future -> shutdown(subscriptions));
   }
 
   @Override
@@ -61,7 +64,7 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(byte[] channel, byte[] message) {
+  public void publishMessage(byte[] channel, byte[] message, Subscriptions subscriptions) {
     try {
       readyForPublish.await();
     } catch (InterruptedException e) {
@@ -74,29 +77,36 @@ public abstract class AbstractSubscription implements Subscription {
       context.writeToChannel(constructResponse(channel, message))
           .addListener((ChannelFutureListener) f -> {
             if (f.cause() != null) {
-              shutdown();
+              shutdown(subscriptions);
             }
           });
     }
   }
 
   @Override
-  public synchronized void shutdown() {
-    running = false;
-    subscriptions.remove(client);
-  }
-
   public Client getClient() {
-    return client;
+    return context.getClient();
   }
 
   @Override
-  public boolean matchesClient(Client client) {
-    return this.client.equals(client);
+  public boolean isEqualTo(byte[] subscriptionName, Client client) {
+    return getClient().equals(client) && Arrays.equals(getSubscriptionName(), subscriptionName);
+  }
+
+  @Override
+  public byte[] getSubscriptionName() {
+    return subscriptionName;
   }
 
   private RedisResponse constructResponse(byte[] channel, byte[] message) {
     return RedisResponse.array(createResponse(channel, message));
   }
+
+  private synchronized void shutdown(Subscriptions subscriptions) {
+    running = false;
+    subscriptions.remove(getClient());
+  }
+
+  protected abstract List<Object> createResponse(byte[] channel, byte[] message);
 
 }

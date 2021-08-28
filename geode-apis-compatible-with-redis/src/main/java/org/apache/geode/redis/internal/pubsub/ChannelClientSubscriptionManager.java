@@ -13,34 +13,11 @@
  * the License.
  *
  */
-
 package org.apache.geode.redis.internal.pubsub;
 
-
-import org.apache.geode.redis.internal.netty.Client;
-
-
-/**
- * Interface that represents the relationship between a channel or pattern and client.
- */
-public interface Subscription {
-  Client getClient();
-
-  /**
-   * Equality of a subscription is represented by a combination of client and one of channel or
-   * pattern
-   */
-  boolean isEqualTo(byte[] subscriptionName, Client client);
-
-  /**
-   * Will publish a message to the designated channel
-   */
-  void publishMessage(byte[] channel, byte[] message, Subscriptions subscriptions);
-
-  /**
-   * Return the channel or pattern name.
-   */
-  byte[] getSubscriptionName();
-
-  void readyToPublish();
+class ChannelClientSubscriptionManager
+    extends AbstractClientSubscriptionManager<ChannelSubscription> {
+  public ChannelClientSubscriptionManager(ChannelSubscription subscription) {
+    super(subscription);
+  }
 }
