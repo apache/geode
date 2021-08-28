@@ -21,7 +21,7 @@ plugins {
   id "base"
   id "idea"
   id "eclipse"
-  id "com.diffplug.spotless" version "5.14.0" apply false
+  id "com.diffplug.spotless" version "5.14.3" apply false
   id "com.github.ben-manes.versions" version "0.39.0" apply false
   id "nebula.lint" version "16.26.0" apply false
   id "com.palantir.docker" version "0.26.0" apply false
