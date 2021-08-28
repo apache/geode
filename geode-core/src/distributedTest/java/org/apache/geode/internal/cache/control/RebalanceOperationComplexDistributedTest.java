@@ -40,6 +40,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
@@ -75,6 +76,9 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
+
+  @Rule
+  public DistributedDiskDirRule distributedDiskDirRule = new DistributedDiskDirRule();
 
   @Before
   public void setup() throws Exception {

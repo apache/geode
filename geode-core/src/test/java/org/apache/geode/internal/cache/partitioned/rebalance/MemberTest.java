@@ -79,8 +79,8 @@ public class MemberTest {
         ArgumentMatchers.any(InternalDistributedMember.class),
         ArgumentMatchers.any(InternalDistributedMember.class));
     Bucket bucket = mock(Bucket.class);
-    Member memberUnderTest = new Member(addressComparor, memberId, true, true);
-    Member sourceMember = new Member(addressComparor, sourceId, true, true);
+    Member memberUnderTest = new Member(addressComparor, memberId, false, false);
+    Member sourceMember = new Member(addressComparor, sourceId, false, false);
 
     assertThat(memberUnderTest.willAcceptBucket(bucket, null, true)).isEqualTo(RefusalReason.NONE);
 
