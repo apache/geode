@@ -26,7 +26,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -151,7 +150,7 @@ public class RegionProvider {
     return redisStats;
   }
 
-  public <T> T execute(Object key, Callable<T> callable) {
+  public <T> T execute(RedisKey key, Callable<T> callable) {
     try {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(key, callable));
@@ -164,10 +163,10 @@ public class RegionProvider {
     }
   }
 
-  public <T> T execute(Object key, List<Object> keysToLock, Callable<T> callable) {
+  public <T> T execute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
     try {
       return partitionedRegion.computeWithPrimaryLocked(key,
-          () -> stripedCoordinator.execute(keysToLock, 0, callable));
+          () -> stripedCoordinator.execute(keysToLock, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
       throw createRedisDataMovedException((RedisKey) key);
     } catch (RedisException bex) {
@@ -206,7 +205,7 @@ public class RegionProvider {
     }
   }
 
-  public RedisDataMovedException createRedisDataMovedException(RedisKey key) {
+  private RedisDataMovedException createRedisDataMovedException(RedisKey key) {
     RedisMemberInfo memberInfo = getRedisMemberInfo(key);
     Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
     return new RedisDataMovedException(slot, memberInfo.getHostAddress(),
@@ -318,13 +317,24 @@ public class RegionProvider {
    * @return the keys ordered in the sequence in which they should be locked.
    */
   public List<RedisKey> orderForLocking(List<RedisKey> keys) {
-    Collections.sort(keys, stripedCoordinator::compareStripes);
+    keys.sort(stripedCoordinator::compareStripes);
 
     return keys;
   }
 
   public List<RedisKey> orderForLocking(RedisKey... keys) {
     return orderForLocking(Arrays.asList(keys));
+  }
+
+  /**
+   * Check if a key would be stored locally (in a primary bucket on this server). Otherwise throw a
+   * {@link RedisDataMovedException}. Note that this will not check for the actual existence of the
+   * key.
+   */
+  public void ensureKeyIsLocal(RedisKey key) {
+    if (!slotAdvisor.isLocal(key)) {
+      throw createRedisDataMovedException(key);
+    }
   }
 
 }

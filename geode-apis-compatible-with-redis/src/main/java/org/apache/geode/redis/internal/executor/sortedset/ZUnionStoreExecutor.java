@@ -36,6 +36,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZUnionStoreExecutor extends AbstractExecutor {
 
+  /**
+   * The position in the command array where the source set keys start.
+   */
+  private static final int SOURCE_KEY_OFFSET = 3;
+
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
@@ -49,6 +54,11 @@ public class ZUnionStoreExecutor extends AbstractExecutor {
     try {
       numKeys = Coder.bytesToLong(argIterator.next());
     } catch (NumberFormatException nex) {
+      return RedisResponse.error(ERROR_SYNTAX);
+    }
+
+    // Rough validation so that we can use numKeys to initialize the array sizes below.
+    if (numKeys > commandElements.size()) {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
@@ -66,7 +76,7 @@ public class ZUnionStoreExecutor extends AbstractExecutor {
 
       arg = toUpperCaseBytes(arg);
       if (Arrays.equals(arg, bWEIGHTS)) {
-        if (weights.size() > 0) {
+        if (!weights.isEmpty()) {
           return RedisResponse.error(ERROR_SYNTAX);
         }
         for (int i = 0; i < numKeys; i++) {
@@ -91,17 +101,12 @@ public class ZUnionStoreExecutor extends AbstractExecutor {
         continue;
       }
 
+      // End up here if we have more keys than weights
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
     if (sourceKeys.size() != numKeys) {
       return RedisResponse.error(ERROR_SYNTAX);
-    }
-
-    if (weights.size() == 0) {
-      for (int i = 0; i < numKeys; i++) {
-        weights.add(1D);
-      }
     }
 
     int bucket = command.getKey().getBucketId();
@@ -111,8 +116,14 @@ public class ZUnionStoreExecutor extends AbstractExecutor {
       }
     }
 
+    List<ZKeyWeight> keyWeights = new ArrayList<>();
+    for (int i = 0; i < sourceKeys.size(); i++) {
+      double weight = weights.isEmpty() ? 1 : weights.get(i);
+      keyWeights.add(new ZKeyWeight(sourceKeys.get(i), weight));
+    }
+
     long result = context.getSortedSetCommands()
-        .zunionstore(command.getKey(), sourceKeys, weights, aggregator);
+        .zunionstore(command.getKey(), keyWeights, aggregator);
 
     return RedisResponse.integer(result);
   }

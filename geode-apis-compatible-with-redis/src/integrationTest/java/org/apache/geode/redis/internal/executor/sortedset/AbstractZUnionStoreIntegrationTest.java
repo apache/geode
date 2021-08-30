@@ -62,21 +62,19 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void shouldError_givenWrongKeyType() {
-    final String NEW_KEY = "{user1}new";
     final String STRING_KEY = "{user1}stringKey";
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_KEY, Protocol.Command.ZUNIONSTORE, NEW_KEY, "2", STRING_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", STRING_KEY,
             SORTED_SET_KEY1))
                 .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
   public void shouldError_givenSetsCrossSlots() {
-    final String NEW_KEY = "{user1}new";
     final String WRONG_KEY = "{user2}another";
     assertThatThrownBy(
-        () -> jedis.sendCommand(NEW_KEY, Protocol.Command.ZUNIONSTORE, NEW_KEY, "2", WRONG_KEY,
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", WRONG_KEY,
             SORTED_SET_KEY1))
                 .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
   }
@@ -164,6 +162,44 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
             SORTED_SET_KEY1, "WEIGHTS", "1", "AGGREGATE", "SUM", "MIN"))
                 .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+  }
+
+  @Test
+  public void shouldUnionize_givenBoundaryScoresAndWeights() {
+    Map<String, Double> scores = new LinkedHashMap<>();
+    scores.put("player1", Double.NEGATIVE_INFINITY);
+    scores.put("player2", 0D);
+    scores.put("player3", 1D);
+    scores.put("player4", Double.POSITIVE_INFINITY);
+    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
+    jedis.zadd(SORTED_SET_KEY1, scores);
+
+    jedis.zunionstore(NEW_SET, new ZParams().weights(1), SORTED_SET_KEY1);
+
+    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    assertThat(results).containsExactlyElementsOf(expectedResults);
+
+    jedis.zunionstore(NEW_SET, new ZParams().weights(0), SORTED_SET_KEY1);
+
+    expectedResults = convertToTuples(scores, (i, x) -> 0D);
+    results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    assertThat(results).containsExactlyElementsOf(expectedResults);
+
+    jedis.zunionstore(NEW_SET, new ZParams().weights(Double.POSITIVE_INFINITY), SORTED_SET_KEY1);
+
+    expectedResults = convertToTuples(scores, (i, x) -> x == 1 ? Double.POSITIVE_INFINITY : x);
+    results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    assertThat(results).containsExactlyElementsOf(expectedResults);
+
+    jedis.zunionstore(NEW_SET, new ZParams().weights(Double.NEGATIVE_INFINITY), SORTED_SET_KEY1);
+
+    expectedResults = new LinkedHashSet<>();
+    expectedResults.add(new Tuple("player3", Double.NEGATIVE_INFINITY));
+    expectedResults.add(new Tuple("player4", Double.NEGATIVE_INFINITY));
+    expectedResults.add(new Tuple("player2", 0D));
+    expectedResults.add(new Tuple("player1", Double.POSITIVE_INFINITY));
+    results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    assertThat(results).containsExactlyElementsOf(expectedResults);
   }
 
   @Test

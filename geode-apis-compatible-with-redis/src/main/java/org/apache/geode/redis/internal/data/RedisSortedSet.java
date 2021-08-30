@@ -26,6 +26,7 @@ import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -58,6 +59,7 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOpti
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAggregator;
+import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
@@ -387,27 +389,34 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  long zunionstore(RegionProvider regionProvider, RedisKey key, List<RedisKey> sourceSets,
-      List<Double> weights, ZAggregator aggregator) {
-    for (int i = 0; i < sourceSets.size(); i++) {
+  long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
-          regionProvider.getTypedRedisData(REDIS_SORTED_SET, sourceSets.get(i), false);
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
       if (set == NULL_REDIS_SORTED_SET) {
         continue;
       }
-      double weight = weights.get(i);
+      double weight = keyWeight.getWeight();
 
-      Iterator<AbstractOrderedSetEntry> scoreIterator =
-          set.scoreSet.getIndexRange(0, Integer.MAX_VALUE, false);
-      while (scoreIterator.hasNext()) {
-        OrderedSetEntry entry = (OrderedSetEntry) scoreIterator.next();
+      for (AbstractOrderedSetEntry entry : set.members.values()) {
         OrderedSetEntry existingValue = members.get(entry.member);
         if (existingValue == null) {
           byte[] score;
-          if (weight == 1) {
+          // Redis math and Java math are different when handling infinity. Specifically:
+          // Java: INFINITY * 0 = NaN
+          // Redis: INFINITY * 0 = 0
+          if (weight == 0) {
+            score = bZERO;
+          } else if (weight == 1) {
             score = entry.getScoreBytes();
           } else {
-            score = Coder.doubleToBytes(entry.score * weight);
+            double newScore = entry.score * weight;
+            if (Double.isNaN(newScore)) {
+              score = entry.getScoreBytes();
+            } else {
+              score = Coder.doubleToBytes(entry.score * weight);
+            }
           }
           members.put(entry.member, new OrderedSetEntry(entry.member, score));
           continue;

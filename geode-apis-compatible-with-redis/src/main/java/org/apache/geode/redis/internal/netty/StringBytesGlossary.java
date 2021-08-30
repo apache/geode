@@ -171,12 +171,6 @@ public class StringBytesGlossary {
   public static final byte[] bWEIGHTS = stringToBytes("WEIGHTS");
   @MakeImmutable
   public static final byte[] bAGGREGATE = stringToBytes("AGGREGATE");
-  @MakeImmutable
-  public static final byte[] bSUM = stringToBytes("SUM");
-  @MakeImmutable
-  public static final byte[] bMIN = stringToBytes("MIN");
-  @MakeImmutable
-  public static final byte[] bMAX = stringToBytes("MAX");
 
   // SetExecutor
   @MakeImmutable
@@ -197,6 +191,8 @@ public class StringBytesGlossary {
   public static final byte[] bLIMIT = stringToBytes("LIMIT");
   public static final byte bPLUS = SIMPLE_STRING_ID; // +
   public static final byte bMINUS = ERROR_ID; // -
+
+  public static final byte[] bZERO = stringToBytes("0");
 
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";

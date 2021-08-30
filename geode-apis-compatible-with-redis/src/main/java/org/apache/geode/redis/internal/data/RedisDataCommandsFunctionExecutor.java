@@ -44,11 +44,11 @@ public abstract class RedisDataCommandsFunctionExecutor {
     return regionProvider.getLocalDataRegion();
   }
 
-  protected <T> T stripedExecute(Object key, Callable<T> callable) {
+  protected <T> T stripedExecute(RedisKey key, Callable<T> callable) {
     return regionProvider.execute(key, callable);
   }
 
-  protected <T> T stripedExecute(Object key, List<Object> keysToLock, Callable<T> callable) {
+  protected <T> T stripedExecute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
     return regionProvider.execute(key, keysToLock, callable);
   }
 

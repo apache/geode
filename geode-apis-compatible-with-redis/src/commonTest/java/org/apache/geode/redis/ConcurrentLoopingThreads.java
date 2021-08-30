@@ -25,7 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ public class ConcurrentLoopingThreads {
   private final Consumer<Integer>[] functions;
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private List<Future<?>> loopingFutures;
-  private AtomicReference<Throwable> actionThrowable = new AtomicReference<>();
+  private Throwable actionThrowable = null;
 
   @SafeVarargs
   public ConcurrentLoopingThreads(int iterationCount,
@@ -107,7 +106,7 @@ public class ConcurrentLoopingThreads {
       try {
         action.run();
       } catch (Throwable e) {
-        actionThrowable.set(e);
+        actionThrowable = e;
         throw e;
       }
     };
@@ -117,12 +116,12 @@ public class ConcurrentLoopingThreads {
     try {
       await();
     } catch (Throwable e) {
-      Throwable actionException = actionThrowable.get();
-      if (actionException != null) {
-        if (actionException instanceof Error) {
-          throw (Error) actionException;
+      if (actionThrowable != null) {
+        // This will ensure that AssertionErrors are clearly apparent
+        if (actionThrowable instanceof Error) {
+          throw (Error) actionThrowable;
         }
-        throw new RuntimeException(actionThrowable.get());
+        throw new RuntimeException(actionThrowable);
       } else {
         throw e;
       }

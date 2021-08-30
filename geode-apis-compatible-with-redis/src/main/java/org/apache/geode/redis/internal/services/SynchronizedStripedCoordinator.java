@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.services;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.redis.internal.data.RedisKey;
+
 /**
  * Implements {@link StripedCoordinator} by using
  * synchronization. The thread that calls execute will also be the thread that does the work. But it
@@ -40,7 +42,7 @@ public class SynchronizedStripedCoordinator implements StripedCoordinator {
   }
 
   @Override
-  public <T> T execute(Object stripeId, Callable<T> callable) {
+  public <T> T execute(RedisKey stripeId, Callable<T> callable) {
     synchronized (getSync(stripeId)) {
       try {
         return callable.call();
@@ -53,7 +55,11 @@ public class SynchronizedStripedCoordinator implements StripedCoordinator {
   }
 
   @Override
-  public <T> T execute(List<Object> stripeIds, int index, Callable<T> callable) {
+  public <T> T execute(List<RedisKey> stripeIds, Callable<T> callable) {
+    return execute(stripeIds, 0, callable);
+  }
+
+  private <T> T execute(List<RedisKey> stripeIds, int index, Callable<T> callable) {
     if (index + 1 == stripeIds.size()) {
       return execute(stripeIds.get(index), callable);
     }

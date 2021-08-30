@@ -28,6 +28,7 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOpti
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAggregator;
+import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
 
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
     implements RedisSortedSetCommands {
@@ -131,17 +132,16 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public long zunionstore(RedisKey key, List<RedisKey> sourceSets, List<Double> weights,
+  public long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    List<Object> keysToLock = new ArrayList<>(sourceSets);
-    keysToLock.add(key);
-    return stripedExecute(key, keysToLock,
+    List<RedisKey> keysToLock = keyWeights.stream()
+        .collect(ArrayList::new, (x, y) -> x.add(y.getKey()), ArrayList::addAll);
+    keysToLock.add(destinationKey);
+    return stripedExecute(destinationKey, keysToLock,
         () -> {
-          if (!getRegionProvider().getSlotAdvisor().isLocal(key)) {
-            throw getRegionProvider().createRedisDataMovedException(key);
-          }
-          return new RedisSortedSet(Collections.emptyList()).zunionstore(getRegionProvider(), key,
-              sourceSets, weights, aggregator);
+          getRegionProvider().ensureKeyIsLocal(destinationKey);
+          return new RedisSortedSet(Collections.emptyList()).zunionstore(getRegionProvider(),
+              destinationKey, keyWeights, aggregator);
         });
   }
 

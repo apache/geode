@@ -15,25 +15,26 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.function.BiFunction;
+import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
- * Enums representing aggregation functions used in {@link ZUnionStoreExecutor} and
+ * Simple class to hold the key and weight associations used in {@link ZUnionStoreExecutor} and
  * {@link ZInterStoreExecutor}.
  */
-public enum ZAggregator {
+public class ZKeyWeight {
+  private final RedisKey key;
+  private final double weight;
 
-  SUM(Double::sum),
-  MIN(Math::min),
-  MAX(Math::max);
-
-  private final BiFunction<Double, Double, Double> function;
-
-  ZAggregator(BiFunction<Double, Double, Double> function) {
-    this.function = function;
+  public ZKeyWeight(RedisKey key, double weight) {
+    this.key = key;
+    this.weight = weight;
   }
 
-  public BiFunction<Double, Double, Double> getFunction() {
-    return function;
+  public RedisKey getKey() {
+    return key;
+  }
+
+  public double getWeight() {
+    return weight;
   }
 }
