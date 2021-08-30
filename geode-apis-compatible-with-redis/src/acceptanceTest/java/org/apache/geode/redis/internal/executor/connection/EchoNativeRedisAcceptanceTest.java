@@ -18,16 +18,20 @@ package org.apache.geode.redis.internal.executor.connection;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
 public class EchoNativeRedisAcceptanceTest extends AbstractEchoIntegrationTest {
 
   @ClassRule
-  public static NativeRedisTestRule redis = new NativeRedisTestRule();
+  public static NativeRedisClusterTestRule server = new NativeRedisClusterTestRule();
 
   @Override
   public int getPort() {
-    return redis.getPort();
+    return server.getExposedPorts().get(0);
   }
 
+  @Override
+  public void flushAll() {
+    server.flushAll();
+  }
 }

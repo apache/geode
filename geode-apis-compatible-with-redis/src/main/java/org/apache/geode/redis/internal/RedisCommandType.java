@@ -151,6 +151,7 @@ public enum RedisCommandType {
 
   /*************** Connection ****************/
   AUTH(new AuthExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  ECHO(new EchoExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   PING(new PingExecutor(), SUPPORTED, new MaximumParameterRequirements(2)),
   QUIT(new QuitExecutor(), SUPPORTED),
 
@@ -267,7 +268,6 @@ public enum RedisCommandType {
 
   /*************** Connection *************/
 
-  ECHO(new EchoExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
   SELECT(new SelectExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
 
   /*************** Keys ******************/

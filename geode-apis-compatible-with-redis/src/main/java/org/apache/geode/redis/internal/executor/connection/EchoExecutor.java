@@ -15,7 +15,6 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
-import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -25,11 +24,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class EchoExecutor extends AbstractExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    return RedisResponse.bulkString(commandElems.get(1));
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    return RedisResponse.bulkString(command.getProcessedCommand().get(1));
   }
 
 }
