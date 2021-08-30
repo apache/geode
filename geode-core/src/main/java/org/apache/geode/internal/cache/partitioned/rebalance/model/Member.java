@@ -20,6 +20,8 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -58,28 +60,46 @@ public class Member implements Comparable<Member> {
     this.localMaxMemory = localMaxMemory;
   }
 
+
+
   /**
    * @param sourceMember the member we will be moving this bucket off of
    * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
-   *        IP address.
    */
   public RefusalReason canDelete(Bucket bucket, InternalDistributedMember sourceMember,
-      boolean checkZone) {
-    // Check the ip address
-    if (checkZone) {
-      if (addressComparor.enforceUniqueZones()
-          && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
-        logger.debug(
-            "Member {} cannot delete {} because it is in a different redundancy zone than {}",
-            getMemberId(), bucket, sourceMember);
-        return RefusalReason.DIFFERENT_ZONE;
-      } else {
-        logger.debug(
-            "Member {} will delete  {} because it is already on another member with the same redundancy zone",
-            this, bucket);
+      boolean checkZone,
+      DistributionManager distributionManager) {
+    logger.info("MLH canDelete called with bucket " + bucket + " sourceMember " + sourceMember
+        + " checkZone " + checkZone + " distributionManager " + distributionManager);
+    if (distributionManager instanceof ClusterDistributionManager) {
+      ClusterDistributionManager clusterDistributionManager =
+          (ClusterDistributionManager) distributionManager;
+      String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
+      logger.info("MLH canDelete member = " + this + " myRedundancyZone = " + myRedundancyZone);
+      boolean notLastMemberOfZone = false;
+      for (Member member : bucket.getMembersHosting()) {
+        if (!member.getMemberId().equals(this.getMemberId())) {
+          String memberRedundancyZone =
+              clusterDistributionManager.getRedundancyZone(member.memberId);
+          logger.info(
+              "MLH canDelete member = " + member + " memberRedundancyZone " + memberRedundancyZone);
+          if (memberRedundancyZone.equals(myRedundancyZone)) {
+            logger.info(
+                "MLH canDelete member = " + member + " is another member of my redundancy zone");
+            notLastMemberOfZone = true;
+          }
+        } else {
+          logger.info(
+              "MLH canDelete found myself " + getMemberId() + " member = " + member.getMemberId());
+        }
+      }
+      if (notLastMemberOfZone) {
+        logger.info("MLH canDelete not the last member of the zone!");
+        return RefusalReason.NONE;
       }
     }
-    return RefusalReason.NONE;
+    logger.info("MLH canDelete UH-OH last member of the zone!");
+    return RefusalReason.DIFFERENT_ZONE;
   }
 
 
