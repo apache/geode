@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,12 +37,10 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -57,8 +56,8 @@ public class ZRemRangeByRankDUnitTest {
 
   private JedisCluster jedis;
   private List<MemberVM> servers;
-  private static final String KEY = "key";
-  private static final String BASE_MEMBER_NAME = "member-";
+  private static String KEY;
+  private static final String BASE_MEMBER_NAME = "member";
   private static final int SET_SIZE = 1000;
   private final AtomicBoolean isCrashing = new AtomicBoolean(false);
 
@@ -77,6 +76,8 @@ public class ZRemRangeByRankDUnitTest {
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+
+    KEY = RandomStringUtils.randomAlphabetic(8);
   }
 
   @After
@@ -114,17 +115,6 @@ public class ZRemRangeByRankDUnitTest {
     assertThat(jedis.exists(KEY)).isFalse();
   }
 
-  private void doZRemRangeByRankOnMembers(int numberOfMemberToRemove, AtomicInteger total) {
-    long count = jedis.zremrangeByRank(KEY, 0, numberOfMemberToRemove - 1);
-    total.addAndGet((int) count);
-  }
-
-  private void doZRemRangeByRankOnMembersWithOffset(int numberOfMemberToRemove, int offset,
-      AtomicInteger total) {
-    long count = jedis.zremrangeByRank(KEY, offset, (offset + numberOfMemberToRemove) - 1);
-    total.addAndGet((int) count);
-  }
-
   @Test
   public void zRemRangeByRankRemovesMembersFromSortedSetAfterPrimaryShutsDown() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
@@ -139,36 +129,8 @@ public class ZRemRangeByRankDUnitTest {
     assertThat(jedis.exists(KEY)).isFalse();
   }
 
-  private void doZRemRangeByRankWithRetries(Map<String, Double> map) {
-    int maxRetryAttempts = 10;
-    int retryAttempts = 0;
-    while (!zRemRangeByRankWithRetries(map, retryAttempts, maxRetryAttempts)) {
-      retryAttempts++;
-    }
-  }
-
-  private boolean zRemRangeByRankWithRetries(Map<String, Double> map, int retries, int maxRetries) {
-    long removed;
-    try {
-      removed = jedis.zremrangeByRank(KEY, 0, -1);
-    } catch (JedisClusterMaxAttemptsException e) {
-      if (retries < maxRetries) {
-        return false;
-      }
-      throw e;
-    }
-    assertThat(removed).isEqualTo(map.size());
-    return true;
-  }
-
-  private void removeAllButFirstEntry() {
-    await().until(isCrashing::get);
-    long removed = jedis.zremrangeByRank(KEY, 1, -1);
-    assertThat(removed).isEqualTo(SET_SIZE - 1);
-  }
-
   @Test
-  public void zRemRangeByRankCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed()
+  public void zRemRangeByRankCanRemoveMembersFromSortedSetWhenPrimaryIsCrashed()
       throws Exception {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
 
@@ -208,6 +170,45 @@ public class ZRemRangeByRankDUnitTest {
     return true;
   }
 
+  private void doZRemRangeByRankOnMembers(int numberOfMemberToRemove, AtomicInteger total) {
+    long count = jedis.zremrangeByRank(KEY, 0, numberOfMemberToRemove - 1);
+    total.addAndGet((int) count);
+  }
+
+  private void doZRemRangeByRankOnMembersWithOffset(int numberOfMemberToRemove, int offset,
+      AtomicInteger total) {
+    long count = jedis.zremrangeByRank(KEY, offset, (offset + numberOfMemberToRemove) - 1);
+    total.addAndGet((int) count);
+  }
+
+  private void doZRemRangeByRankWithRetries(Map<String, Double> map) {
+    int maxRetryAttempts = 10;
+    int retryAttempts = 0;
+    while (!zRemRangeByRankWithRetries(map, retryAttempts, maxRetryAttempts)) {
+      retryAttempts++;
+    }
+  }
+
+  private boolean zRemRangeByRankWithRetries(Map<String, Double> map, int retries, int maxRetries) {
+    long removed;
+    try {
+      removed = jedis.zremrangeByRank(KEY, 0, -1);
+    } catch (JedisClusterMaxAttemptsException e) {
+      if (retries < maxRetries) {
+        return false;
+      }
+      throw e;
+    }
+    assertThat(removed).isEqualTo(map.size());
+    return true;
+  }
+
+  private void removeAllButFirstEntry() {
+    await().until(isCrashing::get);
+    long removed = jedis.zremrangeByRank(KEY, 1, -1);
+    assertThat(removed).isEqualTo(SET_SIZE - 1);
+  }
+
   private void stopNodeWithPrimaryBucketOfTheKey(boolean isCrash) {
     boolean isPrimary;
     for (MemberVM server : servers) {
@@ -225,22 +226,11 @@ public class ZRemRangeByRankDUnitTest {
   }
 
   private static boolean isPrimaryForKey() {
-    int bucketId = getBucketId(new RedisKey(KEY.getBytes()));
-    return isPrimaryForBucket(bucketId);
-  }
-
-  private static int getBucketId(Object key) {
-    return PartitionedRegionHelper.getHashKey((PartitionedRegion) getDataRegion(), Operation.GET,
-        key, null, null);
-  }
-
-  private static Region<RedisKey, RedisData> getDataRegion() {
-    return ClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
-  }
-
-  private static boolean isPrimaryForBucket(int bucketId) {
-    return ((PartitionedRegion) getDataRegion()).getLocalPrimaryBucketsListTestOnly()
-        .contains(bucketId);
+    PartitionedRegion region = (PartitionedRegion) ClusterStartupRule.getCache()
+        .getRegion(RegionProvider.REDIS_DATA_REGION);
+    int bucketId = PartitionedRegionHelper.getHashKey(region, Operation.GET,
+        new RedisKey(KEY.getBytes()), null, null);
+    return region.getLocalPrimaryBucketsListTestOnly().contains(bucketId);
   }
 
   private Map<String, Double> makeMemberScoreMap() {

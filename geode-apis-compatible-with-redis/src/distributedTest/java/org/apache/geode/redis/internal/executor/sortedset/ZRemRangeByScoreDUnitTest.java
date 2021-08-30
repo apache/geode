@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,8 +60,8 @@ public class ZRemRangeByScoreDUnitTest {
 
   private JedisCluster jedis;
   private List<MemberVM> servers;
-  private static final String KEY = "key";
-  private static final String MEMBER_NAME = "memberName";
+  private static String KEY;
+  private static final String BASE_MEMBER_NAME = "member";
   private final int SET_SIZE = 500;
   private final AtomicBoolean isCrashing = new AtomicBoolean(false);
 
@@ -81,6 +82,7 @@ public class ZRemRangeByScoreDUnitTest {
 
     jedis =
         new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
+    KEY = RandomStringUtils.randomAlphabetic(8);
   }
 
   @After
@@ -103,7 +105,7 @@ public class ZRemRangeByScoreDUnitTest {
         .isEqualTo(removeRangeSize);
 
     for (int i = 0; i < removeRangeSize; ++i) {
-      assertThat(jedis.zrank(KEY, MEMBER_NAME + i)).isNull();
+      assertThat(jedis.zrank(KEY, BASE_MEMBER_NAME + i)).isNull();
     }
 
     assertThat(jedis.zrange(KEY, 0, -1)).containsExactlyElementsOf(expected);
@@ -222,7 +224,7 @@ public class ZRemRangeByScoreDUnitTest {
 
   private Map<String, Double> makeMemberScoreMap() {
     Map<String, Double> scoreMemberPairs = new HashMap<>();
-    String memberName = MEMBER_NAME;
+    String memberName = BASE_MEMBER_NAME;
     for (int i = 0; i < SET_SIZE; i++) {
       memberName = memberName + i;
       scoreMemberPairs.put(memberName, (double) i);
