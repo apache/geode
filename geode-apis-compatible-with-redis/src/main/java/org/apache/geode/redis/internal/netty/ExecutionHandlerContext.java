@@ -37,7 +37,6 @@ import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.ParameterRequirements.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
@@ -51,6 +50,7 @@ import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
+import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 

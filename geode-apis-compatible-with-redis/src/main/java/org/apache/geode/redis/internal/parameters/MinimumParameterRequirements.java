@@ -13,24 +13,23 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameters;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MultipleParameterRequirements implements ParameterRequirements {
-  private final ParameterRequirements parameterRequirements;
-  private final ParameterRequirements moreRequirements;
+public class MinimumParameterRequirements implements ParameterRequirements {
+  private final int minimum;
 
-  public MultipleParameterRequirements(
-      ParameterRequirements parameterRequirements, ParameterRequirements moreRequirements) {
-    this.parameterRequirements = parameterRequirements;
-    this.moreRequirements = moreRequirements;
+  public MinimumParameterRequirements(int minimum) {
+    this.minimum = minimum;
   }
 
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    this.moreRequirements.checkParameters(command, executionHandlerContext);
-    this.parameterRequirements.checkParameters(command, executionHandlerContext);
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    if (command.getProcessedCommand().size() < minimum) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+    }
   }
+
 }

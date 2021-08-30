@@ -13,23 +13,23 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameters;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MinimumParameterRequirements implements ParameterRequirements {
-  private final int minimum;
-
-  public MinimumParameterRequirements(int minimum) {
-    this.minimum = minimum;
-  }
-
+public class SpopParameterRequirements implements ParameterRequirements {
   @Override
   public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() < minimum) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+    if (command.getProcessedCommand().size() == 3) {
+      try {
+        bytesToLong(command.getProcessedCommand().get(2));
+      } catch (NumberFormatException nex) {
+        throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
+      }
     }
   }
-
 }

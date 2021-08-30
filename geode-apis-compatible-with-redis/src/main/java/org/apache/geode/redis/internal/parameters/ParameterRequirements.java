@@ -13,22 +13,15 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameters;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ExactParameterRequirements implements ParameterRequirements {
-  private int number;
+public interface ParameterRequirements {
+  void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext);
 
-  public ExactParameterRequirements(int number) {
-    this.number = number;
-  }
-
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() != number) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    }
+  default ParameterRequirements and(ParameterRequirements moreRequirements) {
+    return new MultipleParameterRequirements(this, moreRequirements);
   }
 }
