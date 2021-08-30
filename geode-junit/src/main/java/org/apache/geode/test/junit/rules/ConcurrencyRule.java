@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Stopwatch;
 import org.junit.rules.ErrorCollector;
-import org.junit.rules.ExternalResource;
 
+import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
  * A rule for testing using multiple threads. This rule should not be used as a class rule. This
@@ -73,7 +73,7 @@ import org.junit.rules.ExternalResource;
  * </code>
  * </pre>
  */
-public class ConcurrencyRule extends ExternalResource {
+public class ConcurrencyRule extends SerializableExternalResource {
 
   private final ExecutorService threadPool = Executors.newCachedThreadPool();
   private final Collection<ConcurrentOperation> toInvoke;

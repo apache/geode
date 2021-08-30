@@ -62,8 +62,6 @@ dependencies {
 
   testImplementation('pl.pragmatists:JUnitParams')
 
-  integrationTestImplementation(project(':geode-core'))
-  integrationTestImplementation(project(':geode-serialization'))
 }
 
 test {

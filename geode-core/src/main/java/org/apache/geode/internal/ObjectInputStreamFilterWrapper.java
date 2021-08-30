@@ -15,12 +15,12 @@
 package org.apache.geode.internal;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +30,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
@@ -66,10 +66,10 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
   private Method serialClassMethod; // method on ObjectInputFilter$FilterInfo
 
   public ObjectInputStreamFilterWrapper(String serializationFilterSpec,
-      Collection<SanctionedSerializablesService> services) {
+      Collection<DistributedSystemService> services) {
 
     Set<String> sanctionedClasses = new HashSet<>(500);
-    for (SanctionedSerializablesService service : services) {
+    for (DistributedSystemService service : services) {
       try {
         Collection<String> classNames = service.getSerializationAcceptlist();
         logger.info("loaded {} sanctioned serializables from {}", classNames.size(),
@@ -79,6 +79,25 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
         throw new InternalGemFireException("error initializing serialization filter for " + service,
             e);
       }
+    }
+
+    try {
+      URL sanctionedSerializables = ClassPathLoader.getLatest()
+          .getResource(InternalDataSerializer.class, "sanctioned-geode-core-serializables.txt");
+      Collection<String> coreClassNames =
+          InternalDataSerializer.loadClassNames(sanctionedSerializables);
+
+      URL sanctionedManagementSerializables = ClassPathLoader.getLatest()
+          .getResource(InternalDataSerializer.class,
+              "sanctioned-geode-management-serializables.txt");
+      Collection<String> managmentClassNames =
+          InternalDataSerializer.loadClassNames(sanctionedManagementSerializables);
+
+      sanctionedClasses.addAll(coreClassNames);
+      sanctionedClasses.addAll(managmentClassNames);
+    } catch (IOException e) {
+      throw new InternalGemFireException(
+          "unable to read sanctionedSerializables.txt to form a serialization acceptlist", e);
     }
 
     logger.info("setting a serialization filter containing {}", serializationFilterSpec);
@@ -213,7 +232,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
             Object status = checkInputMethod.invoke(userFilter, filterInfo);
             if (status == REJECTED) {
               logger.fatal("Serialization filter is rejecting class {}", className,
-                  new InvalidClassException(className));
+                  new Exception(""));
             }
             return status;
           }

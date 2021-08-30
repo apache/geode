@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_LOOK_FOR_STUCK_THREAD;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIMEOUT;
@@ -37,7 +36,7 @@ import org.junit.rules.Timeout;
 public class SerializableTimeoutTest {
 
   @Test
-  public void hasThreeFields() {
+  public void hasThreeFields() throws Exception {
     Field[] fields = Timeout.class.getDeclaredFields();
     assertThat(fields.length).as("Fields: " + Arrays.asList(fields)).isEqualTo(3);
   }
@@ -61,7 +60,7 @@ public class SerializableTimeoutTest {
   }
 
   @Test
-  public void fieldsCanBeRead() {
+  public void fieldsCanBeRead() throws Exception {
     long timeout = 1000;
     TimeUnit timeUnit = TimeUnit.MILLISECONDS;
     boolean lookingForStuckThread = false;
@@ -76,27 +75,14 @@ public class SerializableTimeoutTest {
   }
 
   @Test
-  public void isSerializable() {
-    SerializableTimeout serializableTimeout =
-        new SerializableTimeout(SerializableTimeout.builder());
-
-    assertThat(serializableTimeout).isInstanceOf(Serializable.class);
+  public void isSerializable() throws Exception {
+    assertThat(SerializableTimeout.class).isInstanceOf(Serializable.class);
   }
 
   @Test
-  public void serializes() {
-    SerializableTimeout serializableTimeout =
-        new SerializableTimeout(SerializableTimeout.builder());
-
-    SerializableTimeout clone = SerializationUtils.clone(serializableTimeout);
-
-    assertThat(clone.timeout(SECONDS)).isEqualTo(serializableTimeout.timeout(SECONDS));
-  }
-
-  @Test
-  public void canBeSerialized() {
+  public void canBeSerialized() throws Exception {
     long timeout = 2;
-    TimeUnit timeUnit = SECONDS;
+    TimeUnit timeUnit = TimeUnit.SECONDS;
     boolean lookingForStuckThread = true;
 
     SerializableTimeout instance = SerializableTimeout.builder().withTimeout(timeout, timeUnit)

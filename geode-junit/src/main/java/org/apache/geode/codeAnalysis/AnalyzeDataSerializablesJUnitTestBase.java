@@ -14,7 +14,6 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,10 +62,8 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
       + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
       + NEW_LINE + "%s to " + NEW_LINE + "%s.";
   protected static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
-  protected static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
+  private static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
   protected static final String OPEN_BUGS_TXT = "openBugs.txt";
-  protected static final String SANCTIONED_DATA_SERIALIZABLES_FILE =
-      "sanctionedDataSerializables.txt";
 
   /**
    * all loaded classes
@@ -98,7 +94,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
    * you have put your sanctioned-modulename-serializables.txt file in the production resources
    * tree.
    */
-  protected abstract Class<?> getModuleClass();
+  protected abstract Class getModuleClass();
 
   /**
    * Implement this to deserialize an object that was serialized with serializeObject()
@@ -120,13 +116,11 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
 
   private void loadExpectedDataSerializables() throws Exception {
-    expectedDataSerializablesFile = getResourceAsFile(SANCTIONED_DATA_SERIALIZABLES_FILE);
-    if (expectedDataSerializablesFile == null) {
-      expectedDataSerializables = emptyList();
-    } else {
-      expectedDataSerializables =
-          CompiledClassUtils.loadClassesAndMethods(expectedDataSerializablesFile);
-    }
+    this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
+    assertThat(this.expectedDataSerializablesFile).exists().canRead();
+
+    this.expectedDataSerializables =
+        CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
   }
 
   public void findClasses() throws Exception {
@@ -226,13 +220,9 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
         "$1" + getModuleName() + File.separator + srcResourcePath + "$2");
   }
 
-  protected List<String> loadExcludedClasses(File excludedClassesFile) throws IOException {
-    if (excludedClassesFile == null) {
-      return emptyList();
-    }
-
+  protected List<String> loadExcludedClasses(File exclusionsFile) throws IOException {
     List<String> excludedClasses = new LinkedList<>();
-    FileReader fr = new FileReader(excludedClassesFile);
+    FileReader fr = new FileReader(exclusionsFile);
     BufferedReader br = new BufferedReader(fr);
     try {
       String line;
@@ -248,13 +238,9 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return excludedClasses;
   }
 
-  protected List<String> loadOpenBugs(File openBugsFile) throws IOException {
-    if (openBugsFile == null) {
-      return emptyList();
-    }
-
+  protected List<String> loadOpenBugs(File exclusionsFile) throws IOException {
     List<String> excludedClasses = new LinkedList<>();
-    FileReader fr = new FileReader(openBugsFile);
+    FileReader fr = new FileReader(exclusionsFile);
     BufferedReader br = new BufferedReader(fr);
     try {
       String line;
@@ -337,23 +323,15 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
   /**
    * Use this method to get a resource stored in the test's resource directory
    */
-  File getResourceAsFile(String resourceName) {
-    URL resource = getResource(getClass(), resourceName);
-    if (resource == null) {
-      return null;
-    }
-    return new File(resource.getFile());
+  protected File getResourceAsFile(String resourceName) {
+    return new File(getClass().getResource(resourceName).getFile());
   }
 
   /**
    * Use this method to get a resource that might be in a JAR file
    */
-  protected InputStream getResourceAsStream(Class<?> associatedClass, String resourceName)
+  protected InputStream getResourceAsStream(Class associatedClass, String resourceName)
       throws IOException {
-    return getResource(associatedClass, resourceName).openStream();
-  }
-
-  private static URL getResource(final Class<?> classInSamePackage, final String resourceName) {
-    return classInSamePackage.getResource(resourceName);
+    return associatedClass.getResource(resourceName).openStream();
   }
 }

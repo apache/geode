@@ -26,11 +26,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class ServerLauncherStartupRule extends SerializableExternalResource {
   private ServerLauncher launcher;
-  private final TemporaryFolder temp = new SerializableTemporaryFolder();
+  private final TemporaryFolder temp = new TemporaryFolder();
   private final Properties properties = new Properties();
   private boolean autoStart;
   private UnaryOperator<ServerLauncher.Builder> builderOperator;
