@@ -475,7 +475,8 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      if (member.canDelete(bucket, this.partitionedRegion.getMyId(), true).willAccept()) {
+      if (member.canDelete(bucket, this.partitionedRegion.getMyId(), true,
+          partitionedRegion.getDistributionManager()).willAccept()) {
         float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
         if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
           Move move = new Move(null, member, bucket);

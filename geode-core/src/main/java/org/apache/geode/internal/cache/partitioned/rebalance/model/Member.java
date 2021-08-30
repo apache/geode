@@ -20,6 +20,8 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -58,28 +60,34 @@ public class Member implements Comparable<Member> {
     this.localMaxMemory = localMaxMemory;
   }
 
+
+
   /**
    * @param sourceMember the member we will be moving this bucket off of
    * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
-   *        IP address.
    */
   public RefusalReason canDelete(Bucket bucket, InternalDistributedMember sourceMember,
-      boolean checkZone) {
-    // Check the ip address
-    if (checkZone) {
-      if (addressComparor.enforceUniqueZones()
-          && !addressComparor.areSameZone(getMemberId(), sourceMember)) {
-        logger.debug(
-            "Member {} cannot delete {} because it is in a different redundancy zone than {}",
-            getMemberId(), bucket, sourceMember);
-        return RefusalReason.DIFFERENT_ZONE;
-      } else {
-        logger.debug(
-            "Member {} will delete  {} because it is already on another member with the same redundancy zone",
-            this, bucket);
+      boolean checkZone,
+      DistributionManager distributionManager) {
+    if (distributionManager instanceof ClusterDistributionManager) {
+      ClusterDistributionManager clusterDistributionManager =
+          (ClusterDistributionManager) distributionManager;
+      String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
+      boolean notLastMemberOfZone = false;
+      for (Member member : bucket.getMembersHosting()) {
+        if (!member.getMemberId().equals(this.getMemberId())) {
+          String memberRedundancyZone =
+              clusterDistributionManager.getRedundancyZone(member.memberId);
+          if (memberRedundancyZone.equals(myRedundancyZone)) {
+            notLastMemberOfZone = true;
+          }
+        }
+      }
+      if (notLastMemberOfZone) {
+        return RefusalReason.NONE;
       }
     }
-    return RefusalReason.NONE;
+    return RefusalReason.LAST_MEMBER_IN_ZONE;
   }
 
 
