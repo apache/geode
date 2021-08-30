@@ -36,8 +36,8 @@ import org.apache.geode.redis.RedisIntegrationTest;
 @RunWith(JUnitParamsRunner.class)
 public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
-  public static final int SCORE = 1;
-  public static final String BASE_MEMBER_NAME = "v";
+  public static final int BASE_SCORE = 1;
+  public static final String BASE_MEMBER_NAME = "member";
 
   JedisCluster jedis;
 
@@ -59,7 +59,7 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
 
   @Test
   @Parameters({"a", "--", "++", "4="})
-  public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
+  public void shouldError_givenInvalidStartOrStop(String invalidArgument) {
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY, "1", invalidArgument))
             .hasMessageContaining(ERROR_NOT_INTEGER);
@@ -73,23 +73,30 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
 
   @Test
   public void shouldReturnZero_givenNonExistentKey() {
-    jedis.zadd(KEY, SCORE, "member1");
+    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME);
     assertThat(jedis.zremrangeByRank("fakeKey", 0, 1)).isEqualTo(0);
   }
 
   @Test
   public void shouldReturnZero_givenMinGreaterThanMax() {
-    jedis.zadd(KEY, SCORE, "member");
+    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME);
 
     assertThat(jedis.zremrangeByRank(KEY, 1, 0)).isEqualTo(0);
   }
 
   @Test
-  public void shouldReturnMember_givenMemberRankInRange() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName + "0");
-    jedis.zadd(KEY, SCORE + 1, memberName + "1");
-    jedis.zadd(KEY, SCORE + 2, memberName + "2");
+  public void shouldRemoveMember_givenMemberRankInRange() {
+    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME);
+
+    assertThat(jedis.zremrangeByRank(KEY, 0, 0)).isEqualTo(1);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME)).isNull();
+  }
+
+  @Test
+  public void shouldReturnOne_givenMemberRankInRange() {
+    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME + "0");
+    jedis.zadd(KEY, BASE_SCORE + 1, BASE_MEMBER_NAME + "1");
+    jedis.zadd(KEY, BASE_SCORE + 2, BASE_MEMBER_NAME + "2");
 
     assertThat(jedis.zremrangeByRank(KEY, 2, 2)).isEqualTo(1);
     assertThat(jedis.zremrangeByRank(KEY, 1, 1)).isEqualTo(1);
@@ -97,11 +104,9 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
     assertThat(jedis.zcard(KEY)).isEqualTo(0);
   }
 
-
   @Test
   public void shouldReturnZero_givenRangeExcludingMember() {
-    String memberName = "member";
-    jedis.zadd(KEY, SCORE, memberName);
+    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME);
 
     assertThat(jedis.zremrangeByRank(KEY, 1, 2)).isEqualTo(0);
     assertThat(jedis.zcard(KEY)).isEqualTo(1);
@@ -112,12 +117,25 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
     populateSortedSet();
 
     assertThat(jedis.zcard(KEY)).isEqualTo(10);
+
     assertThat(jedis.zremrangeByRank(KEY, 8, 9)).isEqualTo(2);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 8)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 9)).isNull();
+
     assertThat(jedis.zremrangeByRank(KEY, 4, 7)).isEqualTo(4);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 4)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 5)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 6)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 7)).isNull();
+
     assertThat(jedis.zremrangeByRank(KEY, 0, 3)).isEqualTo(4);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 0)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 1)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 2)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 3)).isNull();
+
     assertThat(jedis.zcard(KEY)).isEqualTo(0);
   }
-
 
   @Test
   public void shouldReturnAccurateCountOfRemovedMembers_givenRangePastEndOfSet() {
@@ -135,7 +153,8 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
     assertThat(jedis.zcard(KEY)).isEqualTo(10);
     assertThat(jedis.zremrangeByRank(KEY, -2, -1)).isEqualTo(2);
     assertThat(jedis.zcard(KEY)).isEqualTo(8);
-    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 7)).isEqualTo(8);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 8)).isNull();
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + 9)).isNull();
   }
 
   @Test
@@ -175,16 +194,15 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
   public void shouldDeleteSet_whenAllMembersDeleted() {
     populateSortedSet();
 
-    assertThat(jedis.zremrangeByRank(KEY, 0, 9)).isEqualTo(10);
+    assertThat(jedis.zremrangeByRank(KEY, 0, -1)).isEqualTo(10);
     assertThat(jedis.exists(KEY)).isFalse();
   }
 
 
   // Add 10 members with the different scores and member names
   private void populateSortedSet() {
-    String memberName = BASE_MEMBER_NAME;
     for (int i = 0; i < 10; ++i) {
-      jedis.zadd(KEY, SCORE + i, memberName + i);
+      jedis.zadd(KEY, BASE_SCORE + i, BASE_MEMBER_NAME + i);
     }
   }
 }

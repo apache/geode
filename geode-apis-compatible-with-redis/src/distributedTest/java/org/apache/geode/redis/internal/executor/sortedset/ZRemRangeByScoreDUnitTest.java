@@ -57,8 +57,7 @@ public class ZRemRangeByScoreDUnitTest {
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private JedisCluster jedis1;
-  private JedisCluster jedis2;
+  private JedisCluster jedis;
   private List<MemberVM> servers;
   private static final String KEY = "key";
   private static final String MEMBER_NAME = "memberName";
@@ -79,23 +78,20 @@ public class ZRemRangeByScoreDUnitTest {
     servers.add(server3);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    int redisServerPort2 = clusterStartUp.getRedisPort(2);
 
-    jedis1 =
+    jedis =
         new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
-    jedis2 =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort2), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
   public void tearDown() {
-    jedis1.close();
+    jedis.close();
   }
 
   @Test
   public void zRemRangeByScore_removesMembersInRangeFromBothServers() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
-    jedis1.zadd(KEY, memberScoreMap);
+    jedis.zadd(KEY, memberScoreMap);
     verifyDataExists(memberScoreMap);
 
     int removeRangeSize = 4;
@@ -103,22 +99,20 @@ public class ZRemRangeByScoreDUnitTest {
         .collect(Collectors.toList())).subList(removeRangeSize, SET_SIZE);
 
     // Subtract 1 from removeRangeSize here since scores start from 0, not 1
-    assertThat(jedis1.zremrangeByScore(KEY, "0", String.valueOf(removeRangeSize - 1)))
+    assertThat(jedis.zremrangeByScore(KEY, "0", String.valueOf(removeRangeSize - 1)))
         .isEqualTo(removeRangeSize);
 
     for (int i = 0; i < removeRangeSize; ++i) {
-      assertThat(jedis1.zrank(KEY, MEMBER_NAME + i)).isNull();
-      assertThat(jedis2.zrank(KEY, MEMBER_NAME + i)).isNull();
+      assertThat(jedis.zrank(KEY, MEMBER_NAME + i)).isNull();
     }
 
-    assertThat(jedis1.zrange(KEY, 0, -1)).containsExactlyElementsOf(expected);
-    assertThat(jedis2.zrange(KEY, 0, -1)).containsExactlyElementsOf(expected);
+    assertThat(jedis.zrange(KEY, 0, -1)).containsExactlyElementsOf(expected);
   }
 
   @Test
   public void zRemRangeByScore_concurrentlyRemovesMembersInRangeFromBothServers() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
-    jedis1.zadd(KEY, memberScoreMap);
+    jedis.zadd(KEY, memberScoreMap);
     verifyDataExists(memberScoreMap);
 
     AtomicInteger totalRemoved = new AtomicInteger();
@@ -127,8 +121,7 @@ public class ZRemRangeByScoreDUnitTest {
         (i) -> doZRemRangeByScore(i * rangeSize, totalRemoved),
         (i) -> doZRemRangeByScore(i * rangeSize, totalRemoved)).run();
 
-    assertThat(jedis1.exists(KEY)).isFalse();
-    assertThat(jedis2.exists(KEY)).isFalse();
+    assertThat(jedis.exists(KEY)).isFalse();
 
     assertThat(totalRemoved.get()).isEqualTo(SET_SIZE);
   }
@@ -136,7 +129,7 @@ public class ZRemRangeByScoreDUnitTest {
   @Test
   public void zRemRangeByScoreRemovesMembersFromSortedSetAfterPrimaryShutsDown() {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
-    jedis1.zadd(KEY, memberScoreMap);
+    jedis.zadd(KEY, memberScoreMap);
     verifyDataExists(memberScoreMap);
 
     stopNodeWithPrimaryBucketOfTheKey(false);
@@ -144,8 +137,7 @@ public class ZRemRangeByScoreDUnitTest {
     doZRemRangeByScoreWithRetries(memberScoreMap);
 
     verifyDataDoesNotExist(memberScoreMap);
-    assertThat(jedis1.exists(KEY)).isFalse();
-    assertThat(jedis2.exists(KEY)).isFalse();
+    assertThat(jedis.exists(KEY)).isFalse();
   }
 
   @Test
@@ -153,10 +145,10 @@ public class ZRemRangeByScoreDUnitTest {
       throws ExecutionException, InterruptedException {
     Map<String, Double> memberScoreMap = makeMemberScoreMap();
 
-    jedis1.zadd(KEY, memberScoreMap);
+    jedis.zadd(KEY, memberScoreMap);
     verifyDataExists(memberScoreMap);
 
-    String firstMember = String.join("", jedis1.zrange(KEY, 0, 0));
+    String firstMember = String.join("", jedis.zrange(KEY, 0, 0));
     memberScoreMap.remove(firstMember);
 
     Future<Void> future1 = executor.submit(() -> stopNodeWithPrimaryBucketOfTheKey(true));
@@ -166,19 +158,19 @@ public class ZRemRangeByScoreDUnitTest {
     future2.get();
 
     await().until(() -> verifyDataDoesNotExist(memberScoreMap));
-    assertThat(jedis1.zrank(KEY, firstMember)).isZero();
-    assertThat(jedis1.exists(KEY)).isTrue();
+    assertThat(jedis.zrank(KEY, firstMember)).isZero();
+    assertThat(jedis.exists(KEY)).isTrue();
   }
 
   private void verifyDataExists(Map<String, Double> memberScoreMap) {
     for (String member : memberScoreMap.keySet()) {
-      Double score = jedis1.zscore(KEY, member);
+      Double score = jedis.zscore(KEY, member);
       assertThat(score).isEqualTo(memberScoreMap.get(member));
     }
   }
 
   private void doZRemRangeByScore(int i, AtomicInteger total) {
-    long count = jedis1.zremrangeByScore(KEY, String.valueOf(i), String.valueOf(i + 5));
+    long count = jedis.zremrangeByScore(KEY, String.valueOf(i), String.valueOf(i + 5));
     total.addAndGet((int) count);
   }
 
@@ -201,7 +193,7 @@ public class ZRemRangeByScoreDUnitTest {
   private boolean verifyDataDoesNotExist(Map<String, Double> memberScoreMap) {
     try {
       for (String member : memberScoreMap.keySet()) {
-        Double score = jedis1.zscore(KEY, member);
+        Double score = jedis.zscore(KEY, member);
         assertThat(score).isNull();
       }
     } catch (JedisClusterMaxAttemptsException e) {
@@ -215,7 +207,7 @@ public class ZRemRangeByScoreDUnitTest {
     int rangeSize = 5;
     await().until(isCrashing::get);
     for (int i = 1; i < SET_SIZE; i += rangeSize) {
-      removed += jedis1.zremrangeByScore(KEY, String.valueOf(i), String.valueOf(i + rangeSize));
+      removed += jedis.zremrangeByScore(KEY, String.valueOf(i), String.valueOf(i + rangeSize));
     }
     assertThat(removed).isEqualTo(SET_SIZE - 1);
   }
@@ -250,7 +242,7 @@ public class ZRemRangeByScoreDUnitTest {
       int maxRetries) {
     long removed;
     try {
-      removed = jedis1.zremrangeByScore(KEY, "-inf", "+inf");
+      removed = jedis.zremrangeByScore(KEY, "-inf", "+inf");
     } catch (JedisClusterMaxAttemptsException e) {
       if (retries < maxRetries) {
         return false;

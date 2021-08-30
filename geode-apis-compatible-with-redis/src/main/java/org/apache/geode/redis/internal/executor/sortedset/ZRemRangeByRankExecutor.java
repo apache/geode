@@ -14,23 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
-public class ZRemRangeByRankExecutor
-    extends AbstractSortedSetRangeExecutor<SortedSetRankRangeOptions> {
-  @Override
-  public boolean isRev() {
-    return false;
-  }
-
-  @Override
-  public SortedSetRankRangeOptions createRangeOptions(List<byte[]> commandElements) {
-    return new SortedSetRankRangeOptions(commandElements, isRev());
-  }
-
+public class ZRemRangeByRankExecutor extends ZRangeExecutor {
   @Override
   public RedisResponse getEmptyResponse() {
     return RedisResponse.integer(0);
