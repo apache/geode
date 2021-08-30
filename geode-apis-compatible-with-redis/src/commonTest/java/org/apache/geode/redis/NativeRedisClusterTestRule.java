@@ -135,7 +135,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     int primaryCount = 0;
 
     try (Jedis jedis = new Jedis("localhost", port)) {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 60; i++) {
         nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
         primaryCount = nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum();
         if (primaryCount == wantedPrimaries) {
@@ -143,7 +143,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         }
 
         try {
-          Thread.sleep(500);
+          Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
       }
