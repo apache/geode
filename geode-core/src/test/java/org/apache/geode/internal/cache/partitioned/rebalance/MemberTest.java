@@ -53,7 +53,7 @@ public class MemberTest {
     Bucket bucket = mock(Bucket.class);
     Member memberUnderTest = new Member(addressComparor, memberId, false, false);
     assertThat(memberUnderTest.canDelete(bucket, sourceId, true))
-        .isEqualTo(RefusalReason.DIFFERENT_ZONE);
+        .isEqualTo(RefusalReason.LAST_MEMBER_IN_ZONE);
   }
 
 

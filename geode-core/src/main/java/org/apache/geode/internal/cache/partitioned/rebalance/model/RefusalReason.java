@@ -19,7 +19,7 @@ public enum RefusalReason {
   ALREADY_HOSTING,
   UNITIALIZED_MEMBER,
   SAME_ZONE,
-  DIFFERENT_ZONE,
+  LAST_MEMBER_IN_ZONE,
   LOCAL_MAX_MEMORY_FULL,
   CRITICAL_HEAP;
 
@@ -48,9 +48,9 @@ public enum RefusalReason {
       case CRITICAL_HEAP:
         return "Target member " + target.getMemberId()
             + " has reached its critical heap percentage, and cannot accept more data";
-      case DIFFERENT_ZONE:
+      case LAST_MEMBER_IN_ZONE:
         return "Target member " + target.getMemberId()
-            + " is in a different redundancy zone than other members hosting bucket "
+            + " is the last member of redundancy zone for the bucket "
             + bucket.getId()
             + ": " + bucket.getMembersHosting();
       default:

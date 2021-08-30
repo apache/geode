@@ -69,37 +69,25 @@ public class Member implements Comparable<Member> {
   public RefusalReason canDelete(Bucket bucket, InternalDistributedMember sourceMember,
       boolean checkZone,
       DistributionManager distributionManager) {
-    logger.info("MLH canDelete called with bucket " + bucket + " sourceMember " + sourceMember
-        + " checkZone " + checkZone + " distributionManager " + distributionManager);
     if (distributionManager instanceof ClusterDistributionManager) {
       ClusterDistributionManager clusterDistributionManager =
           (ClusterDistributionManager) distributionManager;
       String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
-      logger.info("MLH canDelete member = " + this + " myRedundancyZone = " + myRedundancyZone);
       boolean notLastMemberOfZone = false;
       for (Member member : bucket.getMembersHosting()) {
         if (!member.getMemberId().equals(this.getMemberId())) {
           String memberRedundancyZone =
               clusterDistributionManager.getRedundancyZone(member.memberId);
-          logger.info(
-              "MLH canDelete member = " + member + " memberRedundancyZone " + memberRedundancyZone);
           if (memberRedundancyZone.equals(myRedundancyZone)) {
-            logger.info(
-                "MLH canDelete member = " + member + " is another member of my redundancy zone");
             notLastMemberOfZone = true;
           }
-        } else {
-          logger.info(
-              "MLH canDelete found myself " + getMemberId() + " member = " + member.getMemberId());
         }
       }
       if (notLastMemberOfZone) {
-        logger.info("MLH canDelete not the last member of the zone!");
         return RefusalReason.NONE;
       }
     }
-    logger.info("MLH canDelete UH-OH last member of the zone!");
-    return RefusalReason.DIFFERENT_ZONE;
+    return RefusalReason.LAST_MEMBER_IN_ZONE;
   }
 
 
