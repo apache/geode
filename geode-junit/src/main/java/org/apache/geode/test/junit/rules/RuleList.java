@@ -43,7 +43,9 @@ public class RuleList implements TestRule {
   /**
    * Creates an empty {@code RuleList}.
    */
-  public RuleList() {}
+  public RuleList() {
+    // nothing
+  }
 
   /**
    * Creates a {@code RuleList} containing a single {@link TestRule}.
@@ -51,7 +53,7 @@ public class RuleList implements TestRule {
    * @param rule the first rule of the {@code RuleList}
    */
   public RuleList(final TestRule rule) {
-    this.rules.add(rule);
+    rules.add(rule);
   }
 
   /**
@@ -60,7 +62,9 @@ public class RuleList implements TestRule {
    * @param rules the list of {@code TestRule}s to add
    */
   protected RuleList(final List<TestRule> rules) {
-    this.rules.addAll(rules);
+    if (rules != null) {
+      this.rules.addAll(rules);
+    }
   }
 
   /**
@@ -70,13 +74,13 @@ public class RuleList implements TestRule {
    * @return the {@code RuleList} with a new TestRule added
    */
   public RuleList add(final TestRule rule) {
-    this.rules.add(rule);
+    rules.add(rule);
     return this;
   }
 
   @Override
   public Statement apply(Statement base, final Description description) {
-    for (TestRule each : this.rules) {
+    for (TestRule each : rules) {
       base = each.apply(base, description);
     }
     return base;
@@ -86,6 +90,6 @@ public class RuleList implements TestRule {
    * Returns a reference to the actual list of {@code TestRule}s. For use by subclasses and tests.
    */
   protected List<TestRule> rules() {
-    return this.rules;
+    return rules;
   }
 }
