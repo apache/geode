@@ -24,20 +24,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 
-public class ZaddsDeltaInfo implements DeltaInfo {
+public class ZAddsDeltaInfo implements DeltaInfo {
   private final ArrayList<byte[]> deltas = new ArrayList<>();
   private final ArrayList<Double> scores = new ArrayList<>();
 
-  public ZaddsDeltaInfo() {}
+  public ZAddsDeltaInfo() {}
 
-  public ZaddsDeltaInfo(List<byte[]> deltas, List<Double> scores) {
+  public ZAddsDeltaInfo(List<byte[]> deltas, List<Double> scores) {
     this.deltas.addAll(deltas);
     this.scores.addAll(scores);
   }
 
-  public ZaddsDeltaInfo(byte[] delta, Double score) {
+  public ZAddsDeltaInfo(byte[] delta, Double score) {
     this.deltas.add(delta);
     this.scores.add(score);
   }
@@ -48,15 +47,15 @@ public class ZaddsDeltaInfo implements DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    InternalDataSerializer.writeEnum(ZADDS, out);
-    InternalDataSerializer.writeArrayLength(deltas.size(), out);
+    DataSerializer.writeEnum(ZADDS, out);
+    DataSerializer.writePrimitiveInt(deltas.size(), out);
     for (int i = 0; i < deltas.size(); i++) {
       DataSerializer.writeByteArray(deltas.get(i), out);
       DataSerializer.writeDouble(scores.get(i), out);
     }
   }
 
-  public List<byte[]> getZAddsMembers() {
+  public List<byte[]> getZAddMembers() {
     return deltas;
   }
 

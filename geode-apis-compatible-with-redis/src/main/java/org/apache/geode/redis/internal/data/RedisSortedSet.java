@@ -75,7 +75,7 @@ public class RedisSortedSet extends AbstractRedisData {
     this.members = new MemberMap(members.size() + scores.size());
 
     if (members.size() != scores.size()) {
-      throw new NumberFormatException("there must be the same number of members and scores");
+      throw new IllegalArgumentException("there must be the same number of members and scores");
     }
 
     for (int i = 0; i < members.size(); i++) {
@@ -101,8 +101,8 @@ public class RedisSortedSet extends AbstractRedisData {
       AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
       membersAddAll(addsDeltaInfo);
     } else if (deltaInfo instanceof ZAddsDeltaInfo) {
-      ZAddsDeltaInfo ZAddsDeltaInfo = (ZAddsDeltaInfo) deltaInfo;
-      membersZAddAll(ZAddsDeltaInfo);
+      ZAddsDeltaInfo zaddsDeltaInfo = (ZAddsDeltaInfo) deltaInfo;
+      membersZAddAll(zaddsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
       membersRemoveAll(remsDeltaInfo);
@@ -208,9 +208,9 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  private synchronized void membersZAddAll(ZAddsDeltaInfo ZAddsDeltaInfo) {
-    List<byte[]> members = ZAddsDeltaInfo.getZAddMembers();
-    List<Double> scores = ZAddsDeltaInfo.getZAddScores();
+  private synchronized void membersZAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
+    List<byte[]> members = zaddsDeltaInfo.getZAddMembers();
+    List<Double> scores = zaddsDeltaInfo.getZAddScores();
     for (int i = 0; i < members.size(); i++) {
       memberAdd(members.get(i), scores.get(i));
     }
@@ -236,19 +236,16 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     if (membersToAdd.size() != scoresToAdd.size()) {
-      throw new NumberFormatException("there must be the same number of members and scores");
+      throw new IllegalArgumentException("there must be the same number of members and scores");
     }
 
     ZAddsDeltaInfo deltaInfo = null;
-    Iterator<byte[]> membersIterator = membersToAdd.iterator();
-    Iterator<Double> scoresIterator = scoresToAdd.iterator();
-
     int initialSize = scoreSet.size();
     int changesCount = 0;
 
-    while (membersIterator.hasNext()) {
-      double score = scoresIterator.next();
-      byte[] member = membersIterator.next();
+    for (int i = 0; i < membersToAdd.size(); i++) {
+      double score = scoresToAdd.get(i);
+      byte[] member = membersToAdd.get(i);
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
