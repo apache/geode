@@ -43,7 +43,7 @@ The following steps have been tested with **IntelliJ IDEA 2020.3.3**
 
     1. Select  **File -> Open...** from the menu.
     1. Select the `build.gradle` file in the Geode repository root and select **Open**.
-    1. In the **Open Project?** popup, select **Open Project**.
+    1. In the **Open Project?** popup, select **Open as Project**.
     1. In the **Trust and Open Gradle Project?** popup, select **Trust Project**.
     1. Wait for IntelliJ to import the project and complete its background tasks.
 
