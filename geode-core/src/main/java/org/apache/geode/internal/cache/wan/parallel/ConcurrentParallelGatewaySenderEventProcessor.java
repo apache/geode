@@ -217,7 +217,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
         }
       }
     }
-
   }
 
   private void waitForRunningStatus() {

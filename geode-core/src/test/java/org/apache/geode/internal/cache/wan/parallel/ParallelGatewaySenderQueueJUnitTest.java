@@ -565,7 +565,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
 
     ParallelGatewaySenderQueue queue1 =
         new ParallelGatewaySenderQueue(sender, targetRs, 0, 1, metaRegionFactory,
-            true);
+            true, true);
 
     verify(shadowRegion, times(1)).shadowPRWaitForBucketRecovery();
 
