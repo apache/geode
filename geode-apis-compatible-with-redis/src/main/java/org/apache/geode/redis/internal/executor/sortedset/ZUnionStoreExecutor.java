@@ -36,11 +36,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZUnionStoreExecutor extends AbstractExecutor {
 
-  /**
-   * The position in the command array where the source set keys start.
-   */
-  private static final int SOURCE_KEY_OFFSET = 3;
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
@@ -62,8 +57,8 @@ public class ZUnionStoreExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
-    List<RedisKey> sourceKeys = new ArrayList<>();
-    List<Double> weights = new ArrayList<>();
+    List<RedisKey> sourceKeys = new ArrayList<>((int) numKeys);
+    List<Double> weights = new ArrayList<>((int) numKeys);
     ZAggregator aggregator = ZAggregator.SUM;
 
     while (argIterator.hasNext()) {
