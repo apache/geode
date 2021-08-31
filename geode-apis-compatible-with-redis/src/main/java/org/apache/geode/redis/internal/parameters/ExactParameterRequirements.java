@@ -13,23 +13,22 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
-
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+package org.apache.geode.redis.internal.parameters;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SpopParameterRequirements implements ParameterRequirements {
+public class ExactParameterRequirements implements ParameterRequirements {
+  private int number;
+
+  public ExactParameterRequirements(int number) {
+    this.number = number;
+  }
+
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() == 3) {
-      try {
-        bytesToLong(command.getProcessedCommand().get(2));
-      } catch (NumberFormatException nex) {
-        throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
-      }
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    if (command.getProcessedCommand().size() != number) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
     }
   }
 }

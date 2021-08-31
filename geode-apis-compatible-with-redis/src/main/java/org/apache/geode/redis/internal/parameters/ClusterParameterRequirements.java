@@ -13,38 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameters;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class OddParameterRequirements implements ParameterRequirements {
-  private final String errorMessage;
-
-  public OddParameterRequirements() {
-    this(null);
-  }
-
-  public OddParameterRequirements(String errorMessage) {
-    this.errorMessage = errorMessage;
-  }
-
+public class ClusterParameterRequirements implements ParameterRequirements {
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (!isOdd(command.getProcessedCommand().size())) {
-      throw new RedisParametersMismatchException(getErrorMessage(command));
+  public void checkParameters(Command command, ExecutionHandlerContext context) {
+    int numberOfArguments = command.getProcessedCommand().size();
+
+    if (numberOfArguments < 2) {
+      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+    } else if (numberOfArguments > 2) {
+      throw new RedisParametersMismatchException(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
     }
   }
 
-  private boolean isOdd(int n) {
-    return n % 2 == 1;
-  }
-
-  private String getErrorMessage(Command command) {
-    if (errorMessage != null) {
-      return errorMessage;
-    }
-
-    return command.wrongNumberOfArgumentsErrorMessage();
-  }
 }

@@ -13,15 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.ParameterRequirements;
+package org.apache.geode.redis.internal.parameters;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public interface ParameterRequirements {
-  void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext);
+public class MultipleParameterRequirements implements ParameterRequirements {
+  private final ParameterRequirements parameterRequirements;
+  private final ParameterRequirements moreRequirements;
 
-  default ParameterRequirements and(ParameterRequirements moreRequirements) {
-    return new MultipleParameterRequirements(this, moreRequirements);
+  public MultipleParameterRequirements(
+      ParameterRequirements parameterRequirements, ParameterRequirements moreRequirements) {
+    this.parameterRequirements = parameterRequirements;
+    this.moreRequirements = moreRequirements;
+  }
+
+  @Override
+  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
+    this.moreRequirements.checkParameters(command, executionHandlerContext);
+    this.parameterRequirements.checkParameters(command, executionHandlerContext);
   }
 }
