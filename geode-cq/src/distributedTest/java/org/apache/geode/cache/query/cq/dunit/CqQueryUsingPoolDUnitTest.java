@@ -208,14 +208,14 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server, thePort, eviction, mirrorType);
   }
 
-  public void createServer(VM server, final int thePort, final boolean eviction,
+  public void createServer(VM server, final int port, final boolean eviction,
       final MirrorType mirrorType) {
 
     // Don't use ephemeral ports since those will probably fall out of the range as dictated by
     // AvailablePort.lowerBound and AvailablePort.upperBound. Usually that's OK unless the server
     // intends to be restarted using the same port as originally assigned ephemerally. There's
     // always a race when restarting servers, but this should reduce the problem just a bit.
-    int finalPort = thePort == 0 ? AvailablePortHelper.getRandomAvailableTCPPort() : thePort;
+    int actualPort = port == 0 ? AvailablePortHelper.getRandomAvailableTCPPort() : port;
 
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
       @Override
@@ -237,7 +237,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
 
         try {
-          startBridgeServer(finalPort, true);
+          startBridgeServer(actualPort, true);
         }
 
         catch (Exception ex) {
