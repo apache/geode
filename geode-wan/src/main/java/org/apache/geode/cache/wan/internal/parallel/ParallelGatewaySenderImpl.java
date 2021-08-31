@@ -70,7 +70,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         return;
       }
 
-      Set<Region> targetRs = new HashSet<Region>();
+      Set<Region> targetRs = new HashSet<>();
       for (InternalRegion pr : this.getCache().getApplicationRegions()) {
         if (((LocalRegion) pr).getAllGatewaySenderIds().contains(this.getId())) {
           targetRs.add(pr);
@@ -93,7 +93,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
       logger.info("Stopped {}", this);
 
-      enqueueTempDroppedEvents();
+      processTempDroppedEvents();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }

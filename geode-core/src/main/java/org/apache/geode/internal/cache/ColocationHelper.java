@@ -180,6 +180,7 @@ public class ColocationHelper {
         return false;
       }
     }
+
     // Check to make sure all of the persisted regions that are colocated
     // with this region have been created.
     return !hasOfflineColocatedChildRegions(partitionedRegion);

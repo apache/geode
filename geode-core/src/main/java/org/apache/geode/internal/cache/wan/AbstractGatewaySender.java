@@ -188,6 +188,16 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
+
+  /**
+   * Contains all events that were stored in temporary dropped events queue when
+   * hook to collect tmp dropped events is enabled
+   */
+  private volatile ConcurrentLinkedQueue<EntryEventImpl> hookForTmpDroppedEvents;
+
+  @VisibleForTesting
+  public static boolean ENABLE_HOOK_TMP_DROPPED_EVENTS = false;
+
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -1223,6 +1233,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
       tmpDroppedEvents.add(event);
+      if (ENABLE_HOOK_TMP_DROPPED_EVENTS) {
+        if (hookForTmpDroppedEvents == null) {
+          hookForTmpDroppedEvents = new ConcurrentLinkedQueue<>();
+        }
+        hookForTmpDroppedEvents.add(event);
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
       }
@@ -1232,6 +1248,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @VisibleForTesting
   public int getTmpDroppedEventSize() {
     return tmpDroppedEvents.size();
+  }
+
+  @VisibleForTesting
+  public int getTempDroppedEventsHookSize() {
+    return hookForTmpDroppedEvents.size();
   }
 
   /**
@@ -1249,7 +1270,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public void enqueueTempEvents() {
     if (eventProcessor != null) {// Fix for defect #47308
       // process tmpDroppedEvents
-      enqueueTempDroppedEvents();
+      processTempDroppedEvents();
 
       TmpQueueEvent nextEvent = null;
       final GatewaySenderStats stats = getStatistics();
@@ -1289,7 +1310,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * tmpDroppedEvents temporary queue. Once event processor is created then queue will be
    * drained and ParallelQueueRemovalMessage will be sent.
    */
-  public void enqueueTempDroppedEvents() {
+  public void processTempDroppedEvents() {
     if (this.eventProcessor != null) {
       // process tmpDroppedEvents
       EntryEventImpl droppedEvent;

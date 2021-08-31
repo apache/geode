@@ -430,7 +430,8 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
    * stores events in tmpDroppedEvents queue, and handles them after sender has been recovered.
    */
   @Test
-  public void testSubscriptionQueueWanTrafficWhileServerIsRestarted() throws Exception {
+  public void testEventsAreQueuedInTmpDroppedEventQueueDuringRecoveryOfSenderInStoppedState()
+      throws Exception {
     configureSites(true, "PARTITION_REDUNDANT_PERSISTENT", "1", "true");
 
     List<MemberVM> allMembers = new ArrayList<>();
@@ -451,6 +452,8 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
         .getCommandString();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
+    startServer.invoke(() -> AbstractGatewaySender.ENABLE_HOOK_TMP_DROPPED_EVENTS = true);
+
     startServer.stop(false);
 
     Thread thread = new Thread(
@@ -469,6 +472,12 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
         verifyTmpDroppedEventSize("ln", 0);
       });
     }
+
+    // check that events are stored in tmp dropped queue during the startup of server
+    startServer.invoke(() -> {
+      AbstractGatewaySender.ENABLE_HOOK_TMP_DROPPED_EVENTS = false;
+      verifyThatTempDroppedEventsHookIsTriggered("ln");
+    });
   }
 
   public static void verifyTmpDroppedEventSize(String senderId, int size) {
@@ -479,19 +488,28 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
         + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
   }
 
-  public static void testLocalQueueIsEmpty(String senderId) {
-    await()
-        .untilAsserted(() -> localQueueSize(senderId));
+  public static void verifyThatTempDroppedEventsHookIsTriggered(String senderId) {
+    GatewaySender sender = getGatewaySender(senderId);
+
+    AbstractGatewaySender ags = (AbstractGatewaySender) sender;
+    await().untilAsserted(
+        () -> assertNotEquals("Expected tmpDroppedEvents to be queued in tmpDroppedEvents queue", 0,
+            ags.getTempDroppedEventsHookSize()));
   }
 
-  public static void localQueueSize(String senderId) {
+  public static void testLocalQueueIsEmpty(String senderId) {
+    await()
+        .untilAsserted(() -> assertThatLocalQueueSizeIsZero(senderId));
+  }
+
+  public static void assertThatLocalQueueSizeIsZero(String senderId) {
     GatewaySender sender = getGatewaySender(senderId);
     int totalSize = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     if (queues != null) {
       for (RegionQueue q : queues) {
         ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
-        prQ.localSize(true);
+        totalSize += prQ.localSize(true);
       }
     }
     assertEquals(0, totalSize);
