@@ -57,10 +57,9 @@ public class ZRemRangeByScoreDUnitTest {
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-
   private JedisCluster jedis;
   private List<MemberVM> servers;
-  private static final String KEY = "key";
+  private static final String KEY = "ZRemRangeByScoreDUnitTestKey";
   private static final String BASE_MEMBER_NAME = "member";
   private final int SET_SIZE = 500;
   private final AtomicBoolean isCrashing = new AtomicBoolean(false);
@@ -205,7 +204,7 @@ public class ZRemRangeByScoreDUnitTest {
 
   private void removeAllButFirstEntry() {
     long removed = 0;
-    int rangeSize = 5;
+    int rangeSize = 10;
     await().until(isCrashing::get);
     for (int i = 1; i < SET_SIZE; i += rangeSize) {
       removed += jedis.zremrangeByScore(KEY, String.valueOf(i), String.valueOf(i + rangeSize));

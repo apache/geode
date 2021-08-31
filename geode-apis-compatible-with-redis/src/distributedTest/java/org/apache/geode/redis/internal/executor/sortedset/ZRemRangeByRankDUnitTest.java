@@ -55,7 +55,7 @@ public class ZRemRangeByRankDUnitTest {
 
   private JedisCluster jedis;
   private List<MemberVM> servers;
-  private static final String KEY = "key";
+  private static final String KEY = "ZRemRangeByRankDUnitTestKey";
   private static final String BASE_MEMBER_NAME = "member";
   private static final int SET_SIZE = 1000;
   private final AtomicBoolean isCrashing = new AtomicBoolean(false);
@@ -201,8 +201,12 @@ public class ZRemRangeByRankDUnitTest {
   }
 
   private void removeAllButFirstEntry() {
+    long removed = 0;
+    int rangeSize = 10;
     await().until(isCrashing::get);
-    long removed = jedis.zremrangeByRank(KEY, 1, -1);
+    for (int i = 1; i < SET_SIZE; i += rangeSize) {
+      removed += jedis.zremrangeByRank(KEY, 1, rangeSize);
+    }
     assertThat(removed).isEqualTo(SET_SIZE - 1);
   }
 
