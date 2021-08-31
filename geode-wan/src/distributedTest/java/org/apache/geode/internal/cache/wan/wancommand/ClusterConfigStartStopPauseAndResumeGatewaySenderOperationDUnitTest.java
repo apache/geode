@@ -340,7 +340,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     thread.start();
     thread1.start();
     thread.join();
-    thread.join();
+    thread1.join();
 
     verifyGatewaySenderState(false, false);
 
