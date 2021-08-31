@@ -57,6 +57,11 @@ public class LonerOperationExecutors implements OperationExecutors {
   }
 
   @Override
+  public Executor getWanCopyRegionFunctionExecutor() {
+    return executor;
+  }
+
+  @Override
   public OverflowQueueWithDMStats<Runnable> getSerialQueue(InternalDistributedMember sender) {
     throw new UnsupportedOperationException(
         "non-clustered caches do not support a serial executor queue");

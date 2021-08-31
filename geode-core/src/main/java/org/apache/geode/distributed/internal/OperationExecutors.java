@@ -56,6 +56,9 @@ public interface OperationExecutors {
   String FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
       "Function Execution Processor";
 
+  String WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX =
+      "WAN Copy Region Function Execution Processor";
+
   Executor getExecutor(int processorType, InternalDistributedMember sender);
 
   ExecutorService getThreadPool();
@@ -67,6 +70,8 @@ public interface OperationExecutors {
   ExecutorService getPrMetaDataCleanupThreadPool();
 
   Executor getFunctionExecutor();
+
+  Executor getWanCopyRegionFunctionExecutor();
 
   OverflowQueueWithDMStats<Runnable> getSerialQueue(InternalDistributedMember sender);
 }

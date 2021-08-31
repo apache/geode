@@ -39,6 +39,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ClusterOperationExecutors implements OperationExecutors {
@@ -148,6 +149,8 @@ public class ClusterOperationExecutors implements OperationExecutors {
   /** Function Execution executors */
   private ExecutorService functionExecutionThread;
   private ExecutorService functionExecutionPool;
+
+  private final ExecutorService wanCopyRegionFunctionExecutionPool;
 
   /** Message processing executor for serial, ordered, messages. */
   private final ExecutorService serialThread;
@@ -283,6 +286,9 @@ public class ClusterOperationExecutors implements OperationExecutors {
               thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
               stats.getFunctionExecutionPoolHelper(), threadMonitor);
     }
+
+    wanCopyRegionFunctionExecutionPool = LoggingExecutors
+        .newFixedThreadPool(10, WAN_COPY_REGION_FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX, true);
   }
 
   /**
@@ -345,6 +351,11 @@ public class ClusterOperationExecutors implements OperationExecutors {
     } else {
       return functionExecutionPool;
     }
+  }
+
+  @Override
+  public Executor getWanCopyRegionFunctionExecutor() {
+    return wanCopyRegionFunctionExecutionPool;
   }
 
   private Executor getSerialExecutor(InternalDistributedMember sender) {
@@ -504,6 +515,10 @@ public class ClusterOperationExecutors implements OperationExecutors {
     if (es != null) {
       es.shutdown();
     }
+    es = wanCopyRegionFunctionExecutionPool;
+    if (es != null) {
+      es.shutdown();
+    }
   }
 
   void waitForThreadsToStop(long timeInMillis) throws InterruptedException {
@@ -513,7 +528,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
     ExecutorService[] allExecutors = new ExecutorService[] {serialThread,
         functionExecutionThread, functionExecutionPool, partitionedRegionThread,
         partitionedRegionPool, highPriorityPool, waitingPool,
-        prMetaDataCleanupThreadPool, threadPool};
+        prMetaDataCleanupThreadPool, threadPool, wanCopyRegionFunctionExecutionPool};
     for (ExecutorService es : allExecutors) {
       if (es != null) {
         es.awaitTermination(remaining, TimeUnit.MILLISECONDS);
@@ -583,6 +598,10 @@ public class ClusterOperationExecutors implements OperationExecutors {
         stillAlive = true;
         culprits.append(" thread pool;");
       }
+      if (executorAlive(wanCopyRegionFunctionExecutionPool, "wan copy region pool")) {
+        stillAlive = true;
+        culprits.append(" wan copy region pool;");
+      }
 
       if (!stillAlive) {
         return;
@@ -634,6 +653,9 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
     if (threadPool != null) {
       threadPool.shutdownNow();
+    }
+    if (wanCopyRegionFunctionExecutionPool != null) {
+      wanCopyRegionFunctionExecutionPool.shutdownNow();
     }
   }
 

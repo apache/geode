@@ -29,7 +29,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -65,7 +65,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -102,13 +101,9 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   private static final int MAX_BATCH_SEND_RETRIES = 1;
 
-  private static final int THREAD_POOL_SIZE = 10;
-
   private final Clock clock;
   private final ThreadSleeper threadSleeper;
-
-  private static final ExecutorService executor = LoggingExecutors
-      .newFixedThreadPool(THREAD_POOL_SIZE, "wanCopyRegionFunctionThread_", true);
+  private final WanCopyRegionFunctionExecutorFactory executorFactory;
 
   /**
    * Contains the ongoing executions of this function
@@ -119,13 +114,16 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   private int batchId = 0;
 
   public WanCopyRegionFunction() {
-    this(Clock.systemDefaultZone(), new ThreadSleeper());
+    this(Clock.systemDefaultZone(), new ThreadSleeper(),
+        new WanCopyRegionFunctionExecutorFactoryImpl());
   }
 
   @VisibleForTesting
-  WanCopyRegionFunction(Clock clock, ThreadSleeper threadSleeper) {
+  WanCopyRegionFunction(Clock clock, ThreadSleeper threadSleeper,
+      WanCopyRegionFunctionExecutorFactory executorFactory) {
     this.clock = clock;
     this.threadSleeper = threadSleeper;
+    this.executorFactory = executorFactory;
   }
 
   @Override
@@ -209,6 +207,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       throws InterruptedException, ExecutionException, CancellationException {
     String executionName = getExecutionName(regionName, sender.getId());
     CompletableFuture<CliFunctionResult> future = null;
+    Executor executor = executorFactory.getExecutor();
     try {
       synchronized (executions) {
         if (executions.containsKey(executionName)) {
@@ -397,7 +396,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     if (sleepMs > 0) {
       logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
           this.getClass().getSimpleName(), sleepMs);
-      threadSleeper.millis(sleepMs);
+      threadSleeper.sleep(sleepMs);
     } else {
       if (Thread.currentThread().isInterrupted()) {
         throw new InterruptedException();
@@ -410,6 +409,11 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       batchId = 0;
     }
     return batchId++;
+  }
+
+  @VisibleForTesting
+  static int getNumberOfCurrentExecutions() {
+    return executions.size();
   }
 
   @VisibleForTesting
@@ -537,7 +541,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   static class ThreadSleeper implements Serializable {
-    void millis(long millis) throws InterruptedException {
+    void sleep(long millis) throws InterruptedException {
       Thread.sleep(millis);
     }
   }
