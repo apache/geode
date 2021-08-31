@@ -195,7 +195,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   private volatile ConcurrentLinkedQueue<EntryEventImpl> hookForTmpDroppedEvents;
 
-  @VisibleForTesting
+  @MutableForTesting
   public static boolean ENABLE_HOOK_TMP_DROPPED_EVENTS = false;
 
   /**
