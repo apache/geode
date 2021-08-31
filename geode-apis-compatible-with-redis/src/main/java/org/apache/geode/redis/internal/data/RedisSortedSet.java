@@ -563,6 +563,8 @@ public class RedisSortedSet extends AbstractRedisData {
 
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry next = entryIterator.next();
+      entryIterator.remove();
+      members.remove(next.member);
       if (deltaInfo == null) {
         deltaInfo = new RemsDeltaInfo();
       }
@@ -571,7 +573,6 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     if (deltaInfo != null) {
-      membersRemoveAll(deltaInfo);
       storeChanges(region, key, deltaInfo);
     }
 
