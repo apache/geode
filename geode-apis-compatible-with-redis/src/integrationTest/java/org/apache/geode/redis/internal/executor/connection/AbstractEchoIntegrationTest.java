@@ -17,25 +17,25 @@
 package org.apache.geode.redis.internal.executor.connection;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractEchoIntegrationTest implements RedisIntegrationTest {
-
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
-  private static Jedis jedis;
+  private JedisCluster jedis;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -46,5 +46,11 @@ public abstract class AbstractEchoIntegrationTest implements RedisIntegrationTes
   @Test
   public void errors_GivenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.ECHO, 1);
+  }
+
+  @Test
+  public void returnsString_givenString() {
+    String string = "test";
+    assertThat(jedis.echo(string)).isEqualTo(string);
   }
 }
