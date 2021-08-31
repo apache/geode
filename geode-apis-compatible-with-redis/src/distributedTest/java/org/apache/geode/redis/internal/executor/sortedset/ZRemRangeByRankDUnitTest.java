@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,7 +55,7 @@ public class ZRemRangeByRankDUnitTest {
 
   private JedisCluster jedis;
   private List<MemberVM> servers;
-  private static String KEY;
+  private static final String KEY = "key";
   private static final String BASE_MEMBER_NAME = "member";
   private static final int SET_SIZE = 1000;
   private final AtomicBoolean isCrashing = new AtomicBoolean(false);
@@ -76,8 +75,6 @@ public class ZRemRangeByRankDUnitTest {
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
-
-    KEY = RandomStringUtils.randomAlphabetic(8);
   }
 
   @After
