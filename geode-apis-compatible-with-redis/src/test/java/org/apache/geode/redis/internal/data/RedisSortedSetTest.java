@@ -218,7 +218,8 @@ public class RedisSortedSetTest {
     membersToRemove.add(stringToBytes(member4));
 
     SortedSetLexRangeOptions rangeOptions =
-        new SortedSetLexRangeOptions(stringToBytes("[" + member2), stringToBytes("(" + member4));
+        new SortedSetLexRangeOptions(Arrays.asList("command".getBytes(), "key".getBytes(),
+            stringToBytes("[" + member2), stringToBytes("(" + member4)), false);
     long removed = sortedSet.zremrangebylex(region, key, rangeOptions);
 
     assertThat(removed).isEqualTo(2);
