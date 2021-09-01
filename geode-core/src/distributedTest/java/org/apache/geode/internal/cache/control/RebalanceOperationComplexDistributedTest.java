@@ -132,6 +132,10 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   @After
   public void after() {
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      clusterStartupRule.stop(entry.getKey(), true);
+    }
+
   }
 
 
