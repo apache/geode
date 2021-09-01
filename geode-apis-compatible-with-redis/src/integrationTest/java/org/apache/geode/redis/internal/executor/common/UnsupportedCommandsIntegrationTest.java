@@ -53,7 +53,7 @@ public class UnsupportedCommandsIntegrationTest {
     final String NEW_VALUE = "new value";
     jedis.set("key", "value");
 
-    jedis.getSet("key", NEW_VALUE);
+    jedis.mset("key", NEW_VALUE);
 
     String actual = jedis.get("key");
     assertThat(actual).isEqualTo(NEW_VALUE);
@@ -66,11 +66,11 @@ public class UnsupportedCommandsIntegrationTest {
     final String KEY = "key";
     final String NEW_VALUE = "changed value";
     final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, "GETSET", "`" + KEY + "`", NEW_VALUE);
+        String.format(ERROR_UNKNOWN_COMMAND, "MSET", "`" + KEY + "`", NEW_VALUE);
     jedis.set(KEY, "value");
 
     assertThatThrownBy(
-        () -> jedis.getSet(KEY, NEW_VALUE))
+        () -> jedis.mset(KEY, NEW_VALUE))
             .hasMessageContaining(EXPECTED_ERROR_MSG);
   }
 

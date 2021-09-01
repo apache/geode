@@ -187,6 +187,7 @@ public enum RedisCommandType {
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  GETSET(new GetSetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Hashes *****************/
 
@@ -284,7 +285,6 @@ public enum RedisCommandType {
   BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  GETSET(new GetSetExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
   MSET(new MSetExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
   MSETNX(new MSetNXExecutor(), UNSUPPORTED,

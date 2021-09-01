@@ -84,6 +84,19 @@ public class RedisStringTest {
   }
 
   @Test
+  public void getsetSetsValueAndReturnsOldValue() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    byte[] oldBytes = {0, 1};
+    byte[] newBytes = {0, 1, 2};
+    RedisString string = new RedisString(oldBytes);
+    byte[] returnedBytes = string.getset(region, null, newBytes);
+    assertThat(returnedBytes).isNotNull();
+    assertThat(returnedBytes).isEqualTo(oldBytes);
+    assertThat(string.get()).isNotNull();
+    assertThat(string.get()).isEqualTo(newBytes);
+  }
+
+  @Test
   public void appendResizesByteArray() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     RedisString redisString = new RedisString(new byte[] {0, 1});

@@ -106,6 +106,7 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - EXPIREAT <br/>
 - GET <br/>
 - GETRANGE <br/>
+- GETSET <br/>
 - HDEL <br/>
 - HEXISTS <br/>
 - HGET <br/>
