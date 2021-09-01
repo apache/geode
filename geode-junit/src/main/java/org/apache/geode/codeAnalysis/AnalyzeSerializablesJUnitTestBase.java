@@ -14,9 +14,6 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static java.util.Collections.emptyList;
-import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,13 +28,13 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.junit.Before;
@@ -49,6 +46,9 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributedSystemService;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
@@ -62,21 +62,28 @@ import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
  * This subclass of AbstractAnalyzeSerializablesTestBase uses DataSerializer and
  * InternalDataSerializer. It also performs initialization of the Geode TypeRegistry
  */
-@Category(SerializationTest.class)
-public abstract class AnalyzeSerializablesJUnitTestBase
-    extends AnalyzeDataSerializablesJUnitTestBase {
-
+@Category({SerializationTest.class})
+public abstract class AnalyzeSerializablesJUnitTestBase extends
+    AnalyzeDataSerializablesJUnitTestBase {
   protected static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
 
   protected String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
-
   protected List<ClassAndVariableDetails> expectedSerializables;
+
 
   @Before
   public void setUp() throws Exception {
     TypeRegistry.init();
   }
+
+  @Override
+  protected Class getModuleClass() {
+    // subclasses should override this if their sanctioned-serializables.txt file is not
+    // in org.apache.geode.internal
+    return InternalDataSerializer.class;
+  }
+
 
   @Test
   public void testSerializables() throws Exception {
@@ -232,15 +239,11 @@ public abstract class AnalyzeSerializablesJUnitTestBase
   }
 
   public void loadExpectedSerializables() throws Exception {
-    if (expectedSerializablesFileName == null) {
-      expectedSerializables = emptyList();
-    } else {
-      try (InputStream expectedSerializablesStream =
-          getResourceAsStream(getModuleClass(), expectedSerializablesFileName)) {
-        // the expectedSerializablesStream will be automatically closed when we exit this block
-        expectedSerializables =
-            CompiledClassUtils.loadClassesAndVariables(expectedSerializablesStream);
-      }
+    try (InputStream expectedSerializablesStream =
+        getResourceAsStream(getModuleClass(), expectedSerializablesFileName)) {
+      // the expectedSerializablesStream will be automatically closed when we exit this block
+      this.expectedSerializables =
+          CompiledClassUtils.loadClassesAndVariables(expectedSerializablesStream);
     }
   }
 
@@ -278,10 +281,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase
   @Override
   protected void initializeSerializationService() {
     Properties properties = new Properties();
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER, "!*");
-
-    InternalDataSerializer.initializeSerializationFilter(new DistributionConfigImpl(properties));
+    properties.put(ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS, "true");
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, "!*");
+    DistributionConfig distributionConfig = new DistributionConfigImpl(properties);
+    InternalDataSerializer.initialize(distributionConfig, initializeServices());
   }
 
   @Override
@@ -302,10 +305,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     BufferDataOutputStream outputStream = new BufferDataOutputStream(KnownVersion.CURRENT);
     try {
       serializeObject(object, outputStream);
-    } catch (RemoteException e) {
-      System.out.println(object.getClass().getName() +
-          " is a java.rmi.server.RemoteObject which is not supported by AnalyzeSerializables");
-      return;
     } catch (IOException e) {
       // some classes, such as BackupLock, are Serializable because the extend something
       // like ReentrantLock but we never serialize them & it doesn't work to try to do so
@@ -319,6 +318,17 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       fail("I was unable to deserialize " + object.getClass().getName(), e);
     }
   }
+
+  private List<DistributedSystemService> initializeServices() {
+    ServiceLoader<DistributedSystemService> loader =
+        ServiceLoader.load(DistributedSystemService.class);
+    List<DistributedSystemService> services = new ArrayList<>();
+    for (DistributedSystemService service : loader) {
+      services.add(service);
+    }
+    return services;
+  }
+
 
   public boolean isSerializableAndNotDataSerializable(CompiledClass compiledClass) {
     // these classes throw exceptions or log ugly messages when you try to load them

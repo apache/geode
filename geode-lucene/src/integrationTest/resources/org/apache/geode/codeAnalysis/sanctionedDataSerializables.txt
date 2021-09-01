@@ -55,3 +55,4 @@ toData,94
 org/apache/geode/cache/lucene/internal/results/PageResults,2
 fromData,45
 toData,45
+

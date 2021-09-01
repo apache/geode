@@ -14,28 +14,5 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-
-import java.util.Properties;
-
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-
 public class QueryCommandDUnitTest extends QueryCommandDUnitTestBase {
-
-  @Override
-  protected Properties locatorProperties(Properties configProperties) {
-    int jmxPort = getRandomAvailableTCPPort();
-    configProperties.setProperty(HTTP_SERVICE_PORT, "0");
-    configProperties.setProperty(JMX_MANAGER, "true");
-    configProperties.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    return configProperties;
-  }
-
-  @Override
-  protected void connectToLocator() throws Exception {
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-  }
 }

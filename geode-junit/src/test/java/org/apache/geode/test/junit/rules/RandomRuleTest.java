@@ -20,9 +20,6 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-import java.io.Serializable;
-
-import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -30,18 +27,6 @@ public class RandomRuleTest {
 
   @Rule
   public RandomRule randomRule = new RandomRule();
-
-  @Test
-  public void isSerializable() {
-    assertThat(randomRule).isInstanceOf(Serializable.class);
-  }
-
-  @Test
-  public void serializes() {
-    RandomRule clone = SerializationUtils.clone(randomRule);
-
-    assertThat(clone.getSeed()).isEqualTo(randomRule.getSeed());
-  }
 
   @Test
   public void iterableWithOneElementReturnsThatElement() {
