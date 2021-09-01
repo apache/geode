@@ -1095,6 +1095,8 @@ Apache Geode bundles the following files under the MIT License:
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
+  - OrderStatisticTree (https://github.com/coderodde/OrderStatisticTree),
+    Copyright (c) 2021 Rodion Efremov
   - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - SLF4J API v1.7.30 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
