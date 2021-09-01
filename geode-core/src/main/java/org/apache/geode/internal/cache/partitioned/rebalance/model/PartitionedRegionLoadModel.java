@@ -297,7 +297,7 @@ public class PartitionedRegionLoadModel {
               new Object[] {memberRollup, this.allColocatedRegions,
                   memberRollup.getColocatedMembers().keySet(), memberRollup.getBuckets()});
         }
-        for (Bucket bucket : new HashSet<Bucket>(memberRollup.getBuckets())) {
+        for (Bucket bucket : new HashSet<>(memberRollup.getBuckets())) {
           bucket.removeMember(memberRollup);
         }
       }
@@ -475,8 +475,7 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      if (member.canDelete(bucket, this.partitionedRegion.getMyId(), true,
-          partitionedRegion.getDistributionManager()).willAccept()) {
+      if (member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
         float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
         if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
           Move move = new Move(null, member, bucket);
@@ -491,8 +490,8 @@ public class PartitionedRegionLoadModel {
   }
 
   public Move findBestTargetForFPR(Bucket bucket, boolean checkIPAddress) {
-    InternalDistributedMember targetMemberID = null;
-    Member targetMember = null;
+    InternalDistributedMember targetMemberID;
+    Member targetMember;
     List<FixedPartitionAttributesImpl> fpas =
         this.partitionedRegion.getFixedPartitionAttributesImpl();
 

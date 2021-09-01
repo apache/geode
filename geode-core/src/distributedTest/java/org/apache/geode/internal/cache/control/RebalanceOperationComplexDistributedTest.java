@@ -16,8 +16,13 @@ package org.apache.geode.internal.cache.control;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +31,7 @@ import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,8 +46,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.RemoteInvoker;
 
 /**
  * The purpose of RebalanceOperationComplexDistributedTest is to test rebalances
@@ -59,9 +65,9 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   public static final String ZONE_A = "zoneA";
   public static final String ZONE_B = "zoneB";
-
+  private final RemoteInvoker remoteInvoker = new RemoteInvoker();
   public int locatorPort;
-
+  public int runID;
   // 6 servers distributed evenly across 2 zones
   public static final Map<Integer, String> SERVER_ZONE_MAP = new HashMap<Integer, String>() {
     {
@@ -77,13 +83,25 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
-  @Rule
-  public DistributedDiskDirRule distributedDiskDirRule = new DistributedDiskDirRule();
-
   @Before
   public void setup() throws Exception {
+    SecureRandom secureRandom = new SecureRandom();
+    runID = secureRandom.nextInt();
+
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
+
+    remoteInvoker.invokeInEveryVMAndController(() -> {
+      final String path =
+          clusterStartupRule.getWorkingDirRoot().getAbsolutePath() + runID
+              + VM.getVMId();
+
+      File diskDir = new File(path);
+      if (!diskDir.exists()) {
+        Files.createDirectory(diskDir.toPath());
+      }
+      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
+    });
 
     // Startup the servers
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
@@ -112,6 +130,10 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     });
   }
 
+  @After
+  public void after() {
+  }
+
 
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
@@ -127,7 +149,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
     // Take a server offline
-    clusterStartupRule.stop(shutdownServer);
+    clusterStartupRule.stop(shutdownServer, false);
 
     // Rebalance so that now all the buckets are on server 1 and server 3 redundancy.
     // Zone b servers should not be touched.
@@ -186,5 +208,13 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     PartitionedRegion region =
         (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
     return region.getLocalBucketsListTestOnly().size();
+  }
+
+
+  /**
+   * Returns the current default disk dirs value for the specified VM.
+   */
+  public File getDiskDirFor(VM vm) {
+    return new File(vm.invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY)));
   }
 }

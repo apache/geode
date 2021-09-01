@@ -17,10 +17,16 @@ package org.apache.geode.internal.cache.partitioned.rebalance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
@@ -30,61 +36,49 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason
 public class MemberTest {
   AddressComparor addressComparor = mock(AddressComparor.class);
   InternalDistributedMember memberId = mock(InternalDistributedMember.class);
-  InternalDistributedMember sourceId = mock(InternalDistributedMember.class);
+  InternalDistributedMember otherMemberId = mock(InternalDistributedMember.class);
 
   @Test
-  public void testCanDeleteWhenInSameZone() {
+  public void testCanDeleteWhenNotLastInZone() {
     doReturn(true).when(addressComparor).enforceUniqueZones();
     doReturn(true).when(addressComparor).areSameZone(
         ArgumentMatchers.any(InternalDistributedMember.class),
         ArgumentMatchers.any(InternalDistributedMember.class));
+    Set<Member> membersHostingBucket = new HashSet<>();
     Bucket bucket = mock(Bucket.class);
+    ClusterDistributionManager clusterDistributionManager = mock(ClusterDistributionManager.class);
+
     Member memberUnderTest = new Member(addressComparor, memberId, false, false);
-    assertThat(memberUnderTest.canDelete(bucket, sourceId, true)).isEqualTo(RefusalReason.NONE);
+    Member otherMember = new Member(addressComparor, otherMemberId, false, false);
+    membersHostingBucket.add(memberUnderTest);
+    membersHostingBucket.add(otherMember);
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+
+    Mockito.when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn("zoneA");
+    Mockito.when(clusterDistributionManager.getRedundancyZone(otherMemberId)).thenReturn("zoneA");
+
+    assertThat(memberUnderTest.canDelete(bucket, clusterDistributionManager))
+        .isEqualTo(RefusalReason.NONE);
   }
 
-
   @Test
-  public void testCanDeleteWhenInDifferentZone() {
+  public void testCanDeleteWhenLastInZone() {
     doReturn(true).when(addressComparor).enforceUniqueZones();
-    doReturn(false).when(addressComparor).areSameZone(
+    doReturn(true).when(addressComparor).areSameZone(
         ArgumentMatchers.any(InternalDistributedMember.class),
         ArgumentMatchers.any(InternalDistributedMember.class));
+    Set<Member> membersHostingBucket = new HashSet<>();
     Bucket bucket = mock(Bucket.class);
+    ClusterDistributionManager clusterDistributionManager = mock(ClusterDistributionManager.class);
+
     Member memberUnderTest = new Member(addressComparor, memberId, false, false);
-    assertThat(memberUnderTest.canDelete(bucket, sourceId, true))
+    membersHostingBucket.add(memberUnderTest);
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+
+    Mockito.when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn("zoneA");
+
+    assertThat(memberUnderTest.canDelete(bucket, clusterDistributionManager))
         .isEqualTo(RefusalReason.LAST_MEMBER_IN_ZONE);
   }
-
-
-  @Test
-  public void testWillAcceptBucket() {
-    doReturn(true).when(addressComparor).enforceUniqueZones();
-    doReturn(true).when(addressComparor).areSameZone(
-        ArgumentMatchers.any(InternalDistributedMember.class),
-        ArgumentMatchers.any(InternalDistributedMember.class));
-    Bucket bucket = mock(Bucket.class);
-    Member memberUnderTest = new Member(addressComparor, memberId, false, false);
-    Member sourceMember = new Member(addressComparor, sourceId, false, false);
-
-    assertThat(memberUnderTest.willAcceptBucket(bucket, sourceMember, true))
-        .isEqualTo(RefusalReason.NONE);
-
-  }
-
-  @Test
-  public void testWillAcceptBucketWithNullSourceMember() {
-    doReturn(true).when(addressComparor).enforceUniqueZones();
-    doReturn(true).when(addressComparor).areSameZone(
-        ArgumentMatchers.any(InternalDistributedMember.class),
-        ArgumentMatchers.any(InternalDistributedMember.class));
-    Bucket bucket = mock(Bucket.class);
-    Member memberUnderTest = new Member(addressComparor, memberId, false, false);
-    Member sourceMember = new Member(addressComparor, sourceId, false, false);
-
-    assertThat(memberUnderTest.willAcceptBucket(bucket, null, true)).isEqualTo(RefusalReason.NONE);
-
-  }
-
 
 }
