@@ -62,22 +62,19 @@ public class Member implements Comparable<Member> {
 
 
 
-  /**
-   * @param sourceMember the member we will be moving this bucket off of
-   * @param checkZone true if we should not put two copies of a bucket on two nodes with the same
-   */
-  public RefusalReason canDelete(Bucket bucket, InternalDistributedMember sourceMember,
-      boolean checkZone,
-      DistributionManager distributionManager) {
+  public RefusalReason canDelete(Bucket bucket, DistributionManager distributionManager) {
     if (distributionManager instanceof ClusterDistributionManager) {
       ClusterDistributionManager clusterDistributionManager =
           (ClusterDistributionManager) distributionManager;
       String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
       boolean notLastMemberOfZone = false;
+
       for (Member member : bucket.getMembersHosting()) {
         if (!member.getMemberId().equals(this.getMemberId())) {
+
           String memberRedundancyZone =
               clusterDistributionManager.getRedundancyZone(member.memberId);
+
           if (memberRedundancyZone.equals(myRedundancyZone)) {
             notLastMemberOfZone = true;
           }
@@ -249,7 +246,7 @@ public class Member implements Comparable<Member> {
   }
 
   void changeTotalBytes(float change) {
-    totalBytes += (long) Math.round(change);
+    totalBytes += Math.round(change);
   }
 
   @Override
