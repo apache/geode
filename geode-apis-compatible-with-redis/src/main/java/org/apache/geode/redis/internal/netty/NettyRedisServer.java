@@ -18,20 +18,16 @@ package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -44,8 +40,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
+import io.netty.handler.ssl.util.TrustManagerFactoryWrapper;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +55,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
+import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -180,29 +181,45 @@ public class NettyRedisServer {
 
   private void addSSLIfEnabled(SocketChannel ch, ChannelPipeline p) {
 
-    SSLConfig sslConfigForComponent =
+    SSLConfig sslConfigForServer =
         SSLConfigurationFactory.getSSLConfigForComponent(configSupplier.get(),
             SecurableCommunicationChannel.SERVER);
 
-    if (!sslConfigForComponent.isEnabled()) {
+    if (!sslConfigForServer.isEnabled()) {
       return;
     }
 
     SslContext sslContext;
-    try (FileInputStream fileInputStream =
-        new FileInputStream(sslConfigForComponent.getKeystore())) {
-      KeyStore ks = KeyStore.getInstance("JKS");
-      ks.load(fileInputStream, sslConfigForComponent.getKeystorePassword().toCharArray());
-      // Set up key manager factory to use our key store
-      KeyManagerFactory kmf =
-          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      kmf.init(ks, sslConfigForComponent.getKeystorePassword().toCharArray());
+    try {
+      KeyManagerFactory keyManagerFactory = null;
+      if (sslConfigForServer.getKeystore() != null) {
+        keyManagerFactory = new KeyManagerFactoryWrapper(
+            FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager(sslConfigForServer));
+      }
 
-      SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(kmf);
+      TrustManagerFactory trustManagerFactory = null;
+      if (sslConfigForServer.getTruststore() != null) {
+        trustManagerFactory = new TrustManagerFactoryWrapper(
+            FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager(sslConfigForServer));
+      }
+
+      SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(keyManagerFactory);
+      sslContextBuilder.trustManager(trustManagerFactory);
+
+      if (!"any".equals(sslConfigForServer.getCiphers())) {
+        sslContextBuilder.ciphers(Arrays.asList(sslConfigForServer.getCiphersAsStringArray()));
+      }
+
+      if (!"any".equals(sslConfigForServer.getProtocols())) {
+        sslContextBuilder.protocols(
+            Arrays.asList(sslConfigForServer.getProtocolsAsStringArray()));
+      }
+
+      if (sslConfigForServer.isRequireAuth()) {
+        sslContextBuilder.clientAuth(ClientAuth.REQUIRE);
+      }
       sslContext = sslContextBuilder.build();
-
-    } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException | IOException
-        | CertificateException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
     p.addLast(sslContext.newHandler(ch.alloc()));
