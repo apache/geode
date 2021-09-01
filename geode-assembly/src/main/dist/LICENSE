@@ -221,7 +221,7 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
-  - ASM v5.0.4 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
+  - ASM v9.1 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
     Telecom
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
