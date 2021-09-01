@@ -1062,7 +1062,7 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT License:
 
-  - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
+  - Checker Qual v3.8.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
   - ClassGraph v4.8.115 (https://github.com/classgraph/classgraph), Copyright
     (c) 2019 Luke Hutchison
