@@ -203,30 +203,6 @@ public class RedisSortedSetTest {
   }
 
   @Test
-  public void zremrangebylex_removesMembersInRange() {
-    String member3 = "member3";
-    String member4 = "member4";
-    String member5 = "member5";
-    RedisSortedSet sortedSet = spy(createRedisSortedSet(score1, member1, score1, member2, score1,
-        member3, score1, member4, score1, member5));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    RedisKey key = new RedisKey();
-    ArrayList<byte[]> membersToRemove = new ArrayList<>();
-    membersToRemove.add(stringToBytes("nonExistent"));
-    membersToRemove.add(stringToBytes(member2));
-    membersToRemove.add(stringToBytes(member3));
-    membersToRemove.add(stringToBytes(member4));
-
-    SortedSetLexRangeOptions rangeOptions =
-        new SortedSetLexRangeOptions(Arrays.asList("command".getBytes(), "key".getBytes(),
-            stringToBytes("[" + member2), stringToBytes("(" + member4)), false);
-    long removed = sortedSet.zremrangebylex(region, key, rangeOptions);
-
-    assertThat(removed).isEqualTo(2);
-    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
-  }
-
-  @Test
   public void memberRemoveCanRemoveMemberInSortedSet() {
     RedisSortedSet sortedSet = createRedisSortedSet(score1, member1, score2, member2);
     RedisSortedSet sortedSet2 = createRedisSortedSet(score2, member2);

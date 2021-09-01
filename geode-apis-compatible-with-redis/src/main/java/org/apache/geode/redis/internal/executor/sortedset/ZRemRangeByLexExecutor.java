@@ -14,27 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-
-import java.util.List;
-
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
-public class ZRemRangeByLexExecutor
-    extends AbstractSortedSetRangeExecutor<SortedSetLexRangeOptions> {
-  @Override
-  public boolean isRev() {
-    return false;
-  }
-
-  @Override
-  public SortedSetLexRangeOptions createRangeOptions(List<byte[]> commandElements) {
-    return new SortedSetLexRangeOptions(commandElements, isRev());
-  }
-
+public class ZRemRangeByLexExecutor extends ZRangeByLexExecutor {
   @Override
   public RedisResponse getEmptyResponse() {
-    return RedisResponse.emptyArray();
+    return RedisResponse.integer(0);
   }
 
   @Override

@@ -22,9 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -77,7 +75,7 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
   @Test
   public void shouldReturnZero_givenNonExistentKey() {
     jedis.zadd(KEY, SCORE, "member1");
-    assertThat(jedis.zremrangeByLex("fakeKey", "-", "+")).isEqualTo(0);
+    assertThat(jedis.zremrangeByLex("fakeKey", "-", "+")).isZero();
   }
 
   @Test
@@ -85,9 +83,9 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, "member");
 
     // Range + <= member name <= -
-    assertThat(jedis.zrangeByLex(KEY, "+", "-")).isEmpty();
+    assertThat(jedis.zremrangeByLex(KEY, "+", "-")).isZero();
     // Range z <= member name <= a
-    assertThat(jedis.zrangeByLex(KEY, "[z", "[a")).isEmpty();
+    assertThat(jedis.zremrangeByLex(KEY, "[z", "[a")).isZero();
   }
 
   @Test
@@ -96,7 +94,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range m <= member name <= n
-    assertThat(jedis.zremrangeByLex(KEY, "[m", "[n")).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[m", "[n")).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -105,7 +104,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range -infinity <= member name <= n
-    assertThat(jedis.zremrangeByLex(KEY, "-", "[n")).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "-", "[n")).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -114,7 +114,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range m <= member name <= +infinity
-    assertThat(jedis.zremrangeByLex(KEY, "[m", "+")).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[m", "+")).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -123,7 +124,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range member <= member name <= n
-    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[n")).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[n")).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -132,7 +134,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range a <= member name <= member
-    assertThat(jedis.zremrangeByLex(KEY, "[a", "[" + memberName)).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[a", "[" + memberName)).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -140,7 +143,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     String memberName = "member";
     jedis.zadd(KEY, SCORE, memberName);
 
-    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[" + memberName)).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[" + memberName)).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -148,7 +152,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
   public void shouldReturnOne_givenMemberNameIsSpecialCharacterInRange(String memberName) {
     jedis.zadd(KEY, SCORE, memberName);
 
-    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[" + memberName)).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "[" + memberName, "[" + memberName)).isOne();
+    assertThat(jedis.zscore(KEY, memberName)).isNull();
   }
 
   @Test
@@ -157,7 +162,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range member < member name <= n
-    assertThat(jedis.zremrangeByLex(KEY, "(" + memberName, "[n")).isEqualTo(0);
+    assertThat(jedis.zremrangeByLex(KEY, "(" + memberName, "[n")).isZero();
+    assertThat(jedis.zscore(KEY, memberName)).isEqualTo(SCORE);
   }
 
   @Test
@@ -166,7 +172,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range a <= member name < member
-    assertThat(jedis.zremrangeByLex(KEY, "[a", "(" + memberName)).isEqualTo(0);
+    assertThat(jedis.zremrangeByLex(KEY, "[a", "(" + memberName)).isZero();
+    assertThat(jedis.zscore(KEY, memberName)).isEqualTo(SCORE);
   }
 
   @Test
@@ -175,7 +182,8 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     jedis.zadd(KEY, SCORE, memberName);
 
     // Range member name <= n <= o
-    assertThat(jedis.zremrangeByLex(KEY, "[n", "[o")).isEqualTo(0);
+    assertThat(jedis.zremrangeByLex(KEY, "[n", "[o")).isZero();
+    assertThat(jedis.zscore(KEY, memberName)).isEqualTo(SCORE);
   }
 
   @Test
@@ -187,11 +195,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(minLength - 1, maxLength));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(minLength - 1, maxLength));
+    members.removeAll(membersToRemove);
 
     // Range (v * 3) <= member name <= (v * 6)
-    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "[" + max)).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "[" + max)).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -204,11 +212,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(minLength, maxLength - 1));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(minLength, maxLength - 1));
+    members.removeAll(membersToRemove);
 
     // Range (v * 1) < member name < (v * 7)
-    assertThat(jedis.zremrangeByLex(KEY, "(" + min, "(" + max)).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "(" + min, "(" + max)).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -221,11 +229,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(minLength - 1, maxLength - 1));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(minLength - 1, maxLength - 1));
+    members.removeAll(membersToRemove);
 
     // Range (v * 5) <= member name < (v * 8)
-    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "(" + max)).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "(" + max)).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -238,11 +246,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(minLength, maxLength));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(minLength, maxLength));
+    members.removeAll(membersToRemove);
 
     // Range (v * 2) < member name <= (v * 5)
-    assertThat(jedis.zremrangeByLex(KEY, "(" + min, "[" + max)).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "(" + min, "[" + max)).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -253,11 +261,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     int maxLength = 8;
     String max = StringUtils.repeat(BASE_MEMBER_NAME, maxLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(0, maxLength));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(0, maxLength));
+    members.removeAll(membersToRemove);
 
     // Range -infinity <= member name <= (v * 8)
-    assertThat(jedis.zremrangeByLex(KEY, "-", "[" + max)).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "-", "[" + max)).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -268,11 +276,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
     int minLength = 4;
     String min = StringUtils.repeat(BASE_MEMBER_NAME, minLength);
 
-    List<String> sublist = new ArrayList<>(members.subList(minLength - 1, members.size()));
-    members.removeAll(sublist);
+    List<String> membersToRemove = new ArrayList<>(members.subList(minLength - 1, members.size()));
+    members.removeAll(membersToRemove);
 
     // Range (v * 4) <= member name < +infinity
-    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "+")).isEqualTo(sublist.size());
+    assertThat(jedis.zremrangeByLex(KEY, "[" + min, "+")).isEqualTo(membersToRemove.size());
     assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(members);
   }
 
@@ -282,35 +290,15 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
 
     // Range -infinity <= member name < +infinity
     assertThat(jedis.zremrangeByLex(KEY, "-", "+")).isEqualTo(members.size());
-    assertThat(jedis.zcard(KEY)).isEqualTo(0);
+    assertThat(jedis.zcard(KEY)).isZero();
   }
 
   @Test
   public void shouldRemoveMemberInRangeAndKey_givenOneMember() {
     jedis.zadd(KEY, 1.0, "member");
 
-    assertThat(jedis.zremrangeByLex(KEY, "-", "+")).isEqualTo(1);
+    assertThat(jedis.zremrangeByLex(KEY, "-", "+")).isOne();
     assertThat(jedis.exists(KEY)).isFalse();
-  }
-
-  @Test
-  public void shouldRemoveMembersInRange_givenMultipleMembers() {
-    List<String> members = populateSortedSet();
-
-    Set<String> expectedMembers = new HashSet<>();
-    expectedMembers.add(members.get(0));
-    expectedMembers.add(members.get(4));
-    expectedMembers.add(members.get(5));
-    expectedMembers.add(members.get(6));
-    expectedMembers.add(members.get(7));
-    expectedMembers.add(members.get(8));
-    expectedMembers.add(members.get(9));
-
-    // range of [vv to (vvvvv
-    assertThat(jedis.zremrangeByLex(KEY, "[" + members.get(1), "(" + members.get(4)))
-        .isEqualTo(3);
-    assertThat(jedis.zcard(KEY)).isEqualTo(7);
-    assertThat(jedis.zrange(KEY, 0, -1)).hasSameElementsAs(expectedMembers);
   }
 
   /************** Helper Methods ************************/

@@ -720,17 +720,4 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
   }
-
-  private void runCommandAndAssertNoStatUpdates(String key, String min, String max,
-      TriConsumer<String, String, String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    String currentHits = info.get(HITS);
-    String currentMisses = info.get(MISSES);
-
-    command.accept(key, min, max);
-    info = RedisTestHelper.getInfo(jedis);
-
-    assertThat(info.get(HITS)).isEqualTo(currentHits);
-    assertThat(info.get(MISSES)).isEqualTo(currentMisses);
-  }
 }

@@ -108,10 +108,9 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  int zremrangebylex(
-      Region<RedisKey, RedisData> region,
-      RedisKey key, SortedSetLexRangeOptions rangeOptions) {
-    return 0;
+  long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetLexRangeOptions rangeOptions) {
+    return 0L;
   }
 
   @Override
