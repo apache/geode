@@ -21,6 +21,7 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -68,6 +69,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   private final RemoteInvoker remoteInvoker = new RemoteInvoker();
   public int locatorPort;
   public int runID;
+  private File temporaryDirectory;
   // 6 servers distributed evenly across 2 zones
   public static final Map<Integer, String> SERVER_ZONE_MAP = new HashMap<Integer, String>() {
     {
@@ -85,55 +87,31 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   @Before
   public void setup() throws Exception {
-    SecureRandom secureRandom = new SecureRandom();
-    runID = secureRandom.nextInt();
-
+  // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
 
-    remoteInvoker.invokeInEveryVMAndController(() -> {
-      final String path =
-          clusterStartupRule.getWorkingDirRoot().getAbsolutePath() + runID
-              + VM.getVMId();
-
-      File diskDir = new File(path);
-      if (!diskDir.exists()) {
-        Files.createDirectory(diskDir.toPath());
-      }
-      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
-    });
+    // configure the servers
+    setPersistenceDirectoriesOnServerVMs();
 
     // Startup the servers
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       startServerInRedundancyZone(entry.getKey(), entry.getValue());
     }
 
-    // Startup a client to put all the data in the server regions
-    Properties properties2 = new Properties();
-    properties2.setProperty("cache-xml-file", CLIENT_XML);
-    ClientVM clientVM =
-        clusterStartupRule.startClientVM(7, properties2,
-            ccf -> ccf.addPoolLocator("localhost", locatorPort));
-
-    clientVM.invoke(() -> {
-      Map<Integer, String> putMap = new HashMap<>();
-      for (int i = 0; i < 1000; i++) {
-        putMap.put(i, "A");
-      }
-
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-
-      Stream.of(REGION_NAME, COLOCATED_REGION_NAME).forEach(regionName -> {
-        Region<Integer, String> region = clientCache.getRegion(regionName);
-        region.putAll(putMap);
-      });
-    });
+    // Put data in the server regions
+    clientPopulateServers();
   }
 
   @After
-  public void after() {
+  public void after() throws IOException {
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      clusterStartupRule.stop(entry.getKey(), true);
+      if (temporaryDirectory.exists()) {
+        Files.delete(temporaryDirectory.toPath());
+      }
+    }
   }
-
 
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
@@ -167,7 +145,55 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     compareZoneBucketCounts(REGION_NAME);
   }
 
+  /**
+   * Set the persistence directories on server VMs
+   */
+  private void setPersistenceDirectoriesOnServerVMs() throws IOException {
+    SecureRandom secureRandom = new SecureRandom();
+    runID = secureRandom.nextInt();
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      final String path =
+          clusterStartupRule.getWorkingDirRoot().getAbsolutePath() + "/" + "runId-" + runID + "-vm-"
+              + entry.getKey();
+      temporaryDirectory = new File(path);
+      if (!temporaryDirectory.exists()) {
+        Files.createDirectory(temporaryDirectory.toPath());
+      }
+      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
+    }
+  }
 
+  /**
+   * Startup a client to put all the data in the server regions
+   */
+  private void clientPopulateServers() throws Exception {
+    Properties properties2 = new Properties();
+    properties2.setProperty("cache-xml-file", CLIENT_XML);
+    ClientVM clientVM =
+        clusterStartupRule.startClientVM(SERVER_ZONE_MAP.size() + 1, properties2,
+            ccf -> ccf.addPoolLocator("localhost", locatorPort));
+
+    clientVM.invoke(() -> {
+      Map<Integer, String> putMap = new HashMap<>();
+      for (int i = 0; i < 1000; i++) {
+        putMap.put(i, "A");
+      }
+
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+
+      Stream.of(REGION_NAME, COLOCATED_REGION_NAME).forEach(regionName -> {
+        Region<Integer, String> region = clientCache.getRegion(regionName);
+        region.putAll(putMap);
+      });
+    });
+  }
+
+  /**
+   * Startup server *index* in *redundancy zone*
+   *
+   * @param index - server
+   * @param zone - Redundancy zone for the server to be started in
+   */
   private void startServerInRedundancyZone(int index, final String zone) {
     clusterStartupRule.startServerVM(index, s -> s.withProperty("cache-xml-file",
         SERVER_XML)
@@ -175,7 +201,10 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
         .withConnectionToLocator(locatorPort));
   }
 
-
+  /**
+   * Trigger a rebalance of buckets
+   *
+   */
   private void doRebalance(ResourceManager manager)
       throws TimeoutException, InterruptedException {
     manager.createRebalanceFactory()
@@ -183,7 +212,10 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     assertThat(manager.getRebalanceOperations()).isEmpty();
   }
 
-
+  /**
+   * Compare the bucket counts for each zone. They should be equal
+   *
+   */
   private void compareZoneBucketCounts(final String regionName) {
     int zoneABucketCount = getZoneBucketCount(regionName, ZONE_A);
     int zoneBBucketCount = getZoneBucketCount(regionName, ZONE_B);
@@ -191,30 +223,25 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     assertThat(zoneABucketCount).isEqualTo(zoneBBucketCount).isEqualTo(EXPECTED_BUCKET_COUNT);
   }
 
-
+  /**
+   * Get the bucket count for the region in the redundancy zone
+   *
+   * @param regionName - name of the region to get the bucket count of
+   * @param zoneName - redundancy zone for which to get the bucket count
+   * @return - the total bucket count for the region in the redundancy zone
+   */
   private int getZoneBucketCount(String regionName, String zoneName) {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       if (entry.getValue().compareTo(zoneName) == 0) {
         bucketCount +=
-            clusterStartupRule.getVM(entry.getKey()).invoke(() -> getBucketCount(regionName));
+            clusterStartupRule.getVM(entry.getKey()).invoke(() -> {
+              PartitionedRegion region =
+                  (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
+              return region.getLocalBucketsListTestOnly().size();
+            });
       }
     }
     return bucketCount;
-  }
-
-
-  private int getBucketCount(String regionName) {
-    PartitionedRegion region =
-        (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
-    return region.getLocalBucketsListTestOnly().size();
-  }
-
-
-  /**
-   * Returns the current default disk dirs value for the specified VM.
-   */
-  public File getDiskDirFor(VM vm) {
-    return new File(vm.invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY)));
   }
 }
