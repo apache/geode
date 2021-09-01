@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.alerting.internal.api.AlertingService;
@@ -173,7 +176,8 @@ public interface DistributionManager extends ReplySender {
    * @return recipients who did not receive the message
    */
   @Override
-  Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
+  @Nullable
+  Set<InternalDistributedMember> putOutgoing(@NotNull DistributionMessage msg);
 
   /**
    * Returns the distributed system to which this distribution manager is connected.

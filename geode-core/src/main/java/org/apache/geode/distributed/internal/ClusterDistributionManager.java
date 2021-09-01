@@ -39,6 +39,8 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -1076,7 +1078,8 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> putOutgoing(final DistributionMessage msg) {
+  @Nullable
+  public Set<InternalDistributedMember> putOutgoing(final @NotNull DistributionMessage msg) {
     try {
       DistributionMessageObserver observer = DistributionMessageObserver.getInstance();
       if (observer != null) {
