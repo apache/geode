@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static it.unimi.dsi.fastutil.bytes.ByteArrays.HASH_STRATEGY;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
@@ -45,7 +44,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -84,13 +83,7 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writePrimitiveInt(hash.size(), out);
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      byte[] key = entry.getKey();
-      byte[] value = entry.getValue();
-      DataSerializer.writeByteArray(key, out);
-      DataSerializer.writeByteArray(value, out);
-    }
+    hash.toData(out);
   }
 
   @Override
@@ -190,11 +183,11 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hgetall() {
-    ArrayList<byte[]> result = new ArrayList<>(hash.size());
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+    ArrayList<byte[]> result = new ArrayList<>(hash.size() * 2);
+    hash.fastForEach(entry -> {
       result.add(entry.getKey());
       result.add(entry.getValue());
-    }
+    });
     return result;
   }
 
@@ -228,11 +221,15 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hvals() {
-    return new ArrayList<>(hash.values());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachValue(result::add);
+    return result;
   }
 
   public Collection<byte[]> hkeys() {
-    return new ArrayList<>(hash.keySet());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachKey(result::add);
+    return result;
   }
 
   public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
@@ -364,12 +361,8 @@ public class RedisHash extends AbstractRedisData {
       return false;
     }
 
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      if (!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
-        return false;
-      }
-    }
-    return true;
+    return hash.fastWhileEach(
+        entry -> Arrays.equals(redisHash.hash.get(entry.getKey()), entry.getValue()));
   }
 
   @Override
@@ -393,33 +386,35 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public static class Hash
-      extends SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> {
+      extends SizeableBytes2ObjectOpenCustomHashMapWithCursor<byte[]> {
 
     public Hash() {
-      super(HASH_STRATEGY);
+      super();
     }
 
     public Hash(int expected) {
-      super(expected, HASH_STRATEGY);
-    }
-
-    public Hash(int expected, float f) {
-      super(expected, f, HASH_STRATEGY);
+      super(expected);
     }
 
     public Hash(Map<byte[], byte[]> m) {
-      super(m, HASH_STRATEGY);
-    }
-
-    @Override
-    protected int sizeKey(byte[] key) {
-      return memoryOverhead(key);
+      super(m);
     }
 
     @Override
     protected int sizeValue(byte[] value) {
       return sizeKey(value);
     }
-  }
 
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writePrimitiveInt(size(), out);
+      final int maxIndex = getMaxIndex();
+      for (int pos = 0; pos < maxIndex; ++pos) {
+        byte[] key = getKeyAtIndex(pos);
+        if (key != null) {
+          DataSerializer.writeByteArray(key, out);
+          DataSerializer.writeByteArray(getValueAtIndex(pos), out);
+        }
+      }
+    }
+  }
 }
