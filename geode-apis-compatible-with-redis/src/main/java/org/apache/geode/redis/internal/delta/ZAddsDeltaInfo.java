@@ -26,23 +26,26 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 
 public class ZAddsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas = new ArrayList<>();
-  private final ArrayList<Double> scores = new ArrayList<>();
+  private final List<byte[]> deltas;
+  private final List<Double> scores;
 
-  public ZAddsDeltaInfo() {}
+  public ZAddsDeltaInfo() {
+    this.deltas = new ArrayList<>();
+    this.scores = new ArrayList<>();
+  }
 
   public ZAddsDeltaInfo(List<byte[]> deltas, List<Double> scores) {
-    this.deltas.addAll(deltas);
-    this.scores.addAll(scores);
+    this.deltas = deltas;
+    this.scores = scores;
   }
 
   public ZAddsDeltaInfo(byte[] delta, Double score) {
-    this.deltas.add(delta);
-    this.scores.add(score);
+    this();
+    add(delta, score);
   }
 
   public void add(byte[] delta, double score) {
-    deltas.add(delta);
+    this.deltas.add(delta);
     this.scores.add(score);
   }
 
