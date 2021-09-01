@@ -189,13 +189,15 @@ public class NettyRedisServer {
       return;
     }
 
+    if (sslConfigForServer.getKeystore() == null) {
+      throw new IllegalStateException(
+          "Cannot start netty as no key manager is configured. Please ensure that the Geode property 'ssl-keystore' is set.");
+    }
+
     SslContext sslContext;
     try {
-      KeyManagerFactory keyManagerFactory = null;
-      if (sslConfigForServer.getKeystore() != null) {
-        keyManagerFactory = new KeyManagerFactoryWrapper(
-            FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager(sslConfigForServer));
-      }
+      KeyManagerFactory keyManagerFactory = new KeyManagerFactoryWrapper(
+          FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager(sslConfigForServer));
 
       TrustManagerFactory trustManagerFactory = null;
       if (sslConfigForServer.getTruststore() != null) {
