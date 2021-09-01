@@ -175,7 +175,7 @@ tests:
   RAM: '8'
   name: redis
 - ARTIFACT_SLUG: stressnewtestfiles
-  CALL_STACK_TIMEOUT: '20700'
+  CALL_STACK_TIMEOUT: '35100'
   CPUS: '96'
   DISK: '300GB'
   DUNIT_PARALLEL_FORKS: '24'
