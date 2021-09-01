@@ -87,8 +87,9 @@ public class SSLDUnitTest {
 
     // Create the client without a keystore
     try (Jedis jedis = createClient(false, false)) {
-      assertThatThrownBy(jedis::ping)
-          .hasMessageContaining("readHandshakeRecord");
+      assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+          e -> assertThat(e.getMessage()).contains("SSLException"),
+          e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
     }
 
     IgnoredException.removeAllExpectedExceptions();
@@ -100,8 +101,9 @@ public class SSLDUnitTest {
 
     // Create the client with a self-signed certificate
     try (Jedis jedis = createClient(true, true)) {
-      assertThatThrownBy(jedis::ping)
-          .hasMessageContaining("readHandshakeRecord");
+      assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+          e -> assertThat(e.getMessage()).contains("SSLException"),
+          e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
     }
 
     IgnoredException.removeAllExpectedExceptions();
