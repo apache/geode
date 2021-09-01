@@ -497,10 +497,10 @@ public class OpExecutorImpl implements ExecutablePool {
    */
   protected void handleException(Throwable e, Connection conn, int retryCount,
       boolean finalAttempt) {
-    handleException(e, conn, retryCount, finalAttempt, false);
+    handleException(e, conn, retryCount, finalAttempt, false, cancelCriterion, endpointManager);
   }
 
-  protected void handleException(Op op, Throwable e, Connection conn, int retryCount,
+  private void handleException(Op op, Throwable e, Connection conn, int retryCount,
       boolean finalAttempt, boolean timeoutFatal) throws CacheRuntimeException {
     if (op instanceof AuthenticateUserOp.AuthenticateUserOpImpl) {
       if (e instanceof GemFireSecurityException) {
@@ -509,12 +509,15 @@ public class OpExecutorImpl implements ExecutablePool {
         throw (ServerRefusedConnectionException) e;
       }
     }
-    handleException(e, conn, retryCount, finalAttempt, timeoutFatal);
+    handleException(e, conn, retryCount, finalAttempt, timeoutFatal, cancelCriterion,
+        endpointManager);
   }
 
-  protected void handleException(final Throwable throwable, final Connection connection,
+  static void handleException(final @NotNull Throwable throwable,
+      final @NotNull Connection connection,
       final int retryCount, final boolean finalAttempt,
-      final boolean timeoutFatal) throws CacheRuntimeException {
+      final boolean timeoutFatal, final @NotNull CancelCriterion cancelCriterion,
+      final @NotNull EndpointManager endpointManager) throws CacheRuntimeException {
 
     cancelCriterion.checkCancelInProgress(throwable);
 
@@ -536,6 +539,8 @@ public class OpExecutorImpl implements ExecutablePool {
     boolean invalidateServer = true;
     boolean warn = true;
     boolean forceThrow = false;
+    Throwable cause = throwable;
+
     if (throwable instanceof MessageTooLargeException) {
       title = null;
       exceptionToThrow = new GemFireIOException("message is too large to transmit", throwable);
@@ -581,9 +586,13 @@ public class OpExecutorImpl implements ExecutablePool {
     } else if (throwable instanceof SocketTimeoutException) {
       invalidateServer = timeoutFatal;
       title = "socket timed out on client";
+      // specific cause checks will fail if cause is not null here
+      cause = null;
     } else if (throwable instanceof ConnectionDestroyedException) {
       invalidateServer = false;
       title = "connection was asynchronously destroyed";
+      // specific cause checks will fail if cause is not null here
+      cause = null;
     } else if (throwable instanceof java.io.EOFException) {
       title = "closed socket on server";
     } else if (throwable instanceof IOException) {
@@ -611,7 +620,8 @@ public class OpExecutorImpl implements ExecutablePool {
           || (t instanceof SerializationException) || (t instanceof CopyException)
           || (t instanceof GemFireSecurityException) || (t instanceof ServerOperationException)
           || (t instanceof TransactionException) || (t instanceof CancelException)) {
-        handleException(t, connection, retryCount, finalAttempt, timeoutFatal);
+        handleException(t, connection, retryCount, finalAttempt, timeoutFatal, cancelCriterion,
+            endpointManager);
         return;
       } else if (throwable instanceof ServerOperationException) {
         title = null; // no message
@@ -620,7 +630,8 @@ public class OpExecutorImpl implements ExecutablePool {
       } else if (throwable instanceof FunctionException) {
         if (t instanceof InternalFunctionInvocationTargetException) {
           // Client server to re-execute for node failure
-          handleException(t, connection, retryCount, finalAttempt, timeoutFatal);
+          handleException(t, connection, retryCount, finalAttempt, timeoutFatal, cancelCriterion,
+              endpointManager);
           return;
         } else {
           title = null; // no message
@@ -655,7 +666,7 @@ public class OpExecutorImpl implements ExecutablePool {
           }
         }
         if (forceThrow || finalAttempt) {
-          exceptionToThrow = new ServerConnectivityException(msg, throwable);
+          exceptionToThrow = new ServerConnectivityException(msg, cause);
         }
       }
     }
@@ -664,7 +675,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  private StringBuilder getExceptionMessage(final String exceptionName, final int retryCount,
+  private static StringBuilder getExceptionMessage(final String exceptionName, final int retryCount,
       final boolean finalAttempt, final Connection connection) {
     final StringBuilder message = new StringBuilder(200);
     message.append("Pool unexpected ").append(exceptionName);
