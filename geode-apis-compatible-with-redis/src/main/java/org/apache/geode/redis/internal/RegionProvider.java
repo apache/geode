@@ -25,7 +25,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -312,18 +311,11 @@ public class RegionProvider {
   }
 
   /**
-   * A means to consistently order 2 keys for locking to avoid typical deadlock situations.
-   *
-   * @return the keys ordered in the sequence in which they should be locked.
+   * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
+   * Note that the list of keys is sorted in place.
    */
-  public List<RedisKey> orderForLocking(List<RedisKey> keys) {
+  public void orderForLocking(List<RedisKey> keys) {
     keys.sort(stripedCoordinator::compareStripes);
-
-    return keys;
-  }
-
-  public List<RedisKey> orderForLocking(RedisKey... keys) {
-    return orderForLocking(Arrays.asList(keys));
   }
 
   /**

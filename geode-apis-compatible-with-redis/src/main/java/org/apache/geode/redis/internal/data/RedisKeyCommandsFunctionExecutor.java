@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
@@ -135,7 +136,8 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
 
   @Override
   public boolean rename(RedisKey oldKey, RedisKey newKey) {
-    List<RedisKey> orderedKeys = orderForLocking(oldKey, newKey);
+    List<RedisKey> orderedKeys = Arrays.asList(oldKey, newKey);
+    getRegionProvider().orderForLocking(orderedKeys);
     return stripedExecute(orderedKeys.get(0), () -> rename0(orderedKeys.get(1), oldKey, newKey));
   }
 

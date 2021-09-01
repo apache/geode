@@ -56,7 +56,4 @@ public abstract class RedisDataCommandsFunctionExecutor {
     return regionProvider.getRedisData(key);
   }
 
-  protected List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
-    return regionProvider.orderForLocking(key1, key2);
-  }
 }

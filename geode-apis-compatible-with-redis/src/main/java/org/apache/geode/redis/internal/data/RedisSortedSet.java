@@ -402,23 +402,23 @@ public class RedisSortedSet extends AbstractRedisData {
       for (AbstractOrderedSetEntry entry : set.members.values()) {
         OrderedSetEntry existingValue = members.get(entry.member);
         if (existingValue == null) {
-          byte[] score;
+          byte[] scoreBytes;
           // Redis math and Java math are different when handling infinity. Specifically:
           // Java: INFINITY * 0 = NaN
           // Redis: INFINITY * 0 = 0
           if (weight == 0) {
-            score = bZERO;
+            scoreBytes = bZERO;
           } else if (weight == 1) {
-            score = entry.getScoreBytes();
+            scoreBytes = entry.getScoreBytes();
           } else {
             double newScore = entry.score * weight;
             if (Double.isNaN(newScore)) {
-              score = entry.getScoreBytes();
+              scoreBytes = entry.getScoreBytes();
             } else {
-              score = Coder.doubleToBytes(entry.score * weight);
+              scoreBytes = Coder.doubleToBytes(entry.score * weight);
             }
           }
-          members.put(entry.member, new OrderedSetEntry(entry.member, score));
+          members.put(entry.member, new OrderedSetEntry(entry.member, scoreBytes));
           continue;
         }
 

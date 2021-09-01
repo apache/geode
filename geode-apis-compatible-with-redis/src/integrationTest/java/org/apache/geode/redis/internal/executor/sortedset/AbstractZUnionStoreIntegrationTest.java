@@ -448,9 +448,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     new ConcurrentLoopingThreads(1000,
         i -> jedis.zadd("{A}scores1", (double) i, String.format("member-%05d", i)),
         i -> jedis.zadd("{A}scores2", (double) i, String.format("member-%05d", i)),
-        i -> jedis.zunionstore("{A}newSet", new ZParams().aggregate(ZParams.Aggregate.MAX),
-            "{A}scores1", "{A}scores2"))
-                .runWithAction(() -> assertThat(jedis.zrangeWithScores("{A}newSet", 0, scoreCount))
+        i -> jedis.zunionstore("{A}maxSet", new ZParams().aggregate(ZParams.Aggregate.MAX),
+            "{A}scores1", "{A}scores2"),
+        // This ensures that the lock ordering for keys is working
+        i -> jedis.zunionstore("{A}minSet", new ZParams().aggregate(ZParams.Aggregate.MIN),
+            "{A}scores2", "{A}scores1"))
+                .runWithAction(() -> assertThat(jedis.zrangeWithScores("{A}maxSet", 0, scoreCount))
                     .hasSize(scoreCount));
   }
 

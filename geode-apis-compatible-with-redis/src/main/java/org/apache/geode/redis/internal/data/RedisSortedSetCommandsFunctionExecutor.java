@@ -134,15 +134,19 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    List<RedisKey> keysToLock = keyWeights.stream()
-        .collect(ArrayList::new, (x, y) -> x.add(y.getKey()), ArrayList::addAll);
+    List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
+    for (ZKeyWeight kw : keyWeights) {
+      getRegionProvider().ensureKeyIsLocal(kw.getKey());
+      keysToLock.add(kw.getKey());
+    }
+    getRegionProvider().ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
+
+    getRegionProvider().orderForLocking(keysToLock);
+
     return stripedExecute(destinationKey, keysToLock,
-        () -> {
-          getRegionProvider().ensureKeyIsLocal(destinationKey);
-          return new RedisSortedSet(Collections.emptyList()).zunionstore(getRegionProvider(),
-              destinationKey, keyWeights, aggregator);
-        });
+        () -> new RedisSortedSet(Collections.emptyList()).zunionstore(getRegionProvider(),
+            destinationKey, keyWeights, aggregator));
   }
 
 }
