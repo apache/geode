@@ -24,7 +24,6 @@ import static org.apache.geode.redis.internal.netty.Coder.isNegativeInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -110,16 +109,6 @@ public class CoderTest {
       assertThat(narrowLongToInt(i)).isEqualTo(Math.toIntExact(i));
     }
   }
-
-  @Test
-  @Parameters(method = "doubleBytes")
-  public void stripTrailingZeroFromDouble_correctlyStripsTrailingZero(byte[] input,
-      byte[] expected) {
-    byte[] output = stripTrailingZeroFromDouble(input);
-    assertThat(output).containsExactly(expected);
-  }
-
-
 
   @SuppressWarnings("unused")
   private Object[] stringPairs() {

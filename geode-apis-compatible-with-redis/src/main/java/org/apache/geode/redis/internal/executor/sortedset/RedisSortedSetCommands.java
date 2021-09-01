@@ -27,7 +27,7 @@ public interface RedisSortedSetCommands {
 
   long zcount(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
-  double zincrby(RedisKey key, double increment, byte[] member);
+  byte[] zincrby(RedisKey key, double increment, byte[] member);
 
   long zlexcount(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 

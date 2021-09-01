@@ -59,7 +59,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public double zincrby(RedisKey key, double increment, byte[] member) {
+  public byte[] zincrby(RedisKey key, double increment, byte[] member) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zincrby(getRegion(), key, increment, member));
   }

@@ -40,7 +40,7 @@ public class ZIncrByExecutor extends AbstractExecutor {
     }
     byte[] member = commandElements.get(3);
 
-    double retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
-    return RedisResponse.bulkString(Coder.doubleToBytes(retVal));
+    byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
+    return RedisResponse.bulkString(retVal);
   }
 }

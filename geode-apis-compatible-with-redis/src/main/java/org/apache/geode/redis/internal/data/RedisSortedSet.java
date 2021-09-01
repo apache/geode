@@ -46,7 +46,6 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.ZAddsDeltaInfo;
@@ -72,17 +71,10 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   RedisSortedSet(List<byte[]> members, List<Double> scores) {
-    this.members = new MemberMap(members.size() + scores.size());
-
-    if (members.size() != scores.size()) {
-      throw new IllegalArgumentException("there must be the same number of members and scores");
-    }
+    this.members = new MemberMap(members.size());
 
     for (int i = 0; i < members.size(); i++) {
       double score = scores.get(i);
-      if (Double.isNaN(score)) {
-        throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-      }
       byte[] member = members.get(i);
       memberAdd(member, score);
     }
@@ -97,12 +89,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof AddsDeltaInfo) {
-      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      membersAddAll(addsDeltaInfo);
-    } else if (deltaInfo instanceof ZAddsDeltaInfo) {
+    if (deltaInfo instanceof ZAddsDeltaInfo) {
       ZAddsDeltaInfo zaddsDeltaInfo = (ZAddsDeltaInfo) deltaInfo;
-      membersZAddAll(zaddsDeltaInfo);
+      membersAddAll(zaddsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
       membersRemoveAll(remsDeltaInfo);
@@ -199,16 +188,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return false;
   }
 
-  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
-    while (iterator.hasNext()) {
-      byte[] member = iterator.next();
-      double score = Coder.bytesToDouble(iterator.next());
-      memberAdd(member, score);
-    }
-  }
-
-  private synchronized void membersZAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
+  private synchronized void membersAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
     List<byte[]> members = zaddsDeltaInfo.getZAddMembers();
     List<Double> scores = zaddsDeltaInfo.getZAddScores();
     for (int i = 0; i < members.size(); i++) {
@@ -235,10 +215,6 @@ public class RedisSortedSet extends AbstractRedisData {
       return zaddIncr(region, key, membersToAdd.get(0), scoresToAdd.get(0), options);
     }
 
-    if (membersToAdd.size() != scoresToAdd.size()) {
-      throw new IllegalArgumentException("there must be the same number of members and scores");
-    }
-
     ZAddsDeltaInfo deltaInfo = null;
     int initialSize = scoreSet.size();
     int changesCount = 0;
@@ -253,14 +229,15 @@ public class RedisSortedSet extends AbstractRedisData {
         continue;
       }
       boolean scoreChanged = memberAdd(member, score);
-      if (options.isCH() && scoreChanged) {
-        changesCount++;
-      }
-
-      if (deltaInfo == null) {
-        deltaInfo = new ZAddsDeltaInfo(member, score);
-      } else {
-        deltaInfo.add(member, score);
+      if (scoreChanged) {
+        if (options.isCH()) {
+          changesCount++;
+        }
+        if (deltaInfo == null) {
+          deltaInfo = new ZAddsDeltaInfo(member, score);
+        } else {
+          deltaInfo.add(member, score);
+        }
       }
     }
 
@@ -286,7 +263,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return maxIndex - minIndex;
   }
 
-  double zincrby(Region<RedisKey, RedisData> region, RedisKey key, double incr, byte[] member) {
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double incr, byte[] member) {
     double score;
     OrderedSetEntry orderedSetEntry = members.get(member);
 
@@ -306,7 +283,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     storeChanges(region, key, deltaInfo);
 
-    return score;
+    return Coder.doubleToBytes(score);
   }
 
   long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -508,9 +485,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key, byte[] member,
       double increment, ZAddOptions options) {
-    if (Double.isNaN(increment)) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-    }
     // for zadd incr option, only one incrementing element pair is allowed to get here.
     if (options.isNX() && members.containsKey(member)) {
       return null;
@@ -518,7 +492,7 @@ public class RedisSortedSet extends AbstractRedisData {
     if (options.isXX() && !members.containsKey(member)) {
       return null;
     }
-    return Coder.doubleToBytes(zincrby(region, key, increment, member));
+    return zincrby(region, key, increment, member);
   }
 
   private List<byte[]> getRange(AbstractSortedSetRangeOptions<?> rangeOptions) {
