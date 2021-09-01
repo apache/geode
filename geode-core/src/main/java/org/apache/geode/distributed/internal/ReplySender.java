@@ -16,6 +16,9 @@ package org.apache.geode.distributed.internal;
 
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 
@@ -31,6 +34,12 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
  */
 public interface ReplySender {
 
-  Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
+
+  /**
+   * @param message to send.
+   * @return recipients who did not receive the message. May return an immutable set.
+   */
+  @Nullable
+  Set<InternalDistributedMember> putOutgoing(@NotNull DistributionMessage message);
 
 }

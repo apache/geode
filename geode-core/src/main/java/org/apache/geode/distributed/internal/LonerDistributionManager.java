@@ -27,6 +27,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.admin.GemFireHealthConfig;
@@ -1098,7 +1101,8 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
+  @Nullable
+  public Set<InternalDistributedMember> putOutgoing(@NotNull DistributionMessage msg) {
     return null;
   }
 
