@@ -174,6 +174,20 @@ public class SSLConfig {
     return sslParameterExtension;
   }
 
+  /**
+   * Returns true if ciphers is either null, empty or is set to "any" (ignoring case)
+   */
+  public boolean isAnyCiphers() {
+    return StringUtils.isBlank(ciphers) || "any".equalsIgnoreCase(ciphers);
+  }
+
+  /**
+   * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
+   */
+  public boolean isAnyProtocols() {
+    return StringUtils.isBlank(protocols) || "any".equalsIgnoreCase(protocols);
+  }
+
   @Override
   public String toString() {
     return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"

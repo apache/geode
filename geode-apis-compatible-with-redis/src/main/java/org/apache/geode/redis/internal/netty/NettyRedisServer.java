@@ -191,7 +191,7 @@ public class NettyRedisServer {
 
     if (sslConfigForServer.getKeystore() == null) {
       throw new IllegalStateException(
-          "Cannot start netty as no key manager is configured. Please ensure that the Geode property 'ssl-keystore' is set.");
+          "Cannot start netty as no key manager is configured. Please ensure that the GemFire property 'ssl-keystore' is set.");
     }
 
     SslContext sslContext;
@@ -208,11 +208,11 @@ public class NettyRedisServer {
       SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(keyManagerFactory);
       sslContextBuilder.trustManager(trustManagerFactory);
 
-      if (!"any".equals(sslConfigForServer.getCiphers())) {
+      if (!sslConfigForServer.isAnyCiphers()) {
         sslContextBuilder.ciphers(Arrays.asList(sslConfigForServer.getCiphersAsStringArray()));
       }
 
-      if (!"any".equals(sslConfigForServer.getProtocols())) {
+      if (!sslConfigForServer.isAnyProtocols()) {
         sslContextBuilder.protocols(
             Arrays.asList(sslConfigForServer.getProtocolsAsStringArray()));
       }

@@ -175,14 +175,14 @@ public class SSLDUnitTest {
     GeodeAwaitility.await().during(Duration.ofSeconds(1)).until(() -> true);
     serverStore.createKeyStore(serverKeyStoreFilename, commonPassword);
 
-    // Wait long enough for the file change to be detected
-    GeodeAwaitility.await().during(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS + 2))
-        .until(() -> true);
-
-    try (Jedis jedis = createClient(true, false)) {
-      assertThat(jedis.ping()).isEqualTo("PONG");
-    }
-    assertThat(hostnameVerifier.getSubjectAltNames()).contains(newServerName);
+    // Try long enough for the file change to be detected
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 2))
+        .untilAsserted(() -> {
+          try (Jedis jedis = createClient(true, false)) {
+            jedis.ping();
+            assertThat(hostnameVerifier.getSubjectAltNames()).contains(newServerName);
+          }
+        });
   }
 
   @Test
@@ -211,14 +211,14 @@ public class SSLDUnitTest {
     serverStore.createKeyStore(serverKeyStoreFilename, commonPassword);
     serverStore.createTrustStore(serverTrustStoreFilename, commonPassword);
 
-    // Wait long enough for the file change to be detected
-    GeodeAwaitility.await().during(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS + 2))
-        .until(() -> true);
-
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
 
-    assertThatThrownBy(() -> createClient(true, false))
-        .isInstanceOf(JedisConnectionException.class);
+    // Try long enough for the file change to be detected
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 2))
+        .untilAsserted(() -> {
+          assertThatThrownBy(() -> createClient(true, false))
+              .isInstanceOf(JedisConnectionException.class);
+        });
 
     IgnoredException.removeAllExpectedExceptions();
   }
