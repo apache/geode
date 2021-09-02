@@ -1275,6 +1275,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
       try {
         socket = serverSock.accept();
         crHelper.checkCancelInProgress(null); // throws
+        if (this.cache.getDistributionManager() != null
+            && this.cache.getDistributionManager().getDistribution() != null
+            && this.cache.getDistributionManager().getDistribution().getMembership() != null) {
+          this.cache.getDistributionManager().getDistribution().getMembership().checkCancelled();
+        }
 
         // Optionally enable SO_KEEPALIVE in the OS network protocol.
         socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
