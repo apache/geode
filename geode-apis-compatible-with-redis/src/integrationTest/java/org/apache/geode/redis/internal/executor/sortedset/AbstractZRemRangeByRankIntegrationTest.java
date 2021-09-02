@@ -85,22 +85,20 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
   }
 
   @Test
-  public void shouldRemoveMember_givenMemberRankInRange() {
-    jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME);
-
-    assertThat(jedis.zremrangeByRank(KEY, 0, 0)).isEqualTo(1);
-    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME)).isNull();
-  }
-
-  @Test
-  public void shouldReturnOne_givenMemberRankInRange() {
+  public void shouldReturnOneAndRemoveMember_givenMemberRankInRange() {
     jedis.zadd(KEY, BASE_SCORE, BASE_MEMBER_NAME + "0");
     jedis.zadd(KEY, BASE_SCORE + 1, BASE_MEMBER_NAME + "1");
     jedis.zadd(KEY, BASE_SCORE + 2, BASE_MEMBER_NAME + "2");
 
     assertThat(jedis.zremrangeByRank(KEY, 2, 2)).isEqualTo(1);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + "2")).isNull();
+
     assertThat(jedis.zremrangeByRank(KEY, 1, 1)).isEqualTo(1);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + "1")).isNull();
+
     assertThat(jedis.zremrangeByRank(KEY, 0, 0)).isEqualTo(1);
+    assertThat(jedis.zscore(KEY, BASE_MEMBER_NAME + "0")).isNull();
+
     assertThat(jedis.zcard(KEY)).isEqualTo(0);
   }
 

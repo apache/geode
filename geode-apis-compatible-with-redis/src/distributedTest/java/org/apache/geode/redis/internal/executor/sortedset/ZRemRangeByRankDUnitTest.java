@@ -75,6 +75,7 @@ public class ZRemRangeByRankDUnitTest {
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+    isCrashing.set(false);
   }
 
   @After
