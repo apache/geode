@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +67,7 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
   public static final double SCORE_TWO = 2.2;
   public static final String MEMBER_THREE = "member3";
   public static final double SCORE_THREE = 3.3;
+  public static final Offset<Double> doubleOffset = Offset.offset(0.0000001);
 
   public static final String BASE_MEMBER = "baseMember_";
   private final int SIZE_OF_ENTRY_SET = 100;
@@ -344,7 +346,8 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenMultipleMatches_returnsEntriesMatchingLastMatchParameter() {
-    initializeThreeFieldSortedSet();
+    Map<String, Double> expectedResults = initializeThreeFieldSortedSet();
+    expectedResults.remove(MEMBER_THREE);
 
     List<Object> result =
         uncheckedCast(jedis.sendCommand(KEY.getBytes(), Protocol.Command.ZSCAN,
@@ -354,12 +357,12 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
     List<byte[]> membersAndScores = uncheckedCast(result.get(1));
-    System.out.println(
-        "DONAL: members and scores = " + membersAndScores.stream().map(String::new).collect(
-            Collectors.joining(", ")));
-    assertThat(membersAndScores).containsExactlyInAnyOrder(
-        MEMBER_ONE.getBytes(), String.valueOf(SCORE_ONE).getBytes(),
-        MEMBER_TWO.getBytes(), String.valueOf(SCORE_TWO).getBytes());
+
+    Map<String, Double> scanResults = byteArrayListToMap(membersAndScores);
+    assertThat(scanResults.keySet()).containsExactlyInAnyOrderElementsOf(expectedResults.keySet());
+    for (Map.Entry<String, Double> entry : scanResults.entrySet()) {
+      assertThat(expectedResults.get(entry.getKey())).isCloseTo(entry.getValue(), doubleOffset);
+    }
   }
 
   @Test
@@ -383,9 +386,10 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenMultipleCountsAndMatches_returnsEntriesMatchingLastMatchParameter() {
-    initializeThreeFieldSortedSet();
-    List<Object> result;
+    Map<String, Double> expectedResults = initializeThreeFieldSortedSet();
+    expectedResults.remove(MEMBER_THREE);
 
+    List<Object> result;
     List<byte[]> allEntries = new ArrayList<>();
     String cursor = ZERO_CURSOR;
 
@@ -404,9 +408,12 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
     } while (!Arrays.equals((byte[]) result.get(0), ZERO_CURSOR.getBytes()));
 
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
-    assertThat(allEntries).containsExactlyInAnyOrder(
-        MEMBER_ONE.getBytes(), String.valueOf(SCORE_ONE).getBytes(),
-        MEMBER_TWO.getBytes(), String.valueOf(SCORE_TWO).getBytes());
+
+    Map<String, Double> scanResults = byteArrayListToMap(allEntries);
+    assertThat(scanResults.keySet()).containsExactlyInAnyOrderElementsOf(expectedResults.keySet());
+    for (Map.Entry<String, Double> entry : scanResults.entrySet()) {
+      assertThat(expectedResults.get(entry.getKey())).isCloseTo(entry.getValue(), doubleOffset);
+    }
   }
 
   @Test
@@ -447,7 +454,7 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void should_notErrorGivenCountGreaterThanIntegerMaxValue() {
-    initializeThreeFieldSortedSet();
+    Map<String, Double> initialEntries = initializeThreeFieldSortedSet();
 
     String greaterThanInt = String.valueOf(2L * Integer.MAX_VALUE);
     List<Object> result =
@@ -458,10 +465,11 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
 
     List<byte[]> membersAndScores = uncheckedCast(result.get(1));
-    assertThat(membersAndScores).containsExactlyInAnyOrder(
-        MEMBER_ONE.getBytes(), String.valueOf(SCORE_ONE).getBytes(),
-        MEMBER_TWO.getBytes(), String.valueOf(SCORE_TWO).getBytes(),
-        MEMBER_THREE.getBytes(), String.valueOf(SCORE_THREE).getBytes());
+    Map<String, Double> scanResults = byteArrayListToMap(membersAndScores);
+    assertThat(scanResults.keySet()).containsExactlyInAnyOrderElementsOf(initialEntries.keySet());
+    for (Map.Entry<String, Double> entry : scanResults.entrySet()) {
+      assertThat(initialEntries.get(entry.getKey())).isCloseTo(entry.getValue(), doubleOffset);
+    }
   }
 
   // Concurrency
@@ -544,5 +552,15 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
   private Map<String, Double> tupleCollectionToMap(Collection<Tuple> allEntries) {
     return allEntries.stream().collect(Collectors.toMap(Tuple::getElement, Tuple::getScore));
+  }
+
+  private Map<String, Double> byteArrayListToMap(List<byte[]> byteArrayList) {
+    assertThat(byteArrayList.size() % 2 == 0);
+    Map<String, Double> outputMap = new HashMap<>();
+    for (int i = 0; i < byteArrayList.size(); i += 2) {
+      outputMap.put(new String(byteArrayList.get(i)),
+          Double.parseDouble(new String(byteArrayList.get(i + 1))));
+    }
+    return outputMap;
   }
 }
