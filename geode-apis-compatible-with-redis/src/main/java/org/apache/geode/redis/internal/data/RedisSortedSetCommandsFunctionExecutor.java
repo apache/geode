@@ -165,8 +165,8 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     getRegionProvider().orderForLocking(keysToLock);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> getRedisSortedSet(destinationKey, false).zunionstore(getRegionProvider(),
-            destinationKey, keyWeights, aggregator));
+        () -> new RedisSortedSet(Collections.emptyList(), Collections.emptyList())
+            .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
   }
 
 }
