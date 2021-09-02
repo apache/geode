@@ -203,7 +203,6 @@ public class RedisHashTest {
     RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
     ImmutablePair<Integer, List<byte[]>> result = hash.hscan(Pattern.compile("a.*"), 3, 0);
 
-    assertThat(result.left).isEqualTo(0);
     List<String> fieldsAndValues =
         result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());
 
