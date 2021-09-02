@@ -510,4 +510,5 @@ PATCH="${VERSION##*.}"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode and geode-native."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
+[ "${PATCH}" -ne 0 ] || echo "Run cd ${GEODE} && geode-management/src/test/script/update-management-wiki.sh"
 echo 'Finally, send announce email!'
