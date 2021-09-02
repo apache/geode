@@ -229,15 +229,13 @@ public class RedisSortedSet extends AbstractRedisData {
         continue;
       }
       boolean scoreChanged = memberAdd(member, score);
-      if (scoreChanged) {
-        if (options.isCH()) {
-          changesCount++;
-        }
-        if (deltaInfo == null) {
-          deltaInfo = new ZAddsDeltaInfo(member, score);
-        } else {
-          deltaInfo.add(member, score);
-        }
+      if (options.isCH() && scoreChanged) {
+        changesCount++;
+      }
+      if (deltaInfo == null) {
+        deltaInfo = new ZAddsDeltaInfo(member, score);
+      } else {
+        deltaInfo.add(member, score);
       }
     }
 
