@@ -26,6 +26,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -57,6 +58,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   public static final String HASH_KEY = "key";
   public static final int SLOT_FOR_KEY = CRC16.calculate(HASH_KEY) % RegionProvider.REDIS_SLOTS;
   public static final String ZERO_CURSOR = "0";
+  public static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
 
   public static final String FIELD_ONE = "1";
   public static final String VALUE_ONE = "yellow";
@@ -240,6 +242,21 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     assertThat(new HashSet<>(allEntries)).isEqualTo(entryMap.entrySet());
   }
 
+  @Test
+  public void shouldReturnError_givenCursorGreaterThanUnsignedLongMaxValue() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+
+    assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
+        UNSIGNED_LONG_CAPACITY.add(new BigInteger("10")).toString()))
+            .hasMessageContaining(ERROR_CURSOR);
+  }
+
+  @Test
+  public void shouldNotError_givenCursorEqualToUnsignedLongMaxValue() {
+    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
+        UNSIGNED_LONG_CAPACITY.toString());
+  }
 
   @Test
   public void givenInvalidRegexSyntax_returnsEmptyArray() {

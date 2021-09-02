@@ -15,16 +15,119 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import java.math.BigInteger;
-import java.util.regex.Pattern;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
+import java.math.BigInteger;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisDataType;
+import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
-
+  private static final Logger logger = LogService.getLogger();
   protected final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
   protected final int DEFAULT_COUNT = 10;
+
+  @Override
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    List<byte[]> commandElems = command.getProcessedCommand();
+
+    int cursor;
+    try {
+      cursor = getIntCursor(bytesToString(commandElems.get(2)));
+    } catch (RedisException ex) {
+      return RedisResponse.error(ERROR_CURSOR);
+    }
+
+    RedisKey key = command.getKey();
+
+    // Because we're trying to preserve the same semantics of error conditions, with native redis,
+    // the ordering of input validation is reflected here. To that end the first check ends up
+    // being an existence check of the key. That causes a race since the data value needs to be
+    // accessed again when the actual command does its work. If the relevant bucket doesn't get
+    // locked throughout the call, the bucket may move producing inconsistent results.
+    return context.getRegionProvider().execute(key, () -> {
+      RedisData value = context.getRegionProvider().getRedisData(key);
+      if (value.isNull()) {
+        context.getRedisStats().incKeyspaceMisses();
+        return RedisResponse.emptyScan();
+      }
+
+      if (value.getType() != getDataType()) {
+        throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
+      }
+
+      command.getCommandType().checkDeferredParameters(command, context);
+      int count = DEFAULT_COUNT;
+      String globPattern = null;
+
+      for (int i = 3; i < commandElems.size(); i = i + 2) {
+        byte[] commandElemBytes = commandElems.get(i);
+        if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
+          commandElemBytes = commandElems.get(i + 1);
+          globPattern = bytesToString(commandElemBytes);
+
+        } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
+          commandElemBytes = commandElems.get(i + 1);
+          try {
+            count = narrowLongToInt(bytesToLong(commandElemBytes));
+          } catch (NumberFormatException e) {
+            return RedisResponse.error(ERROR_NOT_INTEGER);
+          }
+
+          if (count < 1) {
+            return RedisResponse.error(ERROR_SYNTAX);
+          }
+
+        } else {
+          return RedisResponse.error(ERROR_SYNTAX);
+        }
+      }
+
+      Pattern matchPattern;
+      try {
+        matchPattern = convertGlobToRegex(globPattern);
+      } catch (PatternSyntaxException e) {
+        logger.warn(
+            "Could not compile the pattern: '{}' due to the following exception: '{}'. {} will return an empty list.",
+            globPattern, e.getMessage(), command.getCommandType().name());
+
+        return RedisResponse.emptyScan();
+      }
+
+      Pair<Integer, List<byte[]>> scanResult;
+      try {
+        scanResult = executeScan(context, key, matchPattern, count, cursor);
+      } catch (IllegalArgumentException ex) {
+        return RedisResponse.error(ERROR_NOT_INTEGER);
+      }
+
+      return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    });
+  }
 
   /**
    * @param pattern A glob pattern.
@@ -36,4 +139,31 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
     }
     return GlobPattern.createPattern(pattern);
   }
+  // Redis allows values for CURSOR up to UNSIGNED_LONG_CAPACITY, but internally it only makes sense
+  // for us to use values up to Integer.MAX_VALUE, so safely narrow any cursor values to int here
+
+  protected int getIntCursor(String cursorString) {
+    BigInteger tempCursor;
+
+    try {
+      tempCursor = new BigInteger(cursorString).abs();
+    } catch (NumberFormatException e) {
+      throw new RedisException(ERROR_CURSOR);
+    }
+
+    if (tempCursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
+      throw new RedisException(ERROR_CURSOR);
+    }
+
+    try {
+      return tempCursor.intValueExact();
+    } catch (ArithmeticException ex) {
+      return Integer.MAX_VALUE;
+    }
+  }
+
+  protected abstract Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context,
+      RedisKey key, Pattern pattern, int count, int cursor);
+
+  protected abstract RedisDataType getDataType();
 }

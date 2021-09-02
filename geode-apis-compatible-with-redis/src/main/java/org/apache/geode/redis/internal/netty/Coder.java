@@ -50,7 +50,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTY
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.List;
@@ -150,12 +149,11 @@ public class Coder {
     }
   }
 
-  public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
-      List<?> scanResult) {
+  public static ByteBuf getScanResponse(ByteBuf buffer, int cursor, List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
     buffer.writeByte(digitToAscii(2));
     buffer.writeBytes(bCRLF);
-    byte[] cursorBytes = stringToBytes(cursor.toString());
+    byte[] cursorBytes = intToBytes(cursor);
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
     appendAsciiDigitsToByteBuf(scanResult.size(), buffer);

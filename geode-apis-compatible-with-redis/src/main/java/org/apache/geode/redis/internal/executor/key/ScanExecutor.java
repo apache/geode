@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -103,7 +104,7 @@ public class ScanExecutor extends AbstractScanExecutor {
         scan(getDataRegion(context).keySet(), matchPattern, count, cursor);
     context.setScanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    return RedisResponse.scan(scanResult.getLeft().intValue(), scanResult.getRight());
   }
 
   private Pair<BigInteger, List<Object>> scan(Collection<RedisKey> list,
@@ -142,5 +143,17 @@ public class ScanExecutor extends AbstractScanExecutor {
       scanResult = new ImmutablePair<>(new BigInteger(String.valueOf(i + 1)), returnList);
     }
     return scanResult;
+  }
+
+  // TODO: When SCAN is supported, refactor to use these methods and not override executeCommand()
+  @Override
+  protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
+      Pattern pattern, int count, int cursor) {
+    return null;
+  }
+
+  @Override
+  protected RedisDataType getDataType() {
+    return null;
   }
 }

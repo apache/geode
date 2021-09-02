@@ -16,13 +16,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigInteger;
-
 import org.junit.ClassRule;
-import org.junit.Test;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -34,29 +28,5 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
   @Override
   public int getPort() {
     return server.getPort();
-  }
-
-
-  // Note: these tests will not pass native redis, so included here in concrete test class
-  @Test
-  public void givenCursorGreaterThanIntMaxValue_returnsCursorError() {
-    int largestCursorValue = Integer.MAX_VALUE;
-
-    BigInteger tooBigCursor =
-        new BigInteger(String.valueOf(largestCursorValue)).add(BigInteger.valueOf(1));
-
-    assertThatThrownBy(() -> jedis.hscan("a", tooBigCursor.toString()))
-        .hasMessageContaining(ERROR_CURSOR);
-  }
-
-  @Test
-  public void givenCursorLessThanIntMinValue_returnsCursorError() {
-    int smallestCursorValue = Integer.MIN_VALUE;
-
-    BigInteger tooSmallCursor =
-        new BigInteger(String.valueOf(smallestCursorValue)).subtract(BigInteger.valueOf(1));
-
-    assertThatThrownBy(() -> jedis.hscan("a", tooSmallCursor.toString()))
-        .hasMessageContaining(ERROR_CURSOR);
   }
 }
