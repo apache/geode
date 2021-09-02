@@ -40,11 +40,7 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
 
   @Override
   public int getSubscriptionCount() {
-    int result = size.get();
-    if (result < 0) {
-      result = 0;
-    }
-    return result;
+    return size.get();
   }
 
   @Override
@@ -65,13 +61,14 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
     // This allows us to increment size first
     // which is needed so we can check it for
     // zero and not allow the add.
-    int sizeValue = size.get();
+    int sizeValue;
     do {
-      if (sizeValue <= 0) {
+      sizeValue = size.get();
+      if (sizeValue == 0) {
         // no adds allowed after it is empty
         return false;
       }
-    } while (size.compareAndSet(sizeValue, sizeValue + 1));
+    } while (!size.compareAndSet(sizeValue, sizeValue + 1));
     Client client = subscription.getClient();
     map.put(client, subscription);
     return true;
