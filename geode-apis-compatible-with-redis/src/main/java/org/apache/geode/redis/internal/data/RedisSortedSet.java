@@ -19,12 +19,14 @@ package org.apache.geode.redis.internal.data;
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -45,6 +47,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
@@ -55,6 +58,9 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptio
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.executor.sortedset.ZAggregator;
+import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
@@ -379,6 +385,51 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
+  long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    for (ZKeyWeight keyWeight : keyWeights) {
+      RedisSortedSet set =
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
+      if (set == NULL_REDIS_SORTED_SET) {
+        continue;
+      }
+      double weight = keyWeight.getWeight();
+
+      for (AbstractOrderedSetEntry entry : set.members.values()) {
+        OrderedSetEntry existingValue = members.get(entry.member);
+        if (existingValue == null) {
+          byte[] scoreBytes;
+          // Redis math and Java math are different when handling infinity. Specifically:
+          // Java: INFINITY * 0 = NaN
+          // Redis: INFINITY * 0 = 0
+          if (weight == 0) {
+            scoreBytes = bZERO;
+          } else if (weight == 1) {
+            scoreBytes = entry.getScoreBytes();
+          } else {
+            double newScore = entry.score * weight;
+            if (Double.isNaN(newScore)) {
+              scoreBytes = entry.getScoreBytes();
+            } else {
+              scoreBytes = Coder.doubleToBytes(entry.score * weight);
+            }
+          }
+          members.put(entry.member, new OrderedSetEntry(entry.member, scoreBytes));
+          continue;
+        }
+
+        existingValue.updateScore(aggregator.getFunction().apply(existingValue.score,
+            entry.score * weight));
+      }
+    }
+
+    scoreSet.addAll(members.values());
+
+    regionProvider.getLocalDataRegion().put(key, this);
+
+    return getSortedSetSize();
+  }
+
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,
       Region<RedisKey, RedisData> region, RedisKey key) {
     if (!scoresIterator.hasNext()) {
@@ -662,6 +713,13 @@ public class RedisSortedSet extends AbstractRedisData {
         scoreBytes = newScore;
         score = processByteArrayAsDouble(newScore);
       }
+    }
+
+    public double updateScore(double newScore) {
+      score = newScore;
+      scoreBytes = Coder.doubleToBytes(newScore);
+
+      return score;
     }
   }
 

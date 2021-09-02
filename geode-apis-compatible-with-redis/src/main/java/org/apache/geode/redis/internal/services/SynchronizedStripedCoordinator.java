@@ -15,7 +15,10 @@
 
 package org.apache.geode.redis.internal.services;
 
+import java.util.List;
 import java.util.concurrent.Callable;
+
+import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
  * Implements {@link StripedCoordinator} by using
@@ -39,7 +42,7 @@ public class SynchronizedStripedCoordinator implements StripedCoordinator {
   }
 
   @Override
-  public <T> T execute(Object stripeId, Callable<T> callable) {
+  public <T> T execute(RedisKey stripeId, Callable<T> callable) {
     synchronized (getSync(stripeId)) {
       try {
         return callable.call();
@@ -48,6 +51,21 @@ public class SynchronizedStripedCoordinator implements StripedCoordinator {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  @Override
+  public <T> T execute(List<RedisKey> stripeIds, Callable<T> callable) {
+    return execute(stripeIds, 0, callable);
+  }
+
+  private <T> T execute(List<RedisKey> stripeIds, int index, Callable<T> callable) {
+    if (index + 1 == stripeIds.size()) {
+      return execute(stripeIds.get(index), callable);
+    }
+
+    synchronized (getSync(stripeIds.get(index))) {
+      return execute(stripeIds, ++index, callable);
     }
   }
 

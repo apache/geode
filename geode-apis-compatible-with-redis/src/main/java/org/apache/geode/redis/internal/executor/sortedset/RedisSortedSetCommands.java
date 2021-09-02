@@ -56,4 +56,7 @@ public interface RedisSortedSetCommands {
   long zrevrank(RedisKey key, byte[] member);
 
   byte[] zscore(RedisKey key, byte[] member);
+
+  long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights, ZAggregator aggregator);
+
 }

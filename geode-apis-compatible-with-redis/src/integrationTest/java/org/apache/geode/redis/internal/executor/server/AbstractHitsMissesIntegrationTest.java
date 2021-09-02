@@ -32,6 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ZParams;
 
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -330,6 +331,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testZrevrangeByScore() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByScore(k, 1, 0));
+  }
+
+  @Test
+  public void testZUnionStore() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY,
+        k -> jedis.zunionstore(k, new ZParams().weights(1, 2), k, k));
   }
 
   /************* Set related commands *************/

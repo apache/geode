@@ -104,6 +104,7 @@ import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByScoreExecut
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZUnionStoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -238,6 +239,7 @@ public enum RedisCommandType {
   ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  ZUNIONSTORE(new ZUnionStoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
 
   /************* Server *****************/
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),

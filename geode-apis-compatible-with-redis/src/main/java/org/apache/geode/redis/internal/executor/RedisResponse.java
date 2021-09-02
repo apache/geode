@@ -133,6 +133,10 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
   }
 
+  public static RedisResponse crossSlot(String error) {
+    return new RedisResponse((bba) -> Coder.getCrossSlotResponse(bba, error));
+  }
+
   public static RedisResponse busykey(String error) {
     return new RedisResponse((bba) -> Coder.getBusyKeyResponse(bba, error));
   }

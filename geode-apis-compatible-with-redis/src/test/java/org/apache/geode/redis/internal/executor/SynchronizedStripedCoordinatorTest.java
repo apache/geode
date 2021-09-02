@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 
@@ -42,7 +43,7 @@ public class SynchronizedStripedCoordinatorTest {
     assertThat(result).isEqualTo("OK");
   }
 
-  private static class Hashy {
+  private static class Hashy extends RedisKey {
     private final int hashcode;
 
     public Hashy(int hashcode) {

@@ -30,6 +30,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -198,4 +199,25 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     assertThat(jedis.smembers("{user1}master").toArray())
         .containsExactlyInAnyOrder(masterSet.toArray());
   }
+
+  @Test
+  public void doesNotThrowExceptions_whenConcurrentSaddAndSunionExecute() {
+    final int ENTRIES = 1000;
+    Set<String> set1 = new HashSet<>();
+    Set<String> set2 = new HashSet<>();
+    for (int i = 0; i < ENTRIES; i++) {
+      set1.add("value-1-" + i);
+      set2.add("value-2-" + i);
+    }
+
+    jedis.sadd("{player1}key1", set1.toArray(new String[] {}));
+    jedis.sadd("{player1}key2", set2.toArray(new String[] {}));
+
+    new ConcurrentLoopingThreads(ENTRIES,
+        i -> jedis.sunion("{player1}key1", "{player1}key2"),
+        i -> jedis.sadd("{player1}key1", "newValue-1-" + i),
+        i -> jedis.sadd("{player1}key2", "newValue-2-" + i))
+            .runInLockstep();
+  }
+
 }

@@ -33,6 +33,7 @@ public class ConcurrentLoopingThreads {
   private final Consumer<Integer>[] functions;
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private List<Future<?>> loopingFutures;
+  private Throwable actionThrowable = null;
 
   @SafeVarargs
   public ConcurrentLoopingThreads(int iterationCount,
@@ -45,15 +46,15 @@ public class ConcurrentLoopingThreads {
    * Start the operations asynchronously. Use {@link #await()} to wait for completion.
    */
   public ConcurrentLoopingThreads start() {
-    return start(false);
+    return start(false, null);
   }
 
-  private ConcurrentLoopingThreads start(boolean lockstep) {
-    CyclicBarrier latch = new CyclicBarrier(functions.length);
+  private ConcurrentLoopingThreads start(boolean lockstep, Runnable barrierAction) {
+    CyclicBarrier barrier = new CyclicBarrier(functions.length, barrierAction);
 
     loopingFutures = Arrays
         .stream(functions)
-        .map(r -> new LoopingThread(r, iterationCount, latch, lockstep))
+        .map(r -> new LoopingThread(r, iterationCount, barrier, lockstep))
         .map(t -> executorService.submit(t))
         .collect(Collectors.toList());
 
@@ -84,7 +85,7 @@ public class ConcurrentLoopingThreads {
    * Start operations and only return once all are complete.
    */
   public void run() {
-    start(false);
+    start(false, null);
     await();
   }
 
@@ -92,8 +93,39 @@ public class ConcurrentLoopingThreads {
    * Start operations and run each iteration in lockstep
    */
   public void runInLockstep() {
-    start(true);
+    start(true, null);
     await();
+  }
+
+  /**
+   * Start operations and provide an action to be performed at the end of every iteration. This
+   * implies running in lockstep. This would typically be used to provide some form of validation.
+   */
+  public void runWithAction(Runnable action) {
+    Runnable innerRunnable = () -> {
+      try {
+        action.run();
+      } catch (Throwable e) {
+        actionThrowable = e;
+        throw e;
+      }
+    };
+
+    start(true, innerRunnable);
+
+    try {
+      await();
+    } catch (Throwable e) {
+      if (actionThrowable != null) {
+        // This will ensure that AssertionErrors are clearly apparent
+        if (actionThrowable instanceof Error) {
+          throw (Error) actionThrowable;
+        }
+        throw new RuntimeException(actionThrowable);
+      } else {
+        throw e;
+      }
+    }
   }
 
   private static class LoopingRunnable implements Runnable {
@@ -112,13 +144,14 @@ public class ConcurrentLoopingThreads {
 
     @Override
     public void run() {
-      waitForBarrier();
+      if (!lockstep) {
+        waitForBarrier();
+      }
       for (int i = 0; i < iterationCount; i++) {
+        runnable.accept(i);
         if (lockstep) {
           waitForBarrier();
         }
-        runnable.accept(i);
-        Thread.yield();
       }
     }
 
