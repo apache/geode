@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -132,14 +133,13 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
-    return subscriptions.subscribe(channel, context, client);
+  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context) {
+    return subscriptions.subscribe(channel, context);
   }
 
   @Override
-  public SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context,
-      Client client) {
-    return subscriptions.psubscribe(pattern, context, client);
+  public SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context) {
+    return subscriptions.psubscribe(pattern, context);
   }
 
   private void registerPublishFunction() {
@@ -202,7 +202,12 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names) {
-    return subscriptions.findNumberOfSubscribersPerChannel(names);
+    List<Object> result = new ArrayList<>(names.size() * 2);
+    names.forEach(name -> {
+      result.add(name);
+      result.add(subscriptions.getChannelSubscriptionCount(name));
+    });
+    return result;
   }
 
   @Override

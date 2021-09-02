@@ -34,7 +34,7 @@ public class PsubscribeExecutor extends AbstractExecutor {
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       byte[] patternBytes = command.getProcessedCommand().get(i);
       SubscribeResult result =
-          context.getPubSub().psubscribe(patternBytes, context, context.getClient());
+          context.getPubSub().psubscribe(patternBytes, context);
       results.add(result);
     }
 

@@ -34,7 +34,7 @@ public class SubscribeExecutor extends AbstractExecutor {
     for (int i = 1; i < command.getProcessedCommand().size(); i++) {
       byte[] channelName = command.getProcessedCommand().get(i);
       SubscribeResult result =
-          context.getPubSub().subscribe(channelName, context, context.getClient());
+          context.getPubSub().subscribe(channelName, context);
       results.add(result);
     }
 

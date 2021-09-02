@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -71,22 +70,6 @@ public class Subscriptions {
   }
 
   /**
-   * Return a list consisting of pairs {@code channelName, subscriptionCount}.
-   *
-   * @param names a list of the names to consider. This should not include any patterns.
-   */
-  public List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names) {
-    List<Object> result = new ArrayList<>(names.size() * 2);
-
-    names.forEach(name -> {
-      result.add(name);
-      result.add(getChannelSubscriptionCount(name));
-    });
-
-    return result;
-  }
-
-  /**
    * Return a count of all pattern subscriptions including duplicates.
    */
   public int getPatternSubscriptionCount() {
@@ -124,8 +107,8 @@ public class Subscriptions {
     return getChannelSubscriptionCount() + getPatternSubscriptionCount();
   }
 
-  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context,
-      Client client) {
+  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context) {
+    final Client client = context.getClient();
     ChannelSubscription createdSubscription = null;
     if (client.addChannelSubscription(channel)) {
       createdSubscription = new ChannelSubscription(channel, context, this);
@@ -135,8 +118,8 @@ public class Subscriptions {
     return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
-  public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context,
-      Client client) {
+  public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context) {
+    final Client client = context.getClient();
     PatternSubscription createdSubscription = null;
     if (client.addPatternSubscription(patternBytes)) {
       boolean added = false;

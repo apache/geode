@@ -16,12 +16,16 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -32,39 +36,135 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SubscriptionsJUnitTest {
 
+  private final Subscriptions subscriptions = new Subscriptions();
+
   @Test
   public void correctlyIdentifiesChannelSubscriber() {
-    Subscriptions subscriptions = new Subscriptions();
+    ExecutionHandlerContext context = createExecutionHandlerContext();
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    subscriptions
-        .add(new ChannelSubscription(stringToBytes("subscriptions"), context,
-            subscriptions));
+    addChannelSubscription(context, "subscriptions");
 
     assertThat(subscriptions.getChannelSubscriptionCount(stringToBytes("unknown"))).isZero();
     assertThat(subscriptions.getChannelSubscriptionCount(stringToBytes("subscriptions"))).isOne();
   }
 
   @Test
+  public void correctlyCountsSubscriptions() {
+    ExecutionHandlerContext context1 = createExecutionHandlerContext();
+    ExecutionHandlerContext context2 = createExecutionHandlerContext();
+    ExecutionHandlerContext context3 = createExecutionHandlerContext();
+
+    addChannelSubscription(context1, "subscription1");
+    addChannelSubscription(context3, "subscription1");
+    addChannelSubscription(context2, "subscription2");
+    addPatternSubscription(context1, "sub*");
+    addPatternSubscription(context3, "sub*");
+    addPatternSubscription(context2, "subscription?");
+
+    assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("subscription1"))).isEqualTo(5);
+    assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("subscription2"))).isEqualTo(4);
+    assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("subscription3"))).isEqualTo(3);
+    assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("sub1"))).isEqualTo(2);
+    assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("none"))).isEqualTo(0);
+  }
+
+  @Test
+  public void foreachHitsEachSubscription() {
+    ExecutionHandlerContext context1 = createExecutionHandlerContext();
+    ExecutionHandlerContext context2 = createExecutionHandlerContext();
+    ExecutionHandlerContext context3 = createExecutionHandlerContext();
+
+    addChannelSubscription(context1, "subscription1");
+    addChannelSubscription(context3, "subscription1");
+    addChannelSubscription(context2, "subscription2");
+    addPatternSubscription(context1, "sub*");
+    addPatternSubscription(context3, "sub*");
+    addPatternSubscription(context2, "subscription?");
+
+    List<String> hits = new ArrayList<>();
+    subscriptions.forEachSubscription(stringToBytes("subscription1"), subscription -> {
+      hits.add(bytesToString(subscription.getSubscriptionName()));
+    });
+    assertThat(hits).containsExactlyInAnyOrder("subscription1", "subscription1", "sub*", "sub*",
+        "subscription?");
+  }
+
+  @Test
+  public void subscribeReturnsExpectedResult() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    final byte[] channel = stringToBytes("channel");
+
+    SubscribeResult result = subscriptions.subscribe(channel, context);
+
+    assertThat(result.getChannelCount()).isOne();
+    assertThat(result.getChannel()).isEqualTo(channel);
+    assertThat(result.getSubscription()).isInstanceOf(ChannelSubscription.class);
+    assertThat(result.getSubscription().getSubscriptionName()).isEqualTo(channel);
+    assertThat(context.getClient().getSubscriptionCount()).isOne();
+    assertThat(context.getClient().getChannelSubscriptions()).containsExactlyInAnyOrder(channel);
+  }
+
+  @Test
+  public void psubscribeReturnsExpectedResult() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    final byte[] pattern = stringToBytes("pattern");
+
+    SubscribeResult result = subscriptions.psubscribe(pattern, context);
+
+    assertThat(result.getChannelCount()).isOne();
+    assertThat(result.getChannel()).isEqualTo(pattern);
+    assertThat(result.getSubscription()).isInstanceOf(PatternSubscription.class);
+    assertThat(result.getSubscription().getSubscriptionName()).isEqualTo(pattern);
+    assertThat(context.getClient().getSubscriptionCount()).isOne();
+    assertThat(context.getClient().getPatternSubscriptions()).containsExactlyInAnyOrder(pattern);
+  }
+
+  @Test
+  public void subscribeDoesNothingIfAlreadySubscribed() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    final byte[] channel = stringToBytes("channel");
+
+    subscriptions.subscribe(channel, context);
+    SubscribeResult result = subscriptions.subscribe(channel, context);
+
+    assertThat(result.getChannelCount()).isOne();
+    assertThat(result.getChannel()).isEqualTo(channel);
+    assertThat(result.getSubscription()).isNull();
+    assertThat(context.getClient().getSubscriptionCount()).isOne();
+    assertThat(context.getClient().getChannelSubscriptions()).containsExactlyInAnyOrder(channel);
+  }
+
+  @Test
+  public void psubscribeDoesNothingIfAlreadySubscribed() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    final byte[] pattern = stringToBytes("pattern");
+
+    subscriptions.psubscribe(pattern, context);
+    SubscribeResult result = subscriptions.psubscribe(pattern, context);
+
+    assertThat(result.getChannelCount()).isOne();
+    assertThat(result.getChannel()).isEqualTo(pattern);
+    assertThat(result.getSubscription()).isNull();
+    assertThat(context.getClient().getSubscriptionCount()).isOne();
+    assertThat(context.getClient().getPatternSubscriptions()).containsExactlyInAnyOrder(pattern);
+  }
+
+  @Test
+  public void psubscribeCleanUpAfterFailedSubscribe() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    final byte[] pattern = stringToBytes("\\C");
+
+    assertThatThrownBy(() -> subscriptions.psubscribe(pattern, context))
+        .isInstanceOf(PatternSyntaxException.class);
+
+    assertThat(context.getClient().getSubscriptionCount()).isZero();
+  }
+
+  @Test
   public void correctlyIdentifiesPatternSubscriber() {
-    Subscriptions subscriptions = new Subscriptions();
+    ExecutionHandlerContext context = createExecutionHandlerContext();
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    byte[] pattern = stringToBytes("sub*s");
-
-    subscriptions.add(new PatternSubscription(pattern, context, subscriptions));
+    addPatternSubscription(context, "sub*s");
 
     assertThat(subscriptions.getChannelSubscriptionCount()).isZero();
     assertThat(subscriptions.getPatternSubscriptionCount()).isOne();
@@ -74,18 +174,9 @@ public class SubscriptionsJUnitTest {
 
   @Test
   public void doesNotMisidentifyChannelAsPattern() {
-    Subscriptions subscriptions = new Subscriptions();
+    ExecutionHandlerContext context = createExecutionHandlerContext();
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    subscriptions
-        .add(new ChannelSubscription(stringToBytes("subscriptions"), context,
-            subscriptions));
+    addChannelSubscription(context, "subscriptions");
 
     assertThat(subscriptions.getChannelSubscriptionCount()).isOne();
     assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
@@ -94,20 +185,10 @@ public class SubscriptionsJUnitTest {
 
   @Test
   public void doesNotMisidentifyWhenBothTypesArePresent() {
-    Subscriptions subscriptions = new Subscriptions();
+    ExecutionHandlerContext context = createExecutionHandlerContext();
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    byte[] globby = stringToBytes("sub*s");
-
-    subscriptions
-        .add(new ChannelSubscription(stringToBytes("subscriptions"), context,
-            subscriptions));
-    subscriptions.add(new PatternSubscription(globby, context, subscriptions));
+    addChannelSubscription(context, "subscriptions");
+    addPatternSubscription(context, "sub*s");
 
     assertThat(subscriptions.size()).isEqualTo(2);
     assertThat(subscriptions.getPatternSubscriptionCount()).isOne();
@@ -119,40 +200,13 @@ public class SubscriptionsJUnitTest {
             stringToBytes("subscriptions"));
   }
 
-
-  @Test
-  public void verifyDifferentMockChannelsNotEqual() {
-    Channel mockChannelOne = mock(Channel.class);
-    Channel mockChannelTwo = mock(Channel.class);
-
-    assertThat(mockChannelOne).isNotEqualTo(mockChannelTwo);
-    assertThat(mockChannelOne.equals(mockChannelTwo)).isFalse();
-  }
-
   @Test
   public void findSubscribers() {
-    Subscriptions subscriptions = new Subscriptions();
+    ExecutionHandlerContext context1 = createExecutionHandlerContext();
+    ExecutionHandlerContext context2 = createExecutionHandlerContext();
 
-    ExecutionHandlerContext context1 = mock(ExecutionHandlerContext.class);
-    ExecutionHandlerContext context2 = mock(ExecutionHandlerContext.class);
-    Channel mockChannelOne = mock(Channel.class);
-    Channel mockChannelTwo = mock(Channel.class);
-    when(mockChannelOne.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    when(mockChannelTwo.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client clientOne = new Client(mockChannelOne);
-    Client clientTwo = new Client(mockChannelTwo);
-    when(context1.getClient()).thenReturn(clientOne);
-    when(context2.getClient()).thenReturn(clientTwo);
-
-    ChannelSubscription subscriptionOne =
-        new ChannelSubscription(stringToBytes("subscriptions"), context1,
-            subscriptions);
-    ChannelSubscription subscriptionTwo =
-        new ChannelSubscription(stringToBytes("monkeys"), context2, subscriptions);
-
-    subscriptions.add(subscriptionOne);
-    subscriptions.add(subscriptionTwo);
-
+    addChannelSubscription(context1, "subscriptions");
+    addChannelSubscription(context2, "monkeys");
 
     assertThat(subscriptions.findChannelNames())
         .containsExactlyInAnyOrder(
@@ -162,32 +216,13 @@ public class SubscriptionsJUnitTest {
 
   @Test
   public void removeByClient() {
-    Subscriptions subscriptions = new Subscriptions();
+    Client clientOne = createClient();
+    Client clientTwo = createClient();
+    ExecutionHandlerContext context1 = createExecutionHandlerContext(clientOne);
+    ExecutionHandlerContext context2 = createExecutionHandlerContext(clientTwo);
 
-    Channel mockChannelOne = mock(Channel.class);
-    Channel mockChannelTwo = mock(Channel.class);
-
-    when(mockChannelOne.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    when(mockChannelTwo.closeFuture()).thenReturn(mock(ChannelFuture.class));
-
-    Client clientOne = new Client(mockChannelOne);
-    Client clientTwo = new Client(mockChannelTwo);
-
-    ExecutionHandlerContext context1 = mock(ExecutionHandlerContext.class);
-    ExecutionHandlerContext context2 = mock(ExecutionHandlerContext.class);
-    when(context1.getClient()).thenReturn(clientOne);
-    when(context2.getClient()).thenReturn(clientTwo);
-
-    ChannelSubscription subscriptionOne =
-        new ChannelSubscription(stringToBytes("subscriptions"), context1,
-            subscriptions);
-    ChannelSubscription subscriptionTwo =
-        new ChannelSubscription(stringToBytes("monkeys"), context2, subscriptions);
-
-    clientOne.addChannelSubscription(stringToBytes("subscriptions"));
-    subscriptions.add(subscriptionOne);
-    subscriptions.add(subscriptionTwo);
-
+    addChannelSubscription(context1, "subscriptions");
+    addChannelSubscription(context2, "monkeys");
     subscriptions.remove(clientOne);
 
     assertThat(subscriptions.findChannelNames())
@@ -197,27 +232,12 @@ public class SubscriptionsJUnitTest {
 
   @Test
   public void removeByClientAndPattern() {
-
-    Subscriptions subscriptions = new Subscriptions();
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    ChannelSubscription channelSubscriberOne =
-        new ChannelSubscription(stringToBytes("subscriptions"), context,
-            subscriptions);
     byte[] pattern = stringToBytes("monkeys");
-    PatternSubscription patternSubscriber = new PatternSubscription(
-        pattern, context, subscriptions);
-    ChannelSubscription channelSubscriberTwo =
-        new ChannelSubscription(stringToBytes("monkeys"), context, subscriptions);
-
-    subscriptions.add(channelSubscriberOne);
-    subscriptions.add(patternSubscriber);
-    subscriptions.add(channelSubscriberTwo);
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addChannelSubscription(context, "subscriptions");
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
 
     subscriptions.punsubscribe(pattern, client);
 
@@ -228,46 +248,41 @@ public class SubscriptionsJUnitTest {
   }
 
   @Test
+  public void removeByClientAndChannel() {
+    byte[] channel = stringToBytes("monkeys");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addChannelSubscription(context, "subscriptions");
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    subscriptions.unsubscribe(channel, client);
+
+    assertThat(subscriptions.findChannelNames())
+        .containsExactlyInAnyOrder(
+            stringToBytes("subscriptions"));
+  }
+
+  @Test
   public void findChannelNames_shouldReturnAllChannelNames_whenCalledWithoutParameter() {
-    Subscriptions subject = new Subscriptions();
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    addChannelSubscription(context, "foo");
+    addChannelSubscription(context, "bar");
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    ChannelSubscription subscriptionFoo =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    ChannelSubscription subscriptionBar =
-        new ChannelSubscription(stringToBytes("bar"), context, subject);
-
-    subject.add(subscriptionFoo);
-    subject.add(subscriptionBar);
-
-    List<byte[]> result = subject.findChannelNames();
+    List<byte[]> result = subscriptions.findChannelNames();
 
     assertThat(result).containsExactlyInAnyOrder(stringToBytes("foo"), stringToBytes("bar"));
   }
 
   @Test
   public void findChannelNames_shouldReturnOnlyMatchingChannelNames_whenCalledWithPattern() {
-    Subscriptions subject = new Subscriptions();
     byte[] pattern = stringToBytes("b*");
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    addChannelSubscription(context, "foo");
+    addChannelSubscription(context, "bar");
+    addChannelSubscription(context, "barbarella");
 
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    subject.add(new ChannelSubscription(stringToBytes("foo"), context, subject));
-    subject.add(new ChannelSubscription(stringToBytes("bar"), context, subject));
-    subject
-        .add(new ChannelSubscription(stringToBytes("barbarella"), context, subject));
-
-    List<byte[]> result = subject.findChannelNames(pattern);
+    List<byte[]> result = subscriptions.findChannelNames(pattern);
 
     assertThat(result).containsExactlyInAnyOrder(stringToBytes("bar"),
         stringToBytes("barbarella"));
@@ -275,77 +290,70 @@ public class SubscriptionsJUnitTest {
 
   @Test
   public void findChannelNames_shouldNotReturnPatternSubscriptions() {
+    ExecutionHandlerContext context = createExecutionHandlerContext();
+    addChannelSubscription(context, "foo");
+    addPatternSubscription(context, "bar");
 
-    Subscriptions subject = new Subscriptions();
-
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    ChannelSubscription subscriptionFoo =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    PatternSubscription patternSubscriptionBar =
-        new PatternSubscription(stringToBytes("bar"), context, subject);
-
-    subject.add(subscriptionFoo);
-    subject.add(patternSubscriptionBar);
-
-    List<byte[]> result = subject.findChannelNames();
+    List<byte[]> result = subscriptions.findChannelNames();
 
     assertThat(result).containsExactlyInAnyOrder(stringToBytes("foo"));
   }
 
-
   @Test
   public void findChannelNames_shouldNotReturnDuplicates_givenMultipleSubscriptionsToSameChannel_whenCalledWithoutPattern() {
+    ExecutionHandlerContext context1 = createExecutionHandlerContext();
+    ExecutionHandlerContext context2 = createExecutionHandlerContext();
+    addChannelSubscription(context1, "foo");
+    addChannelSubscription(context2, "foo");
 
-    Subscriptions subject = new Subscriptions();
-
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    ChannelSubscription subscriptionFoo1 =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    ChannelSubscription subscriptionFoo2 =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    subject.add(subscriptionFoo1);
-    subject.add(subscriptionFoo2);
-
-    List<byte[]> result = subject.findChannelNames();
+    List<byte[]> result = subscriptions.findChannelNames();
 
     assertThat(result).containsExactlyInAnyOrder(stringToBytes("foo"));
   }
 
   @Test
   public void findChannelNames_shouldNotReturnDuplicates_givenMultipleSubscriptionsToSameChannel_whenCalledWithPattern() {
+    ExecutionHandlerContext context1 = createExecutionHandlerContext();
+    ExecutionHandlerContext context2 = createExecutionHandlerContext();
+    addChannelSubscription(context1, "foo");
+    addChannelSubscription(context2, "foo");
 
-    Subscriptions subject = new Subscriptions();
-
-    Channel channel = mock(Channel.class);
-    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-    Client client = new Client(channel);
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-    when(context.getClient()).thenReturn(client);
-
-    ChannelSubscription subscriptionFoo1 =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    ChannelSubscription subscriptionFoo2 =
-        new ChannelSubscription(stringToBytes("foo"), context, subject);
-
-    subject.add(subscriptionFoo1);
-    subject.add(subscriptionFoo2);
-
-    List<byte[]> result = subject.findChannelNames(stringToBytes("f*"));
+    List<byte[]> result = subscriptions.findChannelNames(stringToBytes("f*"));
 
     assertThat(result).containsExactlyInAnyOrder(stringToBytes("foo"));
   }
+
+
+  private void addPatternSubscription(ExecutionHandlerContext context, String pattern) {
+    byte[] patternBytes = stringToBytes(pattern);
+    subscriptions.add(new PatternSubscription(patternBytes, context, subscriptions));
+    context.getClient().addPatternSubscription(patternBytes);
+  }
+
+  private void addChannelSubscription(ExecutionHandlerContext context, String channel) {
+    byte[] channelBytes = stringToBytes(channel);
+    subscriptions.add(new ChannelSubscription(channelBytes, context, subscriptions));
+    context.getClient().addChannelSubscription(channelBytes);
+  }
+
+  private ExecutionHandlerContext createExecutionHandlerContext(Client client) {
+    ExecutionHandlerContext result = mock(ExecutionHandlerContext.class);
+    when(result.getClient()).thenReturn(client);
+    return result;
+  }
+
+  private ExecutionHandlerContext createExecutionHandlerContext() {
+    return createExecutionHandlerContext(createClient());
+  }
+
+  private Channel createChannel() {
+    Channel channel = mock(Channel.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    return channel;
+  }
+
+  private Client createClient() {
+    return new Client(createChannel());
+  }
+
 }

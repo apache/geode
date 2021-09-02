@@ -49,20 +49,18 @@ public interface PubSub {
    *
    * @param channel to subscribe to
    * @param context ExecutionHandlerContext which will handle the client response
-   * @param client a Client instance making the request
    * @return the result of the subscribe
    */
-  SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context, Client client);
+  SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context);
 
   /**
    * Subscribe to a pattern
    *
    * @param pattern glob pattern to subscribe to
    * @param context ExecutionHandlerContext which will handle the client response
-   * @param client a Client instance making the request
    * @return the result of the subscribe
    */
-  SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context, Client client);
+  SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context);
 
   /**
    * Unsubscribe a client from a channel
