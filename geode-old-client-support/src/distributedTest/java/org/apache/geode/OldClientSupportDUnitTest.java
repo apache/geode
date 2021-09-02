@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 
 import java.io.ByteArrayInputStream;
@@ -22,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -183,7 +183,7 @@ public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
     properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.ClientSerializableObjec");
     DistributionConfig config = new DistributionConfigImpl(properties);
-    InternalDataSerializer.initialize(config, new ArrayList<>());
+    InternalDataSerializer.initializeSerializationFilter(config, emptySet());
 
     com.gemstone.gemfire.ClientSerializableObject gemfireObject =
         new com.gemstone.gemfire.ClientSerializableObject();
