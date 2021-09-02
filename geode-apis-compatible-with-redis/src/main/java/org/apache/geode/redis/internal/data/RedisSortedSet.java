@@ -397,10 +397,9 @@ public class RedisSortedSet extends AbstractRedisData {
       throw new IllegalArgumentException("Requested array size exceeds VM limit");
     }
     List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
-    do {
-      cursor = members.scan(cursor, 1,
-          (list, key, value) -> addIfMatching(matchPattern, list, key, value.score), resultList);
-    } while (cursor != 0 && resultList.size() < maximumCapacity);
+
+    cursor = members.scan(cursor, count,
+        (list, key, value) -> addIfMatching(matchPattern, list, key, value.score), resultList);
 
     return new ImmutablePair<>(cursor, resultList);
   }
