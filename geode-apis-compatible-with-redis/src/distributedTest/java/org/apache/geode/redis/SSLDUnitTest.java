@@ -101,9 +101,18 @@ public class SSLDUnitTest {
   public void givenMutualAuthentication_clientErrorsWithoutKeystore() throws Exception {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
 
-    // Create the client without a keystore
-    assertThatThrownBy(() -> createClient(false, false))
-        .isInstanceOf(JedisConnectionException.class);
+    Jedis jedis;
+    try {
+      // Create the client without a keystore
+      jedis = createClient(false, false);
+    } catch (JedisConnectionException ignored) {
+      return;
+    }
+
+    // Sometimes the client is created successfully - perhaps this is platform/JDK specific
+    assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+        e -> assertThat(e.getMessage()).contains("SSLException"),
+        e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
 
     IgnoredException.removeAllExpectedExceptions();
   }
@@ -112,9 +121,18 @@ public class SSLDUnitTest {
   public void givenMutualAuthentication_clientErrorsWithSelfSignedCert() throws Exception {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
 
-    // Create the client with a self-signed certificate
-    assertThatThrownBy(() -> createClient(false, false))
-        .isInstanceOf(JedisConnectionException.class);
+    Jedis jedis;
+    try {
+      // Create the client with a self-signed certificate
+      jedis = createClient(true, true);
+    } catch (JedisConnectionException ignored) {
+      return;
+    }
+
+    // Sometimes the client is created successfully - perhaps this is platform/JDK specific
+    assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+        e -> assertThat(e.getMessage()).contains("SSLException"),
+        e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
 
     IgnoredException.removeAllExpectedExceptions();
   }
