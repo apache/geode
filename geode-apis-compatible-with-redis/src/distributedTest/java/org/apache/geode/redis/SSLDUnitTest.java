@@ -111,6 +111,7 @@ public class SSLDUnitTest {
 
     // Sometimes the client is created successfully - perhaps this is platform/JDK specific
     assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+        e -> assertThat(e.getMessage()).contains("SocketException"),
         e -> assertThat(e.getMessage()).contains("SSLException"),
         e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
 
@@ -131,6 +132,7 @@ public class SSLDUnitTest {
 
     // Sometimes the client is created successfully - perhaps this is platform/JDK specific
     assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+        e -> assertThat(e.getMessage()).contains("SocketException"),
         e -> assertThat(e.getMessage()).contains("SSLException"),
         e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
 
