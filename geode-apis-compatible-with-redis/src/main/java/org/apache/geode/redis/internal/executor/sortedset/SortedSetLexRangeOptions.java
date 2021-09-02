@@ -28,11 +28,13 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
 public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte[]> {
 
+  @VisibleForTesting
   public SortedSetLexRangeOptions(List<byte[]> commandElements, boolean isRev) {
     super(commandElements, isRev);
   }
