@@ -21,9 +21,9 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.After;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +48,6 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.RemoteInvoker;
 
 /**
  * The purpose of RebalanceOperationComplexDistributedTest is to test rebalances
@@ -66,10 +65,10 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   public static final String ZONE_A = "zoneA";
   public static final String ZONE_B = "zoneB";
-  private final RemoteInvoker remoteInvoker = new RemoteInvoker();
   public int locatorPort;
   public int runID;
-  private File temporaryDirectory;
+  public String workingDir;
+
   // 6 servers distributed evenly across 2 zones
   public static final Map<Integer, String> SERVER_ZONE_MAP = new HashMap<Integer, String>() {
     {
@@ -87,30 +86,14 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
 
   @Before
   public void setup() throws Exception {
-  // Start the locator
+    // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
 
-    // configure the servers
-    setPersistenceDirectoriesOnServerVMs();
+    workingDir = clusterStartupRule.getWorkingDirRoot().getAbsolutePath();
+    SecureRandom secureRandom = new SecureRandom();
+    runID = secureRandom.nextInt();
 
-    // Startup the servers
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      startServerInRedundancyZone(entry.getKey(), entry.getValue());
-    }
-
-    // Put data in the server regions
-    clientPopulateServers();
-  }
-
-  @After
-  public void after() throws IOException {
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      clusterStartupRule.stop(entry.getKey(), true);
-      if (temporaryDirectory.exists()) {
-        Files.delete(temporaryDirectory.toPath());
-      }
-    }
   }
 
   /**
@@ -119,7 +102,16 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
    */
   @Test
   @Parameters({"1,2", "1,4", "4,1", "5,6"})
-  public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer, int shutdownServer) {
+  public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer, int shutdownServer)
+      throws Exception {
+
+    // Startup the servers
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
+    }
+
+    // Put data in the server regions
+    clientPopulateServers();
 
     VM rebalanceServerVM = clusterStartupRule.getVM(rebalanceServer);
 
@@ -143,23 +135,28 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     // Verify that all bucket counts add up to what they should
     compareZoneBucketCounts(COLOCATED_REGION_NAME);
     compareZoneBucketCounts(REGION_NAME);
+
+    deleteServerDirectories();
   }
 
-  /**
-   * Set the persistence directories on server VMs
-   */
-  private void setPersistenceDirectoriesOnServerVMs() throws IOException {
-    SecureRandom secureRandom = new SecureRandom();
-    runID = secureRandom.nextInt();
+  private void deleteServerDirectories() {
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      final String path =
-          clusterStartupRule.getWorkingDirRoot().getAbsolutePath() + "/" + "runId-" + runID + "-vm-"
-              + entry.getKey();
-      temporaryDirectory = new File(path);
-      if (!temporaryDirectory.exists()) {
-        Files.createDirectory(temporaryDirectory.toPath());
-      }
-      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
+      clusterStartupRule.stop(entry.getKey(), true);
+      int index = entry.getKey();
+      VM.getVM(index).invoke(() -> {
+        String path = workingDir + "/" + "runId-" + runID + "-vm-" + index;
+        File temporaryDirectory = new File(path);
+        if (temporaryDirectory.exists()) {
+          logger.info("MLH Attempting to delete " + temporaryDirectory.toPath());
+          try {
+            Arrays.stream(temporaryDirectory.listFiles()).forEach(FileUtils::deleteQuietly);
+            Files.delete(temporaryDirectory.toPath());
+          } catch (Exception exception) {
+            logger.error("MLH delete failed ", exception);
+            throw exception;
+          }
+        }
+      });
     }
   }
 
@@ -195,6 +192,17 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
    * @param zone - Redundancy zone for the server to be started in
    */
   private void startServerInRedundancyZone(int index, final String zone) {
+    VM.getVM(index).invoke(() -> {
+      String path = workingDir + "/" + "runId-" + runID + "-vm-" + index;
+      logger.info("MLH startServerInRedundancyZone Path = " + path);
+
+      File temporaryDirectory = new File(path);
+      if (!temporaryDirectory.exists()) {
+        Files.createDirectory(temporaryDirectory.toPath());
+      }
+      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
+    });
+
     clusterStartupRule.startServerVM(index, s -> s.withProperty("cache-xml-file",
         SERVER_XML)
         .withProperty(REDUNDANCY_ZONE, zone)
