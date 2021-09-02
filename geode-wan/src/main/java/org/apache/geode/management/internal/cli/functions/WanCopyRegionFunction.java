@@ -29,7 +29,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -50,6 +49,7 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedExcepti
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DefaultEntryEventFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -59,15 +59,15 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -94,7 +94,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * must be canceled and also sleeps for some time if necessary to adjust the
  * copy rate to the one passed as argument.
  */
-public class WanCopyRegionFunction extends CliFunction<Object[]> implements Declarable {
+public class WanCopyRegionFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
@@ -102,13 +102,10 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
 
   private static final int MAX_BATCH_SEND_RETRIES = 1;
 
-  private static final int THREAD_POOL_SIZE = 10;
-
   private final Clock clock;
   private final ThreadSleeper threadSleeper;
-
-  private static final ExecutorService executor = LoggingExecutors
-      .newFixedThreadPool(THREAD_POOL_SIZE, "wanCopyRegionFunctionThread_", true);
+  private final WanCopyRegionFunctionExecutorFactory executorFactory;
+  private final EventCreator eventCreator;
 
   /**
    * Contains the ongoing executions of this function
@@ -119,13 +116,17 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   private int batchId = 0;
 
   public WanCopyRegionFunction() {
-    this(Clock.systemDefaultZone(), new ThreadSleeper());
+    this(Clock.systemDefaultZone(), new ThreadSleeper(),
+        new WanCopyRegionFunctionExecutorFactoryImpl(), new EventCreatorImpl());
   }
 
   @VisibleForTesting
-  WanCopyRegionFunction(Clock clock, ThreadSleeper threadSleeper) {
+  WanCopyRegionFunction(Clock clock, ThreadSleeper threadSleeper,
+      WanCopyRegionFunctionExecutorFactory executorFactory, EventCreator eventCreator) {
     this.clock = clock;
     this.threadSleeper = threadSleeper;
+    this.executorFactory = executorFactory;
+    this.eventCreator = eventCreator;
   }
 
   @Override
@@ -139,12 +140,24 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   @Override
+  public final void execute(FunctionContext<Object[]> context) {
+    try {
+      context.getResultSender().lastResult(executeFunction(context));
+    } catch (EntityNotFoundException nfe) {
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), nfe));
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), e));
+    }
+  }
+
+  @Override
   public boolean isHA() {
     return false;
   }
 
-  @Override
-  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+  @VisibleForTesting
+  CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     final Object[] args = context.getArguments();
     if (args.length < 5) {
       throw new IllegalStateException(
@@ -209,6 +222,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       throws InterruptedException, ExecutionException, CancellationException {
     String executionName = getExecutionName(regionName, sender.getId());
     CompletableFuture<CliFunctionResult> future = null;
+    Executor executor = executorFactory.getExecutor((InternalCache) context.getCache());
     try {
       synchronized (executions) {
         if (executions.containsKey(executionName)) {
@@ -309,14 +323,15 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     }
   }
 
-  List<GatewayQueueEvent<?, ?>> createBatch(InternalRegion region, GatewaySender sender,
+  private List<GatewayQueueEvent<?, ?>> createBatch(InternalRegion region, GatewaySender sender,
       int batchSize, InternalCache cache, Iterator<?> iter) {
     int batchIndex = 0;
     List<GatewayQueueEvent<?, ?>> batch = new ArrayList<>();
 
     while (iter.hasNext() && batchIndex < batchSize) {
       GatewayQueueEvent<?, ?> event =
-          createGatewaySenderEvent(cache, region, sender, (Region.Entry<?, ?>) iter.next());
+          eventCreator.createGatewaySenderEvent(cache, region, sender,
+              (Region.Entry<?, ?>) iter.next());
       if (event != null) {
         batch.add(event);
         batchIndex++;
@@ -325,7 +340,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     return batch;
   }
 
-  Set<?> getEntries(Region<?, ?> region, GatewaySender sender) {
+  private Set<?> getEntries(Region<?, ?> region, GatewaySender sender) {
     if (region instanceof PartitionedRegion && sender.isParallel()) {
       return ((PartitionedRegion) region).getDataStore().getAllLocalBucketRegions()
           .stream()
@@ -334,28 +349,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     return region.entrySet();
   }
 
-  @VisibleForTesting
-  GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
-      InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry) {
-    final EntryEventImpl event;
-    if (region instanceof PartitionedRegion) {
-      event = createEventForPartitionedRegion(sender, cache, region, entry);
-    } else {
-      event = createEventForReplicatedRegion(cache, region, entry);
-    }
-    if (event == null) {
-      return null;
-    }
-    try {
-      return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
-          event, null, true);
-    } catch (IOException e) {
-      logger.error("Error when creating event in wan-copy: {}", e.getMessage());
-      return null;
-    }
-  }
-
-  final CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
+  private CliFunctionResult cancelWanCopyRegion(FunctionContext<Object[]> context,
       String regionName, String senderId) {
     Future<CliFunctionResult> execution = executions.remove(getExecutionName(regionName, senderId));
     if (execution == null) {
@@ -368,7 +362,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
         CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
   }
 
-  final CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
+  private CliFunctionResult cancelAllWanCopyRegion(FunctionContext<Object[]> context) {
     String executionsString = executions.keySet().toString();
     for (Future<CliFunctionResult> execution : executions.values()) {
       execution.cancel(true);
@@ -378,7 +372,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
         CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED, executionsString));
   }
 
-  public static String getExecutionName(String regionName, String senderId) {
+  private static String getExecutionName(String regionName, String senderId) {
     return "(" + regionName + "," + senderId + ")";
   }
 
@@ -391,13 +385,14 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
    * @param copiedEntries number of entries copied so far
    * @param maxRate maximum copying rate
    */
+  @VisibleForTesting
   void doPostSendBatchActions(long startTime, int copiedEntries, long maxRate)
       throws InterruptedException {
     long sleepMs = getTimeToSleep(startTime, copiedEntries, maxRate);
     if (sleepMs > 0) {
       logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
           this.getClass().getSimpleName(), sleepMs);
-      threadSleeper.millis(sleepMs);
+      threadSleeper.sleep(sleepMs);
     } else {
       if (Thread.currentThread().isInterrupted()) {
         throw new InterruptedException();
@@ -413,6 +408,11 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   @VisibleForTesting
+  static int getNumberOfCurrentExecutions() {
+    return executions.size();
+  }
+
+  @VisibleForTesting
   long getTimeToSleep(long startTime, int copiedEntries, long maxRate) {
     if (maxRate == 0) {
       return 0;
@@ -425,49 +425,6 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     return targetElapsedMs - elapsedMs;
   }
 
-  private EntryEventImpl createEventForReplicatedRegion(InternalCache cache, InternalRegion region,
-      Region.Entry<?, ?> entry) {
-    return createEvent(cache, region, entry);
-  }
-
-  private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender, InternalCache cache,
-      InternalRegion region,
-      Region.Entry<?, ?> entry) {
-    EntryEventImpl event = createEvent(cache, region, entry);
-    if (event == null) {
-      return null;
-    }
-    BucketRegion bucketRegion = ((PartitionedRegion) event.getRegion()).getDataStore()
-        .getLocalBucketById(event.getKeyInfo().getBucketId());
-    if (bucketRegion != null && !bucketRegion.getBucketAdvisor().isPrimary()
-        && sender.isParallel()) {
-      return null;
-    }
-    if (bucketRegion != null) {
-      bucketRegion.handleWANEvent(event);
-    }
-    return event;
-  }
-
-  private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
-      Region.Entry<?, ?> entry) {
-    EntryEventImpl event;
-    try {
-      event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
-          entry.getKey(),
-          entry.getValue(), null, false,
-          (cache).getInternalDistributedSystem().getDistributedMember(), false);
-    } catch (EntryDestroyedException e) {
-      return null;
-    }
-    if (entry instanceof NonTXEntry) {
-      event.setVersionTag(((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
-    } else {
-      event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
-    }
-    event.setNewEventId(cache.getInternalDistributedSystem());
-    return event;
-  }
 
   static class ConnectionState {
     private volatile Connection connection = null;
@@ -523,7 +480,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       return Optional.empty();
     }
 
-    void close() {
+    public void close() {
       if (senderPool != null && connection != null) {
         try {
           connection.close(false);
@@ -536,9 +493,99 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
     }
   }
 
+
   static class ThreadSleeper implements Serializable {
-    void millis(long millis) throws InterruptedException {
+    void sleep(long millis) throws InterruptedException {
       Thread.sleep(millis);
     }
   }
+
+
+  interface EventCreator {
+    GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
+        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry);
+  }
+
+  static class EventCreatorImpl implements EventCreator, Serializable {
+    @VisibleForTesting
+    public GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
+        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry) {
+      final EntryEventImpl event;
+      if (region instanceof PartitionedRegion) {
+        event = createEventForPartitionedRegion(sender, cache, region, entry);
+      } else {
+        event = createEventForReplicatedRegion(cache, region, entry);
+      }
+      if (event == null) {
+        return null;
+      }
+      try {
+        return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
+            event, null, true);
+      } catch (IOException e) {
+        logger.error("Error when creating event in wan-copy: {}", e.getMessage());
+        return null;
+      }
+    }
+
+    private EntryEventImpl createEventForReplicatedRegion(InternalCache cache,
+        InternalRegion region,
+        Region.Entry<?, ?> entry) {
+      return createEvent(cache, region, entry);
+    }
+
+    private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender,
+        InternalCache cache,
+        InternalRegion region,
+        Region.Entry<?, ?> entry) {
+      EntryEventImpl event = createEvent(cache, region, entry);
+      if (event == null) {
+        return null;
+      }
+      BucketRegion bucketRegion = ((PartitionedRegion) event.getRegion()).getDataStore()
+          .getLocalBucketById(event.getKeyInfo().getBucketId());
+      if (bucketRegion != null && !bucketRegion.getBucketAdvisor().isPrimary()
+          && sender.isParallel()) {
+        return null;
+      }
+      if (bucketRegion != null) {
+        bucketRegion.handleWANEvent(event);
+      }
+      return event;
+    }
+
+    private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
+        Region.Entry<?, ?> entry) {
+
+      EntryEventImpl event;
+      try {
+        event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
+            entry.getKey(),
+            entry.getValue(), null, false,
+            (cache).getInternalDistributedSystem().getDistributedMember(), false);
+      } catch (EntryDestroyedException e) {
+        return null;
+      }
+      if (entry instanceof NonTXEntry) {
+        event.setVersionTag(((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag());
+      } else {
+        event.setVersionTag(((EntrySnapshot) entry).getVersionTag());
+      }
+      event.setNewEventId(cache.getInternalDistributedSystem());
+      return event;
+    }
+  }
+
+
+  interface WanCopyRegionFunctionExecutorFactory {
+    Executor getExecutor(InternalCache cache);
+  }
+
+  static class WanCopyRegionFunctionExecutorFactoryImpl
+      implements WanCopyRegionFunctionExecutorFactory, Serializable {
+    public Executor getExecutor(InternalCache cache) {
+      return cache.getService(WanCopyRegionFunctionService.class).getExecutor();
+    }
+  }
+
 }

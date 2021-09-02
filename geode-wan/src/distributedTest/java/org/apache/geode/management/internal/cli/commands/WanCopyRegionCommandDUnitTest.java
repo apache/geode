@@ -853,7 +853,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         s -> (s.startsWith("Execution failed. Error:")
             || s.startsWith("Error (Unknown error sending batch)")
             || s.startsWith("Error (Region destroyed)")
-            || s.startsWith("MemberResponse got memberDeparted event for")),
+            || s.startsWith("MemberResponse got memberDeparted event for")
+            || s.equals(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED)),
         "execution error");
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied:"), "Entries copied");
@@ -871,7 +872,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
             || s.startsWith("Error (Unknown error sending batch)")
             || s.startsWith("No connection available towards receiver after having copied")
             || s.startsWith("Error (Region destroyed)")
-            || s.startsWith("MemberResponse got memberDeparted event for")),
+            || s.startsWith("MemberResponse got memberDeparted event for")
+            || s.equals(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED)),
         "execution error");
 
     Condition<String> senderNotPrimary = new Condition<>(

@@ -52,6 +52,9 @@ public class MultiGfshDUnitTest {
     IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
     IgnoredException
         .addIgnoredException("java.lang.IllegalStateException: WAN service is not available.");
+    IgnoredException
+        .addIgnoredException(
+            "org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException: Locators must be configured before starting gateway-sender.");
     int jmxPort = server.getJmxPort();
 
     // set up vm_1 as a gfsh vm, data-reader will login and log out constantly in this vm until the

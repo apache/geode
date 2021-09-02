@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -23,13 +24,12 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,13 +40,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.stubbing.Answer;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
@@ -59,11 +63,14 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.management.internal.cli.functions.WanCopyRegionFunction.EventCreator;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class WanCopyRegionFunctionTest {
 
@@ -80,57 +87,95 @@ public class WanCopyRegionFunctionTest {
 
   private final FunctionContext<Object[]> contextMock = uncheckedCast(mock(FunctionContext.class));
 
-  private final Region<Object, Object> regionMock =
-      uncheckedCast(mock(InternalRegion.class, RETURNS_DEEP_STUBS));
+  private final Region<?, ?> regionMock =
+      uncheckedCast(mock(InternalRegion.class));
 
-  private final Region.Entry<String, String> entryMock = uncheckedCast(mock(Region.Entry.class));
-
-  private final Region.Entry<String, String> entryMock2 = uncheckedCast(mock(Region.Entry.class));
+  private EventCreator eventCreatorMock;
 
   @Before
   public void setUp() throws InterruptedException {
+    startTime = System.currentTimeMillis();
+
     clockMock = mock(Clock.class);
+
     threadSleeperMock = mock(WanCopyRegionFunction.ThreadSleeper.class);
-    doNothing().when(threadSleeperMock).millis(anyLong());
-    internalCacheMock = mock(InternalCache.class);
-    gatewaySenderMock = mock(AbstractGatewaySender.class, RETURNS_DEEP_STUBS);
+    doNothing().when(threadSleeperMock).sleep(anyLong());
+
+    gatewaySenderMock = mock(AbstractGatewaySender.class);
     when(gatewaySenderMock.getId()).thenReturn("mySender");
+
     poolMock = mock(PoolImpl.class);
+
     connectionMock = mock(PooledConnection.class);
     when(connectionMock.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_15_0.ordinal());
+
     dispatcherMock = mock(GatewaySenderEventDispatcher.class);
-    function = new WanCopyRegionFunction(clockMock, threadSleeperMock);
-    startTime = System.currentTimeMillis();
+
+    eventCreatorMock = mock(EventCreator.class);
+    when(eventCreatorMock.createGatewaySenderEvent(any(), any(), any(), any()))
+        .thenReturn(uncheckedCast(mock(GatewayQueueEvent.class)));
+
+    function = new WanCopyRegionFunction(clockMock, threadSleeperMock,
+        mock(WanCopyRegionFunction.WanCopyRegionFunctionExecutorFactory.class), eventCreatorMock);
+
+    AbstractGatewaySenderEventProcessor eventProcessorMock =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessorMock.getDispatcher()).thenReturn(dispatcherMock);
+    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor())
+        .thenReturn(eventProcessorMock);
+
+    RegionAttributes<?, ?> attributesMock = mock(RegionAttributes.class);
+    Set<?> idsMock = mock(Set.class);
+    when(idsMock.contains(anyString())).thenReturn(true);
+    when(attributesMock.getGatewaySenderIds()).thenReturn(uncheckedCast(idsMock));
+    when(regionMock.getAttributes()).thenReturn(uncheckedCast(attributesMock));
+
+    internalCacheMock = mock(InternalCache.class);
+    when(internalCacheMock.getRegion(any())).thenReturn(uncheckedCast(regionMock));
   }
 
   @Test
-  public void doPostSendBatchActions_DoNotSleepIfGetTimeToSleepIsZero()
+  public void doPostSendBatchActions_DoNotSleepIfMaxRateIsZero()
       throws InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
-    doReturn(0L).when(functionSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
-    functionSpy.doPostSendBatchActions(startTime, entries, 1L);
-    verify(threadSleeperMock, never()).millis(anyLong());
+    Object[] options = new Object[] {"myRegion", "mySender", false, 0L, 10};
+    when(internalCacheMock.getRegion(any())).thenReturn(null);
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+
+    function.executeFunction(contextMock);
+    verify(threadSleeperMock, never()).sleep(anyLong());
   }
 
   @Test
-  public void doPostSendBatchActions_SleepIfGetTimeToSleepIsNotZero()
+  public void doPostSendBatchActions_SleepIfMaxRateIsNotZero()
+      throws InterruptedException, BatchException70, ExecutionException, TimeoutException {
+    Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 2};
+    WanCopyRegionFunction.ThreadSleeper sleeperMock =
+        mock(WanCopyRegionFunction.ThreadSleeper.class);
+    doNothing().when(sleeperMock).sleep(anyLong());
+
+    executeAsyncWanCopyRegionFunction(options, sleeperMock)
+        .get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+    ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+    verify(sleeperMock, times(1)).sleep(captor.capture());
+    assertThat(captor.getValue()).isGreaterThan(0).isLessThanOrEqualTo(2000);
+  }
+
+  @Test
+  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero()
       throws InterruptedException {
-    long expectedMsToSleep = 1100L;
-    WanCopyRegionFunction functionSpy = spy(function);
-    doReturn(expectedMsToSleep).when(functionSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
-    functionSpy.doPostSendBatchActions(startTime, entries, 1L);
-    verify(threadSleeperMock, times(1)).millis(expectedMsToSleep);
-  }
-
-  @Test
-  public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero() {
     long maxRate = 1;
     long elapsedTime = 20L;
-    when(clockMock.millis()).thenAnswer((Answer<?>) invocation -> {
-      Thread.sleep(1000L);
-      return startTime + elapsedTime;
-    });
+    when(clockMock.millis()).thenReturn(startTime + elapsedTime);
+
+    // Sleep so that the sleep can be interrupted
+    doAnswer(invocation -> {
+      Thread.sleep(1);
+      return null;
+    }).when(threadSleeperMock).sleep(anyLong());
+
     Thread.currentThread().interrupt();
+
     assertThatThrownBy(
         () -> function.doPostSendBatchActions(startTime, entries, maxRate))
             .isInstanceOf(InterruptedException.class);
@@ -151,6 +196,7 @@ public class WanCopyRegionFunctionTest {
     when(internalCacheMock.getRegion(any())).thenReturn(null);
     when(contextMock.getArguments()).thenReturn(options);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+
     CliFunctionResult result = function.executeFunction(contextMock);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo("Region myRegion not found");
@@ -159,10 +205,10 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void executeFunction_verifyErrorWhenSenderNotFound() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
-    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(null);
     when(contextMock.getArguments()).thenReturn(options);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+
     CliFunctionResult result = function.executeFunction(contextMock);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo("Sender mySender not found");
@@ -172,11 +218,10 @@ public class WanCopyRegionFunctionTest {
   public void executeFunction_verifyErrorWhenSenderIsNotRunning() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
     when(gatewaySenderMock.isRunning()).thenReturn(false);
-    when(regionMock.getAttributes().getGatewaySenderIds().contains(anyString())).thenReturn(true);
-    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
     when(contextMock.getArguments()).thenReturn(options);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+
     CliFunctionResult result = function.executeFunction(contextMock);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage()).isEqualTo("Sender mySender is not running");
@@ -186,13 +231,12 @@ public class WanCopyRegionFunctionTest {
   public void executeFunction_verifySuccessWhenSenderIsSerialAndSenderIsNotPrimary() {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 10};
     when(gatewaySenderMock.isRunning()).thenReturn(true);
-    when(regionMock.getAttributes().getGatewaySenderIds().contains(anyString())).thenReturn(true);
     when(gatewaySenderMock.isParallel()).thenReturn(false);
     when(((InternalGatewaySender) gatewaySenderMock).isPrimary()).thenReturn(false);
-    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
     when(contextMock.getArguments()).thenReturn(options);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
+
     CliFunctionResult result = function.executeFunction(contextMock);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
@@ -202,23 +246,17 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenRemoteSiteDoesNotSupportCommand()
       throws InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     PooledConnection oldWanSiteConn = mock(PooledConnection.class);
     when(oldWanSiteConn.getWanSiteVersion()).thenReturn(KnownVersion.GEODE_1_14_0.ordinal());
     when(poolMock.acquireConnection()).thenReturn(oldWanSiteConn);
-
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Command not supported at remote site.");
@@ -227,21 +265,16 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenNoPoolAvailableAndEntriesInRegion()
       throws InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(null);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
         .thenThrow(NoAvailableServersException.class);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("No connection pool available to receiver");
@@ -250,17 +283,14 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifySuccessWhenNoPoolAvailableAndNoEntriesInRegion()
       throws InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(null);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
         .thenThrow(NoAvailableServersException.class);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    doReturn(new HashSet<>()).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
+    when(regionMock.entrySet()).thenReturn(new HashSet<>());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Entries copied: 0");
@@ -272,7 +302,6 @@ public class WanCopyRegionFunctionTest {
     Set<String> senders = new HashSet<>();
     senders.add("notMySender");
     when(gatewaySenderMock.isParallel()).thenReturn(true);
-    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
     when(regionMock.getAttributes().getGatewaySenderIds()).thenReturn(senders);
     when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
     when(contextMock.getArguments()).thenReturn(options);
@@ -286,38 +315,30 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifyErrorWhenNoConnectionAvailableAtStartAndEntriesInRegion() {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
         .thenThrow(NoAvailableServersException.class);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
 
     assertThatThrownBy(
-        () -> functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10))
+        () -> function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10))
             .isInstanceOf(NoAvailableServersException.class);
   }
 
   @Test
   public void wanCopyRegion_verifySuccessWhenNoConnectionAvailableAtStartAndNoEntriesInRegion()
       throws InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenThrow(NoAvailableServersException.class)
         .thenThrow(NoAvailableServersException.class);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    doReturn(new HashSet<>()).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
+    when(regionMock.entrySet()).thenReturn(new HashSet<>());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Entries copied: 0");
@@ -326,26 +347,19 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenNoConnectionAvailableAfterCopyingSomeEntries()
       throws BatchException70, InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock)
         .thenThrow(NoAvailableServersException.class);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    entries.add(entryMock2);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).doReturn(mock(GatewayQueueEvent.class))
-        .when(functionSpy)
-        .createGatewaySenderEvent(any(), any(),
-            any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doNothing().doThrow(ConnectionDestroyedException.class).doNothing().when(dispatcherMock)
         .sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 1);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 1);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("No connection available to receiver after having copied 1 entries");
@@ -353,21 +367,16 @@ public class WanCopyRegionFunctionTest {
 
   @Test
   public void wanCopyRegion_verifySuccess() throws BatchException70, InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Entries copied: 1");
@@ -376,25 +385,19 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifySuccessWithRetryWhenConnectionDestroyed()
       throws BatchException70, InterruptedException {
-
-    WanCopyRegionFunction functionSpy = spy(function);
     ConnectionDestroyedException exceptionWhenSendingBatch =
         new ConnectionDestroyedException("My connection exception", new Exception());
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
         any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Entries copied: 1");
@@ -403,24 +406,19 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenConnectionDestroyedTwice()
       throws BatchException70, InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     ConnectionDestroyedException exceptionWhenSendingBatch =
         new ConnectionDestroyedException("My connection exception", new Exception());
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Error (Connection error) in operation after having copied 0 entries");
@@ -429,22 +427,17 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenRegionDestroyed()
       throws BatchException70, InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
     doReturn(true).when(regionMock).isDestroyed();
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Error (Region destroyed) in operation after having copied 1 entries");
@@ -453,25 +446,19 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifySuccessWithRetryWhenServerConnectivityException()
       throws BatchException70, InterruptedException {
-
-    WanCopyRegionFunction functionSpy = spy(function);
     ServerConnectivityException exceptionWhenSendingBatch =
         new ServerConnectivityException("My connection exception", new Exception());
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(exceptionWhenSendingBatch).doNothing().when(dispatcherMock).sendBatch(anyList(), any(),
         any(), anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Entries copied: 1");
@@ -480,24 +467,19 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenServerConnectivityExceptionTwice()
       throws BatchException70, InterruptedException {
-    WanCopyRegionFunction functionSpy = spy(function);
     ServerConnectivityException exceptionWhenSendingBatch =
         new ServerConnectivityException("My connection exception", new Exception());
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo("Error (Connection error) in operation after having copied 0 entries");
@@ -506,8 +488,6 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyErrorWhenBatchExceptionWhileSendingBatch()
       throws BatchException70, InterruptedException {
-
-    WanCopyRegionFunction functionSpy = spy(function);
     BatchException70 exceptionWhenSendingBatch =
         new BatchException70("My batch exception", new Exception("test exception"), 0, 0);
     BatchException70 topLevelException =
@@ -515,18 +495,14 @@ public class WanCopyRegionFunctionTest {
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(topLevelException).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt(), anyBoolean());
 
     CliFunctionResult result =
-        functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
+        function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10);
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
     assertThat(result.getStatusMessage())
         .isEqualTo(
@@ -536,36 +512,32 @@ public class WanCopyRegionFunctionTest {
   @Test
   public void wanCopyRegion_verifyExceptionThrownWhenExceptionWhileSendingBatch()
       throws BatchException70 {
-
-    WanCopyRegionFunction functionSpy = spy(function);
     RuntimeException exceptionWhenSendingBatch =
         new RuntimeException("Exception when sending batch");
     when(((AbstractGatewaySender) gatewaySenderMock).getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
     doThrow(exceptionWhenSendingBatch).when(dispatcherMock).sendBatch(anyList(), any(), any(),
         anyInt(), anyBoolean());
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
 
     assertThatThrownBy(
-        () -> functionSpy.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10))
+        () -> function.wanCopyRegion(contextMock, regionMock, gatewaySenderMock, 1, 10))
             .isInstanceOf(RuntimeException.class);
   }
 
   @Test
   public void executeWanCopyRegionFunctionInNewThread_verifyErrorWhenAlreadyRunningCommand()
-      throws BatchException70, InterruptedException, ExecutionException {
+      throws BatchException70, InterruptedException, ExecutionException, TimeoutException {
     Object[] options = new Object[] {"myRegion", "mySender", false, 1L, 1};
     Future<CliFunctionResult> future = executeAsyncWanCopyRegionFunction(options);
 
     // Wait for the execute function to start
-    Thread.sleep(100);
+    await()
+        .until(
+            () -> WanCopyRegionFunction.getNumberOfCurrentExecutions() == 1);
 
     // Execute another function instance for the same region and sender-id
     Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options);
@@ -576,12 +548,39 @@ public class WanCopyRegionFunctionTest {
         .isEqualTo("There is already a command running for region myRegion and sender mySender");
 
     // Wait for the first function to finish
-    future.get();
+    future.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+  }
+
+  @Test
+  public void executeWanCopyRegionFunctionInNewThread_cancelExecution()
+      throws ExecutionException, InterruptedException, BatchException70, TimeoutException {
+    Object[] executeOptions = new Object[] {"myRegion", "mySender", false, 1L, 1};
+    Future<CliFunctionResult> future = executeAsyncWanCopyRegionFunction(executeOptions);
+
+    // Wait for the function to start execution
+    await()
+        .until(
+            () -> WanCopyRegionFunction.getNumberOfCurrentExecutions() == 1);
+
+    // Cancel the function execution
+    Object[] cancelOptions = new Object[] {"myRegion", "mySender", true, 1L, 1};
+    final FunctionContext<Object[]> cancelContextMock =
+        uncheckedCast(mock(FunctionContext.class));
+    when(cancelContextMock.getArguments()).thenReturn(cancelOptions);
+
+    WanCopyRegionFunction cancelFunction = new WanCopyRegionFunction();
+    CliFunctionResult result1 = cancelFunction.executeFunction(cancelContextMock);
+
+    assertThat(result1.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result1.getStatusMessage())
+        .isEqualTo("Execution canceled");
+
+    future.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
   }
 
   @Test
   public void executeWanCopyRegionFunctionInNewThread_cancelAllExecutions()
-      throws ExecutionException, InterruptedException, BatchException70 {
+      throws ExecutionException, InterruptedException, BatchException70, TimeoutException {
     Object[] options1 = new Object[] {"myRegion", "mySender", false, 1L, 1};
     Future<CliFunctionResult> future1 = executeAsyncWanCopyRegionFunction(options1);
 
@@ -589,7 +588,9 @@ public class WanCopyRegionFunctionTest {
     Future<CliFunctionResult> future2 = executeAsyncWanCopyRegionFunction(options2);
 
     // Wait for the functions to start execution
-    Thread.sleep(100);
+    await()
+        .until(
+            () -> WanCopyRegionFunction.getNumberOfCurrentExecutions() == 2);
 
     // Cancel the function executions
     Object[] cancelAllOptions = new Object[] {"*", "*", true, 1L, 1};
@@ -604,48 +605,61 @@ public class WanCopyRegionFunctionTest {
     assertThat(result1.getStatusMessage())
         .isEqualTo("Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]");
 
-    future1.get();
-    future2.get();
+    future1.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+    future2.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
   }
 
   private Future<CliFunctionResult> executeAsyncWanCopyRegionFunction(Object[] options)
       throws BatchException70 {
-    AbstractGatewaySender gatewaySenderMock = mock(AbstractGatewaySender.class, RETURNS_DEEP_STUBS);
-    Region<Object, Object> regionMock =
-        uncheckedCast(mock(InternalRegion.class, RETURNS_DEEP_STUBS));
-    InternalCache internalCacheMock = mock(InternalCache.class);
-    FunctionContext<Object[]> contextMock = uncheckedCast(mock(FunctionContext.class));
+    return executeAsyncWanCopyRegionFunction(options, new WanCopyRegionFunction.ThreadSleeper());
+  }
 
+  private Future<CliFunctionResult> executeAsyncWanCopyRegionFunction(Object[] options,
+      WanCopyRegionFunction.ThreadSleeper sleeper)
+      throws BatchException70 {
+    Region<?, ?> regionMock =
+        uncheckedCast(mock(InternalRegion.class));
+
+    RegionAttributes<?, ?> attributesMock = mock(RegionAttributes.class);
+    Set<?> idsMock = mock(Set.class);
+    when(idsMock.contains(anyString())).thenReturn(true);
+    when(attributesMock.getGatewaySenderIds()).thenReturn(uncheckedCast(idsMock));
+    when(regionMock.getAttributes()).thenReturn(uncheckedCast(attributesMock));
+
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    entries.add(uncheckedCast(mock(Region.Entry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
+
+    doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
+
+    AbstractGatewaySender gatewaySenderMock = mock(AbstractGatewaySender.class);
     when(gatewaySenderMock.getId()).thenReturn((String) options[1]);
-
     when(gatewaySenderMock.isRunning()).thenReturn(true);
-    when(regionMock.getAttributes().getGatewaySenderIds().contains(anyString())).thenReturn(true);
     when(gatewaySenderMock.isParallel()).thenReturn(true);
     when(gatewaySenderMock.isPrimary()).thenReturn(false);
-    when(internalCacheMock.getRegion(any())).thenReturn(regionMock);
-    when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
-    when(contextMock.getArguments()).thenReturn(options);
-    when(contextMock.getCache()).thenReturn(internalCacheMock);
-
-    WanCopyRegionFunction function1 = new WanCopyRegionFunction();
-    WanCopyRegionFunction functionSpy = spy(function1);
 
     when(gatewaySenderMock.getProxy()).thenReturn(poolMock);
     when(poolMock.acquireConnection()).thenReturn(connectionMock).thenReturn(connectionMock);
     when(contextMock.getCache()).thenReturn(internalCacheMock);
-    when(gatewaySenderMock.getEventProcessor().getDispatcher())
-        .thenReturn(dispatcherMock);
-    Set<Region.Entry<String, String>> entries = new HashSet<>();
-    entries.add(entryMock);
-    entries.add(entryMock2);
-    doReturn(entries).when(functionSpy).getEntries(regionMock, gatewaySenderMock);
-    doReturn(mock(GatewayQueueEvent.class)).when(functionSpy).createGatewaySenderEvent(any(), any(),
-        any(), any());
-    doNothing().when(dispatcherMock).sendBatch(anyList(), any(), any(), anyInt(), anyBoolean());
-    long expectedMsToSleep = 1000L;
-    doReturn(expectedMsToSleep).when(functionSpy).getTimeToSleep(anyLong(), anyInt(), anyLong());
 
-    return CompletableFuture.supplyAsync(() -> functionSpy.executeFunction(contextMock));
+    AbstractGatewaySenderEventProcessor eventProcessorMock =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    when(eventProcessorMock.getDispatcher()).thenReturn(dispatcherMock);
+    when(gatewaySenderMock.getEventProcessor()).thenReturn(eventProcessorMock);
+
+    InternalCache internalCacheMock = mock(InternalCache.class);
+    when(internalCacheMock.getRegion(any())).thenReturn(uncheckedCast(regionMock));
+    when(internalCacheMock.getGatewaySender(any())).thenReturn(gatewaySenderMock);
+
+    FunctionContext<Object[]> contextMock = uncheckedCast(mock(FunctionContext.class));
+    when(contextMock.getArguments()).thenReturn(options);
+    when(contextMock.getCache()).thenReturn(internalCacheMock);
+
+    WanCopyRegionFunction function = new WanCopyRegionFunction(Clock.systemDefaultZone(),
+        sleeper, (cache) -> Executors.newSingleThreadExecutor(), eventCreatorMock);
+
+    return CompletableFuture.supplyAsync(() -> function.executeFunction(contextMock));
   }
 
   @Test

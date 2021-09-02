@@ -23,8 +23,9 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  api(project(':geode-core'))
-  api(project(':geode-common'))
+    api(project(':geode-core'))
+    api(project(':geode-common'))
+    api(project(':geode-wan'))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
