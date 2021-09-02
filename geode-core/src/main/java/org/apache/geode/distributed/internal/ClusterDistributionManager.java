@@ -2412,11 +2412,6 @@ public class ClusterDistributionManager implements DistributionManager {
         dm.getCache().saveCacheXmlForReconnect();
       }
     }
-
-    @Override
-    public void setShutdownCause(Exception shutdownCause) {
-      dm.setRootCause(shutdownCause);
-    }
   }
 
 
