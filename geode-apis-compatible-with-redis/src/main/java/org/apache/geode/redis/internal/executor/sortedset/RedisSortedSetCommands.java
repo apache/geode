@@ -16,6 +16,9 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 
@@ -58,6 +61,8 @@ public interface RedisSortedSetCommands {
   List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrevrank(RedisKey key, byte[] member);
+
+  Pair<Integer, List<byte[]>> zscan(RedisKey key, Pattern matchPattern, int count, int cursor);
 
   byte[] zscore(RedisKey key, byte[] member);
 
