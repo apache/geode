@@ -21,6 +21,7 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,7 +48,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -58,7 +58,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
  * is working correctly.
  */
 @RunWith(JUnitParamsRunner.class)
-public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
+public class RebalanceOperationComplexDistributedTest implements Serializable {
   public static final int EXPECTED_BUCKET_COUNT = 113;
   public static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getValue();
   public static final String CLIENT_XML = "RebalanceOperationComplex-client.xml";
@@ -70,7 +70,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   public static final String ZONE_A = "zoneA";
   public static final String ZONE_B = "zoneB";
   public int locatorPort;
-  public static AtomicInteger runID = new AtomicInteger(0);
+  public static final AtomicInteger runID = new AtomicInteger(0);
   public String workingDir;
 
   // 6 servers distributed evenly across 2 zones
@@ -89,7 +89,7 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
@@ -97,11 +97,12 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     workingDir = clusterStartupRule.getWorkingDirRoot().getAbsolutePath();
 
     runID.incrementAndGet();
+    cleanOutServerDirectories();
   }
 
   @After
   public void after() {
-    deleteServerDirectories();
+    stopServersAndDeleteDirectories();
   }
 
   /**
@@ -143,31 +144,31 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
     // Verify that all bucket counts add up to what they should
     compareZoneBucketCounts(COLOCATED_REGION_NAME);
     compareZoneBucketCounts(REGION_NAME);
-
-
   }
 
-  private void deleteServerDirectories() {
-
-    VM.getVM(SERVER_ZONE_MAP.size() + 1).bounceForcibly();
+  private void stopServersAndDeleteDirectories() {
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       clusterStartupRule.stop(entry.getKey(), true);
+    }
+    cleanOutServerDirectories();
+  }
+
+  private void cleanOutServerDirectories() {
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
       int index = entry.getKey();
       VM.getVM(index).invoke(() -> {
         String path = workingDir + "/" + "runId-" + runID.get() + "-vm-" + index;
         File temporaryDirectory = new File(path);
         if (temporaryDirectory.exists()) {
-          logger.info("MLH Attempting to delete " + temporaryDirectory.toPath());
           try {
             Arrays.stream(temporaryDirectory.listFiles()).forEach(FileUtils::deleteQuietly);
             Files.delete(temporaryDirectory.toPath());
           } catch (Exception exception) {
-            logger.error("MLH delete failed ", exception);
+            logger.error("The delete of files or directory failed ", exception);
             throw exception;
           }
         }
       });
-      VM.getVM(index).bounceForcibly();
     }
   }
 
@@ -205,7 +206,6 @@ public class RebalanceOperationComplexDistributedTest extends CacheTestCase {
   private void startServerInRedundancyZone(int index, final String zone) {
     VM.getVM(index).invoke(() -> {
       String path = workingDir + "/" + "runId-" + runID.get() + "-vm-" + index;
-      logger.info("MLH startServerInRedundancyZone Path = " + path);
 
       File temporaryDirectory = new File(path);
       if (!temporaryDirectory.exists()) {
