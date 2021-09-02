@@ -66,9 +66,9 @@ import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 public abstract class AnalyzeSerializablesJUnitTestBase
     extends AnalyzeDataSerializablesJUnitTestBase {
 
-  protected static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
+  private static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
 
-  protected String expectedSerializablesFileName =
+  private final String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
 
   protected List<ClassAndVariableDetails> expectedSerializables;
@@ -80,19 +80,19 @@ public abstract class AnalyzeSerializablesJUnitTestBase
 
   @Test
   public void testSerializables() throws Exception {
-    System.out.println(this.testName.getMethodName() + " starting");
+    System.out.println(testName.getMethodName() + " starting");
     findClasses();
     loadExpectedSerializables();
 
     File actualSerializablesFile = createEmptyFile(ACTUAL_SERIALIZABLES_DAT);
-    System.out.println(this.testName.getMethodName() + " actualSerializablesFile="
+    System.out.println(testName.getMethodName() + " actualSerializablesFile="
         + actualSerializablesFile.getAbsolutePath());
 
     List<ClassAndVariables> actualSerializables = findSerializables();
     CompiledClassUtils.storeClassesAndVariables(actualSerializables, actualSerializablesFile);
 
     String diff = CompiledClassUtils
-        .diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
+        .diffSortedClassesAndVariables(expectedSerializables, actualSerializables);
     if (!diff.isEmpty()) {
       System.out.println(
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
@@ -163,8 +163,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       try {
         boolean isThrowable = Throwable.class.isAssignableFrom(sanctionedClass);
 
-        Constructor constructor = isThrowable ? sanctionedClass.getDeclaredConstructor(String.class)
-            : sanctionedClass.getDeclaredConstructor((Class<?>[]) null);
+        Constructor<?> constructor =
+            isThrowable ? sanctionedClass.getDeclaredConstructor(String.class)
+                : sanctionedClass.getDeclaredConstructor((Class<?>[]) null);
         constructor.setAccessible(true);
         sanctionedInstance =
             isThrowable ? constructor.newInstance("test throwable") : constructor.newInstance();
@@ -175,7 +176,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       }
       try {
         Class<?> superClass = sanctionedClass;
-        Constructor constructor = null;
+        Constructor<?> constructor = null;
         if (Externalizable.class.isAssignableFrom(sanctionedClass)) {
           Constructor<?> cons = sanctionedClass.getDeclaredConstructor((Class<?>[]) null);
           cons.setAccessible(true);
@@ -193,9 +194,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase
               .newConstructorForSerialization(sanctionedClass, constructor);
         }
         sanctionedInstance = constructor.newInstance();
-      } catch (Exception e2) {
+      } catch (Exception e) {
         throw new AssertionError("Unable to instantiate " + className + " - please move it from "
-            + expectedSerializablesFileName + " to excludedClasses.txt", e2);
+            + expectedSerializablesFileName + " to excludedClasses.txt", e);
       }
       serializeAndDeserializeSanctionedObject(sanctionedInstance);
     }
@@ -249,13 +250,12 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     }
   }
 
-
   private List<ClassAndVariables> findSerializables() throws IOException {
     List<ClassAndVariables> result = new ArrayList<>(2000);
     List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
     System.out.println("excluded classes are " + excludedClasses);
     Set<String> setOfExclusions = new HashSet<>(excludedClasses);
-    for (Map.Entry<String, CompiledClass> entry : this.classes.entrySet()) {
+    for (Map.Entry<String, CompiledClass> entry : classes.entrySet()) {
       CompiledClass compiledClass = entry.getValue();
       if (setOfExclusions.contains(compiledClass.fullyQualifiedName())) {
         System.out.println("excluding class " + compiledClass.fullyQualifiedName());
@@ -277,8 +277,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     Collections.sort(result);
     return result;
   }
-
-
 
   @Override
   protected void initializeSerializationService() {
@@ -302,7 +300,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     DataSerializer.writeObject(object, outputStream);
   }
 
-
   private void serializeAndDeserializeSanctionedObject(Object object) throws Exception {
     BufferDataOutputStream outputStream = new BufferDataOutputStream(KnownVersion.CURRENT);
     try {
@@ -324,7 +321,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     }
   }
 
-  public boolean isSerializableAndNotDataSerializable(CompiledClass compiledClass) {
+  private boolean isSerializableAndNotDataSerializable(CompiledClass compiledClass) {
     // these classes throw exceptions or log ugly messages when you try to load them
     // in junit
     String name = compiledClass.fullyQualifiedName().replace('/', '.');
@@ -333,7 +330,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       return false;
     }
     try {
-      Class realClass = Class.forName(name);
+      Class<?> realClass = Class.forName(name);
       return Serializable.class.isAssignableFrom(realClass)
           && !DataSerializable.class.isAssignableFrom(realClass)
           && !DataSerializableFixedID.class.isAssignableFrom(realClass);
@@ -346,7 +343,4 @@ public abstract class AnalyzeSerializablesJUnitTestBase
     }
     return false;
   }
-
-
-
 }

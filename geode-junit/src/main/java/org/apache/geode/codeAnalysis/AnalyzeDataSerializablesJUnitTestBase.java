@@ -52,6 +52,7 @@ import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 /**
  * This abstract test class is the basis for all of our AnalyzeModuleNameSerializables tests.
  * Subclasses must provide serialization/deserialization methods.
+ *
  * <p>
  * Most tests should subclass {@link AnalyzeSerializablesJUnitTestBase} instead of this
  * class because it ties into geode-core serialization and saves a lot of work.
@@ -60,24 +61,23 @@ import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
   private static final Path MODULE_ROOT = Paths.get("..", "..", "..").toAbsolutePath().normalize();
-
   private static final Path SOURCE_ROOT = MODULE_ROOT.resolve(Paths.get("src"));
   private static final Path TEST_RESOURCES_SOURCE_ROOT =
       SOURCE_ROOT.resolve(Paths.get("integrationTest", "resources"));
-
   private static final Path BUILD_RESOURCES_ROOT =
       MODULE_ROOT.resolve(Paths.get("build", "resources"));
 
   private static final String NEW_LINE = System.getProperty("line.separator");
 
-  protected static final String FAIL_MESSAGE = NEW_LINE + NEW_LINE
+  static final String FAIL_MESSAGE = NEW_LINE + NEW_LINE
       + "If the class is not persisted or sent over the wire add it to the file " + NEW_LINE + "%s"
       + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
       + NEW_LINE + "%s to " + NEW_LINE + "%s.";
-  protected static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
-  protected static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
-  protected static final String OPEN_BUGS_TXT = "openBugs.txt";
-  protected static final String SANCTIONED_DATA_SERIALIZABLES_FILE =
+
+  static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
+  private static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
+  static final String OPEN_BUGS_TXT = "openBugs.txt";
+  private static final String SANCTIONED_DATA_SERIALIZABLES_FILE =
       "sanctionedDataSerializables.txt";
 
   /**
@@ -128,8 +128,6 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
    */
   protected abstract void initializeSerializationService();
 
-
-
   private void loadExpectedDataSerializables() throws Exception {
     expectedDataSerializablesFile = getResourceAsFile(SANCTIONED_DATA_SERIALIZABLES_FILE);
     if (expectedDataSerializablesFile == null) {
@@ -150,17 +148,16 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     removeExclusions(classes, excludedClasses);
   }
 
-
   @Test
   public void testDataSerializables() throws Exception {
     // assumeTrue("Ignoring this test when java version is 9 and above",
     // !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
-    System.out.println(this.testName.getMethodName() + " starting");
+    System.out.println(testName.getMethodName() + " starting");
     findClasses();
     loadExpectedDataSerializables();
 
     File actualDataSerializablesFile = createEmptyFile(ACTUAL_DATA_SERIALIZABLES_DAT);
-    System.out.println(this.testName.getMethodName() + " actualDataSerializablesFile="
+    System.out.println(testName.getMethodName() + " actualDataSerializablesFile="
         + actualDataSerializablesFile.getAbsolutePath());
 
     List<ClassAndMethods> actualDataSerializables = findToDatasAndFromDatas();
@@ -168,7 +165,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
     String diff =
         CompiledClassUtils
-            .diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
+            .diffSortedClassesAndMethods(expectedDataSerializables, actualDataSerializables);
     if (!diff.isEmpty()) {
       System.out.println(
           "++++++++++++++++++++++++++++++testDataSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
@@ -220,7 +217,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return false;
   }
 
-  protected void serializeAndDeserializeObject(Object object) throws Exception {
+  private void serializeAndDeserializeObject(Object object) throws Exception {
     BufferDataOutputStream outputStream = new BufferDataOutputStream(KnownVersion.CURRENT);
     try {
       serializeObject(object, outputStream);
@@ -244,26 +241,27 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return file.toPath().toAbsolutePath().normalize().toString();
   }
 
-  String toTestResourcesSourcePathString(Path relativeFilePath) {
+  private String toTestResourcesSourcePathString(Path relativeFilePath) {
     return TEST_RESOURCES_SOURCE_ROOT.resolve(relativeFilePath).normalize().toString();
   }
 
-  // FROM:
-  // /Users/klund/dev/geode2/geode-junit/build/resources/main/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
-  // TO:
-  // /Users/klund/dev/geode2/geode-junit/src/main/resources/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
+  /**
+   * <pre>
+   * FROM:
+   * /Users/user/dev/geode/geode-junit/build/resources/main/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
+   *
+   * TO:
+   * /Users/user/dev/geode/geode-junit/src/main/resources/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
+   * </pre>
+   */
   String mainResourceToSourcePath(URI buildResourceURI) {
-
     Path mainBuildResources = BUILD_RESOURCES_ROOT.resolve(Paths.get("main"));
-
     Path mainSourceResources = SOURCE_ROOT.resolve(Paths.get("main", "resources"));
-
     Path relativeFilePath = mainBuildResources.relativize(Paths.get(buildResourceURI));
-
     return mainSourceResources.resolve(relativeFilePath).toString();
   }
 
-  protected List<String> loadExcludedClasses(File excludedClassesFile) throws IOException {
+  List<String> loadExcludedClasses(File excludedClassesFile) throws IOException {
     if (excludedClassesFile == null) {
       return emptyList();
     }
@@ -285,7 +283,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return excludedClasses;
   }
 
-  protected List<String> loadOpenBugs(File openBugsFile) throws IOException {
+  List<String> loadOpenBugs(File openBugsFile) throws IOException {
     if (openBugsFile == null) {
       return emptyList();
     }
@@ -321,7 +319,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
   private List<ClassAndMethods> findToDatasAndFromDatas() {
     List<ClassAndMethods> result = new ArrayList<>();
-    for (Map.Entry<String, CompiledClass> entry : this.classes.entrySet()) {
+    for (Map.Entry<String, CompiledClass> entry : classes.entrySet()) {
       CompiledClass compiledClass = entry.getValue();
       ClassAndMethods classAndMethods = null;
 
@@ -346,7 +344,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return result;
   }
 
-  protected File createEmptyFile(String fileName) throws IOException {
+  File createEmptyFile(String fileName) throws IOException {
     final String workingDir = System.getProperty("user.dir");
     final String filePath;
     if (isIntelliJDir(workingDir)) {
