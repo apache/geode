@@ -34,7 +34,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -204,7 +203,7 @@ public abstract class AbstractRedisData implements RedisData {
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
       case ZADDS:
-        int numMembers = InternalDataSerializer.readPrimitiveInt(in);
+        int numMembers = DataSerializer.readPrimitiveInt(in);
         List<byte[]> members = new ArrayList<>();
         List<Double> scores = new ArrayList<>();
         for (int i = 0; i < numMembers; i++) {
