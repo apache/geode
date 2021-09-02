@@ -16,15 +16,12 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,21 +31,18 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationTest {
 
-  private JedisCluster jedis;
+  private final JedisCluster jedis =
+      new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   private static final int ITERATION_COUNT = 4000;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @Before
-  public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
-  }
+  public void setUp() {}
 
   @After
   public void tearDown() {
@@ -120,41 +114,20 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void testGetSet_shouldBeAtomic()
-      throws ExecutionException, InterruptedException {
-    jedis.set("contestedKey", "0");
-    assertThat(jedis.get("contestedKey")).isEqualTo("0");
-    CountDownLatch latch = new CountDownLatch(1);
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfIncrs(jedis, latch);
-    Callable<Integer> callable2 = () -> doABunchOfGetSets(jedis, latch);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
+  public void testGetSet_shouldBeAtomic() {
+    String contestedKey = "contestedKey";
+    jedis.set(contestedKey, "0");
+    assertThat(jedis.get(contestedKey)).isEqualTo("0");
 
-    latch.countDown();
-
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(future2.get()).isEqualTo(future1.get()));
-    assertThat(future1.get() + future2.get()).isEqualTo(2 * ITERATION_COUNT);
-  }
-
-  private Integer doABunchOfIncrs(JedisCluster jedis, CountDownLatch latch)
-      throws InterruptedException {
-    latch.await();
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      jedis.incr("contestedKey");
-    }
-    return ITERATION_COUNT;
-  }
-
-  private Integer doABunchOfGetSets(JedisCluster jedis, CountDownLatch latch)
-      throws InterruptedException {
-    int sum = 0;
-    latch.await();
-
-    while (sum < ITERATION_COUNT) {
-      sum += Integer.parseInt(jedis.getSet("contestedKey", "0"));
-    }
-    return sum;
+    final AtomicInteger sumHolder = new AtomicInteger(0);
+    new ConcurrentLoopingThreads(ITERATION_COUNT,
+        (ignored) -> jedis.incr(contestedKey),
+        (i) -> {
+          // continue fetching with getSet until caught up with incrementing
+          // noinspection StatementWithEmptyBody
+          while (sumHolder.getAndAdd(Integer.parseInt(jedis.getSet(contestedKey, "0"))) <= i);
+        }).run();
+    assertThat(sumHolder.get()).isEqualTo(ITERATION_COUNT);
   }
 
   private String randString() {

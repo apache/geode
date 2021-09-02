@@ -179,6 +179,7 @@ public enum RedisCommandType {
   DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   DECRBY(new DecrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  GETSET(new GetSetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   INCRBY(new IncrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   GETRANGE(new GetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
@@ -187,7 +188,6 @@ public enum RedisCommandType {
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  GETSET(new GetSetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
 
   /************* Hashes *****************/
 
