@@ -38,7 +38,11 @@ public class CachedRegionHelper {
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
     this.cache.getCancelCriterion().checkCancelInProgress(e);
-    this.cache.getDistributionManager().getDistribution().getMembership().checkCancelled();
+    if (this.cache.getDistributionManager() != null
+        && this.cache.getDistributionManager().getDistribution() != null
+        && this.cache.getDistributionManager().getDistribution().getMembership() != null) {
+      this.cache.getDistributionManager().getDistribution().getMembership().checkCancelled();
+    }
   }
 
   public Region getRegion(String name) {
