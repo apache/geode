@@ -43,6 +43,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import sun.security.provider.certpath.SunCertPathBuilderException;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
@@ -121,6 +122,7 @@ public class SSLDUnitTest {
   @Test
   public void givenMutualAuthentication_clientErrorsWithSelfSignedCert() throws Exception {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
+    IgnoredException.addIgnoredException(SunCertPathBuilderException.class);
 
     Jedis jedis;
     try {
