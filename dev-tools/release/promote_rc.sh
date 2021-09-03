@@ -259,7 +259,9 @@ echo "Building Geode docker image"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
+sed -e '/www.apache.org.dyn.closer/d' -i.backup Dockerfile
 docker build .
+mv Dockerfile.backup Dockerfile
 docker build -t apachegeode/geode:${VERSION} .
 [ -n "$LATER" ] || docker build -t apachegeode/geode:latest .
 set +x
