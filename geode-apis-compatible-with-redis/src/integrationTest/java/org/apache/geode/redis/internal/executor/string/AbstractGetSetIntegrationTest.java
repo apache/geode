@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,12 +36,13 @@ import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationTest {
 
-  private final JedisCluster jedis =
-      new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
+  private JedisCluster jedis;
   private static final int ITERATION_COUNT = 4000;
 
   @Before
-  public void setUp() {}
+  public void setUp() {
+    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+  }
 
   @After
   public void tearDown() {
