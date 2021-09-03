@@ -153,6 +153,14 @@ groups:
   {%- endfor %}
 
 resources:
+- name: build-weekly-thu
+  type: time
+  source:
+    days: [Thursday]
+    start: 1:00 AM
+    stop: 3:00 AM
+    interval: 2h
+    location: US/Pacific
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
@@ -261,6 +269,8 @@ jobs:
   max_in_flight: {{build_test.MAX_IN_FLIGHT}}
   plan:
   - in_parallel:
+    - get: build-weekly-thu
+      trigger: true
     - get: geode-ci
     - get: alpine-tools-image
     - get: geode
