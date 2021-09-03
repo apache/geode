@@ -188,6 +188,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testGetset() {
+    runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
+  }
+
+  @Test
   public void testStrlen() {
     runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.strlen(k));
   }
@@ -456,11 +461,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   /************* String related commands *************/
-  @Test
-  public void testGetset() {
-    runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
-  }
-
   @Test
   public void testMset() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.mset(k, v));
