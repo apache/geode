@@ -52,20 +52,20 @@ dependencies {
   api('com.google.guava:guava')
   api('com.jayway.jsonpath:json-path')
   api('commons-io:commons-io')
-  
+
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
-  
+
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
-  
+
   api('org.skyscreamer:jsonassert')
 
   implementation('org.junit.jupiter:junit-jupiter-engine')
   implementation('org.junit.vintage:junit-vintage-engine')
 
-  testImplementation('pl.pragmatists:JUnitParams')
+  api('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))

@@ -152,7 +152,7 @@ configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repe
   }
 }
 
-configure([integrationTest, distributedTest, performanceTest]) {
+configure([test, integrationTest, distributedTest, performanceTest]) {
   if (project.hasProperty("testCategory")) {
     testFramework.options.includeTags += project.testCategory
   }
