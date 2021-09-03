@@ -100,6 +100,7 @@ public class SSLDUnitTest {
   @Test
   public void givenMutualAuthentication_clientErrorsWithoutKeystore() throws Exception {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
+    IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
     Jedis jedis;
     try {
@@ -213,6 +214,7 @@ public class SSLDUnitTest {
     serverStore.createTrustStore(serverTrustStoreFilename, commonPassword);
 
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
+    IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
     // Try long enough for the file change to be detected
     GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 2))
