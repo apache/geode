@@ -21,6 +21,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.experimental.categories.Category;
@@ -129,7 +130,7 @@ public class GeodeTestEngine implements TestEngine {
     return Arrays.stream(testClass.getDeclaredMethods())
         .filter(m -> methodName.equals(m.getName()))
         .findAny()
-        .get();
+        .orElseThrow(missingMethodException(testClass, methodName));
   }
 
   /**
@@ -143,5 +144,10 @@ public class GeodeTestEngine implements TestEngine {
         removeFromTree(parent);
       }
     });
+  }
+
+  private static Supplier<RuntimeException> missingMethodException(Class<?> testClass,
+      String methodName) {
+    return () -> new RuntimeException("No method " + methodName + " in test class " + testClass);
   }
 }
