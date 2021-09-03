@@ -85,7 +85,8 @@ else
 fi
 
 
-SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64"
+JAVA_BUILD_PATH="/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64"
+SET_JAVA_HOME="export JAVA_HOME=${JAVA_BUILD_PATH}"
 
 if [ -v CALL_STACK_TIMEOUT ]; then
   ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${SET_JAVA_HOME} && tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
@@ -103,7 +104,9 @@ GRADLE_ARGS="\
     -PbuildId=${BUILD_ID} \
     build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test"
 
-EXEC_COMMAND="mkdir -p tmp \
+EXEC_COMMAND="echo Building with: \
+  && ${JAVA_BUILD_PATH}/bin/java -version \
+  && mkdir -p /tmp \
   && cp geode/ci/scripts/attach_sha_to_branch.sh /tmp/ \
   && /tmp/attach_sha_to_branch.sh geode ${BUILD_BRANCH} \
   && cd geode \

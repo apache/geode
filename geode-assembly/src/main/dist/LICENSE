@@ -221,7 +221,7 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
-  - ASM v5.0.4 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
+  - ASM v9.1 (https://asm.ow2.io) Copyright (c) 2000-2011 INRIA, France
     Telecom
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
@@ -1062,7 +1062,7 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT License:
 
-  - Checker Qual v2.10.0 (https://checkerframework.org), Copyright (c)
+  - Checker Qual v3.8.0 (https://checkerframework.org), Copyright (c)
     2004-present by the Checker Framework developers
   - ClassGraph v4.8.115 (https://github.com/classgraph/classgraph), Copyright
     (c) 2019 Luke Hutchison
@@ -1095,6 +1095,8 @@ Apache Geode bundles the following files under the MIT License:
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
+  - OrderStatisticTree (https://github.com/coderodde/OrderStatisticTree),
+    Copyright (c) 2021 Rodion Efremov
   - Sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - SLF4J API v1.7.30 (http://www.slf4j.org), Copyright (c) 2004-2017 QOS.ch
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)

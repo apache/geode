@@ -339,6 +339,7 @@ if [ "${licFromWs}" = "true" ] ; then
     echo "Incorrect LICENSE in binary distribution"
     echo "Expected:" $(wc -c ${BLICENSE})
     echo "Actual:" $(wc -c ${NEW_DIR}/LICENSE)
+    result=1
   fi
 
   if ! [ "$SKIP_SRC_LICENSE" = "true" ] ; then
@@ -349,13 +350,15 @@ if [ "${licFromWs}" = "true" ] ; then
       echo "Incorrect LICENSE in source distribution"
       echo "Expected:" $(wc -c ${SLICENSE})
       echo "Actual:" $(wc -c ${NEW_SRC_DIR}/LICENSE)
+      result=1
     fi
 
     banner "Checking references in source license"
-    cat $SLICENSE | checkMissing $SLICENSE
+    cat $SLICENSE | checkMissing $SLICENSE || result=1
+
 
     banner "Checking references in binary license"
-    cat $SLICENSE $SLICENSE $BLICENSE | sort | uniq -u | checkMissing $BLICENSE
+    cat $SLICENSE $SLICENSE $BLICENSE | sort | uniq -u | checkMissing $BLICENSE || result=1
   fi
 fi
 
