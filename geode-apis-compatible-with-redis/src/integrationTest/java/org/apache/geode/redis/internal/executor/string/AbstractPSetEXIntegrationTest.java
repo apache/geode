@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -54,5 +55,18 @@ public abstract class AbstractPSetEXIntegrationTest implements RedisIntegrationT
     jedis.psetex("key", 20000, "value");
 
     assertThat(jedis.pttl("key")).isGreaterThanOrEqualTo(1500);
+  }
+
+  @Test
+  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key", Protocol.Command.PSETEX, "key", "10", "value", "extraArg"))
+            .hasMessageContaining("ERR wrong number of arguments for 'psetex' command");
+  }
+
+  @Test
+  public void testSetEXWithIllegalMilliseconds() {
+    assertThatThrownBy(() -> jedis.psetex("key", -1L, "value"))
+        .hasMessage("ERR invalid expire time in psetex");
   }
 }

@@ -32,7 +32,7 @@ public class SetEXExecutor extends AbstractExecutor {
       "The expiration argument provided was not a number";
 
   private static final String ERROR_SECONDS_NOT_LEGAL =
-      "invalid expire time in setex";
+      "invalid expire time";
 
   private static final int VALUE_INDEX = 3;
 
@@ -54,7 +54,8 @@ public class SetEXExecutor extends AbstractExecutor {
     }
 
     if (expiration <= 0) {
-      return RedisResponse.error(ERROR_SECONDS_NOT_LEGAL);
+      return RedisResponse.error(
+          ERROR_SECONDS_NOT_LEGAL + " in " + command.getCommandType().toString().toLowerCase());
     }
 
     if (!timeUnitMillis()) {
