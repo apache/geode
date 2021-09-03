@@ -275,6 +275,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZInterStore() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY,
+        k -> jedis.zinterstore(k, new ZParams().weights(1, 2), k, k));
+  }
+
+  @Test
   public void testZLexCount() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zlexcount(k, "-", "+"));
   }

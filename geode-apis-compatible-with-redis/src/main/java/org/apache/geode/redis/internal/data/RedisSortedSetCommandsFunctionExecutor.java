@@ -68,6 +68,24 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
+  public long zinterstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
+    for (ZKeyWeight kw : keyWeights) {
+      getRegionProvider().ensureKeyIsLocal(kw.getKey());
+      keysToLock.add(kw.getKey());
+    }
+    getRegionProvider().ensureKeyIsLocal(destinationKey);
+    keysToLock.add(destinationKey);
+
+    getRegionProvider().orderForLocking(keysToLock);
+
+    return stripedExecute(destinationKey, keysToLock,
+        () -> new RedisSortedSet(Collections.emptyList())
+            .zinterstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
+  }
+
+  @Override
   public long zlexcount(RedisKey key, SortedSetLexRangeOptions lexOptions) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zlexcount(lexOptions));
   }

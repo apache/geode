@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OPERATION_PRODUCED_NAN;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
@@ -183,7 +185,6 @@ public class RedisSortedSet extends AbstractRedisData {
       scoreSet.remove(orderedSetEntry);
       return true;
     }
-
     return false;
   }
 
@@ -286,6 +287,52 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     return Coder.doubleToBytes(score);
+  }
+
+  long zinterstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
+    for (ZKeyWeight keyWeight : keyWeights) {
+      RedisSortedSet set =
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
+
+      if (set == NULL_REDIS_SORTED_SET) {
+        continue;
+      }
+
+      double weight = keyWeight.getWeight();
+      RedisSortedSet weightedSet = new RedisSortedSet(Collections.emptyList());
+
+      for (AbstractOrderedSetEntry entry : set.members.values()) {
+        OrderedSetEntry existingValue = members.get(entry.member);
+        if (existingValue == null) {
+          double score;
+          // Redis math and Java math are different when handling infinity. Specifically:
+          // Java: INFINITY * 0 = NaN
+          // Redis: INFINITY * 0 = 0
+          if (weight == 0) {
+            score = 0;
+          } else if (weight == 1) {
+            score = entry.getScore();
+          } else {
+            double newScore = entry.score * weight;
+            if (Double.isNaN(newScore)) {
+              throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
+            } else {
+              score = newScore;
+            }
+          }
+          weightedSet.memberAdd(entry.member, Coder.doubleToBytes(score));
+        }
+      }
+      sets.add(weightedSet);
+    }
+
+    RedisSortedSet intersection = getIntersection(sets, aggregator);
+
+    regionProvider.getLocalDataRegion().put(key, intersection);
+
+    return intersection.getSortedSetSize();
   }
 
   long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -607,6 +654,91 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+  private RedisSortedSet getIntersection(List<RedisSortedSet> sets, ZAggregator aggregator) {
+    RedisSortedSet retVal = new RedisSortedSet(Collections.emptyList());
+
+    for (RedisSortedSet set : sets) {
+      for (OrderedSetEntry entry : set.members.values()) {
+        Double newScore;
+        if (aggregator.equals(ZAggregator.SUM)) {
+          newScore = recursivelySumScoresForMember(sets, entry.member, 0D);
+        } else if (aggregator.equals(ZAggregator.MAX)) {
+          newScore = recursivelyGetMaxScoreForMember(sets, entry.member, Double.MIN_VALUE);
+        } else {
+          newScore = recursivelyGetMinScoreForMember(sets, entry.member, Double.MAX_VALUE);
+        }
+
+        if (newScore != null) {
+          if (newScore.isNaN()) {
+            throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
+          }
+          retVal.memberAdd(entry.getMember(), Coder.doubleToBytes(newScore));
+        }
+      }
+    }
+    return retVal;
+  }
+
+  private Double recursivelySumScoresForMember(List<RedisSortedSet> sets, byte[] member,
+      Double runningTotal) {
+    if (sets.isEmpty()) {
+      return runningTotal;
+    }
+
+    if (runningTotal.isNaN()) {
+      return runningTotal;
+    }
+
+    if (sets.get(0).members.containsKey(member)) {
+      Double score = sets.get(0).members.get(member).score;
+      if (score.isNaN()) {
+        return Double.NaN;
+      }
+      if (runningTotal.isInfinite() || score.isInfinite()) {
+        if (runningTotal == -score) {
+          return Double.NaN;
+        }
+      }
+      runningTotal += score;
+      return recursivelySumScoresForMember(sets.subList(1, sets.size()), member, runningTotal);
+    }
+    return null;
+  }
+
+  private Double recursivelyGetMaxScoreForMember(List<RedisSortedSet> sets, byte[] member,
+      Double maxScore) {
+    if (sets.isEmpty()) {
+      return maxScore;
+    }
+
+    if (sets.get(0).members.containsKey(member)) {
+      double score = sets.get(0).members.get(member).score;
+      maxScore = recursivelyGetMaxScoreForMember(sets.subList(1, sets.size()), member, maxScore);
+      if (maxScore == null) {
+        return null;
+      }
+      return Math.max(score, maxScore);
+    }
+    return null;
+  }
+
+  private Double recursivelyGetMinScoreForMember(List<RedisSortedSet> sets, byte[] member,
+      Double minScore) {
+    if (sets.isEmpty()) {
+      return minScore;
+    }
+
+    if (sets.get(0).members.containsKey(member)) {
+      double score = sets.get(0).members.get(member).score;
+      minScore = recursivelyGetMinScoreForMember(sets.subList(1, sets.size()), member, minScore);
+      if (minScore == null) {
+        return null;
+      }
+      return Math.min(score, minScore);
+    }
+    return null;
+  }
+
   @Override
   public RedisDataType getType() {
     return REDIS_SORTED_SET;
@@ -677,7 +809,7 @@ public class RedisSortedSet extends AbstractRedisData {
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
     byte[] member;
-    double score;
+    Double score;
 
     private AbstractOrderedSetEntry() {}
 
