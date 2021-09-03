@@ -112,6 +112,11 @@ class NullRedisSortedSet extends RedisSortedSet {
     return 0L;
   }
 
+  long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetRankRangeOptions rangeOptions) {
+    return 0;
+  }
+
   @Override
   long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetScoreRangeOptions rangeOptions) {
