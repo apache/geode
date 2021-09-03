@@ -294,6 +294,7 @@ public class RegionProvider {
     for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
       membersWithDataRegion.add(memberInfo.getDistributedMember());
     }
+
     return membersWithDataRegion;
   }
 
