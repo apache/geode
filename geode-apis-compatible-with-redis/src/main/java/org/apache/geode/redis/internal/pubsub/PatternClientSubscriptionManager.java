@@ -16,21 +16,22 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.executor.GlobPattern;
 
 class PatternClientSubscriptionManager
     extends AbstractClientSubscriptionManager<PatternSubscription> {
-  private final GlobPattern pattern;
+  private final Pattern pattern;
 
   public PatternClientSubscriptionManager(PatternSubscription subscription) {
     super(subscription);
     byte[] patternBytes = subscription.getSubscriptionName();
-    pattern = new GlobPattern(patternBytes);
+    pattern = GlobPattern.createPattern(patternBytes);
   }
 
   private boolean matches(String channel) {
-    return pattern.matches(channel);
+    return GlobPattern.matches(pattern, channel);
   }
 
   @Override

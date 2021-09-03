@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -121,7 +122,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
 
       if (matchPattern != null) {
-        if (matchPattern.matcher(key.toString()).matches()) {
+        if (GlobPattern.matches(matchPattern, key.toString())) {
           returnList.add(key);
           numElements++;
         }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
@@ -45,11 +46,11 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
 
   @Override
   public List<byte[]> getIds(byte[] pattern) {
-    final GlobPattern globPattern = new GlobPattern(pattern);
+    final Pattern globPattern = GlobPattern.createPattern(pattern);
     final ArrayList<byte[]> result = new ArrayList<>();
     for (SubscriptionId key : map.keySet()) {
       byte[] idBytes = key.getSubscriptionIdBytes();
-      if (globPattern.matches(idBytes)) {
+      if (GlobPattern.matches(globPattern, idBytes)) {
         result.add(idBytes);
       }
     }

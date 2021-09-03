@@ -44,7 +44,7 @@ public class KeysExecutor extends AbstractExecutor {
 
     Pattern pattern;
     try {
-      pattern = GlobPattern.compile(glob);
+      pattern = GlobPattern.createPattern(glob);
     } catch (PatternSyntaxException e) {
       logger.warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. KEYS will return an empty list.",

@@ -34,6 +34,6 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
     if (pattern == null) {
       return null;
     }
-    return GlobPattern.compile(pattern);
+    return GlobPattern.createPattern(pattern);
   }
 }
