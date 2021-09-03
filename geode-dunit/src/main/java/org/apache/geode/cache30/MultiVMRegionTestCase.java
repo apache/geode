@@ -3814,6 +3814,19 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         createRegion(name);
       });
 
+      // Make sure vm0 and vm1 have both registered the LongWrapperSerializer after vm2 reconnects
+      // and before vm2 puts any instance of LongWrapper in the region
+      // This is to avoid async disk store FlusherThread serializing any instance of LongWrapper
+      // before the LongWrapperSerializer is registered
+      vm0.invoke(() -> {
+        waitForLongWrapperSerializerRegistration();
+      });
+
+      vm1.invoke(() -> {
+        // see the comments in "get" CacheSerializableRunnable above
+        waitForLongWrapperSerializerRegistration();
+      });
+
       vm2.invoke("Put long", () -> {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
         region.put(key2, new LongWrapper(longValue));
@@ -3845,6 +3858,18 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     } finally {
       Wait.pause(1500);
       unregisterAllSerializers();
+    }
+  }
+
+  private void waitForLongWrapperSerializerRegistration() {
+    // see the comments in "get" CacheSerializableRunnable in testNoDataSerializer()
+    final int savVal = InternalDataSerializer.GetMarker.WAIT_MS;
+    InternalDataSerializer.GetMarker.WAIT_MS = 1;
+    try {
+      await("DataSerializer with id 121 was never registered")
+          .until(() -> InternalDataSerializer.getSerializer((byte) 121) != null);
+    } finally {
+      InternalDataSerializer.GetMarker.WAIT_MS = savVal;
     }
   }
 
