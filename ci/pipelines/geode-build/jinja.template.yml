@@ -151,10 +151,10 @@ groups:
   {%- endfor %}
 
 resources:
-- name: build-weekly-fri
+- name: build-weekly-tue
   type: time
   source:
-    days: [Friday]
+    days: [Tuesday]
     start: 1:00 AM
     stop: 3:00 AM
     interval: 2h
@@ -260,7 +260,7 @@ jobs:
   max_in_flight: {{build_test.MAX_IN_FLIGHT}}
   plan:
   - in_parallel:
-    - get: build-weekly-fri
+    - get: build-weekly-tue
       trigger: true
     - get: geode-ci
     - get: alpine-tools-image
