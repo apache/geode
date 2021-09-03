@@ -497,7 +497,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private Boolean redisEnabled = DEFAULT_REDIS_ENABLED;
 
-  private String redisPassword = DEFAULT_REDIS_PASSWORD;
+  private String redisPassword = DEFAULT_REDIS_USERNAME;
 
   /**
    * port on which GeodeRedisServer is started
@@ -794,7 +794,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     memcachedBindAddress = other.getMemcachedBindAddress();
     redisPort = other.getRedisPort();
     redisBindAddress = other.getRedisBindAddress();
-    redisPassword = other.getRedisPassword();
+    redisPassword = other.getRedisUsername();
     redisEnabled = other.getRedisEnabled();
     userCommandPackages = other.getUserCommandPackages();
 
@@ -3524,13 +3524,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getRedisPassword() {
+  public String getRedisUsername() {
     return redisPassword;
   }
 
   @Override
-  public void setRedisPassword(String password) {
-    redisPassword = password;
+  public void setRedisUsername(String username) {
+    redisPassword = username;
   }
 
   @Override

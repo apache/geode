@@ -154,7 +154,7 @@ public class NettyRedisServer {
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
-    String redisPassword = configSupplier.get().getRedisPassword();
+    String redisPassword = configSupplier.get().getRedisUsername();
     final byte[] redisPasswordBytes =
         StringUtils.isBlank(redisPassword) ? null : stringToBytes(redisPassword);
 

@@ -19,7 +19,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_USERNAME;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -73,7 +73,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   }
 
   public GeodeRedisServerRule withPassword(String password) {
-    cacheFactory.set(REDIS_PASSWORD, password);
+    cacheFactory.set(REDIS_USERNAME, password);
 
     return this;
   }

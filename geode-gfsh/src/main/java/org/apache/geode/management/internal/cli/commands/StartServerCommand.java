@@ -137,9 +137,9 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
           help = EXPERIMENTAL
               + CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
+      @CliOption(key = CliStrings.START_SERVER__REDIS_USERNAME,
           help = EXPERIMENTAL
-              + CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
+              + CliStrings.START_SERVER__REDIS_USERNAME__HELP) final String redisPassword,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -290,7 +290,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PASSWORD,
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_USERNAME,
         redisPassword);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
@@ -308,7 +308,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
 
     // if compatible-with-redis-port, compatible-with-redis-bind-address, or
-    // compatible-with-redis-password are specified in the command line, REDIS_ENABLED should be set
+    // compatible-with-redis-username are specified in the command line, REDIS_ENABLED should be set
     // to true
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
