@@ -182,7 +182,7 @@ public class SSLTest {
 
   @Test
   public void driverCannotConnectIfProtocolsMismatch() throws Exception {
-    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.1", "any");
+    startLocator(SERVER_KEY_STORE, SERVER_TRUST_STORE, true, "TLSv1.3", "any");
     startServer();
     expectedException.expect(SSLException.class);
     driver = new DriverFactory().addLocator("localhost", locatorPort)
