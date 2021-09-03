@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.pubsub;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -175,19 +176,13 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long unsubscribe(byte[] channel, Client client) {
-    if (client.removeChannelSubscription(channel)) {
-      subscriptions.unsubscribe(channel, client);
-    }
-    return client.getSubscriptionCount();
+  public Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client) {
+    return subscriptions.unsubscribe(channels, client);
   }
 
   @Override
-  public long punsubscribe(byte[] patternBytes, Client client) {
-    if (client.removePatternSubscription(patternBytes)) {
-      subscriptions.punsubscribe(patternBytes, client);
-    }
-    return client.getSubscriptionCount();
+  public Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client) {
+    return subscriptions.punsubscribe(patterns, client);
   }
 
   @Override

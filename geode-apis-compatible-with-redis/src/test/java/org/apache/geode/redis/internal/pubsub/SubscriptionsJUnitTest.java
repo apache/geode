@@ -16,14 +16,20 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -82,9 +88,8 @@ public class SubscriptionsJUnitTest {
     addPatternSubscription(context2, "subscription?");
 
     List<String> hits = new ArrayList<>();
-    subscriptions.forEachSubscription(stringToBytes("subscription1"), subscription -> {
-      hits.add(bytesToString(subscription.getSubscriptionName()));
-    });
+    subscriptions.forEachSubscription(stringToBytes("subscription1"),
+        subscription -> hits.add(bytesToString(subscription.getSubscriptionName())));
     assertThat(hits).containsExactlyInAnyOrder("subscription1", "subscription1", "sub*", "sub*",
         "subscription?");
   }
@@ -220,9 +225,9 @@ public class SubscriptionsJUnitTest {
     Client clientTwo = createClient();
     ExecutionHandlerContext context1 = createExecutionHandlerContext(clientOne);
     ExecutionHandlerContext context2 = createExecutionHandlerContext(clientTwo);
-
     addChannelSubscription(context1, "subscriptions");
     addChannelSubscription(context2, "monkeys");
+
     subscriptions.remove(clientOne);
 
     assertThat(subscriptions.findChannelNames())
@@ -239,16 +244,88 @@ public class SubscriptionsJUnitTest {
     addPatternSubscription(context, "monkeys");
     addChannelSubscription(context, "monkeys");
 
-    subscriptions.punsubscribe(pattern, client);
+    Collection<Collection<?>> result = subscriptions.punsubscribe(singletonList(pattern), client);
 
-    assertThat(subscriptions.findChannelNames())
-        .containsExactlyInAnyOrder(
-            stringToBytes("subscriptions"),
-            stringToBytes("monkeys"));
+    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern, 2L));
+    assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
   }
 
   @Test
-  public void removeByClientAndChannel() {
+  public void unsubscribeOnePattern() {
+    byte[] pattern = stringToBytes("monkeys");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addChannelSubscription(context, "subscriptions");
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    Collection<Collection<?>> result = subscriptions.punsubscribe(singletonList(pattern), client);
+
+    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern, 2L));
+    assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
+  }
+
+  @Test
+  public void unsubscribeTwoPatterns() {
+    byte[] pattern1 = stringToBytes("monkeys");
+    byte[] pattern2 = stringToBytes("subscriptions");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addPatternSubscription(context, "subscriptions");
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    Collection<Collection<?>> result =
+        subscriptions.punsubscribe(asList(pattern1, pattern2), client);
+
+    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern1, 2L),
+        asList(bPUNSUBSCRIBE, pattern2, 1L));
+    assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
+  }
+
+  @Test
+  public void unsubscribeAllPatterns() {
+    byte[] pattern = stringToBytes("monkeys");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    Collection<Collection<?>> result = subscriptions.punsubscribe(emptyList(), client);
+
+    assertThat(result).hasSize(1);
+    @SuppressWarnings("unchecked")
+    Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
+    assertThat(firstItem).containsExactly(bPUNSUBSCRIBE, pattern, 1L);
+    assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
+  }
+
+  @Test
+  public void unsubscribeAllChannelsWhenNoSubscriptions() {
+    Client client = createClient();
+
+    Collection<Collection<?>> result = subscriptions.unsubscribe(emptyList(), client);
+
+    assertThat(result).hasSize(1);
+    @SuppressWarnings("unchecked")
+    Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
+    assertThat(firstItem).containsExactly(bUNSUBSCRIBE, null, 0L);
+  }
+
+  @Test
+  public void unsubscribeAllPatternsWhenNoSubscriptions() {
+    Client client = createClient();
+
+    Collection<Collection<?>> result = subscriptions.punsubscribe(emptyList(), client);
+
+    assertThat(result).hasSize(1);
+    @SuppressWarnings("unchecked")
+    Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
+    assertThat(firstItem).containsExactly(bPUNSUBSCRIBE, null, 0L);
+  }
+
+  @Test
+  public void unsubscribeOneChannel() {
     byte[] channel = stringToBytes("monkeys");
     Client client = createClient();
     ExecutionHandlerContext context = createExecutionHandlerContext(client);
@@ -256,11 +333,47 @@ public class SubscriptionsJUnitTest {
     addPatternSubscription(context, "monkeys");
     addChannelSubscription(context, "monkeys");
 
-    subscriptions.unsubscribe(channel, client);
+    Collection<Collection<?>> result = subscriptions.unsubscribe(singletonList(channel), client);
 
+    assertThat(result).containsExactly(asList(bUNSUBSCRIBE, channel, 2L));
     assertThat(subscriptions.findChannelNames())
         .containsExactlyInAnyOrder(
             stringToBytes("subscriptions"));
+  }
+
+  @Test
+  public void unsubscribeTwoChannels() {
+    byte[] channel1 = stringToBytes("monkeys");
+    byte[] channel2 = stringToBytes("subscriptions");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addChannelSubscription(context, "subscriptions");
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    Collection<Collection<?>> result =
+        subscriptions.unsubscribe(asList(channel1, channel2), client);
+
+    assertThat(result).containsExactly(asList(bUNSUBSCRIBE, channel1, 2L),
+        asList(bUNSUBSCRIBE, channel2, 1L));
+    assertThat(subscriptions.findChannelNames()).isEmpty();
+  }
+
+  @Test
+  public void unsubscribeAllChannels() {
+    byte[] channel = stringToBytes("monkeys");
+    Client client = createClient();
+    ExecutionHandlerContext context = createExecutionHandlerContext(client);
+    addPatternSubscription(context, "monkeys");
+    addChannelSubscription(context, "monkeys");
+
+    Collection<Collection<?>> result = subscriptions.unsubscribe(emptyList(), client);
+
+    assertThat(result).hasSize(1);
+    @SuppressWarnings("unchecked")
+    Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
+    assertThat(firstItem).containsExactly(bUNSUBSCRIBE, channel, 1L);
+    assertThat(subscriptions.findChannelNames()).isEmpty();
   }
 
   @Test

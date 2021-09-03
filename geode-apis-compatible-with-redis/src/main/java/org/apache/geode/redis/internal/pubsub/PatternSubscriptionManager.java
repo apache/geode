@@ -39,7 +39,7 @@ class PatternSubscriptionManager
   public int getSubscriptionCount(byte[] channel) {
     int result = 0;
     final String channelString = bytesToString(channel);
-    for (ClientSubscriptionManager<PatternSubscription> manager : map.values()) {
+    for (ClientSubscriptionManager<PatternSubscription> manager : clientManagers.values()) {
       result += manager.getSubscriptionCount(channelString);
     }
     return result;
@@ -48,7 +48,7 @@ class PatternSubscriptionManager
   @Override
   public void foreachSubscription(byte[] channel, Consumer<Subscription> action) {
     final String channelString = bytesToString(channel);
-    for (ClientSubscriptionManager<PatternSubscription> manager : map.values()) {
+    for (ClientSubscriptionManager<PatternSubscription> manager : clientManagers.values()) {
       manager.forEachSubscription(channelString, action);
     }
   }

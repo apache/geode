@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
@@ -65,20 +66,20 @@ public interface PubSub {
   /**
    * Unsubscribe a client from a channel
    *
-   * @param channel the channel to unsubscribe from
+   * @param channels the channels to unsubscribe from
    * @param client the Client which is to be unsubscribed
-   * @return the number of channels still subscribed to by the client
+   * @return result will contain a nested Collection for each channel unsubscribed from.
    */
-  long unsubscribe(byte[] channel, Client client);
+  Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client);
 
   /**
    * Unsubscribe from a previously subscribed pattern
    *
-   * @param pattern the channel to unsubscribe from
+   * @param patterns the patterns to unsubscribe from
    * @param client the Client which is to be unsubscribed
-   * @return the number of channels still subscribed to by the client
+   * @return result will contain a nested Collection for each pattern unsubscribed from.
    */
-  long punsubscribe(byte[] pattern, Client client);
+  Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client);
 
   /**
    * Return a list of all subscribed channel names (not including subscribed patterns).

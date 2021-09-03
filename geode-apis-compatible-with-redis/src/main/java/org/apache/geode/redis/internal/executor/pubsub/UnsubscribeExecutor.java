@@ -15,11 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import static java.util.Collections.singletonList;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,36 +31,13 @@ public class UnsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> channelNames = extractChannelNames(command);
-    Collection<Collection<?>> response = unsubscribe(context, channelNames);
+    Client client = context.getClient();
+    Collection<Collection<?>> response = context.getPubSub().unsubscribe(channelNames, client);
     return RedisResponse.flattenedArray(response);
   }
 
   private List<byte[]> extractChannelNames(Command command) {
     return command.getProcessedCommand().stream().skip(1).collect(Collectors.toList());
-  }
-
-  private static final Collection<Collection<?>> EMPTY_RESULT = singletonList(createItem(null, 0));
-
-  private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
-      List<byte[]> channelNames) {
-    Client client = context.getClient();
-    if (channelNames.isEmpty()) {
-      channelNames = client.getChannelSubscriptions();
-      if (channelNames.isEmpty()) {
-        return EMPTY_RESULT;
-      }
-    }
-    Collection<Collection<?>> response = new ArrayList<>(channelNames.size());
-    for (byte[] channel : channelNames) {
-      long subscriptionCount = context.getPubSub().unsubscribe(channel, client);
-      response.add(createItem(channel, subscriptionCount));
-    }
-
-    return response;
-  }
-
-  private static List<Object> createItem(byte[] channelName, long subscriptionCount) {
-    return Arrays.asList(bUNSUBSCRIBE, channelName, subscriptionCount);
   }
 
 }

@@ -27,18 +27,18 @@ import org.apache.geode.redis.internal.netty.Client;
 
 abstract class AbstractSubscriptionManager<S extends Subscription>
     implements SubscriptionManager<S> {
-  protected final Map<SubscriptionId, ClientSubscriptionManager<S>> map =
+  protected final Map<SubscriptionId, ClientSubscriptionManager<S>> clientManagers =
       new ConcurrentHashMap<>();
 
   protected ClientSubscriptionManager<S> getClientManager(byte[] channelOrPattern) {
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
-    return map.getOrDefault(subscriptionId, emptyClientManager());
+    return clientManagers.getOrDefault(subscriptionId, emptyClientManager());
   }
 
   @Override
   public List<byte[]> getIds() {
-    final ArrayList<byte[]> result = new ArrayList<>(map.size());
-    for (SubscriptionId key : map.keySet()) {
+    final ArrayList<byte[]> result = new ArrayList<>(clientManagers.size());
+    for (SubscriptionId key : clientManagers.keySet()) {
       result.add(key.getSubscriptionIdBytes());
     }
     return result;
@@ -48,7 +48,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   public List<byte[]> getIds(byte[] pattern) {
     final Pattern globPattern = GlobPattern.createPattern(pattern);
     final ArrayList<byte[]> result = new ArrayList<>();
-    for (SubscriptionId key : map.keySet()) {
+    for (SubscriptionId key : clientManagers.keySet()) {
       byte[] idBytes = key.getSubscriptionIdBytes();
       if (GlobPattern.matches(globPattern, idBytes)) {
         result.add(idBytes);
@@ -60,7 +60,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   @Override
   public int getSubscriptionCount() {
     int sum = 0;
-    for (ClientSubscriptionManager<S> manager : map.values()) {
+    for (ClientSubscriptionManager<S> manager : clientManagers.values()) {
       sum += manager.getSubscriptionCount();
     }
     return sum;
@@ -71,7 +71,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
     final byte[] channelOrPattern = subscription.getSubscriptionName();
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager<S> newManager = null;
-    ClientSubscriptionManager<S> existingManager = map.get(subscriptionId);
+    ClientSubscriptionManager<S> existingManager = clientManagers.get(subscriptionId);
     while (true) {
       if (existingManager == null) {
         if (newManager == null) {
@@ -81,7 +81,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
           // Note that newManager is initialized to contain subscription.
           newManager = createClientManager(subscription);
         }
-        existingManager = map.putIfAbsent(subscriptionId, newManager);
+        existingManager = clientManagers.putIfAbsent(subscriptionId, newManager);
         if (existingManager == null) {
           // newManager was added to map so all done
           return;
@@ -93,7 +93,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
       }
       // existingManager is empty so remove it
       // and try to add newManager again.
-      map.remove(subscriptionId, existingManager);
+      clientManagers.remove(subscriptionId, existingManager);
       existingManager = null;
     }
   }
@@ -101,12 +101,12 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   @Override
   public void remove(byte[] channelOrPattern, Client client) {
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
-    ClientSubscriptionManager<S> manager = map.get(subscriptionId);
+    ClientSubscriptionManager<S> manager = clientManagers.get(subscriptionId);
     if (manager == null) {
       return;
     }
     if (!manager.remove(client)) {
-      map.remove(subscriptionId, manager);
+      clientManagers.remove(subscriptionId, manager);
     }
   }
 

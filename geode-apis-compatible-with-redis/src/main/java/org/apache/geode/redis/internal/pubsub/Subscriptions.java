@@ -16,6 +16,13 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Collections.singletonList;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -138,12 +145,60 @@ public class Subscriptions {
     return new SubscribeResult(createdSubscription, channelCount, patternBytes);
   }
 
-  public void unsubscribe(byte[] channel, Client client) {
-    channelSubscriptions.remove(channel, client);
+  private static final Collection<Collection<?>> EMPTY_UNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(true, null, 0));
+  private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(false, null, 0));
+
+  public Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client) {
+    if (channels.isEmpty()) {
+      channels = client.getChannelSubscriptions();
+      if (channels.isEmpty()) {
+        return EMPTY_UNSUBSCRIBE_RESULT;
+      }
+    }
+    Collection<Collection<?>> response = new ArrayList<>(channels.size());
+    for (byte[] channel : channels) {
+      long subscriptionCount = unsubscribe(channel, client);
+      response.add(createUnsubscribeItem(true, channel, subscriptionCount));
+    }
+    return response;
   }
 
-  public void punsubscribe(byte[] pattern, Client client) {
-    patternSubscriptions.remove(pattern, client);
+  public Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client) {
+    if (patterns.isEmpty()) {
+      patterns = client.getPatternSubscriptions();
+      if (patterns.isEmpty()) {
+        return EMPTY_PUNSUBSCRIBE_RESULT;
+      }
+    }
+    Collection<Collection<?>> response = new ArrayList<>(patterns.size());
+    for (byte[] pattern : patterns) {
+      long subscriptionCount = punsubscribe(pattern, client);
+      response.add(createUnsubscribeItem(false, pattern, subscriptionCount));
+    }
+    return response;
   }
+
+  private long unsubscribe(byte[] channel, Client client) {
+    if (client.removeChannelSubscription(channel)) {
+      channelSubscriptions.remove(channel, client);
+    }
+    return client.getSubscriptionCount();
+  }
+
+  private long punsubscribe(byte[] patternBytes, Client client) {
+    if (client.removePatternSubscription(patternBytes)) {
+      patternSubscriptions.remove(patternBytes, client);
+    }
+    return client.getSubscriptionCount();
+  }
+
+  private static List<Object> createUnsubscribeItem(boolean channel, byte[] channelOrPattern,
+      long subscriptionCount) {
+    return Arrays.asList(channel ? bUNSUBSCRIBE : bPUNSUBSCRIBE, channelOrPattern,
+        subscriptionCount);
+  }
+
 
 }

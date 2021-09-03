@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.netty.Client;
 
 abstract class AbstractClientSubscriptionManager<S extends Subscription>
     implements ClientSubscriptionManager<S> {
-  private final Map<Client, S> map = new ConcurrentHashMap<>();
+  private final Map<Client, S> subscriptionMap = new ConcurrentHashMap<>();
   /**
    * This is used instead of map.size() because we need to
    * make sure that once size goes to zero no further adds
@@ -35,7 +35,7 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
 
   public AbstractClientSubscriptionManager(S subscription) {
     Client client = subscription.getClient();
-    map.put(client, subscription);
+    subscriptionMap.put(client, subscription);
   }
 
   @Override
@@ -50,7 +50,7 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
 
   @Override
   public void forEachSubscription(String channel, Consumer<Subscription> action) {
-    map.values().forEach(action);
+    subscriptionMap.values().forEach(action);
   }
 
   @Override
@@ -70,14 +70,14 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
       }
     } while (!size.compareAndSet(sizeValue, sizeValue + 1));
     Client client = subscription.getClient();
-    map.put(client, subscription);
+    subscriptionMap.put(client, subscription);
     return true;
   }
 
   @Override
   public boolean remove(Client client) {
     boolean result = true;
-    if (map.remove(client) != null) {
+    if (subscriptionMap.remove(client) != null) {
       result = size.decrementAndGet() > 0;
     }
     return result;
