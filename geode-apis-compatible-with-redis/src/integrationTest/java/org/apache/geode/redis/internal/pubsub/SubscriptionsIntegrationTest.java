@@ -54,7 +54,7 @@ public class SubscriptionsIntegrationTest {
     };
   }
 
-  final Subscriptions subscriptions = new Subscriptions();
+  private final Subscriptions subscriptions = new Subscriptions();
 
   private int dummyCount;
 
