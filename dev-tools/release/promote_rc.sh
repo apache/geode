@@ -260,7 +260,23 @@ echo "============================================================"
 set -x
 cd ${GEODE}/docker
 sed -e '/www.apache.org.dyn.closer/d' -i.backup Dockerfile
-docker build .
+if ! docker build . ; then
+  echo retrying in 1 minute...
+  sleep 60
+  if ! docker build . ; then
+    echo retrying in 4 minutes...
+    sleep 240
+    if ! docker build . ; then
+      echo retrying in 7 minutes...
+      sleep 420
+      if ! docker build . ; then
+        echo "Hmm, the geode Dockerfile doesn't seem to want to build..."
+        echo "Try instrumenting it with some echo's to track down where it's failing..."
+        exit 7
+      fi
+    fi
+  fi
+fi
 mv Dockerfile.backup Dockerfile
 docker build -t apachegeode/geode:${VERSION} .
 [ -n "$LATER" ] || docker build -t apachegeode/geode:latest .
@@ -273,7 +289,7 @@ echo "Building Native docker image"
 echo "============================================================"
 set -x
 cd ${GEODE_NATIVE}/docker
-docker build .
+docker build . || docker build . || docker build .
 docker build -t apachegeode/geode-native-build:${VERSION} .
 [ -n "$LATER" ] || docker build -t apachegeode/geode-native-build:latest .
 set +x
