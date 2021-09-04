@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.pubsub;
 
 
+import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -149,9 +150,11 @@ public class SubscriptionsIntegrationTest {
     }
 
     new ConcurrentLoopingThreads(1,
-        i -> clients.forEach(c -> subscriptions.unsubscribe(stringToBytes("channel"), c)),
-        i -> clients.forEach(c -> subscriptions.unsubscribe(stringToBytes("channel"), c)))
-            .run();
+        i -> clients
+            .forEach(c -> subscriptions.unsubscribe(singletonList(stringToBytes("channel")), c)),
+        i -> clients
+            .forEach(c -> subscriptions.unsubscribe(singletonList(stringToBytes("channel")), c)))
+                .run();
 
     assertThat(subscriptions.size()).isEqualTo(0);
   }
