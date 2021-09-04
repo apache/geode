@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -64,6 +65,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
+  public static final Logger logger = LogService.getLogger();
 
   private MemberMap members;
   private final ScoreSet scoreSet = new ScoreSet();
@@ -391,7 +393,7 @@ public class RedisSortedSet extends AbstractRedisData {
     // need to add 1 to zcard() to ensure that if count > members.size(), we return a cursor of 0
     long maximumCapacity = 2L * Math.min(count, zcard() + 1);
     if (maximumCapacity > Integer.MAX_VALUE) {
-      LogService.getLogger().info(
+      logger.info(
           "The size of the data to be returned by zscan, {}, exceeds the maximum capacity of an array. A value for the ZSCAN COUNT argument less than {} should be used",
           maximumCapacity, Integer.MAX_VALUE / 2);
       throw new IllegalArgumentException("Requested array size exceeds VM limit");

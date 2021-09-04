@@ -34,6 +34,7 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -48,7 +49,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
-  protected final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
+  public static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
   protected final int DEFAULT_COUNT = 10;
 
   @Override
@@ -82,13 +83,13 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
 
       command.getCommandType().checkDeferredParameters(command, context);
       int count = DEFAULT_COUNT;
-      String globPattern = null;
+      byte[] globPattern = null;
 
       for (int i = 3; i < commandElems.size(); i = i + 2) {
         byte[] commandElemBytes = commandElems.get(i);
         if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
           commandElemBytes = commandElems.get(i + 1);
-          globPattern = bytesToString(commandElemBytes);
+          globPattern = commandElemBytes;
 
         } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
           commandElemBytes = commandElems.get(i + 1);
@@ -142,7 +143,8 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
   // Redis allows values for CURSOR up to UNSIGNED_LONG_CAPACITY, but internally it only makes sense
   // for us to use values up to Integer.MAX_VALUE, so safely narrow any cursor values to int here
 
-  protected int getIntCursor(String cursorString) {
+  @VisibleForTesting
+  public int getIntCursor(String cursorString) {
     BigInteger tempCursor;
 
     try {
