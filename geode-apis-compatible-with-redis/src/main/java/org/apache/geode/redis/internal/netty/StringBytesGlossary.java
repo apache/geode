@@ -111,7 +111,15 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bCROSSSLOT = stringToBytes("CROSSSLOT ");
 
+  @MakeImmutable
+  public static final byte[] bWRONGPASS = stringToBytes("WRONGPASS ");
+
   // ********** Redis Command constants **********
+
+  // AuthExecutor
+  @MakeImmutable
+  public static final String DEFAULT_USERNAME = "default";
+  public static final byte[] bDEFAULT_USERNAME = stringToBytes(DEFAULT_USERNAME);
 
   // ClusterExecutor
   @MakeImmutable

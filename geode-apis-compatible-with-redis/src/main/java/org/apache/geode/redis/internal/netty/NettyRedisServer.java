@@ -63,6 +63,7 @@ import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.security.SecurityManager;
 
 public class NettyRedisServer {
 
@@ -86,11 +87,12 @@ public class NettyRedisServer {
   private final Channel serverChannel;
   private final int serverPort;
   private final DistributedMember member;
+  private final SecurityManager securityManager;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
-      DistributedMember member) {
+      DistributedMember member, SecurityManager securityManager) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -98,6 +100,7 @@ public class NettyRedisServer {
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.member = member;
+    this.securityManager = securityManager;
 
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException(
@@ -154,9 +157,9 @@ public class NettyRedisServer {
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
-    String redisPassword = configSupplier.get().getRedisUsername();
-    final byte[] redisPasswordBytes =
-        StringUtils.isBlank(redisPassword) ? null : stringToBytes(redisPassword);
+    String redisUsername = configSupplier.get().getRedisUsername();
+    final byte[] redisUsernameBytes =
+        StringUtils.isBlank(redisUsername) ? null : stringToBytes(redisUsername);
 
     return new ChannelInitializer<SocketChannel>() {
       @Override
@@ -172,8 +175,8 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisPasswordBytes,
-                getPort(), member));
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsernameBytes,
+                getPort(), member, securityManager));
       }
     };
   }

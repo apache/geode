@@ -42,18 +42,75 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithSecurity(true);
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
         .hasMessageContaining("ERR wrong number of arguments for 'auth' command");
-    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH, "fhqwhgads", "extraArg"))
-        .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
+    assertThatThrownBy(
+        () -> jedis.sendCommand(Protocol.Command.AUTH, "username", "password", "extraArg"))
+            .hasMessageContaining("ERR syntax error");
   }
 
   @Test
   public void givenSecurity_clientCanAuthAfterFailedAuth_passes() throws Exception {
     setupCacheWithSecurity(true);
 
-    assertThatThrownBy(() -> jedis.auth("wrongpwd"))
+    assertThatThrownBy(() -> jedis.auth(USERNAME, "wrongpwd"))
         .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
 
-    assertThat(jedis.auth(USERNAME)).isEqualTo("OK");
+    assertThat(jedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurity_authorizedUser_passes() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThatThrownBy(() -> jedis.set("foo", "bar"))
+        .hasMessage("NOAUTH Authentication required.");
+
+    String res = jedis.auth(USERNAME, PASSWORD);
+    assertThat(res).isEqualTo("OK");
+
+    jedis.set("foo", "bar"); // No exception
+  }
+
+  @Test
+  public void givenSecurity_authWithCorrectPasswordForDefaultUser_passes() throws Exception {
+    setupCacheWithSecurity(true);
+
+    String res = jedis.auth(PASSWORD);
+    assertThat(res).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurity_authWithIncorrectPasswordForDefaultUser_fails() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThatThrownBy(() -> jedis.auth("wrong-password"))
+        .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
+  }
+
+  @Test
+  public void givenSecurity_separateClientRequest_doNotInteract() throws Exception {
+    setupCacheWithSecurity(true);
+    Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
+    Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
+
+    assertThat(authorizedJedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+    authorizedJedis.set("foo", "bar"); // No exception for authorized client
+    authorizedJedis.auth(USERNAME, PASSWORD);
+
+    assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
+        .hasMessage("NOAUTH Authentication required.");
+
+    authorizedJedis.close();
+    nonAuthorizedJedis.close();
+  }
+
+  @Test
+  public void givenSecurity_lettuceV6AuthClient_passes() throws Exception {
+    setupCacheWithSecurity(true);
+
+    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", USERNAME, getPort()));
+    RedisClient client = RedisClient.create(uri);
+
+    client.connect().sync().ping();
   }
 
   @Test
@@ -88,58 +145,7 @@ public abstract class AbstractAuthIntegrationTest {
   }
 
   @Test
-  public void givenSecurity_authorizedUser_passes() throws Exception {
-    setupCacheWithSecurity(true);
-
-    assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessage("NOAUTH Authentication required.");
-
-    String res = jedis.auth(USERNAME, PASSWORD);
-    assertThat(res).isEqualTo("OK");
-
-    jedis.set("foo", "bar"); // No exception
-  }
-
-  @Test
-  public void givenSecurity_separateClientRequest_passes() throws Exception {
-    setupCacheWithSecurity(true);
-    Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
-    Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
-
-    assertThat(authorizedJedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
-    authorizedJedis.set("foo", "bar"); // No exception for authorized client
-    authorizedJedis.auth(USERNAME, PASSWORD);
-
-    assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
-        .hasMessage("NOAUTH Authentication required.");
-
-    authorizedJedis.close();
-    nonAuthorizedJedis.close();
-  }
-
-  @Test
-  public void givenSecurity_lettuceAuthClient_withLettuceVersion6_passes() throws Exception {
-    setupCacheWithSecurity(true);
-
-    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", USERNAME, getPort()));
-    RedisClient client = RedisClient.create(uri);
-
-    client.connect().sync().ping();
-  }
-
-  @Test
-  public void givenNoSecurity_lettuceAuthClient_withLettuceVersion6_andDefaultUsername_passes()
-      throws Exception {
-    setupCacheWithoutSecurity();
-
-    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", USERNAME, getPort()));
-    RedisClient client = RedisClient.create(uri);
-
-    client.connect().sync().ping();
-  }
-
-  @Test
-  public void givenNoSecurity_lettuceAuthClient_withLettuceVersion6_defaultUsername_passes()
+  public void givenNoSecurity_lettuceV6AuthClient_defaultUsernameAndAnyPassword_passes()
       throws Exception {
     setupCacheWithoutSecurity();
 
@@ -148,11 +154,13 @@ public abstract class AbstractAuthIntegrationTest {
         RedisURI.create(String.format("redis://%s@localhost:%d", "not-default", getPort()));
     RedisClient client = RedisClient.create(uri);
 
-    client.connect().sync().ping();
+    assertThatThrownBy(() -> client.connect().sync().ping())
+        .hasRootCauseMessage(
+            "ERR AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?");
   }
 
   @Test
-  public void givenNoSecurity_lettuceAuthClient_withLettuceVersion6_andNonDefaultUsername_fails()
+  public void givenNoSecurity_lettuceV6AuthClient_andNonDefaultUsername_fails()
       throws Exception {
     setupCacheWithoutSecurity();
 

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -38,6 +37,7 @@ import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.security.SecurityManager;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -84,11 +84,12 @@ public class GeodeRedisServer {
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+    SecurityManager securityManager = cache.getSecurityService().getSecurityManager();
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        member);
+        member, securityManager);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
