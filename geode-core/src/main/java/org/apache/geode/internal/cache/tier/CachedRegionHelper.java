@@ -40,6 +40,13 @@ public class CachedRegionHelper {
     this.cache.getCancelCriterion().checkCancelInProgress(e);
   }
 
+  public void checkForceDisconnecting() {
+    if (this.cache.getDistributionManager() != null
+        && this.cache.getDistributionManager().isForceDisconnecting()) {
+      this.cache.getDistributionManager().getDistribution().getMembership().checkCancelled();
+    }
+  }
+
   public Region getRegion(String name) {
     return this.cache.getRegion(name);
   }

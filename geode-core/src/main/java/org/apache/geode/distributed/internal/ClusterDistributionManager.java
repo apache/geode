@@ -278,6 +278,8 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private volatile Throwable rootCause = null;
 
+  private volatile boolean isForceDisconnecting = false;
+
   /**
    * @see #closeInProgress
    */
@@ -2412,8 +2414,12 @@ public class ClusterDistributionManager implements DistributionManager {
         dm.getCache().saveCacheXmlForReconnect();
       }
     }
-  }
 
+    @Override
+    public void setForceDisconnecting(boolean forceDisconnecting) {
+      dm.setForceDisconnecting(forceDisconnecting);
+    }
+  }
 
   private abstract static class MemberEvent {
 
@@ -2649,6 +2655,16 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void setRootCause(Throwable t) {
     rootCause = t;
+  }
+
+  @Override
+  public void setForceDisconnecting(boolean isForceDisconnecting) {
+    this.isForceDisconnecting = isForceDisconnecting;
+  }
+
+  @Override
+  public boolean isForceDisconnecting() {
+    return isForceDisconnecting;
   }
 
   /*
