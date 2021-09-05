@@ -72,8 +72,8 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     return server;
   }
 
-  public GeodeRedisServerRule withPassword(String password) {
-    cacheFactory.set(REDIS_USERNAME, password);
+  public GeodeRedisServerRule withUsername(String username) {
+    cacheFactory.set(REDIS_USERNAME, username);
 
     return this;
   }

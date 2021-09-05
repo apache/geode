@@ -117,11 +117,11 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    this.unsupportedCommandsEnabled = allowUnsupportedCommands;
+    unsupportedCommandsEnabled = allowUnsupportedCommands;
   }
 
   public boolean allowUnsupportedCommands() {
-    return this.unsupportedCommandsEnabled;
+    return unsupportedCommandsEnabled;
   }
 
   public RegionProvider getRegionProvider() {

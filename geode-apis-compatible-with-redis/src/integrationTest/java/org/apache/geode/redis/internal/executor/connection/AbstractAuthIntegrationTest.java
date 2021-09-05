@@ -55,6 +55,7 @@ public abstract class AbstractAuthIntegrationTest {
         .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
 
     assertThat(jedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+    assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
   @Test
@@ -74,8 +75,8 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authWithCorrectPasswordForDefaultUser_passes() throws Exception {
     setupCacheWithSecurity(true);
 
-    String res = jedis.auth(PASSWORD);
-    assertThat(res).isEqualTo("OK");
+    assertThat(jedis.auth(PASSWORD)).isEqualTo("OK");
+    assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
   @Test
@@ -93,8 +94,7 @@ public abstract class AbstractAuthIntegrationTest {
     Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
 
     assertThat(authorizedJedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
-    authorizedJedis.set("foo", "bar"); // No exception for authorized client
-    authorizedJedis.auth(USERNAME, PASSWORD);
+    assertThat(authorizedJedis.set("foo", "bar")).isEqualTo("OK");
 
     assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
         .hasMessage("NOAUTH Authentication required.");
@@ -117,14 +117,16 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenNoSecurity_authWithDefaultUsernameAndEmptyPassword_passes() throws Exception {
     setupCacheWithoutSecurity();
 
-    jedis.auth(USERNAME, "");
+    assertThat(jedis.auth(USERNAME, "")).isEqualTo("OK");
+    assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
   @Test
   public void givenNoSecurity_authWithDefaultUsernameAndAnyPassword_passes() throws Exception {
     setupCacheWithoutSecurity();
 
-    jedis.auth(USERNAME, "wrong-password");
+    assertThat(jedis.auth(USERNAME, "wrong-password")).isEqualTo("OK");
+    assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
   @Test

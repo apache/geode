@@ -116,11 +116,6 @@ public class StringBytesGlossary {
 
   // ********** Redis Command constants **********
 
-  // AuthExecutor
-  @MakeImmutable
-  public static final String DEFAULT_USERNAME = "default";
-  public static final byte[] bDEFAULT_USERNAME = stringToBytes(DEFAULT_USERNAME);
-
   // ClusterExecutor
   @MakeImmutable
   public static final byte[] bINFO = stringToBytes("INFO");

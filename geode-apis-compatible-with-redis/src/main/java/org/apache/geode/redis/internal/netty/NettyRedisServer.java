@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.netty;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,7 +47,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -158,8 +156,6 @@ public class NettyRedisServer {
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
     String redisUsername = configSupplier.get().getRedisUsername();
-    final byte[] redisUsernameBytes =
-        StringUtils.isBlank(redisUsername) ? null : stringToBytes(redisUsername);
 
     return new ChannelInitializer<SocketChannel>() {
       @Override
@@ -175,7 +171,7 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsernameBytes,
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsername,
                 getPort(), member, securityManager));
       }
     };

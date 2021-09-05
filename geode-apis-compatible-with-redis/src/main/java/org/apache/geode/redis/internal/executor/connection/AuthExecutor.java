@@ -18,9 +18,6 @@ package org.apache.geode.redis.internal.executor.connection;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_AUTH_CALLED_WITHOUT_PASSWORD_CONFIGURED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_USERNAME_OR_PASSWORD;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.DEFAULT_USERNAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bDEFAULT_USERNAME;
 
 import java.util.List;
 import java.util.Properties;
@@ -44,11 +41,12 @@ public class AuthExecutor implements Executor {
       if (securityManager == null) {
         return RedisResponse.error(ERROR_AUTH_CALLED_WITHOUT_PASSWORD_CONFIGURED);
       }
-      props.setProperty("security-username", DEFAULT_USERNAME);
+      props.setProperty("security-username", context.getRedisUsername());
       props.setProperty("security-password", bytesToString(commandElems.get(1)));
     } else {
       if (securityManager == null) {
-        if (equalsIgnoreCaseBytes(commandElems.get(1), bDEFAULT_USERNAME)) {
+        String receivedUsername = new String(commandElems.get(1));
+        if (receivedUsername.equalsIgnoreCase(context.getRedisUsername())) {
           return RedisResponse.ok();
         } else {
           return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);

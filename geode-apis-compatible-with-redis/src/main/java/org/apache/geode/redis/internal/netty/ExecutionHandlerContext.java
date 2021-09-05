@@ -67,7 +67,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Client client;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
-  private final byte[] redisUsername;
+  private final String redisUsername;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
@@ -93,7 +93,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
-      byte[] username,
+      String username,
       int serverPort,
       DistributedMember member,
       SecurityManager securityManager) {
@@ -273,21 +273,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
    * to {@link GeodeRedisServer}.
    */
-  public byte[] getRedisUsername() {
-    return this.redisUsername;
+  public String getRedisUsername() {
+    return redisUsername;
   }
 
   /**
-   * Checker if user has authenticated themselves
+   * Check if the client has authenticated.
    *
-   * @return True if no authentication required or authentication complete, false otherwise
+   * @return True if no authentication required or authentication is complete, false otherwise
    */
   public boolean isAuthenticated() {
-    return principal != null;
+    return securityManager == null || principal != null;
   }
 
   /**
-   * Lets this context know the authentication is complete
+   * Sets an authenticated principal in the context. This implies that the connection has been
+   * successfully authenticated.
    */
   public void setPrincipal(Object principal) {
     this.principal = principal;
