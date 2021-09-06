@@ -31,7 +31,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
@@ -267,7 +266,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * Get the default username. This is the username that will be passed to the {@link SecurityManager} in response to
+   * Get the default username. This is the username that will be passed to the
+   * {@link SecurityManager} in response to
    * an {@code AUTH password} command.
    */
   public String getRedisUsername() {
