@@ -83,9 +83,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Default constructor for execution contexts.
-   *
-   * @param channel Channel used by this context, should be one to one
-   * @param username Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel,
       RegionProvider regionProvider,
@@ -270,8 +267,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * Get the authentication password, this will be same server wide. It is exposed here as opposed
-   * to {@link GeodeRedisServer}.
+   * Get the default username. This is the username that will be passed to the {@link SecurityManager} in response to
+   * an {@code AUTH password} command.
    */
   public String getRedisUsername() {
     return redisUsername;

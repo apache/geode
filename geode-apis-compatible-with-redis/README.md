@@ -14,7 +14,7 @@ Note: This feature is experimental and is subject to change in future releases o
 
 The Geode APIs compatible with Redis allow Geode to function as a drop-in replacement for a highly-available Redis data store, letting Redis applications take advantage of Geode’s scaling capabilities without changing their client code. 
 
-Redis clients connect to a Geode server in the same way they connect to a Redis server, using a hostname and a port number, with optional password authentication.
+Redis clients connect to a Geode server in the same way they connect to a Redis server, using a hostname and a port number, with optional username/password authentication.
 
 ### <a name="redis-commands"></a>Supported Redis Commands
 
@@ -31,11 +31,10 @@ start server \
   --name=<serverName> \
   --locators=<locatorPort> \
   --compatible-with-redis-port=<compatibleWithRedisPort> \
-  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
-  --compatible-with-redis-password=<compatibleWithRedisPassword>
+  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress>
 ```
 
-If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port` are included, a Geode server with APIs compatible with Redis will be started.
+If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-username`, or `compatible-with-redis-port` are included, a Geode server with APIs compatible with Redis will be started.
 
 - Replace `<serverName>` with the name of your server.
 
@@ -44,8 +43,6 @@ If any of the options `compatible-with-redis-bind-address`, `compatible-with-red
 - Replace `<compatibleWithRedisPort>` with the port that the Geode server listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
 
 - Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
-
-- Replace `<compatibleWithWithRedisPassword>` with the password clients use to authenticate.
 
 Your Geode instance should now be up and running (1 locator and 1 server) and ready to accept Redis 
     commands.  
@@ -56,14 +53,40 @@ Your Geode instance should now be up and running (1 locator and 1 server) and re
 To confirm the server is listening, in a separate terminal run:
 
 ```console
-redis-cli -h <compatibleWithRedisBindAddress> -p <compatibleWithRedisPort> -a <compatibleWithRedisPassword> ping
+redis-cli -h <compatibleWithRedisBindAddress> -p <compatibleWithRedisPort> ping
 ```
 
 - Replace `<compatibleWithRedisBindAddress>`, `<compatibleWithRedisPort>`, and `<compatibleWithRedisPassword>` with the same values as the server.
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-### <a name="adding-a-server"></a>Optional - Adding an additional Geode server with compatible with Redis APIS
+## <a name="security"></a>Security
+
+Security is implemented slightly differently to Redis. To enable security, a Security Manager needs to be configured. This Security Manager will authenticate `AUTH username password` commands. Instead of a default, system-wide password, a default username can be set using the `geode-compatible-with-redis-username` parameter. This username is used when `AUTH` commands are sent with only a password.
+
+For example, the following gfsh command will configure a `SimpleSecurityManager`:
+
+```console
+start server \
+  --name=<serverName> \
+  --locators=<locatorPort> \
+  --compatible-with-redis-port=<compatibleWithRedisPort> \
+  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
+  --compatible-with-redis-username=<compatibleWithRedisUsername> \
+  --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager
+```
+
+To confirm that the server is working, in a separate terminal run:
+
+```console
+redis-cli -h <compatibleWithRedisBindAddress> -p <compatibleWithRedisPort> --user <compatibleWithRedisUsername> -a <compatibleWithRedisUsername> ping
+```
+
+The `SimpleSecurityManager` is only to be used for demonstration purposes and will successfully authenticate if the provided password is the same as the user.
+
+Note that the `compatible-with-redis-username` property is only needed if `AUTH` commands are issued without a username. In this case, the Security Manager will need to respond to authentication requests using this username.
+
+### <a name="adding-a-server"></a>Optional - Adding an additional Geode server with compatible with Redis APIs
 If you’re interested in testing Geode scalability, in gfsh run the `start server` command again BUT 
 make sure you change the `--name=` and `--redis-port=` parameters. 
 
