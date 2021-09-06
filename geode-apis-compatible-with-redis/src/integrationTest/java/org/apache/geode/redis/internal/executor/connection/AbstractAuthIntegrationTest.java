@@ -114,6 +114,13 @@ public abstract class AbstractAuthIntegrationTest {
   }
 
   @Test
+  public void givenNoSecurity_accessWithoutAuth_passes() throws Exception {
+    setupCacheWithoutSecurity();
+
+    assertThat(jedis.ping()).isEqualTo("PONG");
+  }
+
+  @Test
   public void givenNoSecurity_authWithDefaultUsernameAndEmptyPassword_passes() throws Exception {
     setupCacheWithoutSecurity();
 
@@ -151,7 +158,6 @@ public abstract class AbstractAuthIntegrationTest {
       throws Exception {
     setupCacheWithoutSecurity();
 
-    // Implicitly sends the default username ('default') as part of the AUTH request
     RedisURI uri =
         RedisURI.create(String.format("redis://%s@localhost:%d", "not-default", getPort()));
     RedisClient client = RedisClient.create(uri);

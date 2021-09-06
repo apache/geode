@@ -68,11 +68,11 @@ public class AuthNativeRedisAcceptanceTest extends AbstractAuthIntegrationTest {
 
   @Override
   @Test
-  public void givenNoSecurity_lettuceV6AuthClient_defaultUsernameAndAnyPassword_passes()
-      throws Exception {
+  public void givenNoSecurity_lettuceV6AuthClient_defaultUsernameAndAnyPassword_passes() {
     setupCacheWithoutSecurity();
 
-    // Implicitly sends the default username ('default') as part of the AUTH request
+    // Implicitly sends the default username ('default') as part of the AUTH request. This is because lettuce
+    // detects a Redis 6 server.
     RedisURI uri =
         RedisURI.create(String.format("redis://%s@localhost:%d", "not-default", getPort()));
     RedisClient client = RedisClient.create(uri);

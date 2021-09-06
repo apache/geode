@@ -3532,7 +3532,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   @ConfigAttribute(type = String.class)
   String REDIS_USERNAME_NAME = REDIS_USERNAME;
-  String DEFAULT_REDIS_USERNAME = "";
+  String DEFAULT_REDIS_USERNAME = "default";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property

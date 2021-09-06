@@ -1964,7 +1964,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: Specifies the default username that the server uses when a client attempts
    * to authenticate using only a password. This requires a SecurityManager to be configured.
    * </p>
-   * <U>Default</U>: no username is set
+   * <U>Default</U>: default
    *
    * <p>
    * Experimental: Geode API compatible with Redis is subject to change in future releases
