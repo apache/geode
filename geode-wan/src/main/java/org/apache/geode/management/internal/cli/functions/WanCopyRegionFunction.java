@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -59,7 +60,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
@@ -67,7 +67,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.functions.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -94,7 +94,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * must be canceled and also sleeps for some time if necessary to adjust the
  * copy rate to the one passed as argument.
  */
-public class WanCopyRegionFunction implements InternalFunction<Object[]> {
+public class WanCopyRegionFunction extends CliFunction<Object[]> implements Declarable {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
@@ -140,24 +140,12 @@ public class WanCopyRegionFunction implements InternalFunction<Object[]> {
   }
 
   @Override
-  public final void execute(FunctionContext<Object[]> context) {
-    try {
-      context.getResultSender().lastResult(executeFunction(context));
-    } catch (EntityNotFoundException nfe) {
-      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), nfe));
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
-      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), e));
-    }
-  }
-
-  @Override
   public boolean isHA() {
     return false;
   }
 
-  @VisibleForTesting
-  CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+  @Override
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     final Object[] args = context.getArguments();
     if (args.length < 5) {
       throw new IllegalStateException(
