@@ -1274,7 +1274,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
       Socket socket = null;
       try {
         socket = serverSock.accept();
-
         crHelper.checkCancelInProgress(null); // throws
 
         // Optionally enable SO_KEEPALIVE in the OS network protocol.

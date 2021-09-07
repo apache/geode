@@ -304,14 +304,14 @@ public interface DistributionManager extends ReplySender {
   Throwable getRootCause();
 
   /**
-   * Set if DM is forced disconnecting
+   * Set if DM is being force disconnected
    *
-   * @param forceDisconnecting if DM is foreced disconnecting
+   * @param forceDisconnecting if DM is being force disconnected
    */
   default void setForceDisconnecting(boolean forceDisconnecting) {}
 
   /**
-   * return if DM is forced disconnecting
+   * return if DM is being force disconnected
    *
    * @return the underlying isForceDisconnecting
    */
