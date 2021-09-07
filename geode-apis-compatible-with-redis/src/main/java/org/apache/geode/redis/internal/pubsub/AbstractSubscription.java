@@ -53,7 +53,7 @@ public abstract class AbstractSubscription implements Subscription {
       readyForPublish.await();
     } catch (InterruptedException e) {
       // we must be shutting down or registration failed
-      Thread.interrupted();
+      Thread.currentThread().interrupt();
       running = false;
     }
 
