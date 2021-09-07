@@ -24,6 +24,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCROSSSLOT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_ARRAY;
@@ -230,7 +231,7 @@ public class Coder {
   }
 
   public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bWRONGPASS, error);
+    return getErrorResponse0(buffer, bBUSYKEY, error);
   }
 
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
