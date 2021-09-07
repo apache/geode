@@ -71,12 +71,15 @@ public class Member implements Comparable<Member> {
 
       for (Member member : bucket.getMembersHosting()) {
         if (!member.getMemberId().equals(this.getMemberId())) {
-
           String memberRedundancyZone =
               clusterDistributionManager.getRedundancyZone(member.memberId);
-
-          if (memberRedundancyZone.equals(myRedundancyZone)) {
-            notLastMemberOfZone = true;
+          if (memberRedundancyZone != null) {
+            if (memberRedundancyZone.equals(myRedundancyZone)) {
+              notLastMemberOfZone = true;
+            }
+          } else {
+            // Not using redundancy zones, so...
+            return RefusalReason.NONE;
           }
         }
       }

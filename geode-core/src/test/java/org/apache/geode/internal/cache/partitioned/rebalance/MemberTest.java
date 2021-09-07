@@ -81,4 +81,27 @@ public class MemberTest {
         .isEqualTo(RefusalReason.LAST_MEMBER_IN_ZONE);
   }
 
+
+  @Test
+  public void testCanDeleteWhenNoZone() {
+    doReturn(true).when(addressComparor).enforceUniqueZones();
+    doReturn(true).when(addressComparor).areSameZone(
+        ArgumentMatchers.any(InternalDistributedMember.class),
+        ArgumentMatchers.any(InternalDistributedMember.class));
+    Set<Member> membersHostingBucket = new HashSet<>();
+    Bucket bucket = mock(Bucket.class);
+    ClusterDistributionManager clusterDistributionManager = mock(ClusterDistributionManager.class);
+    Member memberUnderTest = new Member(addressComparor, memberId, false, false);
+    Member otherMember = new Member(addressComparor, otherMemberId, false, false);
+    membersHostingBucket.add(memberUnderTest);
+    membersHostingBucket.add(otherMember);
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+
+    Mockito.when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn(null);
+    Mockito.when(clusterDistributionManager.getRedundancyZone(otherMemberId)).thenReturn(null);
+
+    assertThat(memberUnderTest.canDelete(bucket, clusterDistributionManager))
+        .isEqualTo(RefusalReason.NONE);
+  }
+
 }
