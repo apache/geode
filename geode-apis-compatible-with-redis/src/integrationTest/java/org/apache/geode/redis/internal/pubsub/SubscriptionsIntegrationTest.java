@@ -25,46 +25,30 @@ import static org.mockito.Mockito.when;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SubscriptionsIntegrationTest {
 
   private static final int ITERATIONS = 1000;
 
-  @ClassRule
-  public static ExecutorServiceRule executor = new ExecutorServiceRule();
-
-  private Callable<Void> functionSpinner(Consumer<Void> consumer) {
-    return () -> {
-      for (int i = 0; i < ITERATIONS; i++) {
-        consumer.accept(null);
-        Thread.yield();
-      }
-      return null;
-    };
-  }
-
   private final Subscriptions subscriptions = new Subscriptions();
 
-  private int dummyCount;
+  private final AtomicInteger dummyCount = new AtomicInteger();
 
   private ChannelSubscription createDummy() {
-    dummyCount++;
+    int myDummyCount = dummyCount.incrementAndGet();
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     Client client = mock(Client.class);
     when(context.getClient()).thenReturn(client);
-    return new ChannelSubscription(stringToBytes("dummy-" + dummyCount), context, subscriptions);
+    return new ChannelSubscription(stringToBytes("dummy-" + myDummyCount), context, subscriptions);
   }
 
   @Test
@@ -81,7 +65,7 @@ public class SubscriptionsIntegrationTest {
   public void getChannelSubscriptionCount_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
         i -> subscriptions.add(createDummy()),
-        i -> subscriptions.getChannelSubscriptionCount(stringToBytes("dummy-" + dummyCount)))
+        i -> subscriptions.getChannelSubscriptionCount(stringToBytes("dummy-" + dummyCount.get())))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);

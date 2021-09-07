@@ -261,6 +261,14 @@ public class StringBytesGlossary {
 
   public static final byte[] bNEGATIVE_ZERO = stringToBytes("-0");
 
+  ///////////////////// Response Message Types /////////////////////////
+
+  @Immutable
+  public static final byte[] bSUBSCRIBE = Coder.stringToBytes("subscribe");
+
+  @Immutable
+  public static final byte[] bPSUBSCRIBE = Coder.stringToBytes("psubscribe");
+
   @Immutable
   public static final byte[] bMESSAGE = Coder.stringToBytes("message");
 

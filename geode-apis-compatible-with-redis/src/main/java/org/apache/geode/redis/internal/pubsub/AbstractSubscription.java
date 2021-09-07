@@ -21,18 +21,12 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import io.netty.channel.ChannelFutureListener;
-import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-
-
 public abstract class AbstractSubscription implements Subscription {
-  private static final Logger logger = LogService.getLogger();
-
   private final ExecutionHandlerContext context;
   private final byte[] subscriptionName;
   // Before we are ready to publish we need to make sure that the response to the
@@ -42,16 +36,6 @@ public abstract class AbstractSubscription implements Subscription {
 
   AbstractSubscription(ExecutionHandlerContext context,
       Subscriptions subscriptions, byte[] subscriptionName) {
-    if (context == null) {
-      throw new IllegalArgumentException("context cannot be null");
-    }
-    if (subscriptions == null) {
-      throw new IllegalArgumentException("subscriptions cannot be null");
-    }
-    if (subscriptionName == null) {
-      throw new IllegalArgumentException("subscriptionName cannot be null");
-    }
-
     this.context = context;
     this.subscriptionName = subscriptionName;
 

@@ -35,6 +35,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  */
 public class Subscriptions {
 
+  private static final Collection<Collection<?>> EMPTY_UNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(true, null, 0));
+  private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(false, null, 0));
+
   private final SubscriptionManager<ChannelSubscription> channelSubscriptions =
       new ChannelSubscriptionManager();
   private final SubscriptionManager<PatternSubscription> patternSubscriptions =
@@ -44,7 +49,8 @@ public class Subscriptions {
     return channelSubscriptions.getSubscriptionCount(channel);
   }
 
-  public int getPatternSubscriptionCount(byte[] channel) {
+  @VisibleForTesting
+  int getPatternSubscriptionCount(byte[] channel) {
     return patternSubscriptions.getSubscriptionCount(channel);
   }
 
@@ -144,11 +150,6 @@ public class Subscriptions {
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, patternBytes);
   }
-
-  private static final Collection<Collection<?>> EMPTY_UNSUBSCRIBE_RESULT =
-      singletonList(createUnsubscribeItem(true, null, 0));
-  private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
-      singletonList(createUnsubscribeItem(false, null, 0));
 
   public Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client) {
     if (channels.isEmpty()) {

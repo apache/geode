@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -28,17 +27,11 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class PunsubscribeExecutor extends AbstractExecutor {
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> patternNames = extractPatternNames(command);
+    List<byte[]> patternNames = command.getCommandArguments();
     Client client = context.getClient();
     Collection<Collection<?>> response = context.getPubSub().punsubscribe(patternNames, client);
     return RedisResponse.flattenedArray(response);
   }
-
-  private List<byte[]> extractPatternNames(Command command) {
-    return command.getProcessedCommand().stream().skip(1).collect(Collectors.toList());
-  }
-
 }

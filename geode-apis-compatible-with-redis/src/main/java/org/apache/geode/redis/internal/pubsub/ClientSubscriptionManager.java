@@ -29,9 +29,9 @@ interface ClientSubscriptionManager<S> {
   /**
    * Call the given action for each subscription this manager
    * has that matches the given channel.
-   * Note that some manager's support a pattern
+   * Note that some managers support a pattern
    * that the channel needs to match.
-   * For manager's without a pattern all subscriptions match.
+   * For managers without a pattern all subscriptions match.
    */
   void forEachSubscription(String channel, Consumer<Subscription> action);
 
@@ -43,9 +43,9 @@ interface ClientSubscriptionManager<S> {
   /**
    * returns how many subscriptions this manager has
    * that match the given channel.
-   * Note that some manager's support a pattern
+   * Note that some managers support a pattern
    * that the channel needs to match.
-   * For manager's without a pattern all subscriptions match.
+   * For managers without a pattern all subscriptions match.
    */
   int getSubscriptionCount(String channel);
 
