@@ -109,6 +109,8 @@ public class StringBytesGlossary {
   public static final byte[] bSLOTS = stringToBytes("SLOTS");
   @MakeImmutable
   public static final byte[] bNODES = stringToBytes("NODES");
+  @MakeImmutable
+  public static final byte[] bKEYSLOT = stringToBytes("KEYSLOT");
 
   // ScanExecutor, HScanExecutor and SScanExecutor
   @MakeImmutable

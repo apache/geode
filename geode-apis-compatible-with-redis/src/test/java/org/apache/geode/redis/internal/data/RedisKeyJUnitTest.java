@@ -26,6 +26,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 
 public class RedisKeyJUnitTest {
@@ -39,43 +40,45 @@ public class RedisKeyJUnitTest {
   @Test
   public void testRoutingId_withHashtags() {
     RedisKey key = new RedisKey(stringToBytes("name{user1000}"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("user1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("{user1000"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("{user1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("}user1000{"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("}user1000{"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("}user1000{") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("user{}1000"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user{}1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("user{}1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("user}{1000"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user}{1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("user}{1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("{user1000}}bar"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("user1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("foo{user1000}{bar}"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("user1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("user1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("foo{}{user1000}"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("foo{}{user1000}"));
+    assertThat(key.getSlot())
+        .isEqualTo(CRC16.calculate("foo{}{user1000}") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("{}{user1000}"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{}{user1000}"));
+    assertThat(key.getSlot())
+        .isEqualTo(CRC16.calculate("{}{user1000}") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(stringToBytes("foo{{user1000}}bar"));
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate("{user1000"));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("{user1000") % RegionProvider.REDIS_SLOTS);
 
     key = new RedisKey(new byte[] {});
-    assertThat(key.getCrc16()).isEqualTo(CRC16.calculate(""));
+    assertThat(key.getSlot()).isEqualTo(CRC16.calculate("") % RegionProvider.REDIS_SLOTS);
   }
 
   @Test
   public void testSerialization_withPositiveSignedShortCRC16() throws Exception {
     RedisKey keyOut = new RedisKey(stringToBytes("012345"));
-    assertThat((short) keyOut.getCrc16()).isPositive();
+    assertThat((short) keyOut.getSlot()).isPositive();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
     DataSerializer.writeObject(keyOut, out);
@@ -84,18 +87,4 @@ public class RedisKeyJUnitTest {
     RedisKey keyIn = DataSerializer.readObject(in);
     assertThat(keyIn).isEqualTo(keyOut);
   }
-
-  @Test
-  public void testSerialization_withNegativeSignedShortCRC16() throws Exception {
-    RedisKey keyOut = new RedisKey(stringToBytes("k2"));
-    assertThat((short) keyOut.getCrc16()).isNegative();
-
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    DataSerializer.writeObject(keyOut, out);
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-
-    RedisKey keyIn = DataSerializer.readObject(in);
-    assertThat(keyIn).isEqualTo(keyOut);
-  }
-
 }

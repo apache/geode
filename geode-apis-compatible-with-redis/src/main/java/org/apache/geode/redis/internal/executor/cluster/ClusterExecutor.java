@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUC
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSLOT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNODES;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSLOTS;
 
@@ -36,6 +37,7 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.redis.internal.SlotAdvisor;
+import org.apache.geode.redis.internal.data.KeyHashUtil;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -58,6 +60,8 @@ public class ClusterExecutor extends AbstractExecutor {
       return getNodes(context);
     } else if (equalsIgnoreCaseBytes(bytes, bSLOTS)) {
       return getSlots(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bKEYSLOT)) {
+      return RedisResponse.integer(KeyHashUtil.slotForKey(args.get(2)));
     } else {
       return RedisResponse.error(
           String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
