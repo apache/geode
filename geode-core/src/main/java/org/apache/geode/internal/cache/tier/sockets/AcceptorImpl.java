@@ -1275,10 +1275,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
       try {
         socket = serverSock.accept();
 
-        // First check if cache is closing. If not, double check if the membership is being force
-        // disconnected. GMSMembership.forceDisconnect() called
-        // services.getCancelCriterion().cancel(reason) at the beginning, it should prevent creating
-        // new ServerConnection.
         crHelper.checkCancelInProgress(null); // throws
 
         // Optionally enable SO_KEEPALIVE in the OS network protocol.

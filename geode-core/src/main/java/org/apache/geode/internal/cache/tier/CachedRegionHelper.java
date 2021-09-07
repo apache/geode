@@ -38,10 +38,13 @@ public class CachedRegionHelper {
   }
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
+    // First check if then cache is closing. Then double check if the membership is being force
+    // disconnected.
+    // We should not create a new server connection when membership is being force disconnected.
     this.cache.getCancelCriterion().checkCancelInProgress(e);
     if (this.cache.getDistributionManager() != null
         && this.cache.getDistributionManager().isForceDisconnecting()) {
-      throw new ForcedDisconnectException("The connection is forced disconnecting", e);
+      throw new ForcedDisconnectException("The membership is being force disconnected", e);
     }
   }
 
