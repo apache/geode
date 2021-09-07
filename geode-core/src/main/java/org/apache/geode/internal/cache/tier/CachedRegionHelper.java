@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -38,12 +39,9 @@ public class CachedRegionHelper {
 
   public void checkCancelInProgress(Throwable e) throws CancelException {
     this.cache.getCancelCriterion().checkCancelInProgress(e);
-  }
-
-  public void checkForceDisconnecting() {
     if (this.cache.getDistributionManager() != null
         && this.cache.getDistributionManager().isForceDisconnecting()) {
-      this.cache.getDistributionManager().getDistribution().getMembership().checkCancelled();
+      throw new ForcedDisconnectException("The connection is forced disconnecting", e);
     }
   }
 

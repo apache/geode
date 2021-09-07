@@ -1280,7 +1280,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
         // services.getCancelCriterion().cancel(reason) at the beginning, it should prevent creating
         // new ServerConnection.
         crHelper.checkCancelInProgress(null); // throws
-        crHelper.checkForceDisconnecting();
 
         // Optionally enable SO_KEEPALIVE in the OS network protocol.
         socket.setKeepAlive(SocketCreator.ENABLE_TCP_KEEP_ALIVE);
