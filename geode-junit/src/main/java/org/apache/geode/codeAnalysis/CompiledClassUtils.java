@@ -124,6 +124,8 @@ public class CompiledClassUtils {
           }
         } catch (IOException e) {
           System.err.println("Exception while parsing " + entry.getName() + ": " + e.getMessage());
+        } catch (NoClassDefFoundError e) {
+          throw new RuntimeException("NoClassDefFoundError while parsing " + entry.getName(), e);
         }
       }
     }

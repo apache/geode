@@ -21,6 +21,9 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
+
+  compile(project(':geode-serialization'))
+
   compile('org.apache.commons:commons-lang3')
   compile('com.fasterxml.jackson.core:jackson-databind')
   compile('com.fasterxml.jackson.core:jackson-core')
@@ -40,4 +43,9 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
 }
