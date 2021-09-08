@@ -19,6 +19,9 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,13 +29,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
 @SuppressWarnings({"serial", "unused", "WeakerAccess", "NumericCastThatLosesPrecision"})
 public class RandomRule extends SecureRandom implements GsRandom, SerializableTestRule {
 
-  private final AtomicReference<SecureRandom> random = new AtomicReference<>();
+  private final transient AtomicReference<SecureRandom> random = new AtomicReference<>();
   private final byte[] seed;
 
   public RandomRule() {
@@ -62,11 +66,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
       @Override
       public void evaluate() throws Throwable {
         before();
-        try {
-          base.evaluate();
-        } finally {
-          // nothing
-        }
+        base.evaluate();
       }
     };
   }
@@ -258,6 +258,11 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
     return requireNonEmpty(list).get(nextInt(0, list.size() - 1));
   }
 
+  @VisibleForTesting
+  byte[] getSeed() {
+    return seed == null ? null : seed.clone();
+  }
+
   private SecureRandom newRandom() {
     if (seed == null) {
       return new SecureRandom();
@@ -275,5 +280,32 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
   private <T> List<T> requireNonNulls(List<T> list) {
     list.forEach(t -> requireNonNull(t));
     return list;
+  }
+
+  private void readObject(ObjectInputStream stream) throws InvalidObjectException {
+    throw new InvalidObjectException("SerializationProxy required");
+  }
+
+  protected Object writeReplace() {
+    return new SerializationProxy(this);
+  }
+
+  /**
+   * Serialization proxy for {@code RandomRule}.
+   */
+  @SuppressWarnings("serial")
+  private static class SerializationProxy implements Serializable {
+
+    private final byte[] seed;
+
+    private SerializationProxy(RandomRule instance) {
+      seed = instance.getSeed();
+    }
+
+    protected Object readResolve() {
+      RandomRule randomRule = seed == null ? new RandomRule() : new RandomRule(seed.clone());
+      randomRule.before();
+      return randomRule;
+    }
   }
 }

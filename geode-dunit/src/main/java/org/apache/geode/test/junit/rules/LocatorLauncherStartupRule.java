@@ -31,10 +31,11 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class LocatorLauncherStartupRule extends SerializableExternalResource {
   private LocatorLauncher launcher;
-  private final TemporaryFolder temp = new TemporaryFolder();
+  private final TemporaryFolder temp = new SerializableTemporaryFolder();
   private final Properties properties = defaultProperties();
   private boolean autoStart;
   private UnaryOperator<LocatorLauncher.Builder> builderOperator;
