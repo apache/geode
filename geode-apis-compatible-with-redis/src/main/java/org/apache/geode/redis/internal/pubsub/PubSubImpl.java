@@ -86,15 +86,24 @@ public class PubSubImpl implements PubSub {
 
   public PubSubImpl(Subscriptions subscriptions) {
     this.subscriptions = subscriptions;
+    executor = createExecutorService();
+    registerPublishFunction();
+  }
 
+  @VisibleForTesting
+  PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
+    this.subscriptions = subscriptions;
+    executor = executorService;
+    // since this is used for unit testing, do not call registerPublishFunction
+  }
+
+  private static ExecutorService createExecutorService() {
     ThreadFactory threadFactory = new LoggingThreadFactory("GeodeRedisServer-Publish-", true);
     BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
     ExecutorService innerPublishExecutor = new ThreadPoolExecutor(1, MAX_PUBLISH_THREAD_COUNT,
         60, TimeUnit.SECONDS, workQueue, threadFactory);
 
-    executor = new StripedExecutorService(innerPublishExecutor);
-
-    registerPublishFunction();
+    return new StripedExecutorService(innerPublishExecutor);
   }
 
   @VisibleForTesting
