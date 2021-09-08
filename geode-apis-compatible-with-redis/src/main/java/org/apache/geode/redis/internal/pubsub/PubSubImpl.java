@@ -41,7 +41,6 @@ import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.StripedExecutorService;
 import org.apache.geode.redis.internal.services.StripedRunnable;
 
@@ -134,13 +133,13 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context) {
-    return subscriptions.subscribe(channel, context);
+  public SubscribeResult subscribe(byte[] channel, Client client) {
+    return subscriptions.subscribe(channel, client);
   }
 
   @Override
-  public SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context) {
-    return subscriptions.psubscribe(pattern, context);
+  public SubscribeResult psubscribe(byte[] pattern, Client client) {
+    return subscriptions.psubscribe(pattern, client);
   }
 
   private void registerPublishFunction() {

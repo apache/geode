@@ -21,16 +21,16 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.netty.Client;
 
 /**
  * This class represents a single channel subscription as created by the SUBSCRIBE command
  */
 class ChannelSubscription extends AbstractSubscription {
 
-  public ChannelSubscription(byte[] channel, ExecutionHandlerContext context,
+  public ChannelSubscription(byte[] channel, Client client,
       Subscriptions subscriptions) {
-    super(context, subscriptions, channel);
+    super(client, subscriptions, channel);
   }
 
   @Override

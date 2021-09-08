@@ -48,7 +48,7 @@ public class SubscriptionsIntegrationTest {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     Client client = mock(Client.class);
     when(context.getClient()).thenReturn(client);
-    return new ChannelSubscription(stringToBytes("dummy-" + myDummyCount), context, subscriptions);
+    return new ChannelSubscription(stringToBytes("dummy-" + myDummyCount), client, subscriptions);
   }
 
   @Test
@@ -103,7 +103,7 @@ public class SubscriptionsIntegrationTest {
       clients.add(client);
       ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
       when(context.getClient()).thenReturn(client);
-      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), context,
+      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client,
           subscriptions);
       client.addChannelSubscription(subscription.getSubscriptionName());
       subscriptions.add(subscription);
@@ -127,7 +127,7 @@ public class SubscriptionsIntegrationTest {
       clients.add(client);
       ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
       when(context.getClient()).thenReturn(client);
-      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), context,
+      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client,
           subscriptions);
       client.addChannelSubscription(subscription.getSubscriptionName());
       subscriptions.add(subscription);

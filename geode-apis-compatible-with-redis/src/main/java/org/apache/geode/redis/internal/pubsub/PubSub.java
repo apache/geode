@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
@@ -49,19 +48,19 @@ public interface PubSub {
    * Subscribe to a channel
    *
    * @param channel to subscribe to
-   * @param context ExecutionHandlerContext which will handle the client response
+   * @param client which will handle the client response
    * @return the result of the subscribe
    */
-  SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context);
+  SubscribeResult subscribe(byte[] channel, Client client);
 
   /**
    * Subscribe to a pattern
    *
    * @param pattern glob pattern to subscribe to
-   * @param context ExecutionHandlerContext which will handle the client response
+   * @param client which will handle the client response
    * @return the result of the subscribe
    */
-  SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context);
+  SubscribeResult psubscribe(byte[] pattern, Client client);
 
   /**
    * Unsubscribe a client from a channel

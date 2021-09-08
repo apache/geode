@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Class that manages both channel and pattern subscriptions.
@@ -120,24 +119,22 @@ public class Subscriptions {
     return getChannelSubscriptionCount() + getPatternSubscriptionCount();
   }
 
-  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context) {
-    final Client client = context.getClient();
+  public SubscribeResult subscribe(byte[] channel, Client client) {
     ChannelSubscription createdSubscription = null;
     if (client.addChannelSubscription(channel)) {
-      createdSubscription = new ChannelSubscription(channel, context, this);
+      createdSubscription = new ChannelSubscription(channel, client, this);
       add(createdSubscription);
     }
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
-  public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context) {
-    final Client client = context.getClient();
+  public SubscribeResult psubscribe(byte[] patternBytes, Client client) {
     PatternSubscription createdSubscription = null;
     if (client.addPatternSubscription(patternBytes)) {
       boolean added = false;
       try {
-        createdSubscription = new PatternSubscription(patternBytes, context, this);
+        createdSubscription = new PatternSubscription(patternBytes, client, this);
         add(createdSubscription);
         added = true;
       } finally {

@@ -20,23 +20,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSubscription implements Subscription {
-  private final ExecutionHandlerContext context;
+  private final Client client;
   private final byte[] subscriptionName;
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
   private boolean running = true;
 
-  AbstractSubscription(ExecutionHandlerContext context,
+  AbstractSubscription(Client client,
       Subscriptions subscriptions, byte[] subscriptionName) {
-    this.context = context;
+    this.client = client;
     this.subscriptionName = subscriptionName;
 
     getClient().addShutdownListener(future -> shutdown(subscriptions));
@@ -58,18 +58,19 @@ public abstract class AbstractSubscription implements Subscription {
     }
 
     if (running) {
-      context.writeToChannel(constructResponse(channel, message))
-          .addListener((ChannelFutureListener) f -> {
-            if (f.cause() != null) {
-              shutdown(subscriptions);
-            }
-          });
+      ChannelFuture writeResult = getClient().writeToChannel(constructResponse(channel, message));
+      System.out.println("writeREsult=" + writeResult);
+      writeResult.addListener((ChannelFutureListener) f -> {
+        if (f.cause() != null) {
+          shutdown(subscriptions);
+        }
+      });
     }
   }
 
   @Override
   public Client getClient() {
-    return context.getClient();
+    return client;
   }
 
   @Override

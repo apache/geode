@@ -22,15 +22,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 
 
 public class Client {
+  private static final Logger logger = LogService.getLogger();
+
   private final Channel channel;
+  private final ByteBufAllocator byteBufAllocator;
   private final Set<byte[]> channelSubscriptions =
       new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
   private final Set<byte[]> patternSubscriptions =
@@ -38,6 +50,11 @@ public class Client {
 
   public Client(Channel remoteAddress) {
     this.channel = remoteAddress;
+    this.byteBufAllocator = this.channel.alloc();
+  }
+
+  public String getRemoteAddress() {
+    return channel.remoteAddress().toString();
   }
 
   @Override
@@ -108,4 +125,26 @@ public class Client {
     }
     return new ArrayList<>(patternSubscriptions);
   }
+
+  public ChannelFuture writeToChannel(RedisResponse response) {
+    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
+        .addListener((ChannelFutureListener) f -> {
+          response.afterWrite();
+          logResponse(response, channel.remoteAddress(), f.cause());
+        });
+  }
+
+  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
+    if (logger.isDebugEnabled() && response != null) {
+      ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
+      if (cause == null) {
+        logger.debug("Redis command returned: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
+      } else {
+        logger.debug("Redis command FAILED to return: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
+      }
+    }
+  }
+
 }
