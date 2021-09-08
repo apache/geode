@@ -15,6 +15,9 @@
 
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.junit.rules.MemberStarterRule.getSSLProperties;
 
 import java.io.File;
@@ -32,7 +35,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class LocatorLauncherStartupRule extends SerializableExternalResource {
   private LocatorLauncher launcher;
   private final TemporaryFolder temp = new TemporaryFolder();
-  private final Properties properties = new Properties();
+  private final Properties properties = defaultProperties();
   private boolean autoStart;
   private UnaryOperator<LocatorLauncher.Builder> builderOperator;
 
@@ -106,5 +109,16 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
       launcher.stop();
     }
     temp.delete();
+  }
+
+  /**
+   * By default, assign available HTTP and JMX ports.
+   */
+  private static Properties defaultProperties() {
+    Properties props = new Properties();
+    int[] ports = getRandomAvailableTCPPorts(2);
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(ports[0]));
+    props.setProperty(JMX_MANAGER_PORT, String.valueOf(ports[1]));
+    return props;
   }
 }
