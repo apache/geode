@@ -1,2 +1,0 @@
-# e.g.,
-#org/apache/geode/cache/query/CqAttributesFactory

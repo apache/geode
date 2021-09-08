@@ -29,6 +29,8 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
+  compile(project(':geode-serialization'))
+
   compile('org.springframework.security:spring-security-core')
   compile('javax.servlet:javax.servlet-api')
   compile('mx4j:mx4j') {
@@ -121,6 +123,11 @@ dependencies {
   integrationTestCompile('org.powermock:powermock-api-mockito2')
   integrationTestCompile('org.springframework:spring-test')
 
+
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.hamcrest:hamcrest-core')
+  integrationTestCompile('org.hamcrest:hamcrest-library')
+  integrationTestCompile('org.hamcrest:hamcrest-all')
 
   uiTestRuntime(project(':geode-core'))
   uiTestCompile(project(':geode-junit')) {

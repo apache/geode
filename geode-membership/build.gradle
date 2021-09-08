@@ -49,6 +49,7 @@ dependencies {
 
     testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
+    integrationTestCompile(project(':geode-core'))
     integrationTestCompile(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
