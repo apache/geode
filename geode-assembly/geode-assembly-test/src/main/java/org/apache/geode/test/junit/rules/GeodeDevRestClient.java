@@ -156,7 +156,10 @@ public class GeodeDevRestClient {
 
       return clientBuilder.build().execute(host, request, clientContext);
     } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
+      throw new RuntimeException(
+          String.format("Request %s' with username '%s' password '%s' failed", request, username,
+              password),
+          e);
     }
   }
 
