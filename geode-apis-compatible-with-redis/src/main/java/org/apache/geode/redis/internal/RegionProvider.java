@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -121,11 +122,13 @@ public class RegionProvider {
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
     partitionedRegion = (PartitionedRegion) dataRegion;
 
-    stringCommands = new RedisStringCommandsFunctionExecutor(this);
-    setCommands = new RedisSetCommandsFunctionExecutor(this);
-    hashCommands = new RedisHashCommandsFunctionExecutor(this);
-    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this);
-    keyCommands = new RedisKeyCommandsFunctionExecutor(this);
+    CacheTransactionManager txManager = cache.getCacheTransactionManager();
+
+    stringCommands = new RedisStringCommandsFunctionExecutor(this, txManager);
+    setCommands = new RedisSetCommandsFunctionExecutor(this, txManager);
+    hashCommands = new RedisHashCommandsFunctionExecutor(this, txManager);
+    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this, txManager);
+    keyCommands = new RedisKeyCommandsFunctionExecutor(this, txManager);
 
     slotAdvisor = new SlotAdvisor(dataRegion, cache.getMyId());
   }
@@ -300,14 +303,6 @@ public class RegionProvider {
   @SuppressWarnings("unchecked")
   public Set<DistributedMember> getRemoteRegionMembers() {
     return (Set<DistributedMember>) (Set<?>) partitionedRegion.getRegionAdvisor().adviseDataStore();
-  }
-
-  /**
-   * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
-   * Note that the list of keys is sorted in place.
-   */
-  public void orderForLocking(List<RedisKey> keys) {
-    keys.sort(stripedCoordinator::compareStripes);
   }
 
   /**

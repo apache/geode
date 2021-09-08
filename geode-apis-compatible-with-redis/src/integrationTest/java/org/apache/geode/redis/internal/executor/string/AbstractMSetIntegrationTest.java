@@ -14,39 +14,31 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private final String hashTag = "{111}";
-  private static final int ITERATION_COUNT = 4000;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String HASHTAG = "{111}";
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -71,9 +63,16 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
     assertThatThrownBy(
-        () -> jedis.sendCommand(hashTag, Protocol.Command.MSET, "key1" + hashTag, "value1",
-            "key2" + hashTag, "value2", "key3" + hashTag))
+        () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSET, "key1" + HASHTAG, "value1",
+            "key2" + HASHTAG, "value2", "key3" + HASHTAG))
                 .hasMessageContaining("ERR wrong number of arguments");
+  }
+
+  @Test
+  public void givenDifferentSlots_returnsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key1", Protocol.Command.MSET, "key1", "value1", "key2", "value2"))
+            .hasMessageContaining("CROSSSLOT Keys in request don't hash to the same slot");
   }
 
   @Test
@@ -83,7 +82,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
     String[] keys = new String[keyCount];
     String[] vals = new String[keyCount];
     for (int i = 0; i < keyCount; i++) {
-      String key = randString() + hashTag;
+      String key = randString() + HASHTAG;
       String val = randString();
       keyvals[2 * i] = key;
       keyvals[2 * i + 1] = val;
@@ -98,76 +97,37 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  @Ignore("GEODE-8192")
-  public void testMSet_concurrentInstances_mustBeAtomic()
-      throws InterruptedException, ExecutionException {
-    String keyBaseName = "MSETBASE";
-    String val1BaseName = "FIRSTVALBASE";
-    String val2BaseName = "SECONDVALBASE";
-    String[] keysAndVals1 = new String[(ITERATION_COUNT * 2)];
-    String[] keysAndVals2 = new String[(ITERATION_COUNT * 2)];
-    String[] keys = new String[ITERATION_COUNT];
-    String[] vals1 = new String[ITERATION_COUNT];
-    String[] vals2 = new String[ITERATION_COUNT];
-    String[] expectedVals;
+  public void testMSet_concurrentInstances_mustBeAtomic() {
+    int KEY_COUNT = 5000;
+    String[] keys = new String[KEY_COUNT];
 
-    SetUpArraysForConcurrentMSet(keyBaseName,
-        val1BaseName, val2BaseName,
-        keysAndVals1, keysAndVals2,
-        keys,
-        vals1, vals2);
-
-    RunTwoMSetsInParallelThreadsAndVerifyReturnValue(keysAndVals1, keysAndVals2);
-
-    List<String> actualVals = jedis.mget(keys);
-    expectedVals = DetermineWhichMSetWonTheRace(vals1, vals2, actualVals);
-
-    assertThat(actualVals.toArray(new String[] {})).contains(expectedVals);
-  }
-
-  private void SetUpArraysForConcurrentMSet(String keyBaseName, String val1BaseName,
-      String val2BaseName, String[] keysAndVals1,
-      String[] keysAndVals2, String[] keys, String[] vals1,
-      String[] vals2) {
-    for (int i = 0; i < ITERATION_COUNT; i++) {
-      String key = keyBaseName + i + hashTag;
-      String value1 = val1BaseName + i;
-      String value2 = val2BaseName + i;
-      keysAndVals1[2 * i] = key;
-      keysAndVals1[2 * i + 1] = value1;
-      keysAndVals2[2 * i] = key;
-      keysAndVals2[2 * i + 1] = value2;
-      keys[i] = key;
-      vals1[i] = value1;
-      vals2[i] = value2;
+    for (int i = 0; i < keys.length; i++) {
+      keys[i] = HASHTAG + "key" + i;
     }
+    String[] keysAndValues1 = makeKeysAndValues(keys, "valueOne");
+    String[] keysAndValues2 = makeKeysAndValues(keys, "valueTwo");
+
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.mset(keysAndValues1),
+        i -> jedis.mset(keysAndValues2))
+            .runWithAction(() -> {
+              int count = 0;
+              List<String> values = jedis.mget(keys);
+              for (String v : values) {
+                count += v.startsWith("valueOne") ? 1 : -1;
+              }
+              assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
+            });
   }
 
-  private void RunTwoMSetsInParallelThreadsAndVerifyReturnValue(String[] keysAndVals1,
-      String[] keysAndVals2)
-      throws InterruptedException, ExecutionException {
-    CountDownLatch latch = new CountDownLatch(1);
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<String> callable1 = () -> jedis.mset(keysAndVals1);
-    Callable<String> callable2 = () -> jedis.mset(keysAndVals2);
-    Future<String> future1 = pool.submit(callable1);
-    Future<String> future2 = pool.submit(callable2);
-
-    latch.countDown();
-
-    assertThat(future1.get()).isEqualTo("OK");
-    assertThat(future2.get()).isEqualTo("OK");
-  }
-
-  private String[] DetermineWhichMSetWonTheRace(String[] vals1, String[] vals2,
-      List<String> actualVals) {
-    String[] expectedVals;
-    if (actualVals.get(0).equals("FIRSTVALBASE0")) {
-      expectedVals = vals1;
-    } else {
-      expectedVals = vals2;
+  private String[] makeKeysAndValues(String[] keys, String valueBase) {
+    String[] keysValues = new String[keys.length * 2];
+    for (int i = 0; i < keys.length * 2; i += 2) {
+      keysValues[i] = keys[i / 2];
+      keysValues[i + 1] = valueBase + i;
     }
-    return expectedVals;
+
+    return keysValues;
   }
 
   private String randString() {

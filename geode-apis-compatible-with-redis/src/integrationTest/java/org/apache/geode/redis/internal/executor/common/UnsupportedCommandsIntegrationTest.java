@@ -66,11 +66,11 @@ public class UnsupportedCommandsIntegrationTest {
     final String KEY = "key";
     final String NEW_VALUE = "changed value";
     final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, "MSET", "`" + KEY + "`", NEW_VALUE);
+        String.format(ERROR_UNKNOWN_COMMAND, "BITCOUNT", "`" + KEY + "`", NEW_VALUE);
     jedis.set(KEY, "value");
 
     assertThatThrownBy(
-        () -> jedis.mset(KEY, NEW_VALUE))
+        () -> jedis.bitcount(KEY))
             .hasMessageContaining(EXPECTED_ERROR_MSG);
   }
 

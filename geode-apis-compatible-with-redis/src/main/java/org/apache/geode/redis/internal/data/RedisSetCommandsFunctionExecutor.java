@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
@@ -36,8 +37,9 @@ import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisSetCommands {
 
-  public RedisSetCommandsFunctionExecutor(RegionProvider regionProvider) {
-    super(regionProvider);
+  public RedisSetCommandsFunctionExecutor(RegionProvider regionProvider,
+      CacheTransactionManager txManager) {
+    super(regionProvider, txManager);
   }
 
   private RedisSet getRedisSet(RedisKey key, boolean updateStats) {

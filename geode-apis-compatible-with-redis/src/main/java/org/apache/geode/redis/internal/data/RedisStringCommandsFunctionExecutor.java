@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
@@ -29,8 +30,9 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     implements
     RedisStringCommands {
 
-  public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider) {
-    super(regionProvider);
+  public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider,
+      CacheTransactionManager txManager) {
+    super(regionProvider, txManager);
   }
 
   private RedisString getRedisString(RedisKey key, boolean updateStats) {
@@ -142,6 +144,35 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     byte bitIndex = (byte) (offset % 8);
     return stripedExecute(key,
         () -> getRedisString(key, false).setbit(getRegion(), key, value, byteIndex, bitIndex));
+  }
+
+  @Override
+  public Void mset(List<RedisKey> keys, List<byte[]> values) {
+    List<RedisKey> keysToLock = new ArrayList<>(keys.size());
+    for (RedisKey key : keys) {
+      getRegionProvider().ensureKeyIsLocal(key);
+      keysToLock.add(key);
+    }
+
+    // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
+    // in the same bucket we can use any key for this.
+    return stripedExecute(keysToLock.get(0), keysToLock, () -> mset0(keys, values));
+  }
+
+  private Void mset0(List<RedisKey> keys, List<byte[]> values) {
+    CacheTransactionManager txManager = getTransactionManager();
+    try {
+      txManager.begin();
+      for (int i = 0; i < keys.size(); i++) {
+        setRedisString(getRegionProvider(), keys.get(i), values.get(i));
+      }
+      txManager.commit();
+    } finally {
+      if (txManager.exists()) {
+        txManager.rollback();
+      }
+    }
+    return null;
   }
 
   private boolean set(RegionProvider regionProvider, RedisKey key, byte[] value,

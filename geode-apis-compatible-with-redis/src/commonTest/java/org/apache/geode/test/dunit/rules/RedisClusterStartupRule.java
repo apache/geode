@@ -167,27 +167,51 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
    * non-hosting member.
    */
   public DistributedMember moveBucketForKey(String key) {
-    return getMember(1).invoke("moveBucketForKey: " + key, () -> {
-      Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-          .getRegion(RegionProvider.REDIS_DATA_REGION);
+    return moveBucketForKey(key, null);
+  }
 
-      RedisKey redisKey = new RedisKey(key.getBytes());
-      DistributedMember primaryMember = PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
-      Set<DistributedMember> allHosting = PartitionRegionHelper.getAllMembersForKey(r, redisKey);
+  /**
+   * Explicitly move the primary bucket to a specific server identified by the server name.
+   */
+  public DistributedMember moveBucketForKey(String key, String targetServerName) {
+    return getMember(1).invoke("moveBucketForKey: " + key + " -> " + targetServerName,
+        () -> {
+          Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+              .getRegion(RegionProvider.REDIS_DATA_REGION);
 
-      // Returns all members, except the one calling.
-      Set<DistributedMember> allMembers = getCache().getMembers(r);
-      allMembers.add(getCache().getDistributedSystem().getDistributedMember());
+          RedisKey redisKey = new RedisKey(key.getBytes());
+          DistributedMember primaryMember =
+              PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
+          Set<DistributedMember> allHosting =
+              PartitionRegionHelper.getAllMembersForKey(r, redisKey);
 
-      allMembers.removeAll(allHosting);
-      DistributedMember targetMember = allMembers.stream().findFirst().orElseThrow(
-          () -> new IllegalStateException("No non-hosting member found for key: " + key));
+          // Returns all members, except the one calling.
+          Set<DistributedMember> allMembers = getCache().getMembers(r);
+          allMembers.add(getCache().getDistributedSystem().getDistributedMember());
 
-      PartitionRegionHelper.moveBucketByKey(r, primaryMember, targetMember, redisKey);
+          DistributedMember targetMember;
+          if (targetServerName == null) {
+            allMembers.removeAll(allHosting);
+            targetMember = allMembers.stream().findFirst().orElseThrow(
+                () -> new IllegalStateException("No non-hosting member found for key: " + key));
+          } else {
+            targetMember = allMembers.stream().filter(m -> m.getName().equals(targetServerName))
+                .findFirst().orElseThrow(
+                    () -> new IllegalStateException(
+                        "Could not find member with name: " + targetServerName));
+          }
 
-      // Who is the primary now?
-      return PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
-    });
+          try {
+            PartitionRegionHelper.moveBucketByKey(r, primaryMember, targetMember, redisKey);
+          } catch (IllegalStateException e) {
+            if (targetServerName == null || !e.getMessage().contains("is already hosting")) {
+              throw e;
+            }
+          }
+
+          // Who is the primary now?
+          return PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
+        });
   }
 
   /**

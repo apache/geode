@@ -20,6 +20,7 @@ package org.apache.geode.redis.internal.data;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RegionProvider;
 
@@ -31,13 +32,20 @@ import org.apache.geode.redis.internal.RegionProvider;
  */
 public abstract class RedisDataCommandsFunctionExecutor {
   private final RegionProvider regionProvider;
+  private final CacheTransactionManager txManager;
+
+  protected RedisDataCommandsFunctionExecutor(RegionProvider regionProvider,
+      CacheTransactionManager txManager) {
+    this.regionProvider = regionProvider;
+    this.txManager = txManager;
+  }
 
   protected RegionProvider getRegionProvider() {
     return regionProvider;
   }
 
-  protected RedisDataCommandsFunctionExecutor(RegionProvider regionProvider) {
-    this.regionProvider = regionProvider;
+  protected CacheTransactionManager getTransactionManager() {
+    return txManager;
   }
 
   protected Region<RedisKey, RedisData> getRegion() {

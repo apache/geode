@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
@@ -29,8 +30,9 @@ import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
 public class RedisHashCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisHashCommands {
 
-  public RedisHashCommandsFunctionExecutor(RegionProvider regionProvider) {
-    super(regionProvider);
+  public RedisHashCommandsFunctionExecutor(RegionProvider regionProvider,
+      CacheTransactionManager txManager) {
+    super(regionProvider, txManager);
   }
 
   private RedisHash getRedisHash(RedisKey key, boolean updateStats) {

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
@@ -36,8 +37,9 @@ import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
     implements RedisSortedSetCommands {
 
-  public RedisSortedSetCommandsFunctionExecutor(RegionProvider regionProvider) {
-    super(regionProvider);
+  public RedisSortedSetCommandsFunctionExecutor(RegionProvider regionProvider,
+      CacheTransactionManager txManager) {
+    super(regionProvider, txManager);
   }
 
   private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
@@ -171,8 +173,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     }
     getRegionProvider().ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
-
-    getRegionProvider().orderForLocking(keysToLock);
 
     return stripedExecute(destinationKey, keysToLock,
         () -> new RedisSortedSet(Collections.emptyList(), new double[0])

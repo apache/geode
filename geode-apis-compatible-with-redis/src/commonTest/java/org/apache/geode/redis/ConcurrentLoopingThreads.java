@@ -25,11 +25,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class ConcurrentLoopingThreads {
   private final int iterationCount;
+  private final AtomicBoolean runWhileTrue;
   private final Consumer<Integer>[] functions;
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private List<Future<?>> loopingFutures;
@@ -40,6 +42,15 @@ public class ConcurrentLoopingThreads {
       Consumer<Integer>... functions) {
     this.iterationCount = iterationCount;
     this.functions = functions;
+    runWhileTrue = new AtomicBoolean(true);
+  }
+
+  @SafeVarargs
+  public ConcurrentLoopingThreads(AtomicBoolean runWhileTrue,
+      Consumer<Integer>... functions) {
+    this.iterationCount = Integer.MAX_VALUE;
+    this.functions = functions;
+    this.runWhileTrue = runWhileTrue;
   }
 
   /**
@@ -54,7 +65,7 @@ public class ConcurrentLoopingThreads {
 
     loopingFutures = Arrays
         .stream(functions)
-        .map(r -> new LoopingThread(r, iterationCount, barrier, lockstep))
+        .map(r -> new LoopingThread(r, runWhileTrue, iterationCount, barrier, lockstep))
         .map(t -> executorService.submit(t))
         .collect(Collectors.toList());
 
@@ -75,7 +86,11 @@ public class ConcurrentLoopingThreads {
         } catch (TimeoutException e) {
           timeOutExceptionThrown = true;
         } catch (InterruptedException | ExecutionException e) {
+          runWhileTrue.set(false);
           throw new RuntimeException(e);
+        } catch (Exception ex) {
+          runWhileTrue.set(false);
+          throw ex;
         }
       }
     } while (timeOutExceptionThrown);
@@ -130,13 +145,15 @@ public class ConcurrentLoopingThreads {
 
   private static class LoopingRunnable implements Runnable {
     private final Consumer<Integer> runnable;
+    private final AtomicBoolean running;
     private final int iterationCount;
     private final CyclicBarrier barrier;
     private final boolean lockstep;
 
-    public LoopingRunnable(Consumer<Integer> runnable, int iterationCount,
+    public LoopingRunnable(Consumer<Integer> runnable, AtomicBoolean running, int iterationCount,
         CyclicBarrier barrier, boolean lockstep) {
       this.runnable = runnable;
+      this.running = running;
       this.iterationCount = iterationCount;
       this.barrier = barrier;
       this.lockstep = lockstep;
@@ -147,10 +164,13 @@ public class ConcurrentLoopingThreads {
       if (!lockstep) {
         waitForBarrier();
       }
-      for (int i = 0; i < iterationCount; i++) {
-        runnable.accept(i);
-        if (lockstep) {
-          waitForBarrier();
+      for (int i = 0; i < iterationCount && running.get(); i++) {
+        try {
+          runnable.accept(i);
+        } finally {
+          if (lockstep) {
+            waitForBarrier();
+          }
         }
       }
     }
@@ -165,9 +185,10 @@ public class ConcurrentLoopingThreads {
   }
 
   private static class LoopingThread extends Thread {
-    public LoopingThread(Consumer<Integer> runnable, int iterationCount,
+    public LoopingThread(Consumer<Integer> runnable,
+        AtomicBoolean runWhileTrue, int iterationCount,
         CyclicBarrier barrier, boolean lockstep) {
-      super(new LoopingRunnable(runnable, iterationCount, barrier, lockstep));
+      super(new LoopingRunnable(runnable, runWhileTrue, iterationCount, barrier, lockstep));
     }
   }
 }

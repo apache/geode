@@ -34,8 +34,8 @@ import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
+import org.apache.geode.redis.internal.services.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
-import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -76,7 +76,7 @@ public class GeodeRedisServer {
 
     pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
-    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
+    StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
