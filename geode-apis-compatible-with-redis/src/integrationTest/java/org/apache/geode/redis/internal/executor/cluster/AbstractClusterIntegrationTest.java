@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -56,5 +57,26 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
         () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "NOTACOMMAND"))
             .hasMessage(
                 "ERR Unknown subcommand or wrong number of arguments for 'NOTACOMMAND'. Try CLUSTER HELP.");
+    assertThatThrownBy(
+        () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "KEYSLOT"))
+            .hasMessage(
+                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+    assertThatThrownBy(
+        () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "KEYSLOT",
+            "blah", "fo"))
+                .hasMessage(
+                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+  }
+
+  @Test
+  public void keyslot_ReturnsCorrectSlot() {
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("nohash")).isEqualTo(9072);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{hash}")).isEqualTo(238);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{two}{hashes}")).isEqualTo(2127);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{borked{hashes}"))
+        .isEqualTo(1058);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{unmatched")).isEqualTo(10479);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("withunmatchedright}"))
+        .isEqualTo(10331);
   }
 }

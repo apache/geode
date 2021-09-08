@@ -44,6 +44,7 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
 public class ClusterExecutor extends AbstractExecutor {
 
@@ -52,19 +53,30 @@ public class ClusterExecutor extends AbstractExecutor {
       throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
-    byte[] bytes = args.get(1);
+    byte[] subcommand = args.get(1);
 
-    if (equalsIgnoreCaseBytes(bytes, bINFO)) {
+    if (equalsIgnoreCaseBytes(subcommand, bINFO)) {
+      checkNumArgs(command, subcommand, 2);
       return getInfo(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bNODES)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, bNODES)) {
+      checkNumArgs(command, subcommand, 2);
       return getNodes(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bSLOTS)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, bSLOTS)) {
+      checkNumArgs(command, subcommand, 2);
       return getSlots(context);
-    } else if (equalsIgnoreCaseBytes(bytes, bKEYSLOT)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, bKEYSLOT)) {
+      checkNumArgs(command, subcommand, 3);
       return RedisResponse.integer(KeyHashUtil.slotForKey(args.get(2)));
     } else {
       return RedisResponse.error(
-          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(subcommand)));
+    }
+  }
+
+  private void checkNumArgs(Command command, byte[] subcommand, int expectedNumArgs) {
+    if (command.getProcessedCommand().size() != expectedNumArgs) {
+      throw new RedisParametersMismatchException(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(subcommand)));
     }
   }
 
