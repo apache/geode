@@ -11,30 +11,28 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.redis.internal.netty.Client;
+import java.util.List;
 
+import org.junit.Test;
 
-/**
- * Interface that represents the relationship between a channel or pattern and client.
- */
-public interface Subscription {
-  Client getClient();
+import org.apache.geode.redis.internal.netty.StringBytesGlossary;
 
-  /**
-   * Will publish a message to the designated channel
-   */
-  void publishMessage(byte[] channel, byte[] message);
+public class ChannelSubscriptionTest {
+  @Test
+  public void createResponseReturnsCorrectResult() {
+    byte[] name = stringToBytes("subscription");
+    byte[] channel = stringToBytes("channel");
+    byte[] message = stringToBytes("message");
+    AbstractSubscription subscription = new ChannelSubscription(name, null);
 
-  /**
-   * Return the channel or pattern name.
-   */
-  byte[] getSubscriptionName();
+    List<Object> result = subscription.createResponse(channel, message);
 
-  void readyToPublish();
+    assertThat(result).containsExactly(StringBytesGlossary.bMESSAGE, channel, message);
+  }
 }

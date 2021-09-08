@@ -16,13 +16,13 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 
@@ -70,11 +70,6 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public boolean isEqualTo(byte[] subscriptionName, Client client) {
-    return getClient().equals(client) && Arrays.equals(getSubscriptionName(), subscriptionName);
-  }
-
-  @Override
   public byte[] getSubscriptionName() {
     return subscriptionName;
   }
@@ -86,6 +81,11 @@ public abstract class AbstractSubscription implements Subscription {
    */
   private void shutdown() {
     running = false;
+  }
+
+  @VisibleForTesting
+  boolean isShutdown() {
+    return !running;
   }
 
   private RedisResponse constructResponse(byte[] channel, byte[] message) {
