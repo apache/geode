@@ -60,6 +60,9 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-serialization'))
 }
 
 test {
