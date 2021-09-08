@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SubscriptionsIntegrationTest {
 
@@ -45,9 +44,7 @@ public class SubscriptionsIntegrationTest {
 
   private ChannelSubscription createDummy() {
     int myDummyCount = dummyCount.incrementAndGet();
-    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     Client client = mock(Client.class);
-    when(context.getClient()).thenReturn(client);
     return new ChannelSubscription(stringToBytes("dummy-" + myDummyCount), client);
   }
 
@@ -101,8 +98,6 @@ public class SubscriptionsIntegrationTest {
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel);
       clients.add(client);
-      ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-      when(context.getClient()).thenReturn(client);
       ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
       client.addChannelSubscription(subscription.getSubscriptionName());
       subscriptions.add(subscription);
@@ -124,8 +119,6 @@ public class SubscriptionsIntegrationTest {
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel);
       clients.add(client);
-      ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
-      when(context.getClient()).thenReturn(client);
       ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
       client.addChannelSubscription(subscription.getSubscriptionName());
       subscriptions.add(subscription);
