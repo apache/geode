@@ -108,10 +108,14 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
    * copies of a buckets and doesn't allow cross redundancy zone deletes.
+   *
+   * @param rebalanceServer - the server index that will initiate all the rebalances
+   * @param serverToBeShutdownAndRestarted - the server index that will be shutdown and restarted
    */
   @Test
   @Parameters({"1,2", "1,4", "4,1", "5,6"})
-  public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer, int shutdownServer)
+  public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer,
+      int serverToBeShutdownAndRestarted)
       throws Exception {
 
     // Startup the servers
@@ -122,20 +126,22 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     // Put data in the server regions
     clientPopulateServers();
 
+    // Rebalance Server VM will initiate all of the rebalances in this test
     VM rebalanceServerVM = clusterStartupRule.getVM(rebalanceServer);
 
     // Baseline rebalance with everything up
     rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
-    // Take a server offline
-    clusterStartupRule.stop(shutdownServer, false);
+    // Take the serverToBeShutdownAndRestarted offline
+    clusterStartupRule.stop(serverToBeShutdownAndRestarted, false);
 
-    // Rebalance so that now all the buckets are on server 1 and server 3 redundancy.
+    // Rebalance so that now all the buckets are on the other two servers.
     // Zone b servers should not be touched.
     rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
-    // Restart the shutdownServer
-    startServerInRedundancyZone(shutdownServer, SERVER_ZONE_MAP.get(shutdownServer));
+    // Restart the serverToBeShutdownAndRestarted
+    startServerInRedundancyZone(serverToBeShutdownAndRestarted,
+        SERVER_ZONE_MAP.get(serverToBeShutdownAndRestarted));
 
     // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there are
     // no cross redundancy zone bucket deletions.

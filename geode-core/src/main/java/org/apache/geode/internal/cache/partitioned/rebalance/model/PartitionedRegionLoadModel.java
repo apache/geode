@@ -478,16 +478,29 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      if (member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
-        float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
-        if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
-          Move move = new Move(null, member, bucket);
-          if (!this.attemptedBucketRemoves.contains(move)) {
-            mostLoaded = newLoad;
-            bestMove = move;
-          }
-        }
+
+      // If we can't delete it continue (last member of zone)
+      if (!member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
+        continue;
       }
+
+      // if this load is lower than then highest load, we prefer the deleting from high
+      // load servers so move on. If this member is the bucket primary, we prefer not to move
+      // primaries, so move on.
+      float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
+      if (newLoad <= mostLoaded || member.equals(bucket.getPrimary())) {
+        continue;
+      }
+
+      // if the attemptedBucketRemovesList contains this move, then we don't need to add it
+      // again.
+      Move move = new Move(null, member, bucket);
+      if (this.attemptedBucketRemoves.contains(move)) {
+        continue;
+      }
+
+      mostLoaded = newLoad;
+      bestMove = move;
     }
     return bestMove;
   }

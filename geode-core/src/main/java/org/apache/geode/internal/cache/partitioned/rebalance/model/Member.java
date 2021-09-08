@@ -61,34 +61,52 @@ public class Member implements Comparable<Member> {
     this.localMaxMemory = localMaxMemory;
   }
 
-
+  /**
+   * Check to see if the member is the last copy of the bucket in the redundancy zone
+   *
+   * @param bucket -- bucket to be deleted from the member
+   * @param distributionManager -- used to check members of redundancy zones
+   */
 
   public RefusalReason canDelete(Bucket bucket, DistributionManager distributionManager) {
-    if (distributionManager instanceof ClusterDistributionManager) {
-      ClusterDistributionManager clusterDistributionManager =
-          (ClusterDistributionManager) distributionManager;
-      String myRedundancyZone = clusterDistributionManager.getRedundancyZone(memberId);
-      boolean notLastMemberOfZone = false;
+    // This code only applies to Clusters.
+    if (!(distributionManager instanceof ClusterDistributionManager)) {
+      return RefusalReason.NONE;
+    }
 
-      for (Member member : bucket.getMembersHosting()) {
-        if (!member.getMemberId().equals(this.getMemberId())) {
-          String memberRedundancyZone =
-              clusterDistributionManager.getRedundancyZone(member.memberId);
-          if (memberRedundancyZone != null) {
-            if (memberRedundancyZone.equals(myRedundancyZone)) {
-              notLastMemberOfZone = true;
-            }
-          } else {
-            // Not using redundancy zones, so...
-            return RefusalReason.NONE;
-          }
-        }
+    ClusterDistributionManager clstrDistrMgr = (ClusterDistributionManager) distributionManager;
+    String myRedundancyZone = clstrDistrMgr.getRedundancyZone(memberId);
+    boolean lastMemberOfZone = true;
+
+    if (myRedundancyZone == null) {
+      // Not using redundancy zones, so...
+      return RefusalReason.NONE;
+    }
+
+    for (Member member : bucket.getMembersHosting()) {
+      // Don't look at yourself because you are not redundant for yourself
+      if (member.getMemberId().equals(this.getMemberId())) {
+        continue;
       }
-      if (notLastMemberOfZone) {
-        return RefusalReason.NONE;
+
+      String memberRedundancyZone = clstrDistrMgr.getRedundancyZone(member.memberId);
+      if (memberRedundancyZone == null) {
+        // Not using redundancy zones, so...
+        continue;
+      }
+
+      // Does the member redundancy zone match my redundancy zone?
+      // if so we are not the last in the redundancy zone.
+      if (memberRedundancyZone.equals(myRedundancyZone)) {
+        lastMemberOfZone = false;
       }
     }
-    return RefusalReason.LAST_MEMBER_IN_ZONE;
+
+    if (lastMemberOfZone) {
+      return RefusalReason.LAST_MEMBER_IN_ZONE;
+    }
+
+    return RefusalReason.NONE;
   }
 
 
