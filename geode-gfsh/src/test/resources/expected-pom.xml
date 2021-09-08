@@ -53,11 +53,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-wan</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
       <scope>compile</scope>
     </dependency>

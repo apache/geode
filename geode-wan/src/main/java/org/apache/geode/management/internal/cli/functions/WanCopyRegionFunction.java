@@ -67,7 +67,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.functions.CliFunction;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -151,14 +151,16 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       throw new IllegalStateException(
           "Arguments length does not match required length.");
     }
-    final String regionName = (String) args[0];
+    String regionName = (String) args[0];
     final String senderId = (String) args[1];
     final boolean isCancel = (Boolean) args[2];
     long maxRate = (Long) args[3];
     int batchSize = (Integer) args[4];
 
-    if ((regionName.equals("*") || regionName.equals(SEPARATOR + "*")) && senderId.equals("*")
-        && isCancel) {
+    if (regionName.startsWith(SEPARATOR)) {
+      regionName = regionName.substring(1);
+    }
+    if (regionName.equals("*") && senderId.equals("*") && isCancel) {
       return cancelAllWanCopyRegion(context);
     }
 
@@ -396,7 +398,7 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   }
 
   @VisibleForTesting
-  static int getNumberOfCurrentExecutions() {
+  public static int getNumberOfCurrentExecutions() {
     return executions.size();
   }
 

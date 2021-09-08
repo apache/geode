@@ -349,6 +349,35 @@ public class GatewaySenderEventImplTest {
     return cacheEvent;
   }
 
+  @Parameters({"true, true", "true, false", "false, false"})
+  public void testCreation_WithAfterUpdateWithGenerateCallbacks(boolean isGenerateCallbacks,
+      boolean isCallbackArgumentNull)
+      throws IOException {
+    LocalRegion region = mock(LocalRegion.class);
+    when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
+
+    Operation operation = mock(Operation.class);
+    when(operation.isLocalLoad()).thenReturn(true);
+
+    EntryEventImpl cacheEvent = mock(EntryEventImpl.class);
+    when(cacheEvent.getRegion()).thenReturn(region);
+    when(cacheEvent.getEventId()).thenReturn(mock(EventID.class));
+    when(cacheEvent.getOperation()).thenReturn(operation);
+    when(cacheEvent.isGenerateCallbacks()).thenReturn(isGenerateCallbacks);
+    when(cacheEvent.getRawCallbackArgument())
+        .thenReturn(isCallbackArgumentNull ? null : mock(GatewaySenderEventCallbackArgument.class));
+
+    GatewaySenderEventImpl event = new GatewaySenderEventImpl(
+        EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS, cacheEvent,
+        null, false, INCLUDE_LAST_EVENT);
+
+    final int numberOfParts = isCallbackArgumentNull ? 8 : 9;
+    assertThat(event.getNumberOfParts()).isEqualTo(numberOfParts);
+
+    final int action = isGenerateCallbacks ? 1 : 4;
+    assertThat(event.getAction()).isEqualTo(action);
+  }
+
   public static class VersionAndExpectedInvocations {
 
     private final KnownVersion version;

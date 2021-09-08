@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.cache.wan.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,6 @@ public class WanCopyRegionCommand extends GfshCommand {
     final Object[] args = {regionName, senderId, isCancel, maxRate, batchSize};
     ResultCollector<?, ?> resultCollector =
         executeFunction(wanCopyRegionFunction, args, getAllNormalMembers());
-    @SuppressWarnings("unchecked")
     final List<CliFunctionResult> cliFunctionResults =
         getCliFunctionResults((List<CliFunctionResult>) resultCollector.getResult());
     return ResultModel.createMemberStatusResult(cliFunctionResults, false, false);
