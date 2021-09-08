@@ -31,7 +31,7 @@ public abstract class AbstractAuthIntegrationTest {
   static final String PASSWORD = USERNAME;
   Jedis jedis;
 
-  protected abstract void setupCacheWithSecurity(boolean withSecurityManager) throws Exception;
+  protected abstract void setupCacheWithSecurity() throws Exception;
 
   protected abstract void setupCacheWithoutSecurity() throws Exception;
 
@@ -39,7 +39,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithIncorrectNumberOfArguments_fails() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
         .hasMessageContaining("ERR wrong number of arguments for 'auth' command");
     assertThatThrownBy(
@@ -49,7 +49,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_clientCanAuthAfterFailedAuth_passes() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
 
     assertThatThrownBy(() -> jedis.auth(USERNAME, "wrongpwd"))
         .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
@@ -60,7 +60,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authorizedUser_passes() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
 
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
         .hasMessage("NOAUTH Authentication required.");
@@ -73,7 +73,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithCorrectPasswordForDefaultUser_passes() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
 
     assertThat(jedis.auth(PASSWORD)).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
@@ -81,7 +81,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithIncorrectPasswordForDefaultUser_fails() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
 
     assertThatThrownBy(() -> jedis.auth("wrong-password"))
         .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
@@ -89,7 +89,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_separateClientRequest_doNotInteract() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
     Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
     Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
 
@@ -105,7 +105,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_lettuceV6AuthClient_passes() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
 
     RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", USERNAME, getPort()));
     RedisClient client = RedisClient.create(uri);

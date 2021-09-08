@@ -51,8 +51,8 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     return port;
   }
 
-  public void setupCacheWithSecurity(boolean withSecurityManager) throws Exception {
-    setupCache(true, withSecurityManager);
+  public void setupCacheWithSecurity() throws Exception {
+    setupCache(true, true);
   }
 
   public void setupCacheWithoutSecurity() throws Exception {
@@ -79,7 +79,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   @Test
   public void testAuthConfig() throws Exception {
-    setupCacheWithSecurity(true);
+    setupCacheWithSecurity();
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
     assertThat(iD.getConfig().getRedisUsername()).isEqualTo(USERNAME);
   }

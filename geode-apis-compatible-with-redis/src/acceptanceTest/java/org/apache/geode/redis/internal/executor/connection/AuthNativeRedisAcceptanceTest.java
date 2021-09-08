@@ -46,7 +46,7 @@ public class AuthNativeRedisAcceptanceTest extends AbstractAuthIntegrationTest {
   }
 
   @Override
-  public void setupCacheWithSecurity(boolean withSecurityManager) {
+  public void setupCacheWithSecurity() {
     redisContainer =
         new GenericContainer<>(REDIS_DOCKER_IMAGE).withExposedPorts(6379)
             .withCommand("redis-server --requirepass " + PASSWORD);
