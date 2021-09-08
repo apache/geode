@@ -45,7 +45,7 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(byte[] channel, byte[] message, Subscriptions subscriptions) {
+  public void publishMessage(byte[] channel, byte[] message) {
     try {
       readyForPublish.await();
     } catch (InterruptedException e) {

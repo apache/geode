@@ -35,7 +35,7 @@ public interface Subscription {
   /**
    * Will publish a message to the designated channel
    */
-  void publishMessage(byte[] channel, byte[] message, Subscriptions subscriptions);
+  void publishMessage(byte[] channel, byte[] message);
 
   /**
    * Return the channel or pattern name.
