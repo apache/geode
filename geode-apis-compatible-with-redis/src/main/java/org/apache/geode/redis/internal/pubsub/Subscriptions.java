@@ -122,7 +122,7 @@ public class Subscriptions {
   public SubscribeResult subscribe(byte[] channel, Client client) {
     ChannelSubscription createdSubscription = null;
     if (client.addChannelSubscription(channel)) {
-      createdSubscription = new ChannelSubscription(channel, client, this);
+      createdSubscription = new ChannelSubscription(channel, client);
       add(createdSubscription);
     }
     long channelCount = client.getSubscriptionCount();
@@ -134,7 +134,7 @@ public class Subscriptions {
     if (client.addPatternSubscription(patternBytes)) {
       boolean added = false;
       try {
-        createdSubscription = new PatternSubscription(patternBytes, client, this);
+        createdSubscription = new PatternSubscription(patternBytes, client);
         add(createdSubscription);
         added = true;
       } finally {

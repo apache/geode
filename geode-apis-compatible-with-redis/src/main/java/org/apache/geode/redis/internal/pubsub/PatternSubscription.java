@@ -28,9 +28,8 @@ import org.apache.geode.redis.internal.netty.Client;
  */
 class PatternSubscription extends AbstractSubscription {
 
-  public PatternSubscription(byte[] pattern, Client client,
-      Subscriptions subscriptions) {
-    super(client, subscriptions, pattern);
+  public PatternSubscription(byte[] pattern, Client client) {
+    super(client, pattern);
   }
 
   @Override

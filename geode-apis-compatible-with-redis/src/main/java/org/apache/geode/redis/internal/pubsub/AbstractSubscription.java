@@ -32,14 +32,11 @@ public abstract class AbstractSubscription implements Subscription {
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
-  private boolean running = true;
+  private volatile boolean running = true;
 
-  AbstractSubscription(Client client,
-      Subscriptions subscriptions, byte[] subscriptionName) {
+  AbstractSubscription(Client client, byte[] subscriptionName) {
     this.client = client;
     this.subscriptionName = subscriptionName;
-
-    getClient().addShutdownListener(future -> shutdown(subscriptions));
   }
 
   @Override
@@ -54,14 +51,14 @@ public abstract class AbstractSubscription implements Subscription {
     } catch (InterruptedException e) {
       // we must be shutting down or registration failed
       Thread.currentThread().interrupt();
-      running = false;
+      shutdown();
     }
 
     if (running) {
       ChannelFuture writeResult = getClient().writeToChannel(constructResponse(channel, message));
       writeResult.addListener((ChannelFutureListener) f -> {
         if (f.cause() != null) {
-          shutdown(subscriptions);
+          shutdown();
         }
       });
     }
@@ -82,13 +79,17 @@ public abstract class AbstractSubscription implements Subscription {
     return subscriptionName;
   }
 
-  private RedisResponse constructResponse(byte[] channel, byte[] message) {
-    return RedisResponse.array(createResponse(channel, message));
+  /**
+   * Most of the cleanup is done by a channel shutdown listener that calls
+   * {@link PubSub#clientDisconnect(Client)}.
+   * So this method only marks this subscription as no longer running.
+   */
+  private void shutdown() {
+    running = false;
   }
 
-  private synchronized void shutdown(Subscriptions subscriptions) {
-    running = false;
-    subscriptions.remove(getClient());
+  private RedisResponse constructResponse(byte[] channel, byte[] message) {
+    return RedisResponse.array(createResponse(channel, message));
   }
 
   protected abstract List<Object> createResponse(byte[] channel, byte[] message);

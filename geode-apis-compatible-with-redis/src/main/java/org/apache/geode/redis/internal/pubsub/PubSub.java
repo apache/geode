@@ -106,4 +106,9 @@ public interface PubSub {
    * Return a count of all pattern subscriptions including duplicates.
    */
   long findNumberOfSubscribedPatterns();
+
+  /**
+   * Should be called when the given client disconnects from the server.
+   */
+  void clientDisconnect(Client client);
 }

@@ -209,6 +209,11 @@ public class PubSubImpl implements PubSub {
     return subscriptions.getPatternSubscriptionCount();
   }
 
+  @Override
+  public void clientDisconnect(Client client) {
+    subscriptions.remove(client);
+  }
+
   @VisibleForTesting
   void publishMessageToLocalSubscribers(byte[] channel, byte[] message) {
     subscriptions.forEachSubscription(channel,

@@ -429,13 +429,13 @@ public class SubscriptionsJUnitTest {
 
   private void addPatternSubscription(Client client, String pattern) {
     byte[] patternBytes = stringToBytes(pattern);
-    subscriptions.add(new PatternSubscription(patternBytes, client, subscriptions));
+    subscriptions.add(new PatternSubscription(patternBytes, client));
     client.addPatternSubscription(patternBytes);
   }
 
   private void addChannelSubscription(Client client, String channel) {
     byte[] channelBytes = stringToBytes(channel);
-    subscriptions.add(new ChannelSubscription(channelBytes, client, subscriptions));
+    subscriptions.add(new ChannelSubscription(channelBytes, client));
     client.addChannelSubscription(channelBytes);
   }
 
