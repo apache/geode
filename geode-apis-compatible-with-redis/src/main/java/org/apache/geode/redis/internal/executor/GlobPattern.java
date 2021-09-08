@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
  * This class is a factory for Pattern instances using
  * the static factory method {@link #createPattern(byte[])}.
  * To see if a string matches a pattern
- * use {@link #matches(Pattern, CharSequence)}.
+ * use {@link #matches(Pattern, CharSequence)} or
+ * {@link #matches(Pattern, byte[])}.
  */
 public class GlobPattern {
   private static final char BACKSLASH = '\\';
