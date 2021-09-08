@@ -15,12 +15,14 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<!DOCTYPE client-cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-  "http://www.gemstone.com/dtd/cache7_0.dtd">
-  
-<client-cache>
-  <pdx read-serialized="true">
+<client-cache
+        xmlns="http://geode.apache.org/schema/cache"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://geode.apache.org/schema/cache
+                        http://geode.apache.org/schema/cache/cache-1.0.xsd"
+        version="1.0">
+
+  <pdx read-serialized="false">
     <pdx-serializer>
       <class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>
       <parameter name="classes">

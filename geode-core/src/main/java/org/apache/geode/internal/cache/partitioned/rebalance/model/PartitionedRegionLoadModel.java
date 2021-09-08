@@ -53,7 +53,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * are assumed to be colocated, and the model adds together the load from each of the individual
  * regions to balance all of the regions together.
  *
- * Reblancing operations are performed by repeatedly calling model.nextStep until it returns false.
+ * Rebalancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
  * BucketOperator you provide to the contructor perform the actual create or move.
  *

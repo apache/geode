@@ -53,7 +53,8 @@ public class Member implements Comparable<Member> {
     this.enforceLocalMaxMemory = enforceLocalMaxMemory;
   }
 
-  Member(AddressComparor addressComparor, InternalDistributedMember memberId, float weight,
+  @VisibleForTesting
+  public Member(AddressComparor addressComparor, InternalDistributedMember memberId, float weight,
       long localMaxMemory, boolean isCritical, boolean enforceLocalMaxMemory) {
     this(addressComparor, memberId, isCritical, enforceLocalMaxMemory);
     this.weight = weight;
