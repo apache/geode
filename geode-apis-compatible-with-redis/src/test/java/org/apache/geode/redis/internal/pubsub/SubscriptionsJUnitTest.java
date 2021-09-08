@@ -446,7 +446,7 @@ public class SubscriptionsJUnitTest {
   }
 
   private Client createClient() {
-    return new Client(createChannel());
+    return new Client(createChannel(), mock(PubSub.class));
   }
 
 }

@@ -28,14 +28,13 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.pubsub.PubSub;
 
 
 public class Client {
@@ -48,9 +47,10 @@ public class Client {
   private final Set<byte[]> patternSubscriptions =
       new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
 
-  public Client(Channel remoteAddress) {
+  public Client(Channel remoteAddress, PubSub pubsub) {
     this.channel = remoteAddress;
     this.byteBufAllocator = this.channel.alloc();
+    channel.closeFuture().addListener(future -> pubsub.clientDisconnect(this));
   }
 
   public String getRemoteAddress() {
@@ -72,11 +72,6 @@ public class Client {
   @Override
   public int hashCode() {
     return Objects.hash(channel);
-  }
-
-  public void addShutdownListener(
-      GenericFutureListener<? extends Future<? super Void>> shutdownListener) {
-    channel.closeFuture().addListener(shutdownListener);
   }
 
   public String toString() {

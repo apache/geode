@@ -65,7 +65,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final Logger logger = LogService.getLogger();
 
   private final Client client;
-  private final Channel channel;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
   private final byte[] authPassword;
@@ -96,13 +95,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       byte[] password,
       int serverPort,
       DistributedMember member) {
-    this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.client = new Client(channel);
+    this.client = new Client(channel, pubsub);
     this.authPassword = password;
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
@@ -110,7 +108,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
-    client.addShutdownListener(future -> pubsub.clientDisconnect(client));
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {

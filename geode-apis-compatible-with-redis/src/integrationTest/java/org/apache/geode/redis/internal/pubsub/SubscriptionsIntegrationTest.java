@@ -96,7 +96,7 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Channel channel = mock(Channel.class);
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-      Client client = new Client(channel);
+      Client client = new Client(channel, mock(PubSub.class));
       clients.add(client);
       ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
       client.addChannelSubscription(subscription.getSubscriptionName());
@@ -117,7 +117,7 @@ public class SubscriptionsIntegrationTest {
     for (int i = 0; i < ITERATIONS; i++) {
       Channel channel = mock(Channel.class);
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
-      Client client = new Client(channel);
+      Client client = new Client(channel, mock(PubSub.class));
       clients.add(client);
       ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
       client.addChannelSubscription(subscription.getSubscriptionName());

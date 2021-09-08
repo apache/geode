@@ -17,12 +17,22 @@ package org.apache.geode.redis.internal.netty;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.pubsub.PubSub;
+
 public class ClientTest {
-  private final Client client = new Client(mock(Channel.class));
+  private final Client client = new Client(mockChannel(), mock(PubSub.class));
+
+  private Channel mockChannel() {
+    Channel channel = mock(Channel.class);
+    when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
+    return channel;
+  }
 
   private void verifyClientIsEmpty() {
     assertThat(client.getSubscriptionCount()).isZero();
