@@ -59,7 +59,6 @@ public abstract class AbstractSubscription implements Subscription {
 
     if (running) {
       ChannelFuture writeResult = getClient().writeToChannel(constructResponse(channel, message));
-      System.out.println("writeREsult=" + writeResult);
       writeResult.addListener((ChannelFutureListener) f -> {
         if (f.cause() != null) {
           shutdown(subscriptions);
