@@ -14,9 +14,12 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.redis.internal.RedisSanctionedSerializablesService;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
+@Category(SerializationTest.class)
 public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
@@ -25,7 +28,7 @@ public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class getModuleClass() {
-    return GeodeRedisService.class;
+  protected Class<?> getModuleClass() {
+    return RedisSanctionedSerializablesService.class;
   }
 }

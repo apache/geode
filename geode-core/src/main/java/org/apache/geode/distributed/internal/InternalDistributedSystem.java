@@ -26,15 +26,12 @@ import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -190,11 +187,6 @@ public class InternalDistributedSystem extends DistributedSystem
   protected DistributionManager dm;
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
-
-  /**
-   * services provided by other modules
-   */
-  private Map<Class, DistributedSystemService> services = new HashMap<>();
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
@@ -657,20 +649,6 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * Initialize any services that provided as extensions to the cache using the service loader
-   * mechanism.
-   */
-  private void initializeServices() {
-    ServiceLoader<DistributedSystemService> loader =
-        ServiceLoader.load(DistributedSystemService.class);
-    for (DistributedSystemService service : loader) {
-      service.init(this);
-      services.put(service.getInterface(), service);
-    }
-  }
-
-
-  /**
    * Initializes this connection to a distributed system with the current configuration state.
    */
   private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
@@ -735,8 +713,7 @@ public class InternalDistributedSystem extends DistributedSystem
         locatorDMTypeForced = true;
       }
 
-      initializeServices();
-      InternalDataSerializer.initialize(config, services.values());
+      InternalDataSerializer.initializeSerializationFilter(config);
 
       // Initialize the Diffie-Hellman and public/private keys
       try {
