@@ -46,7 +46,6 @@ import org.apache.geode.cache.query.internal.CompiledSortCriterion;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.QueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.index.IndexManager.TestHook;
 import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
@@ -1001,7 +1000,7 @@ public class RangeIndex extends AbstractIndex {
     if (entriesMap == null || result == null) {
       return;
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
       return;
@@ -1058,7 +1057,7 @@ public class RangeIndex extends AbstractIndex {
     if (entriesMap == null || result == null) {
       return;
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (verifyLimit(result, limit)) {
       observer.limitAppliedAtIndexLevel(this, limit, result);
       return;
@@ -1091,14 +1090,14 @@ public class RangeIndex extends AbstractIndex {
     boolean limitApplied = false;
     if (entriesMap == null || result == null) {
       if (verifyLimit(result, limit)) {
-        QueryObserver observer = QueryObserverHolder.getInstance();
+        QueryObserver observer = context.getObserver();
         if (observer != null) {
           observer.limitAppliedAtIndexLevel(this, limit, result);
         }
       }
       return;
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (entriesMap instanceof SortedMap) {
       Iterator entriesIter = ((Map) entriesMap).entrySet().iterator();
       Map.Entry entry = null;

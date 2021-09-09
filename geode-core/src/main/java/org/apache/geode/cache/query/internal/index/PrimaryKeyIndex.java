@@ -35,7 +35,6 @@ import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.Support;
@@ -106,7 +105,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (limit != -1 && results.size() == limit) {
       observer.limitAppliedAtIndexLevel(this, limit, results);
       return;
@@ -177,7 +176,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     int limit = -1;
 
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);

@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,10 +61,12 @@ public class QueryTraceJUnitTest {
   @Before
   public void setUp() throws Exception {
     CacheUtils.startCache();
+    DefaultQuery.testHook = new BeforeQueryExecutionHook();
   }
 
   @After
   public void tearDown() throws Exception {
+    DefaultQuery.testHook = null;
     CacheUtils.closeCache();
   }
 
@@ -104,10 +107,13 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   @Test
@@ -141,10 +147,13 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   /**
@@ -183,10 +192,13 @@ public class QueryTraceJUnitTest {
     assertFalse(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertFalse(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should not have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isNotInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   /**
@@ -223,10 +235,13 @@ public class QueryTraceJUnitTest {
     assertFalse(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertFalse(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should not have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isNotInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   /**
@@ -262,10 +277,13 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   @Test
@@ -296,10 +314,12 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
-    // The query should return all elements in region.
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   @Test
@@ -331,11 +351,13 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
-
   }
 
   @Test
@@ -366,10 +388,13 @@ public class QueryTraceJUnitTest {
     assertTrue(((DefaultQuery) query).isTraced());
 
     SelectResults results = (SelectResults) query.execute();
-    assertTrue(QueryObserverHolder.getInstance() instanceof IndexTrackingQueryObserver);
+
+    // The IndexTrackingObserver should have been set
+    BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
+    assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
+
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
-    QueryObserverHolder.reset();
   }
 
   @Test
@@ -438,4 +463,21 @@ public class QueryTraceJUnitTest {
     }
   }
 
+  private class BeforeQueryExecutionHook implements DefaultQuery.TestHook {
+    private QueryObserver observer = null;
+
+    @Override
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
+      switch (spot) {
+        case BEFORE_QUERY_EXECUTION:
+          observer = executionContext.getObserver();
+          break;
+      }
+    }
+
+    public QueryObserver getObserver() {
+      return observer;
+    }
+  }
 }

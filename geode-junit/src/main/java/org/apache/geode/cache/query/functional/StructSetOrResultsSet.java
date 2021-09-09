@@ -49,7 +49,6 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.OrderByComparator;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -237,11 +236,10 @@ public class StructSetOrResultsSet {
     }
     final Comparator secondLevelComparator = baseComparator;
     final Comparator finalComparator = new Comparator() {
-
       @Override
       public int compare(Object o1, Object o2) {
         final boolean[] orderByColsEqual = new boolean[] {false};
-        QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        context.setObserver(new QueryObserverAdapter() {
           @Override
           public void orderByColumnsEqual() {
             orderByColsEqual[0] = true;

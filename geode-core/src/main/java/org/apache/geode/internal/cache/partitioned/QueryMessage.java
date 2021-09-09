@@ -180,7 +180,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     pr.getCache().setPdxReadSerializedOverride(true);
     // In case of "select *" queries we can keep the results in serialized form and send
     query.setRemoteQuery(true);
-    QueryObserver indexObserver = query.startTrace();
+    QueryObserver indexObserver = query.startTrace(executionContext);
     boolean isQueryTraced = false;
     List queryTraceList = null;
 

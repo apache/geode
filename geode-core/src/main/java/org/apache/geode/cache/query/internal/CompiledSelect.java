@@ -537,7 +537,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
               result = ((Filter) this.whereClause).filterEvaluate(context, null);
               if (!(context.cacheGet(RESULT_TYPE) instanceof Boolean)) {
-                QueryObserverHolder.getInstance()
+                context.getObserver()
                     .beforeApplyingProjectionOnFilterEvaluatedResults(result);
                 result = applyProjectionOnCollection(result, context, !needsTopLevelOrdering);
               }
@@ -691,7 +691,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         for (Iterator itr = tmpResults.iterator(); itr.hasNext();) {
           Object currObj = itr.next();
           rIter.setCurrent(currObj);
-          QueryObserver observer = QueryObserverHolder.getInstance();
+          QueryObserver observer = context.getObserver();
           observer.beforeIterationEvaluation(rIter, currObj);
           applyProjectionAndAddToResultSet(context, results, this.orderByAttrs == null);
         }
@@ -768,12 +768,12 @@ public class CompiledSelect extends AbstractCompiledValue {
       boolean evaluateWhereClause, int numElementsInResult)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException, CompiledSelect.NullIteratorException {
-    QueryObserver observer = QueryObserverHolder.getInstance();
     List iterList = context.getCurrentIterators();
     if (level == iterList.size()) {
       boolean addToResults = true;
       if (evaluateWhereClause) {
         Object result = this.whereClause.evaluate(context);
+        QueryObserver observer = context.getObserver();
         observer.afterIterationEvaluation(result);
         if (result == null) {
           addToResults = false;
@@ -839,6 +839,7 @@ public class CompiledSelect extends AbstractCompiledValue {
 
         Object currObj = aSr;
         rIter.setCurrent(currObj);
+        QueryObserver observer = context.getObserver();
         observer.beforeIterationEvaluation(rIter, currObj);
         numElementsInResult = doNestedIterations(level + 1, results, context, evaluateWhereClause,
             numElementsInResult);

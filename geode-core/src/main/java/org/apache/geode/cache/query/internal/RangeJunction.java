@@ -751,7 +751,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         indexFieldsSize = 1;
       }
       // actual index lookup
-      QueryObserver observer = QueryObserverHolder.getInstance();
+      QueryObserver observer = context.getObserver();
       /*
        * Asif : First obtain the match level of index resultset. If the match level happens to be
        * zero , this implies that we just have to change the StructType ( again if only the Index
@@ -945,7 +945,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         indexFieldsSize = 1;
       }
       // actual index lookup
-      QueryObserver observer = QueryObserverHolder.getInstance();
+      QueryObserver observer = context.getObserver();
       /*
        * Asif : First obtain the match level of index resultset. If the match level happens to be
        * zero , this implies that we just have to change the StructType ( again if only the Index
@@ -1086,7 +1086,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       // Shobhit: Limit can not be applied at index level for RangeJunction as
       // other conditions are applied after coming out of index query method.
       context.cachePut(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX, Boolean.FALSE);
-      QueryObserver observer = QueryObserverHolder.getInstance();
+      QueryObserver observer = context.getObserver();
       /*
        * Asif : First obtain the match level of index resultset. If the match level happens to be
        * zero , this implies that we just have to change the StructType ( again if only the Index

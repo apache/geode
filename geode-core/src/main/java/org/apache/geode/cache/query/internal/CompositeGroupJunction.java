@@ -309,7 +309,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
         }
         // Do the cartesian of the different group junction results.
         // TODO:Asif Remove the time
-        QueryObserver observer = QueryObserverHolder.getInstance();
+        QueryObserver observer = context.getObserver();
         observer.beforeCartesianOfGroupJunctionsInCompositeGroupJunctionOfType_AND(results);
         SelectResults grpCartRs = QueryUtils.cartesian(results, itrsForResultFields, expansionList,
             finalList, context, iterOp);

@@ -50,7 +50,6 @@ import org.apache.geode.cache.query.internal.IndexInfo;
 import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.StructImpl;
@@ -746,7 +745,7 @@ public class CompactRangeIndex extends AbstractIndex {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     boolean limitApplied = false;
     if (entriesIter == null || (limitApplied = verifyLimit(result, limit))) {
       if (limitApplied) {

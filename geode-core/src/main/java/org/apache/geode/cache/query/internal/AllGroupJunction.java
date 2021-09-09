@@ -169,7 +169,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
         iterOperandsToSend = new CompiledJunction(cv, this.operator);
       }
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     observer.beforeCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND(results);
     resultsSet = QueryUtils.cartesian(results, itrsForResultFields, expansionList, finalList,
         context, iterOperandsToSend);

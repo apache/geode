@@ -205,13 +205,13 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
     Query query = qs.newQuery(queryString);
     DefaultQuery tracedQuery = (DefaultQuery) query;
     WrappedIndexTrackingQueryObserver queryObserver = null;
-    QueryObserver origQueryObserver = null;
+    QueryObserver oldQueryObserver = null;
     String queryVerboseMsg = null;
     long startTime = -1;
     if (tracedQuery.isTraced()) {
       startTime = NanoTimer.getTime();
       queryObserver = new WrappedIndexTrackingQueryObserver();
-      origQueryObserver = QueryObserverHolder.setInstance(queryObserver);
+      oldQueryObserver = QueryObserverHolder.setInstance(queryObserver);
     }
     List<SelectResultRow> list = new ArrayList<>();
 
@@ -239,7 +239,7 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
         QueryObserverHolder.reset();
       }
       if (tracedQuery.isTraced()) {
-        QueryObserverHolder.setInstance(origQueryObserver);
+        QueryObserverHolder.setInstance(oldQueryObserver);
       }
     }
   }

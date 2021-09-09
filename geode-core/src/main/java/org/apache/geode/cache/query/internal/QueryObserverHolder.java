@@ -49,31 +49,31 @@ public class QueryObserverHolder {
    * The current observer which will be notified of all query events.
    */
   @MakeNotStatic
-  private static ThreadLocal<QueryObserver> _instance = ThreadLocal.withInitial(() -> NO_OBSERVER);
+  private static QueryObserver _instance = NO_OBSERVER;
 
   /**
    * Set the given observer to be notified of query events. Returns the current observer.
    */
-  public static QueryObserver setInstance(QueryObserver observer) {
+  public static synchronized QueryObserver setInstance(QueryObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
-    QueryObserver oldObserver = _instance.get();
-    _instance.set(observer);
+    QueryObserver oldObserver = _instance;
+    _instance = observer;
     return oldObserver;
   }
 
-  public static boolean hasObserver() {
+  public static synchronized boolean hasObserver() {
     return _instance != NO_OBSERVER;
   }
 
   /** Return the current QueryObserver instance */
-  public static QueryObserver getInstance() {
-    return _instance.get();
+  public static synchronized QueryObserver getInstance() {
+    return _instance;
   }
 
   /**
    * Only for test purposes.
    */
-  public static void reset() {
-    _instance.remove();
+  public static synchronized void reset() {
+    _instance = NO_OBSERVER;
   }
 }
