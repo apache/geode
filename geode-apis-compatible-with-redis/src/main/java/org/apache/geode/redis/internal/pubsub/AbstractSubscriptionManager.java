@@ -68,14 +68,14 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
 
   protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
 
-  protected abstract S createSubscription(byte[] channelOrPattern, Client client);
+  protected abstract S createSubscription(byte[] channelOrPattern);
 
   @Override
   public S add(byte[] channelOrPattern, Client client) {
     if (!addToClient(client, channelOrPattern)) {
       return null;
     }
-    final S subscription = createSubscription(channelOrPattern, client);
+    final S subscription = createSubscription(channelOrPattern);
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager<S> newManager = null;
     ClientSubscriptionManager<S> existingManager = clientManagers.get(subscriptionId);
@@ -86,7 +86,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
           // at all if existingManager found, and so it will only be
           // created once if we try multiple times.
           // Note that newManager is initialized to contain subscription.
-          newManager = createClientManager(subscription);
+          newManager = createClientManager(client, subscription);
         }
         existingManager = clientManagers.putIfAbsent(subscriptionId, newManager);
         if (existingManager == null) {
@@ -94,7 +94,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
           return subscription;
         }
       }
-      if (existingManager.add(subscription)) {
+      if (existingManager.add(client, subscription)) {
         // subscription added to existingManager so all done
         return subscription;
       }
@@ -120,7 +120,8 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
 
   protected abstract ClientSubscriptionManager<S> emptyClientManager();
 
-  protected abstract ClientSubscriptionManager<S> createClientManager(S subscription);
+  protected abstract ClientSubscriptionManager<S> createClientManager(Client client,
+      S subscription);
 
   /**
    * Wraps a id (channel or pattern) so it can be used as a key on a hash map

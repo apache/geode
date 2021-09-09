@@ -27,15 +27,13 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 
 public abstract class AbstractSubscription implements Subscription {
-  private final Client client;
   private final byte[] subscriptionName;
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
   private volatile boolean running = true;
 
-  AbstractSubscription(Client client, byte[] subscriptionName) {
-    this.client = client;
+  AbstractSubscription(byte[] subscriptionName) {
     this.subscriptionName = subscriptionName;
   }
 
@@ -45,7 +43,7 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(byte[] channel, byte[] message) {
+  public void publishMessage(Client client, byte[] channel, byte[] message) {
     try {
       readyForPublish.await();
     } catch (InterruptedException e) {
@@ -55,18 +53,13 @@ public abstract class AbstractSubscription implements Subscription {
     }
 
     if (running) {
-      ChannelFuture writeResult = getClient().writeToChannel(constructResponse(channel, message));
+      ChannelFuture writeResult = client.writeToChannel(constructResponse(channel, message));
       writeResult.addListener((ChannelFutureListener) f -> {
         if (f.cause() != null) {
           shutdown();
         }
       });
     }
-  }
-
-  @Override
-  public Client getClient() {
-    return client;
   }
 
   @Override

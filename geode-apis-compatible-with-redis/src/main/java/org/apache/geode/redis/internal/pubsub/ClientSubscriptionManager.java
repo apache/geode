@@ -15,7 +15,7 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.geode.redis.internal.netty.Client;
 
@@ -34,7 +34,7 @@ interface ClientSubscriptionManager<S> {
    * that the channel needs to match.
    * For managers without a pattern all subscriptions match.
    */
-  void forEachSubscription(String channel, Consumer<Subscription> action);
+  void forEachSubscription(String channel, BiConsumer<Client, Subscription> action);
 
   /**
    * return how many subscriptions this manager has.
@@ -51,16 +51,14 @@ interface ClientSubscriptionManager<S> {
   int getSubscriptionCount(String channel);
 
   /**
-   * Adds the given subscription to this manager.
-   * The client that made this subscription is
-   * obtained from the subscription.
+   * Adds the given subscription for the given client to this manager.
    * If this manager already has a subscription
    * for that client then the old subscription is
    * removed and the new one is added.
    *
    * @return true if added or already added; false if caller should retry
    */
-  boolean add(S subscription);
+  boolean add(Client client, S subscription);
 
   /**
    * Remove any subscription added for the given client.

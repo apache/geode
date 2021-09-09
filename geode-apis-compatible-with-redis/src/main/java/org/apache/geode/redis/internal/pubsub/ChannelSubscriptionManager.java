@@ -15,7 +15,7 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
@@ -28,8 +28,8 @@ class ChannelSubscriptionManager
   }
 
   @Override
-  protected ChannelSubscription createSubscription(byte[] channel, Client client) {
-    return new ChannelSubscription(channel, client);
+  protected ChannelSubscription createSubscription(byte[] channel) {
+    return new ChannelSubscription(channel);
   }
 
   @Override
@@ -39,8 +39,8 @@ class ChannelSubscriptionManager
 
   @Override
   protected ClientSubscriptionManager<ChannelSubscription> createClientManager(
-      ChannelSubscription subscription) {
-    return new ChannelClientSubscriptionManager(subscription);
+      Client client, ChannelSubscription subscription) {
+    return new ChannelClientSubscriptionManager(client, subscription);
   }
 
   @Override
@@ -49,7 +49,7 @@ class ChannelSubscriptionManager
   }
 
   @Override
-  public void foreachSubscription(byte[] channel, Consumer<Subscription> action) {
+  public void foreachSubscription(byte[] channel, BiConsumer<Client, Subscription> action) {
     getClientManager(channel).forEachSubscription(null, action);
   }
 
@@ -64,7 +64,7 @@ class ChannelSubscriptionManager
   private static final ClientSubscriptionManager<ChannelSubscription> EMPTY_CHANNEL_MANAGER =
       new ClientSubscriptionManager<ChannelSubscription>() {
         @Override
-        public void forEachSubscription(String channel, Consumer<Subscription> action) {}
+        public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {}
 
         @Override
         public int getSubscriptionCount() {
@@ -77,7 +77,7 @@ class ChannelSubscriptionManager
         }
 
         @Override
-        public boolean add(ChannelSubscription subscription) {
+        public boolean add(Client client, ChannelSubscription subscription) {
           return true;
         }
 

@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.geode.redis.internal.netty.Client;
 
@@ -33,8 +33,7 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
    */
   private final AtomicInteger size = new AtomicInteger(1);
 
-  public AbstractClientSubscriptionManager(S subscription) {
-    Client client = subscription.getClient();
+  public AbstractClientSubscriptionManager(Client client, S subscription) {
     subscriptionMap.put(client, subscription);
   }
 
@@ -49,12 +48,12 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
   }
 
   @Override
-  public void forEachSubscription(String channel, Consumer<Subscription> action) {
-    subscriptionMap.values().forEach(action);
+  public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {
+    subscriptionMap.forEach(action);
   }
 
   @Override
-  public boolean add(S subscription) {
+  public boolean add(Client client, S subscription) {
     // the client has already confirmed that
     // this is a new subscription.
     // So map.put should always return null.
@@ -69,7 +68,6 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
         return false;
       }
     } while (!size.compareAndSet(sizeValue, sizeValue + 1));
-    Client client = subscription.getClient();
     subscriptionMap.put(client, subscription);
     return true;
   }

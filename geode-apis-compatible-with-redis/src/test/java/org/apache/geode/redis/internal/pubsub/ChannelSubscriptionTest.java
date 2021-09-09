@@ -29,7 +29,7 @@ public class ChannelSubscriptionTest {
     byte[] name = stringToBytes("subscription");
     byte[] channel = stringToBytes("channel");
     byte[] message = stringToBytes("message");
-    AbstractSubscription subscription = new ChannelSubscription(name, null);
+    AbstractSubscription subscription = new ChannelSubscription(name);
 
     List<Object> result = subscription.createResponse(channel, message);
 

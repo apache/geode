@@ -21,15 +21,14 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAG
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.netty.Client;
 
 /**
  * This class represents a pattern subscription as created by the PSUBSCRIBE command
  */
 class PatternSubscription extends AbstractSubscription {
 
-  public PatternSubscription(byte[] pattern, Client client) {
-    super(client, pattern);
+  public PatternSubscription(byte[] pattern) {
+    super(pattern);
   }
 
   @Override

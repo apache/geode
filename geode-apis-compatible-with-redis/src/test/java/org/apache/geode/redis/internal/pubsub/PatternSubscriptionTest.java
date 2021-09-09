@@ -29,7 +29,7 @@ public class PatternSubscriptionTest {
     byte[] name = stringToBytes("subscription");
     byte[] channel = stringToBytes("channel");
     byte[] message = stringToBytes("message");
-    AbstractSubscription subscription = new PatternSubscription(name, null);
+    AbstractSubscription subscription = new PatternSubscription(name);
 
     List<Object> result = subscription.createResponse(channel, message);
 

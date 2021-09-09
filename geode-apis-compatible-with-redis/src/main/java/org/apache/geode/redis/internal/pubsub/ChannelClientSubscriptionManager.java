@@ -15,9 +15,11 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import org.apache.geode.redis.internal.netty.Client;
+
 class ChannelClientSubscriptionManager
     extends AbstractClientSubscriptionManager<ChannelSubscription> {
-  public ChannelClientSubscriptionManager(ChannelSubscription subscription) {
-    super(subscription);
+  public ChannelClientSubscriptionManager(Client client, ChannelSubscription subscription) {
+    super(client, subscription);
   }
 }

@@ -24,12 +24,10 @@ import org.apache.geode.redis.internal.netty.Client;
  * Interface that represents the relationship between a channel or pattern and client.
  */
 public interface Subscription {
-  Client getClient();
-
   /**
-   * Will publish a message to the designated channel
+   * Will publish a message to the designated client and channel
    */
-  void publishMessage(byte[] channel, byte[] message);
+  void publishMessage(Client client, byte[] channel, byte[] message);
 
   /**
    * Return the channel or pattern name.

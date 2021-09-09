@@ -88,7 +88,7 @@ public class SubscriptionsJUnitTest {
 
     List<String> hits = new ArrayList<>();
     subscriptions.forEachSubscription(stringToBytes("subscription1"),
-        subscription -> hits.add(bytesToString(subscription.getSubscriptionName())));
+        (client, subscription) -> hits.add(bytesToString(subscription.getSubscriptionName())));
     assertThat(hits).containsExactlyInAnyOrder("subscription1", "subscription1", "sub*", "sub*",
         "subscription?");
   }

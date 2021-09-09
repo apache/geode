@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.netty.Client;
@@ -66,7 +66,7 @@ public class Subscriptions {
     return getChannelSubscriptionCount(channel) + getPatternSubscriptionCount(channel);
   }
 
-  public void forEachSubscription(byte[] channel, Consumer<Subscription> action) {
+  public void forEachSubscription(byte[] channel, BiConsumer<Client, Subscription> action) {
     channelSubscriptions.foreachSubscription(channel, action);
     patternSubscriptions.foreachSubscription(channel, action);
   }
