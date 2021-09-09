@@ -838,7 +838,9 @@ public class CompactRangeIndex extends AbstractIndex {
               runtimeItr.setCurrent(value);
             }
             if (ok && runtimeItr != null && iterOps != null) {
+              observer.beforeIterationEvaluation(iterOps, context);
               ok = QueryUtils.applyCondition(iterOps, context);
+              observer.afterIterationEvaluation(ok);
             }
             if (ok) {
               if (context != null && context.isCqQueryContext()) {

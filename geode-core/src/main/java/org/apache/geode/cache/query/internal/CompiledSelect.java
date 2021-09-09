@@ -768,12 +768,12 @@ public class CompiledSelect extends AbstractCompiledValue {
       boolean evaluateWhereClause, int numElementsInResult)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException, CompiledSelect.NullIteratorException {
+    QueryObserver observer = QueryObserverHolder.getInstance();
     List iterList = context.getCurrentIterators();
     if (level == iterList.size()) {
       boolean addToResults = true;
       if (evaluateWhereClause) {
         Object result = this.whereClause.evaluate(context);
-        QueryObserver observer = QueryObserverHolder.getInstance();
         observer.afterIterationEvaluation(result);
         if (result == null) {
           addToResults = false;
@@ -839,7 +839,6 @@ public class CompiledSelect extends AbstractCompiledValue {
 
         Object currObj = aSr;
         rIter.setCurrent(currObj);
-        QueryObserver observer = QueryObserverHolder.getInstance();
         observer.beforeIterationEvaluation(rIter, currObj);
         numElementsInResult = doNestedIterations(level + 1, results, context, evaluateWhereClause,
             numElementsInResult);
