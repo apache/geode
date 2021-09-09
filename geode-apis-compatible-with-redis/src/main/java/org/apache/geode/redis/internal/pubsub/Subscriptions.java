@@ -31,6 +31,15 @@ import org.apache.geode.redis.internal.netty.Client;
 
 /**
  * Class that manages both channel and pattern subscriptions.
+ * The data associated with subscriptions is organized like so:
+ * 1. Client stores a byte array containing the channel or pattern name in a Set.
+ * 2. Subscriptions has two SubscriptionManager instances; one or channels and one for patterns.
+ * 3. Each SubscriptionManager uses a Map to store a SubscriptionId (that references the same
+ * channel or pattern name as the Client) as a key, and a ClientSubscriptionManager as a value.
+ * 4. Each ClientSubscriptionManager uses a Map to store a Client as a key and a Subscription as a
+ * value.
+ * 5. Each Subscription references the same channel or pattern name as the Client,
+ * and a reference to its Client. It also has a CountdownLatch.
  */
 public class Subscriptions {
 
