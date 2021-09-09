@@ -124,6 +124,8 @@ The `SimpleSecurityManager` is only to be used **for demonstration purposes**. I
 
 Note that the `compatible-with-redis-username` property is only needed if `AUTH` commands are issued without a username. In this case, the Security Manager will need to respond to authentication requests using this username.
 
+Note also that _any_ `AUTH` requests will fail if no Security Manager has been configured.
+
 ## <a name="application-developement"></a>Application Developement
 
 ### Things to know before you begin

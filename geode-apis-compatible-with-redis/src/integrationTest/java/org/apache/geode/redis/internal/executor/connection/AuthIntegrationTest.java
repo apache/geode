@@ -34,6 +34,7 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.internal.RedisConstants;
 
 public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
@@ -90,7 +91,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("password"))
-        .hasMessageContaining("ERR");
+        .hasMessageContaining(RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
@@ -98,7 +99,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("username", "password"))
-        .hasMessageContaining("ERR");
+        .hasMessageContaining(RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
 }
