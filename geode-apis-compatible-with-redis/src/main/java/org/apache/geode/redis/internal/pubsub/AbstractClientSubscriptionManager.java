@@ -18,9 +18,9 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 abstract class AbstractClientSubscriptionManager<S extends Subscription>
     implements ClientSubscriptionManager<S> {
@@ -48,8 +48,9 @@ abstract class AbstractClientSubscriptionManager<S extends Subscription>
   }
 
   @Override
-  public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {
-    subscriptionMap.forEach(action);
+  public void forEachSubscription(byte[] subscriptionName, String channel, ForEachConsumer action) {
+    subscriptionMap
+        .forEach((client, subscription) -> action.accept(subscriptionName, client, subscription));
   }
 
   @Override

@@ -69,7 +69,7 @@ public abstract class SubscriptionManagerTestBase {
     byte[] channel = stringToBytes("channel");
     AtomicInteger count = new AtomicInteger();
     AbstractSubscriptionManager<?> manager = createManager();
-    manager.foreachSubscription(channel, (client, sub) -> count.getAndIncrement());
+    manager.foreachSubscription(channel, (name, client, sub) -> count.getAndIncrement());
     assertThat(count.get()).isZero();
   }
 
@@ -88,7 +88,7 @@ public abstract class SubscriptionManagerTestBase {
     manager.add(channel1, client3);
     manager.add(channel2, client2);
     manager.add(channel3, client3);
-    manager.foreachSubscription(channel1, (client, sub) -> count.getAndIncrement());
+    manager.foreachSubscription(channel1, (name, client, sub) -> count.getAndIncrement());
     assertThat(count.get()).isEqualTo(3);
   }
 

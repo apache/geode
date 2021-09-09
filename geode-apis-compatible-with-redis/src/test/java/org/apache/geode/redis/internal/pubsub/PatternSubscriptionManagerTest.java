@@ -48,7 +48,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     manager.add(pattern2, client2);
     manager.add(pattern3, client3);
 
-    manager.foreachSubscription(channel1, (client, sub) -> count.getAndIncrement());
+    manager.foreachSubscription(channel1, (name, client, sub) -> count.getAndIncrement());
 
     assertThat(count.get()).isEqualTo(3);
   }

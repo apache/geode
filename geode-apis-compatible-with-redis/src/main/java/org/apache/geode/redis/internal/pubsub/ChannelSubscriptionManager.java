@@ -15,10 +15,9 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.function.BiConsumer;
-
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class ChannelSubscriptionManager
     extends AbstractSubscriptionManager<ChannelSubscription> {
@@ -28,8 +27,8 @@ class ChannelSubscriptionManager
   }
 
   @Override
-  protected ChannelSubscription createSubscription(byte[] channel) {
-    return new ChannelSubscription(channel);
+  protected ChannelSubscription createSubscription() {
+    return new ChannelSubscription();
   }
 
   @Override
@@ -39,7 +38,7 @@ class ChannelSubscriptionManager
 
   @Override
   protected ClientSubscriptionManager<ChannelSubscription> createClientManager(
-      Client client, ChannelSubscription subscription) {
+      Client client, byte[] channel, ChannelSubscription subscription) {
     return new ChannelClientSubscriptionManager(client, subscription);
   }
 
@@ -49,8 +48,8 @@ class ChannelSubscriptionManager
   }
 
   @Override
-  public void foreachSubscription(byte[] channel, BiConsumer<Client, Subscription> action) {
-    getClientManager(channel).forEachSubscription(null, action);
+  public void foreachSubscription(byte[] channel, ForEachConsumer action) {
+    getClientManager(channel).forEachSubscription(channel, null, action);
   }
 
   @Override
@@ -64,7 +63,8 @@ class ChannelSubscriptionManager
   private static final ClientSubscriptionManager<ChannelSubscription> EMPTY_CHANNEL_MANAGER =
       new ClientSubscriptionManager<ChannelSubscription>() {
         @Override
-        public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {}
+        public void forEachSubscription(byte[] subscriptionName, String channel,
+            ForEachConsumer action) {}
 
         @Override
         public int getSubscriptionCount() {

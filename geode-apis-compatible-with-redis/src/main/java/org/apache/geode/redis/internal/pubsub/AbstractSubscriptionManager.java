@@ -68,14 +68,14 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
 
   protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
 
-  protected abstract S createSubscription(byte[] channelOrPattern);
+  protected abstract S createSubscription();
 
   @Override
   public S add(byte[] channelOrPattern, Client client) {
     if (!addToClient(client, channelOrPattern)) {
       return null;
     }
-    final S subscription = createSubscription(channelOrPattern);
+    final S subscription = createSubscription();
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager<S> newManager = null;
     ClientSubscriptionManager<S> existingManager = clientManagers.get(subscriptionId);
@@ -86,7 +86,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
           // at all if existingManager found, and so it will only be
           // created once if we try multiple times.
           // Note that newManager is initialized to contain subscription.
-          newManager = createClientManager(client, subscription);
+          newManager = createClientManager(client, channelOrPattern, subscription);
         }
         existingManager = clientManagers.putIfAbsent(subscriptionId, newManager);
         if (existingManager == null) {
@@ -121,12 +121,13 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   protected abstract ClientSubscriptionManager<S> emptyClientManager();
 
   protected abstract ClientSubscriptionManager<S> createClientManager(Client client,
+      byte[] channelOrPattern,
       S subscription);
 
   /**
    * Wraps a id (channel or pattern) so it can be used as a key on a hash map
    */
-  private static class SubscriptionId {
+  static class SubscriptionId {
     private final int hashCode;
     private final byte[] bytes;
 

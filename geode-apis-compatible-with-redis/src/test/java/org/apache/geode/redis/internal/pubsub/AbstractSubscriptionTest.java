@@ -33,28 +33,19 @@ import org.apache.geode.redis.internal.netty.Client;
 
 public class AbstractSubscriptionTest {
   private static class TestableAbstractSubscription extends AbstractSubscription {
-    TestableAbstractSubscription(byte[] subscriptionName) {
-      super(subscriptionName);
-    }
 
     @Override
-    protected List<Object> createResponse(byte[] channel, byte[] message) {
+    protected List<Object> createResponse(byte[] subName, byte[] channel, byte[] message) {
       return Arrays.asList(channel, message);
     }
   }
 
   private final byte[] subscriptionName = stringToBytes("subscription");
   private final Client client = createClient();
-  private final AbstractSubscription subscription =
-      new TestableAbstractSubscription(subscriptionName);
+  private final AbstractSubscription subscription = new TestableAbstractSubscription();
 
   private Client createClient() {
     return mock(Client.class);
-  }
-
-  @Test
-  public void gettors() {
-    assertThat(subscription.getSubscriptionName()).isEqualTo(subscriptionName);
   }
 
   @Test
@@ -67,7 +58,8 @@ public class AbstractSubscriptionTest {
     byte[] channel = stringToBytes("channel");
     byte[] message = stringToBytes("message");
 
-    Thread t = new Thread(() -> subscription.publishMessage(client, channel, message));
+    Thread t =
+        new Thread(() -> subscription.publishMessage(subscriptionName, client, channel, message));
     t.start();
     try {
       t.interrupt();
@@ -84,7 +76,8 @@ public class AbstractSubscriptionTest {
     byte[] message = stringToBytes("message");
     when(client.writeToChannel(any())).thenReturn(mock(ChannelFuture.class));
 
-    Thread t = new Thread(() -> subscription.publishMessage(client, channel, message));
+    Thread t =
+        new Thread(() -> subscription.publishMessage(subscriptionName, client, channel, message));
     t.start();
     try {
       subscription.readyToPublish();

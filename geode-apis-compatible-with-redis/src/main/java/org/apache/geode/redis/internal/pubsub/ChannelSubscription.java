@@ -27,12 +27,8 @@ import java.util.List;
  */
 class ChannelSubscription extends AbstractSubscription {
 
-  public ChannelSubscription(byte[] channel) {
-    super(channel);
-  }
-
   @Override
-  protected List<Object> createResponse(byte[] channel, byte[] message) {
+  protected List<Object> createResponse(byte[] subscriptionName, byte[] channel, byte[] message) {
     return Arrays.asList(bMESSAGE, channel, message);
   }
 

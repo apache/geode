@@ -16,9 +16,9 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 /**
  * Keeps track of subscriptions of a particular type S.
@@ -33,7 +33,7 @@ interface SubscriptionManager<S extends Subscription> {
   /**
    * For each subscription on the given channel invoke the given action.
    */
-  void foreachSubscription(byte[] channel, BiConsumer<Client, Subscription> action);
+  void foreachSubscription(byte[] channel, ForEachConsumer action);
 
   /**
    * returns the ids (channel or pattern) for all the subscriptions added

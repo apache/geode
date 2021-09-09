@@ -15,9 +15,8 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.function.BiConsumer;
-
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 /**
  * An instance of this interface keeps track of all the clients
@@ -34,7 +33,7 @@ interface ClientSubscriptionManager<S> {
    * that the channel needs to match.
    * For managers without a pattern all subscriptions match.
    */
-  void forEachSubscription(String channel, BiConsumer<Client, Subscription> action);
+  void forEachSubscription(byte[] subscriptionName, String channel, ForEachConsumer action);
 
   /**
    * return how many subscriptions this manager has.

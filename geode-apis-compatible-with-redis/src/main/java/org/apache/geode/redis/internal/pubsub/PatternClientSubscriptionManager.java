@@ -15,11 +15,11 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class PatternClientSubscriptionManager
     extends AbstractClientSubscriptionManager<PatternSubscription> {
@@ -30,9 +30,9 @@ class PatternClientSubscriptionManager
    */
   private final Pattern pattern;
 
-  public PatternClientSubscriptionManager(Client client, PatternSubscription subscription) {
+  public PatternClientSubscriptionManager(Client client, byte[] patternBytes,
+      PatternSubscription subscription) {
     super(client, subscription);
-    byte[] patternBytes = subscription.getSubscriptionName();
     pattern = GlobPattern.createPattern(patternBytes);
   }
 
@@ -49,9 +49,9 @@ class PatternClientSubscriptionManager
   }
 
   @Override
-  public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {
+  public void forEachSubscription(byte[] subscriptionName, String channel, ForEachConsumer action) {
     if (matches(channel)) {
-      super.forEachSubscription(channel, action);
+      super.forEachSubscription(subscriptionName, channel, action);
     }
   }
 

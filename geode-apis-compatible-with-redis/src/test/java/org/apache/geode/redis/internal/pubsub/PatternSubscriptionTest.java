@@ -29,9 +29,9 @@ public class PatternSubscriptionTest {
     byte[] name = stringToBytes("subscription");
     byte[] channel = stringToBytes("channel");
     byte[] message = stringToBytes("message");
-    AbstractSubscription subscription = new PatternSubscription(name);
+    AbstractSubscription subscription = new PatternSubscription();
 
-    List<Object> result = subscription.createResponse(channel, message);
+    List<Object> result = subscription.createResponse(name, channel, message);
 
     assertThat(result).containsExactly(StringBytesGlossary.bPMESSAGE, name, channel, message);
   }

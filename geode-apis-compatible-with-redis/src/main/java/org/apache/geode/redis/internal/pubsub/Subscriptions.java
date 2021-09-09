@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.netty.Client;
@@ -33,13 +32,12 @@ import org.apache.geode.redis.internal.netty.Client;
  * Class that manages both channel and pattern subscriptions.
  * The data associated with subscriptions is organized like so:
  * 1. Client stores a byte array containing the channel or pattern name in a Set.
- * 2. Subscriptions has two SubscriptionManager instances; one or channels and one for patterns.
+ * 2. Subscriptions has two SubscriptionManager instances; one for channels and one for patterns.
  * 3. Each SubscriptionManager uses a Map to store a SubscriptionId (that references the same
  * channel or pattern name as the Client) as a key, and a ClientSubscriptionManager as a value.
  * 4. Each ClientSubscriptionManager uses a Map to store a Client as a key and a Subscription as a
  * value.
- * 5. Each Subscription references the same channel or pattern name as the Client,
- * and a reference to its Client. It also has a CountdownLatch.
+ * 5. Each Subscription has a CountdownLatch.
  */
 public class Subscriptions {
 
@@ -66,7 +64,11 @@ public class Subscriptions {
     return getChannelSubscriptionCount(channel) + getPatternSubscriptionCount(channel);
   }
 
-  public void forEachSubscription(byte[] channel, BiConsumer<Client, Subscription> action) {
+  public interface ForEachConsumer {
+    void accept(byte[] subscriptionName, Client client, Subscription subscription);
+  }
+
+  public void forEachSubscription(byte[] channel, ForEachConsumer action) {
     channelSubscriptions.foreachSubscription(channel, action);
     patternSubscriptions.foreachSubscription(channel, action);
   }

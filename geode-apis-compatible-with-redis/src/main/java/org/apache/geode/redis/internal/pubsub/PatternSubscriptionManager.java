@@ -17,11 +17,11 @@ package org.apache.geode.redis.internal.pubsub;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
-import java.util.function.BiConsumer;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class PatternSubscriptionManager
     extends AbstractSubscriptionManager<PatternSubscription> {
@@ -31,8 +31,8 @@ class PatternSubscriptionManager
   }
 
   @Override
-  protected PatternSubscription createSubscription(byte[] pattern) {
-    return new PatternSubscription(pattern);
+  protected PatternSubscription createSubscription() {
+    return new PatternSubscription();
   }
 
   @Override
@@ -42,11 +42,11 @@ class PatternSubscriptionManager
 
   @Override
   protected ClientSubscriptionManager<PatternSubscription> createClientManager(
-      Client client, PatternSubscription subscription) {
+      Client client, byte[] patternBytes, PatternSubscription subscription) {
     try {
-      return new PatternClientSubscriptionManager(client, subscription);
+      return new PatternClientSubscriptionManager(client, patternBytes, subscription);
     } catch (PatternSyntaxException ex) {
-      client.removePatternSubscription(subscription.getSubscriptionName());
+      client.removePatternSubscription(patternBytes);
       throw ex;
     }
   }
@@ -62,11 +62,10 @@ class PatternSubscriptionManager
   }
 
   @Override
-  public void foreachSubscription(byte[] channel, BiConsumer<Client, Subscription> action) {
+  public void foreachSubscription(byte[] channel, ForEachConsumer action) {
     final String channelString = bytesToString(channel);
-    for (ClientSubscriptionManager<PatternSubscription> manager : clientManagers.values()) {
-      manager.forEachSubscription(channelString, action);
-    }
+    clientManagers.forEach((id, manager) -> manager.forEachSubscription(id.getSubscriptionIdBytes(),
+        channelString, action));
   }
 
   @Override
@@ -80,7 +79,8 @@ class PatternSubscriptionManager
   private static final ClientSubscriptionManager<PatternSubscription> EMPTY_PATTERN_MANAGER =
       new ClientSubscriptionManager<PatternSubscription>() {
         @Override
-        public void forEachSubscription(String channel, BiConsumer<Client, Subscription> action) {}
+        public void forEachSubscription(byte[] subscriptionName, String channel,
+            ForEachConsumer action) {}
 
         @Override
         public int getSubscriptionCount() {

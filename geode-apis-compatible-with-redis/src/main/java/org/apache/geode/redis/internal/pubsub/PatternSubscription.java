@@ -27,13 +27,9 @@ import java.util.List;
  */
 class PatternSubscription extends AbstractSubscription {
 
-  public PatternSubscription(byte[] pattern) {
-    super(pattern);
-  }
-
   @Override
-  protected List<Object> createResponse(byte[] channel, byte[] message) {
-    return Arrays.asList(bPMESSAGE, getSubscriptionName(), channel, message);
+  protected List<Object> createResponse(byte[] subscriptionName, byte[] channel, byte[] message) {
+    return Arrays.asList(bPMESSAGE, subscriptionName, channel, message);
   }
 
 }

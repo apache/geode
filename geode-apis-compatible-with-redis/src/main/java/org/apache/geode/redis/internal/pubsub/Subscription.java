@@ -21,18 +21,15 @@ import org.apache.geode.redis.internal.netty.Client;
 
 
 /**
- * Interface that represents the relationship between a channel or pattern and client.
+ * Interface that represents a subscription that was made by a client on a channel or pattern.
+ * It supports telling a subscription it is ready to publish messages
+ * and the ability to publish a message to a subscribed client.
  */
 public interface Subscription {
   /**
    * Will publish a message to the designated client and channel
    */
-  void publishMessage(Client client, byte[] channel, byte[] message);
-
-  /**
-   * Return the channel or pattern name.
-   */
-  byte[] getSubscriptionName();
+  void publishMessage(byte[] subscriptionName, Client client, byte[] channel, byte[] message);
 
   void readyToPublish();
 }

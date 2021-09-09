@@ -29,9 +29,9 @@ public class ChannelSubscriptionTest {
     byte[] name = stringToBytes("subscription");
     byte[] channel = stringToBytes("channel");
     byte[] message = stringToBytes("message");
-    AbstractSubscription subscription = new ChannelSubscription(name);
+    AbstractSubscription subscription = new ChannelSubscription();
 
-    List<Object> result = subscription.createResponse(channel, message);
+    List<Object> result = subscription.createResponse(name, channel, message);
 
     assertThat(result).containsExactly(StringBytesGlossary.bMESSAGE, channel, message);
   }
