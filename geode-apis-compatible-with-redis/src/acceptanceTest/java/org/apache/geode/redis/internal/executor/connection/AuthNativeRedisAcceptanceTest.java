@@ -17,11 +17,8 @@ package org.apache.geode.redis.internal.executor.connection;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.RedisURI;
 import org.junit.After;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.testcontainers.containers.GenericContainer;
 import redis.clients.jedis.Jedis;
@@ -66,18 +63,4 @@ public class AuthNativeRedisAcceptanceTest extends AbstractAuthIntegrationTest {
     return redisContainer.getFirstMappedPort();
   }
 
-  @Override
-  @Test
-  public void givenNoSecurity_lettuceV6AuthClient_defaultUsernameAndAnyPassword_passes() {
-    setupCacheWithoutSecurity();
-
-    // Implicitly sends the default username ('default') as part of the AUTH request. This is
-    // because lettuce
-    // detects a Redis 6 server.
-    RedisURI uri =
-        RedisURI.create(String.format("redis://%s@localhost:%d", "not-default", getPort()));
-    RedisClient client = RedisClient.create(uri);
-
-    client.connect().sync().ping();
-  }
 }

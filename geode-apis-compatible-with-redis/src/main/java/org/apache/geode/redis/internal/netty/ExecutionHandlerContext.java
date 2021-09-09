@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -71,7 +72,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
-  private final SecurityManager securityManager;
+  private final SecurityService securityService;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
@@ -92,7 +93,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       String username,
       int serverPort,
       DistributedMember member,
-      SecurityManager securityManager) {
+      SecurityService securityService) {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
@@ -102,7 +103,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.client = new Client(channel, pubsub);
     this.serverPort = serverPort;
     this.member = member;
-    this.securityManager = securityManager;
+    this.securityService = securityService;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
@@ -280,7 +281,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @return True if no authentication required or authentication is complete, false otherwise
    */
   public boolean isAuthenticated() {
-    return securityManager == null || principal != null;
+    return (!securityService.isIntegratedSecurity()) || principal != null;
   }
 
   /**
@@ -351,8 +352,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return regionProvider.getSetCommands();
   }
 
-  public SecurityManager getSecurityManager() {
-    return securityManager;
+  public SecurityService getSecurityService() {
+    return securityService;
   }
 
 }

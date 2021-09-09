@@ -22,6 +22,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -37,7 +38,6 @@ import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
-import org.apache.geode.security.SecurityManager;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -84,12 +84,12 @@ public class GeodeRedisServer {
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-    SecurityManager securityManager = cache.getSecurityService().getSecurityManager();
+    SecurityService securityService = cache.getSecurityService();
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        member, securityManager);
+        member, securityService);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }

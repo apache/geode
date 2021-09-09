@@ -3520,7 +3520,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Returns the value of the
    * {@link ConfigurationProperties#REDIS_USERNAME} property
    *
-   * @return the authentication password for GeodeRedisServer
+   * @return the authentication username for GeodeRedisServer
    *
    * @since GemFire 8.0
    */

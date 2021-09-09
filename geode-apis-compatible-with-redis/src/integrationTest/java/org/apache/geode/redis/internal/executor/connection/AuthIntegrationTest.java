@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Test;
@@ -82,6 +83,22 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithSecurity();
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
     assertThat(iD.getConfig().getRedisUsername()).isEqualTo(USERNAME);
+  }
+
+  @Test
+  public void givenNoSecurity_accessWithAuthAndOnlyPassword_fails() throws Exception {
+    setupCacheWithoutSecurity();
+
+    assertThatThrownBy(() -> jedis.auth("password"))
+        .hasMessageContaining("ERR");
+  }
+
+  @Test
+  public void givenNoSecurity_accessWithAuthAndUsernamePassword_fails() throws Exception {
+    setupCacheWithoutSecurity();
+
+    assertThatThrownBy(() -> jedis.auth("username", "password"))
+        .hasMessageContaining("ERR");
   }
 
 }

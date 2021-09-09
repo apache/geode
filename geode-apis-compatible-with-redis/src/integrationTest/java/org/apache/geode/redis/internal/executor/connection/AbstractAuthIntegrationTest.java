@@ -65,8 +65,7 @@ public abstract class AbstractAuthIntegrationTest {
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
         .hasMessage("NOAUTH Authentication required.");
 
-    String res = jedis.auth(USERNAME, PASSWORD);
-    assertThat(res).isEqualTo("OK");
+    assertThat(jedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
 
     jedis.set("foo", "bar"); // No exception
   }
@@ -118,66 +117,6 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThat(jedis.ping()).isEqualTo("PONG");
-  }
-
-  @Test
-  public void givenNoSecurity_authWithDefaultUsernameAndEmptyPassword_passes() throws Exception {
-    setupCacheWithoutSecurity();
-
-    assertThat(jedis.auth(USERNAME, "")).isEqualTo("OK");
-    assertThat(jedis.ping()).isEqualTo("PONG");
-  }
-
-  @Test
-  public void givenNoSecurity_authWithDefaultUsernameAndAnyPassword_passes() throws Exception {
-    setupCacheWithoutSecurity();
-
-    assertThat(jedis.auth(USERNAME, "wrong-password")).isEqualTo("OK");
-    assertThat(jedis.ping()).isEqualTo("PONG");
-  }
-
-  @Test
-  public void givenNoSecurity_authWithNonDefaultUsername_fails() throws Exception {
-    setupCacheWithoutSecurity();
-
-    assertThatThrownBy(() -> jedis.auth("wrong-username", PASSWORD))
-        .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
-  }
-
-  @Test
-  public void givenNoSecurity_authWithPasswordButWithoutUsername_fails() throws Exception {
-    setupCacheWithoutSecurity();
-
-    assertThatThrownBy(() -> jedis.auth("wrong-password"))
-        .hasMessage(
-            "ERR AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?");
-  }
-
-  @Test
-  public void givenNoSecurity_lettuceV6AuthClient_defaultUsernameAndAnyPassword_passes()
-      throws Exception {
-    setupCacheWithoutSecurity();
-
-    RedisURI uri =
-        RedisURI.create(String.format("redis://%s@localhost:%d", "not-default", getPort()));
-    RedisClient client = RedisClient.create(uri);
-
-    assertThatThrownBy(() -> client.connect().sync().ping())
-        .hasRootCauseMessage(
-            "ERR AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?");
-  }
-
-  @Test
-  public void givenNoSecurity_lettuceV6AuthClient_andNonDefaultUsername_fails()
-      throws Exception {
-    setupCacheWithoutSecurity();
-
-    RedisURI uri = RedisURI.create(
-        String.format("redis://%s:%s@localhost:%d", "wrong-username", "not-default", getPort()));
-    RedisClient client = RedisClient.create(uri);
-
-    assertThatThrownBy(() -> client.connect().sync().ping())
-        .hasRootCauseMessage("WRONGPASS invalid username-password pair or user is disabled.");
   }
 
 }

@@ -1318,7 +1318,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(REDIS_ENABLED,
         "When the default value of false, the Redis API for Geode is not available.  Set to true to enable the Redis API for Geode.");
     m.put(REDIS_USERNAME,
-        "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.");
+        "Specifies the username that the server uses when a client attempts to authenticate using only a password. The default is 'default'.");
     m.put(REDIS_PORT,
         "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,

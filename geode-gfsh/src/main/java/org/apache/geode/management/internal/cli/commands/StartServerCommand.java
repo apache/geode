@@ -139,7 +139,7 @@ public class StartServerCommand extends OfflineGfshCommand {
               + CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
       @CliOption(key = CliStrings.START_SERVER__REDIS_USERNAME,
           help = EXPERIMENTAL
-              + CliStrings.START_SERVER__REDIS_USERNAME__HELP) final String redisPassword,
+              + CliStrings.START_SERVER__REDIS_USERNAME__HELP) final String redisUsername,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -211,7 +211,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
         logLevel, maxConnections, maxHeap, maxMessageCount, maxThreads, mcastBindAddress, mcastPort,
         memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort, redisBindAddress,
-        redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
+        redisUsername, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
         httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
@@ -227,7 +227,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
       String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
       Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
-      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisPassword,
+      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisUsername,
       Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
       Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
@@ -291,7 +291,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_USERNAME,
-        redisPassword);
+        redisUsername);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
@@ -313,7 +313,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
 
-    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisPassword)
+    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisUsername)
         || StringUtils.isNotBlank(redisBindAddress)) {
       gemfireProperties.setProperty(ConfigurationProperties.REDIS_ENABLED, "true");
     }
