@@ -38,7 +38,6 @@ public class RedisKeyJUnitTest {
   @Test
   public void testSerialization() throws Exception {
     RedisKey keyOut = new RedisKey(stringToBytes("012345"));
-    assertThat((short) keyOut.getSlot()).isPositive();
 
     HeapDataOutputStream out = new HeapDataOutputStream(100);
     DataSerializer.writeObject(keyOut, out);

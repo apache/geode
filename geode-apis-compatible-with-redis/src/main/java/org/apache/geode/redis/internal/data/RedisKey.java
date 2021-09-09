@@ -79,7 +79,6 @@ public class RedisKey implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException {
-    // Need to convert a signed short to unsigned
     slot = in.readShort();
     value = DataSerializer.readByteArray(in);
   }
