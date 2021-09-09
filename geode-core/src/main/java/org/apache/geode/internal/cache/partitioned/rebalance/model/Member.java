@@ -19,6 +19,9 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -40,7 +43,9 @@ public class Member implements Comparable<Member> {
   private final boolean isCritical;
   private final boolean enforceLocalMaxMemory;
 
-  Member(AddressComparor addressComparor, InternalDistributedMember memberId, boolean isCritical,
+  @VisibleForTesting
+  public Member(AddressComparor addressComparor, InternalDistributedMember memberId,
+      boolean isCritical,
       boolean enforceLocalMaxMemory) {
     this.addressComparor = addressComparor;
     this.memberId = memberId;
@@ -48,12 +53,62 @@ public class Member implements Comparable<Member> {
     this.enforceLocalMaxMemory = enforceLocalMaxMemory;
   }
 
-  Member(AddressComparor addressComparor, InternalDistributedMember memberId, float weight,
+  @VisibleForTesting
+  public Member(AddressComparor addressComparor, InternalDistributedMember memberId, float weight,
       long localMaxMemory, boolean isCritical, boolean enforceLocalMaxMemory) {
     this(addressComparor, memberId, isCritical, enforceLocalMaxMemory);
     this.weight = weight;
     this.localMaxMemory = localMaxMemory;
   }
+
+  /**
+   * Check to see if the member is the last copy of the bucket in the redundancy zone
+   *
+   * @param bucket -- bucket to be deleted from the member
+   * @param distributionManager -- used to check members of redundancy zones
+   */
+
+  public RefusalReason canDelete(Bucket bucket, DistributionManager distributionManager) {
+    // This code only applies to Clusters.
+    if (!(distributionManager instanceof ClusterDistributionManager)) {
+      return RefusalReason.NONE;
+    }
+
+    ClusterDistributionManager clstrDistrMgr = (ClusterDistributionManager) distributionManager;
+    String myRedundancyZone = clstrDistrMgr.getRedundancyZone(memberId);
+    boolean lastMemberOfZone = true;
+
+    if (myRedundancyZone == null) {
+      // Not using redundancy zones, so...
+      return RefusalReason.NONE;
+    }
+
+    for (Member member : bucket.getMembersHosting()) {
+      // Don't look at yourself because you are not redundant for yourself
+      if (member.getMemberId().equals(this.getMemberId())) {
+        continue;
+      }
+
+      String memberRedundancyZone = clstrDistrMgr.getRedundancyZone(member.memberId);
+      if (memberRedundancyZone == null) {
+        // Not using redundancy zones, so...
+        continue;
+      }
+
+      // Does the member redundancy zone match my redundancy zone?
+      // if so we are not the last in the redundancy zone.
+      if (memberRedundancyZone.equals(myRedundancyZone)) {
+        lastMemberOfZone = false;
+      }
+    }
+
+    if (lastMemberOfZone) {
+      return RefusalReason.LAST_MEMBER_IN_ZONE;
+    }
+
+    return RefusalReason.NONE;
+  }
+
 
   /**
    * @param sourceMember the member we will be moving this bucket off of
@@ -213,7 +268,7 @@ public class Member implements Comparable<Member> {
   }
 
   void changeTotalBytes(float change) {
-    totalBytes += (long) Math.round(change);
+    totalBytes += Math.round(change);
   }
 
   @Override
