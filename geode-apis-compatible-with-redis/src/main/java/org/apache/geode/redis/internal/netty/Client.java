@@ -42,6 +42,11 @@ public class Client {
 
   private final Channel channel;
   private final ByteBufAllocator byteBufAllocator;
+  /**
+   * The subscription sets do not need to be thread safe
+   * because they are only used by a single thread as it
+   * does pubsub operations for a particular Client.
+   */
   private final Set<byte[]> channelSubscriptions =
       new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
   private final Set<byte[]> patternSubscriptions =

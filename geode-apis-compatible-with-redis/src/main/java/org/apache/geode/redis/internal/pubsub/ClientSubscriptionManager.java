@@ -23,6 +23,7 @@ import org.apache.geode.redis.internal.netty.Client;
  * An instance of this interface keeps track of all the clients
  * that have active subscriptions to the channel or pattern that
  * this instance represents.
+ * In a given manager all of its subscriptions will have the same name.
  */
 interface ClientSubscriptionManager<S> {
 

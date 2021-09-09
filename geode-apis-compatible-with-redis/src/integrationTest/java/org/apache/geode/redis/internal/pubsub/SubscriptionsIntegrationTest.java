@@ -41,11 +41,11 @@ public class SubscriptionsIntegrationTest {
 
   private final Subscriptions subscriptions = new Subscriptions();
 
-  private final AtomicInteger dummyCount = new AtomicInteger();
+  private final AtomicInteger channelCount = new AtomicInteger();
 
   private byte[] createChannel() {
-    int myDummyCount = dummyCount.incrementAndGet();
-    return stringToBytes("dummy-" + myDummyCount);
+    int myChannelCount = channelCount.incrementAndGet();
+    return stringToBytes("channel-" + myChannelCount);
   }
 
   private Client createClient() {
@@ -68,8 +68,9 @@ public class SubscriptionsIntegrationTest {
   public void getChannelSubscriptionCount_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
         i -> subscriptions.addChannel(createChannel(), createClient()),
-        i -> subscriptions.getChannelSubscriptionCount(stringToBytes("dummy-" + dummyCount.get())))
-            .run();
+        i -> subscriptions
+            .getChannelSubscriptionCount(stringToBytes("channel-" + channelCount.get())))
+                .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);
   }
@@ -88,7 +89,7 @@ public class SubscriptionsIntegrationTest {
   public void findChannelNames_withPattern_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
         i -> subscriptions.addChannel(createChannel(), createClient()),
-        i -> subscriptions.findChannelNames(stringToBytes("dummy-*")))
+        i -> subscriptions.findChannelNames(stringToBytes("channel-*")))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS);

@@ -22,6 +22,11 @@ import org.apache.geode.redis.internal.executor.GlobPattern;
 
 class PatternClientSubscriptionManager
     extends AbstractClientSubscriptionManager<PatternSubscription> {
+  /**
+   * Since all the subscriptions in an instance of this manager
+   * have the same pattern, its compiled form is kept in this field
+   * instead of on each PatternSubscription instance.
+   */
   private final Pattern pattern;
 
   public PatternClientSubscriptionManager(PatternSubscription subscription) {
@@ -36,16 +41,15 @@ class PatternClientSubscriptionManager
 
   @Override
   public int getSubscriptionCount(String channel) {
-    int result = super.getSubscriptionCount();
-    if (result > 0 && !matches(channel)) {
-      result = 0;
+    if (matches(channel)) {
+      return getSubscriptionCount();
     }
-    return result;
+    return 0;
   }
 
   @Override
   public void forEachSubscription(String channel, Consumer<Subscription> action) {
-    if (getSubscriptionCount() > 0 && matches(channel)) {
+    if (matches(channel)) {
       super.forEachSubscription(channel, action);
     }
   }
