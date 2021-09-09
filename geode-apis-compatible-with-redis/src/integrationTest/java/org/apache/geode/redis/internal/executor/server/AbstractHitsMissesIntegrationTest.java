@@ -188,6 +188,16 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSetex() {
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setex(k, 200L, v));
+  }
+
+  @Test
+  public void testPsetex() {
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.psetex(k, 200000L, v));
+  }
+
+  @Test
   public void testGetset() {
     runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
   }
@@ -476,11 +486,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testMsetnx() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.msetnx(k, v));
-  }
-
-  @Test
-  public void testSetex() {
-    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setex(k, 200L, v));
   }
 
   @Test

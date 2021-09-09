@@ -187,7 +187,9 @@ public enum RedisCommandType {
   GETRANGE(new GetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   MGET(new MGetExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  PSETEX(new PSetEXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  SETEX(new SetEXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
@@ -293,9 +295,7 @@ public enum RedisCommandType {
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
   MSETNX(new MSetNXExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
-  PSETEX(new PSetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SETEX(new SetEXExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
   SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
 
   /**************** Sets *****************/
