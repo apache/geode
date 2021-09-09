@@ -53,11 +53,14 @@ interface SubscriptionManager<S extends Subscription> {
   int getSubscriptionCount();
 
   /**
-   * add the given subscription to this manager. If the manager already
-   * has a subscription with the same id and client then the old one is
-   * replaced by this one.
+   * Add and return a subscription to this manager with the given
+   * id and client. If the manager already
+   * has a subscription with the same id and client then nothing
+   * is added.
+   *
+   * @return the new subscription or null if one already existed
    */
-  void add(S subscription);
+  S add(byte[] channelOrPattern, Client client);
 
   /**
    * remove and subscriptions that have been added to this manager by the

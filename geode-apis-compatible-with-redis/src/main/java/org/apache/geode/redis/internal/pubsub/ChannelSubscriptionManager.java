@@ -23,6 +23,16 @@ import org.apache.geode.redis.internal.netty.Client;
 class ChannelSubscriptionManager
     extends AbstractSubscriptionManager<ChannelSubscription> {
   @Override
+  protected boolean addToClient(Client client, byte[] channel) {
+    return client.addChannelSubscription(channel);
+  }
+
+  @Override
+  protected ChannelSubscription createSubscription(byte[] channel, Client client) {
+    return new ChannelSubscription(channel, client);
+  }
+
+  @Override
   protected ClientSubscriptionManager<ChannelSubscription> emptyClientManager() {
     return EMPTY_CHANNEL_MANAGER;
   }

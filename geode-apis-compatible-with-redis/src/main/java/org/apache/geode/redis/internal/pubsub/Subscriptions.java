@@ -93,12 +93,12 @@ public class Subscriptions {
     return channelSubscriptions.getSubscriptionCount();
   }
 
-  void add(ChannelSubscription subscription) {
-    channelSubscriptions.add(subscription);
+  ChannelSubscription addChannel(byte[] channel, Client client) {
+    return channelSubscriptions.add(channel, client);
   }
 
-  void add(PatternSubscription subscription) {
-    patternSubscriptions.add(subscription);
+  PatternSubscription addPattern(byte[] pattern, Client client) {
+    return patternSubscriptions.add(pattern, client);
   }
 
   /**
@@ -120,30 +120,13 @@ public class Subscriptions {
   }
 
   public SubscribeResult subscribe(byte[] channel, Client client) {
-    ChannelSubscription createdSubscription = null;
-    if (client.addChannelSubscription(channel)) {
-      createdSubscription = new ChannelSubscription(channel, client);
-      add(createdSubscription);
-    }
+    ChannelSubscription createdSubscription = addChannel(channel, client);
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
   public SubscribeResult psubscribe(byte[] patternBytes, Client client) {
-    PatternSubscription createdSubscription = null;
-    if (client.addPatternSubscription(patternBytes)) {
-      boolean added = false;
-      try {
-        createdSubscription = new PatternSubscription(patternBytes, client);
-        add(createdSubscription);
-        added = true;
-      } finally {
-        if (!added) {
-          // Must have had a problem parsing the pattern
-          client.removePatternSubscription(patternBytes);
-        }
-      }
-    }
+    PatternSubscription createdSubscription = addPattern(patternBytes, client);
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, patternBytes);
   }

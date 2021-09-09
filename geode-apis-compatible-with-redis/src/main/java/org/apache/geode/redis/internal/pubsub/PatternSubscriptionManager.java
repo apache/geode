@@ -18,12 +18,23 @@ package org.apache.geode.redis.internal.pubsub;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.function.Consumer;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
 
 class PatternSubscriptionManager
     extends AbstractSubscriptionManager<PatternSubscription> {
+  @Override
+  protected boolean addToClient(Client client, byte[] pattern) {
+    return client.addPatternSubscription(pattern);
+  }
+
+  @Override
+  protected PatternSubscription createSubscription(byte[] pattern, Client client) {
+    return new PatternSubscription(pattern, client);
+  }
+
   @Override
   protected ClientSubscriptionManager<PatternSubscription> emptyClientManager() {
     return EMPTY_PATTERN_MANAGER;
@@ -32,7 +43,12 @@ class PatternSubscriptionManager
   @Override
   protected ClientSubscriptionManager<PatternSubscription> createClientManager(
       PatternSubscription subscription) {
-    return new PatternClientSubscriptionManager(subscription);
+    try {
+      return new PatternClientSubscriptionManager(subscription);
+    } catch (PatternSyntaxException ex) {
+      subscription.getClient().removePatternSubscription(subscription.getSubscriptionName());
+      throw ex;
+    }
   }
 
   @Override

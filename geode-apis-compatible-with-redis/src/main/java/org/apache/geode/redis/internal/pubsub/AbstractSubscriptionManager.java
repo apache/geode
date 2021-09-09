@@ -66,9 +66,16 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
     return sum;
   }
 
+  protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
+
+  protected abstract S createSubscription(byte[] channelOrPattern, Client client);
+
   @Override
-  public void add(S subscription) {
-    final byte[] channelOrPattern = subscription.getSubscriptionName();
+  public S add(byte[] channelOrPattern, Client client) {
+    if (!addToClient(client, channelOrPattern)) {
+      return null;
+    }
+    final S subscription = createSubscription(channelOrPattern, client);
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager<S> newManager = null;
     ClientSubscriptionManager<S> existingManager = clientManagers.get(subscriptionId);
@@ -84,12 +91,12 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
         existingManager = clientManagers.putIfAbsent(subscriptionId, newManager);
         if (existingManager == null) {
           // newManager was added to map so all done
-          return;
+          return subscription;
         }
       }
       if (existingManager.add(subscription)) {
         // subscription added to existingManager so all done
-        return;
+        return subscription;
       }
       // existingManager is empty so remove it
       // and try to add newManager again.

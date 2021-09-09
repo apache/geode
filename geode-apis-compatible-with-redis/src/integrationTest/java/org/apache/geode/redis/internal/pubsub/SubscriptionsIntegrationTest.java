@@ -20,6 +20,7 @@ package org.apache.geode.redis.internal.pubsub;
 import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,17 +43,22 @@ public class SubscriptionsIntegrationTest {
 
   private final AtomicInteger dummyCount = new AtomicInteger();
 
-  private ChannelSubscription createDummy() {
+  private byte[] createChannel() {
     int myDummyCount = dummyCount.incrementAndGet();
+    return stringToBytes("dummy-" + myDummyCount);
+  }
+
+  private Client createClient() {
     Client client = mock(Client.class);
-    return new ChannelSubscription(stringToBytes("dummy-" + myDummyCount), client);
+    when(client.addChannelSubscription(any())).thenReturn(true);
+    return client;
   }
 
   @Test
   public void add_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(createDummy()),
-        i -> subscriptions.add(createDummy()))
+        i -> subscriptions.addChannel(createChannel(), createClient()),
+        i -> subscriptions.addChannel(createChannel(), createClient()))
             .run();
 
     assertThat(subscriptions.size()).isEqualTo(ITERATIONS * 2);
@@ -61,7 +67,7 @@ public class SubscriptionsIntegrationTest {
   @Test
   public void getChannelSubscriptionCount_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.addChannel(createChannel(), createClient()),
         i -> subscriptions.getChannelSubscriptionCount(stringToBytes("dummy-" + dummyCount.get())))
             .run();
 
@@ -71,7 +77,7 @@ public class SubscriptionsIntegrationTest {
   @Test
   public void findChannelNames_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.addChannel(createChannel(), createClient()),
         i -> subscriptions.findChannelNames())
             .run();
 
@@ -81,7 +87,7 @@ public class SubscriptionsIntegrationTest {
   @Test
   public void findChannelNames_withPattern_doesNotThrowException_whenListIsConcurrentlyModified() {
     new ConcurrentLoopingThreads(ITERATIONS,
-        i -> subscriptions.add(createDummy()),
+        i -> subscriptions.addChannel(createChannel(), createClient()),
         i -> subscriptions.findChannelNames(stringToBytes("dummy-*")))
             .run();
 
@@ -98,9 +104,7 @@ public class SubscriptionsIntegrationTest {
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel, mock(PubSub.class));
       clients.add(client);
-      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
-      client.addChannelSubscription(subscription.getSubscriptionName());
-      subscriptions.add(subscription);
+      subscriptions.addChannel(stringToBytes("channel"), client);
     }
 
     new ConcurrentLoopingThreads(1,
@@ -119,9 +123,7 @@ public class SubscriptionsIntegrationTest {
       when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
       Client client = new Client(channel, mock(PubSub.class));
       clients.add(client);
-      ChannelSubscription subscription = new ChannelSubscription(stringToBytes("channel"), client);
-      client.addChannelSubscription(subscription.getSubscriptionName());
-      subscriptions.add(subscription);
+      subscriptions.addChannel(stringToBytes("channel"), client);
     }
 
     new ConcurrentLoopingThreads(1,
