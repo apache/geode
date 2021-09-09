@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.netty;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -222,7 +223,7 @@ public class NettyRedisServer {
       }
       sslContext = sslContextBuilder.build();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
     p.addLast(sslContext.newHandler(ch.alloc()));
   }

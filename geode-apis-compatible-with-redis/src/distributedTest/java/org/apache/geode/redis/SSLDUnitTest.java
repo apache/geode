@@ -102,16 +102,12 @@ public class SSLDUnitTest {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
     IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
-    Jedis jedis;
-    try {
-      // Create the client without a keystore
-      jedis = createClient(false, false);
-    } catch (JedisConnectionException ignored) {
-      return;
-    }
-
     // Sometimes the client is created successfully - perhaps this is platform/JDK specific
-    assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+    assertThatThrownBy(() -> {
+      Jedis jedis = createClient(false, false);
+      jedis.ping();
+    }).satisfiesAnyOf(
+        e -> assertThat(e).isInstanceOf(JedisConnectionException.class),
         e -> assertThat(e.getMessage()).contains("SocketException"),
         e -> assertThat(e.getMessage()).contains("SSLException"),
         e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
@@ -124,16 +120,12 @@ public class SSLDUnitTest {
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
     IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
-    Jedis jedis;
-    try {
-      // Create the client with a self-signed certificate
-      jedis = createClient(true, true);
-    } catch (JedisConnectionException ignored) {
-      return;
-    }
-
     // Sometimes the client is created successfully - perhaps this is platform/JDK specific
-    assertThatThrownBy(jedis::ping).satisfiesAnyOf(
+    assertThatThrownBy(() -> {
+      Jedis jedis = createClient(true, true);
+      jedis.ping();
+    }).satisfiesAnyOf(
+        e -> assertThat(e).isInstanceOf(JedisConnectionException.class),
         e -> assertThat(e.getMessage()).contains("SocketException"),
         e -> assertThat(e.getMessage()).contains("SSLException"),
         e -> assertThat(e.getMessage()).contains("SSLHandshakeException"));
@@ -174,11 +166,11 @@ public class SSLDUnitTest {
 
     // Wait for one second since file timestamp granularity may only be seconds depending on the
     // platform.
-    GeodeAwaitility.await().during(Duration.ofSeconds(1)).until(() -> true);
+    Thread.sleep(1000);
     serverStore.createKeyStore(serverKeyStoreFilename, commonPassword);
 
     // Try long enough for the file change to be detected
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 2))
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 3))
         .untilAsserted(() -> {
           try (Jedis jedis = createClient(true, false)) {
             jedis.ping();
@@ -209,7 +201,7 @@ public class SSLDUnitTest {
 
     // Wait for one second since file timestamp granularity may only be seconds depending on the
     // platform.
-    GeodeAwaitility.await().during(Duration.ofSeconds(1)).until(() -> true);
+    Thread.sleep(1000);
     serverStore.createKeyStore(serverKeyStoreFilename, commonPassword);
     serverStore.createTrustStore(serverTrustStoreFilename, commonPassword);
 
@@ -217,7 +209,7 @@ public class SSLDUnitTest {
     IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
     // Try long enough for the file change to be detected
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 2))
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 3))
         .untilAsserted(() -> {
           assertThatThrownBy(() -> createClient(true, false))
               .isInstanceOf(JedisConnectionException.class);
