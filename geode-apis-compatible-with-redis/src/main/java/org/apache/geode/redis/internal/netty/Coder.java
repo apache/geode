@@ -429,9 +429,10 @@ public class Coder {
    * @throws NumberFormatException if the double cannot be parsed
    */
   public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF)) {
+    if (d.equalsIgnoreCase(P_INF) || d.equalsIgnoreCase("+infinity")
+        || d.equalsIgnoreCase("infinity")) {
       return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF)) {
+    } else if (d.equalsIgnoreCase(N_INF) || d.equalsIgnoreCase("-infinity")) {
       return Double.NEGATIVE_INFINITY;
     } else {
       return Double.parseDouble(d);

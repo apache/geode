@@ -204,8 +204,8 @@ public abstract class AbstractRedisData implements RedisData {
         break;
       case ZADDS:
         int numMembers = DataSerializer.readPrimitiveInt(in);
-        List<byte[]> members = new ArrayList<>();
-        List<Double> scores = new ArrayList<>();
+        List<byte[]> members = new ArrayList<>(numMembers);
+        List<Double> scores = new ArrayList<>(numMembers);
         for (int i = 0; i < numMembers; i++) {
           members.add(DataSerializer.readByteArray(in));
           scores.add(DataSerializer.readDouble(in));

@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -111,11 +111,11 @@ public class RedisSortedSet extends AbstractRedisData {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    int size = InternalDataSerializer.readPrimitiveInt(in);
+    int size = DataSerializer.readPrimitiveInt(in);
     members = new MemberMap(size);
     for (int i = 0; i < size; i++) {
-      byte[] member = InternalDataSerializer.readByteArray(in);
-      double score = InternalDataSerializer.readDouble(in);
+      byte[] member = DataSerializer.readByteArray(in);
+      double score = DataSerializer.readDouble(in);
       OrderedSetEntry newEntry = new OrderedSetEntry(member, score);
       members.put(member, newEntry);
       scoreSet.add(newEntry);
@@ -163,16 +163,11 @@ public class RedisSortedSet extends AbstractRedisData {
       if (entry.score == scoreToAdd) {
         return false;
       }
-      updateScore(memberToAdd, scoreToAdd, entry);
+      scoreSet.remove(entry);
+      entry.updateScore(scoreToAdd);
+      scoreSet.add(entry);
     }
     return true;
-  }
-
-  private void updateScore(byte[] memberToAdd, double scoreToAdd, OrderedSetEntry entry) {
-    scoreSet.remove(entry);
-    entry.updateScore(scoreToAdd);
-    members.put(memberToAdd, entry);
-    scoreSet.add(entry);
   }
 
   synchronized boolean memberRemove(byte[] member) {
@@ -780,12 +775,12 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     public void toData(DataOutput out) throws IOException {
-      InternalDataSerializer.writePrimitiveInt(size(), out);
+      DataSerializer.writePrimitiveInt(size(), out);
       for (Map.Entry<byte[], OrderedSetEntry> entry : entrySet()) {
         byte[] member = entry.getKey();
         double score = entry.getValue().getScore();
-        InternalDataSerializer.writeByteArray(member, out);
-        InternalDataSerializer.writeDouble(score, out);
+        DataSerializer.writeByteArray(member, out);
+        DataSerializer.writeDouble(score, out);
       }
     }
   }
