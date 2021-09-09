@@ -32,27 +32,37 @@ public class StringBytesGlossary {
   /**
    * byte identifier of a bulk string
    */
-  public static final byte BULK_STRING_ID = 36; // '$'
+  public static final byte BULK_STRING_ID = '$';
 
   /**
    * byte identifier of an array
    */
-  public static final byte ARRAY_ID = 42; // '*'
+  public static final byte ARRAY_ID = '*';
 
   /**
    * byte identifier of a simple string
    */
-  public static final byte SIMPLE_STRING_ID = 43; // '+'
+  public static final byte SIMPLE_STRING_ID = '+';
 
   /**
    * byte identifier of an error
    */
-  public static final byte ERROR_ID = 45; // '-'
+  public static final byte ERROR_ID = '-';
 
   /**
    * byte identifier of an integer
    */
-  public static final byte INTEGER_ID = 58; // ':'
+  public static final byte INTEGER_ID = ':';
+
+  /**
+   * byte identifier of an left paren
+   */
+  public static final byte LEFT_BRACE_ID = '{';
+
+  /**
+   * byte identifier of an right paren
+   */
+  public static final byte RIGHT_BRACE_ID = '}';
 
   // ********** RedisResponse constants **********
   /**

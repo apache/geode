@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEFT_BRACE_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RIGHT_BRACE_ID;
 
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 
@@ -28,24 +30,36 @@ public class KeyHashUtil {
    *
    * @return the slot, a value between 0 and 16K.
    */
-  public static int slotForKey(byte[] value) {
-    int startHashtag = Integer.MAX_VALUE;
-    int endHashtag = 0;
+  public static short slotForKey(byte[] key) {
+    int startHashtag;
+    int endHashtag;
 
-    for (int i = 0; i < value.length; i++) {
-      if (value[i] == '{' && startHashtag == Integer.MAX_VALUE) {
-        startHashtag = i;
-      } else if (value[i] == '}') {
-        endHashtag = i;
+    for (startHashtag = 0; startHashtag < key.length; startHashtag++) {
+      if (key[startHashtag] == LEFT_BRACE_ID) {
         break;
       }
     }
 
-    if (endHashtag - startHashtag <= 1) {
-      startHashtag = -1;
-      endHashtag = value.length;
+    // No starting hashtag, hash the whole thing
+    if (startHashtag == key.length) {
+      return crc16(key, 0, key.length);
     }
 
-    return CRC16.calculate(value, startHashtag + 1, endHashtag) & (REDIS_SLOTS - 1);
+    for (endHashtag = startHashtag + 1; endHashtag < key.length; endHashtag++) {
+      if (key[endHashtag] == RIGHT_BRACE_ID) {
+        break;
+      }
+    }
+
+    // No ending hashtag, or empty hashtag. Hash the whole thing.
+    if (endHashtag == key.length || endHashtag == startHashtag + 1) {
+      return crc16(key, 0, key.length);
+    }
+
+    return crc16(key, startHashtag + 1, endHashtag);
+  }
+
+  private static short crc16(byte[] key, int start, int end) {
+    return (short) (CRC16.calculate(key, start, end) & (REDIS_SLOTS - 1));
   }
 }

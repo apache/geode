@@ -32,7 +32,7 @@ import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 
 public class RedisKey implements DataSerializableFixedID {
 
-  private int slot;
+  private short slot;
   private byte[] value;
 
   public RedisKey() {}
@@ -43,7 +43,6 @@ public class RedisKey implements DataSerializableFixedID {
   }
 
   public int getBucketId() {
-    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
     return getSlot() / REDIS_SLOTS_PER_BUCKET;
   }
 
@@ -81,7 +80,7 @@ public class RedisKey implements DataSerializableFixedID {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException {
     // Need to convert a signed short to unsigned
-    slot = in.readShort() & 0xffff;
+    slot = in.readShort();
     value = DataSerializer.readByteArray(in);
   }
 

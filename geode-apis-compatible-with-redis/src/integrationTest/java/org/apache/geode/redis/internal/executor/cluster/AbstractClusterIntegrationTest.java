@@ -76,6 +76,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
     assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{borked{hashes}"))
         .isEqualTo(1058);
     assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("with{unmatched")).isEqualTo(10479);
+    assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("aaa}bbb{tag}ccc")).isEqualTo(8338);
     assertThat(jedis.getConnectionFromSlot(0).clusterKeySlot("withunmatchedright}"))
         .isEqualTo(10331);
   }
