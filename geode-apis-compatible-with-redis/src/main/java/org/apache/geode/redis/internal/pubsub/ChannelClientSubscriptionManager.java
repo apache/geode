@@ -15,11 +15,72 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class ChannelClientSubscriptionManager
-    extends AbstractClientSubscriptionManager<ChannelSubscription> {
-  public ChannelClientSubscriptionManager(Client client, ChannelSubscription subscription) {
-    super(client, subscription);
+    implements ClientSubscriptionManager {
+  private final Map<Client, Subscription> subscriptionMap = new ConcurrentHashMap<>();
+  /**
+   * This is used instead of map.size() because we need to
+   * make sure that once size goes to zero no further adds
+   * will be made to this manager. Instead a new manager
+   * needs to be created.
+   */
+  private final AtomicInteger size = new AtomicInteger(1);
+
+  public ChannelClientSubscriptionManager(Client client, Subscription subscription) {
+    subscriptionMap.put(client, subscription);
+  }
+
+  @Override
+  public int getSubscriptionCount() {
+    return size.get();
+  }
+
+  @Override
+  public int getSubscriptionCount(String channel) {
+    return size.get();
+  }
+
+  @Override
+  public void forEachSubscription(byte[] subscriptionName, String channelToMatch,
+      ForEachConsumer action) {
+    subscriptionMap
+        .forEach((client, subscription) -> action.accept(subscriptionName, channelToMatch, client,
+            subscription));
+  }
+
+  @Override
+  public boolean add(Client client, Subscription subscription) {
+    // the client has already confirmed that
+    // this is a new subscription.
+    // So map.put should always return null.
+    // This allows us to increment size first
+    // which is needed so we can check it for
+    // zero and not allow the add.
+    int sizeValue;
+    do {
+      sizeValue = size.get();
+      if (sizeValue == 0) {
+        // no adds allowed after it is empty
+        return false;
+      }
+    } while (!size.compareAndSet(sizeValue, sizeValue + 1));
+    subscriptionMap.put(client, subscription);
+    return true;
+  }
+
+  @Override
+  public boolean remove(Client client) {
+    boolean result = true;
+    if (subscriptionMap.remove(client) != null) {
+      result = size.decrementAndGet() > 0;
+    }
+    return result;
   }
 }

@@ -19,30 +19,15 @@ import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class PatternSubscriptionManager
-    extends AbstractSubscriptionManager<PatternSubscription> {
-  @Override
-  protected boolean addToClient(Client client, byte[] pattern) {
-    return client.addPatternSubscription(pattern);
-  }
+    extends AbstractSubscriptionManager {
 
   @Override
-  protected PatternSubscription createSubscription() {
-    return new PatternSubscription();
-  }
-
-  @Override
-  protected ClientSubscriptionManager<PatternSubscription> emptyClientManager() {
-    return EMPTY_PATTERN_MANAGER;
-  }
-
-  @Override
-  protected ClientSubscriptionManager<PatternSubscription> createClientManager(
-      Client client, byte[] patternBytes, PatternSubscription subscription) {
+  protected ClientSubscriptionManager createClientManager(
+      Client client, byte[] patternBytes, Subscription subscription) {
     try {
       return new PatternClientSubscriptionManager(client, patternBytes, subscription);
     } catch (PatternSyntaxException ex) {
@@ -55,7 +40,7 @@ class PatternSubscriptionManager
   public int getSubscriptionCount(byte[] channel) {
     int result = 0;
     final String channelString = bytesToString(channel);
-    for (ClientSubscriptionManager<PatternSubscription> manager : clientManagers.values()) {
+    for (ClientSubscriptionManager manager : clientManagers.values()) {
       result += manager.getSubscriptionCount(channelString);
     }
     return result;
@@ -69,38 +54,13 @@ class PatternSubscriptionManager
   }
 
   @Override
+  protected boolean addToClient(Client client, byte[] pattern) {
+    return client.addPatternSubscription(pattern);
+  }
+
+  @Override
   public void remove(Client client) {
     client.getPatternSubscriptions().forEach(
         channel -> remove(channel, client));
   }
-
-
-  @Immutable
-  private static final ClientSubscriptionManager<PatternSubscription> EMPTY_PATTERN_MANAGER =
-      new ClientSubscriptionManager<PatternSubscription>() {
-        @Override
-        public void forEachSubscription(byte[] subscriptionName, String channel,
-            ForEachConsumer action) {}
-
-        @Override
-        public int getSubscriptionCount() {
-          return 0;
-        }
-
-        @Override
-        public int getSubscriptionCount(String channel) {
-          return 0;
-        }
-
-        @Override
-        public boolean add(Client client, PatternSubscription subscription) {
-          return true;
-        }
-
-        @Override
-        public boolean remove(Client client) {
-          return true;
-        }
-      };
-
 }

@@ -21,9 +21,11 @@ import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 /**
- * Keeps track of subscriptions of a particular type S.
+ * Keeps track of subscriptions. Each Subscription instance
+ * added to this manager is identified by a corresponding SubscriptionId
+ * which contains the channel or pattern byte[] subscribed to.
  */
-interface SubscriptionManager<S extends Subscription> {
+interface SubscriptionManager {
 
   /**
    * returns the number of subscriptions for the given channel.
@@ -60,7 +62,7 @@ interface SubscriptionManager<S extends Subscription> {
    *
    * @return the new subscription or null if one already existed
    */
-  S add(byte[] channelOrPattern, Client client);
+  Subscription add(byte[] channelOrPattern, Client client);
 
   /**
    * remove and subscriptions that have been added to this manager by the

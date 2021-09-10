@@ -24,7 +24,7 @@ import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
  * this instance represents.
  * In a given manager all of its subscriptions will have the same name.
  */
-interface ClientSubscriptionManager<S> {
+interface ClientSubscriptionManager {
 
   /**
    * Call the given action for each subscription this manager
@@ -32,8 +32,11 @@ interface ClientSubscriptionManager<S> {
    * Note that some managers support a pattern
    * that the channel needs to match.
    * For managers without a pattern all subscriptions match.
+   *
+   * @param channelToMatch if non-null and the manager supports matching
+   *        then only invoke action for subscriptions that match this.
    */
-  void forEachSubscription(byte[] subscriptionName, String channel, ForEachConsumer action);
+  void forEachSubscription(byte[] subscriptionName, String channelToMatch, ForEachConsumer action);
 
   /**
    * return how many subscriptions this manager has.
@@ -57,7 +60,7 @@ interface ClientSubscriptionManager<S> {
    *
    * @return true if added or already added; false if caller should retry
    */
-  boolean add(Client client, S subscription);
+  boolean add(Client client, Subscription subscription);
 
   /**
    * Remove any subscription added for the given client.

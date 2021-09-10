@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -23,26 +25,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.List;
-
 import io.netty.channel.ChannelFuture;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 
-public class AbstractSubscriptionTest {
-  private static class TestableAbstractSubscription extends AbstractSubscription {
-
-    @Override
-    protected List<Object> createResponse(byte[] subName, byte[] channel, byte[] message) {
-      return Arrays.asList(channel, message);
-    }
-  }
+public class SubscriptionImplTest {
 
   private final byte[] subscriptionName = stringToBytes("subscription");
   private final Client client = createClient();
-  private final AbstractSubscription subscription = new TestableAbstractSubscription();
+  private final SubscriptionImpl subscription = new SubscriptionImpl();
 
   private Client createClient() {
     return mock(Client.class);
@@ -59,7 +53,8 @@ public class AbstractSubscriptionTest {
     byte[] message = stringToBytes("message");
 
     Thread t =
-        new Thread(() -> subscription.publishMessage(subscriptionName, client, channel, message));
+        new Thread(
+            () -> subscription.publishMessage(false, subscriptionName, client, channel, message));
     t.start();
     try {
       t.interrupt();
@@ -77,7 +72,8 @@ public class AbstractSubscriptionTest {
     when(client.writeToChannel(any())).thenReturn(mock(ChannelFuture.class));
 
     Thread t =
-        new Thread(() -> subscription.publishMessage(subscriptionName, client, channel, message));
+        new Thread(
+            () -> subscription.publishMessage(false, subscriptionName, client, channel, message));
     t.start();
     try {
       subscription.readyToPublish();
@@ -86,6 +82,36 @@ public class AbstractSubscriptionTest {
     }
     assertThat(subscription.isShutdown()).isFalse();
     verify(client, times(1)).writeToChannel(any());
+  }
+
+  @Test
+  public void publishOfNonPatternWritesExpectedResponse() {
+    byte[] channel = stringToBytes("channel");
+    byte[] message = stringToBytes("message");
+    when(client.writeToChannel(any())).thenReturn(mock(ChannelFuture.class));
+    subscription.readyToPublish();
+    ArgumentCaptor<RedisResponse> argCaptor = ArgumentCaptor.forClass(RedisResponse.class);
+
+    subscription.publishMessage(false, subscriptionName, client, channel, message);
+
+    verify(client).writeToChannel(argCaptor.capture());
+    assertThat(argCaptor.getValue().toString())
+        .isEqualTo(RedisResponse.array(bMESSAGE, channel, message).toString());
+  }
+
+  @Test
+  public void publishOfPatternWritesExpectedResponse() {
+    byte[] channel = stringToBytes("channel");
+    byte[] message = stringToBytes("message");
+    when(client.writeToChannel(any())).thenReturn(mock(ChannelFuture.class));
+    subscription.readyToPublish();
+    ArgumentCaptor<RedisResponse> argCaptor = ArgumentCaptor.forClass(RedisResponse.class);
+
+    subscription.publishMessage(true, subscriptionName, client, channel, message);
+
+    verify(client).writeToChannel(argCaptor.capture());
+    assertThat(argCaptor.getValue().toString())
+        .isEqualTo(RedisResponse.array(bPMESSAGE, subscriptionName, channel, message).toString());
   }
 
 }

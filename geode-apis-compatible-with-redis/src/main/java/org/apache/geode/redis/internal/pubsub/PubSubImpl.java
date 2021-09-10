@@ -226,7 +226,8 @@ public class PubSubImpl implements PubSub {
   @VisibleForTesting
   void publishMessageToLocalSubscribers(byte[] channel, byte[] message) {
     subscriptions.forEachSubscription(channel,
-        (subscriptionName, client, subscription) -> subscription.publishMessage(subscriptionName,
+        (subscriptionName, channelToMatch, client, subscription) -> subscription.publishMessage(
+            channelToMatch != null, subscriptionName,
             client, channel, message));
   }
 

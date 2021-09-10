@@ -16,7 +16,9 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.List;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
+
 import java.util.concurrent.CountDownLatch;
 
 import io.netty.channel.ChannelFuture;
@@ -30,7 +32,7 @@ import org.apache.geode.redis.internal.netty.Client;
  * To save memory this class no longer stores its client and name
  * since those are kept in the data structures that store Subscriptions.
  */
-public abstract class AbstractSubscription implements Subscription {
+public class SubscriptionImpl implements Subscription {
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
   private final CountDownLatch readyForPublish = new CountDownLatch(1);
@@ -42,7 +44,8 @@ public abstract class AbstractSubscription implements Subscription {
   }
 
   @Override
-  public void publishMessage(byte[] subscriptionName, Client client, byte[] channel,
+  public void publishMessage(boolean isPatternSubscription, byte[] subscriptionName, Client client,
+      byte[] channel,
       byte[] message) {
     try {
       readyForPublish.await();
@@ -54,7 +57,8 @@ public abstract class AbstractSubscription implements Subscription {
 
     if (running) {
       ChannelFuture writeResult =
-          client.writeToChannel(constructResponse(subscriptionName, channel, message));
+          client.writeToChannel(
+              constructResponse(isPatternSubscription, subscriptionName, channel, message));
       writeResult.addListener((ChannelFutureListener) f -> {
         if (f.cause() != null) {
           shutdown();
@@ -77,11 +81,12 @@ public abstract class AbstractSubscription implements Subscription {
     return !running;
   }
 
-  private RedisResponse constructResponse(byte[] subscriptionName, byte[] channel, byte[] message) {
-    return RedisResponse.array(createResponse(subscriptionName, channel, message));
+  private RedisResponse constructResponse(boolean isPatternSubscription, byte[] subscriptionName,
+      byte[] channel, byte[] message) {
+    if (isPatternSubscription) {
+      return RedisResponse.array(bPMESSAGE, subscriptionName, channel, message);
+    } else {
+      return RedisResponse.array(bMESSAGE, channel, message);
+    }
   }
-
-  protected abstract List<Object> createResponse(byte[] subscriptionName, byte[] channel,
-      byte[] message);
-
 }

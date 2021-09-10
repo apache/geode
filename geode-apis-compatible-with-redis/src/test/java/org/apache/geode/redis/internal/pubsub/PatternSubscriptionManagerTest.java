@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.netty.Client;
 public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
-  protected AbstractSubscriptionManager<?> createManager() {
+  protected AbstractSubscriptionManager createManager() {
     return new PatternSubscriptionManager();
   }
 
@@ -41,14 +41,14 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     Client client1 = createClient();
     Client client2 = createClient();
     Client client3 = createClient();
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     manager.add(pattern1, client1);
     manager.add(pattern1, client2);
     manager.add(pattern1, client3);
     manager.add(pattern2, client2);
     manager.add(pattern3, client3);
 
-    manager.foreachSubscription(channel1, (name, client, sub) -> count.getAndIncrement());
+    manager.foreachSubscription(channel1, (name, toMatch, client, sub) -> count.getAndIncrement());
 
     assertThat(count.get()).isEqualTo(3);
   }
@@ -57,7 +57,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
   public void twoPatternsThatMatchSameChannel() {
     Client client1 = createClient();
     Client client2 = createClient();
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     byte[] channel = stringToBytes("channel");
     byte[] pattern1 = stringToBytes("ch*");
     byte[] pattern2 = stringToBytes("chan*");

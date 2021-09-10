@@ -29,7 +29,8 @@ public interface Subscription {
   /**
    * Will publish a message to the designated client and channel
    */
-  void publishMessage(byte[] subscriptionName, Client client, byte[] channel, byte[] message);
+  void publishMessage(boolean isPatternSubscription, byte[] subscriptionName, Client client,
+      byte[] channel, byte[] message);
 
   void readyToPublish();
 }

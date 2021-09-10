@@ -88,7 +88,7 @@ public class SubscriptionsJUnitTest {
 
     List<String> hits = new ArrayList<>();
     subscriptions.forEachSubscription(stringToBytes("subscription1"),
-        (name, client, subscription) -> hits.add(bytesToString(name)));
+        (name, channelToMatch, client, subscription) -> hits.add(bytesToString(name)));
     assertThat(hits).containsExactlyInAnyOrder("subscription1", "subscription1", "sub*", "sub*",
         "subscription?");
   }
@@ -102,7 +102,6 @@ public class SubscriptionsJUnitTest {
 
     assertThat(result.getChannelCount()).isOne();
     assertThat(result.getChannel()).isEqualTo(channel);
-    assertThat(result.getSubscription()).isInstanceOf(ChannelSubscription.class);
     assertThat(client.getSubscriptionCount()).isOne();
     assertThat(client.getChannelSubscriptions()).containsExactlyInAnyOrder(channel);
   }
@@ -116,7 +115,6 @@ public class SubscriptionsJUnitTest {
 
     assertThat(result.getChannelCount()).isOne();
     assertThat(result.getChannel()).isEqualTo(pattern);
-    assertThat(result.getSubscription()).isInstanceOf(PatternSubscription.class);
     assertThat(client.getSubscriptionCount()).isOne();
     assertThat(client.getPatternSubscriptions()).containsExactlyInAnyOrder(pattern);
   }

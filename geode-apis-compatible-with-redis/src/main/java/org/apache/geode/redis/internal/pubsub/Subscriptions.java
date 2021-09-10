@@ -46,10 +46,8 @@ public class Subscriptions {
   private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
       singletonList(createUnsubscribeItem(false, null, 0));
 
-  private final SubscriptionManager<ChannelSubscription> channelSubscriptions =
-      new ChannelSubscriptionManager();
-  private final SubscriptionManager<PatternSubscription> patternSubscriptions =
-      new PatternSubscriptionManager();
+  private final SubscriptionManager channelSubscriptions = new ChannelSubscriptionManager();
+  private final SubscriptionManager patternSubscriptions = new PatternSubscriptionManager();
 
   public int getChannelSubscriptionCount(byte[] channel) {
     return channelSubscriptions.getSubscriptionCount(channel);
@@ -65,7 +63,8 @@ public class Subscriptions {
   }
 
   public interface ForEachConsumer {
-    void accept(byte[] subscriptionName, Client client, Subscription subscription);
+    void accept(byte[] subscriptionName, String channelToMatch, Client client,
+        Subscription subscription);
   }
 
   public void forEachSubscription(byte[] channel, ForEachConsumer action) {
@@ -104,11 +103,11 @@ public class Subscriptions {
     return channelSubscriptions.getSubscriptionCount();
   }
 
-  ChannelSubscription addChannel(byte[] channel, Client client) {
+  Subscription addChannel(byte[] channel, Client client) {
     return channelSubscriptions.add(channel, client);
   }
 
-  PatternSubscription addPattern(byte[] pattern, Client client) {
+  Subscription addPattern(byte[] pattern, Client client) {
     return patternSubscriptions.add(pattern, client);
   }
 
@@ -131,13 +130,13 @@ public class Subscriptions {
   }
 
   public SubscribeResult subscribe(byte[] channel, Client client) {
-    ChannelSubscription createdSubscription = addChannel(channel, client);
+    Subscription createdSubscription = addChannel(channel, client);
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
   public SubscribeResult psubscribe(byte[] patternBytes, Client client) {
-    PatternSubscription createdSubscription = addPattern(patternBytes, client);
+    Subscription createdSubscription = addPattern(patternBytes, client);
     long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, patternBytes);
   }

@@ -51,7 +51,7 @@ public abstract class SubscriptionManagerTestBase {
 
   @Test
   public void defaultManager_removeWithClient_doesNothing() {
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     manager.remove(createClient());
     assertThat(manager.getSubscriptionCount()).isZero();
   }
@@ -59,7 +59,7 @@ public abstract class SubscriptionManagerTestBase {
   @Test
   public void defaultManager_removeWithClientAndChannel_doesNothing() {
     byte[] channel = stringToBytes("channel");
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     manager.remove(channel, createClient());
     assertThat(manager.getSubscriptionCount()).isZero();
   }
@@ -68,8 +68,8 @@ public abstract class SubscriptionManagerTestBase {
   public void defaultManager_foreach_doesNothing() {
     byte[] channel = stringToBytes("channel");
     AtomicInteger count = new AtomicInteger();
-    AbstractSubscriptionManager<?> manager = createManager();
-    manager.foreachSubscription(channel, (name, client, sub) -> count.getAndIncrement());
+    AbstractSubscriptionManager manager = createManager();
+    manager.foreachSubscription(channel, (name, toMatch, client, sub) -> count.getAndIncrement());
     assertThat(count.get()).isZero();
   }
 
@@ -82,26 +82,26 @@ public abstract class SubscriptionManagerTestBase {
     Client client1 = createClient();
     Client client2 = createClient();
     Client client3 = createClient();
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     manager.add(channel1, client1);
     manager.add(channel1, client2);
     manager.add(channel1, client3);
     manager.add(channel2, client2);
     manager.add(channel3, client3);
-    manager.foreachSubscription(channel1, (name, client, sub) -> count.getAndIncrement());
+    manager.foreachSubscription(channel1, (name, toMatch, client, sub) -> count.getAndIncrement());
     assertThat(count.get()).isEqualTo(3);
   }
 
   @Test
   public void managerWithOneSub_hasCorrectCounts() {
-    AbstractSubscriptionManager<?> manager = createManager(1);
+    AbstractSubscriptionManager manager = createManager(1);
     assertThat(manager.getSubscriptionCount()).isOne();
     assertThat(manager.getSubscriptionCount(stringToBytes("channel1"))).isOne();
   }
 
   @Test
   public void managerWithOneSub_hasCorrectIds() {
-    AbstractSubscriptionManager<?> manager = createManager(1);
+    AbstractSubscriptionManager manager = createManager(1);
     assertThat(manager.getIds()).containsExactlyInAnyOrder(stringToBytes("channel1"));
     assertThat(manager.getIds(stringToBytes("*")))
         .containsExactlyInAnyOrder(stringToBytes("channel1"));
@@ -109,7 +109,7 @@ public abstract class SubscriptionManagerTestBase {
 
   @Test
   public void managerWithMultipleSubs_hasCorrectIds() {
-    AbstractSubscriptionManager<?> manager = createManager(2);
+    AbstractSubscriptionManager manager = createManager(2);
     assertThat(manager.getIds()).containsExactlyInAnyOrder(stringToBytes("channel1"),
         stringToBytes("channel2"));
     assertThat(manager.getIds(stringToBytes("*")))
@@ -119,7 +119,7 @@ public abstract class SubscriptionManagerTestBase {
   @Test
   public void managerWithSubs_isEmpty_afterClientRemove() {
     Client client = createClient();
-    AbstractSubscriptionManager<?> manager = createManager(3, client);
+    AbstractSubscriptionManager manager = createManager(3, client);
 
     manager.remove(client);
 
@@ -129,7 +129,7 @@ public abstract class SubscriptionManagerTestBase {
   @Test
   public void managerWithOneSub_isEmpty_afterRemove() {
     Client client = createClient();
-    AbstractSubscriptionManager<?> manager = createManager(1, client);
+    AbstractSubscriptionManager manager = createManager(1, client);
     byte[] channel = stringToBytes("channel1");
 
     manager.remove(channel, client);
@@ -140,7 +140,7 @@ public abstract class SubscriptionManagerTestBase {
   @Test
   public void addingDuplicateDoesNothing() {
     Client client = createClient();
-    AbstractSubscriptionManager<?> manager = createManager(1, client);
+    AbstractSubscriptionManager manager = createManager(1, client);
     byte[] channel = stringToBytes("channel1");
 
     Object result = manager.add(channel, client);
@@ -153,7 +153,7 @@ public abstract class SubscriptionManagerTestBase {
   public void addingTwoSubscriptionsWithDifferentClients() {
     Client client1 = createClient();
     Client client2 = createClient();
-    AbstractSubscriptionManager<?> manager = createManager();
+    AbstractSubscriptionManager manager = createManager();
     byte[] channel = stringToBytes("channel");
 
     Object result1 = manager.add(channel, client1);
@@ -173,8 +173,8 @@ public abstract class SubscriptionManagerTestBase {
     return new Client(channel, mock(PubSub.class));
   }
 
-  protected AbstractSubscriptionManager<?> createManager(int subCount, Client client) {
-    AbstractSubscriptionManager<?> manager = createManager();
+  protected AbstractSubscriptionManager createManager(int subCount, Client client) {
+    AbstractSubscriptionManager manager = createManager();
     for (int i = 1; i <= subCount; i++) {
       byte[] channel = stringToBytes("channel" + i);
       manager.add(channel, client);
@@ -182,9 +182,9 @@ public abstract class SubscriptionManagerTestBase {
     return manager;
   }
 
-  protected AbstractSubscriptionManager<?> createManager(int subCount) {
+  protected AbstractSubscriptionManager createManager(int subCount) {
     return createManager(subCount, createClient());
   }
 
-  protected abstract AbstractSubscriptionManager<?> createManager();
+  protected abstract AbstractSubscriptionManager createManager();
 }

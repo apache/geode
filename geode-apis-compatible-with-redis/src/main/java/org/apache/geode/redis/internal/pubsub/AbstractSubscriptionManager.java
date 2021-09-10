@@ -22,15 +22,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 
-abstract class AbstractSubscriptionManager<S extends Subscription>
-    implements SubscriptionManager<S> {
-  protected final Map<SubscriptionId, ClientSubscriptionManager<S>> clientManagers =
+abstract class AbstractSubscriptionManager implements SubscriptionManager {
+  protected final Map<SubscriptionId, ClientSubscriptionManager> clientManagers =
       new ConcurrentHashMap<>();
 
-  protected ClientSubscriptionManager<S> getClientManager(byte[] channelOrPattern) {
+  protected ClientSubscriptionManager getClientManager(byte[] channelOrPattern) {
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     return clientManagers.getOrDefault(subscriptionId, emptyClientManager());
   }
@@ -60,25 +60,21 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   @Override
   public int getSubscriptionCount() {
     int sum = 0;
-    for (ClientSubscriptionManager<S> manager : clientManagers.values()) {
+    for (ClientSubscriptionManager manager : clientManagers.values()) {
       sum += manager.getSubscriptionCount();
     }
     return sum;
   }
 
-  protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
-
-  protected abstract S createSubscription();
-
   @Override
-  public S add(byte[] channelOrPattern, Client client) {
+  public Subscription add(byte[] channelOrPattern, Client client) {
     if (!addToClient(client, channelOrPattern)) {
       return null;
     }
-    final S subscription = createSubscription();
+    final Subscription subscription = new SubscriptionImpl();
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
-    ClientSubscriptionManager<S> newManager = null;
-    ClientSubscriptionManager<S> existingManager = clientManagers.get(subscriptionId);
+    ClientSubscriptionManager newManager = null;
+    ClientSubscriptionManager existingManager = clientManagers.get(subscriptionId);
     while (true) {
       if (existingManager == null) {
         if (newManager == null) {
@@ -108,7 +104,7 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
   @Override
   public void remove(byte[] channelOrPattern, Client client) {
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
-    ClientSubscriptionManager<S> manager = clientManagers.get(subscriptionId);
+    ClientSubscriptionManager manager = clientManagers.get(subscriptionId);
     if (manager == null) {
       return;
     }
@@ -117,12 +113,43 @@ abstract class AbstractSubscriptionManager<S extends Subscription>
     }
   }
 
+  @Immutable
+  private static final ClientSubscriptionManager EMPTY_CLIENT_MANAGER =
+      new ClientSubscriptionManager() {
+        @Override
+        public void forEachSubscription(byte[] subscriptionName, String channelToMatch,
+            Subscriptions.ForEachConsumer action) {}
 
-  protected abstract ClientSubscriptionManager<S> emptyClientManager();
+        @Override
+        public int getSubscriptionCount() {
+          return 0;
+        }
 
-  protected abstract ClientSubscriptionManager<S> createClientManager(Client client,
+        @Override
+        public int getSubscriptionCount(String channel) {
+          return 0;
+        }
+
+        @Override
+        public boolean add(Client client, Subscription subscription) {
+          return true;
+        }
+
+        @Override
+        public boolean remove(Client client) {
+          return true;
+        }
+      };
+
+  private ClientSubscriptionManager emptyClientManager() {
+    return EMPTY_CLIENT_MANAGER;
+  }
+
+  protected abstract ClientSubscriptionManager createClientManager(Client client,
       byte[] channelOrPattern,
-      S subscription);
+      Subscription subscription);
+
+  protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
 
   /**
    * Wraps a id (channel or pattern) so it can be used as a key on a hash map

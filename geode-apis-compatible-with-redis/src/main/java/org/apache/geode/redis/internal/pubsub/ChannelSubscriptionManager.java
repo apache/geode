@@ -15,30 +15,15 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class ChannelSubscriptionManager
-    extends AbstractSubscriptionManager<ChannelSubscription> {
-  @Override
-  protected boolean addToClient(Client client, byte[] channel) {
-    return client.addChannelSubscription(channel);
-  }
+    extends AbstractSubscriptionManager {
 
   @Override
-  protected ChannelSubscription createSubscription() {
-    return new ChannelSubscription();
-  }
-
-  @Override
-  protected ClientSubscriptionManager<ChannelSubscription> emptyClientManager() {
-    return EMPTY_CHANNEL_MANAGER;
-  }
-
-  @Override
-  protected ClientSubscriptionManager<ChannelSubscription> createClientManager(
-      Client client, byte[] channel, ChannelSubscription subscription) {
+  protected ClientSubscriptionManager createClientManager(
+      Client client, byte[] channel, Subscription subscription) {
     return new ChannelClientSubscriptionManager(client, subscription);
   }
 
@@ -53,38 +38,13 @@ class ChannelSubscriptionManager
   }
 
   @Override
+  protected boolean addToClient(Client client, byte[] channel) {
+    return client.addChannelSubscription(channel);
+  }
+
+  @Override
   public void remove(Client client) {
     client.getChannelSubscriptions().forEach(
         channel -> remove(channel, client));
   }
-
-
-  @Immutable
-  private static final ClientSubscriptionManager<ChannelSubscription> EMPTY_CHANNEL_MANAGER =
-      new ClientSubscriptionManager<ChannelSubscription>() {
-        @Override
-        public void forEachSubscription(byte[] subscriptionName, String channel,
-            ForEachConsumer action) {}
-
-        @Override
-        public int getSubscriptionCount() {
-          return 0;
-        }
-
-        @Override
-        public int getSubscriptionCount(String channel) {
-          return 0;
-        }
-
-        @Override
-        public boolean add(Client client, ChannelSubscription subscription) {
-          return true;
-        }
-
-        @Override
-        public boolean remove(Client client) {
-          return true;
-        }
-      };
-
 }

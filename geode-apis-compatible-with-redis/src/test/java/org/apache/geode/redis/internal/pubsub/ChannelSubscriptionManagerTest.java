@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.pubsub;
 public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
-  protected AbstractSubscriptionManager<?> createManager() {
+  protected AbstractSubscriptionManager createManager() {
     return new ChannelSubscriptionManager();
   }
 }

@@ -15,8 +15,6 @@
  */
 package org.apache.geode.redis.internal.executor.server;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -28,14 +26,10 @@ public class TimeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<String> results = new ArrayList<>();
     long timeStamp = System.currentTimeMillis();
     long seconds = timeStamp / 1000;
     long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
 
-    results.add(Long.toString(seconds));
-    results.add(Long.toString(microSeconds));
-
-    return RedisResponse.array(results);
+    return RedisResponse.array(Long.toString(seconds), Long.toString(microSeconds));
   }
 }
