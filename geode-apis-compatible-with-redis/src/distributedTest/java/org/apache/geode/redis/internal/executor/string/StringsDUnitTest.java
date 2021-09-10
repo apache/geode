@@ -186,6 +186,23 @@ public class StringsDUnitTest {
   }
 
   @Test
+  public void append_shouldAllowMultipleClientsToSetrangeDifferentValueToSameKeyConcurrently() {
+    List<String> keys = makeStringList(LIST_SIZE, "key1-");
+    List<String> values1 = makeStringList(LIST_SIZE, "values1-");
+    List<String> values2 = makeStringList(LIST_SIZE, "values2-");
+
+    new ConcurrentLoopingThreads(LIST_SIZE,
+        (i) -> jedisCluster.setrange(keys.get(i), 0, values1.get(i)),
+        (i) -> jedisCluster.setrange(keys.get(i), values1.get(i).length(),
+            values2.get(i))).runInLockstep();
+
+    for (int i = 0; i < LIST_SIZE; i++) {
+      assertThat(jedisCluster.get(keys.get(i))).contains(values1.get(i));
+      assertThat(jedisCluster.get(keys.get(i))).contains(values2.get(i));
+    }
+  }
+
+  @Test
   public void decr_shouldDecrementWhileDoingConcurrentDecr() {
     String key = "key";
     int initialValue = NUM_ITERATIONS * 2;

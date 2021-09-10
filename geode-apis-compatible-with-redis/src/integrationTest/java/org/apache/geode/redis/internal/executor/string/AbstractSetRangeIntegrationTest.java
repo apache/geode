@@ -82,7 +82,15 @@ public abstract class AbstractSetRangeIntegrationTest implements RedisIntegratio
   public void setRange_extendsAndPadsWithZero() {
     jedis.set("key", "0123456789");
     assertThat(jedis.setrange("key", 11, "abc")).isEqualTo(14);
-    assertThat((int) (jedis.get("key").charAt(10))).isEqualTo(0);
+    assertThat(jedis.get("key")).isEqualTo("0123456789\u0000abc");
+  }
+
+
+  @Test
+  public void setRange_withEmptyStringDoesNotPad() {
+    jedis.set("key", "0123456789");
+    assertThat(jedis.setrange("key", 13, "")).isEqualTo(10);
+    assertThat(jedis.get("key")).isEqualTo("0123456789");
   }
 
   @Test
@@ -96,7 +104,6 @@ public abstract class AbstractSetRangeIntegrationTest implements RedisIntegratio
     jedis.sadd("key", "m1");
     assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessageContaining("WRONGTYPE");
   }
-
 
   @Test
   public void setRange_onNonExistentKey_padsBeginning() {

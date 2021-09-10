@@ -143,6 +143,7 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - SET <br/>
 - SETEX <br/>
 - SETNX <br/>
+- SETRANGE <br/>
 - SLOWLOG <sup>3</sup> <br/>
 - SMEMBERS <br/>
 - SREM <br/>

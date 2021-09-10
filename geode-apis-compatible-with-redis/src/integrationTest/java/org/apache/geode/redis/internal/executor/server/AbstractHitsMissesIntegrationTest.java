@@ -203,6 +203,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSetrange() {
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setrange(k, 1L, v));
+  }
+
+  @Test
   public void testStrlen() {
     runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.strlen(k));
   }
@@ -486,11 +491,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testMsetnx() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.msetnx(k, v));
-  }
-
-  @Test
-  public void testSetrange() {
-    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setrange(k, 1L, v));
   }
 
   /************* Bit related commands *************/

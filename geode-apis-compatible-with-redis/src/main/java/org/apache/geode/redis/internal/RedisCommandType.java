@@ -191,6 +191,7 @@ public enum RedisCommandType {
   SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
   SETEX(new SetEXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  SETRANGE(new SetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
   STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
 
   /************* Hashes *****************/
@@ -296,7 +297,6 @@ public enum RedisCommandType {
   MSETNX(new MSetNXExecutor(), UNSUPPORTED,
       new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SETRANGE(new SetRangeExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
 
   /**************** Sets *****************/
 
