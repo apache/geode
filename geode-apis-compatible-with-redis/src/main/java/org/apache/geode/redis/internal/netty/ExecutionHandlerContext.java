@@ -26,6 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
@@ -79,7 +80,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private final int serverPort;
 
-  private Object principal;
+  private Subject subject;
 
   /**
    * Default constructor for execution contexts.
@@ -107,6 +108,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
+
+    client.addShutdownListener(future -> logout());
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
@@ -260,6 +263,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
+   * If previously authenticated, logs out the current user
+   */
+  private void logout() {
+    if (subject != null) {
+      subject.logout();
+      subject = null;
+    }
+  }
+
+  /**
    * Gets the provider of Regions
    */
   public RegionProvider getRegionProvider() {
@@ -281,15 +294,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @return True if no authentication required or authentication is complete, false otherwise
    */
   public boolean isAuthenticated() {
-    return (!securityService.isIntegratedSecurity()) || principal != null;
+    return (!securityService.isIntegratedSecurity()) || subject != null;
   }
 
   /**
    * Sets an authenticated principal in the context. This implies that the connection has been
    * successfully authenticated.
    */
-  public void setPrincipal(Object principal) {
-    this.principal = principal;
+  public void setSubject(Subject subject) {
+    this.subject = subject;
   }
 
   public int getServerPort() {

@@ -57,7 +57,7 @@ public class AuthExecutor implements Executor {
 
     try {
       Subject subject = securityService.login(props);
-      context.setPrincipal(subject.getPrincipal());
+      context.setSubject(subject);
     } catch (AuthenticationFailedException ex) {
       return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);
     }
