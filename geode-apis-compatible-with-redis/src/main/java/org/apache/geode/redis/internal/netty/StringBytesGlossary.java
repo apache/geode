@@ -240,22 +240,22 @@ public class StringBytesGlossary {
   /**
    * byte value of the number 0
    */
-  public static final byte NUMBER_0_BYTE = 48; // '0'
+  public static final byte NUMBER_0_BYTE = '0';
 
   /**
    * byte value of the number 1
    */
-  public static final byte NUMBER_1_BYTE = 49; // '1'
+  public static final byte NUMBER_1_BYTE = '1';
 
-  public static final byte bLOWERCASE_A = 97; // a
+  public static final byte bLOWERCASE_A = 'a';
 
-  public static final byte bLOWERCASE_Z = 122; // z
+  public static final byte bLOWERCASE_Z = 'z';
 
-  public static final byte bLEFT_PAREN = 40; // (
+  public static final byte bLEFT_PAREN = '(';
 
-  public static final byte bLEFT_SQUARE_BRACKET = 91; // [
+  public static final byte bLEFT_SQUARE_BRACKET = '[';
 
-  public static final byte bPERIOD = 46; // .
+  public static final byte bPERIOD = '.';
 
   public static final String PING_RESPONSE = "PONG";
 
