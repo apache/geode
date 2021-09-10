@@ -43,7 +43,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
@@ -58,7 +57,6 @@ import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Comp
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
-import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -1545,10 +1543,10 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
 
-    Mockito.when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn("zoneA");
-    Mockito.when(clusterDistributionManager.getRedundancyZone(otherMemberId)).thenReturn("zoneA");
+    when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn("zoneA");
+    when(clusterDistributionManager.getRedundancyZone(otherMemberId)).thenReturn("zoneA");
 
-    Mockito.when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
 
     org.apache.geode.internal.cache.partitioned.rebalance.model.Move bestRemove =
         model.findBestRemove(bucket);

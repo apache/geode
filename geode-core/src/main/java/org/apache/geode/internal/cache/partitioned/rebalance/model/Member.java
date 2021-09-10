@@ -20,7 +20,6 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -67,16 +66,9 @@ public class Member implements Comparable<Member> {
    * @param bucket -- bucket to be deleted from the member
    * @param distributionManager -- used to check members of redundancy zones
    */
-
   public RefusalReason canDelete(Bucket bucket, DistributionManager distributionManager) {
     // This code only applies to Clusters.
-    if (!(distributionManager instanceof ClusterDistributionManager)) {
-      return RefusalReason.NONE;
-    }
-
-    ClusterDistributionManager clstrDistrMgr = (ClusterDistributionManager) distributionManager;
-    String myRedundancyZone = clstrDistrMgr.getRedundancyZone(memberId);
-    boolean lastMemberOfZone = true;
+    String myRedundancyZone = distributionManager.getRedundancyZone(memberId);
 
     if (myRedundancyZone == null) {
       // Not using redundancy zones, so...
@@ -89,7 +81,7 @@ public class Member implements Comparable<Member> {
         continue;
       }
 
-      String memberRedundancyZone = clstrDistrMgr.getRedundancyZone(member.memberId);
+      String memberRedundancyZone = distributionManager.getRedundancyZone(member.memberId);
       if (memberRedundancyZone == null) {
         // Not using redundancy zones, so...
         continue;
@@ -98,15 +90,11 @@ public class Member implements Comparable<Member> {
       // Does the member redundancy zone match my redundancy zone?
       // if so we are not the last in the redundancy zone.
       if (memberRedundancyZone.equals(myRedundancyZone)) {
-        lastMemberOfZone = false;
+        return RefusalReason.NONE;
       }
     }
 
-    if (lastMemberOfZone) {
-      return RefusalReason.LAST_MEMBER_IN_ZONE;
-    }
-
-    return RefusalReason.NONE;
+    return RefusalReason.LAST_MEMBER_IN_ZONE;
   }
 
 
