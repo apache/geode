@@ -283,9 +283,8 @@ public class PartitionedRegionRebalanceOp {
     // Early out of this VM doesn't have all of the regions that are
     // supposed to be colocated with this one.
     // TODO rebalance - there is a race here between this check and the
-    // earlier acquisition of the list
-    // of colocated regions. Really we should get a list of all colocated
-    // regions on all nodes.
+    // earlier acquisition of the list of colocated regions. Really we
+    // should get a list of all colocated regions on all nodes.
     if (!ColocationHelper.checkMembersColocation(leaderRegion,
         leaderRegion.getDistributionManager().getDistributionManagerId())) {
       return false;

@@ -53,7 +53,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * are assumed to be colocated, and the model adds together the load from each of the individual
  * regions to balance all of the regions together.
  *
- * Reblancing operations are performed by repeatedly calling model.nextStep until it returns false.
+ * Rebalancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
  * BucketOperator you provide to the contructor perform the actual create or move.
  *
@@ -125,9 +125,13 @@ public class PartitionedRegionLoadModel {
   private final BucketOperator operator;
   private final int requiredRedundancy;
 
-  /** The average primary load on a member */
+  /**
+   * The average primary load on a member
+   */
   private float primaryAverage = -1;
-  /** The average bucket load on a member */
+  /**
+   * The average bucket load on a member
+   */
   private float averageLoad = -1;
   /**
    * The minimum improvement in variance that we'll consider worth moving a primary
@@ -151,7 +155,8 @@ public class PartitionedRegionLoadModel {
    * @param redundancyLevel The expected redundancy level for the region
    */
   public PartitionedRegionLoadModel(BucketOperator operator, int redundancyLevel, int numBuckets,
-      AddressComparor addressComparor, Set<InternalDistributedMember> criticalMembers,
+      AddressComparor addressComparor,
+      Set<InternalDistributedMember> criticalMembers,
       PartitionedRegion region) {
     this.operator = operator;
     this.requiredRedundancy = redundancyLevel;
@@ -292,7 +297,7 @@ public class PartitionedRegionLoadModel {
               new Object[] {memberRollup, this.allColocatedRegions,
                   memberRollup.getColocatedMembers().keySet(), memberRollup.getBuckets()});
         }
-        for (Bucket bucket : new HashSet<Bucket>(memberRollup.getBuckets())) {
+        for (Bucket bucket : new HashSet<>(memberRollup.getBuckets())) {
           bucket.removeMember(memberRollup);
         }
       }
@@ -470,21 +475,36 @@ public class PartitionedRegionLoadModel {
     Move bestMove = null;
 
     for (Member member : bucket.getMembersHosting()) {
-      float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
-      if (newLoad > mostLoaded && !member.equals(bucket.getPrimary())) {
-        Move move = new Move(null, member, bucket);
-        if (!this.attemptedBucketRemoves.contains(move)) {
-          mostLoaded = newLoad;
-          bestMove = move;
-        }
+
+      // If we can't delete it continue (last member of zone)
+      if (!member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
+        continue;
       }
+
+      // if this load is lower than then highest load, we prefer the deleting from high
+      // load servers so move on. If this member is the bucket primary, we prefer not to move
+      // primaries, so move on.
+      float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
+      if (newLoad <= mostLoaded || member.equals(bucket.getPrimary())) {
+        continue;
+      }
+
+      // if the attemptedBucketRemovesList contains this move, then we don't need to add it
+      // again.
+      Move move = new Move(null, member, bucket);
+      if (this.attemptedBucketRemoves.contains(move)) {
+        continue;
+      }
+
+      mostLoaded = newLoad;
+      bestMove = move;
     }
     return bestMove;
   }
 
   public Move findBestTargetForFPR(Bucket bucket, boolean checkIPAddress) {
-    InternalDistributedMember targetMemberID = null;
-    Member targetMember = null;
+    InternalDistributedMember targetMemberID;
+    Member targetMember;
     List<FixedPartitionAttributesImpl> fpas =
         this.partitionedRegion.getFixedPartitionAttributesImpl();
 
