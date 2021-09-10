@@ -15,11 +15,14 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Fail.fail;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -66,7 +70,7 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
   }
 
   @Test
-  public void clientReAuthenticationWorksOnMultipleServers() throws Exception {
+  public void clientConnectToServerShouldReauthenticate() throws Exception {
     UpdatableUserAuthInitialize.setUser("user1");
     clientCacheRule
         .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -86,30 +90,32 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
 
     // locator only validates peer
     locator.invoke(() -> {
-      Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-      assertThat(authorizedOps.keySet().contains("test")).isTrue();
-      assertThat(authorizedOps.keySet().size()).isEqualTo(1);
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-      assertThat(unAuthorizedOps.keySet().size()).isEqualTo(0);
+      ExpirableSecurityManager securityManager = getSecurityManager();
+      Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
+      assertThat(authorizedOps.keySet()).containsExactly("test");
+      Map<String, List<String>> unAuthorizedOps = securityManager.getUnAuthorizedOps();
+      assertThat(unAuthorizedOps.keySet()).isEmpty();
     });
 
     // client is connected to server1, server1 gets all the initial contact,
     // authorization checks happens here
     server1.invoke(() -> {
-      Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-      assertThat(authorizedOps.get("user1")).asList().containsExactlyInAnyOrder(
+      ExpirableSecurityManager securityManager = getSecurityManager();
+      Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
+      assertThat(authorizedOps.get("user1")).containsExactlyInAnyOrder(
           "DATA:WRITE:replicateRegion:0", "DATA:WRITE:partitionRegion:0");
-      assertThat(authorizedOps.get("user2")).asList().containsExactlyInAnyOrder(
+      assertThat(authorizedOps.get("user2")).containsExactlyInAnyOrder(
           "DATA:WRITE:replicateRegion:1", "DATA:WRITE:partitionRegion:1");
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
-      assertThat(unAuthorizedOps.get("user1")).asList()
+      Map<String, List<String>> unAuthorizedOps = securityManager.getUnAuthorizedOps();
+      assertThat(unAuthorizedOps.get("user1"))
           .containsExactly("DATA:WRITE:replicateRegion:1");
     });
 
     // server2 performs no authorization checks
     server2.invoke(() -> {
-      Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-      Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+      ExpirableSecurityManager securityManager = getSecurityManager();
+      Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
+      Map<String, List<String>> unAuthorizedOps = securityManager.getUnAuthorizedOps();
       assertThat(authorizedOps.size()).isEqualTo(0);
       assertThat(unAuthorizedOps.size()).isEqualTo(0);
     });
@@ -121,18 +127,79 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
       Region<Object, Object> serverRegion2 = cache.getRegion(PARTITION_REGION);
       assertThat(serverRegion2.size()).isEqualTo(2);
     }, server1, server2);
+  }
 
-    MemberVM.invokeInEveryMember(() -> {
-      ExpirableSecurityManager.reset();
-      UpdatableUserAuthInitialize.reset();
-    }, locator, server1, server2);
+  @Test
+  public void clientConnectToLocatorShouldReAuthenticate() throws Exception {
+    UpdatableUserAuthInitialize.setUser("user1");
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locator.getPort());
+    clientCacheRule.createCache();
+    Region<Object, Object> region = clientCacheRule.createProxyRegion(PARTITION_REGION);
+    expireUserOnAllVms("user1");
+    UpdatableUserAuthInitialize.setUser("user2");
+    IntStream.range(0, 100).forEach(i -> region.put(i, "value" + i));
+
+    ExpirableSecurityManager consolidated = gatherAuthorizedAndUnauthorizedOps(server1, server2);
+    Map<String, List<String>> authorized = consolidated.getAuthorizedOps();
+    Map<String, List<String>> unAuthorized = consolidated.getUnAuthorizedOps();
+
+    assertThat(authorized.keySet()).containsExactly("user2");
+    assertThat(authorized.get("user2")).hasSize(100);
+
+    assertThat(unAuthorized.keySet()).containsExactly("user1");
+    assertThat(unAuthorized.get("user1")).hasSize(1);
+  }
+
+  @Test
+  public void clientConnectToLocatorShouldNotAllowOperationIfUserIsNotRefreshed() throws Exception {
+    UpdatableUserAuthInitialize.setUser("user1");
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locator.getPort());
+    clientCacheRule.createCache();
+    Region<Object, Object> region = clientCacheRule.createProxyRegion(PARTITION_REGION);
+    expireUserOnAllVms("user1");
+    for (int i = 1; i < 100; i++) {
+      try {
+        region.put(1, "value1");
+        fail("Exception expected");
+      } catch (Exception e) {
+        assertThat(e).isInstanceOf(ServerOperationException.class);
+        assertThat(e.getCause()).isInstanceOfAny(AuthenticationFailedException.class,
+            AuthenticationRequiredException.class, AuthenticationExpiredException.class);
+      }
+    }
+    ExpirableSecurityManager consolidated =
+        gatherAuthorizedAndUnauthorizedOps(server1, server2);
+    assertThat(consolidated.getAuthorizedOps().keySet()).isEmpty();
   }
 
   private void expireUserOnAllVms(String user) {
     MemberVM.invokeInEveryMember(() -> {
-      ExpirableSecurityManager.addExpiredUser(user);
+      getSecurityManager().addExpiredUser(user);
     }, locator, server1, server2);
   }
 
+  private ExpirableSecurityManager gatherAuthorizedAndUnauthorizedOps(MemberVM... vms) {
+    List<ExpirableSecurityManager> results = new ArrayList<>();
+    for (MemberVM vm : vms) {
+      results.add(vm.invoke(() -> getSecurityManager()));
+    }
 
+    ExpirableSecurityManager consolidated = new ExpirableSecurityManager();
+    for (ExpirableSecurityManager result : results) {
+      consolidated.getAuthorizedOps().putAll(result.getAuthorizedOps());
+      consolidated.getUnAuthorizedOps().putAll(result.getUnAuthorizedOps());
+    }
+    return consolidated;
+  }
+
+  private static ExpirableSecurityManager getSecurityManager() {
+    return (ExpirableSecurityManager) ClusterStartupRule.getCache().getSecurityService()
+        .getSecurityManager();
+  }
 }

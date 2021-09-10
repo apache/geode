@@ -15,6 +15,7 @@
 
 package org.apache.geode.security;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,44 +32,44 @@ import org.apache.geode.examples.SimpleSecurityManager;
  *
  * make sure to call reset after each test to clean things up.
  */
-public class ExpirableSecurityManager extends SimpleSecurityManager {
+public class ExpirableSecurityManager extends SimpleSecurityManager implements Serializable {
   // use static field for ease of testing since there is only one instance of this in each VM
   // we only need ConcurrentHashSet here, but map is only construct available in the library
-  private static final Set<String> EXPIRED_USERS = ConcurrentHashMap.newKeySet();
-  private static final Map<String, List<String>> AUTHORIZED_OPS =
+  private final Set<String> expired_users = ConcurrentHashMap.newKeySet();
+  private final Map<String, List<String>> authorizedOps =
       new ConcurrentHashMap<>();
-  private static final Map<String, List<String>> UNAUTHORIZED_OPS =
+  private final Map<String, List<String>> unauthorizedOps =
       new ConcurrentHashMap<>();
 
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
-    if (EXPIRED_USERS.contains((String) principal)) {
-      addToMap(UNAUTHORIZED_OPS, principal, permission);
+    if (expired_users.contains((String) principal)) {
+      addToMap(unauthorizedOps, principal, permission);
       throw new AuthenticationExpiredException("User authentication expired.");
     }
-    addToMap(AUTHORIZED_OPS, principal, permission);
+    addToMap(authorizedOps, principal, permission);
 
     // always authorized
     return true;
   }
 
-  public static void addExpiredUser(String user) {
-    EXPIRED_USERS.add(user);
+  public void addExpiredUser(String user) {
+    expired_users.add(user);
   }
 
-  public static Set<String> getExpiredUsers() {
-    return EXPIRED_USERS;
+  public Set<String> getExpiredUsers() {
+    return expired_users;
   }
 
-  public static Map<String, List<String>> getAuthorizedOps() {
-    return AUTHORIZED_OPS;
+  public Map<String, List<String>> getAuthorizedOps() {
+    return authorizedOps;
   }
 
-  public static Map<String, List<String>> getUnAuthorizedOps() {
-    return UNAUTHORIZED_OPS;
+  public Map<String, List<String>> getUnAuthorizedOps() {
+    return unauthorizedOps;
   }
 
-  private static void addToMap(Map<String, List<String>> maps, Object user,
+  private void addToMap(Map<String, List<String>> maps, Object user,
       ResourcePermission permission) {
     List<String> list = maps.get(user);
     if (list == null) {
@@ -76,11 +77,5 @@ public class ExpirableSecurityManager extends SimpleSecurityManager {
     }
     list.add(permission.toString());
     maps.put(user.toString(), list);
-  }
-
-  public static void reset() {
-    EXPIRED_USERS.clear();
-    AUTHORIZED_OPS.clear();
-    UNAUTHORIZED_OPS.clear();
   }
 }
