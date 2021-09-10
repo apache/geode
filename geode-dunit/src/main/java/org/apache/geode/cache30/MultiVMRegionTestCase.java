@@ -3818,14 +3818,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // and before vm2 puts any instance of LongWrapper in the region
       // This is to avoid async disk store FlusherThread serializing any instance of LongWrapper
       // before the LongWrapperSerializer is registered
-      vm0.invoke(() -> {
-        waitForLongWrapperSerializerRegistration();
-      });
+      vm0.invoke("waitForLongWrapperSerializerRegistration",
+          this::waitForLongWrapperSerializerRegistration);
 
-      vm1.invoke(() -> {
-        // see the comments in "get" CacheSerializableRunnable above
-        waitForLongWrapperSerializerRegistration();
-      });
+      // see the comments in "get" CacheSerializableRunnable above
+      vm1.invoke("waitForLongWrapperSerializerRegistration",
+          this::waitForLongWrapperSerializerRegistration);
 
       vm2.invoke("Put long", () -> {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -3857,6 +3855,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // responses.
     } finally {
       Wait.pause(1500);
+      vm0.invoke("Flush disk store",
+          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
+      vm1.invoke("Flush disk store",
+          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
+      vm2.invoke("Flush disk store",
+          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
       unregisterAllSerializers();
     }
   }
