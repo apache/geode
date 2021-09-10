@@ -27,22 +27,17 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
@@ -53,18 +48,19 @@ public class BlockingHARegionJUnitTest {
   /** boolean to record an exception occurrence in another thread **/
   private static volatile boolean exceptionOccurred = false;
   /** StringBuffer to store the exception **/
-  private static StringBuffer exceptionString = new StringBuffer();
+  private static final StringBuffer exceptionString = new StringBuffer();
   /** boolen to quit the for loop **/
   private static volatile boolean quitForLoop = false;
 
   @Before
   public void setUp() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
+
     if (cache != null) {
       cache.close(); // fault tolerance
     }
-    cache = (InternalCache) CacheFactory.create(DistributedSystem.connect(props));
+    CacheFactory cacheFactory = new CacheFactory();
+    cache = (InternalCache) cacheFactory.set(MCAST_PORT, "0").create();
+
   }
 
   /**
@@ -148,7 +144,6 @@ public class BlockingHARegionJUnitTest {
   public void testConcurrentPutsNotExceedingLimit() throws Exception {
     exceptionOccurred = false;
     quitForLoop = false;
-    Logger logger = LogService.getLogger();
     List<Thread> listOfThreads = new ArrayList<>();
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
@@ -236,26 +231,15 @@ public class BlockingHARegionJUnitTest {
     join(thread9, 30 * 1000);
     join(thread10, 30 * 1000);
 
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return hrq.region.size() == 20000;
-      }
+    GeodeAwaitility.await().until(() -> hrq.region.size() == 20000);
 
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+    assertThat(thread1.isAlive()).isTrue();
+    assertThat(thread2.isAlive()).isTrue();
+    assertThat(thread3.isAlive()).isTrue();
+    assertThat(thread4.isAlive()).isTrue();
+    assertThat(thread5.isAlive()).isTrue();
 
-    assertTrue(thread1.isAlive());
-    assertTrue(thread2.isAlive());
-    assertTrue(thread3.isAlive());
-    assertTrue(thread4.isAlive());
-    assertTrue(thread5.isAlive());
-
-    assertTrue(hrq.region.size() == 20000);
+    assertThat(hrq.region.size()).isEqualTo(20000);
 
     quitForLoop = true;
 
@@ -301,20 +285,17 @@ public class BlockingHARegionJUnitTest {
       final EventID id1 = new EventID(new byte[] {1}, 1, 2); // violation
       final EventID ignore = new EventID(new byte[] {1}, 1, 1); //
       final EventID id2 = new EventID(new byte[] {1}, 1, 3); //
-      Thread t1 = new Thread() {
-        @Override
-        public void run() {
-          try {
-            hrq.put(new ConflatableObject("key1", "value1", id1, false, "region1"));
-            hrq.take();
-            hrq.put(new ConflatableObject("key2", "value1", ignore, false, "region1"));
-            hrq.put(new ConflatableObject("key3", "value1", id2, false, "region1"));
-          } catch (Exception e) {
-            exceptionString.append("First Put in region queue failed");
-            exceptionOccurred = true;
-          }
+      Thread t1 = new Thread(() -> {
+        try {
+          hrq.put(new ConflatableObject("key1", "value1", id1, false, "region1"));
+          hrq.take();
+          hrq.put(new ConflatableObject("key2", "value1", ignore, false, "region1"));
+          hrq.put(new ConflatableObject("key3", "value1", id2, false, "region1"));
+        } catch (Exception e) {
+          exceptionString.append("First Put in region queue failed");
+          exceptionOccurred = true;
         }
-      };
+      });
       t1.start();
       ThreadUtils.join(t1, 20 * 1000);
       if (exceptionOccurred) {
@@ -331,7 +312,7 @@ public class BlockingHARegionJUnitTest {
    * class which does specified number of puts on the queue
    */
   private static class DoPuts extends Thread {
-    HARegionQueue regionQueue = null;
+    HARegionQueue regionQueue;
     final int numberOfPuts;
 
     DoPuts(HARegionQueue haRegionQueue, int numberOfPuts) {
