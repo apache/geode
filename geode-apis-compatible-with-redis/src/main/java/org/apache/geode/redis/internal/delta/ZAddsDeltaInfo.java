@@ -35,8 +35,8 @@ public class ZAddsDeltaInfo implements DeltaInfo {
   }
 
   public void add(byte[] delta, double score) {
-    this.deltas.add(delta);
     this.scores[deltas.size()] = score;
+    this.deltas.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {

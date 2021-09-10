@@ -228,7 +228,8 @@ public class RedisSortedSet extends AbstractRedisData {
 
       if (!addResult.equals(MemberAddResult.NO_OP)) {
         if (deltaInfo == null) {
-          deltaInfo = new ZAddsDeltaInfo(scoresToAdd.size());
+          deltaInfo = new ZAddsDeltaInfo(membersToAdd.size());
+          deltaInfo.add(member, score);
         } else {
           deltaInfo.add(member, score);
         }
