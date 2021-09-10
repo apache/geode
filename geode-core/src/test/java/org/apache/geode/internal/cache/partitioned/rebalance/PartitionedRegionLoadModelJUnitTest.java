@@ -14,8 +14,12 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,7 +28,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -39,16 +42,21 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetails;
 import org.apache.geode.internal.cache.partitioned.OfflineMemberDetailsImpl;
 import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -1489,11 +1497,62 @@ public class PartitionedRegionLoadModelJUnitTest {
     model.addRegion("primary", Arrays.asList(details1, details2), offlineDetails, true);
     assertEquals(3, doMoves(new CompositeDirector(true, true, true, true), model));
 
-    Collection<Move> expectedMoves = new ArrayList<>();
+    List<Move> expectedMoves = new ArrayList<>();
     expectedMoves.add(new Move(member1, member2));
     expectedMoves.add(new Move(member1, member2));
     expectedMoves.add(new Move(member1, member2));
-    assertEquals(expectedMoves, bucketOperator.bucketMoves);
+    assertThat(expectedMoves).containsAll(bucketOperator.bucketMoves);
+  }
+
+  // Two members each host bucket. Fullyloadedmember hosts bucket2 as well.
+  // findBestRemove should do the bucket remove from fullyloadedmember
+  @Test
+  public void testFindBestRemoveRemovesFromMoreLoadedMember() {
+    Bucket bucket = mock(Bucket.class);
+    Bucket bucket2 = mock(Bucket.class);
+    AddressComparor addressComparor = mock(AddressComparor.class);
+    ClusterDistributionManager clusterDistributionManager = mock(ClusterDistributionManager.class);
+
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    PartitionedRegionLoadModel model = new PartitionedRegionLoadModel(bucketOperator, 2, 6,
+        addressComparor, Collections.emptySet(), partitionedRegion);
+    InternalDistributedMember memberId = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMemberId = mock(InternalDistributedMember.class);
+
+    when(partitionedRegion.getDistributionManager()).thenReturn(clusterDistributionManager);
+    doReturn(true).when(addressComparor).enforceUniqueZones();
+    doReturn(true).when(addressComparor).areSameZone(
+        ArgumentMatchers.any(InternalDistributedMember.class),
+        ArgumentMatchers.any(InternalDistributedMember.class));
+    Set<Member> membersHostingBucket = new HashSet<>();
+    Member halfLoadedMember = new Member(addressComparor, memberId, 100, 100, false, false);
+    Member fullyLoadedMember = new Member(addressComparor, otherMemberId, 100, 100, false, false);
+
+    when(bucket.getPrimary()).thenReturn(halfLoadedMember);
+    when(bucket.getBytes()).thenReturn(10000000L);
+    when(bucket.getLoad()).thenReturn(50.0f);
+    when(bucket2.getPrimary()).thenReturn(fullyLoadedMember);
+    when(bucket2.getBytes()).thenReturn(10000000L);
+    when(bucket2.getLoad()).thenReturn(50.0f);
+
+    fullyLoadedMember.addBucket(bucket);
+    fullyLoadedMember.addBucket(bucket2);
+    halfLoadedMember.addBucket(bucket);
+    membersHostingBucket.add(halfLoadedMember);
+    membersHostingBucket.add(fullyLoadedMember);
+
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+
+    when(clusterDistributionManager.getRedundancyZone(memberId)).thenReturn("zoneA");
+    when(clusterDistributionManager.getRedundancyZone(otherMemberId)).thenReturn("zoneA");
+
+    when(bucket.getMembersHosting()).thenReturn(membersHostingBucket);
+
+    org.apache.geode.internal.cache.partitioned.rebalance.model.Move bestRemove =
+        model.findBestRemove(bucket);
+
+    assertThat(bestRemove).isNotNull();
+    assertThat(bestRemove.getTarget()).isEqualTo(fullyLoadedMember);
   }
 
   private int doMoves(RebalanceDirector director, PartitionedRegionLoadModel model) {

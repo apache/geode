@@ -825,15 +825,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       dumpBucket(bucketId, bucketRegion);
     }
 
-    // Iterator i = localRegion.entrySet().iterator();
-    // while (i.hasNext()) {
-    // try {
-    // NonTXEntry nte = (NonTXEntry) i.next();
-    // // updateBucket2Size(bucketId.longValue(), localRegion, null);
-    // // nte.getRegionEntry().getValueInVM();
-    // } catch (EntryDestroyedException ignore) {}
-    // }
-
     return bucketRegion;
   }
 
