@@ -85,6 +85,9 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   private int PORT2;
   private int PORT3;
 
+  private String hostnameServer1;
+  private String hostnameServer3;
+
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -109,6 +112,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     PORT2 = server2.invoke(() -> createServerCache());
     PORT3 = server3.invoke(() -> createServerCache());
 
+    hostnameServer1 = NetworkUtils.getServerHostName(server1.getHost());
+    hostnameServer3 = NetworkUtils.getServerHostName(server3.getHost());
 
     IgnoredException.addIgnoredException("java.net.SocketException");
     IgnoredException.addIgnoredException("Unexpected IOException");
@@ -117,32 +122,23 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
 
   @Test
-  public void updatesArePropagatedToAllMembersWhenOneKilled() {
+  public void updatesArePropagatedToAllMembersWhenOneKilled() throws Exception {
     client1.invoke(
-        () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1));
+        () -> createClientCache(hostnameServer1, PORT1));
     client2.invoke(
-        () -> createClientCache(NetworkUtils.getServerHostName(server3.getHost()), PORT3));
+        () -> createClientCache(hostnameServer3, PORT3));
     int entries = 20;
     AsyncInvocation invocation = client1.invokeAsync(() -> doPuts(entries));
 
     // Wait for some entries to be put
-    try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    Thread.sleep(5000);
 
     // Simulate crash
     server2.invoke(() -> {
       MembershipManagerHelper.crashDistributedSystem(getSystemStatic());
     });
 
-
-    try {
-      invocation.await();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+    invocation.await();
 
     int notNullEntriesIn1 = client1.invoke(() -> getNotNullEntriesNumber(entries));
     int notNullEntriesIn3 = client2.invoke(() -> getNotNullEntriesNumber(entries));
@@ -156,9 +152,9 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void updatesAreProgegatedAfterFailover() {
     client1.invoke(
-        () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
+        () -> createClientCache(hostnameServer1, PORT1, PORT2));
     client2.invoke(
-        () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
+        () -> createClientCache(hostnameServer1, PORT1, PORT2));
 
     // First create entries on both servers via the two client
     client1.invoke(() -> createEntriesK1andK2());
@@ -294,15 +290,13 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createClientCache(String host, Integer port1) {
-    ClientCache cache;
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     ClientCacheFactory cf = new ClientCacheFactory();
     cf.addPoolServer(host, port1).setPoolSubscriptionEnabled(false)
         .setPoolSubscriptionRedundancy(-1).setPoolMinConnections(4).setPoolSocketBufferSize(1000)
         .setPoolReadTimeout(100).setPoolPingInterval(300);
-    cache = getClientCache(cf);
+    ClientCache cache = getClientCache(cf);
     cache.createClientRegionFactory(ClientRegionShortcut.PROXY)
         .create(REGION_NAME);
   }
@@ -364,20 +358,16 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private void doPuts(int entries) {
-    Region r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
+  private void doPuts(int entries) throws Exception {
+    Region r1 = getCache().getRegion(REGION_NAME);
     assertNotNull(r1);
     for (int i = 0; i < entries; i++) {
       try {
         r1.put("" + i, "" + i);
       } catch (Exception e) {
-        e.printStackTrace();
+        // ignore
       }
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+      Thread.sleep(1000);
     }
   }
 
@@ -386,13 +376,9 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     Region r1 = getCache().getRegion(SEPARATOR + REGION_NAME);
     assertNotNull(r1);
     for (int i = 0; i < entries; i++) {
-      try {
-        Object value = r1.get("" + i, "" + i);
-        if (value != null) {
-          notNullEntries++;
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
+      Object value = r1.get("" + i, "" + i);
+      if (value != null) {
+        notNullEntries++;
       }
     }
     return notNullEntries;

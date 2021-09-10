@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.event;
 
+import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_15_0;
+import static org.apache.geode.internal.serialization.StaticSerialization.getVersionForDataStream;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -24,8 +27,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.StaticSerialization;
+
 
 /**
  * A sequence number tracker to keep events from clients from being re-applied to the cache if
@@ -114,7 +116,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastSequenceNumber = in.readLong();
     versionTag = (VersionTag) DataSerializer.readObject(in);
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_15_0)) {
+    if (getVersionForDataStream(in).isNotOlderThan(GEODE_1_15_0)) {
       final int size = InternalDataSerializer.readArrayLength(in);
       Object key;
       Long value;
@@ -130,8 +132,8 @@ public class EventSequenceNumberHolder implements DataSerializable {
   public void toData(DataOutput out) throws IOException {
     out.writeLong(lastSequenceNumber);
     DataSerializer.writeObject(versionTag, out);
-    if (StaticSerialization.getVersionForDataStream(out)
-        .isNotOlderThan(KnownVersion.GEODE_1_15_0)) {
+    if (getVersionForDataStream(out)
+        .isNotOlderThan(GEODE_1_15_0)) {
       InternalDataSerializer.writeHashMap(this.keySequenceIdMap, out);
     }
   }

@@ -277,12 +277,12 @@ public class DistributedEventTracker implements EventTracker {
       key = ((EntryEventImpl) event).getKey();
     }
 
-    EventSequenceNumberHolder newEvh =
+    EventSequenceNumberHolder newEventSequenceHolder =
         new EventSequenceNumberHolder(eventID.getSequenceID(), tag, key);
     if (logger.isTraceEnabled()) {
       logger.trace("region event tracker recording {}", event);
     }
-    recordSequenceNumber(membershipID, newEvh);
+    recordSequenceNumber(membershipID, newEventSequenceHolder);
 
     // If this is a bulkOp, and concurrency checks are enabled, we need to
     // save the version tag in case we retry.
