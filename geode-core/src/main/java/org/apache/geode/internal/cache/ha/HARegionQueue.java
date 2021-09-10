@@ -637,7 +637,7 @@ public class HARegionQueue implements RegionQueue {
     // optmistically decrease the put count
     Conflatable event = (Conflatable) object;
     try {
-      this.checkQueueSizeConstraint();
+      this.waitForPermission();
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
       this.region.getCache().getCancelCriterion().checkCancelInProgress(ie);
@@ -835,7 +835,7 @@ public class HARegionQueue implements RegionQueue {
   /**
    * Implementation in BlockingHARegionQueue class
    */
-  void checkQueueSizeConstraint() throws InterruptedException {
+  void waitForPermission() throws InterruptedException {
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
@@ -2221,25 +2221,28 @@ public class HARegionQueue implements RegionQueue {
      * in the HARegionQueue.
      */
     @Override
-    void checkQueueSizeConstraint() throws InterruptedException {
-      if (this.haContainer instanceof HAContainerMap && isPrimary()) { // Fix for bug 39413
-        if (Thread.interrupted()) {
-          throw new InterruptedException();
-        }
-        long startTime = System.currentTimeMillis();
-        synchronized (this.permitMon) {
-          if (putPermits.get() <= 0) {
-            long duration = (System.currentTimeMillis() - startTime);
-            checkQueueSizeConstraintCore(duration);
-          } // if (putPermits <= 0)
-          putPermits.decrementAndGet();
-        } // synchronized (this.permitMon)
+    void waitForPermission() throws InterruptedException {
+      if (!(this.haContainer instanceof HAContainerMap && isPrimary())) {
+        return;
       }
-    }
 
-    /* Do not call this method directly from anywhere except checkQueueSizeConstraint */
-    private void checkQueueSizeConstraintCore(long duration) throws InterruptedException {
-      if (reconcilePutPermits() <= 0) {
+      if (Thread.interrupted()) {
+        throw new InterruptedException();
+      }
+
+      long startTime = System.currentTimeMillis();
+      synchronized (this.permitMon) {
+
+        if (putPermits.decrementAndGet() >= 0) {
+          return;
+        }
+
+        long duration = (System.currentTimeMillis() - startTime);
+
+        if (reconcilePutPermits() >= 0) {
+          return;
+        }
+
         if (region.getSystem().getConfig().getRemoveUnresponsiveClient()) {
           isClientSlowReceiver = true;
         } else {
@@ -2249,10 +2252,12 @@ public class HARegionQueue implements RegionQueue {
             if (ccn != null) { // check needed for junit tests
               logFrequency = ccn.getLogFrequency();
             }
+
             if ((this.maxQueueSizeHitCount % logFrequency) == 0) {
               logger.warn("Client queue for {} client is full.", region.getName());
               this.maxQueueSizeHitCount = 0;
             }
+
             ++this.maxQueueSizeHitCount;
             this.region.checkReadiness();
             // TODO: wait called while holding two locks
@@ -2260,6 +2265,7 @@ public class HARegionQueue implements RegionQueue {
             if (millisToWait < 0) {
               millisToWait = 0;
             }
+
             this.permitMon.wait(millisToWait);
 
             this.region.checkReadiness();
@@ -2268,14 +2274,18 @@ public class HARegionQueue implements RegionQueue {
             if (((this.maxQueueSizeHitCount % logFrequency) == 1) || (duration > 100)) {
               logger.info("Resuming with processing puts ... millisToWait = " + millisToWait);
             }
+
           } catch (InterruptedException ex) {
             // TODO: The line below is meaningless. Comment it out later
             this.permitMon.notifyAll();
             throw ex;
           }
         }
-      }
+      } // synchronized (this.permitMon)
+
     }
+
+    /* Do not call this method directly from anywhere except checkQueueSizeConstraint */
 
     /**
      * This function should always be called under a lock on putGuard & permitMon obejct

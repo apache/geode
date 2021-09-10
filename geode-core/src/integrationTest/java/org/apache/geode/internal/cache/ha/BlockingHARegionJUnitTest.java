@@ -179,7 +179,6 @@ public class BlockingHARegionJUnitTest {
     assertThat(hrq.region.size()).isEqualTo(20000);
 
     quitForLoop = true;
-    sleep(10000);
 
     for (Thread thread : listOfThreads) {
       thread.interrupt();
