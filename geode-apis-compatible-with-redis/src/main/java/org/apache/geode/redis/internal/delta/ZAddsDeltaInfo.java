@@ -27,26 +27,16 @@ import org.apache.geode.DataSerializer;
 
 public class ZAddsDeltaInfo implements DeltaInfo {
   private final List<byte[]> deltas;
-  private final List<Double> scores;
+  private final double[] scores;
 
-  public ZAddsDeltaInfo() {
+  public ZAddsDeltaInfo(int size) {
     this.deltas = new ArrayList<>();
-    this.scores = new ArrayList<>();
-  }
-
-  public ZAddsDeltaInfo(List<byte[]> deltas, List<Double> scores) {
-    this.deltas = deltas;
-    this.scores = scores;
-  }
-
-  public ZAddsDeltaInfo(byte[] delta, Double score) {
-    this();
-    add(delta, score);
+    this.scores = new double[size];
   }
 
   public void add(byte[] delta, double score) {
     this.deltas.add(delta);
-    this.scores.add(score);
+    this.scores[deltas.size()] = score;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
@@ -54,7 +44,7 @@ public class ZAddsDeltaInfo implements DeltaInfo {
     DataSerializer.writePrimitiveInt(deltas.size(), out);
     for (int i = 0; i < deltas.size(); i++) {
       DataSerializer.writeByteArray(deltas.get(i), out);
-      DataSerializer.writeDouble(scores.get(i), out);
+      DataSerializer.writePrimitiveDouble(scores[i], out);
     }
   }
 
@@ -62,7 +52,7 @@ public class ZAddsDeltaInfo implements DeltaInfo {
     return deltas;
   }
 
-  public List<Double> getZAddScores() {
+  public double[] getZAddScores() {
     return scores;
   }
 }

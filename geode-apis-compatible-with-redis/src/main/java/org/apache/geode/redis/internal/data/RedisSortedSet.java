@@ -115,7 +115,7 @@ public class RedisSortedSet extends AbstractRedisData {
     members = new MemberMap(size);
     for (int i = 0; i < size; i++) {
       byte[] member = DataSerializer.readByteArray(in);
-      double score = DataSerializer.readDouble(in);
+      double score = DataSerializer.readPrimitiveDouble(in);
       OrderedSetEntry newEntry = new OrderedSetEntry(member, score);
       members.put(member, newEntry);
       scoreSet.add(newEntry);
@@ -182,9 +182,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
   private synchronized void membersAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
     List<byte[]> members = zaddsDeltaInfo.getZAddMembers();
-    List<Double> scores = zaddsDeltaInfo.getZAddScores();
+    double[] scores = zaddsDeltaInfo.getZAddScores();
     for (int i = 0; i < members.size(); i++) {
-      memberAdd(members.get(i), scores.get(i));
+      memberAdd(members.get(i), scores[i]);
     }
   }
 
@@ -228,7 +228,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
       if (!addResult.equals(MemberAddResult.NO_OP)) {
         if (deltaInfo == null) {
-          deltaInfo = new ZAddsDeltaInfo(member, score);
+          deltaInfo = new ZAddsDeltaInfo(scoresToAdd.size());
         } else {
           deltaInfo.add(member, score);
         }
@@ -272,7 +272,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     if (!(memberAdd(member, score) == MemberAddResult.NO_OP)) {
-      ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(member, score);
+      ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(1);
       storeChanges(region, key, deltaInfo);
     }
 
@@ -783,7 +783,7 @@ public class RedisSortedSet extends AbstractRedisData {
         byte[] member = entry.getKey();
         double score = entry.getValue().getScore();
         DataSerializer.writeByteArray(member, out);
-        DataSerializer.writeDouble(score, out);
+        DataSerializer.writePrimitiveDouble(score, out);
       }
     }
   }

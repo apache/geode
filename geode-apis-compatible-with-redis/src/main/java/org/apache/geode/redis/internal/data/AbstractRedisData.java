@@ -25,7 +25,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
@@ -204,13 +203,13 @@ public abstract class AbstractRedisData implements RedisData {
         break;
       case ZADDS:
         int numMembers = DataSerializer.readPrimitiveInt(in);
-        List<byte[]> members = new ArrayList<>(numMembers);
-        List<Double> scores = new ArrayList<>(numMembers);
+        ZAddsDeltaInfo delta = new ZAddsDeltaInfo(numMembers);
         for (int i = 0; i < numMembers; i++) {
-          members.add(DataSerializer.readByteArray(in));
-          scores.add(DataSerializer.readDouble(in));
+          byte[] member = DataSerializer.readByteArray(in);
+          double score = DataSerializer.readPrimitiveDouble(in);
+          delta.add(member, score);
         }
-        applyDelta(new ZAddsDeltaInfo(members, scores));
+        applyDelta(delta);
     }
   }
 
