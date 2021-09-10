@@ -60,7 +60,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @RunWith(JUnitParamsRunner.class)
 public class RebalanceOperationComplexDistributedTest implements Serializable {
   public static final int EXPECTED_BUCKET_COUNT = 113;
-  public static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getSeconds();
+  public static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getValue();
   public static final String CLIENT_XML = "RebalanceOperationComplex-client.xml";
   public static final String SERVER_XML = "RebalanceOperationComplex-server.xml";
   public static final String REGION_NAME = "primary";
