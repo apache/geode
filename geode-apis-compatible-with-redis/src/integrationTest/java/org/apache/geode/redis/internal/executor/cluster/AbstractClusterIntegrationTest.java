@@ -15,18 +15,25 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractClusterIntegrationTest implements RedisIntegrationTest {
+
+  private static final int NUM_KEYS_TO_TEST = 1000;
+  private static final int MAX_KEY_LENGTH = 255;
 
   private JedisCluster jedis;
 
@@ -53,8 +60,40 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
             .hasMessage(
                 "ERR Unknown subcommand or wrong number of arguments for 'SLOTS'. Try CLUSTER HELP.");
     assertThatThrownBy(
+        () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "KEYSLOT"))
+            .hasMessage(
+                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+    assertThatThrownBy(
+        () -> jedis.getConnectionFromSlot(0).sendCommand(
+            Protocol.Command.CLUSTER, "KEYSLOT", "somekey", "1"))
+                .hasMessage(
+                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+    assertThatThrownBy(
         () -> jedis.getConnectionFromSlot(0).sendCommand(Protocol.Command.CLUSTER, "NOTACOMMAND"))
             .hasMessage(
                 "ERR Unknown subcommand or wrong number of arguments for 'NOTACOMMAND'. Try CLUSTER HELP.");
+  }
+
+  @Test
+  public void testClusterKeySlot_valid() {
+    // known key slots from Redis examples in documentation
+    assertThat(
+        jedis.sendCommand("somekey", Protocol.Command.CLUSTER, "KEYSLOT", "somekey"))
+            .isEqualTo(11058L);
+    assertThat(
+        jedis.sendCommand("foo{hash_tag}", Protocol.Command.CLUSTER, "KEYSLOT", "foo{hash_tag}"))
+            .isEqualTo(2515L);
+    assertThat(
+        jedis.sendCommand("bar{hash_tag}", Protocol.Command.CLUSTER, "KEYSLOT", "bar{hash_tag}"))
+            .isEqualTo(2515L);
+    assertThat(
+        jedis.sendCommand("hash_tag", Protocol.Command.CLUSTER, "KEYSLOT", "hash_tag"))
+            .isEqualTo(2515L);
+
+    for (int i = 0; i < NUM_KEYS_TO_TEST; i++) {
+      String key = RandomStringUtils.random(i % MAX_KEY_LENGTH + 1);
+      assertThat(jedis.sendCommand(key, Protocol.Command.CLUSTER, "KEYSLOT", key)).isEqualTo(
+          JedisClusterCRC16.getCRC16(key) % (long) REDIS_SLOTS);
+    }
   }
 }

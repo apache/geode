@@ -16,6 +16,12 @@
 package org.apache.geode.redis.internal.parameters;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSLOT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNODES;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSLOTS;
 
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -27,10 +33,31 @@ public class ClusterParameterRequirements implements ParameterRequirements {
 
     if (numberOfArguments < 2) {
       throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    } else if (numberOfArguments > 2) {
+    } else if (numberOfArguments == 2) {
+      confirmTwoArgSubcommands(command);
+    } else if (numberOfArguments == 3) {
+      confirmArgumentsToKeyslotSubcommand(command);
+    } else { // numberOfArguments > 3
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, command.getStringKey()));
     }
   }
 
+  private void confirmTwoArgSubcommands(Command command) {
+    byte[] bytes = command.getBytesKey();
+    if (!equalsIgnoreCaseBytes(bytes, bINFO) &&
+        !equalsIgnoreCaseBytes(bytes, bSLOTS) &&
+        !equalsIgnoreCaseBytes(bytes, bNODES)) {
+      throw new RedisParametersMismatchException(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
+    }
+  }
+
+  private void confirmArgumentsToKeyslotSubcommand(Command command) {
+    byte[] bytes = command.getBytesKey();
+    if (!equalsIgnoreCaseBytes(bytes, bKEYSLOT)) {
+      throw new RedisParametersMismatchException(
+          String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
+    }
+  }
 }

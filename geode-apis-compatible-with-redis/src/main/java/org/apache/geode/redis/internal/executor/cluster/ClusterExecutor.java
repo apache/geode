@@ -21,6 +21,7 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUC
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSLOT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNODES;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSLOTS;
 
@@ -58,6 +59,8 @@ public class ClusterExecutor extends AbstractExecutor {
       return getNodes(context);
     } else if (equalsIgnoreCaseBytes(bytes, bSLOTS)) {
       return getSlots(context);
+    } else if (equalsIgnoreCaseBytes(bytes, bKEYSLOT)) {
+      return getKeySlot(args.get(2));
     } else {
       return RedisResponse.error(
           String.format(ERROR_UNKNOWN_CLUSTER_SUBCOMMAND, bytesToString(bytes)));
@@ -82,6 +85,11 @@ public class ClusterExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.array(slots);
+  }
+
+  private RedisResponse getKeySlot(byte[] keyBytes) {
+    RedisKey key = new RedisKey(keyBytes);
+    return RedisResponse.integer(key.getCrc16() & (long) (REDIS_SLOTS - 1));
   }
 
   /**
