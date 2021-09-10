@@ -28,6 +28,7 @@ import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.nio.charset.StandardCharsets;
 
@@ -110,6 +111,15 @@ public class CoderTest {
     }
   }
 
+  @Test
+  @Parameters(method = "doubleBytes")
+  public void doubleToBytes_processesTrailingZeroLikeRedis(Double inputDouble,
+      byte[] expectedBytes) {
+    double d = inputDouble;
+    byte[] convertedBytes = doubleToBytes(d);
+    assertArrayEquals(convertedBytes, expectedBytes);
+  }
+
   @SuppressWarnings("unused")
   private Object[] stringPairs() {
     // string1, string2
@@ -152,17 +162,17 @@ public class CoderTest {
 
   @SuppressWarnings("unused")
   private Object[] doubleBytes() {
-    // input double bytes, double bytes with stripped trailing zero
+    // input double, double bytes with stripped trailing zero
     return new Object[] {
-        new Object[] {stringToBytes("0.0"), stringToBytes("0")},
-        new Object[] {stringToBytes("0.01"), stringToBytes("0.01")},
-        new Object[] {stringToBytes("0"), stringToBytes("0")},
-        new Object[] {stringToBytes("1.0"), stringToBytes("1")},
-        new Object[] {stringToBytes("-1.0"), stringToBytes("-1")},
-        new Object[] {stringToBytes("6.0221409E23"), stringToBytes("6.0221409E23")},
-        new Object[] {stringToBytes("6.62607E-34"), stringToBytes("6.62607E-34")},
-        new Object[] {stringToBytes("Infinity"), stringToBytes("Infinity")},
-        new Object[] {stringToBytes("NaN"), stringToBytes("NaN")},
+        new Object[] {0.0, stringToBytes("0")},
+        new Object[] {0.01, stringToBytes("0.01")},
+        new Object[] {0d, stringToBytes("0")},
+        new Object[] {1.0, stringToBytes("1")},
+        new Object[] {-1.0, stringToBytes("-1")},
+        new Object[] {6.0221409E23, stringToBytes("6.0221409E23")},
+        new Object[] {6.62607E-34, stringToBytes("6.62607E-34")},
+        new Object[] {Double.POSITIVE_INFINITY, stringToBytes("inf")},
+        new Object[] {Double.NaN, stringToBytes("NaN")},
     };
   }
 

@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.ORDERED_SET_ENTRY_OVERHEAD;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.REDIS_SORTED_SET_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.when;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -147,10 +149,8 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
-    List<byte[]> members = new ArrayList<>();
-    members.add(stringToBytes("v3"));
-    List<Double> scores = new ArrayList<>();
-    scores.add(1.61803);
+    List<byte[]> members = singletonList(stringToBytes("v3"));
+    List<Double> scores = singletonList(1.61803);
 
     sortedSet1.zadd(region, null, members, scores,
         new ZAddOptions(ZAddOptions.Exists.NONE, false, false));
@@ -728,8 +728,8 @@ public class RedisSortedSetTest {
     // Add members and scores and confirm that the actual size is accurate after each operation
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<Double> scores = Collections.singletonList((double) i);
-      List<byte[]> members = Collections.singletonList(new byte[i]);
+      List<Double> scores = singletonList((double) i);
+      List<byte[]> members = singletonList(new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
       expectedSize = sizer.sizeof(sortedSet);
       actualSize = sortedSet.getSizeInBytes();
@@ -746,15 +746,15 @@ public class RedisSortedSetTest {
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<byte[]> members = Collections.singletonList(new byte[i]);
-      List<Double> scores = Collections.singletonList((double) i);
+      List<byte[]> members = singletonList(new byte[i]);
+      List<Double> scores = singletonList((double) i);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
     // Update half the scores and confirm that the actual size is accurate after each operation
     for (int i = 0; i < numberOfEntries / 2; ++i) {
-      List<byte[]> members = Collections.singletonList(new byte[i]);
-      List<Double> scores = Collections.singletonList(i * 2d);
+      List<byte[]> members = singletonList(new byte[i]);
+      List<Double> scores = singletonList(i * 2d);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
       int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
@@ -771,14 +771,14 @@ public class RedisSortedSetTest {
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<byte[]> members = Collections.singletonList(new byte[i]);
-      List<Double> scores = Collections.singletonList((double) i);
+      List<byte[]> members = singletonList(new byte[i]);
+      List<Double> scores = singletonList((double) i);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
     // Remove all members and confirm that the actual size is accurate after each operation
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<byte[]> memberToRemove = Collections.singletonList(new byte[i]);
+      List<byte[]> memberToRemove = singletonList(new byte[i]);
       sortedSet.zrem(mockRegion, mockKey, memberToRemove);
       int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
@@ -795,8 +795,8 @@ public class RedisSortedSetTest {
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<byte[]> members = Collections.singletonList(new byte[i]);
-      List<Double> scores = Collections.singletonList((double) i);
+      List<byte[]> members = singletonList(new byte[i]);
+      List<Double> scores = singletonList((double) i);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
@@ -818,8 +818,8 @@ public class RedisSortedSetTest {
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<byte[]> members = Collections.singletonList(new byte[i]);
-      List<Double> scores = Collections.singletonList((double) i);
+      List<byte[]> members = singletonList(new byte[i]);
+      List<Double> scores = singletonList((double) i);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
@@ -850,8 +850,8 @@ public class RedisSortedSetTest {
 
     Iterator<String> iterator = Arrays.stream(membersAndScores).iterator();
     while (iterator.hasNext()) {
-      scores.add(Coder.stringToDouble(iterator.next()));
-      members.add(Coder.stringToBytes(iterator.next()));
+      scores.add(Coder.bytesToDouble(iterator.next().getBytes(StandardCharsets.UTF_8)));
+      members.add(iterator.next().getBytes(StandardCharsets.UTF_8));
     }
 
     return new RedisSortedSet(members, scores);

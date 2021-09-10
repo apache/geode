@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,13 +69,8 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double increment,
       byte[] member) {
-    List<byte[]> membersToAdd = new ArrayList<>();
-    membersToAdd.add(member);
+    RedisSortedSet sortedSet = new RedisSortedSet(singletonList(member), singletonList(increment));
 
-    List<Double> scoresToAdd = new ArrayList<>();
-    scoresToAdd.add(increment);
-
-    RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd, scoresToAdd);
     region.create(key, sortedSet);
 
     return Coder.doubleToBytes(increment);

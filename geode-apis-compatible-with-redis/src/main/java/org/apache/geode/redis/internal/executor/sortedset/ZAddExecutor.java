@@ -19,7 +19,6 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
-import static org.apache.geode.redis.internal.netty.Coder.isNaN;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINCR;
@@ -53,8 +52,9 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    List<byte[]> members = new ArrayList<>();
-    List<Double> scores = new ArrayList<>();
+    int size = (commandElements.size() - optionsFoundCount - 2) / 2;
+    List<byte[]> members = new ArrayList<>(size);
+    List<Double> scores = new ArrayList<>(size);
     for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2) {
       try {
         scores.add(Coder.bytesToDouble(commandElements.get(i)));
@@ -101,9 +101,6 @@ public class ZAddExecutor extends AbstractExecutor {
         optionsFoundCount++;
       } else if (isInfinity(subCommand)) {
         scoreFound = true;
-      } else if (isNaN(subCommand)) {
-        executorState.exceptionMessage = ERROR_NOT_A_VALID_FLOAT;
-        return 0;
       } else {
         // assume it's a double; if not, this will throw exception later
         scoreFound = true;

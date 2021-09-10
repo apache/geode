@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.netty.Coder;
 
 public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
@@ -374,15 +372,12 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       RedisSortedSet.OrderedSetEntry value = hash.get(key);
-      double oldScore = value.getScore();
-      int scoreDelta =
-          memoryOverhead(Coder.doubleToBytes(i)) - memoryOverhead(Coder.doubleToBytes(oldScore));
 
       int oldSize = hash.getSizeInBytes();
       value.updateScore(i);
       int sizeDelta = hash.getSizeInBytes() - oldSize;
 
-      assertThat(sizeDelta).isEqualTo(scoreDelta);
+      assertThat(sizeDelta).isZero();
 
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }

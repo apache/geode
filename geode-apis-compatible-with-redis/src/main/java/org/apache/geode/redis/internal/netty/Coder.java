@@ -415,27 +415,16 @@ public class Coder {
     }
 
     try {
-      return stringToDouble(bytesToString(bytes));
+      String d = bytesToString(bytes);
+      if (d.equalsIgnoreCase(P_INF)) {
+        return Double.POSITIVE_INFINITY;
+      } else if (d.equalsIgnoreCase(N_INF)) {
+        return Double.NEGATIVE_INFINITY;
+      } else {
+        return Double.parseDouble(d);
+      }
     } catch (NumberFormatException e) {
       throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
-    }
-  }
-
-  /**
-   * Redis specific manner to parse floats
-   *
-   * @param d String holding double
-   * @return Value of string
-   * @throws NumberFormatException if the double cannot be parsed
-   */
-  public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF) || d.equalsIgnoreCase("+infinity")
-        || d.equalsIgnoreCase("infinity")) {
-      return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF) || d.equalsIgnoreCase("-infinity")) {
-      return Double.NEGATIVE_INFINITY;
-    } else {
-      return Double.parseDouble(d);
     }
   }
 

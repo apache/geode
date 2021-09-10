@@ -152,22 +152,22 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_ID;
   }
 
-  protected synchronized boolean memberAdd(byte[] memberToAdd, double scoreToAdd) {
+  protected synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
     OrderedSetEntry entry = members.get(memberToAdd);
     if (entry == null) {
       OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
       members.put(memberToAdd, newEntry);
       scoreSet.add(newEntry);
-      return false;
+      return MemberAddResult.CREATE;
     } else {
       if (entry.score == scoreToAdd) {
-        return false;
+        return MemberAddResult.NO_OP;
       }
       scoreSet.remove(entry);
       entry.updateScore(scoreToAdd);
       scoreSet.add(entry);
+      return MemberAddResult.UPDATE;
     }
-    return true;
   }
 
   synchronized boolean memberRemove(byte[] member) {
@@ -220,14 +220,18 @@ public class RedisSortedSet extends AbstractRedisData {
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      boolean scoreChanged = memberAdd(member, score);
-      if (options.isCH() && scoreChanged) {
+      MemberAddResult addResult = memberAdd(member, score);
+
+      if (options.isCH() && addResult.equals(MemberAddResult.UPDATE)) {
         changesCount++;
       }
-      if (deltaInfo == null) {
-        deltaInfo = new ZAddsDeltaInfo(member, score);
-      } else {
-        deltaInfo.add(member, score);
+
+      if (!addResult.equals(MemberAddResult.NO_OP)) {
+        if (deltaInfo == null) {
+          deltaInfo = new ZAddsDeltaInfo(member, score);
+        } else {
+          deltaInfo.add(member, score);
+        }
       }
     }
 
@@ -267,11 +271,10 @@ public class RedisSortedSet extends AbstractRedisData {
       score = incr;
     }
 
-    memberAdd(member, score);
-
-    ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(member, score);
-
-    storeChanges(region, key, deltaInfo);
+    if (!(memberAdd(member, score) == MemberAddResult.NO_OP)) {
+      ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(member, score);
+      storeChanges(region, key, deltaInfo);
+    }
 
     return Coder.doubleToBytes(score);
   }
@@ -792,4 +795,9 @@ public class RedisSortedSet extends AbstractRedisData {
   public static class ScoreSet extends OrderStatisticsTree<AbstractOrderedSetEntry> {
   }
 
+  private enum MemberAddResult {
+    CREATE,
+    UPDATE,
+    NO_OP
+  }
 }
