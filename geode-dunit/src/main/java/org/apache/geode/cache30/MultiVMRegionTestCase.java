@@ -96,6 +96,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.EntryExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -3856,12 +3857,21 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     } finally {
       Wait.pause(1500);
       vm0.invoke("Flush disk store",
-          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
+          () -> flushDiskStore(name));
       vm1.invoke("Flush disk store",
-          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
+          () -> flushDiskStore(name));
       vm2.invoke("Flush disk store",
-          () -> ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore().flush());
+          () -> flushDiskStore(name));
       unregisterAllSerializers();
+    }
+  }
+
+  private void flushDiskStore(String name) {
+    if (getRootRegion() != null && getRootRegion().getSubregion(name) != null) {
+      DiskStoreImpl diskStore = ((LocalRegion) getRootRegion().getSubregion(name)).getDiskStore();
+      if (diskStore != null) {
+        diskStore.flush();
+      }
     }
   }
 
