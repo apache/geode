@@ -89,7 +89,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     // Start the locator
     MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
     locatorPort = locatorVM.getPort();
@@ -98,6 +98,15 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
 
     runID.incrementAndGet();
     cleanOutServerDirectories();
+
+    // Startup the servers
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
+    }
+
+    // Put data in the server regions
+    clientPopulateServers();
+
   }
 
   @After
@@ -115,16 +124,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   @Test
   @Parameters({"1,2", "1,4", "4,1", "5,6"})
   public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer,
-      int serverToBeShutdownAndRestarted)
-      throws Exception {
-
-    // Startup the servers
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      startServerInRedundancyZone(entry.getKey(), entry.getValue());
-    }
-
-    // Put data in the server regions
-    clientPopulateServers();
+      int serverToBeShutdownAndRestarted) {
 
     // Rebalance Server VM will initiate all of the rebalances in this test
     VM rebalanceServerVM = clusterStartupRule.getVM(rebalanceServer);
