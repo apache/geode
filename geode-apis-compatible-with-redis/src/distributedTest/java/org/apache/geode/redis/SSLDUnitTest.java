@@ -49,6 +49,7 @@ import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.net.filewatch.PollingFileWatcher;
+import org.apache.geode.redis.internal.ssl.TestSSLServer;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -59,8 +60,8 @@ public class SSLDUnitTest {
   @Rule
   public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
-  private final static String commonPassword = "password";
-  private final static SANCapturingHostnameVerifier hostnameVerifier =
+  private static final String commonPassword = "password";
+  private static final SANCapturingHostnameVerifier hostnameVerifier =
       new SANCapturingHostnameVerifier();
 
   private int redisPort;
@@ -69,7 +70,8 @@ public class SSLDUnitTest {
   private String serverTrustStoreFilename;
 
   private void setup() throws Exception {
-    setup(p -> {});
+    setup(p -> {
+    });
   }
 
   private void setup(Consumer<Properties> propertyConfigurer) throws Exception {
@@ -121,6 +123,13 @@ public class SSLDUnitTest {
     try (Jedis jedis = createClient(true, false)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
+
+    IgnoredException.addIgnoredException(SSLHandshakeException.class);
+    IgnoredException.addIgnoredException(NotSslRecordException.class);
+
+    TestSSLServer tServer = new TestSSLServer("localhost", redisPort).execute();
+
+    assertThat(tServer.getCipherSuiteNames()).containsExactly(rsaCipher);
   }
 
   @Test
@@ -247,7 +256,7 @@ public class SSLDUnitTest {
     // Try long enough for the file change to be detected
     GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 3))
         .untilAsserted(() -> assertThatThrownBy(() -> createClient(true, false))
-              .isInstanceOf(JedisConnectionException.class));
+            .isInstanceOf(JedisConnectionException.class));
 
     IgnoredException.removeAllExpectedExceptions();
   }

@@ -42,7 +42,7 @@ package org.apache.geode.redis.internal.ssl;
  * higher preference level.)
  *
  * ----------------------------------------------------------------------
- * Copyright (c) 2012  Thomas Pornin <pornin@bolet.org>
+ * Copyright (c) 2012 Thomas Pornin <pornin@bolet.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -83,6 +83,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Formatter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,13 +92,23 @@ import java.util.TreeSet;
 
 public class TestSSLServer {
 
+  private final Set<Integer> protocolIds = new TreeSet<>();
+  private final Map<Integer, Set<Integer>> cipherSuiteIds = new TreeMap<>();
+  private final Set<String> certificateIds = new TreeSet<>();
+  private String host;
+  private int port;
+
+  public TestSSLServer(String host, int port) {
+    this.host = host;
+    this.port = port;
+  }
+
   static void usage() {
     System.err.println("usage: TestSSLServer servername [ port ]");
     System.exit(1);
   }
 
-  public static void main(String[] args)
-      throws IOException {
+  public static void main(String[] args) throws IOException {
     if (args.length == 0 || args.length > 2) {
       usage();
     }
@@ -115,31 +126,31 @@ public class TestSSLServer {
     }
     InetSocketAddress isa = new InetSocketAddress(name, port);
 
-    Set<Integer> sv = new TreeSet<Integer>();
+    Set<Integer> protocolVersions = new TreeSet<Integer>();
     boolean compress = false;
     for (int v = 0x0300; v <= 0x0303; v++) {
-      ServerHello sh = connect(isa, v, CIPHER_SUITES.keySet());
-      if (sh == null) {
+      ServerHello serverHello = connect(isa, v, CIPHER_SUITES.keySet());
+      if (serverHello == null) {
         continue;
       }
-      sv.add(sh.protoVersion);
-      if (sh.compression == 1) {
+      protocolVersions.add(serverHello.protoVersion);
+      if (serverHello.compression == 1) {
         compress = true;
       }
     }
 
-    ServerHelloSSLv2 sh2 = connectV2(isa);
+    ServerHelloSSLv2 serverHello2 = connectV2(isa);
 
-    if (sh2 != null) {
-      sv.add(0x0200);
+    if (serverHello2 != null) {
+      protocolVersions.add(0x0200);
     }
 
-    if (sv.size() == 0) {
+    if (protocolVersions.size() == 0) {
       System.out.println("No SSL/TLS server at " + isa);
       System.exit(1);
     }
     System.out.print("Supported versions:");
-    for (int v : sv) {
+    for (int v : protocolVersions) {
       System.out.print(" ");
       System.out.print(versionString(v));
     }
@@ -154,10 +165,10 @@ public class TestSSLServer {
         new TreeMap<Integer, Set<Integer>>();
     Set<String> certID = new TreeSet<String>();
 
-    if (sh2 != null) {
+    if (serverHello2 != null) {
       System.out.println("  " + versionString(0x0200));
       Set<Integer> vc2 = new TreeSet<Integer>();
-      for (int c : sh2.cipherSuites) {
+      for (int c : serverHello2.cipherSuites) {
         vc2.add(c);
       }
       for (int c : vc2) {
@@ -165,13 +176,13 @@ public class TestSSLServer {
             + cipherSuiteStringV2(c));
       }
       suppCS.put(0x0200, vc2);
-      if (sh2.serverCertName != null) {
-        certID.add(sh2.serverCertHash
-            + ": " + sh2.serverCertName);
+      if (serverHello2.serverCertName != null) {
+        certID.add(serverHello2.serverCertHash
+            + ": " + serverHello2.serverCertName);
       }
     }
 
-    for (int v : sv) {
+    for (int v : protocolVersions) {
       if (v == 0x0200) {
         continue;
       }
@@ -202,7 +213,7 @@ public class TestSSLServer {
     int agMaxStrength = STRONG;
     int agMinStrength = STRONG;
     boolean vulnBEAST = false;
-    for (int v : sv) {
+    for (int v : protocolVersions) {
       Set<Integer> vsc = suppCS.get(v);
       agMaxStrength = Math.min(
           maxStrength(vsc), agMaxStrength);
@@ -223,6 +234,77 @@ public class TestSSLServer {
 
   }
 
+  public List<String> getProtocolNames() {
+    List<String> protocols = new ArrayList<>(protocolIds.size());
+    for (int pv : protocolIds) {
+      protocols.add(versionString(pv));
+    }
+
+    return protocols;
+  }
+
+  public List<String> getCipherSuiteNames() {
+    Set<String> ciphers = new HashSet<>();
+    for (Map.Entry<Integer, Set<Integer>> e : cipherSuiteIds.entrySet()) {
+      for (Integer cv : e.getValue()) {
+        if (e.getKey() == 0x0200) {
+          ciphers.add(cipherSuiteStringV2(cv));
+        } else {
+          ciphers.add(cipherSuiteString(cv));
+        }
+      }
+    }
+
+    return new ArrayList<>(ciphers);
+  }
+
+  public TestSSLServer execute() {
+    InetSocketAddress isa = new InetSocketAddress(host, port);
+
+    boolean compress = false;
+    for (int v = 0x0300; v <= 0x0303; v++) {
+      ServerHello serverHello = connect(isa, v, CIPHER_SUITES.keySet());
+      if (serverHello == null) {
+        continue;
+      }
+      protocolIds.add(serverHello.protoVersion);
+      if (serverHello.compression == 1) {
+        compress = true;
+      }
+    }
+
+    ServerHelloSSLv2 serverHello2 = connectV2(isa);
+
+    if (serverHello2 != null) {
+      protocolIds.add(0x0200);
+    }
+
+    if (protocolIds.size() == 0) {
+      return this;
+    }
+
+    if (serverHello2 != null) {
+      Set<Integer> vc2 = new TreeSet<>();
+      for (int c : serverHello2.cipherSuites) {
+        vc2.add(c);
+      }
+      cipherSuiteIds.put(0x0200, vc2);
+      if (serverHello2.serverCertName != null) {
+        certificateIds.add(serverHello2.serverCertHash + ": " + serverHello2.serverCertName);
+      }
+    }
+
+    for (int v : protocolIds) {
+      if (v == 0x0200) {
+        continue;
+      }
+      Set<Integer> vsc = supportedSuites(isa, v, certificateIds);
+      cipherSuiteIds.put(v, vsc);
+    }
+
+    return this;
+  }
+
   /*
    * Get cipher suites supported by the server. This is done by
    * repeatedly contacting the server, each time removing from our
@@ -231,10 +313,10 @@ public class TestSSLServer {
    * to us with a ServerHello.
    */
   static Set<Integer> supportedSuites(InetSocketAddress isa, int version,
-                                      Set<String> serverCertID) {
+      Set<String> serverCertID) {
     Set<Integer> cs = new TreeSet<Integer>(CIPHER_SUITES.keySet());
     Set<Integer> rs = new TreeSet<Integer>();
-    for (; ; ) {
+    for (;;) {
       ServerHello sh = connect(isa, version, cs);
       if (sh == null) {
         break;
@@ -285,7 +367,7 @@ public class TestSSLServer {
   }
 
   static boolean testBEAST(InetSocketAddress isa,
-                           int version, Set<Integer> supp) {
+      int version, Set<Integer> supp) {
     /*
      * TLS 1.1+ is not vulnerable to BEAST.
      * We do not test SSLv2 either.
@@ -346,7 +428,7 @@ public class TestSSLServer {
    * response (ServerHello). On error, null is returned.
    */
   static ServerHello connect(InetSocketAddress isa,
-                             int version, Collection<Integer> cipherSuites) {
+      int version, Collection<Integer> cipherSuites) {
     Socket s = null;
     try {
       s = new Socket();
@@ -555,7 +637,7 @@ public class TestSSLServer {
 
     private void refill()
         throws IOException {
-      for (; ; ) {
+      for (;;) {
         readFully(in, buffer, 0, 5);
         type = buffer[0] & 0xFF;
         version = dec16be(buffer, 1);
@@ -605,7 +687,7 @@ public class TestSSLServer {
    * supported version, and list of cipher suites.
    */
   static byte[] makeClientHello(int version,
-                                Collection<Integer> cipherSuites) {
+      Collection<Integer> cipherSuites) {
     try {
       return makeClientHello0(version, cipherSuites);
     } catch (IOException ioe) {
@@ -614,15 +696,15 @@ public class TestSSLServer {
   }
 
   static byte[] makeClientHello0(int version,
-                                 Collection<Integer> cipherSuites)
+      Collection<Integer> cipherSuites)
       throws IOException {
     ByteArrayOutputStream b = new ByteArrayOutputStream();
 
     /*
      * Message header:
-     *   message type: one byte (1 = "ClientHello")
-     *   message length: three bytes (this will be adjusted
-     *   at the end of this method).
+     * message type: one byte (1 = "ClientHello")
+     * message length: three bytes (this will be adjusted
+     * at the end of this method).
      */
     b.write(1);
     b.write(0);
@@ -796,7 +878,7 @@ public class TestSSLServer {
        * reach the server's Certificate message, or
        * ServerHelloDone.
        */
-      for (; ; ) {
+      for (;;) {
         buf = new byte[4];
         readFully(rec, buf);
         int mt = buf[0] & 0xFF;
@@ -857,20 +939,20 @@ public class TestSSLServer {
    * client.
    */
   private static final byte[] SSL2_CLIENT_HELLO = {
-      (byte) 0x80, (byte) 0x2E,  // header (record length)
-      (byte) 0x01,              // message type (CLIENT HELLO)
-      (byte) 0x00, (byte) 0x02,  // version (0x0002)
-      (byte) 0x00, (byte) 0x15,  // cipher specs list length
-      (byte) 0x00, (byte) 0x00,  // session ID length
-      (byte) 0x00, (byte) 0x10,  // challenge length
-      0x01, 0x00, (byte) 0x80,  // SSL_CK_RC4_128_WITH_MD5
-      0x02, 0x00, (byte) 0x80,  // SSL_CK_RC4_128_EXPORT40_WITH_MD5
-      0x03, 0x00, (byte) 0x80,  // SSL_CK_RC2_128_CBC_WITH_MD5
-      0x04, 0x00, (byte) 0x80,  // SSL_CK_RC2_128_CBC_EXPORT40_WITH_MD5
-      0x05, 0x00, (byte) 0x80,  // SSL_CK_IDEA_128_CBC_WITH_MD5
-      0x06, 0x00, (byte) 0x40,  // SSL_CK_DES_64_CBC_WITH_MD5
-      0x07, 0x00, (byte) 0xC0,  // SSL_CK_DES_192_EDE3_CBC_WITH_MD5
-      0x54, 0x54, 0x54, 0x54,  // challenge data (16 bytes)
+      (byte) 0x80, (byte) 0x2E, // header (record length)
+      (byte) 0x01, // message type (CLIENT HELLO)
+      (byte) 0x00, (byte) 0x02, // version (0x0002)
+      (byte) 0x00, (byte) 0x15, // cipher specs list length
+      (byte) 0x00, (byte) 0x00, // session ID length
+      (byte) 0x00, (byte) 0x10, // challenge length
+      0x01, 0x00, (byte) 0x80, // SSL_CK_RC4_128_WITH_MD5
+      0x02, 0x00, (byte) 0x80, // SSL_CK_RC4_128_EXPORT40_WITH_MD5
+      0x03, 0x00, (byte) 0x80, // SSL_CK_RC2_128_CBC_WITH_MD5
+      0x04, 0x00, (byte) 0x80, // SSL_CK_RC2_128_CBC_EXPORT40_WITH_MD5
+      0x05, 0x00, (byte) 0x80, // SSL_CK_IDEA_128_CBC_WITH_MD5
+      0x06, 0x00, (byte) 0x40, // SSL_CK_DES_64_CBC_WITH_MD5
+      0x07, 0x00, (byte) 0xC0, // SSL_CK_DES_192_EDE3_CBC_WITH_MD5
+      0x54, 0x54, 0x54, 0x54, // challenge data (16 bytes)
       0x54, 0x54, 0x54, 0x54,
       0x54, 0x54, 0x54, 0x54,
       0x54, 0x54, 0x54, 0x54
@@ -878,7 +960,7 @@ public class TestSSLServer {
 
   /*
    * This class represents the response of a server which knows
-   $ SSLv2. It includes the list of cipher suites, and the
+   * $ SSLv2. It includes the list of cipher suites, and the
    * identification of the server certificate.
    */
   static class ServerHelloSSLv2 {
@@ -994,7 +1076,7 @@ public class TestSSLServer {
   }
 
   private static final void makeCS(int suite, String name,
-                                   boolean isCBC, int strength) {
+      boolean isCBC, int strength) {
     CipherSuite cs = new CipherSuite();
     cs.suite = suite;
     cs.name = name;
@@ -1099,10 +1181,11 @@ public class TestSSLServer {
     N(0x001C, "FORTEZZA_KEA_WITH_NULL_SHA");
     B8(0x001D, "FORTEZZA_KEA_WITH_FORTEZZA_CBC_SHA");
 
-		/* This one is deactivated since it conflicts with
-		   one of the Kerberos cipher suites.
-		S8(0x001E, "FORTEZZA_KEA_WITH_RC4_128_SHA"      );
-		*/
+    /*
+     * This one is deactivated since it conflicts with
+     * one of the Kerberos cipher suites.
+     * S8(0x001E, "FORTEZZA_KEA_WITH_RC4_128_SHA" );
+     */
 
     /*
      * Kerberos cipher suites (RFC 2712).
@@ -1242,10 +1325,11 @@ public class TestSSLServer {
     B8(0x00C3, "TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA256");
     B8(0x00C4, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256");
     B8(0x00C5, "TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256");
-		/* This one is a fake cipher suite which marks a
-		   renegotiation.
-		N(0x00FF, "TLS_EMPTY_RENEGOTIATION_INFO_SCSV"                );
-		*/
+    /*
+     * This one is a fake cipher suite which marks a
+     * renegotiation.
+     * N(0x00FF, "TLS_EMPTY_RENEGOTIATION_INFO_SCSV" );
+     */
     N(0xC001, "TLS_ECDH_ECDSA_WITH_NULL_SHA");
     S8(0xC002, "TLS_ECDH_ECDSA_WITH_RC4_128_SHA");
     B8(0xC003, "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA");
