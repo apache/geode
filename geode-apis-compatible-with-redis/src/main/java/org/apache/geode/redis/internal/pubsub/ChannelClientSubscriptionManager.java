@@ -26,7 +26,7 @@ class ChannelClientSubscriptionManager
     implements ClientSubscriptionManager {
   private final Map<Client, Subscription> subscriptionMap = new ConcurrentHashMap<>();
   /**
-   * This is used instead of map.size() because we need to
+   * This is used instead of subscriptionMap.size() because we need to
    * make sure that once size goes to zero no further adds
    * will be made to this manager. Instead a new manager
    * needs to be created.
