@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -61,7 +60,7 @@ public abstract class AbstractRedisData implements RedisData {
    * (i.e. the number of milliseconds since midnight, Jan 1, 1970)
    */
   private volatile long expirationTimestamp = NO_EXPIRATION;
-  private transient DeltaInfo deltaInfo;
+  private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
 
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
@@ -169,22 +168,18 @@ public abstract class AbstractRedisData implements RedisData {
     expirationTimestamp = in.readLong();
   }
 
-  private void setDelta(DeltaInfo deltaInfo) {
-    this.deltaInfo = deltaInfo;
+  private void setDelta(DeltaInfo newDeltaInfo) {
+    deltaInfo.set(newDeltaInfo);
   }
 
   @Override
   public boolean hasDelta() {
-    return deltaInfo != null;
+    return deltaInfo.get() != null;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
-    try {
-      deltaInfo.serializeTo(out);
-    } finally {
-      deltaInfo = null;
-    }
+    deltaInfo.get().serializeTo(out);
   }
 
   @Override
@@ -206,11 +201,6 @@ public abstract class AbstractRedisData implements RedisData {
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
     }
-  }
-
-  @VisibleForTesting
-  protected void clearDelta() {
-    this.deltaInfo = null;
   }
 
   @Override
@@ -248,7 +238,11 @@ public abstract class AbstractRedisData implements RedisData {
         region.remove(key);
       } else {
         setDelta(deltaInfo);
-        region.put(key, this);
+        try {
+          region.put(key, this);
+        } finally {
+          setDelta(null);
+        }
       }
     }
   }

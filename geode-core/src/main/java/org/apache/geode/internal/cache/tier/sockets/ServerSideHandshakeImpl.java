@@ -181,11 +181,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       dos.writeByte(
           ((InternalDistributedSystem) system).getDistributionManager().getDistributedSystemId());
 
-      if (clientVersion.isNotOlderThan(KnownVersion.GFE_80)
-          && currentServerVersion.isNotOlderThan(KnownVersion.GFE_80)) {
-        int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
-        dos.writeInt(pdxSize);
-      }
+      int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
+      dos.writeInt(pdxSize);
     }
 
     // Flush
@@ -193,6 +190,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
   }
 
   @Override
+  @Deprecated
   public Encryptor getEncryptor() {
     return encryptor;
   }

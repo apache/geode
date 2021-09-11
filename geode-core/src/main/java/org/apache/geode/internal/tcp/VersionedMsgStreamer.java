@@ -17,6 +17,8 @@ package org.apache.geode.internal.tcp;
 
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.net.BufferPool;
@@ -30,27 +32,22 @@ import org.apache.geode.internal.serialization.VersionedDataStream;
  */
 class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
 
-  private final KnownVersion version;
+  private final @NotNull KnownVersion version;
 
-  VersionedMsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
-      BufferPool bufferPool, int sendBufferSize, KnownVersion version) {
+  VersionedMsgStreamer(List<Connection> cons, DistributionMessage msg, boolean directReply,
+      DMStats stats,
+      BufferPool bufferPool, int sendBufferSize, @NotNull KnownVersion version) {
     super(cons, msg, directReply, stats, sendBufferSize, bufferPool);
     this.version = version;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public KnownVersion getVersion() {
-    return this.version;
+  public @NotNull KnownVersion getVersion() {
+    return version;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
-    return super.toString() + " (" + this.version + ')';
+    return super.toString() + " (" + version + ')';
   }
 }

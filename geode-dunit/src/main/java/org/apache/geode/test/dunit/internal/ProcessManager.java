@@ -14,25 +14,34 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+import static java.util.stream.Collectors.joining;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.internal.DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
@@ -228,12 +237,13 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort) {
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version, int remoteStubPort)
+      throws IOException {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
+    String classPath;
     String dunitClasspath = System.getProperty("java.class.path");
     String separator = File.separator;
-    String classPath;
     if (VersionManager.isCurrentVersion(version)) {
       classPath = dunitClasspath;
     } else {
@@ -245,6 +255,8 @@ class ProcessManager implements ChildVMLauncher {
                   "geode-serialization", "geode-wan", "geode-gfsh");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
     }
+    String jreLib = separator + "jre" + separator + "lib" + separator;
+    classPath = removeFromPath(classPath, jreLib);
 
     // String tmpDir = System.getProperty("java.io.tmpdir");
     String agent = getAgentString();
@@ -259,9 +271,8 @@ class ProcessManager implements ChildVMLauncher {
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
     cmds.add("-classpath");
-    String jreLib = separator + "jre" + separator + "lib" + separator;
-    classPath = removeFromPath(classPath, jreLib);
-    cmds.add(classPath);
+    // Set the classpath via a "pathing" jar to shorten cmd to a length allowed by Windows.
+    cmds.add(createPathingJar(getVMDir(version, vmNum).getName(), classPath).toString());
     cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
@@ -315,6 +326,32 @@ class ProcessManager implements ChildVMLauncher {
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  // Write the entire classpath to a jar file. The command line can specify the child VM's
+  // classpath by naming only this single file, which shortens the command line to a length that
+  // Windows allows.
+  private Path createPathingJar(String vmName, String classPath) throws IOException {
+    Path currentWorkingDir = Paths.get("").toAbsolutePath();
+    Path pathingJarPath = currentWorkingDir.resolve(vmName + "-pathing.jar");
+
+    List<String> originalClassPathEntries = Arrays.asList(classPath.split(File.pathSeparator));
+    String classPathAttributeValue = originalClassPathEntries.stream()
+        .map(Paths::get)
+        .map(currentWorkingDir::relativize) // Entries must be relative to pathing jar's dir
+        .map(p -> Files.isDirectory(p) ? p + "/" : p.toString()) // Dir entries must end with /
+        .map(s -> s.replaceAll("\\\\", "/")) // Separator must be /
+        .collect(joining(" "));
+
+    Manifest manifest = new Manifest();
+    Attributes mainAttributes = manifest.getMainAttributes();
+    mainAttributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
+    mainAttributes.putValue(Attributes.Name.CLASS_PATH.toString(), classPathAttributeValue);
+
+    FileOutputStream fileOutputStream = new FileOutputStream(pathingJarPath.toFile());
+    JarOutputStream jarOutputStreamStream = new JarOutputStream(fileOutputStream, manifest);
+    jarOutputStreamStream.close();
+    return pathingJarPath;
   }
 
   private String removeFromPath(String classpath, String partialPath) {

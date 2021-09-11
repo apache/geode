@@ -43,12 +43,13 @@ public class NullRedisHash extends RedisHash {
   }
 
   @Override
-  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key,
+  public byte[] hincrby(Region<RedisKey, RedisData> region, RedisKey key,
       byte[] field, long increment)
       throws NumberFormatException, ArithmeticException {
+    byte[] newValue = Coder.longToBytes(increment);
     region.put(key,
-        new RedisHash(Arrays.asList(field, Coder.longToBytes(increment))));
-    return increment;
+        new RedisHash(Arrays.asList(field, newValue)));
+    return newValue;
   }
 
   @Override

@@ -23,11 +23,10 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STR
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCROSSSLOT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_ARRAY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_STRING;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bERR;
@@ -35,6 +34,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
@@ -43,6 +43,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
@@ -57,6 +58,7 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisKey;
 
@@ -100,13 +102,9 @@ public class Coder {
       toWrite = stringToBytes(value);
       writeStringResponse(buffer, toWrite);
     } else if (v instanceof Integer) {
-      buffer.writeByte(INTEGER_ID);
-      buffer.writeBytes(intToBytes((Integer) v));
-      buffer.writeBytes(bCRLF);
+      getIntegerResponse(buffer, (int) v);
     } else if (v instanceof Long) {
-      buffer.writeByte(INTEGER_ID);
-      buffer.writeBytes(intToBytes(((Long) v).intValue()));
-      buffer.writeBytes(bCRLF);
+      getIntegerResponse(buffer, (long) v);
     } else {
       throw new CoderException();
     }
@@ -116,7 +114,7 @@ public class Coder {
 
   private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
     buffer.writeByte(BULK_STRING_ID);
-    buffer.writeBytes(intToBytes(toWrite.length));
+    appendAsciiDigitsToByteBuf(toWrite.length, buffer);
     buffer.writeBytes(bCRLF);
     buffer.writeBytes(toWrite);
     buffer.writeBytes(bCRLF);
@@ -134,7 +132,7 @@ public class Coder {
   public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
       throws CoderException {
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(items.size()));
+    appendAsciiDigitsToByteBuf(items.size(), buffer);
     buffer.writeBytes(bCRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next);
@@ -155,12 +153,12 @@ public class Coder {
   public static ByteBuf getScanResponse(ByteBuf buffer, BigInteger cursor,
       List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(intToBytes(2));
+    buffer.writeByte(digitToAscii(2));
     buffer.writeBytes(bCRLF);
     byte[] cursorBytes = stringToBytes(cursor.toString());
     writeStringResponse(buffer, cursorBytes);
     buffer.writeByte(ARRAY_ID);
-    buffer.writeBytes(longToBytes(scanResult.size()));
+    appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
     buffer.writeBytes(bCRLF);
 
     for (Object nextObject : scanResult) {
@@ -223,6 +221,10 @@ public class Coder {
     return getErrorResponse0(buffer, bWRONGTYPE, error);
   }
 
+  public static ByteBuf getCrossSlotResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bCROSSSLOT, error);
+  }
+
   public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
@@ -241,15 +243,16 @@ public class Coder {
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
-    buffer.writeByte(INTEGER_ID);
-    buffer.writeBytes(intToBytes(integer));
-    buffer.writeBytes(bCRLF);
-    return buffer;
+    return getIntegerResponse(buffer, intToBytes(integer));
   }
 
-  public static ByteBuf getIntegerResponse(ByteBuf buffer, long l) {
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, long integer) {
+    return getIntegerResponse(buffer, longToBytes(integer));
+  }
+
+  public static ByteBuf getIntegerResponse(ByteBuf buffer, byte[] integer) {
     buffer.writeByte(INTEGER_ID);
-    buffer.writeBytes(longToBytes(l));
+    buffer.writeBytes(integer);
     buffer.writeBytes(bCRLF);
     return buffer;
   }
@@ -280,21 +283,6 @@ public class Coder {
     }
   }
 
-  public static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY) {
-      return "inf";
-    }
-    if (d == Double.NEGATIVE_INFINITY) {
-      return "-inf";
-    }
-
-    String stringValue = String.valueOf(d);
-    if (stringValue.endsWith(".0")) {
-      return (stringValue.substring(0, stringValue.length() - 2));
-    }
-    return stringValue;
-  }
-
   public static byte[] stringToBytes(String string) {
     if (string == null) {
       return null;
@@ -311,16 +299,39 @@ public class Coder {
    * literal to byte
    */
 
+  /**
+   * NOTE: Canonical byte arrays may be returned so callers
+   * must never modify the returned array.
+   */
   public static byte[] intToBytes(int i) {
-    return stringToBytes(String.valueOf(i));
+    return longToBytes(i);
   }
 
+  /**
+   * NOTE: Canonical byte arrays may be returned so callers
+   * must never modify the returned array.
+   */
   public static byte[] longToBytes(long l) {
-    return stringToBytes(String.valueOf(l));
+    return convertLongToAsciiDigits(l);
   }
 
   public static byte[] doubleToBytes(double d) {
-    return stringToBytes(doubleToString(d));
+    if (d == Double.POSITIVE_INFINITY) {
+      return bINF;
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
+      return bN_INF;
+    }
+    if (Double.isNaN(d)) {
+      return bNaN;
+    }
+
+    String stringValue = String.valueOf(d);
+    if (stringValue.endsWith(".0")) {
+      stringValue = (stringValue.substring(0, stringValue.length() - 2));
+    }
+
+    return stringToBytes(stringValue);
   }
 
   public static byte[] bigDecimalToBytes(BigDecimal b) {
@@ -332,7 +343,56 @@ public class Coder {
   }
 
   public static long bytesToLong(byte[] bytes) {
-    return Long.parseLong(bytesToString(bytes));
+    return parseLong(bytes);
+  }
+
+  private static NumberFormatException createNumberFormatException(byte[] bytes) {
+    return new NumberFormatException("For input string: \"" + bytesToString(bytes) + "\"");
+  }
+
+  /**
+   * The following was derived from javolution parseLong.
+   * It has been changed to work on bytes instead of chars.
+   */
+  public static long parseLong(final byte[] bytes) throws NumberFormatException {
+    final int length = bytes.length;
+    if (length == 0) {
+      throw createNumberFormatException(bytes);
+    }
+    final long limit = Long.MIN_VALUE / 10;
+    boolean isNegative = false;
+    long result = 0; // Accumulates negatively (avoid MIN_VALUE overflow).
+    int i = 0;
+    if (bytes[0] == bMINUS) {
+      isNegative = true;
+      i++;
+      if (length == 1) {
+        throw createNumberFormatException(bytes); // need a digit
+      } else if (bytes[1] == digitToAscii(0)) {
+        throw createNumberFormatException(bytes); // redis does not allow -0*
+      }
+    } else if (bytes[0] == bPLUS) {
+      throw createNumberFormatException(bytes); // redis does not allow +*
+    }
+    while (i < length) {
+      int digit = asciiToDigit(bytes[i++]);
+      if (digit == -1) {
+        throw createNumberFormatException(bytes); // invalid byte
+      }
+      if (result < limit) {
+        throw createNumberFormatException(bytes); // overflow
+      }
+      final long newResult = result * 10 - digit;
+      if (newResult > result) {
+        throw createNumberFormatException(bytes); // overflow
+      }
+      result = newResult;
+    }
+    // check for opposite overflow.
+    if ((result == Long.MIN_VALUE) && !isNegative) {
+      throw createNumberFormatException(bytes); // overflow
+    }
+    return isNegative ? result : -result;
   }
 
   /**
@@ -353,24 +413,7 @@ public class Coder {
     if (isNaN(bytes)) {
       return NaN;
     }
-    return stringToDouble(bytesToString(bytes));
-  }
-
-  /**
-   * Redis specific manner to parse floats
-   *
-   * @param d String holding double
-   * @return Value of string
-   * @throws NumberFormatException if the double cannot be parsed
-   */
-  public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF)) {
-      return Double.POSITIVE_INFINITY;
-    } else if (d.equalsIgnoreCase(N_INF)) {
-      return Double.NEGATIVE_INFINITY;
-    } else {
-      return Double.parseDouble(d);
-    }
+    return Double.parseDouble(bytesToString(bytes));
   }
 
   /**
@@ -470,5 +513,184 @@ public class Coder {
       return Arrays.copyOfRange(doubleBytes, 0, doubleBytes.length - 2);
     }
     return doubleBytes;
+  }
+
+  /**
+   * Takes the given "value" and computes the sequence of ASCII digits it represents,
+   * appending them to the given "buf".
+   */
+  public static void appendAsciiDigitsToByteBuf(long value, ByteBuf buf) {
+    buf.writeBytes(convertLongToAsciiDigits(value));
+  }
+
+  /**
+   * Convert the given "value" to a sequence of ASCII digits and
+   * returns them in a byte array. The only byte in the array that
+   * may not be a digit is the first byte will be '-' for a negative value.
+   * NOTE: the returned array's contents must not be modified by the caller.
+   */
+  private static byte[] convertLongToAsciiDigits(long value) {
+    final boolean negative = value < 0;
+    if (!negative) {
+      value = -value;
+    }
+    // at this point value <= 0
+
+    if (value > -100) {
+      // it has at most two digits: [-99..0]
+      return convertSmallLongToAsciiDigits((int) value, negative);
+    } else {
+      return convertBigLongToAsciiDigits(value, negative);
+    }
+  }
+
+  /**
+   * value is in the range [-99..0].
+   * This could be done using computation but a simple
+   * table lookup allows no garbage to be produced since
+   * a canonical instance is returned.
+   */
+  private static byte[] convertSmallLongToAsciiDigits(int value, boolean negative) {
+    value = -value;
+    // value is now 0..99
+    if (negative) {
+      return NEGATIVE_TABLE[value];
+    } else {
+      return POSITIVE_TABLE[value];
+    }
+  }
+
+  private static final int TABLE_SIZE = 100;
+  @Immutable
+  private static final byte[][] NEGATIVE_TABLE = new byte[TABLE_SIZE][];
+  @Immutable
+  private static final byte[][] POSITIVE_TABLE = new byte[TABLE_SIZE][];
+  static {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+      NEGATIVE_TABLE[i] = createTwoDigitArray(-i, true);
+      POSITIVE_TABLE[i] = createTwoDigitArray(-i, false);
+    }
+  }
+
+  private static byte[] createTwoDigitArray(int value, boolean negative) {
+    int quotient = value / 10;
+    int remainder = (quotient * 10) - value;
+    int resultSize = (quotient < 0) ? 2 : 1;
+    if (negative) {
+      resultSize++;
+    }
+    byte[] result = new byte[resultSize];
+    int resultIdx = 0;
+    if (negative) {
+      result[resultIdx++] = bMINUS;
+    }
+    if (quotient < 0) {
+      result[resultIdx++] = digitToAscii(-quotient);
+    }
+    result[resultIdx] = digitToAscii(remainder);
+    return result;
+  }
+
+  private static byte[] convertBigLongToAsciiDigits(long value, boolean negative) {
+    final byte[] bytes = new byte[asciiByteLength(value, negative)];
+    int bytePos = bytes.length;
+
+    long quotient;
+    int remainder;
+    // Get 2 digits/iteration using longs until quotient fits into an int
+    while (value <= Integer.MIN_VALUE) {
+      quotient = value / 100;
+      remainder = (int) ((quotient * 100) - value);
+      value = quotient;
+      bytes[--bytePos] = DIGIT_ONES[remainder];
+      bytes[--bytePos] = DIGIT_TENS[remainder];
+    }
+
+    // Get 2 digits/iteration using ints
+    int intQuotient;
+    int intValue = (int) value;
+    while (intValue <= -100) {
+      intQuotient = intValue / 100;
+      remainder = (intQuotient * 100) - intValue;
+      intValue = intQuotient;
+      bytes[--bytePos] = DIGIT_ONES[remainder];
+      bytes[--bytePos] = DIGIT_TENS[remainder];
+    }
+
+    // We know there are at most two digits left at this point.
+    intQuotient = intValue / 10;
+    remainder = (intQuotient * 10) - intValue;
+    bytes[--bytePos] = digitToAscii(remainder);
+
+    // Whatever left is the remaining digit.
+    if (intQuotient < 0) {
+      bytes[--bytePos] = digitToAscii(-intQuotient);
+    }
+    if (negative) {
+      bytes[--bytePos] = bMINUS;
+    }
+    return bytes;
+  }
+
+  /**
+   * Returns the number of bytes needed to represent "value" as ascii bytes
+   * Note that "value" has already been negated if it was positive
+   * and we are told if that happened with the "negative" parameter.
+   *
+   * @param value long value already normalized to be <= 0.
+   * @param negative true if the original "value" was < 0.
+   * @return number of bytes needed to represent "value" as ascii bytes
+   */
+  private static int asciiByteLength(long value, boolean negative) {
+    final int nonDigitCount = negative ? 1 : 0;
+    // Note since this is only called if value >= -100
+    // (see the caller of convertSmallLongToAsciiDigits)
+    // we skip the first two loops by starting
+    // powerOf10 at -1000 (instead of -10)
+    // and digitCount at 3 (instead of 1).
+    long powerOf10 = -1000;
+    final int MAX_DIGITS = 19;
+    for (int digitCount = 3; digitCount < MAX_DIGITS; digitCount++) {
+      if (value > powerOf10) {
+        return digitCount + nonDigitCount;
+      }
+      powerOf10 *= 10;
+    }
+    return MAX_DIGITS + nonDigitCount;
+  }
+
+  /**
+   * Given a digit (a value in the range 0..9) return its corresponding ASCII code.
+   * NOTE: the caller is responsible for ensuring that 'digit' is in the correct range.
+   */
+  public static byte digitToAscii(int digit) {
+    return (byte) (NUMBER_0_BYTE + digit);
+  }
+
+  public static int asciiToDigit(byte ascii) {
+    if (ascii >= NUMBER_0_BYTE && ascii <= NUMBER_0_BYTE + 9) {
+      return ascii - NUMBER_0_BYTE;
+    }
+    return -1;
+  }
+
+  @Immutable
+  private static final byte[] DIGIT_TENS = new byte[10 * 10];
+  static {
+    for (byte i = 0; i < 10; i++) {
+      for (byte j = 0; j < 10; j++) {
+        DIGIT_TENS[(i * 10) + j] = digitToAscii(i);
+      }
+    }
+  }
+
+  @Immutable
+  private static final byte[] DIGIT_ONES = new byte[10 * 10];
+  static {
+    for (byte i = 0; i < 10; i++) {
+      for (byte j = 0; j < 10; j++) {
+        DIGIT_ONES[(i * 10) + j] = digitToAscii(j);
+      }
+    }
   }
 }

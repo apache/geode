@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<cache
+  xmlns="http://geode.apache.org/schema/cache"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://geode.apache.org/schema/cache
+                      http://geode.apache.org/schema/cache/cache-1.0.xsd"
+  version="1.0">
+  
+  <cache-server port="0"/>
+  
+  <pdx read-serialized="false" persistent="true">
+    <pdx-serializer>
+      <class-name>org.apache.geode.pdx.ReflectionBasedAutoSerializer</class-name>
+      <parameter name="classes">
+        <string>.*</string>
+      </parameter>
+    </pdx-serializer>
+  </pdx>
+
+  <region name="primary" refid="PARTITION_REDUNDANT_PERSISTENT">
+    <region-attributes>
+      <partition-attributes total-num-buckets="113" redundant-copies="1" recovery-delay="-1" startup-recovery-delay="-1"/>
+    </region-attributes>
+  </region>
+
+  <region name="colocated" refid="PARTITION_REDUNDANT_PERSISTENT">
+    <region-attributes>
+      <partition-attributes colocated-with="primary" total-num-buckets="113" redundant-copies="1" recovery-delay="-1" startup-recovery-delay="-1"/>
+    </region-attributes>
+  </region>
+
+</cache>

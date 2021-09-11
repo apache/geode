@@ -134,7 +134,7 @@ sed -e "s#clone -b [ds][evlopurt/0-9.]*#clone -b support/${VERSION_MM}#" \
 
 rm -f gradle.properties.bak geode-book/config.yml.bak ci/docker/cache_dependencies.sh.bak ci/images/google-geode-builder/scripts/cache_dependencies.sh.bak
 set -x
-git add gradle.properties geode-book/config.yml
+git add gradle.properties geode-book/config.yml ci/docker/cache_dependencies.sh ci/images/google-geode-builder/scripts/cache_dependencies.sh
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}"

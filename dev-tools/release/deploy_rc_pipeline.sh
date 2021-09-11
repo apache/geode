@@ -303,7 +303,7 @@ jobs:
               echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              apt-get update
+              apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
               cd geode-native
               mkdir build
@@ -352,7 +352,7 @@ jobs:
               echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              apt-get update
+              apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
@@ -435,7 +435,7 @@ jobs:
               mkdir -p ~/.ssh
               ssh-keygen -m PEM -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
               cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-              apt-get update
+              apt-get update || true
               apt-get install openssh-server --no-install-recommends -y
               echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
               service ssh start

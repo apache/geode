@@ -346,7 +346,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       }
     }
 
-    entry.setLastModified(mgr, getLastModified()); // fix for bug 31059
+    entry.setLastModified(getLastModified());
     if (v == Token.INVALID) {
       entry.setInvalid();
     } else if (v == Token.LOCAL_INVALID) {

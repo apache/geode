@@ -15,6 +15,8 @@
 package org.apache.geode.internal;
 
 
+import static org.apache.geode.internal.size.ReflectionSingleObjectSizer.sizeof;
+
 import org.apache.commons.lang3.JavaVersion;
 
 import org.apache.geode.annotations.Immutable;
@@ -131,5 +133,60 @@ public class JvmSizeUtils {
 
   public static int getObjectHeaderSize() {
     return objectHeaderSize;
+  }
+
+  public static long roundUpSize(long size) {
+    // Round up to the nearest 8 bytes. Experimentally, this
+    // is what we've seen the sun 32 bit VM do with object size.
+    // See https://wiki.gemstone.com/display/rusage/Per+Entry+Overhead
+    long remainder = size % 8;
+    if (remainder != 0) {
+      size += 8 - remainder;
+    }
+    return size;
+  }
+
+  public static int roundUpSize(int size) {
+    return (int) roundUpSize((long) size);
+  }
+
+  /**
+   * Returns the amount of memory used to store the given
+   * byte array. Note that this does include the
+   * memory used to store the bytes in the array.
+   */
+  public static int memoryOverhead(byte[] byteArray) {
+    if (byteArray == null) {
+      return 0;
+    }
+    int result = getObjectHeaderSize();
+    result += 4; // array length field
+    result += byteArray.length;
+    return roundUpSize(result);
+  }
+
+  /**
+   * Returns the amount of memory used to store the given
+   * object array. Note that this does not include the
+   * memory used by objects referenced by the array.
+   */
+  public static int memoryOverhead(Object[] objectArray) {
+    if (objectArray == null) {
+      return 0;
+    }
+    int result = getObjectHeaderSize();
+    result += 4; // array length field
+    result += objectArray.length * getReferenceSize();
+    return roundUpSize(result);
+  }
+
+  /**
+   * Returns the amount of memory used to store an instance
+   * of the given class. Note that this does not include
+   * memory used by objects referenced from fields of the
+   * instance.
+   */
+  public static int memoryOverhead(Class<?> clazz) {
+    return (int) sizeof(clazz);
   }
 }

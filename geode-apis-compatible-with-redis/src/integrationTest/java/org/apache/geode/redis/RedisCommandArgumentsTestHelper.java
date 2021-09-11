@@ -121,7 +121,7 @@ public class RedisCommandArgumentsTestHelper {
     }
 
     for (int i = 0; i < numArgs; i++) {
-      args[i] = String.valueOf(i).getBytes();
+      args[i] = ("{A}" + i).getBytes();
     }
 
     return args;

@@ -17,35 +17,13 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.data.RedisKey;
 
-public class ZPopMaxExecutor extends AbstractExecutor {
+public class ZPopMaxExecutor extends AbstractZPopExecutor {
+
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
-    List<byte[]> commandElements = command.getProcessedCommand();
-
-    int count = 1;
-    if (commandElements.size() > 2) {
-      try {
-        count = Coder.narrowLongToInt(Coder.bytesToLong(commandElements.get(2)));
-      } catch (NumberFormatException nex) {
-        return RedisResponse.error(RedisConstants.ERROR_NOT_INTEGER);
-      }
-    }
-
-    if (count < 1) {
-      return RedisResponse.emptyArray();
-    }
-
-    List<byte[]> result = redisSortedSetCommands.zpopmax(command.getKey(), count);
-
-    return RedisResponse.array(result);
+  protected List<byte[]> zpop(RedisSortedSetCommands sortedSetCommands, RedisKey key, int count) {
+    return sortedSetCommands.zpopmax(key, count);
   }
+
 }

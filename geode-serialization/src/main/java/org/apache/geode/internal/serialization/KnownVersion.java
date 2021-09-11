@@ -63,23 +63,6 @@ public class KnownVersion extends AbstractVersion {
   public static final KnownVersion TOKEN =
       new KnownVersion("", "TOKEN", (byte) -1, (byte) 0, (byte) 0, (byte) 0, TOKEN_ORDINAL, true);
 
-  private static final short GFE_80_ORDINAL = 30;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_80 =
-      new KnownVersion("GFE", "8.0", (byte) 8, (byte) 0, (byte) 0, (byte) 0, GFE_80_ORDINAL, true);
-
-  // 31-34 available for 8.0.x variants
-
-  private static final short GFE_8009_ORDINAL = 31;
-
-  @Immutable
-  @Deprecated
-  public static final KnownVersion GFE_8009 =
-      new KnownVersion("GFE", "8.0.0.9", (byte) 8, (byte) 0, (byte) 0, (byte) 9, GFE_8009_ORDINAL,
-          true);
-
   private static final short GFE_81_ORDINAL = 35;
 
   @Immutable
@@ -224,7 +207,7 @@ public class KnownVersion extends AbstractVersion {
   @Immutable
   public static final KnownVersion GEODE_1_15_0 =
       new KnownVersion("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0,
-          GEODE_1_15_0_ORDINAL);
+          GEODE_1_15_0_ORDINAL, true);
 
   /* NOTE: when adding a new version bump the ordinal by 10. Ordinals can be short ints */
 

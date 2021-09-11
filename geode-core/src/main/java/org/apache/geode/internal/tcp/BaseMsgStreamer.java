@@ -18,6 +18,9 @@ package org.apache.geode.internal.tcp;
 import java.io.IOException;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Base interface for {@link MsgStreamer} and {@link MsgStreamerList} to send a message over a list
  * of connections to one or more peers.
@@ -26,18 +29,23 @@ import java.util.List;
  */
 public interface BaseMsgStreamer {
 
+  /**
+   * set connections to be "in use" and schedule alert tasks
+   */
   void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout);
 
   /**
    * Returns a list of the Connections that the message was sent to. Call this after
    * {@link #writeMessage}.
    */
-  List<?> getSentConnections();
+  @NotNull
+  List<@NotNull Connection> getSentConnections();
 
   /**
    * Returns an exception the describes which cons the message was not sent to. Call this after
    * {@link #writeMessage}.
    */
+  @Nullable
   ConnectExceptions getConnectExceptions();
 
   /**

@@ -91,12 +91,12 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   /**
    * Represents stats for a poolName .
    **/
-  private HashMap<String, String> poolStats = new HashMap<String, String>();
+  private HashMap<String, String> poolStats = new HashMap<>();
 
   /** The versions in which this message was modified */
   @Immutable
   private static final KnownVersion[] dsfidVersions =
-      new KnownVersion[] {KnownVersion.GFE_80, KnownVersion.GEODE_1_9_0};
+      new KnownVersion[] {KnownVersion.GEODE_1_9_0};
 
   public ClientHealthStats() {}
 
@@ -238,7 +238,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeHashMap((poolStats), out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+  @SuppressWarnings("unused") // used for serialization
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     DataSerializer.writePrimitiveInt((int) numOfGets, out);
     DataSerializer.writePrimitiveInt((int) numOfPuts, out);
@@ -248,66 +249,57 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writePrimitiveInt(cpus, out);
     DataSerializer.writePrimitiveLong(processCpuTime, out);
     DataSerializer.writeDate(updateTime, out);
-  }
-
-  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    toDataPre_GFE_8_0_0_0(out, context);
     DataSerializer.writeHashMap((poolStats), out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.numOfGets = DataSerializer.readPrimitiveLong(in);
-    this.numOfPuts = DataSerializer.readPrimitiveLong(in);
-    this.numOfMisses = DataSerializer.readPrimitiveLong(in);
-    this.numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
-    this.numOfThreads = DataSerializer.readPrimitiveInt(in);
-    this.cpus = DataSerializer.readPrimitiveInt(in);
-    this.processCpuTime = DataSerializer.readPrimitiveLong(in);
-    this.updateTime = DataSerializer.readDate(in);
-    this.poolStats = DataSerializer.readHashMap(in);
+    numOfGets = DataSerializer.readPrimitiveLong(in);
+    numOfPuts = DataSerializer.readPrimitiveLong(in);
+    numOfMisses = DataSerializer.readPrimitiveLong(in);
+    numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
+    numOfThreads = DataSerializer.readPrimitiveInt(in);
+    cpus = DataSerializer.readPrimitiveInt(in);
+    processCpuTime = DataSerializer.readPrimitiveLong(in);
+    updateTime = DataSerializer.readDate(in);
+    poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.numOfGets = DataSerializer.readPrimitiveInt(in);
-    this.numOfPuts = DataSerializer.readPrimitiveInt(in);
-    this.numOfMisses = DataSerializer.readPrimitiveInt(in);
-    this.numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
-    this.numOfThreads = DataSerializer.readPrimitiveInt(in);
-    this.cpus = DataSerializer.readPrimitiveInt(in);
-    this.processCpuTime = DataSerializer.readPrimitiveLong(in);
-    this.updateTime = DataSerializer.readDate(in);
-  }
-
+  @SuppressWarnings("unused") // used for deserialization
   public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_8_0_0_0(in, context);
-    this.poolStats = DataSerializer.readHashMap(in);
+    numOfGets = DataSerializer.readPrimitiveInt(in);
+    numOfPuts = DataSerializer.readPrimitiveInt(in);
+    numOfMisses = DataSerializer.readPrimitiveInt(in);
+    numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
+    numOfThreads = DataSerializer.readPrimitiveInt(in);
+    cpus = DataSerializer.readPrimitiveInt(in);
+    processCpuTime = DataSerializer.readPrimitiveLong(in);
+    updateTime = DataSerializer.readDate(in);
+    poolStats = DataSerializer.readHashMap(in);
   }
 
   @Override
   public String toString() {
 
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append("ClientHealthStats [");
-    buf.append("\n numOfGets=" + this.numOfGets);
-    buf.append("\n numOfPuts=" + this.numOfPuts);
-    buf.append("\n numOfMisses=" + this.numOfMisses);
-    buf.append("\n numOfCacheListenerCalls=" + this.numOfCacheListenerCalls);
-    buf.append("\n numOfThreads=" + this.numOfThreads);
-    buf.append("\n cpus=" + this.cpus);
-    buf.append("\n processCpuTime=" + this.processCpuTime);
-    buf.append("\n updateTime=" + this.updateTime);
-    Iterator<Entry<String, String>> it = this.poolStats.entrySet().iterator();
-    StringBuffer tempBuffer = new StringBuffer();
+    buf.append("\n numOfGets=").append(numOfGets);
+    buf.append("\n numOfPuts=").append(numOfPuts);
+    buf.append("\n numOfMisses=").append(numOfMisses);
+    buf.append("\n numOfCacheListenerCalls=").append(numOfCacheListenerCalls);
+    buf.append("\n numOfThreads=").append(numOfThreads);
+    buf.append("\n cpus=").append(cpus);
+    buf.append("\n processCpuTime=").append(processCpuTime);
+    buf.append("\n updateTime=").append(updateTime);
+    Iterator<Entry<String, String>> it = poolStats.entrySet().iterator();
+    StringBuilder tempBuffer = new StringBuilder();
     while (it.hasNext()) {
       Entry<String, String> entry = it.next();
-      tempBuffer.append(entry.getKey() + " = " + entry.getValue());
+      tempBuffer.append(entry.getKey()).append(" = ").append(entry.getValue());
     }
-    buf.append("\n poolStats " + tempBuffer);
+    buf.append("\n poolStats ").append(tempBuffer);
     buf.append("\n]");
 
     return buf.toString();
@@ -324,10 +316,10 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   }
 
   public HashMap<String, String> getPoolStats() {
-    return this.poolStats;
+    return poolStats;
   }
 
   public void setPoolStats(HashMap<String, String> statsMap) {
-    this.poolStats = statsMap;
+    poolStats = statsMap;
   }
 }

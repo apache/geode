@@ -42,7 +42,7 @@ gfsh>start server --name=<server-name> --J=-Dgemfire.jmx-manager=true \
 
 By default, any locator can become a JMX Manager when started. When you start up a locator, if no other JMX Manager is detected in the cluster, the locator starts one automatically. If you start a second locator, it will detect the current JMX Manager and will not start up another JMX Manager unless the second locator's `gemfire.jmx-manager-start` property is set to true.
 
-For most deployments, you only need to have one JMX Manager per cluster. However, you can run more than JMX Manager if necessary. If you want to provide high-availability and redundancy for the Pulse monitoring tool, or if you are running additional JMX clients other than gfsh, then use the `jmx-manager-start=true` property to force individual nodes (either locators or servers) to become JMX Managers at startup. Since there is some performance overhead to being a JMX Manager, we recommend using locators as JMX Managers. If you do not want a locator to become a JMX manager, then you must use the `jmx-manager=false` property when you start the locator.
+For most deployments, you only need to have one JMX Manager per cluster. However, you can run more than one JMX Manager if necessary. If you want to provide high-availability and redundancy for the Pulse monitoring tool, or if you are running additional JMX clients other than gfsh, then use the `jmx-manager-start=true` property to force individual nodes (either locators or servers) to become JMX Managers at startup. Since there is some performance overhead to being a JMX Manager, we recommend using locators as JMX Managers. If you do not want a locator to become a JMX manager, then you must use the `jmx-manager=false` property when you start the locator.
 
 After the node becomes a JMX Manager, all other `jmx-manager-*` configuration properties listed in [Configuring a JMX Manager](jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6) are applied.
 
@@ -142,7 +142,7 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 <td>1099</td>
 </tr>
 <tr>
-<td>jmx-manager-ssl</td>
+<td>jmx-manager-ssl-enabled</td>
 <td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other <%=vars.product_name%> connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>false</td>
 </tr>

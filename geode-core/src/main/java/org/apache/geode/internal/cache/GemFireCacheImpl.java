@@ -2034,7 +2034,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (prLockService == null) {
         try {
           prLockService = DLockService.create(PARTITION_LOCK_SERVICE_NAME,
-              getInternalDistributedSystem(), true, true, true);
+              getInternalDistributedSystem(), true, true);
         } catch (IllegalArgumentException e) {
           prLockService = DistributedLockService.getServiceNamed(PARTITION_LOCK_SERVICE_NAME);
           if (prLockService == null) {
@@ -2055,7 +2055,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (gatewayLockService == null) {
           try {
             gatewayLockService = DLockService.create(AbstractGatewaySender.LOCK_SERVICE_NAME,
-                getInternalDistributedSystem(), true, true, true);
+                getInternalDistributedSystem(), true, true);
           } catch (IllegalArgumentException e) {
             gatewayLockService =
                 DistributedLockService.getServiceNamed(AbstractGatewaySender.LOCK_SERVICE_NAME);

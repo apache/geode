@@ -57,7 +57,6 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         // Docker compose does not work on windows in CI. Ignore this test on windows
         // Using a RuleChain to make sure we ignore the test before the rule comes into play
         .outerRule(new IgnoreOnWindowsRule());
-    IgnoredException.addIgnoredException("RedisProxy");
   }
 
   public List<Integer> getExposedPorts() {
@@ -116,6 +115,8 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         proxies.forEach(p -> p.configure(translationMappings));
 
         logger.info("Started redis cluster with mapped ports: {}", translationMappings);
+        IgnoredException.addIgnoredException("RedisProxy");
+
         try {
           base.evaluate(); // This will run the test.
         } finally {
@@ -134,7 +135,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     int primaryCount = 0;
 
     try (Jedis jedis = new Jedis("localhost", port)) {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 60; i++) {
         nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
         primaryCount = nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum();
         if (primaryCount == wantedPrimaries) {
@@ -142,7 +143,7 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
         }
 
         try {
-          Thread.sleep(500);
+          Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
       }

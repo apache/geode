@@ -68,7 +68,7 @@ public class KnownVersionJUnitTest {
     assertThat(KnownVersion.GEODE_1_14_0.getClientServerProtocolVersion())
         .isEqualTo(KnownVersion.GEODE_1_14_0);
     assertThat(KnownVersion.GEODE_1_15_0.getClientServerProtocolVersion())
-        .isEqualTo(KnownVersion.GEODE_1_14_0);
+        .isEqualTo(KnownVersion.GEODE_1_15_0);
   }
 
   private void compare(KnownVersion later, KnownVersion earlier) {

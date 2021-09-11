@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -43,50 +46,57 @@ import org.apache.geode.util.internal.GeodeGlossary;
 /**
  * <p>
  * MsgStreamer supports streaming a message to a tcp Connection in chunks. This allows us to send a
- * message without needing to perserialize it completely in memory thus saving buffer memory.
+ * message without needing to pre-serialize it completely in memory thus saving buffer memory.
  *
  * @since GemFire 5.0.2
  *
  */
-
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
 
   /**
    * List of connections to send this msg to.
    */
-  private final List<?> cons;
+  private final @NotNull List<Connection> connections;
 
   private final BufferPool bufferPool;
 
   /**
    * Any exceptions that happen during sends
    */
-  private ConnectExceptions ce;
+  private @Nullable ConnectExceptions connectExceptions;
+
   /**
    * The byte buffer we used for preparing a chunk of the message. Currently this buffer is obtained
    * from the connection.
    */
   private final ByteBuffer buffer;
+
   private int flushedBytes = 0;
-  // the message this streamer is to send
+
+  /**
+   * the message this streamer is to send
+   */
   private final DistributionMessage msg;
+
   /**
    * True if this message went out as a normal one (it fit it one chunk) False if this message
    * needed to be chunked.
    */
   private boolean normalMsg = false;
+
   /**
    * Set to true when we have started serializing a message. If this is true and doneWritingMsg is
    * false and we think we have finished writing the msg then we have a problem.
    */
   private boolean startedSerializingMsg = false;
+
   /**
    * Set to true after last byte of message has been written to this stream.
    */
   private boolean doneWritingMsg = false;
-  private final DMStats stats;
 
+  private final DMStats stats;
   private short msgId;
   private long serStartTime;
   private final boolean directReply;
@@ -95,28 +105,20 @@ public class MsgStreamer extends OutputStream
    * Called to free up resources used by this streamer after the streamer has produced its message.
    */
   protected void release() {
-    MsgIdGenerator.release(this.msgId);
-    this.buffer.clear();
-    this.overflowBuf = null;
-    bufferPool.releaseSenderBuffer(this.buffer);
+    MsgIdGenerator.release(msgId);
+    buffer.clear();
+    overflowBuf = null;
+    bufferPool.releaseSenderBuffer(buffer);
   }
 
-  /**
-   * Returns an exception the describes which cons the message was not sent to. Call this after
-   * {@link #writeMessage}.
-   */
   @Override
-  public ConnectExceptions getConnectExceptions() {
-    return this.ce;
+  public @Nullable ConnectExceptions getConnectExceptions() {
+    return connectExceptions;
   }
 
-  /**
-   * Returns a list of the Connections that the message was sent to. Call this after
-   * {@link #writeMessage}.
-   */
   @Override
-  public List<?> getSentConnections() {
-    return this.cons;
+  public @NotNull List<@NotNull Connection> getSentConnections() {
+    return connections;
   }
 
   /**
@@ -125,16 +127,17 @@ public class MsgStreamer extends OutputStream
    * Note: This is no longer supposed to be called directly rather the {@link #create} method should
    * now be used.
    */
-  MsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
+  MsgStreamer(@NotNull List<Connection> connections, DistributionMessage msg, boolean directReply,
+      DMStats stats,
       int sendBufferSize, BufferPool bufferPool) {
     this.stats = stats;
     this.msg = msg;
-    this.cons = cons;
+    this.connections = connections;
     int bufferSize = Math.min(sendBufferSize, Connection.MAX_MSG_SIZE);
-    this.buffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
-    this.buffer.clear();
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
-    this.msgId = MsgIdGenerator.NO_MSG_ID;
+    buffer = bufferPool.acquireDirectSenderBuffer(bufferSize);
+    buffer.clear();
+    buffer.position(Connection.MSG_HEADER_BYTES);
+    msgId = MsgIdGenerator.NO_MSG_ID;
     this.directReply = directReply;
     this.bufferPool = bufferPool;
     startSerialization();
@@ -145,138 +148,115 @@ public class MsgStreamer extends OutputStream
    * connections to remote nodes. This method can either return a single MsgStreamer object or a
    * List of MsgStreamer objects.
    */
-  public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
+  public static BaseMsgStreamer create(List<Connection> cons, final DistributionMessage msg,
       final boolean directReply, final DMStats stats, BufferPool bufferPool) {
-    final Connection firstCon = (Connection) cons.get(0);
+    final Connection firstCon = cons.get(0);
+
     // split into different versions if required
-    KnownVersion version;
     final int numCons = cons.size();
     if (numCons > 1) {
-      Connection con;
-      Object2ObjectOpenHashMap versionToConnMap = null;
+      Object2ObjectOpenHashMap<KnownVersion, List<Connection>> versionToConnMap = null;
       int numVersioned = 0;
-      for (Object c : cons) {
-        con = (Connection) c;
-        version = con.getRemoteVersion();
+      for (final Connection connection : cons) {
+        final KnownVersion version = connection.getRemoteVersion();
         if (version != null
             && KnownVersion.CURRENT_ORDINAL > version.ordinal()) {
           if (versionToConnMap == null) {
-            versionToConnMap = new Object2ObjectOpenHashMap();
+            versionToConnMap = new Object2ObjectOpenHashMap<>();
           }
-          @SuppressWarnings("unchecked")
-          ArrayList<Object> vcons = (ArrayList<Object>) versionToConnMap.get(version);
-          if (vcons == null) {
-            vcons = new ArrayList<Object>(numCons);
-            versionToConnMap.put(version, vcons);
-          }
-          vcons.add(con);
+          versionToConnMap.computeIfAbsent(version, k -> new ArrayList<>(numCons)).add(connection);
           numVersioned++;
         }
       }
+
       if (versionToConnMap == null) {
         return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
             bufferPool);
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
-        final ArrayList<MsgStreamer> streamers =
-            new ArrayList<MsgStreamer>(versionToConnMap.size() + 1);
+        final List<MsgStreamer> streamers = new ArrayList<>(versionToConnMap.size() + 1);
         final int sendBufferSize = firstCon.getSendBufferSize();
         if (numCons > numVersioned) {
           // allocating list of numCons size so that as the result of
-          // getSentConnections it may not need to be reallocted later
-          final ArrayList<Object> currentVersionConnections = new ArrayList<Object>(numCons);
-          for (Object c : cons) {
-            con = (Connection) c;
-            version = con.getRemoteVersion();
+          // getSentConnections it may not need to be reallocated later
+          final List<Connection> currentVersionConnections = new ArrayList<>(numCons);
+          for (Connection connection : cons) {
+            final KnownVersion version = connection.getRemoteVersion();
             if (version == null || version.ordinal() >= KnownVersion.CURRENT_ORDINAL) {
-              currentVersionConnections.add(con);
+              currentVersionConnections.add(connection);
             }
           }
           streamers.add(
               new MsgStreamer(currentVersionConnections, msg, directReply, stats, sendBufferSize,
                   bufferPool));
         }
-        for (ObjectIterator<Object2ObjectMap.Entry> itr =
+        for (ObjectIterator<Object2ObjectMap.Entry<KnownVersion, List<Connection>>> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
-          Object2ObjectMap.Entry entry = itr.next();
-          Object ver = entry.getKey();
-          Object l = entry.getValue();
-          streamers.add(new VersionedMsgStreamer((List<?>) l, msg, directReply, stats,
-              bufferPool, sendBufferSize, (KnownVersion) ver));
+          Object2ObjectMap.Entry<KnownVersion, List<Connection>> entry = itr.next();
+          streamers.add(new VersionedMsgStreamer(entry.getValue(), msg, directReply, stats,
+              bufferPool, sendBufferSize, entry.getKey()));
         }
         return new MsgStreamerList(streamers);
       }
-    } else if ((version = firstCon.getRemoteVersion()) == null) {
-      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
-          bufferPool);
     } else {
-      // create a single VersionedMsgStreamer
-      return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
-          firstCon.getSendBufferSize(),
-          version);
+      final KnownVersion version = firstCon.getRemoteVersion();
+      if (null == version) {
+        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+            bufferPool);
+      } else {
+        return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
+            firstCon.getSendBufferSize(), version);
+      }
     }
   }
 
-  /**
-   * set connections to be "in use" and schedule alert tasks
-   *
-   */
   @Override
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
-    for (Iterator it = cons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
-      con.setInUse(true, startTime, ackTimeout, ackSDTimeout, cons);
+    for (final Connection connection : connections) {
+      connection.setInUse(true, startTime, ackTimeout, ackSDTimeout, connections);
       if (ackTimeout > 0) {
-        con.scheduleAckTimeouts();
+        connection.scheduleAckTimeouts();
       }
     }
   }
 
   private void startSerialization() {
-    this.serStartTime = stats.startMsgSerialization();
+    serStartTime = stats.startMsgSerialization();
   }
 
-  /**
-   * @throws IOException if serialization failure
-   */
   @Override
   public int writeMessage() throws IOException {
-    // if (logger.isTraceEnabled()) logger.trace(this.msg);
-
     try {
-      this.startedSerializingMsg = true;
-      InternalDataSerializer.writeDSFID(this.msg, this);
-      this.doneWritingMsg = true;
-      if (this.flushedBytes == 0) {
+      startedSerializingMsg = true;
+      InternalDataSerializer.writeDSFID(msg, this);
+      doneWritingMsg = true;
+      if (flushedBytes == 0) {
         // message fit in one chunk
-        this.normalMsg = true;
+        normalMsg = true;
       }
       realFlush(true);
-      return this.flushedBytes;
+      return flushedBytes;
     } finally {
       release();
     }
   }
 
-  /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    // if (logger.isTraceEnabled()) logger.trace(" byte={}", b);
-
     ensureCapacity(1);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(b);
+    if (overflowBuf != null) {
+      overflowBuf.write(b);
       return;
     }
-    this.buffer.put((byte) (b & 0xff));
+    buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
-    if (this.overflowBuf != null) {
+    if (overflowBuf != null) {
       return;
     }
-    int remainingSpace = this.buffer.capacity() - this.buffer.position();
+    int remainingSpace = buffer.capacity() - buffer.position();
     if (amount > remainingSpace) {
       realFlush(false);
     }
@@ -292,65 +272,65 @@ public class MsgStreamer extends OutputStream
   private HeapDataOutputStream overflowBuf = null;
 
   private boolean isOverflowMode() {
-    return this.overflowMode > 0;
+    return overflowMode > 0;
   }
 
   private void enableOverflowMode() {
-    this.overflowMode++;
+    overflowMode++;
   }
 
   private void disableOverflowMode() {
-    this.overflowMode--;
+    overflowMode--;
     if (!isOverflowMode()) {
-      this.overflowBuf = null;
+      overflowBuf = null;
     }
   }
 
   public void realFlush(boolean lastFlushForMessage) {
     if (isOverflowMode()) {
-      if (this.overflowBuf == null) {
-        this.overflowBuf = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
+      if (overflowBuf == null) {
+        overflowBuf = new HeapDataOutputStream(
+            buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
       }
       return;
     }
-    this.buffer.flip();
+    buffer.flip();
     setMessageHeader();
-    final int serializedBytes = this.buffer.limit();
-    this.flushedBytes += serializedBytes;
+    final int serializedBytes = buffer.limit();
+    flushedBytes += serializedBytes;
     DistributionMessage conflationMsg = null;
-    if (this.normalMsg) {
+    if (normalMsg) {
       // we can't conflate chunked messages; this fixes bug 36633
-      conflationMsg = this.msg;
+      conflationMsg = msg;
     }
-    this.stats.endMsgSerialization(this.serStartTime);
-    for (Iterator it = this.cons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+    stats.endMsgSerialization(serStartTime);
+    for (final Iterator<Connection> it = connections.iterator(); it.hasNext();) {
+      final Connection connection = it.next();
       try {
-        con.sendPreserialized(this.buffer,
-            lastFlushForMessage && this.msg.containsRegionContentChange(), conflationMsg);
+        connection.sendPreserialized(buffer,
+            lastFlushForMessage && msg.containsRegionContentChange(), conflationMsg);
       } catch (IOException ex) {
         it.remove();
-        if (this.ce == null) {
-          this.ce = new ConnectExceptions();
+        if (connectExceptions == null) {
+          connectExceptions = new ConnectExceptions();
         }
-        this.ce.addFailure(con.getRemoteAddress(), ex);
-        con.closeForReconnect(
+        connectExceptions.addFailure(connection.getRemoteAddress(), ex);
+        connection.closeForReconnect(
             String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
-        if (this.ce == null) {
-          this.ce = new ConnectExceptions();
+        if (connectExceptions == null) {
+          connectExceptions = new ConnectExceptions();
         }
-        this.ce.addFailure(con.getRemoteAddress(), ex);
-        con.closeForReconnect(
+        connectExceptions.addFailure(connection.getRemoteAddress(), ex);
+        connection.closeForReconnect(
             String.format("closing due to %s", "ConnectionException"));
       }
-      this.buffer.rewind();
+      buffer.rewind();
     }
     startSerialization();
-    this.buffer.clear();
-    this.buffer.position(Connection.MSG_HEADER_BYTES);
+    buffer.clear();
+    buffer.position(Connection.MSG_HEADER_BYTES);
   }
 
   @VisibleForTesting
@@ -361,13 +341,12 @@ public class MsgStreamer extends OutputStream
   @Override
   public void close() throws IOException {
     try {
-      if (this.startedSerializingMsg && !this.doneWritingMsg) {
-        // if we wrote any bytes on the cnxs then we need to close them
+      if (startedSerializingMsg && !doneWritingMsg) {
+        // if we wrote any bytes on the connections then we need to close them
         // since they have been corrupted by a partial serialization.
-        if (this.flushedBytes > 0) {
-          for (Iterator it = this.cons.iterator(); it.hasNext();) {
-            Connection con = (Connection) it.next();
-            con.closeForReconnect("Message serialization could not complete");
+        if (flushedBytes > 0) {
+          for (final Connection connection : connections) {
+            connection.closeForReconnect("Message serialization could not complete");
           }
         }
       }
@@ -378,20 +357,17 @@ public class MsgStreamer extends OutputStream
 
   /** override OutputStream's write() */
   @Override
-  public void write(byte[] source, int offset, int len) {
-    // if (logger.isTraceEnabled()) {
-    // logger.trace(" bytes={} offset={} len={}", source, offset, len);
-    // }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(source, offset, len);
+  public void write(byte @NotNull [] source, int offset, int len) {
+    if (overflowBuf != null) {
+      overflowBuf.write(source, offset, len);
       return;
     }
     while (len > 0) {
-      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(source, offset, len);
+        if (overflowBuf != null) {
+          overflowBuf.write(source, offset, len);
           return;
         }
       } else {
@@ -399,7 +375,7 @@ public class MsgStreamer extends OutputStream
         if (len < chunkSize) {
           chunkSize = len;
         }
-        this.buffer.put(source, offset, chunkSize);
+        buffer.put(source, offset, chunkSize);
         offset += chunkSize;
         len -= chunkSize;
       }
@@ -408,20 +384,17 @@ public class MsgStreamer extends OutputStream
 
   @Override
   public void write(ByteBuffer bb) {
-    // if (logger.isTraceEnabled()) {
-    // logger.trace(" bytes={} offset={} len={}", source, offset, len);
-    // }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.write(bb);
+    if (overflowBuf != null) {
+      overflowBuf.write(bb);
       return;
     }
     int len = bb.remaining();
     while (len > 0) {
-      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(bb);
+        if (overflowBuf != null) {
+          overflowBuf.write(bb);
           return;
         }
       } else {
@@ -431,7 +404,7 @@ public class MsgStreamer extends OutputStream
         }
         int oldLimit = bb.limit();
         bb.limit(bb.position() + chunkSize);
-        this.buffer.put(bb);
+        buffer.put(bb);
         bb.limit(oldLimit);
         len -= chunkSize;
       }
@@ -442,12 +415,12 @@ public class MsgStreamer extends OutputStream
    * write the header after the message has been written to the stream
    */
   private void setMessageHeader() {
-    Assert.assertTrue(this.overflowBuf == null);
+    Assert.assertTrue(overflowBuf == null);
     Assert.assertTrue(!isOverflowMode());
     // int processorType = this.msg.getProcessorType();
     int msgType;
-    if (this.doneWritingMsg) {
-      if (this.normalMsg) {
+    if (doneWritingMsg) {
+      if (normalMsg) {
         msgType = Connection.NORMAL_MSG_TYPE;
       } else {
         msgType = Connection.END_CHUNKED_MSG_TYPE;
@@ -458,17 +431,17 @@ public class MsgStreamer extends OutputStream
     } else {
       msgType = Connection.CHUNKED_MSG_TYPE;
     }
-    if (!this.normalMsg) {
-      if (this.msgId == MsgIdGenerator.NO_MSG_ID) {
-        this.msgId = MsgIdGenerator.obtain();
+    if (!normalMsg) {
+      if (msgId == MsgIdGenerator.NO_MSG_ID) {
+        msgId = MsgIdGenerator.obtain();
       }
     }
 
-    this.buffer.putInt(Connection.MSG_HEADER_SIZE_OFFSET,
-        Connection.calcHdrSize(this.buffer.limit() - Connection.MSG_HEADER_BYTES));
-    this.buffer.put(Connection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
-    this.buffer.putShort(Connection.MSG_HEADER_ID_OFFSET, this.msgId);
-    this.buffer.position(0);
+    buffer.putInt(Connection.MSG_HEADER_SIZE_OFFSET,
+        Connection.calcHdrSize(buffer.limit() - Connection.MSG_HEADER_BYTES));
+    buffer.put(Connection.MSG_HEADER_TYPE_OFFSET, (byte) (msgType & 0xff));
+    buffer.putShort(Connection.MSG_HEADER_ID_OFFSET, msgId);
+    buffer.position(0);
   }
 
   // DataOutput methods
@@ -523,15 +496,15 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" short={}", v);
 
     ensureCapacity(2);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeShort(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeShort(v);
       return;
     }
-    this.buffer.putShort((short) (v & 0xffff));
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**
-   * Writes a <code>char</code> value, wich is comprised of two bytes, to the output stream. The
+   * Writes a <code>char</code> value, which is comprised of two bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
    *
@@ -553,11 +526,11 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" char={}", v);
 
     ensureCapacity(2);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeChar(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeChar(v);
       return;
     }
-    this.buffer.putChar((char) v);
+    buffer.putChar((char) v);
   }
 
   /**
@@ -584,11 +557,11 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" int={}", v);
 
     ensureCapacity(4);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeInt(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeInt(v);
       return;
     }
-    this.buffer.putInt(v);
+    buffer.putInt(v);
   }
 
   /**
@@ -619,11 +592,11 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" long={}", v);
 
     ensureCapacity(8);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeLong(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeLong(v);
       return;
     }
-    this.buffer.putLong(v);
+    buffer.putLong(v);
   }
 
   /**
@@ -641,11 +614,11 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" float={}", v);
 
     ensureCapacity(4);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeFloat(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeFloat(v);
       return;
     }
-    this.buffer.putFloat(v);
+    buffer.putFloat(v);
   }
 
   /**
@@ -663,11 +636,11 @@ public class MsgStreamer extends OutputStream
     // if (logger.isTraceEnabled()) logger.trace(" double={}", v);
 
     ensureCapacity(8);
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeDouble(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeDouble(v);
       return;
     }
-    this.buffer.putDouble(v);
+    buffer.putDouble(v);
   }
 
   /**
@@ -684,11 +657,11 @@ public class MsgStreamer extends OutputStream
    * @param str the string of bytes to be written.
    */
   @Override
-  public void writeBytes(String str) {
+  public void writeBytes(final @NotNull String str) {
     // if (logger.isTraceEnabled()) logger.trace(" bytes={}", str);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeBytes(str);
+    if (overflowBuf != null) {
+      overflowBuf.writeBytes(str);
       return;
     }
     int strlen = str.length();
@@ -710,21 +683,21 @@ public class MsgStreamer extends OutputStream
    * @param s the string value to be written.
    */
   @Override
-  public void writeChars(String s) {
+  public void writeChars(final @NotNull String s) {
     // if (logger.isTraceEnabled()) logger.trace(" chars={}", s);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeChars(s);
+    if (overflowBuf != null) {
+      overflowBuf.writeChars(s);
       return;
     }
     int len = s.length();
     int offset = 0;
     while (len > 0) {
-      int remainingCharSpace = (this.buffer.capacity() - this.buffer.position()) / 2;
+      int remainingCharSpace = (buffer.capacity() - buffer.position()) / 2;
       if (remainingCharSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.writeChars(s.substring(offset));
+        if (overflowBuf != null) {
+          overflowBuf.writeChars(s.substring(offset));
           return;
         }
       } else {
@@ -733,7 +706,7 @@ public class MsgStreamer extends OutputStream
           chunkSize = len;
         }
         for (int i = 0; i < chunkSize; i++) {
-          this.buffer.putChar(s.charAt(offset + i));
+          buffer.putChar(s.charAt(offset + i));
         }
         offset += chunkSize;
         len -= chunkSize;
@@ -800,11 +773,11 @@ public class MsgStreamer extends OutputStream
    * @exception IOException if an I/O error occurs.
    */
   @Override
-  public void writeUTF(String str) throws IOException {
+  public void writeUTF(@NotNull String str) throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(" utf={}", str);
 
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeUTF(str);
+    if (overflowBuf != null) {
+      overflowBuf.writeUTF(str);
       return;
     }
     if (ASCII_STRINGS) {
@@ -822,11 +795,11 @@ public class MsgStreamer extends OutputStream
     writeShort(len);
     int offset = 0;
     while (len > 0) {
-      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace == 0) {
         realFlush(false);
-        if (this.overflowBuf != null) {
-          this.overflowBuf.write(str.substring(offset).getBytes());
+        if (overflowBuf != null) {
+          overflowBuf.write(str.substring(offset).getBytes());
           return;
         }
       } else {
@@ -835,7 +808,7 @@ public class MsgStreamer extends OutputStream
           chunkSize = len;
         }
         for (int i = 0; i < chunkSize; i++) {
-          this.buffer.put((byte) str.charAt(offset + i));
+          buffer.put((byte) str.charAt(offset + i));
         }
         offset += chunkSize;
         len -= chunkSize;
@@ -849,7 +822,7 @@ public class MsgStreamer extends OutputStream
       throw new UTFDataFormatException();
     }
     {
-      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace >= ((strlen * 3) + 2)) {
         // we have plenty of room to do this with one pass directly into the buffer
         writeQuickFullUTF(str, strlen);
@@ -878,10 +851,10 @@ public class MsgStreamer extends OutputStream
       } else if (c > 0x07FF) {
         writeByte((byte) (0xE0 | ((c >> 12) & 0x0F)));
         writeByte((byte) (0x80 | ((c >> 6) & 0x3F)));
-        writeByte((byte) (0x80 | ((c >> 0) & 0x3F)));
+        writeByte((byte) (0x80 | ((c) & 0x3F)));
       } else {
         writeByte((byte) (0xC0 | ((c >> 6) & 0x1F)));
-        writeByte((byte) (0x80 | ((c >> 0) & 0x3F)));
+        writeByte((byte) (0x80 | ((c) & 0x3F)));
       }
     }
   }
@@ -890,29 +863,29 @@ public class MsgStreamer extends OutputStream
    * Used when we know the max size will fit in the current buffer.
    */
   private void writeQuickFullUTF(String str, int strlen) throws IOException {
-    int utfSizeIdx = this.buffer.position();
+    int utfSizeIdx = buffer.position();
     // skip bytes reserved for length
-    this.buffer.position(utfSizeIdx + 2);
+    buffer.position(utfSizeIdx + 2);
     for (int i = 0; i < strlen; i++) {
       int c = str.charAt(i);
       if ((c >= 0x0001) && (c <= 0x007F)) {
-        this.buffer.put((byte) c);
+        buffer.put((byte) c);
       } else if (c > 0x07FF) {
-        this.buffer.put((byte) (0xE0 | ((c >> 12) & 0x0F)));
-        this.buffer.put((byte) (0x80 | ((c >> 6) & 0x3F)));
-        this.buffer.put((byte) (0x80 | ((c >> 0) & 0x3F)));
+        buffer.put((byte) (0xE0 | ((c >> 12) & 0x0F)));
+        buffer.put((byte) (0x80 | ((c >> 6) & 0x3F)));
+        buffer.put((byte) (0x80 | ((c) & 0x3F)));
       } else {
-        this.buffer.put((byte) (0xC0 | ((c >> 6) & 0x1F)));
-        this.buffer.put((byte) (0x80 | ((c >> 0) & 0x3F)));
+        buffer.put((byte) (0xC0 | ((c >> 6) & 0x1F)));
+        buffer.put((byte) (0x80 | ((c) & 0x3F)));
       }
     }
-    int utflen = this.buffer.position() - (utfSizeIdx + 2);
+    int utflen = buffer.position() - (utfSizeIdx + 2);
     if (utflen > 65535) {
       // act as if we wrote nothing to this buffer
-      this.buffer.position(utfSizeIdx);
+      buffer.position(utfSizeIdx);
       throw new UTFDataFormatException();
     }
-    this.buffer.putShort(utfSizeIdx, (short) utflen);
+    buffer.putShort(utfSizeIdx, (short) utflen);
   }
 
   /**
@@ -932,47 +905,42 @@ public class MsgStreamer extends OutputStream
       other.rewind();
       return;
     }
-    if (this.overflowBuf != null) {
-      this.overflowBuf.writeAsSerializedByteArray(v);
+    if (overflowBuf != null) {
+      overflowBuf.writeAsSerializedByteArray(v);
       return;
     }
     if (isOverflowMode()) {
-      // we must have recursed which is now allowed to fix bug 38194
-      int remainingSpace = this.buffer.capacity() - this.buffer.position();
+      // we must have recursed
+      int remainingSpace = buffer.capacity() - buffer.position();
       if (remainingSpace < 5) {
-        // we don't even have room to write the length field so just create
-        // the overflowBuf
-        this.overflowBuf = new HeapDataOutputStream(
-            this.buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
-        this.overflowBuf.writeAsSerializedByteArray(v);
+        // we don't even have room to write the length field so just create the overflowBuf
+        overflowBuf = new HeapDataOutputStream(
+            buffer.capacity() - Connection.MSG_HEADER_BYTES, KnownVersion.CURRENT);
+        overflowBuf.writeAsSerializedByteArray(v);
         return;
       }
     } else {
-      ensureCapacity(5 + 1024); /*
-                                 * need 5 bytes for length plus enough room for an 'average' small
-                                 * object. I pulled 1024 as the average out of thin air.
-                                 */
+      // need 5 bytes for length plus enough room for an 'average' small object. I pulled 1024 as
+      // the average out of thin air.
+      ensureCapacity(5 + 1024);
     }
-    int lengthPos = this.buffer.position();
-    this.buffer.position(lengthPos + 5);
+    int lengthPos = buffer.position();
+    buffer.position(lengthPos + 5);
     enableOverflowMode();
     boolean finished = false;
     try {
       try {
         DataSerializer.writeObject(v, this);
       } catch (IOException e) {
-        RuntimeException e2 = new IllegalArgumentException(
-            "An Exception was thrown while serializing.");
-        e2.initCause(e);
-        throw e2;
+        throw new IllegalArgumentException("An Exception was thrown while serializing.", e);
       }
-      int baLength = this.buffer.position() - (lengthPos + 5);
-      HeapDataOutputStream overBuf = this.overflowBuf;
+      int baLength = buffer.position() - (lengthPos + 5);
+      HeapDataOutputStream overBuf = overflowBuf;
       if (overBuf != null) {
         baLength += overBuf.size();
       }
-      this.buffer.put(lengthPos, StaticSerialization.INT_ARRAY_LEN);
-      this.buffer.putInt(lengthPos + 1, baLength);
+      buffer.put(lengthPos, StaticSerialization.INT_ARRAY_LEN);
+      buffer.putInt(lengthPos + 1, baLength);
       disableOverflowMode();
       finished = true;
       if (overBuf != null && !isOverflowMode()) {
@@ -981,7 +949,7 @@ public class MsgStreamer extends OutputStream
     } finally {
       if (!finished) {
         // reset buffer and act as if we did nothing
-        this.buffer.position(lengthPos);
+        buffer.position(lengthPos);
         disableOverflowMode();
       }
     }

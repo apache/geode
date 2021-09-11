@@ -63,12 +63,12 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   @Override
-  public long incr(RedisKey key) {
+  public byte[] incr(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, false).incr(getRegion(), key));
   }
 
   @Override
-  public long decr(RedisKey key) {
+  public byte[] decr(RedisKey key) {
     return stripedExecute(key, () -> getRedisString(key, false).decr(getRegion(), key));
   }
 
@@ -78,7 +78,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   @Override
-  public long incrby(RedisKey key, long increment) {
+  public byte[] incrby(RedisKey key, long increment) {
     return stripedExecute(key,
         () -> getRedisString(key, false).incrby(getRegion(), key, increment));
   }
@@ -95,7 +95,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   @Override
-  public long decrby(RedisKey key, long decrement) {
+  public byte[] decrby(RedisKey key, long decrement) {
     return stripedExecute(key,
         () -> getRedisString(key, false).decrby(getRegion(), key, decrement));
   }

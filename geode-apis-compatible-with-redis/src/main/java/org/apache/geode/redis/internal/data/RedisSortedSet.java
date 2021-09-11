@@ -16,15 +16,17 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.internal.size.ReflectionSingleObjectSizer.roundUpSize;
+import static java.lang.Double.compare;
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -37,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
-
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -47,41 +47,34 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.collections.OrderStatisticsSet;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.AbstractSortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.executor.sortedset.ZAggregator;
+import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
+import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
-  private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], OrderedSetEntry> members;
-  private OrderStatisticsSet<AbstractOrderedSetEntry> scoreSet;
-  // This field is used to keep track of the size associated with objects that are referenced by
-  // both backing collections, since they will be counted twice otherwise
-  private int sizeInBytesAdjustment = 0;
+  protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
 
-  // The following constant was calculated using reflection. You can find the test for this value in
-  // RedisSortedSetTest, which shows the way this number was calculated. If our internal
-  // implementation changes, this value may be incorrect. An increase in overhead should be
-  // carefully considered.
-  protected static final int BASE_REDIS_SORTED_SET_OVERHEAD = 40;
+  private MemberMap members;
+  private final ScoreSet scoreSet = new ScoreSet();
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes()
-        - sizeInBytesAdjustment;
+    return REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
   }
 
   RedisSortedSet(List<byte[]> members) {
-    this.members =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(members.size() / 2,
-            ByteArrays.HASH_STRATEGY);
-    scoreSet = new OrderStatisticsTree<>();
+    this.members = new MemberMap(members.size() / 2);
 
     Iterator<byte[]> iterator = members.iterator();
 
@@ -119,13 +112,7 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.writePrimitiveInt(members.size(), out);
-    for (Map.Entry<byte[], OrderedSetEntry> entry : members.entrySet()) {
-      byte[] member = entry.getKey();
-      byte[] score = entry.getValue().getScoreBytes();
-      InternalDataSerializer.writeByteArray(member, out);
-      InternalDataSerializer.writeByteArray(score, out);
-    }
+    members.toData(out);
   }
 
   @Override
@@ -133,9 +120,7 @@ public class RedisSortedSet extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = InternalDataSerializer.readPrimitiveInt(in);
-    members =
-        new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
-    scoreSet = new OrderStatisticsTree<>();
+    members = new MemberMap(size);
     for (int i = 0; i < size; i++) {
       byte[] member = InternalDataSerializer.readByteArray(in);
       byte[] score = InternalDataSerializer.readByteArray(in);
@@ -161,16 +146,13 @@ public class RedisSortedSet extends AbstractRedisData {
       return false;
     }
 
-    for (Map.Entry<byte[], OrderedSetEntry> entry : members.entrySet()) {
-      OrderedSetEntry otherEntry = other.members.get(entry.getKey());
+    return members.fastWhileEachValue(entry -> {
+      OrderedSetEntry otherEntry = other.members.get(entry.getMember());
       if (otherEntry == null) {
         return false;
       }
-      if (Double.compare(otherEntry.getScore(), entry.getValue().getScore()) != 0) {
-        return false;
-      }
-    }
-    return true;
+      return compare(otherEntry.getScore(), entry.getScore()) == 0;
+    });
   }
 
   @Override
@@ -184,9 +166,6 @@ public class RedisSortedSet extends AbstractRedisData {
       OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
       members.put(memberToAdd, newEntry);
       scoreSet.add(newEntry);
-      // Without this adjustment, we count the entry and member name array twice, since references
-      // to them appear in both backing collections.
-      sizeInBytesAdjustment += newEntry.getSizeInBytes() + calculateByteArraySize(memberToAdd);
       return null;
     } else {
       scoreSet.remove(existingEntry);
@@ -204,15 +183,9 @@ public class RedisSortedSet extends AbstractRedisData {
     if (orderedSetEntry != null) {
       scoreSet.remove(orderedSetEntry);
       oldValue = orderedSetEntry.getScoreBytes();
-      // Adjust for removal.
-      adjustSizeForRemoval(orderedSetEntry);
     }
 
     return oldValue;
-  }
-
-  private void adjustSizeForRemoval(AbstractOrderedSetEntry entry) {
-    sizeInBytesAdjustment -= entry.getSizeInBytes() + calculateByteArraySize(entry.getMember());
   }
 
   private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
@@ -276,11 +249,15 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   long zcount(SortedSetScoreRangeOptions rangeOptions) {
-    int minIndex = getIndexByScore(rangeOptions.getStartRange(),
-        rangeOptions.isStartExclusive(), true);
+    long minIndex = rangeOptions.getRangeIndex(scoreSet, true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
 
-    int maxIndex = getIndexByScore(rangeOptions.getEndRange(),
-        rangeOptions.isEndExclusive(), false);
+    long maxIndex = rangeOptions.getRangeIndex(scoreSet, false);
+    if (minIndex >= maxIndex) {
+      return 0;
+    }
 
     return maxIndex - minIndex;
   }
@@ -311,44 +288,44 @@ public class RedisSortedSet extends AbstractRedisData {
     return byteIncr;
   }
 
-  List<byte[]> zrange(int min, int max, boolean withScores) {
-    return getRange(min, max, withScores, false);
+  long zlexcount(SortedSetLexRangeOptions lexOptions) {
+    int minIndex = lexOptions.getRangeIndex(scoreSet, true);
+    if (minIndex >= scoreSet.size()) {
+      return 0;
+    }
+
+    int maxIndex = lexOptions.getRangeIndex(scoreSet, false);
+    if (minIndex >= maxIndex) {
+      return 0;
+    }
+
+    return maxIndex - minIndex;
+  }
+
+  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    Iterator<AbstractOrderedSetEntry> scoresIterator =
+        scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
+
+    return zpop(scoresIterator, region, key);
+  }
+
+  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+    Iterator<AbstractOrderedSetEntry> scoresIterator =
+        scoreSet.getIndexRange(0, count, false);
+
+    return zpop(scoresIterator, region, key);
+  }
+
+  List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
   }
 
   List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
-    // Assume that all members have the same score. Behaviour is unspecified otherwise.
-    double score = scoreSet.get(0).score;
-
-    int minIndex =
-        getIndexByLex(score, rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
-    if (minIndex >= scoreSet.size()) {
-      return Collections.emptyList();
-    }
-
-    int maxIndex =
-        getIndexByLex(score, rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
-    if (minIndex == maxIndex) {
-      return Collections.emptyList();
-    }
-
-    return addLimitToRange(rangeOptions, false, false, minIndex, maxIndex);
+    return getRange(rangeOptions);
   }
 
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    int minIndex =
-        getIndexByScore(rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), true);
-    if (minIndex >= scoreSet.size()) {
-      return Collections.emptyList();
-    }
-
-    int maxIndex =
-        getIndexByScore(rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), false);
-    if (minIndex == maxIndex) {
-      return Collections.emptyList();
-    }
-
-    // Okay, if we make it this far there's a potential range of things to return.
-    return addLimitToRange(rangeOptions, withScores, false, minIndex, maxIndex);
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
   }
 
   long zrank(byte[] member) {
@@ -375,26 +352,31 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
-  List<byte[]> zrevrange(int min, int max, boolean withScores) {
-    return getRange(min, max, withScores, true);
+  long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetLexRangeOptions rangeOptions) {
+    return removeRange(region, key, rangeOptions);
   }
 
-  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    int maxIndex =
-        getIndexByScore(rangeOptions.getStartRange(), rangeOptions.isStartExclusive(), false);
+  long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetRankRangeOptions rangeOptions) {
+    return removeRange(region, key, rangeOptions);
+  }
 
-    int minIndex = getIndexByScore(rangeOptions.getEndRange(), rangeOptions.isEndExclusive(), true);
+  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetScoreRangeOptions rangeOptions) {
+    return removeRange(region, key, rangeOptions);
+  }
 
-    if (minIndex > getSortedSetSize()) {
-      return Collections.emptyList();
-    }
+  List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
+  }
 
-    if (minIndex == maxIndex) {
-      return Collections.emptyList();
-    }
+  List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
+  }
 
-    // Okay, if we make it this far there's a potential range of things to return.
-    return addLimitToRange(rangeOptions, withScores, true, minIndex, maxIndex);
+  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+    return getRange(rangeOptions);
   }
 
   long zrevrank(byte[] member) {
@@ -413,10 +395,53 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
-    Iterator<AbstractOrderedSetEntry> scoresIterator =
-        scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
+  long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    for (ZKeyWeight keyWeight : keyWeights) {
+      RedisSortedSet set =
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
+      if (set == NULL_REDIS_SORTED_SET) {
+        continue;
+      }
+      double weight = keyWeight.getWeight();
 
+      for (AbstractOrderedSetEntry entry : set.members.values()) {
+        OrderedSetEntry existingValue = members.get(entry.member);
+        if (existingValue == null) {
+          byte[] scoreBytes;
+          // Redis math and Java math are different when handling infinity. Specifically:
+          // Java: INFINITY * 0 = NaN
+          // Redis: INFINITY * 0 = 0
+          if (weight == 0) {
+            scoreBytes = bZERO;
+          } else if (weight == 1) {
+            scoreBytes = entry.getScoreBytes();
+          } else {
+            double newScore = entry.score * weight;
+            if (Double.isNaN(newScore)) {
+              scoreBytes = entry.getScoreBytes();
+            } else {
+              scoreBytes = Coder.doubleToBytes(entry.score * weight);
+            }
+          }
+          members.put(entry.member, new OrderedSetEntry(entry.member, scoreBytes));
+          continue;
+        }
+
+        existingValue.updateScore(aggregator.getFunction().apply(existingValue.score,
+            entry.score * weight));
+      }
+    }
+
+    scoreSet.addAll(members.values());
+
+    regionProvider.getLocalDataRegion().put(key, this);
+
+    return getSortedSetSize();
+  }
+
+  private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,
+      Region<RedisKey, RedisData> region, RedisKey key) {
     if (!scoresIterator.hasNext()) {
       return Collections.emptyList();
     }
@@ -427,7 +452,6 @@ public class RedisSortedSet extends AbstractRedisData {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();
       members.remove(entry.member);
-      adjustSizeForRemoval(entry);
 
       result.add(entry.member);
       result.add(entry.scoreBytes);
@@ -437,6 +461,28 @@ public class RedisSortedSet extends AbstractRedisData {
     storeChanges(region, key, deltaInfo);
 
     return result;
+  }
+
+  private long iteratorRangeRemove(Iterator<AbstractOrderedSetEntry> scoresIterator,
+      Region<RedisKey, RedisData> region, RedisKey key) {
+    if (!scoresIterator.hasNext()) {
+      return 0;
+    }
+
+    int entriesRemoved = 0;
+
+    RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
+    while (scoresIterator.hasNext()) {
+      AbstractOrderedSetEntry entry = scoresIterator.next();
+      scoresIterator.remove();
+      members.remove(entry.member);
+      entriesRemoved++;
+      deltaInfo.add(entry.member);
+    }
+
+    storeChanges(region, key, deltaInfo);
+
+    return entriesRemoved;
   }
 
   private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
@@ -453,108 +499,83 @@ public class RedisSortedSet extends AbstractRedisData {
     return zincrby(region, key, increment, member);
   }
 
-  private int getIndexByScore(Double startRange, boolean isExclusive, boolean isMinimum) {
-    AbstractOrderedSetEntry entry =
-        new ScoreDummyOrderedSetEntry(startRange, isExclusive, isMinimum);
-    return scoreSet.indexOf(entry);
-  }
+  private List<byte[]> getRange(AbstractSortedSetRangeOptions<?> rangeOptions) {
+    int startIndex = getStartIndex(rangeOptions);
 
-  private int getIndexByLex(double score, byte[] rangeValue, boolean isExclusive,
-      boolean isMinimum) {
-    AbstractOrderedSetEntry minEntry =
-        new MemberDummyOrderedSetEntry(rangeValue, score, isExclusive, isMinimum);
-    return scoreSet.indexOf(minEntry);
-  }
-
-  private List<byte[]> getRange(int min, int max, boolean withScores, boolean isReverse) {
-    List<byte[]> result = new ArrayList<>();
-    int start;
-    int rangeSize;
-    if (isReverse) {
-      // scoreSet.size() - 1 is the maximum index of elements in the sorted set
-      start = scoreSet.size() - 1 - getBoundedStartIndex(min, scoreSet.size());
-      int end = scoreSet.size() - 1 - getBoundedEndIndex(max, scoreSet.size());
-      // Add one to rangeSize because the range is inclusive, so even if start == end, we return one
-      // element
-      rangeSize = start - end + 1;
-    } else {
-      start = getBoundedStartIndex(min, scoreSet.size());
-      int end = getBoundedEndIndex(max, scoreSet.size());
-      // Add one to rangeSize because the range is inclusive, so even if start == end, we return one
-      // element
-      rangeSize = end - start + 1;
+    if (startIndex >= getSortedSetSize() && !rangeOptions.isRev()
+        || startIndex < 0 && rangeOptions.isRev()) {
+      return Collections.emptyList();
     }
-    if (rangeSize <= 0 || start == scoreSet.size()) {
-      return result;
+
+    int maxElementsToReturn = getMaxElementsToReturn(rangeOptions, startIndex);
+
+    if (maxElementsToReturn <= 0) {
+      return Collections.emptyList();
+    }
+
+    return getElementsFromSet(rangeOptions, startIndex, maxElementsToReturn);
+  }
+
+  private long removeRange(Region<RedisKey, RedisData> region, RedisKey key,
+      AbstractSortedSetRangeOptions<?> rangeOptions) {
+    int startIndex = getStartIndex(rangeOptions);
+
+    if (startIndex >= getSortedSetSize() && !rangeOptions.isRev()
+        || startIndex < 0 && rangeOptions.isRev()) {
+      return 0;
+    }
+
+    int maxElementsToRemove = getMaxElementsToReturn(rangeOptions, startIndex);
+
+    if (maxElementsToRemove <= 0) {
+      return 0;
     }
 
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(start, rangeSize, isReverse);
-    while (entryIterator.hasNext()) {
-      AbstractOrderedSetEntry entry = entryIterator.next();
-      result.add(entry.member);
-      if (withScores) {
-        result.add(entry.scoreBytes);
-      }
-    }
-    return result;
+        scoreSet.getIndexRange(startIndex, maxElementsToRemove, rangeOptions.isRev());
+
+    return iteratorRangeRemove(entryIterator, region, key);
   }
 
-  private List<byte[]> addLimitToRange(AbstractSortedSetRangeOptions<?> rangeOptions,
-      boolean withScores, boolean isReverse,
-      int minIndex, int maxIndex) {
-    int count = Integer.MAX_VALUE;
+  private int getStartIndex(AbstractSortedSetRangeOptions<?> rangeOptions) {
+    int startIndex = rangeOptions.getRangeIndex(scoreSet, true);
     if (rangeOptions.hasLimit()) {
-      count = rangeOptions.getCount();
-      if (isReverse) {
-        maxIndex -= rangeOptions.getOffset();
-        if (maxIndex < 0) {
-          return Collections.emptyList();
-        }
+      if (rangeOptions.isRev()) {
+        startIndex -= rangeOptions.getOffset();
       } else {
-        minIndex += rangeOptions.getOffset();
-        if (minIndex > getSortedSetSize() || minIndex > maxIndex) {
-          return Collections.emptyList();
-        }
+        startIndex += rangeOptions.getOffset();
       }
     }
+    return startIndex;
+  }
 
-    int maxElements = Math.min(count, maxIndex - minIndex);
+  private int getMaxElementsToReturn(AbstractSortedSetRangeOptions<?> rangeOptions,
+      int startIndex) {
+    int endIndex = rangeOptions.getRangeIndex(scoreSet, false);
+    int rangeSize = rangeOptions.isRev() ? startIndex - endIndex : endIndex - startIndex;
 
-    int startIndex = isReverse ? maxIndex - 1 : minIndex;
+    return Math.min(rangeOptions.getCount(), rangeSize);
+  }
+
+  private List<byte[]> getElementsFromSet(AbstractSortedSetRangeOptions<?> rangeOptions,
+      int startIndex, int maxElementsToReturn) {
     Iterator<AbstractOrderedSetEntry> entryIterator =
-        scoreSet.getIndexRange(startIndex, maxElements, isReverse);
+        scoreSet.getIndexRange(startIndex, maxElementsToReturn, rangeOptions.isRev());
 
-    if (withScores) {
-      maxElements *= 2;
+    if (rangeOptions.isWithScores()) {
+      maxElementsToReturn *= 2;
     }
 
-    List<byte[]> result = new ArrayList<>(maxElements);
+    List<byte[]> result = new ArrayList<>(maxElementsToReturn);
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
 
       result.add(entry.member);
-      if (withScores) {
+      if (rangeOptions.isWithScores()) {
         result.add(entry.scoreBytes);
       }
     }
     return result;
-  }
-
-  private int getBoundedStartIndex(int index, int size) {
-    if (index >= 0) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, 0);
-    }
-  }
-
-  private int getBoundedEndIndex(int index, int size) {
-    if (index >= 0) {
-      return Math.min(index, size);
-    } else {
-      return Math.max(index + size, -1);
-    }
   }
 
   @Override
@@ -635,11 +656,8 @@ public class RedisSortedSet extends AbstractRedisData {
     // with same name...
   }
 
-  private static int calculateByteArraySize(byte[] bytes) {
-    return narrowLongToInt(roundUpSize(bytes.length) + 16);
-  }
-
-  abstract static class AbstractOrderedSetEntry implements Comparable<AbstractOrderedSetEntry>,
+  public abstract static class AbstractOrderedSetEntry
+      implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
     byte[] member;
     byte[] scoreBytes;
@@ -648,7 +666,7 @@ public class RedisSortedSet extends AbstractRedisData {
     private AbstractOrderedSetEntry() {}
 
     public int compareTo(AbstractOrderedSetEntry o) {
-      int comparison = Double.compare(score, o.score);
+      int comparison = compareScores(score, o.score);
       if (comparison == 0) {
         // Scores equal, try lexical ordering
         return compareMembers(member, o.member);
@@ -668,6 +686,10 @@ public class RedisSortedSet extends AbstractRedisData {
       return score;
     }
 
+    public int compareScores(double score1, double score2) {
+      return compare(score1, score2);
+    }
+
     public abstract int compareMembers(byte[] array1, byte[] array2);
 
     public abstract int getSizeInBytes();
@@ -676,11 +698,7 @@ public class RedisSortedSet extends AbstractRedisData {
   // Entry used to store data in the scoreSet
   public static class OrderedSetEntry extends AbstractOrderedSetEntry {
 
-    // The following constant was calculated using reflection. You can find the test for this value
-    // in RedisSortedSetTest, which shows the way this number was calculated. If our internal
-    // implementation changes, this value may be incorrect. An increase in overhead should be
-    // carefully considered.
-    public static final int BASE_ORDERED_SET_ENTRY_SIZE = 32;
+    public static final int ORDERED_SET_ENTRY_OVERHEAD = memoryOverhead(OrderedSetEntry.class);
 
     public OrderedSetEntry(byte[] member, byte[] score) {
       this.member = member;
@@ -695,23 +713,31 @@ public class RedisSortedSet extends AbstractRedisData {
 
     @Override
     public int getSizeInBytes() {
-      return BASE_ORDERED_SET_ENTRY_SIZE + calculateByteArraySize(member)
-          + calculateByteArraySize(scoreBytes);
+      // don't include the member size since it is accounted
+      // for as the key on the Hash.
+      return ORDERED_SET_ENTRY_OVERHEAD + memoryOverhead(scoreBytes);
     }
 
-    void updateScore(byte[] newScore) {
+    public void updateScore(byte[] newScore) {
       if (!Arrays.equals(newScore, scoreBytes)) {
         scoreBytes = newScore;
         score = processByteArrayAsDouble(newScore);
       }
     }
+
+    public double updateScore(double newScore) {
+      score = newScore;
+      scoreBytes = Coder.doubleToBytes(newScore);
+
+      return score;
+    }
   }
 
   // Dummy entry used to find the rank of an element with the given score for inclusive or
   // exclusive ranges
-  static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
+  public static class ScoreDummyOrderedSetEntry extends AbstractOrderedSetEntry {
 
-    ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
+    public ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
       // this entry should act as if it is greater than the entry it's being compared to
       this.member = isExclusive ^ isMinimum ? bLEAST_MEMBER_NAME : bGREATEST_MEMBER_NAME;
@@ -733,17 +759,20 @@ public class RedisSortedSet extends AbstractRedisData {
 
   // Dummy entry used to find the rank of an element with the given member name for lexically
   // ordered sets
-  static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
+  public static class MemberDummyOrderedSetEntry extends AbstractOrderedSetEntry {
     final boolean isExclusive;
     final boolean isMinimum;
 
-    MemberDummyOrderedSetEntry(byte[] member, double score, boolean isExclusive,
-        boolean isMinimum) {
+    public MemberDummyOrderedSetEntry(byte[] member, boolean isExclusive, boolean isMinimum) {
       this.member = member;
-      this.scoreBytes = null;
-      this.score = score;
       this.isExclusive = isExclusive;
       this.isMinimum = isMinimum;
+    }
+
+    @Override
+    public int compareScores(double score1, double score2) {
+      // Assume that all members have the same score. Behaviour is unspecified otherwise.
+      return 0;
     }
 
     @Override
@@ -770,4 +799,43 @@ public class RedisSortedSet extends AbstractRedisData {
       return 0;
     }
   }
+
+  public static class MemberMap
+      extends SizeableBytes2ObjectOpenCustomHashMapWithCursor<OrderedSetEntry> {
+
+    public MemberMap(int size) {
+      super(size);
+    }
+
+    public MemberMap(Map<byte[], RedisSortedSet.OrderedSetEntry> initialElements) {
+      super(initialElements);
+    }
+
+    @Override
+    protected int sizeValue(OrderedSetEntry value) {
+      return value.getSizeInBytes();
+    }
+
+    public void toData(DataOutput out) throws IOException {
+      InternalDataSerializer.writePrimitiveInt(size(), out);
+      final int maxIndex = getMaxIndex();
+      for (int pos = 0; pos < maxIndex; ++pos) {
+        OrderedSetEntry value = getValueAtIndex(pos);
+        if (value != null) {
+          byte[] member = value.getMember();
+          byte[] score = value.getScoreBytes();
+          InternalDataSerializer.writeByteArray(member, out);
+          InternalDataSerializer.writeByteArray(score, out);
+        }
+      }
+    }
+  }
+
+  /**
+   * ScoreSet does not keep track of the size of the element instances since they
+   * are already accounted for by the MemberMap.
+   */
+  public static class ScoreSet extends OrderStatisticsTree<AbstractOrderedSetEntry> {
+  }
+
 }

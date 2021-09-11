@@ -16,8 +16,8 @@
 #
 
 benchmarks:
-  baseline_branch: ''
-  baseline_version: '1.13.4'
+  baseline_branch_default: ''
+  baseline_version_default: '1.14.0'
   benchmark_branch: ((geode-build-branch))
   flavors:
   - title: 'base'
@@ -35,6 +35,15 @@ benchmarks:
     options: '--tests=org.apache.geode.benchmark.tests.Partitioned*'
     max_in_flight: 3
     timeout: 12h
+  - title: 'radish'
+    # The current radish baseline version is taken from the commit:
+    #   GEODE-9169: remove netty context switch (#6725)
+    baseline_branch: 'ed38145379d3da05ecc79a39fa145030bbd4fb1e'
+    baseline_version: ''
+    flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
+    options: '--tests=org.apache.geode.benchmark.redis.tests.*'
+    max_in_flight: 5
+    timeout: 8h
 
 build_test:
   ARTIFACT_SLUG: build
@@ -166,7 +175,7 @@ tests:
   RAM: '8'
   name: redis
 - ARTIFACT_SLUG: stressnewtestfiles
-  CALL_STACK_TIMEOUT: '20700'
+  CALL_STACK_TIMEOUT: '35100'
   CPUS: '96'
   DISK: '300GB'
   DUNIT_PARALLEL_FORKS: '24'

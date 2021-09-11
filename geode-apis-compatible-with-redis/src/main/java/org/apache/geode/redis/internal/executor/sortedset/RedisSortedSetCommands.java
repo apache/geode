@@ -29,25 +29,38 @@ public interface RedisSortedSetCommands {
 
   byte[] zincrby(RedisKey key, byte[] increment, byte[] member);
 
-  List<byte[]> zrange(RedisKey key, int min, int max, boolean withScores);
+  long zlexcount(RedisKey key, SortedSetLexRangeOptions rangeOptions);
+
+  List<byte[]> zpopmax(RedisKey key, int count);
+
+  List<byte[]> zpopmin(RedisKey key, int count);
+
+  List<byte[]> zrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
 
   List<byte[]> zrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 
-  List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores);
+  List<byte[]> zrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrank(RedisKey key, byte[] member);
 
   long zrem(RedisKey key, List<byte[]> membersToRemove);
 
-  List<byte[]> zrevrange(RedisKey key, int min, int max, boolean withScore);
+  long zremrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
 
-  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions,
-      boolean withScores);
+  long zremrangebyrank(RedisKey key, SortedSetRankRangeOptions rangeOptions);
+
+  long zremrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
+
+  List<byte[]> zrevrange(RedisKey key, SortedSetRankRangeOptions rangeOptions);
+
+  List<byte[]> zrevrangebylex(RedisKey key, SortedSetLexRangeOptions rangeOptions);
+
+  List<byte[]> zrevrangebyscore(RedisKey key, SortedSetScoreRangeOptions rangeOptions);
 
   long zrevrank(RedisKey key, byte[] member);
 
   byte[] zscore(RedisKey key, byte[] member);
 
-  List<byte[]> zpopmax(RedisKey key, int count);
+  long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights, ZAggregator aggregator);
+
 }

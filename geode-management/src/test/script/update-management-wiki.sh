@@ -53,8 +53,22 @@ if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*
 fi
 
 SUDO=
-PIP=pip
-PYTHON=python
+if python --version | grep 'Python 3' ; then
+  PYTHON=python
+elif python3 --version | grep 'Python 3' ; then
+  PYTHON=python3
+else
+  echo "please install python 3"
+  exit 1
+fi
+if pip --version | grep 'python 3' ; then
+  PIP=pip
+elif pip3 --version | grep 'python 3' ; then
+  PIP=pip3
+else
+  echo "please install pip 3"
+  exit 1
+fi
 
 echo ""
 echo "============================================================"
@@ -80,9 +94,10 @@ GEODE_VERSION=$("$GEODE"/bin/gfsh version | sed -e 's/-SNAPSHOT//' -e 's/-build.
 [[ "${GEODE_VERSION%.*}" == "1.12" ]] && PAGE_ID=132322415
 [[ "${GEODE_VERSION%.*}" == "1.13" ]] && PAGE_ID=147426059
 [[ "${GEODE_VERSION%.*}" == "1.14" ]] && PAGE_ID=153817491
+[[ "${GEODE_VERSION%.*}" == "1.15" ]] && PAGE_ID=188744355
 
 if [[ -z "${PAGE_ID}" ]] ; then
-    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 83"
+    echo "Please create a new blank wiki page for $GEODE_VERSION under https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service+Rest+API and add its page ID to $0 near line 98"
     exit 1
 fi
 
@@ -159,7 +174,7 @@ cat static/index.html |
 # clean up a few things premailer will otherwise choke on
 grep -v doctype | sed -e 's/&mdash;/--/g' |
 # convert css style block to inline css (that is the only way confluence accepts styling)
-$SUDO $PYTHON -m premailer --method xml --encoding ascii --pretty |
+(set -o pipefail && $SUDO $PYTHON -m premailer --method xml --encoding ascii --pretty |
 # strip off the document envelope (otherwise confluence will not accept it) by keeping only lines between the body tags
 awk '
   /<\/body>/ {inbody=0}
@@ -234,7 +249,7 @@ sed -e 's/&#171;/_/g' -e 's/&#187;//g' |
 sed -e 's/class="method" style="margin-left:20p/class="method" style="margin-left:0p/' |
 # add more information at the top
 awk '/More information:/{sub(/More information:/,"Swagger: http://locator:7070/management/docs (requires access to a running locator)<br/>Codegen: <code><small>brew install swagger-codegen; swagger-codegen generate -i http://locator:7070/management'${URI_VERSION}'/api-docs</small></code><br/>More information:")}{print}' |
-cat > static/index-xhtml.html
+cat > static/index-xhtml.html)
 # if file is empty due to some error, abort!
 ! [ -z "$(cat static/index-xhtml.html)" ]
 

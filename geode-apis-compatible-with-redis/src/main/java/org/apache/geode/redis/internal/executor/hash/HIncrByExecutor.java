@@ -67,7 +67,7 @@ public class HIncrByExecutor extends AbstractExecutor {
 
     RedisHashCommands redisHashCommands = context.getHashCommands();
 
-    long value = redisHashCommands.hincrby(key, field, increment);
+    byte[] value = redisHashCommands.hincrby(key, field, increment);
     return RedisResponse.integer(value);
   }
 

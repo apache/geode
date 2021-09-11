@@ -379,10 +379,7 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
   public void shouldReturnEmptyCollection_givenNonZeroNegativeLimitOffset() {
     populateSortedSet();
 
-    int offset = -7;
-
-    // Range (v * 1) <= member name <= (v * 3), offset = 7, count = 10
-    assertThat(jedis.zrangeByLex(KEY, "-", "+", offset, 10)).isEmpty();
+    assertThat(jedis.zrangeByLex(KEY, "-", "+", -7, 10)).isEmpty();
   }
 
   @Test

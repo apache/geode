@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -43,9 +42,6 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * @since GemFire 6.5
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
-
-  private static final boolean OLD_MEMBERS_OPTIMIZED =
-      Boolean.getBoolean("optimized-cq-serialization");
 
   @Immutable
   private static final KnownVersion[] serializationVersions = new KnownVersion[0];
@@ -264,9 +260,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      */
     private transient byte[] myData;
 
-    /** version of creator of myData, needed for deserialization */
-    private transient KnownVersion myDataVersion;
-
     /** Clients that are interested in the event and want values */
     private Set<Long> interestedClients;
 
@@ -306,8 +299,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     }
 
     @Immutable
-    private static final KnownVersion[] serializationVersions =
-        new KnownVersion[] {KnownVersion.GFE_80};
+    private static final KnownVersion[] serializationVersions = new KnownVersion[0];
 
     @Override
     public KnownVersion[] getSerializationVersions() {
@@ -346,50 +338,6 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       InternalDataSerializer.writeSetOfLongs(interestedClientsInv, longIDs, hdos);
       hdos.finishWriting();
       DataSerializer.writeByteArray(myData, hdos.size(), out);
-    }
-
-    @SuppressWarnings("unused") // used by deserialization
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-      if (OLD_MEMBERS_OPTIMIZED) {
-        myDataVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
-        myData = DataSerializer.readByteArray(in);
-      } else {
-        cqs = DataSerializer.readHashMap(in);
-        interestedClients = InternalDataSerializer.readSetOfLongs(in);
-        interestedClientsInv = InternalDataSerializer.readSetOfLongs(in);
-      }
-    }
-
-    @SuppressWarnings("unused") // used by serialization
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-      if (OLD_MEMBERS_OPTIMIZED) {
-        HeapDataOutputStream hdos =
-            new HeapDataOutputStream(1000, StaticSerialization.getVersionForDataStream(out));
-        if (cqs == null) {
-          hdos.writeBoolean(false);
-        } else {
-          hdos.writeBoolean(true);
-          InternalDataSerializer.writeArrayLength(cqs.size(), hdos);
-          for (final Map.Entry<Long, Integer> longIntegerEntry : cqs.entrySet()) {
-            // most cq IDs and all event types are small ints, so we use an optimized
-            // write that serializes 7 bits at a time in a compact form
-            InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getKey(), hdos);
-            InternalDataSerializer.writeUnsignedVL(longIntegerEntry.getValue(), hdos);
-          }
-        }
-        InternalDataSerializer.writeSetOfLongs(interestedClients, longIDs, hdos);
-        InternalDataSerializer.writeSetOfLongs(interestedClientsInv, longIDs, hdos);
-        if (out instanceof HeapDataOutputStream) {
-          ((ObjToByteArraySerializer) out).writeAsSerializedByteArray(hdos);
-        } else {
-          byte[] myData = hdos.toByteArray();
-          DataSerializer.writeByteArray(myData, out);
-        }
-      } else {
-        DataSerializer.writeHashMap(cqs, out);
-        InternalDataSerializer.writeSetOfLongs(interestedClients, longIDs, out);
-        InternalDataSerializer.writeSetOfLongs(interestedClientsInv, longIDs, out);
-      }
     }
 
     public HashMap<Long, Integer> getCQs() {
@@ -431,7 +379,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      * routing, so there is no need to deserialize the routings for other members
      */
     private void deserialize() {
-      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData, myDataVersion)) {
+      try (ByteArrayDataInput dis = new ByteArrayDataInput(myData)) {
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);

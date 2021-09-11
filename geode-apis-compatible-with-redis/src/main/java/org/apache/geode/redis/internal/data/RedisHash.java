@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import org.apache.geode.DataSerializer;
@@ -44,19 +44,16 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.collections.SizeableObject2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
-  // The following constant was calculated using reflection. you can find the test for this value in
-  // RedisHashTest, which shows the way this number was calculated. If our internal implementation
-  // changes, these values may be incorrect. An increase in overhead should be carefully considered.
-  protected static final int BASE_REDIS_HASH_OVERHEAD = 32;
+  protected static final int REDIS_HASH_OVERHEAD = memoryOverhead(RedisHash.class);
 
-  private SizeableObject2ObjectOpenCustomHashMapWithCursor<byte[], byte[]> hash;
+  private Hash hash;
 
   @VisibleForTesting
   public RedisHash(List<byte[]> fieldsToSet) {
@@ -66,8 +63,7 @@ public class RedisHash extends AbstractRedisData {
           "fieldsToSet should have an even number of elements but was size " + numKeysAndValues);
     }
 
-    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(numKeysAndValues / 2,
-        ByteArrays.HASH_STRATEGY);
+    hash = new Hash(numKeysAndValues / 2);
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       hashPut(iterator.next(), iterator.next());
@@ -87,13 +83,7 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writePrimitiveInt(hash.size(), out);
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      byte[] key = entry.getKey();
-      byte[] value = entry.getValue();
-      DataSerializer.writeByteArray(key, out);
-      DataSerializer.writeByteArray(value, out);
-    }
+    hash.toData(out);
   }
 
   @Override
@@ -101,7 +91,7 @@ public class RedisHash extends AbstractRedisData {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = DataSerializer.readInteger(in);
-    hash = new SizeableObject2ObjectOpenCustomHashMapWithCursor<>(size, ByteArrays.HASH_STRATEGY);
+    hash = new Hash(size);
     for (int i = 0; i < size; i++) {
       hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
     }
@@ -193,11 +183,11 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hgetall() {
-    ArrayList<byte[]> result = new ArrayList<>(hash.size());
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
+    ArrayList<byte[]> result = new ArrayList<>(hash.size() * 2);
+    hash.fastForEach(entry -> {
       result.add(entry.getKey());
       result.add(entry.getValue());
-    }
+    });
     return result;
   }
 
@@ -231,11 +221,15 @@ public class RedisHash extends AbstractRedisData {
   }
 
   public Collection<byte[]> hvals() {
-    return new ArrayList<>(hash.values());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachValue(result::add);
+    return result;
   }
 
   public Collection<byte[]> hkeys() {
-    return new ArrayList<>(hash.keySet());
+    ArrayList<byte[]> result = new ArrayList<>(hlen());
+    hash.fastForEachKey(result::add);
+    return result;
   }
 
   public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
@@ -270,7 +264,7 @@ public class RedisHash extends AbstractRedisData {
     }
   }
 
-  public long hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
+  public byte[] hincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] field,
       long increment) throws NumberFormatException, ArithmeticException {
     byte[] oldValue = hash.get(field);
     if (oldValue == null) {
@@ -280,7 +274,7 @@ public class RedisHash extends AbstractRedisData {
       deltaInfo.add(field);
       deltaInfo.add(newValue);
       storeChanges(region, key, deltaInfo);
-      return increment;
+      return newValue;
     }
 
     long value;
@@ -302,7 +296,7 @@ public class RedisHash extends AbstractRedisData {
     deltaInfo.add(field);
     deltaInfo.add(modifiedValue);
     storeChanges(region, key, deltaInfo);
-    return value;
+    return modifiedValue;
   }
 
   public BigDecimal hincrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
@@ -367,12 +361,8 @@ public class RedisHash extends AbstractRedisData {
       return false;
     }
 
-    for (Map.Entry<byte[], byte[]> entry : hash.entrySet()) {
-      if (!Arrays.equals(redisHash.hash.get(entry.getKey()), (entry.getValue()))) {
-        return false;
-      }
-    }
-    return true;
+    return hash.fastWhileEach(
+        entry -> Arrays.equals(redisHash.hash.get(entry.getKey()), entry.getValue()));
   }
 
   @Override
@@ -392,7 +382,39 @@ public class RedisHash extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
+    return REDIS_HASH_OVERHEAD + hash.getSizeInBytes();
   }
 
+  public static class Hash
+      extends SizeableBytes2ObjectOpenCustomHashMapWithCursor<byte[]> {
+
+    public Hash() {
+      super();
+    }
+
+    public Hash(int expected) {
+      super(expected);
+    }
+
+    public Hash(Map<byte[], byte[]> m) {
+      super(m);
+    }
+
+    @Override
+    protected int sizeValue(byte[] value) {
+      return sizeKey(value);
+    }
+
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writePrimitiveInt(size(), out);
+      final int maxIndex = getMaxIndex();
+      for (int pos = 0; pos < maxIndex; ++pos) {
+        byte[] key = getKeyAtIndex(pos);
+        if (key != null) {
+          DataSerializer.writeByteArray(key, out);
+          DataSerializer.writeByteArray(getValueAtIndex(pos), out);
+        }
+      }
+    }
+  }
 }

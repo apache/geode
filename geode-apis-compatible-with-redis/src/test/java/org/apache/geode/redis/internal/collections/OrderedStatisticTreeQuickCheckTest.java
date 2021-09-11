@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(JUnitQuickcheck.class)
 public class OrderedStatisticTreeQuickCheckTest {
+
   OrderStatisticsSet<Long> list = new OrderStatisticsTree<>();
   OrderStatisticsSet<Long> expected = new IndexibleTreeSet<>();
 

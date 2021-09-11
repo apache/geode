@@ -217,8 +217,8 @@ public class EventIdOptimizationJUnitTest {
     byte[] array = EventID.getOptimizedByteArrayForEventID(threadId, sequenceId);
     assertEquals("optimized byte-array length not as expected", expectedArrayLength, array.length);
     ByteBuffer buffer = ByteBuffer.wrap(array);
-    long threadIdReadFromOptArray = EventID.readEventIdPartsFromOptmizedByteArray(buffer);
-    long sequenceIdReadFromOptArray = EventID.readEventIdPartsFromOptmizedByteArray(buffer);
+    long threadIdReadFromOptArray = EventID.readEventIdPartsFromOptimizedByteArray(buffer);
+    long sequenceIdReadFromOptArray = EventID.readEventIdPartsFromOptimizedByteArray(buffer);
     assertEquals("threadId value read is not same as that written to the byte-buffer", threadId,
         threadIdReadFromOptArray);
     assertEquals("sequenceId value read is not same as that written to the byte-buffer", sequenceId,

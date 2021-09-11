@@ -32,6 +32,9 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  compileOnly('org.jetbrains:annotations')
+
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }

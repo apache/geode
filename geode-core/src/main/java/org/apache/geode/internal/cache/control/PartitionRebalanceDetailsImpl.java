@@ -48,6 +48,27 @@ public class PartitionRebalanceDetailsImpl
   private long time;
   private int numOfMembers;
 
+  @Override
+  public String toString() {
+    return "PartitionRebalanceDetailsImpl{" +
+        "bucketCreateBytes=" + bucketCreateBytes +
+        ", bucketCreateTime=" + bucketCreateTime +
+        ", bucketCreatesCompleted=" + bucketCreatesCompleted +
+        ", bucketRemoveBytes=" + bucketRemoveBytes +
+        ", bucketRemoveTime=" + bucketRemoveTime +
+        ", bucketRemovesCompleted=" + bucketRemovesCompleted +
+        ", bucketTransferBytes=" + bucketTransferBytes +
+        ", bucketTransferTime=" + bucketTransferTime +
+        ", bucketTransfersCompleted=" + bucketTransfersCompleted +
+        ", partitionMemberDetailsAfter=" + partitionMemberDetailsAfter +
+        ", partitionMemberDetailsBefore=" + partitionMemberDetailsBefore +
+        ", primaryTransferTime=" + primaryTransferTime +
+        ", primaryTransfersCompleted=" + primaryTransfersCompleted +
+        ", region=" + region +
+        ", time=" + time +
+        '}';
+  }
+
   public PartitionRebalanceDetailsImpl(PartitionedRegion region) {
     this.region = region;
   }

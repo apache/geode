@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-import java.util.concurrent.ExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +25,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfoRetrievalFunction;
@@ -61,7 +59,6 @@ public class GeodeRedisServer {
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
   private final RedisStats redisStats;
-  private final ExecutorService redisCommandExecutor;
   private boolean shutdown;
 
   /**
@@ -86,15 +83,12 @@ public class GeodeRedisServer {
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
-    redisCommandExecutor =
-        LoggingExecutors.newCachedThreadPool("GeodeRedisServer-Command-", true);
-
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        redisCommandExecutor, member);
+        member);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
@@ -146,7 +140,6 @@ public class GeodeRedisServer {
       logger.info("GeodeRedisServer shutting down");
       passiveExpirationManager.stop();
       nettyRedisServer.stop();
-      redisCommandExecutor.shutdown();
       redisStats.close();
       shutdown = true;
     }

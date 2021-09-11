@@ -59,6 +59,10 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
   }
 
+  public static RedisResponse integer(byte[] numericValue) {
+    return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
+  }
+
   public static RedisResponse integer(boolean exists) {
     return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, exists ? 1 : 0));
   }
@@ -127,6 +131,10 @@ public class RedisResponse {
 
   public static RedisResponse oom(String error) {
     return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
+  }
+
+  public static RedisResponse crossSlot(String error) {
+    return new RedisResponse((bba) -> Coder.getCrossSlotResponse(bba, error));
   }
 
   public static RedisResponse busykey(String error) {

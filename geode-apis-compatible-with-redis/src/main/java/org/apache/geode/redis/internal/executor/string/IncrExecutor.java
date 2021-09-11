@@ -29,7 +29,7 @@ public class IncrExecutor extends AbstractExecutor {
     RedisKey key = command.getKey();
     RedisStringCommands stringCommands = context.getStringCommands();
 
-    long value = stringCommands.incr(key);
+    byte[] value = stringCommands.incr(key);
     return RedisResponse.integer(value);
   }
 }

@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
@@ -37,17 +38,13 @@ import org.apache.geode.redis.internal.executor.string.SetOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
-  private int appendSequence;
 
-  private byte[] value;
-
-  // this value is empirically derived using ReflectionObjectSizer, which provides an exact size
-  // of the object. It can't be used directly because of its performance impact. This value causes
-  // the size we keep track of to converge to the actual size as it increases.
-  protected static final int BASE_REDIS_STRING_OVERHEAD = 48;
-
+  private static final int REDIS_STRING_OVERHEAD = memoryOverhead(RedisString.class);
   // An array containing the number of set bits for each value from 0x00 to 0xff
   private static final byte[] bitCountTable = getBitCountTable();
+
+  private int appendSequence;
+  private byte[] value;
 
   public RedisString(byte[] value) {
     this.value = value;
@@ -71,7 +68,7 @@ public class RedisString extends AbstractRedisData {
     return value.length;
   }
 
-  public long incr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] incr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MAX_VALUE) {
@@ -81,10 +78,10 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
-  public long incrby(Region<RedisKey, RedisData> region, RedisKey key, long increment)
+  public byte[] incrby(Region<RedisKey, RedisData> region, RedisKey key, long increment)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue >= 0 && increment > (Long.MAX_VALUE - longValue)) {
@@ -94,7 +91,7 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
   public BigDecimal incrbyfloat(Region<RedisKey, RedisData> region, RedisKey key,
@@ -109,7 +106,7 @@ public class RedisString extends AbstractRedisData {
     return bigDecimalValue;
   }
 
-  public long decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
+  public byte[] decrby(Region<RedisKey, RedisData> region, RedisKey key, long decrement) {
     long longValue = parseValueAsLong();
     if (longValue <= 0 && -decrement < (Long.MIN_VALUE - longValue)) {
       throw new ArithmeticException(RedisConstants.ERROR_OVERFLOW);
@@ -118,10 +115,10 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
-  public long decr(Region<RedisKey, RedisData> region, RedisKey key)
+  public byte[] decr(Region<RedisKey, RedisData> region, RedisKey key)
       throws NumberFormatException, ArithmeticException {
     long longValue = parseValueAsLong();
     if (longValue == Long.MIN_VALUE) {
@@ -131,7 +128,7 @@ public class RedisString extends AbstractRedisData {
     value = Coder.longToBytes(longValue);
     // numeric strings are short so no need to use delta
     region.put(key, this);
-    return longValue;
+    return value;
   }
 
   private long parseValueAsLong() {
@@ -475,7 +472,7 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int getSizeInBytes() {
-    return BASE_REDIS_STRING_OVERHEAD + value.length;
+    return REDIS_STRING_OVERHEAD + memoryOverhead(value);
   }
 
   private static byte[] getBitCountTable() {

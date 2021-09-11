@@ -31,10 +31,10 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Does a region query on a server
@@ -132,8 +132,10 @@ public class QueryOp {
           // connection to the same server and retried the query to it, that it would also
           // workaround this issue and it would not have the limitations of needing multiple servers
           // and would not depend on the retry-attempts configuration.
-          boolean enableQueryRetryOnPdxSerializationException = Boolean.getBoolean(
-              GeodeGlossary.GEMFIRE_PREFIX + "enableQueryRetryOnPdxSerializationException");
+          boolean enableQueryRetryOnPdxSerializationException = SystemPropertyHelper
+              .getProductBooleanProperty(
+                  SystemPropertyHelper.ENABLE_QUERY_RETRY_ON_PDX_SERIALIZATION_EXCEPTION)
+              .orElse(false);
           if (e instanceof PdxSerializationException
               && enableQueryRetryOnPdxSerializationException) {
             // IOException will allow the client to retry next server in the connection pool until

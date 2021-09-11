@@ -32,6 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ZParams;
 
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -187,6 +188,21 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSetex() {
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setex(k, 200L, v));
+  }
+
+  @Test
+  public void testPsetex() {
+    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.psetex(k, 200000L, v));
+  }
+
+  @Test
+  public void testGetset() {
+    runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
+  }
+
+  @Test
   public void testStrlen() {
     runCommandAndAssertHitsAndMisses(STRING_KEY, k -> jedis.strlen(k));
   }
@@ -249,12 +265,22 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testZIncrBy() {
-    runCommandAndAssertNoStatUpdates("key", (k, m) -> jedis.zincrby(k, 100.0, m));
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k, m) -> jedis.zincrby(k, 100.0, m));
+  }
+
+  @Test
+  public void testZLexCount() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zlexcount(k, "-", "+"));
   }
 
   @Test
   public void testZPopMax() {
     runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zpopmax(k, 1));
+  }
+
+  @Test
+  public void testZPopMin() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zpopmin(k, 1));
   }
 
   @Test
@@ -288,6 +314,21 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZremrangeByLex() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, (k) -> jedis.zremrangeByLex(k, "-", "+"));
+  }
+
+  @Test
+  public void testZremrangeByRank() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zremrangeByRank(k, 0, 1));
+  }
+
+  @Test
+  public void testZremrangeByScore() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY, k -> jedis.zremrangeByScore(k, 0.0, 1.0));
+  }
+
+  @Test
   public void testZrevrange() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrange(k, 0, 1));
   }
@@ -308,8 +349,19 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testZrevrangeByLex() {
+    runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByLex(k, "+", "-"));
+  }
+
+  @Test
   public void testZrevrangeByScore() {
     runCommandAndAssertHitsAndMisses(SORTED_SET_KEY, k -> jedis.zrevrangeByScore(k, 1, 0));
+  }
+
+  @Test
+  public void testZUnionStore() {
+    runCommandAndAssertNoStatUpdates(SORTED_SET_KEY,
+        k -> jedis.zunionstore(k, new ZParams().weights(1, 2), k, k));
   }
 
   /************* Set related commands *************/
@@ -425,11 +477,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   /************* String related commands *************/
   @Test
-  public void testGetset() {
-    runCommandAndAssertHitsAndMisses(STRING_KEY, (k, v) -> jedis.getSet(k, v));
-  }
-
-  @Test
   public void testMset() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.mset(k, v));
   }
@@ -439,11 +486,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testMsetnx() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.msetnx(k, v));
-  }
-
-  @Test
-  public void testSetex() {
-    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.setex(k, 200L, v));
   }
 
   @Test

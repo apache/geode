@@ -17,12 +17,12 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
-import static org.apache.geode.redis.internal.data.RedisSet.BASE_REDIS_SET_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
@@ -39,6 +39,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
@@ -48,7 +49,6 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSetTest {
@@ -128,57 +128,48 @@ public class RedisSetTest {
   }
 
   @Test
-  public void sadd_stores_delta_that_is_stable() throws IOException {
+  public void sadd_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisSet set1 = createRedisSet(1, 2);
     byte[] member3 = new byte[] {3};
     ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(member3);
+
     set1.sadd(adds, region, null);
-    assertThat(set1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    set1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSet set2 = createRedisSet(1, 2);
-    assertThat(set2).isNotEqualTo(set1);
-    set2.fromDelta(in);
-    assertThat(set2).isEqualTo(set1);
   }
 
   @Test
-  public void srem_stores_delta_that_is_stable() throws IOException {
+  public void srem_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisSet set1 = createRedisSet(1, 2);
     byte[] member1 = new byte[] {1};
     ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(member1);
+
     set1.srem(removes, region, null);
-    assertThat(set1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    set1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSet set2 = createRedisSet(1, 2);
-    assertThat(set2).isNotEqualTo(set1);
-    set2.fromDelta(in);
-    assertThat(set2).isEqualTo(set1);
   }
 
   @Test
-  public void setExpirationTimestamp_stores_delta_that_is_stable() throws IOException {
+  public void setExpirationTimestamp_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
     RedisSet set1 = createRedisSet(1, 2);
+
     set1.setExpirationTimestamp(region, null, 999);
-    assertThat(set1.hasDelta()).isTrue();
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    set1.toDelta(out);
+
+    verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisSet set2 = createRedisSet(1, 2);
-    assertThat(set2).isNotEqualTo(set1);
-    set2.fromDelta(in);
-    assertThat(set2).isEqualTo(set1);
   }
 
   /************* test size of bytes in use *************/
@@ -189,7 +180,7 @@ public class RedisSetTest {
     Set<byte[]> members = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     RedisSet set = new RedisSet(members);
 
-    int expected = sizer.sizeof(set);
+    int expected = expectedSize(set);
     int actual = set.getSizeInBytes();
 
     assertThat(actual).isEqualTo(expected);
@@ -202,7 +193,7 @@ public class RedisSetTest {
     RedisSet set = new RedisSet(members);
 
     int actual = set.getSizeInBytes();
-    int expected = sizer.sizeof(set);
+    int expected = expectedSize(set);
 
     assertThat(actual).isEqualTo(expected);
   }
@@ -212,18 +203,22 @@ public class RedisSetTest {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetOfSpecifiedSize(i);
 
-      int expected = sizer.sizeof(set);
+      int expected = expectedSize(set);
       int actual = set.getSizeInBytes();
 
       assertThat(actual).isEqualTo(expected);
     }
   }
 
+  private int expectedSize(RedisSet set) {
+    return sizer.sizeof(set) - sizer.sizeof(ByteArrays.HASH_STRATEGY);
+  }
+
   @Test
   public void should_calculateSize_equalToROS_withVaryingMemberSize() {
     for (int i = 0; i < 1024; i += 16) {
       RedisSet set = createRedisSetWithMemberOfSpecifiedSize(i * 64);
-      int expected = sizer.sizeof(set);
+      int expected = expectedSize(set);
       int actual = set.getSizeInBytes();
 
       assertThat(actual).isEqualTo(expected);
@@ -246,9 +241,7 @@ public class RedisSetTest {
 
     set.sadd(members, region, key);
 
-    set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
-
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
 
   @Test
@@ -267,10 +260,8 @@ public class RedisSetTest {
       members.add(value);
       set.sadd(members, region, key);
 
-      set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
-
       long actual = set.getSizeInBytes();
-      long expected = sizer.sizeof(set);
+      long expected = expectedSize(set);
 
       assertThat(actual).isEqualTo(expected);
     }
@@ -295,10 +286,8 @@ public class RedisSetTest {
     membersToRemove.add(value1);
     set.srem(membersToRemove, region, key);
 
-    set.clearDelta(); // because the region is mocked, the delta has to be explicitly cleared
-
     long finalSize = set.getSizeInBytes();
-    long expectedSize = sizer.sizeof(set);
+    long expectedSize = expectedSize(set);
 
     assertThat(finalSize).isEqualTo(expectedSize);
   }
@@ -318,7 +307,7 @@ public class RedisSetTest {
 
     RedisSet set = new RedisSet(initialMembers);
 
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
 
     int membersToAdd = numOfInitialMembers * 3;
     doAddsAndAssertSize(set, membersToAdd);
@@ -326,21 +315,6 @@ public class RedisSetTest {
     doRemovesAndAssertSize(set, set.scard() - 1);
 
     doAddsAndAssertSize(set, membersToAdd);
-  }
-
-  /******** constants *******/
-  // This test contains the math that is used to derive the constant in RedisSet. If this test
-  // starts failing, it is because the overhead of RedisSet has changed. If it has decreased, good
-  // job! You can change the constant in RedisSet to reflect that. If it has increased, carefully
-  // consider that increase before changing the constants.
-  @Test
-  public void baseOverheadConstant_shouldMatchReflectedSize() {
-    RedisSet set = new RedisSet(Collections.emptyList());
-    SizeableObjectOpenCustomHashSet<byte[]> backingSet =
-        new SizeableObjectOpenCustomHashSet<>(0, ByteArrays.HASH_STRATEGY);
-    int baseRedisSetOverhead = sizer.sizeof(set) - sizer.sizeof(backingSet);
-
-    assertThat(baseRedisSetOverhead).isEqualTo(BASE_REDIS_SET_OVERHEAD);
   }
 
   /******* helper methods *******/
@@ -388,7 +362,7 @@ public class RedisSetTest {
 
       assertThat(calculatedOH).isEqualTo(actualOverhead);
     }
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
 
   void doRemovesAndAssertSize(RedisSet set, int membersToRemove) {
@@ -405,6 +379,19 @@ public class RedisSetTest {
 
       assertThat(calculatedOH).isEqualTo(actualOverhead);
     }
-    assertThat(set.getSizeInBytes()).isEqualTo(sizer.sizeof(set));
+    assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
+  }
+
+  private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
+    RedisSet value = invocation.getArgument(1, RedisSet.class);
+    assertThat(value.hasDelta()).isTrue();
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    value.toDelta(out);
+    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
+    RedisSet set2 = createRedisSet(1, 2);
+    assertThat(set2).isNotEqualTo(value);
+    set2.fromDelta(in);
+    assertThat(set2).isEqualTo(value);
+    return null;
   }
 }

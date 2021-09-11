@@ -14,46 +14,80 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNEGATIVE_ZERO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
+
 public abstract class AbstractSortedSetRangeOptions<T> {
-  boolean isStartExclusive;
-  T startRange;
-  boolean isEndExclusive;
-  T endRange;
+  RangeLimit<T> start;
+  RangeLimit<T> end;
+  boolean isRev;
+  boolean withScores;
   boolean hasLimit;
   int offset;
-  int count;
+  // When count it not specified, return the entire range
+  int count = Integer.MAX_VALUE;
 
-  AbstractSortedSetRangeOptions(byte[] minimumBytes, byte[] maximumBytes) {
-    parseStartRange(minimumBytes);
-    parseEndRange(maximumBytes);
+  AbstractSortedSetRangeOptions(List<byte[]> commandElements, boolean isRev) {
+    this.isRev = isRev;
+    parseRangeArguments(commandElements);
+    parseAdditionalArguments(commandElements);
   }
 
-  void parseLimitArguments(List<byte[]> commandElements, int commandIndex) {
+  void parseAdditionalArguments(List<byte[]> commandElements) {
+    if (commandElements.size() <= 4) {
+      return;
+    }
+
+    // Start parsing at index = 4, since 0 is the command name, 1 is the key, and 2 and 3 are the
+    // start or end of the range
+    for (int index = 4; index < commandElements.size(); ++index) {
+      byte[] option = commandElements.get(index);
+      if (equalsIgnoreCaseBytes(option, bLIMIT)) {
+        handleLimitArguments(commandElements, index);
+        index += 2;
+      } else if (equalsIgnoreCaseBytes(option, bWITHSCORES)) {
+        handleWithScoresArgument();
+      } else {
+        throw new RedisException(ERROR_SYNTAX);
+      }
+    }
+  }
+
+  void handleLimitArguments(List<byte[]> commandElements, int commandIndex) {
     if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)) {
-      throw new IllegalArgumentException();
+      throw new RedisException(ERROR_SYNTAX);
     }
 
     // Throw if we don't have enough arguments left to correctly specify LIMIT
     if (commandElements.size() <= commandIndex + 2) {
-      throw new IllegalArgumentException();
+      throw new RedisException(ERROR_SYNTAX);
     }
 
     byte[] offsetBytes = commandElements.get(commandIndex + 1);
     if (Arrays.equals(offsetBytes, bNEGATIVE_ZERO)) {
-      throw new NumberFormatException();
+      throw new RedisException(ERROR_NOT_INTEGER);
     }
 
-    int parsedOffset = narrowLongToInt(bytesToLong(offsetBytes));
-    int parsedCount = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
+    int parsedOffset;
+    int parsedCount;
+    try {
+      parsedOffset = narrowLongToInt(bytesToLong(offsetBytes));
+      parsedCount = narrowLongToInt(bytesToLong(commandElements.get(commandIndex + 2)));
+    } catch (NumberFormatException ex) {
+      throw new RedisException(ERROR_NOT_INTEGER);
+    }
 
     hasLimit = true;
     this.offset = parsedOffset;
@@ -64,37 +98,43 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     }
   }
 
-  // If limit specified but count is zero, or min == max and either are exclusive,
-  // or start & end are in wrong size order, the range cannot contain any elements
-  boolean isEmptyRange(boolean isRev) {
-    if (hasLimit && (count == 0 || offset < 0)) {
-      return true;
-    }
+  void handleWithScoresArgument() {
+    this.withScores = true;
+  }
+
+  // The range will contain no entries if:
+  // limit is specified and count is zero
+  // limit is specified and offset is negative
+  // the start is greater than the end (or vice versa for some reverse ranges)
+  // start == end and either are exclusive
+  boolean containsNoEntries() {
     int startVsEnd = compareStartToEnd();
-    if (startVsEnd == 0 && (isStartExclusive || isEndExclusive)) {
-      return true;
-    }
-    if (isRev) {
-      return startVsEnd == -1;
-    } else {
-      return startVsEnd == 1;
-    }
+    return (hasLimit() && (count == 0 || offset < 0)) || startVsEnd == 1
+        || (startVsEnd == 0 && (isStartExclusive() || isEndExclusive()));
   }
 
   public boolean isStartExclusive() {
-    return isStartExclusive;
+    return start.isExclusive;
   }
 
-  public T getStartRange() {
-    return startRange;
+  public T getStart() {
+    return start.value;
   }
 
   public boolean isEndExclusive() {
-    return isEndExclusive;
+    return end.isExclusive;
   }
 
-  public T getEndRange() {
-    return endRange;
+  public T getEnd() {
+    return end.value;
+  }
+
+  public boolean isRev() {
+    return isRev;
+  }
+
+  public boolean isWithScores() {
+    return withScores;
   }
 
   public boolean hasLimit() {
@@ -109,9 +149,19 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     return count;
   }
 
-  abstract void parseStartRange(byte[] minimumBytes);
-
-  abstract void parseEndRange(byte[] maximumBytes);
+  abstract void parseRangeArguments(List<byte[]> commandElements);
 
   abstract int compareStartToEnd();
+
+  public abstract int getRangeIndex(RedisSortedSet.ScoreSet scoreSet, boolean isStartIndex);
+
+  public static class RangeLimit<T> {
+    final T value;
+    final boolean isExclusive;
+
+    public RangeLimit(T value, boolean isExclusive) {
+      this.value = value;
+      this.isExclusive = isExclusive;
+    }
+  }
 }

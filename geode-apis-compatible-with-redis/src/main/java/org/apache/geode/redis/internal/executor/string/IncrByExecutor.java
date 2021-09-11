@@ -46,7 +46,7 @@ public class IncrByExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_INCREMENT_NOT_USABLE);
     }
 
-    long value = stringCommands.incrby(key, increment);
+    byte[] value = stringCommands.incrby(key, increment);
     return RedisResponse.integer(value);
   }
 }

@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -94,14 +93,12 @@ public class RegisterInterest61 extends BaseCommand {
     }
     // region data policy
     byte[] regionDataPolicyPartBytes;
-    boolean serializeValues = false;
+    final boolean serializeValues;
     try {
       Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
       regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
-      if (serverConnection.getClientVersion().isNotOlderThan(KnownVersion.GFE_80)) {
-        // The second byte here is serializeValues
-        serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
-      }
+      // The second byte here is serializeValues
+      serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -231,8 +228,8 @@ public class RegisterInterest61 extends BaseCommand {
 
       // Send chunk response
       try {
-        if (region.getDistributionManager() instanceof LonerDistributionManager
-            && region instanceof PartitionedRegion) {
+        if (region instanceof PartitionedRegion
+            && region.getDistributionManager() instanceof LonerDistributionManager) {
           throw new IllegalStateException(
               "Should not register interest for a partitioned region when mcast-port is 0 and no locator is present");
         }

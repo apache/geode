@@ -212,8 +212,8 @@ public class Put70 extends BaseCommand {
     }
 
     final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long threadId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptimizedByteArray(eventIdPartsBuffer);
 
     final EventIDHolder clientEvent = new EventIDHolder(
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId));

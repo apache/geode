@@ -25,8 +25,7 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.ORDER_STATISTICS_TREE_BASE_SIZE;
-import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.PER_ENTRY_OVERHEAD;
+import static org.apache.geode.redis.internal.collections.OrderStatisticsTree.NODE_OVERHEAD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -674,34 +673,41 @@ public class OrderStatisticsTreeTest {
 
   @Test
   public void getSizeInBytes_isAccurate_forAdds() {
+    int elementSize = 0;
     for (int i = 0; i < 1000; ++i) {
       tree.add(i);
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      elementSize += sizer.sizeof(i);
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - elementSize);
     }
   }
 
   @Test
   public void getSizeInBytes_isAccurate_forRemoves() {
     int entries = 1000;
+    int elementSize = 0;
     for (int i = 0; i < entries; ++i) {
       tree.add(i);
+      elementSize += sizer.sizeof(i);
     }
     for (int i = 0; i < entries; ++i) {
       tree.remove(i);
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      elementSize -= sizer.sizeof(i);
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - elementSize);
     }
   }
 
   @Test
   public void getSizeInBytes_isAccurate_forIteratorRemoves() {
+    int elementSize = 0;
     for (int i = 0; i < 1000; ++i) {
       tree.add(i);
+      elementSize += sizer.sizeof(i);
     }
     Iterator<Integer> iterator = tree.iterator();
     while (iterator.hasNext()) {
-      iterator.next();
+      elementSize -= sizer.sizeof(iterator.next());
       iterator.remove();
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - elementSize);
     }
   }
 
@@ -711,29 +717,32 @@ public class OrderStatisticsTreeTest {
     byte[] member;
     byte[] scoreBytes;
     List<RedisSortedSet.OrderedSetEntry> entries = new ArrayList<>();
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
+    RedisSortedSet.ScoreSet tree = new RedisSortedSet.ScoreSet();
 
     assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
 
     // Populate the tree set with randomly-sized OrderedSetEntry instances and verify that the
     // reported size is accurate after each addition
+    int sizeOfEntries = 0;
     for (int i = 0; i < 100; ++i) {
       member = new byte[random.nextInt(50_000)];
       scoreBytes = String.valueOf(random.nextDouble()).getBytes();
       RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      sizeOfEntries += sizer.sizeof(entry);
       entries.add(entry);
       tree.add(entry);
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - sizeOfEntries);
     }
 
     // Remove half the entries using an iterator and verify that the reported size is accurate after
     // each removal
-    Iterator<RedisSortedSet.OrderedSetEntry> iterator =
+    Iterator<RedisSortedSet.AbstractOrderedSetEntry> iterator =
         tree.getIndexRange(tree.size() / 2, tree.size(), false);
     while (iterator.hasNext()) {
-      iterator.next();
+      RedisSortedSet.AbstractOrderedSetEntry entry = iterator.next();
+      sizeOfEntries -= sizer.sizeof(entry);
       iterator.remove();
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - sizeOfEntries);
     }
 
     // Remove the rest of the entries using tree.remove() and verify that the reported size is
@@ -741,8 +750,10 @@ public class OrderStatisticsTreeTest {
     int entriesSize = entries.size();
     for (int i = 0; i < entriesSize; i++) {
       RedisSortedSet.OrderedSetEntry entry = entries.get(i);
-      tree.remove(entry);
-      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
+      if (tree.remove(entry)) {
+        sizeOfEntries -= sizer.sizeof(entry);
+      }
+      assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree) - sizeOfEntries);
     }
   }
 
@@ -752,13 +763,13 @@ public class OrderStatisticsTreeTest {
   // that. If they have increased, carefully consider that increase before changing the constants.
   @Test
   public void orderStatisticsTreeBaseSize_shouldMatchReflectedSize() {
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
-    assertThat(ORDER_STATISTICS_TREE_BASE_SIZE).isEqualTo(sizer.sizeof(tree));
+    RedisSortedSet.ScoreSet tree = new RedisSortedSet.ScoreSet();
+    assertThat(tree.getSizeInBytes()).isEqualTo(sizer.sizeof(tree));
   }
 
   @Test
   public void orderStatisticsTreePerEntryOverhead_shouldMatchReflectedSize() {
-    OrderStatisticsSet<RedisSortedSet.OrderedSetEntry> tree = new OrderStatisticsTree<>();
+    RedisSortedSet.ScoreSet tree = new RedisSortedSet.ScoreSet();
     int beforeSize = sizer.sizeof(tree);
     for (int i = 0; i < 100; ++i) {
       byte[] member = new byte[i];
@@ -767,7 +778,7 @@ public class OrderStatisticsTreeTest {
       tree.add(entry);
       int afterSize = sizer.sizeof(tree);
       int perMemberOverhead = afterSize - beforeSize - sizer.sizeof(entry);
-      assertThat(PER_ENTRY_OVERHEAD).isEqualTo(perMemberOverhead);
+      assertThat(NODE_OVERHEAD).isEqualTo(perMemberOverhead);
       beforeSize = afterSize;
     }
   }

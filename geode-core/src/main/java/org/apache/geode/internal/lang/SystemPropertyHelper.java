@@ -72,6 +72,18 @@ public class SystemPropertyHelper {
   public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
 
   /**
+   * This property allows users to enable retrying when client application encounters
+   * PdxSerializationException. The default setting is false, and PdxSerializationException will not
+   * be retried. It will cause client application to throw ServerOperationException. When the
+   * property is set to true, the client application will automatically retry the operation to
+   * another server if encountered PdxSerializationException.
+   *
+   * @since Geode 1.15.0
+   */
+  public static final String ENABLE_QUERY_RETRY_ON_PDX_SERIALIZATION_EXCEPTION =
+      "enableQueryRetryOnPdxSerializationException";
+
+  /**
    * a comma separated string to list out the packages to scan. If not specified, the entire
    * classpath is scanned.
    * This is used by the FastPathScanner to scan for:
@@ -86,6 +98,13 @@ public class SystemPropertyHelper {
    * By default, the value is True, which allows parallel disk store recovery by multiple threads.
    */
   public static final String PARALLEL_DISK_STORE_RECOVERY = "parallelDiskStoreRecovery";
+
+  /**
+   * Milliseconds to wait before retrying to get events for a transaction from the
+   * gateway sender queue when group-transaction-events is true.
+   */
+  public static final String GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
+      "get-transaction-events-from-queue-wait-time-ms";
 
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It

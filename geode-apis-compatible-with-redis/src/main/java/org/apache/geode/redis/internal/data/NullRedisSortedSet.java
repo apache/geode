@@ -17,13 +17,13 @@
 package org.apache.geode.redis.internal.data;
 
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 
@@ -64,16 +64,6 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
-    return Collections.emptyList();
-  }
-
-  @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
       byte[] member) {
     List<byte[]> valuesToAdd = new ArrayList<>();
@@ -87,22 +77,64 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
+  long zlexcount(SortedSetLexRangeOptions rangeOptions) {
+    return 0;
+  }
+
+  @Override
   List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrange(int min, int max, boolean withScores) {
+  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrevrange(int min, int max, boolean withScores) {
+  List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions, boolean withScores) {
+  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetLexRangeOptions rangeOptions) {
+    return 0L;
+  }
+
+  long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetRankRangeOptions rangeOptions) {
+    return 0;
+  }
+
+  @Override
+  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+      SortedSetScoreRangeOptions rangeOptions) {
+    return 0;
+  }
+
+  @Override
+  List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 

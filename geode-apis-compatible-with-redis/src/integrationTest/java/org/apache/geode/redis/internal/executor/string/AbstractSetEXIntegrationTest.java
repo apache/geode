@@ -56,13 +56,6 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("key", Protocol.Command.SETEX, "key", "10", "value", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'setex' command");
-  }
-
-  @Test
   public void testSetEXWithIllegalSeconds() {
     assertThatThrownBy(() -> jedis.setex("key", -1L, "value"))
         .hasMessage("ERR invalid expire time in setex");

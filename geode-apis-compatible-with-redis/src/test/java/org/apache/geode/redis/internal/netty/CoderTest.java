@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.doubleToString;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.isNaN;
@@ -27,7 +27,12 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
@@ -69,9 +74,12 @@ public class CoderTest {
 
   @Test
   @Parameters(method = "infinityReturnStrings")
-  public void doubleToString_processesLikeRedis(String inputString, String expectedString) {
+  public void doubleToBytes_processesLikeRedis(String inputString, String expectedString) {
     byte[] bytes = stringToBytes(inputString);
-    assertThat(doubleToString(bytesToDouble(bytes))).isEqualTo(expectedString);
+    double d = bytesToDouble(bytes);
+    byte[] convertedBytes = doubleToBytes(d);
+    String convertedString = bytesToString(convertedBytes);
+    assertThat(convertedString).isEqualTo(expectedString);
   }
 
   @Test
@@ -174,6 +182,89 @@ public class CoderTest {
         new Object[] {"-inf", "-inf"},
         new Object[] {"-Infinity", "-inf"},
     };
+  }
+
+  @Test
+  public void verify_appendAsciiDigitsToByteBuf() {
+    for (long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Integer.MAX_VALUE + 1000; i > Integer.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Integer.MIN_VALUE + 1000; i > Integer.MIN_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Short.MAX_VALUE + 1000; i > Short.MAX_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Short.MIN_VALUE + 1000; i > Short.MIN_VALUE - 1000; i--) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+    for (long i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
+      verify_appendAsciiDigitsToByteBuf(i);
+    }
+  }
+
+  private void verify_appendAsciiDigitsToByteBuf(long value) {
+    String expected = Long.toString(value);
+    ByteBuf buf = ByteBufAllocator.DEFAULT.heapBuffer();
+
+    Coder.appendAsciiDigitsToByteBuf(value, buf);
+
+    assertThat(buf.toString(StandardCharsets.UTF_8)).isEqualTo(expected);
+  }
+
+  @Test
+  public void verify_longToBytes_bytesToLong_consistency() {
+    for (long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000; i--) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Integer.MAX_VALUE + 1000; i > Integer.MAX_VALUE - 1000; i--) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Integer.MIN_VALUE + 1000; i > Integer.MIN_VALUE - 1000; i--) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Short.MAX_VALUE + 1000; i > Short.MAX_VALUE - 1000; i--) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Short.MIN_VALUE + 1000; i > Short.MIN_VALUE - 1000; i--) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+    for (long i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
+      verify_longToBytes_bytesToLong_consistency(i);
+    }
+  }
+
+  private void verify_longToBytes_bytesToLong_consistency(long l) {
+    byte[] lBytes = Coder.longToBytes(l);
+    long l2 = Coder.bytesToLong(lBytes);
+    assertThat(l2).isEqualTo(l);
+  }
+
+  @Test
+  public void bytesToLong_fails_if_MINUS_ZERO_start() {
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("-01234")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("-0")))
+        .isInstanceOf(NumberFormatException.class);
+  }
+
+  @Test
+  public void bytesToLong_fails_if_PLUS_start() {
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+0")))
+        .isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToLong(Coder.stringToBytes("+1")))
+        .isInstanceOf(NumberFormatException.class);
   }
 
 }

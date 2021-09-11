@@ -47,7 +47,7 @@ public interface RedisHashCommands {
 
   Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count, int cursor);
 
-  long hincrby(RedisKey key, byte[] field, long increment);
+  byte[] hincrby(RedisKey key, byte[] field, long increment);
 
   BigDecimal hincrbyfloat(RedisKey key, byte[] field, BigDecimal increment);
 }

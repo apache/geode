@@ -208,8 +208,15 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createServer(server, thePort, eviction, mirrorType);
   }
 
-  public void createServer(VM server, final int thePort, final boolean eviction,
+  public void createServer(VM server, final int port, final boolean eviction,
       final MirrorType mirrorType) {
+
+    // Don't use ephemeral ports since those will probably fall out of the range as dictated by
+    // AvailablePort.lowerBound and AvailablePort.upperBound. Usually that's OK unless the server
+    // intends to be restarted using the same port as originally assigned ephemerally. There's
+    // always a race when restarting servers, but this should reduce the problem just a bit.
+    int actualPort = port == 0 ? AvailablePortHelper.getRandomAvailableTCPPort() : port;
+
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
       @Override
       public void run2() throws CacheException {
@@ -230,7 +237,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         }
 
         try {
-          startBridgeServer(thePort, true);
+          startBridgeServer(actualPort, true);
         }
 
         catch (Exception ex) {
@@ -2626,7 +2633,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           }
 
           while (true) {
-            if (InitialImageOperation.slowImageSleeps > 0) {
+            if (InitialImageOperation.slowImageSleeps.get() > 0) {
               // Create events while GII for HARegion is in progress.
               LocalRegion region1 = (LocalRegion) getRootRegion().getSubregion(regions[0]);
               for (int i = 90; i <= 120; i++) {

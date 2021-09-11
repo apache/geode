@@ -25,7 +25,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -150,10 +149,23 @@ public class RegionProvider {
     return redisStats;
   }
 
-  public <T> T execute(Object key, Callable<T> callable) {
+  public <T> T execute(RedisKey key, Callable<T> callable) {
     try {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(key, callable));
+    } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
+      throw createRedisDataMovedException((RedisKey) key);
+    } catch (RedisException bex) {
+      throw bex;
+    } catch (Exception ex) {
+      throw new RedisException(ex);
+    }
+  }
+
+  public <T> T execute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
+    try {
+      return partitionedRegion.computeWithPrimaryLocked(key,
+          () -> stripedCoordinator.execute(keysToLock, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
       throw createRedisDataMovedException((RedisKey) key);
     } catch (RedisException bex) {
@@ -299,20 +311,22 @@ public class RegionProvider {
   }
 
   /**
-   * A means to consistently order 2 keys for locking to avoid typical deadlock situations.
-   *
-   * @return the keys ordered in the sequence in which they should be locked.
+   * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
+   * Note that the list of keys is sorted in place.
    */
-  public List<RedisKey> orderForLocking(RedisKey key1, RedisKey key2) {
-    List<RedisKey> orderedKeys = new ArrayList<>();
-    if (stripedCoordinator.compareStripes(key1, key2) > 0) {
-      orderedKeys.add(key1);
-      orderedKeys.add(key2);
-    } else {
-      orderedKeys.add(key2);
-      orderedKeys.add(key1);
-    }
-
-    return orderedKeys;
+  public void orderForLocking(List<RedisKey> keys) {
+    keys.sort(stripedCoordinator::compareStripes);
   }
+
+  /**
+   * Check if a key would be stored locally (in a primary bucket on this server). Otherwise throw a
+   * {@link RedisDataMovedException}. Note that this will not check for the actual existence of the
+   * key.
+   */
+  public void ensureKeyIsLocal(RedisKey key) {
+    if (!slotAdvisor.isLocal(key)) {
+      throw createRedisDataMovedException(key);
+    }
+  }
+
 }

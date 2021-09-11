@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -60,17 +59,6 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     mockSubscriber = new MockSubscriber();
     subscriber = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
     introspector = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
-  }
-
-  @After
-  public void teardown() {
-    if (mockSubscriber.getSubscribedChannels() > 0) {
-      mockSubscriber.unsubscribe();
-    }
-    if (mockSubscriber.getSubscribedChannels() > 0) {
-      mockSubscriber.punsubscribe();
-    }
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
   }
 
   @Test
@@ -109,6 +97,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
         uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, "cHaNNEls"));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -124,6 +114,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
         uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -135,7 +127,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     assertThat(result).isEmpty();
 
-    mockSubscriber.punsubscribe();
+    punsubscribeWithSuccess(mockSubscriber);
   }
 
 
@@ -150,6 +142,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     List<String> result = introspector.pubsubChannels("fo*");
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -173,6 +167,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
         uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -195,9 +191,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
     assertThat(result.size()).isEqualTo(1);
 
-    mockSubscriber2.unsubscribe();
-    waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
-
+    unsubscribeWithSuccess(mockSubscriber);
+    unsubscribeWithSuccess(mockSubscriber2);
     subscriber2.close();
   }
 
@@ -212,6 +207,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
         uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_NUMSUB));
 
     assertThat(result).isEmpty();
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -231,9 +228,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     assertThat(result.get("foo")).isEqualTo("2");
     assertThat(result.get("bar")).isEqualTo("1");
 
-    fooAndBarSubscriber.unsubscribe();
-
-    waitFor(() -> fooAndBarSubscriber.getSubscribedChannels() == 0);
+    unsubscribeWithSuccess(mockSubscriber);
+    unsubscribeWithSuccess(fooAndBarSubscriber);
     subscriber2.close();
   }
 
@@ -246,6 +242,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     assertThat(result.containsKey("bar")).isTrue();
     assertThat(result.get("bar")).isEqualTo("0");
+
+    unsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -257,7 +255,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     assertThat(result.containsKey("f*")).isTrue();
     assertThat(result.get("f*")).isEqualTo("0");
-    mockSubscriber.punsubscribe();
+
+    punsubscribeWithSuccess(mockSubscriber);
   }
 
   @Test
@@ -282,7 +281,10 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     assertThat(result.containsKey("f*")).isFalse();
     assertThat(result.get("foo")).isEqualTo("1");
 
-    fooSubscriber.unsubscribe();
+    punsubscribeWithSuccess(mockSubscriber);
+    unsubscribeWithSuccess(fooSubscriber);
+
+    subscriber2.close();
   }
 
   /** -- NUMPAT-- **/
@@ -301,7 +303,10 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     assertThat(result).isEqualTo(2);
 
-    mockSubscriber2.punsubscribe();
+    punsubscribeWithSuccess(mockSubscriber);
+    punsubscribeWithSuccess(mockSubscriber2);
+
+    subscriber2.close();
   }
 
   @Test
@@ -309,17 +314,20 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     Jedis patternSubscriberJedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
     MockSubscriber patternSubscriber = new MockSubscriber();
 
-    executor.submit(() -> patternSubscriberJedis.subscribe(patternSubscriber, "f*"));
-    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "foo"));
+    executor.submit(() -> patternSubscriberJedis.psubscribe(patternSubscriber, "f*"));
+    executor.submit(() -> subscriber.psubscribe(mockSubscriber, "b*", "f*"));
 
-    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2
         && patternSubscriber.getSubscribedChannels() == 1);
 
     Long result = introspector.pubsubNumPat();
 
-    assertThat(result).isEqualTo(1);
+    assertThat(result).isEqualTo(3);
 
-    patternSubscriber.unsubscribe();
+    punsubscribeWithSuccess(mockSubscriber);
+    punsubscribeWithSuccess(patternSubscriber);
+
+    patternSubscriberJedis.close();
   }
 
   @Test
@@ -332,6 +340,21 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     Long result = introspector.pubsubNumPat();
 
     assertThat(result).isEqualTo(1);
+
+    unsubscribeWithSuccess(mockSubscriber);
+    punsubscribeWithSuccess(mockSubscriber);
+  }
+
+  private void unsubscribeWithSuccess(MockSubscriber subscriber) {
+    int initialSubscription = subscriber.getSubscribedChannels();
+    subscriber.unsubscribe();
+    waitFor(() -> subscriber.getSubscribedChannels() < initialSubscription);
+  }
+
+  private void punsubscribeWithSuccess(MockSubscriber subscriber) {
+    int initialSubscription = subscriber.getSubscribedChannels();
+    subscriber.punsubscribe();
+    waitFor(() -> subscriber.getSubscribedChannels() < initialSubscription);
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {

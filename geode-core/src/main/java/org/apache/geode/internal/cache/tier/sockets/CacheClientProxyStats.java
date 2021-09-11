@@ -61,6 +61,11 @@ public class CacheClientProxyStats implements MessageStats {
   /** Name of the CQ count statistic */
   private static final String CQ_COUNT = "cqCount";
 
+  /** Name of the messages currently being queued statistic */
+  private static final String MESSAGES_BEING_QUEUED_IN_PROGRESS = "messagesBeingQueuedInProgress";
+  /** Name of the messages queueing time statistic */
+  private static final String MESSAGES_BEING_QUEUED_TIME = "messagesBeingQueuedTime";
+
   /** Id of the messages received statistic */
   private static final int _messagesReceivedId;
   /** Id of the messages queued statistic */
@@ -84,6 +89,12 @@ public class CacheClientProxyStats implements MessageStats {
   /** Id of the CQ count statistic */
   private static final int _cqCountId;
   private static final int _sentBytesId;
+
+  /** Id of the messages currently being queued statistic */
+  private static final int _messagesBeingQueuedInProgressId;
+  /** Id of the messages queueing time statistic */
+  private static final int _messagesBeingQueuedTimeId;
+
 
   /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -128,7 +139,14 @@ public class CacheClientProxyStats implements MessageStats {
             "operations"),
 
         f.createLongCounter(CQ_COUNT, "Number of CQs on the client.", "operations"),
-        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),});
+        f.createLongCounter("sentBytes", "Total number of bytes sent to client.", "bytes"),
+
+        f.createLongGauge(MESSAGES_BEING_QUEUED_IN_PROGRESS,
+            "Threads currently adding a message to the queue. Consistently high values indicate that the queue is full and adds are being delayed.",
+            "threads"),
+        f.createLongCounter(MESSAGES_BEING_QUEUED_TIME,
+            "Total time spent while message is put in queue.", "nanoseconds"),
+    });
 
     // Initialize id fields
     _messagesReceivedId = _type.nameToId(MESSAGES_RECEIVED);
@@ -143,6 +161,9 @@ public class CacheClientProxyStats implements MessageStats {
     _deltaFullMessagesSentId = _type.nameToId(DELTA_FULL_MESSAGES_SENT);
     _cqCountId = _type.nameToId(CQ_COUNT);
     _sentBytesId = _type.nameToId("sentBytes");
+    _messagesBeingQueuedInProgressId = _type.nameToId(MESSAGES_BEING_QUEUED_IN_PROGRESS);
+    _messagesBeingQueuedTimeId = _type.nameToId(MESSAGES_BEING_QUEUED_TIME);
+
   }
 
   ////////////////////// Instance Fields //////////////////////
@@ -272,6 +293,25 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Returns the current value of the "_messagesBeingQueuedInProgress" stat.
+   *
+   * @return the current value of the "_messagesBeingQueuedInProgress" stat
+   */
+  public long getMessagesBeingQueuedInProgress() {
+    return this._stats.getLong(_messagesBeingQueuedInProgressId);
+  }
+
+  /**
+   * Returns the current value of the "_messagesBeingQueuedTime" stat.
+   *
+   * @return the current value of the "_messagesBeingQueuedTime" stat
+   */
+  public long getMessagesBeingQueuedTime() {
+    return this._stats.getLong(_messagesBeingQueuedTimeId);
+  }
+
+
+  /**
    * Increments the "messagesReceived" stat.
    */
   public void incMessagesReceived() {
@@ -314,10 +354,24 @@ public class CacheClientProxyStats implements MessageStats {
   }
 
   /**
+   * Increments the "messagesBeingQueuedInProgress" stat.
+   */
+  public void incMessagesBeingQueuedInProgress() {
+    this._stats.incLong(_messagesBeingQueuedInProgressId, 1);
+  }
+
+  /**
    * Decrements the "cqCount" stat.
    */
   public void decCqCount() {
     this._stats.incInt(_cqCountId, -1);
+  }
+
+  /**
+   * Decrements the "messagesBeingQueuedInProgress" stat.
+   */
+  public void decMessagesBeingQueuedInProgress() {
+    this._stats.incLong(_messagesBeingQueuedInProgressId, -1);
   }
 
   /**
@@ -387,5 +441,19 @@ public class CacheClientProxyStats implements MessageStats {
   @Override
   public void decMessagesBeingReceived(int bytes) {
     // noop since we never receive
+  }
+
+  public long startMessageQueueStats() {
+    incMessagesBeingQueuedInProgress();
+    return startTime();
+  }
+
+  public void endMessageQueueStats(long startTime) {
+    long ts = DistributionStats.getStatTime();
+
+    decMessagesBeingQueuedInProgress();
+
+    long elapsed = ts - startTime;
+    this._stats.incLong(_messagesBeingQueuedTimeId, elapsed);
   }
 }

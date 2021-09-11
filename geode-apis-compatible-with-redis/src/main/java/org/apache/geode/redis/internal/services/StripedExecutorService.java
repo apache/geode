@@ -340,11 +340,13 @@ public class StripedExecutorService extends AbstractExecutorService {
   public boolean isTerminated() {
     lock.lock();
     try {
-      if (state == State.RUNNING)
+      if (state == State.RUNNING) {
         return false;
+      }
       for (SerialExecutor executor : executors.values()) {
-        if (!executor.isEmpty())
+        if (!executor.isEmpty()) {
           return false;
+        }
       }
       return executor.isTerminated();
     } finally {

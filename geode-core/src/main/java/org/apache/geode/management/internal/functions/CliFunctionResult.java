@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -34,6 +37,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
+
+  @Immutable
+  private static final KnownVersion[] KNOWN_VERSIONS = {KnownVersion.GEODE_1_6_0};
 
   static {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(CLI_FUNCTION_RESULT,
@@ -58,21 +64,21 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   @Deprecated
   public CliFunctionResult(final String memberIdOrName) {
     this.memberIdOrName = memberIdOrName;
-    this.state = StatusState.OK;
+    state = StatusState.OK;
   }
 
   @Deprecated
   public CliFunctionResult(final String memberIdOrName, final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.serializables = serializables;
-    this.state = StatusState.OK;
+    state = StatusState.OK;
   }
 
   @Deprecated
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
-    this.state = StatusState.OK;
+    state = StatusState.OK;
   }
 
   @Deprecated
@@ -81,7 +87,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     this.serializables = serializables;
-    this.state = StatusState.OK;
+    state = StatusState.OK;
   }
 
   @Deprecated
@@ -89,9 +95,9 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     if (message != null) {
-      this.serializables = new String[] {message};
+      serializables = new String[] {message};
     }
-    this.state = StatusState.OK;
+    state = StatusState.OK;
   }
 
   public CliFunctionResult(final String memberIdOrName, final boolean successful,
@@ -104,7 +110,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.state = state;
     if (message != null) {
-      this.serializables = new String[] {message};
+      serializables = new String[] {message};
     }
   }
 
@@ -113,12 +119,12 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.resultObject = resultObject;
     if (message != null) {
-      this.serializables = new String[] {message};
+      serializables = new String[] {message};
     }
     if (resultObject instanceof Throwable) {
-      this.state = StatusState.ERROR;
+      state = StatusState.ERROR;
     } else {
-      this.state = StatusState.OK;
+      state = StatusState.OK;
     }
   }
 
@@ -127,16 +133,16 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   public String getMemberIdOrName() {
-    return this.memberIdOrName;
+    return memberIdOrName;
   }
 
   @Deprecated
   public String getMessage() {
-    if (this.serializables.length == 0 || !(this.serializables[0] instanceof String)) {
+    if (serializables.length == 0 || !(serializables[0] instanceof String)) {
       return null;
     }
 
-    return (String) this.serializables[0];
+    return (String) serializables[0];
   }
 
   public String getStatus(boolean skipIgnore) {
@@ -199,7 +205,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Deprecated
   public Serializable[] getSerializables() {
-    return this.serializables;
+    return serializables;
   }
 
   @Deprecated
@@ -223,87 +229,74 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GEODE_1_6_0_0(out, context);
-    DataSerializer.writeEnum(this.state, out);
+    DataSerializer.writeEnum(state, out);
   }
 
   public void toDataPre_GEODE_1_6_0_0(DataOutput out, SerializationContext context)
       throws IOException {
-    DataSerializer.writeString(this.memberIdOrName, out);
-    DataSerializer.writePrimitiveBoolean(this.isSuccessful(), out);
-    context.getSerializer().writeObject(this.xmlEntity, out);
-    DataSerializer.writeObjectArray(this.serializables, out);
-    context.getSerializer().writeObject(this.resultObject, out);
-    DataSerializer.writeByteArray(this.byteData, out);
-  }
-
-  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
-      throws IOException {
-    DataSerializer.writeString(this.memberIdOrName, out);
-    DataSerializer.writeObjectArray(this.serializables, out);
-    context.getSerializer().writeObject(this.resultObject, out);
+    DataSerializer.writeString(memberIdOrName, out);
+    DataSerializer.writePrimitiveBoolean(isSuccessful(), out);
+    context.getSerializer().writeObject(xmlEntity, out);
+    DataSerializer.writeObjectArray(serializables, out);
+    context.getSerializer().writeObject(resultObject, out);
+    DataSerializer.writeByteArray(byteData, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_6_0_0(in, context);
-    this.state = DataSerializer.readEnum(StatusState.class, in);
+    state = DataSerializer.readEnum(StatusState.class, in);
   }
 
   public void fromDataPre_GEODE_1_6_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    this.memberIdOrName = DataSerializer.readString(in);
-    this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
-    this.xmlEntity = context.getDeserializer().readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
-    this.resultObject = context.getDeserializer().readObject(in);
-    this.byteData = DataSerializer.readByteArray(in);
-  }
-
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    this.memberIdOrName = DataSerializer.readString(in);
-    this.resultObject = context.getDeserializer().readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    memberIdOrName = DataSerializer.readString(in);
+    state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
+    xmlEntity = context.getDeserializer().readObject(in);
+    serializables = (Serializable[]) DataSerializer.readObjectArray(in);
+    resultObject = context.getDeserializer().readObject(in);
+    byteData = DataSerializer.readByteArray(in);
   }
 
   public boolean isSuccessful() {
-    return this.state == StatusState.OK;
+    return state == StatusState.OK;
   }
 
   public boolean isIgnorableFailure() {
-    return this.state == StatusState.IGNORABLE;
+    return state == StatusState.IGNORABLE;
   }
 
   @Deprecated
   public XmlEntity getXmlEntity() {
-    return this.xmlEntity;
+    return xmlEntity;
   }
 
   @Deprecated
   public byte[] getByteData() {
-    return this.byteData;
+    return byteData;
   }
 
   @Override
-  public int compareTo(CliFunctionResult o) {
-    if (this.memberIdOrName == null && o.memberIdOrName == null) {
+  public int compareTo(@NotNull CliFunctionResult o) {
+    if (memberIdOrName == null && o.memberIdOrName == null) {
       return 0;
     }
-    if (this.memberIdOrName == null && o.memberIdOrName != null) {
+    if (memberIdOrName == null) {
       return -1;
     }
-    if (this.memberIdOrName != null && o.memberIdOrName == null) {
+    if (o.memberIdOrName == null) {
       return 1;
     }
-    return getMemberIdOrName().compareTo(o.memberIdOrName);
+
+    return memberIdOrName.compareTo(o.memberIdOrName);
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((this.memberIdOrName == null) ? 0 : this.memberIdOrName.hashCode());
+    result = prime * result + ((memberIdOrName == null) ? 0 : memberIdOrName.hashCode());
     return result;
   }
 
@@ -319,22 +312,19 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
       return false;
     }
     CliFunctionResult other = (CliFunctionResult) obj;
-    if (this.memberIdOrName == null) {
-      if (other.memberIdOrName != null) {
-        return false;
-      }
-    } else if (!this.memberIdOrName.equals(other.memberIdOrName)) {
-      return false;
+    if (memberIdOrName == null) {
+      return other.memberIdOrName == null;
+    } else {
+      return memberIdOrName.equals(other.memberIdOrName);
     }
-    return true;
   }
 
   @Override
   public String toString() {
-    return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful="
-        + this.isSuccessful() + ", xmlEntity=" + this.xmlEntity + ", serializables="
-        + Arrays.toString(this.serializables) + ", throwable=" + this.resultObject + ", byteData="
-        + Arrays.toString(this.byteData) + "]";
+    return "CliFunctionResult [memberId=" + memberIdOrName + ", successful="
+        + isSuccessful() + ", xmlEntity=" + xmlEntity + ", serializables="
+        + Arrays.toString(serializables) + ", throwable=" + resultObject + ", byteData="
+        + Arrays.toString(byteData) + "]";
   }
 
   /**
@@ -345,7 +335,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
    * @return The cleaned results.
    */
   public static List<CliFunctionResult> cleanResults(List<?> results) {
-    List<CliFunctionResult> returnResults = new ArrayList<CliFunctionResult>(results.size());
+    List<CliFunctionResult> returnResults = new ArrayList<>(results.size());
     for (Object result : results) {
       if (result instanceof CliFunctionResult) {
         returnResults.add((CliFunctionResult) result);
@@ -358,6 +348,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public KnownVersion[] getSerializationVersions() {
-    return new KnownVersion[] {KnownVersion.GFE_80};
+    return KNOWN_VERSIONS;
   }
 }

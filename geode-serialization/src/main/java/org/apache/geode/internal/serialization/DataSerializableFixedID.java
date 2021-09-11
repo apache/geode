@@ -87,7 +87,8 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
 
-  short GATEWAY_EVENT_IMPL = -136;
+  // -136 unused
+
   short GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT = -135;
   short GATEWAY_SENDER_EVENT_IMPL = -134;
 
@@ -596,12 +597,14 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short COMPACT_RESPONSE = 2119;
   short FLOW_CONTROL_PERMIT_MESSAGE = 2120;
 
-  short OBJECT_PART_LIST66 = 2121;
+  // 2121 unused
+
   short LINKED_RESULTSET = 2122;
   short LINKED_STRUCTSET = 2123;
   short PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE = 2124;
 
-  short SERIALIZED_OBJECT_PART_LIST = 2125;
+  // 2125 unused
+
   short FLUSH_TO_DISK_REQUEST = 2126;
   short FLUSH_TO_DISK_RESPONSE = 2127;
 
@@ -710,11 +713,11 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
    * Writes the state of this object as primitive data to the given <code>DataOutput</code>.<br>
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
-   * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * KnownVersion} in the getSerializationVersions array of the
-   * implementing class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
-   * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents to this
-   * newly created toDataPre_GFE_X_X_X_X() method.
+   * add a new toDataPre_GEODE_X_X_X_X() method and add an entry for the current {@link
+   * KnownVersion} in the getSerializationVersions array of the implementing class. e.g. if msg
+   * format changed in version 1.2, create toDataPre_GEODE_1_2_0_0, add {@link
+   * KnownVersion#GEODE_1_2_0} to the getSerializationVersions array and copy previous toData
+   * contents to this newly created toDataPre_GFE_X_X_X_X() method.
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
@@ -725,10 +728,10 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
    * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * KnownVersion} in the getSerializationVersions array of the
-   * implementing class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0,
-   * add Version.GFE_80 to the getSerializationVersions array and copy previous fromData contents to
-   * this newly created fromDataPre_GFE_X_X_X_X() method.
+   * KnownVersion} in the getSerializationVersions array of the implementing class. e.g. if msg
+   * format changed in version 1.2, create fromDataPre_GEODE_1_2_0_0, add {@link
+   * KnownVersion#GEODE_1_2_0} to the getSerializationVersions array and copy previous fromData
+   * contents to this newly created fromDataPre_GFE_X_X_X_X() method.
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>

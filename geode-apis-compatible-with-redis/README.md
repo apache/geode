@@ -106,6 +106,7 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - EXPIREAT <br/>
 - GET <br/>
 - GETRANGE <br/>
+- GETSET <br/>
 - HDEL <br/>
 - HEXISTS <br/>
 - HGET <br/>
@@ -131,6 +132,7 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - PEXPIRE <br/>
 - PEXPIREAT <br/>
 - PING <br/>
+- PSETEX <br/>
 - PSUBSCRIBE <br/>
 - PTTL <br/>
 - PUBLISH <br/>
@@ -139,6 +141,7 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - RENAME <br/>
 - SADD <br/>
 - SET <br/>
+- SETEX <br/>
 - SETNX <br/>
 - SLOWLOG <sup>3</sup> <br/>
 - SMEMBERS <br/>
