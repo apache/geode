@@ -25,9 +25,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
@@ -38,7 +40,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManagerFactory;
 
 import io.netty.handler.ssl.NotSslRecordException;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -58,16 +59,20 @@ public class SSLDUnitTest {
   @Rule
   public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
 
-  private static String commonPassword = "password";
-  private static SANCapturingHostnameVerifier hostnameVerifier = new SANCapturingHostnameVerifier();
+  private final static String commonPassword = "password";
+  private final static SANCapturingHostnameVerifier hostnameVerifier =
+      new SANCapturingHostnameVerifier();
 
   private int redisPort;
   private CertificateMaterial ca;
   private String serverKeyStoreFilename;
   private String serverTrustStoreFilename;
 
-  @Before
-  public void setup() throws Exception {
+  private void setup() throws Exception {
+    setup(p -> {});
+  }
+
+  private void setup(Consumer<Properties> propertyConfigurer) throws Exception {
     ca = new CertificateBuilder()
         .commonName("Test CA")
         .isCA()
@@ -83,6 +88,8 @@ public class SSLDUnitTest {
     serverStore.trust("ca", ca);
     Properties serverProperties = serverStore.propertiesWith("all", true, false);
 
+    propertyConfigurer.accept(serverProperties);
+
     MemberVM server = cluster.startRedisVM(0, x -> x.withProperties(serverProperties));
 
     redisPort = cluster.getRedisPort(server);
@@ -92,6 +99,25 @@ public class SSLDUnitTest {
 
   @Test
   public void givenMutualAuthentication_clientCanConnect() throws Exception {
+    setup();
+
+    try (Jedis jedis = createClient(true, false)) {
+      assertThat(jedis.ping()).isEqualTo("PONG");
+    }
+  }
+
+  @Test
+  public void givenServerHasCipherAndProtocol_clientCanConnect() throws Exception {
+    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
+    ssl.init(null, null, new java.security.SecureRandom());
+    String[] cipherSuites = ssl.getServerSocketFactory().getSupportedCipherSuites();
+    String rsaCipher = Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
+
+    setup(p -> {
+      p.setProperty("ssl-protocols", "TLSv1.2");
+      p.setProperty("ssl-ciphers", rsaCipher);
+    });
+
     try (Jedis jedis = createClient(true, false)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
@@ -99,6 +125,8 @@ public class SSLDUnitTest {
 
   @Test
   public void givenMutualAuthentication_clientErrorsWithoutKeystore() throws Exception {
+    setup();
+
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
     IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
@@ -117,6 +145,8 @@ public class SSLDUnitTest {
 
   @Test
   public void givenMutualAuthentication_clientErrorsWithSelfSignedCert() throws Exception {
+    setup();
+
     IgnoredException.addIgnoredException(SSLHandshakeException.class);
     IgnoredException.addIgnoredException("SunCertPathBuilderException");
 
@@ -134,7 +164,9 @@ public class SSLDUnitTest {
   }
 
   @Test
-  public void givenSslEnabled_clientErrors_whenUsingCleartext() {
+  public void givenSslEnabled_clientErrors_whenUsingCleartext() throws Exception {
+    setup();
+
     IgnoredException.addIgnoredException(NotSslRecordException.class);
 
     try (Jedis jedis = new Jedis(BIND_ADDRESS, redisPort)) {
@@ -147,6 +179,8 @@ public class SSLDUnitTest {
 
   @Test
   public void givenServerCertificateIsRotated_clientCanStillConnect() throws Exception {
+    setup();
+
     String newServerName = "updated-server";
 
     try (Jedis jedis = createClient(true, false)) {
@@ -181,6 +215,8 @@ public class SSLDUnitTest {
 
   @Test
   public void givenServerCAandKeyIsRotated_clientCannotConnect() throws Exception {
+    setup();
+
     try (Jedis jedis = createClient(true, false)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
@@ -210,10 +246,8 @@ public class SSLDUnitTest {
 
     // Try long enough for the file change to be detected
     GeodeAwaitility.await().atMost(Duration.ofSeconds(PollingFileWatcher.PERIOD_SECONDS * 3))
-        .untilAsserted(() -> {
-          assertThatThrownBy(() -> createClient(true, false))
-              .isInstanceOf(JedisConnectionException.class);
-        });
+        .untilAsserted(() -> assertThatThrownBy(() -> createClient(true, false))
+              .isInstanceOf(JedisConnectionException.class));
 
     IgnoredException.removeAllExpectedExceptions();
   }
