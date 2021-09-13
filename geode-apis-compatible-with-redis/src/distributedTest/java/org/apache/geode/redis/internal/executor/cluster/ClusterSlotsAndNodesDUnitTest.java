@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.cluster;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.redis.connection.ClusterSlotHashUtil.calculateSlot;
 
 import java.util.BitSet;
 import java.util.List;
@@ -293,6 +294,13 @@ public class ClusterSlotsAndNodesDUnitTest {
         ClusterNodes.parseClusterNodes(jedis1.clusterNodes()).getNodes();
 
     assertThat(nodesFromSlots).containsExactlyInAnyOrderElementsOf(nodesFromNodes);
+  }
+
+  @Test
+  public void keySlotOnServerMatchesClientSideHashing() {
+    assertThat(jedis1.clusterKeySlot("somekey")).isEqualTo(calculateSlot("somekey"));
+    assertThat(jedis1.clusterKeySlot("otherkey")).isEqualTo(calculateSlot("otherkey"));
+    assertThat(jedis1.clusterKeySlot("key{with}hash")).isEqualTo(calculateSlot("key{with}hash"));
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {

@@ -33,27 +33,37 @@ public class StringBytesGlossary {
   /**
    * byte identifier of a bulk string
    */
-  public static final byte BULK_STRING_ID = 36; // '$'
+  public static final byte BULK_STRING_ID = '$';
 
   /**
    * byte identifier of an array
    */
-  public static final byte ARRAY_ID = 42; // '*'
+  public static final byte ARRAY_ID = '*';
 
   /**
    * byte identifier of a simple string
    */
-  public static final byte SIMPLE_STRING_ID = 43; // '+'
+  public static final byte SIMPLE_STRING_ID = '+';
 
   /**
    * byte identifier of an error
    */
-  public static final byte ERROR_ID = 45; // '-'
+  public static final byte ERROR_ID = '-';
 
   /**
    * byte identifier of an integer
    */
-  public static final byte INTEGER_ID = 58; // ':'
+  public static final byte INTEGER_ID = ':';
+
+  /**
+   * byte identifier of an left paren
+   */
+  public static final byte LEFT_BRACE_ID = '{';
+
+  /**
+   * byte identifier of an right paren
+   */
+  public static final byte RIGHT_BRACE_ID = '}';
 
   // ********** RedisResponse constants **********
   /**
@@ -110,6 +120,8 @@ public class StringBytesGlossary {
   public static final byte[] bSLOTS = stringToBytes("SLOTS");
   @MakeImmutable
   public static final byte[] bNODES = stringToBytes("NODES");
+  @MakeImmutable
+  public static final byte[] bKEYSLOT = stringToBytes("KEYSLOT");
 
   // ScanExecutor, HScanExecutor and SScanExecutor
   @MakeImmutable
@@ -229,22 +241,22 @@ public class StringBytesGlossary {
   /**
    * byte value of the number 0
    */
-  public static final byte NUMBER_0_BYTE = 48; // '0'
+  public static final byte NUMBER_0_BYTE = '0';
 
   /**
    * byte value of the number 1
    */
-  public static final byte NUMBER_1_BYTE = 49; // '1'
+  public static final byte NUMBER_1_BYTE = '1';
 
-  public static final byte bLOWERCASE_A = 97; // a
+  public static final byte bLOWERCASE_A = 'a';
 
-  public static final byte bLOWERCASE_Z = 122; // z
+  public static final byte bLOWERCASE_Z = 'z';
 
-  public static final byte bLEFT_PAREN = 40; // (
+  public static final byte bLEFT_PAREN = '(';
 
-  public static final byte bLEFT_SQUARE_BRACKET = 91; // [
+  public static final byte bLEFT_SQUARE_BRACKET = '[';
 
-  public static final byte bPERIOD = 46; // .
+  public static final byte bPERIOD = '.';
 
   public static final String PING_RESPONSE = "PONG";
 

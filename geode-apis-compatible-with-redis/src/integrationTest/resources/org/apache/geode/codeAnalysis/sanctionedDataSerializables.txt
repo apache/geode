@@ -15,7 +15,7 @@ toData,15
 fromData,58
 
 org/apache/geode/redis/internal/data/RedisKey,2
-fromData,22
+fromData,19
 toData,19
 
 org/apache/geode/redis/internal/data/RedisSet,2

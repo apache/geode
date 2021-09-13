@@ -206,7 +206,7 @@ public class RegionProvider {
 
   private RedisDataMovedException createRedisDataMovedException(RedisKey key) {
     RedisMemberInfo memberInfo = getRedisMemberInfo(key);
-    Integer slot = key.getCrc16() & (REDIS_SLOTS - 1);
+    int slot = key.getSlot();
     return new RedisDataMovedException(slot, memberInfo.getHostAddress(),
         memberInfo.getRedisPort());
   }

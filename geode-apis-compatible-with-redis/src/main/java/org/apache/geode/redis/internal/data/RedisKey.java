@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
@@ -29,41 +28,22 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.executor.cluster.CRC16;
 import org.apache.geode.redis.internal.executor.cluster.RedisPartitionResolver;
 
 public class RedisKey implements DataSerializableFixedID {
 
-  private int crc16;
+  private short slot;
   private byte[] value;
 
   public RedisKey() {}
 
   public RedisKey(byte[] value) {
     this.value = value;
-    int startHashtag = Integer.MAX_VALUE;
-    int endHashtag = 0;
-
-    for (int i = 0; i < value.length; i++) {
-      if (value[i] == '{' && startHashtag == Integer.MAX_VALUE) {
-        startHashtag = i;
-      } else if (value[i] == '}') {
-        endHashtag = i;
-        break;
-      }
-    }
-
-    if (endHashtag - startHashtag <= 1) {
-      startHashtag = -1;
-      endHashtag = value.length;
-    }
-
-    crc16 = CRC16.calculate(value, startHashtag + 1, endHashtag);
+    slot = KeyHashUtil.slotForKey(value);
   }
 
   public int getBucketId() {
-    // & (REDIS_SLOTS - 1) is equivalent to % REDIS_SLOTS but supposedly faster
-    return (getCrc16() & (REDIS_SLOTS - 1)) / REDIS_SLOTS_PER_BUCKET;
+    return getSlot() / REDIS_SLOTS_PER_BUCKET;
   }
 
   /**
@@ -92,15 +72,14 @@ public class RedisKey implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
-    out.writeShort(crc16);
+    out.writeShort(slot);
     DataSerializer.writeByteArray(value, out);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException {
-    // Need to convert a signed short to unsigned
-    crc16 = in.readShort() & 0xffff;
+    slot = in.readShort();
     value = DataSerializer.readByteArray(in);
   }
 
@@ -121,7 +100,7 @@ public class RedisKey implements DataSerializableFixedID {
   /**
    * Used by the {@link RedisPartitionResolver} to map slots to buckets
    */
-  public int getCrc16() {
-    return crc16;
+  public int getSlot() {
+    return slot;
   }
 }
