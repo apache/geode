@@ -33,7 +33,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 class NullRedisSortedSet extends RedisSortedSet {
 
   NullRedisSortedSet() {
-    super(new ArrayList<>(), new ArrayList<>());
+    super(new ArrayList<>(), new double[0]);
   }
 
   @Override
@@ -43,7 +43,7 @@ class NullRedisSortedSet extends RedisSortedSet {
 
   @Override
   Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> members,
-      List<Double> scores, ZAddOptions options) {
+      double[] scores, ZAddOptions options) {
     if (options.isXX()) {
       if (options.isINCR()) {
         return null;
@@ -52,7 +52,7 @@ class NullRedisSortedSet extends RedisSortedSet {
     }
 
     if (options.isINCR()) {
-      return zaddIncr(region, key, members.get(0), scores.get(0));
+      return zaddIncr(region, key, members.get(0), scores[0]);
     }
 
     RedisSortedSet sortedSet = new RedisSortedSet(members, scores);
@@ -69,7 +69,7 @@ class NullRedisSortedSet extends RedisSortedSet {
   @Override
   byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double increment,
       byte[] member) {
-    RedisSortedSet sortedSet = new RedisSortedSet(singletonList(member), singletonList(increment));
+    RedisSortedSet sortedSet = new RedisSortedSet(singletonList(member), new double[] {increment});
 
     region.create(key, sortedSet);
 

@@ -138,7 +138,7 @@ public class RedisSortedSetTest {
   @Test
   public void equals_returnsTrue_givenDifferentEmptySortedSets() {
     RedisSortedSet sortedSet1 =
-        new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+        new RedisSortedSet(Collections.emptyList(), new double[0]);
     RedisSortedSet sortedSet2 = NullRedisDataStructures.NULL_REDIS_SORTED_SET;
     assertThat(sortedSet1).isEqualTo(sortedSet2);
     assertThat(sortedSet2).isEqualTo(sortedSet1);
@@ -150,7 +150,7 @@ public class RedisSortedSetTest {
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     List<byte[]> members = singletonList(stringToBytes("v3"));
-    List<Double> scores = singletonList(1.61803);
+    double[] scores = new double[] {1.61803D};
 
     sortedSet1.zadd(region, null, members, scores,
         new ZAddOptions(ZAddOptions.Exists.NONE, false, false));
@@ -692,7 +692,7 @@ public class RedisSortedSetTest {
   // that increase before changing the constant.
   @Test
   public void baseRedisSortedSetOverheadConstant_shouldMatchReflectedSize() {
-    RedisSortedSet set = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet set = new RedisSortedSet(Collections.emptyList(), new double[0]);
     RedisSortedSet.MemberMap backingMap = new RedisSortedSet.MemberMap(0);
     RedisSortedSet.ScoreSet backingTree = new RedisSortedSet.ScoreSet();
     int baseRedisSetOverhead =
@@ -719,7 +719,7 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
 
     int expectedSize = sizer.sizeof(sortedSet);
     int actualSize = sortedSet.getSizeInBytes();
@@ -728,7 +728,7 @@ public class RedisSortedSetTest {
     // Add members and scores and confirm that the actual size is accurate after each operation
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
-      List<Double> scores = singletonList((double) i);
+      double[] scores = new double[] {(double) i};
       List<byte[]> members = singletonList(new byte[i]);
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
       expectedSize = sizer.sizeof(sortedSet);
@@ -742,19 +742,19 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> members = singletonList(new byte[i]);
-      List<Double> scores = singletonList((double) i);
+      double[] scores = new double[] {(double) i};
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
     // Update half the scores and confirm that the actual size is accurate after each operation
     for (int i = 0; i < numberOfEntries / 2; ++i) {
       List<byte[]> members = singletonList(new byte[i]);
-      List<Double> scores = singletonList(i * 2d);
+      double[] scores = new double[] {i * 2d};
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
       int expectedSize = sizer.sizeof(sortedSet);
       int actualSize = sortedSet.getSizeInBytes();
@@ -767,12 +767,12 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> members = singletonList(new byte[i]);
-      List<Double> scores = singletonList((double) i);
+      double[] scores = new double[] {(double) i};
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
@@ -791,12 +791,12 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> members = singletonList(new byte[i]);
-      List<Double> scores = singletonList((double) i);
+      double[] scores = new double[] {(double) i};
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
@@ -814,12 +814,12 @@ public class RedisSortedSetTest {
     Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
-    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), Collections.emptyList());
+    RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
 
     int numberOfEntries = 100;
     for (int i = 0; i < numberOfEntries; ++i) {
       List<byte[]> members = singletonList(new byte[i]);
-      List<Double> scores = singletonList((double) i);
+      double[] scores = new double[] {(double) i};
       sortedSet.zadd(mockRegion, mockKey, members, scores, options);
     }
 
@@ -846,12 +846,14 @@ public class RedisSortedSetTest {
 
   private RedisSortedSet createRedisSortedSet(String... membersAndScores) {
     List<byte[]> members = new ArrayList<>();
-    List<Double> scores = new ArrayList<>();
+    double[] scores = new double[100];
 
     Iterator<String> iterator = Arrays.stream(membersAndScores).iterator();
+    int i = 0;
     while (iterator.hasNext()) {
-      scores.add(Coder.bytesToDouble(iterator.next().getBytes(StandardCharsets.UTF_8)));
+      scores[i] = Coder.bytesToDouble(iterator.next().getBytes(StandardCharsets.UTF_8));
       members.add(iterator.next().getBytes(StandardCharsets.UTF_8));
+      i++;
     }
 
     return new RedisSortedSet(members, scores);

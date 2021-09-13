@@ -21,7 +21,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
 
 public interface RedisSortedSetCommands {
 
-  Object zadd(RedisKey key, List<byte[]> members, List<Double> scores, ZAddOptions options);
+  Object zadd(RedisKey key, List<byte[]> members, double[] scores, ZAddOptions options);
 
   long zcard(RedisKey key);
 

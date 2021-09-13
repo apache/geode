@@ -30,7 +30,7 @@ public class ZAddsDeltaInfo implements DeltaInfo {
   private final double[] scores;
 
   public ZAddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>();
+    this.deltas = new ArrayList<>(size);
     this.scores = new double[size];
   }
 

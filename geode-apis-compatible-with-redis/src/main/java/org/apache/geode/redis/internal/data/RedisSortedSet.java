@@ -67,11 +67,11 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
   }
 
-  RedisSortedSet(List<byte[]> members, List<Double> scores) {
+  RedisSortedSet(List<byte[]> members, double[] scores) {
     this.members = new MemberMap(members.size());
 
     for (int i = 0; i < members.size(); i++) {
-      double score = scores.get(i);
+      double score = scores[i];
       byte[] member = members.get(i);
       memberAdd(member, score);
     }
@@ -201,10 +201,10 @@ public class RedisSortedSet extends AbstractRedisData {
    * @return the number of members actually added OR incremented value if INCR option specified
    */
   Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      List<Double> scoresToAdd, ZAddOptions options) {
+      double[] scoresToAdd, ZAddOptions options) {
     if (options.isINCR()) {
       // if INCR, only one score and member can be added
-      return zaddIncr(region, key, membersToAdd.get(0), scoresToAdd.get(0), options);
+      return zaddIncr(region, key, membersToAdd.get(0), scoresToAdd[0], options);
     }
 
     ZAddsDeltaInfo deltaInfo = null;
@@ -212,7 +212,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int changesCount = 0;
 
     for (int i = 0; i < membersToAdd.size(); i++) {
-      double score = scoresToAdd.get(i);
+      double score = scoresToAdd[i];
       byte[] member = membersToAdd.get(i);
       if (options.isNX() && members.containsKey(member)) {
         continue;
@@ -274,6 +274,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     if (!(memberAdd(member, score) == MemberAddResult.NO_OP)) {
       ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(1);
+      deltaInfo.add(member, score);
       storeChanges(region, key, deltaInfo);
     }
 

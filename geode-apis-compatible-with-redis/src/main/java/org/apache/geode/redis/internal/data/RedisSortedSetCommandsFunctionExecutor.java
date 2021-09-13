@@ -42,7 +42,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public Object zadd(RedisKey key, List<byte[]> membersToAdd, List<Double> scoresToAdd,
+  public Object zadd(RedisKey key, List<byte[]> membersToAdd, double[] scoresToAdd,
       ZAddOptions options) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zadd(getRegion(), key, membersToAdd, scoresToAdd,
@@ -165,7 +165,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     getRegionProvider().orderForLocking(keysToLock);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet(Collections.emptyList(), Collections.emptyList())
+        () -> new RedisSortedSet(Collections.emptyList(), new double[0])
             .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
   }
 

@@ -54,10 +54,11 @@ public class ZAddExecutor extends AbstractExecutor {
 
     int size = (commandElements.size() - optionsFoundCount - 2) / 2;
     List<byte[]> members = new ArrayList<>(size);
-    List<Double> scores = new ArrayList<>(size);
-    for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2) {
+    double[] scores = new double[size];
+    int n = 0;
+    for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2, n++) {
       try {
-        scores.add(Coder.bytesToDouble(commandElements.get(i)));
+        scores[n] = Coder.bytesToDouble(commandElements.get(i));
       } catch (NumberFormatException e) {
         throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
       }
