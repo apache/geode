@@ -134,15 +134,16 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
    * @param pattern A glob pattern.
    * @return A regex pattern to recognize the given glob pattern.
    */
-  protected Pattern convertGlobToRegex(byte[] pattern) {
+  @VisibleForTesting
+  public Pattern convertGlobToRegex(byte[] pattern) {
     if (pattern == null) {
       return null;
     }
     return GlobPattern.createPattern(pattern);
   }
+
   // Redis allows values for CURSOR up to UNSIGNED_LONG_CAPACITY, but internally it only makes sense
   // for us to use values up to Integer.MAX_VALUE, so safely narrow any cursor values to int here
-
   @VisibleForTesting
   public int getIntCursor(String cursorString) {
     BigInteger tempCursor;
