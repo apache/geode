@@ -137,9 +137,9 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__REDIS_BIND_ADDRESS,
           help = EXPERIMENTAL
               + CliStrings.START_SERVER__REDIS_BIND_ADDRESS__HELP) final String redisBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__REDIS_USERNAME,
+      @CliOption(key = CliStrings.START_SERVER__REDIS_PASSWORD,
           help = EXPERIMENTAL
-              + CliStrings.START_SERVER__REDIS_USERNAME__HELP) final String redisUsername,
+              + CliStrings.START_SERVER__REDIS_PASSWORD__HELP) final String redisPassword,
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
@@ -211,7 +211,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         includeSystemClasspath, initialHeap, jvmArgsOpts, locators, locatorWaitTime, lockMemory,
         logLevel, maxConnections, maxHeap, maxMessageCount, maxThreads, mcastBindAddress, mcastPort,
         memcachedPort, memcachedProtocol, memcachedBindAddress, redisPort, redisBindAddress,
-        redisUsername, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
+        redisPassword, messageTimeToLive, offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
         httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
@@ -227,7 +227,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer locatorWaitTime, Boolean lockMemory, String logLevel, Integer maxConnections,
       String maxHeap, Integer maxMessageCount, Integer maxThreads, String mcastBindAddress,
       Integer mcastPort, Integer memcachedPort, String memcachedProtocol,
-      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisUsername,
+      String memcachedBindAddress, Integer redisPort, String redisBindAddress, String redisPassword,
       Integer messageTimeToLive, String offHeapMemorySize, File gemfirePropertiesFile,
       Boolean rebalance, File gemfireSecurityPropertiesFile, String serverBindAddress,
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
@@ -290,8 +290,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         redisPort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_USERNAME,
-        redisUsername);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PASSWORD,
+        redisPassword);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
@@ -308,12 +308,12 @@ public class StartServerCommand extends OfflineGfshCommand {
         ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
 
     // if compatible-with-redis-port, compatible-with-redis-bind-address, or
-    // compatible-with-redis-username are specified in the command line, REDIS_ENABLED should be set
+    // compatible-with-redis-password are specified in the command line, REDIS_ENABLED should be set
     // to true
     String stringRedisPort;
     stringRedisPort = redisPort == null ? "" : redisPort.toString();
 
-    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisUsername)
+    if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisPassword)
         || StringUtils.isNotBlank(redisBindAddress)) {
       gemfireProperties.setProperty(ConfigurationProperties.REDIS_ENABLED, "true");
     }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal;
 
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -22,7 +23,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -84,12 +84,11 @@ public class GeodeRedisServer {
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-    SecurityService securityService = cache.getSecurityService();
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
-        member, securityService);
+        member);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
@@ -117,11 +116,11 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public void setAllowUnsupportedCommands(boolean allowUnsupportedCommands) {
-    unsupportedCommandsEnabled = allowUnsupportedCommands;
+    this.unsupportedCommandsEnabled = allowUnsupportedCommands;
   }
 
   public boolean allowUnsupportedCommands() {
-    return unsupportedCommandsEnabled;
+    return this.unsupportedCommandsEnabled;
   }
 
   public RegionProvider getRegionProvider() {

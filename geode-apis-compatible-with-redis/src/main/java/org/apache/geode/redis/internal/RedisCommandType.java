@@ -153,8 +153,7 @@ public enum RedisCommandType {
    ***************************************/
 
   /*************** Connection ****************/
-  AUTH(new AuthExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
+  AUTH(new AuthExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   ECHO(new EchoExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
   PING(new PingExecutor(), SUPPORTED, new MaximumParameterRequirements(2)),
   QUIT(new QuitExecutor(), SUPPORTED),

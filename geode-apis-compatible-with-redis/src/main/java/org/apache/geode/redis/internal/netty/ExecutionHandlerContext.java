@@ -15,6 +15,7 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,13 +27,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
@@ -49,7 +49,6 @@ import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
-import org.apache.geode.security.SecurityManager;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -68,22 +67,24 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Client client;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
-  private final String redisUsername;
+  private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
-  private final SecurityService securityService;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
 
   private final int serverPort;
 
-  private Subject subject;
+  private boolean isAuthenticated;
 
   /**
    * Default constructor for execution contexts.
+   *
+   * @param channel Channel used by this context, should be one to one
+   * @param password Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel channel,
       RegionProvider regionProvider,
@@ -91,25 +92,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker,
       RedisStats redisStats,
-      String username,
+      byte[] password,
       int serverPort,
-      DistributedMember member,
-      SecurityService securityService) {
+      DistributedMember member) {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.redisUsername = username;
     this.client = new Client(channel, pubsub);
+    this.authPassword = password;
+    this.isAuthenticated = password == null;
     this.serverPort = serverPort;
     this.member = member;
-    this.securityService = securityService;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
-
-    channel.closeFuture().addListener(future -> logout());
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
@@ -263,16 +261,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * If previously authenticated, logs out the current user
-   */
-  private void logout() {
-    if (subject != null) {
-      subject.logout();
-      subject = null;
-    }
-  }
-
-  /**
    * Gets the provider of Regions
    */
   public RegionProvider getRegionProvider() {
@@ -280,29 +268,27 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * Get the default username. This is the username that will be passed to the
-   * {@link SecurityManager} in response to
-   * an {@code AUTH password} command.
+   * Get the authentication password, this will be same server wide. It is exposed here as opposed
+   * to {@link GeodeRedisServer}.
    */
-  public String getRedisUsername() {
-    return redisUsername;
+  public byte[] getAuthPassword() {
+    return this.authPassword;
   }
 
   /**
-   * Check if the client has authenticated.
+   * Checker if user has authenticated themselves
    *
-   * @return True if no authentication required or authentication is complete, false otherwise
+   * @return True if no authentication required or authentication complete, false otherwise
    */
   public boolean isAuthenticated() {
-    return (!securityService.isIntegratedSecurity()) || subject != null;
+    return this.isAuthenticated;
   }
 
   /**
-   * Sets an authenticated principal in the context. This implies that the connection has been
-   * successfully authenticated.
+   * Lets this context know the authentication is complete
    */
-  public void setSubject(Subject subject) {
-    this.subject = subject;
+  public void setAuthenticationVerified() {
+    this.isAuthenticated = true;
   }
 
   public int getServerPort() {
@@ -363,10 +349,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public RedisSetCommands getSetCommands() {
     return regionProvider.getSetCommands();
-  }
-
-  public SecurityService getSecurityService() {
-    return securityService;
   }
 
 }
