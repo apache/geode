@@ -67,4 +67,8 @@ public class RedisConstants {
       "Keys in request don't hash to the same slot";
   public static final String ERROR_WEIGHT_NOT_A_FLOAT =
       "weight value is not a float";
+  public static final String ERROR_INVALID_USERNAME_OR_PASSWORD =
+      "invalid username-password pair or user is disabled.";
+  public static final String ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED =
+      "AUTH called without a Security Manager configured.";
 }

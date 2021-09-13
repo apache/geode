@@ -15,35 +15,54 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
-import java.util.Arrays;
-import java.util.List;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_USERNAME_OR_PASSWORD;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
-import org.apache.geode.redis.internal.RedisConstants;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.SecurityManager;
 
 public class AuthExecutor implements Executor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    byte[] password = context.getAuthPassword();
-    if (password == null) {
-      return RedisResponse.error(RedisConstants.ERROR_NO_PASS);
+    SecurityService securityService = context.getSecurityService();
+
+    // We're deviating from Redis here in that any AUTH requests, without security explicitly
+    // set up, will fail.
+    if (!securityService.isIntegratedSecurity()) {
+      return RedisResponse.error(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
     }
 
-    boolean correct = Arrays.equals(commandElems.get(1), password);
-
-    if (correct) {
-      context.setAuthenticationVerified();
-      return RedisResponse.ok();
+    Properties props = new Properties();
+    if (commandElems.size() == 2) {
+      props.setProperty(SecurityManager.USER_NAME, context.getRedisUsername());
+      props.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(1)));
     } else {
-      return RedisResponse.error(RedisConstants.ERROR_INVALID_PWD);
+      props.setProperty(SecurityManager.USER_NAME, bytesToString(commandElems.get(1)));
+      props.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(2)));
     }
+
+    try {
+      Subject subject = securityService.login(props);
+      context.setSubject(subject);
+    } catch (AuthenticationFailedException ex) {
+      return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);
+    }
+
+    return RedisResponse.ok();
   }
 
 }

@@ -111,6 +111,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bCROSSSLOT = stringToBytes("CROSSSLOT ");
 
+  @MakeImmutable
+  public static final byte[] bWRONGPASS = stringToBytes("WRONGPASS ");
+
   // ********** Redis Command constants **********
 
   // ClusterExecutor

@@ -113,8 +113,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
@@ -1317,8 +1317,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Specifies the address on which the Redis API for Geode is listening. If set to the empty string or this property is not specified, localhost is requested from the operating system.");
     m.put(REDIS_ENABLED,
         "When the default value of false, the Redis API for Geode is not available.  Set to true to enable the Redis API for Geode.");
-    m.put(REDIS_PASSWORD,
-        "Specifies the password that the server uses when a client attempts to authenticate. The default is none and no authentication will be required.");
+    m.put(REDIS_USERNAME,
+        "Specifies the username that the server uses when a client attempts to authenticate using only a password. The default is 'default'.");
     m.put(REDIS_PORT,
         "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,
