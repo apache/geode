@@ -1958,20 +1958,20 @@ public interface ConfigurationProperties {
   @Experimental
   String REDIS_ENABLED = "compatible-with-redis-enabled";
   /**
-   * The static String definition of the <i>"compatible-with-redis-username"</i> property <a
-   * name="compatible-with-redis-username"/a>
+   * The static String definition of the <i>"compatible-with-redis-password"</i> property <a
+   * name="compatible-with-redis-password"/a>
    * </p>
-   * <U>Description</U>: Specifies the default username that the server uses when a client attempts
-   * to authenticate using only a password. This requires a SecurityManager to be configured.
+   * <U>Description</U>: Specifies the password that the server uses when a client attempts to
+   * authenticate.
    * </p>
-   * <U>Default</U>: default
+   * <U>Default</U>: no password set
    *
    * <p>
    * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
   @Experimental
-  String REDIS_USERNAME = "compatible-with-redis-username";
+  String REDIS_PASSWORD = "compatible-with-redis-password";
   /**
    * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
    * name="compatible-with-redis-port"/a>

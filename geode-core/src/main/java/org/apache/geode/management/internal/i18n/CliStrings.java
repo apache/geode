@@ -2630,10 +2630,10 @@ public class CliStrings {
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
       "Specifies the address on which the Redis API for Geode is listening. "
           + "If set to the empty string or this property is not specified, the server listens on all local addresses.";
-  public static final String START_SERVER__REDIS_USERNAME = ConfigurationProperties.REDIS_USERNAME;
-  public static final String START_SERVER__REDIS_USERNAME__HELP =
-      "Specifies the username that the server uses when a client attempts to authenticate using only a password."
-          + " This option also requires a SecurityManager to be configured.";
+  public static final String START_SERVER__REDIS_PASSWORD = ConfigurationProperties.REDIS_PASSWORD;
+  public static final String START_SERVER__REDIS_PASSWORD__HELP =
+      "Specifies the password that the server uses when a client attempts to authenticate."
+          + " The default is none and no authentication will be required.";
   public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP =
       "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.";

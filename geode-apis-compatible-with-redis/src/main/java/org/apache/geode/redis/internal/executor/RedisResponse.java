@@ -146,10 +146,6 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getBusyKeyResponse(bba, error));
   }
 
-  public static RedisResponse wrongpass(String error) {
-    return new RedisResponse((bba) -> Coder.getWrongpassResponse(bba, error));
-  }
-
   public static RedisResponse customError(String error) {
     return new RedisResponse((buffer) -> Coder.getCustomErrorResponse(buffer, error));
   }
