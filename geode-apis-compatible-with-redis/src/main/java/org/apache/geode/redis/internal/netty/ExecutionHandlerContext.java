@@ -109,7 +109,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.sscanCursor = new BigInteger("0");
     redisStats.addClient();
 
-    client.addShutdownListener(future -> logout());
+    channel.closeFuture().addListener(future -> logout());
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
