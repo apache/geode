@@ -92,6 +92,14 @@ public class Command {
   }
 
   /**
+   * returns the list of arguments given to this command
+   * Note: this is always the {@link #getProcessedCommand} result without its first element.
+   */
+  public List<byte[]> getCommandArguments() {
+    return commandElems.subList(1, commandElems.size());
+  }
+
+  /**
    * Used to get the command element list when every argument is also a key
    *
    * @return List of command elements in form of {@link List}

@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor.createSubscribeResponse;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPSUBSCRIBE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -30,35 +33,13 @@ public class PsubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    Collection<SubscribeResult> results = new ArrayList<>();
-    for (int i = 1; i < command.getProcessedCommand().size(); i++) {
-      byte[] patternBytes = command.getProcessedCommand().get(i);
+    Collection<SubscribeResult> results = new ArrayList<>(command.getCommandArguments().size());
+    for (byte[] patternBytes : command.getCommandArguments()) {
       SubscribeResult result =
-          context.getPubSub().psubscribe(patternBytes, context, context.getClient());
+          context.getPubSub().psubscribe(patternBytes, context.getClient());
       results.add(result);
     }
 
-    Collection<Collection<?>> items = new ArrayList<>();
-    for (SubscribeResult result : results) {
-      Collection<Object> item = new ArrayList<>();
-      item.add("psubscribe");
-      item.add(result.getChannel());
-      item.add(result.getChannelCount());
-      items.add(item);
-    }
-
-    Runnable callback = () -> {
-      for (SubscribeResult result : results) {
-        if (result.getSubscription() != null) {
-          result.getSubscription().readyToPublish();
-        }
-      }
-    };
-
-    RedisResponse response = RedisResponse.flattenedArray(items);
-    response.setAfterWriteCallback(callback);
-
-    return response;
+    return createSubscribeResponse(results, bPSUBSCRIBE);
   }
-
 }

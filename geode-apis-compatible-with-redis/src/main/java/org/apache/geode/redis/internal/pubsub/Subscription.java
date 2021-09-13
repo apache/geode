@@ -16,54 +16,21 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Client;
 
 
 /**
- * Interface that represents the relationship between a channel or pattern and client.
+ * Interface that represents a subscription that was made by a client on a channel or pattern.
+ * It supports telling a subscription it is ready to publish messages
+ * and the ability to publish a message to a subscribed client.
  */
 public interface Subscription {
-  enum Type {
-    CHANNEL,
-    PATTERN;
-  }
-
-  Type getType();
-
   /**
-   * Equality of a subscription is represented by a combination of client and one of channel or
-   * pattern
+   * Will publish a message to the designated client and channel
    */
-  boolean isEqualTo(Object channelOrPattern, Client client);
-
-  /**
-   * Will publish a message to the designated channel.
-   */
-  void publishMessage(byte[] channel, byte[] message);
-
-  /**
-   * Verifies that the subscription is established with the designated client.
-   */
-  boolean matchesClient(Client client);
-
-  /**
-   * Verifies that the subscription channel or pattern matches the designated channel.
-   */
-  boolean matches(byte[] channel);
-
-  /**
-   * The response dependent on the type of the subscription
-   */
-  List<Object> createResponse(byte[] channel, byte[] message);
-
-  /**
-   * Return the channel or pattern name.
-   */
-  byte[] getSubscriptionName();
+  void publishMessage(boolean isPatternSubscription, byte[] subscriptionName, Client client,
+      byte[] channel, byte[] message);
 
   void readyToPublish();
-
-  void shutdown();
 }

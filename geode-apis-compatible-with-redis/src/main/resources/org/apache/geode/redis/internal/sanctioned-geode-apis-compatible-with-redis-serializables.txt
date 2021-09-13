@@ -7,4 +7,3 @@ org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949
 org/apache/geode/redis/internal/parameters/RedisParametersMismatchException,true,-643700717871858072
 org/apache/geode/redis/internal/pubsub/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/pubsub/PubSubImpl
-org/apache/geode/redis/internal/pubsub/Subscription$Type,false

@@ -16,6 +16,10 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -24,7 +28,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -37,10 +40,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.StripedExecutorService;
 import org.apache.geode.redis.internal.services.StripedRunnable;
 
@@ -86,17 +86,27 @@ public class PubSubImpl implements PubSub {
 
   public PubSubImpl(Subscriptions subscriptions) {
     this.subscriptions = subscriptions;
+    executor = createExecutorService();
+    registerPublishFunction();
+  }
 
+  @VisibleForTesting
+  PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
+    this.subscriptions = subscriptions;
+    executor = executorService;
+    // since this is used for unit testing, do not call registerPublishFunction
+  }
+
+  private static ExecutorService createExecutorService() {
     ThreadFactory threadFactory = new LoggingThreadFactory("GeodeRedisServer-Publish-", true);
     BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
     ExecutorService innerPublishExecutor = new ThreadPoolExecutor(1, MAX_PUBLISH_THREAD_COUNT,
         60, TimeUnit.SECONDS, workQueue, threadFactory);
 
-    executor = new StripedExecutorService(innerPublishExecutor);
-
-    registerPublishFunction();
+    return new StripedExecutorService(innerPublishExecutor);
   }
 
+  @VisibleForTesting
   public int getSubscriptionCount() {
     return subscriptions.size();
   }
@@ -107,34 +117,38 @@ public class PubSubImpl implements PubSub {
     executor.submit(
         new PublishingRunnable(() -> internalPublish(regionProvider, channel, message), client));
 
-    return subscriptions.findSubscriptions(channel).size();
+    return subscriptions.getAllSubscriptionCount(channel);
   }
 
+  @SuppressWarnings("unchecked")
   private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
     Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
     try {
-      @SuppressWarnings("unchecked")
-      ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
+      ResultCollector<?, ?> resultCollector = FunctionService
           .onMembers(membersWithDataRegion)
           .setArguments(new Object[] {channel, message})
           .execute(REDIS_PUB_SUB_FUNCTION_ID);
-
-      subscriberCountCollector.getResult();
+      // block until execute completes
+      resultCollector.getResult();
     } catch (Exception e) {
-      logger.warn("Failed to execute publish function on channel {}",
-          Coder.bytesToString(channel), e);
+      // the onMembers contract is for execute to throw an exception
+      // if one of the members goes down.
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Exception executing publish function on channel {}. If a server departed during the publish then an exception is expected.",
+            bytesToString(channel), e);
+      }
     }
   }
 
   @Override
-  public SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context, Client client) {
-    return subscriptions.subscribe(channel, context, client);
+  public SubscribeResult subscribe(byte[] channel, Client client) {
+    return subscriptions.subscribe(channel, client);
   }
 
   @Override
-  public SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context,
-      Client client) {
-    return subscriptions.psubscribe(pattern, context, client);
+  public SubscribeResult psubscribe(byte[] pattern, Client client) {
+    return subscriptions.psubscribe(pattern, client);
   }
 
   private void registerPublishFunction() {
@@ -147,7 +161,7 @@ public class PubSubImpl implements PubSub {
       @Override
       public void execute(FunctionContext<Object[]> context) {
         Object[] publishMessage = context.getArguments();
-        publishMessageToSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
+        publishMessageToLocalSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
         context.getResultSender().lastResult(true);
       }
 
@@ -161,24 +175,22 @@ public class PubSubImpl implements PubSub {
       public boolean isHA() {
         return false;
       }
+
+      @Override
+      public boolean hasResult() {
+        return true; // this is needed to preserve ordering
+      }
     });
   }
 
   @Override
-  public long unsubscribe(byte[] channel, Client client) {
-    return subscriptions.unsubscribe(channel, client);
+  public Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client) {
+    return subscriptions.unsubscribe(channels, client);
   }
 
   @Override
-  public long punsubscribe(GlobPattern pattern, Client client) {
-    return subscriptions.unsubscribe(pattern, client);
-  }
-
-  @Override
-  public List<byte[]> findSubscriptionNames(Client client) {
-    return subscriptions.findSubscriptions(client).stream()
-        .map(Subscription::getSubscriptionName)
-        .collect(Collectors.toList());
+  public Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client) {
+    return subscriptions.punsubscribe(patterns, client);
   }
 
   @Override
@@ -193,31 +205,30 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names) {
-    return subscriptions.findNumberOfSubscribersPerChannel(names);
+    List<Object> result = new ArrayList<>(names.size() * 2);
+    names.forEach(name -> {
+      result.add(name);
+      result.add(subscriptions.getChannelSubscriptionCount(name));
+    });
+    return result;
   }
 
   @Override
-  public List<byte[]> findSubscriptionNames(Client client, Subscription.Type type) {
-    return subscriptions.findSubscriptions(client).stream()
-        .filter(s -> s.getType() == (type))
-        .map(Subscription::getSubscriptionName)
-        .collect(Collectors.toList());
+  public long findNumberOfSubscribedPatterns() {
+    return subscriptions.getPatternSubscriptionCount();
   }
 
   @Override
-  public Long findNumberOfSubscribedPatterns() {
-    return subscriptions.findNumberOfPatternSubscriptions();
+  public void clientDisconnect(Client client) {
+    subscriptions.remove(client);
   }
 
   @VisibleForTesting
-  void publishMessageToSubscribers(byte[] channel, byte[] message) {
-    List<Subscription> foundSubscriptions = subscriptions.findSubscriptions(channel);
-    if (foundSubscriptions.isEmpty()) {
-      return;
-    }
-
-    foundSubscriptions.forEach(
-        subscription -> subscription.publishMessage(channel, message));
+  void publishMessageToLocalSubscribers(byte[] channel, byte[] message) {
+    subscriptions.forEachSubscription(channel,
+        (subscriptionName, channelToMatch, client, subscription) -> subscription.publishMessage(
+            channelToMatch != null, subscriptionName,
+            client, channel, message));
   }
 
 }

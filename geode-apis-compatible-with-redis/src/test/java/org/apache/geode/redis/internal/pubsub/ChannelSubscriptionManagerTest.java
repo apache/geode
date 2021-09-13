@@ -11,25 +11,13 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.server;
+package org.apache.geode.redis.internal.pubsub;
 
-
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-
-public class TimeExecutor extends AbstractExecutor {
+public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    long timeStamp = System.currentTimeMillis();
-    long seconds = timeStamp / 1000;
-    long microSeconds = (timeStamp - (seconds * 1000)) * 1000;
-
-    return RedisResponse.array(Long.toString(seconds), Long.toString(microSeconds));
+  protected AbstractSubscriptionManager createManager() {
+    return new ChannelSubscriptionManager();
   }
 }

@@ -21,12 +21,8 @@ import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
@@ -69,10 +65,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final Logger logger = LogService.getLogger();
 
   private final Client client;
-  private final Channel channel;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
-  private final ByteBufAllocator byteBufAllocator;
   private final byte[] authPassword;
   private final Supplier<Boolean> allowUnsupportedSupplier;
   private final Runnable shutdownInvoker;
@@ -101,14 +95,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       byte[] password,
       int serverPort,
       DistributedMember member) {
-    this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
-    this.client = new Client(channel);
-    this.byteBufAllocator = this.channel.alloc();
+    this.client = new Client(channel, pubsub);
     this.authPassword = password;
     this.isAuthenticated = password == null;
     this.serverPort = serverPort;
@@ -119,11 +111,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public ChannelFuture writeToChannel(RedisResponse response) {
-    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
-        .addListener((ChannelFutureListener) f -> {
-          response.afterWrite();
-          logResponse(response, channel.remoteAddress(), f.cause());
-        });
+    return client.writeToChannel(response);
   }
 
   /**
@@ -213,7 +201,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {} - {}", command,
-            channel.remoteAddress().toString());
+            getClient().getRemoteAddress());
       }
 
       // Note: Some Redis 6 clients look for an 'unknown command' error when
@@ -233,7 +221,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      if (!getPubSub().findSubscriptionNames(getClient()).isEmpty()) {
+      if (getClient().hasSubscriptions()) {
         if (!command.getCommandType().isAllowedWhileSubscribed()) {
           writeToChannel(RedisResponse
               .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
@@ -270,29 +258,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
     }
     return response;
-  }
-
-  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
-    if (logger.isDebugEnabled() && response != null) {
-      ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
-      if (cause == null) {
-        logger.debug("Redis command returned: {} - {}",
-            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
-      } else {
-        logger.debug("Redis command FAILED to return: {} - {}",
-            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
-      }
-    }
-  }
-
-  /**
-   * {@link ByteBuf} allocator for this context. All executors must use this pooled allocator as
-   * opposed to having unpooled buffers for maximum performance
-   *
-   * @return allocator instance
-   */
-  public ByteBufAllocator getByteBufAllocator() {
-    return this.byteBufAllocator;
   }
 
   /**

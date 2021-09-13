@@ -16,75 +16,67 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static java.util.Collections.singletonList;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Class that manages both channel and pattern subscriptions.
+ * The data associated with subscriptions is organized like so:
+ * 1. Client stores a byte array containing the channel or pattern name in a Set.
+ * 2. Subscriptions has two SubscriptionManager instances; one for channels and one for patterns.
+ * 3. Each SubscriptionManager uses a Map to store a SubscriptionId (that references the same
+ * channel or pattern name as the Client) as a key, and a ClientSubscriptionManager as a value.
+ * 4. Each ClientSubscriptionManager uses a Map to store a Client as a key and a Subscription as a
+ * value.
+ * 5. Each Subscription has a CountdownLatch.
  */
 public class Subscriptions {
-  private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
 
-  /**
-   * Check whether a given client has already subscribed to a channel or pattern
-   *
-   * @param channelOrPattern channel or pattern
-   * @param client a client connection
-   */
+  private static final Collection<Collection<?>> EMPTY_UNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(true, null, 0));
+  private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
+      singletonList(createUnsubscribeItem(false, null, 0));
+
+  private final SubscriptionManager channelSubscriptions = new ChannelSubscriptionManager();
+  private final SubscriptionManager patternSubscriptions = new PatternSubscriptionManager();
+
+  public int getChannelSubscriptionCount(byte[] channel) {
+    return channelSubscriptions.getSubscriptionCount(channel);
+  }
+
   @VisibleForTesting
-  boolean exists(Object channelOrPattern, Client client) {
-    return subscriptions.stream()
-        .anyMatch(subscription -> subscription.isEqualTo(channelOrPattern, client));
+  int getPatternSubscriptionCount(byte[] channel) {
+    return patternSubscriptions.getSubscriptionCount(channel);
   }
 
-  /**
-   * Return all subscriptions for a given client
-   *
-   * @param client the subscribed client
-   * @return a list of subscriptions
-   */
-  public List<Subscription> findSubscriptions(Client client) {
-    return subscriptions.stream()
-        .filter(subscription -> subscription.matchesClient(client))
-        .collect(Collectors.toList());
+  public int getAllSubscriptionCount(byte[] channel) {
+    return getChannelSubscriptionCount(channel) + getPatternSubscriptionCount(channel);
   }
 
-  /**
-   * Return all subscriptions for a given channel or pattern
-   *
-   * @param channelOrPattern the channel or pattern
-   * @return a list of subscriptions
-   */
-  public List<Subscription> findSubscriptions(byte[] channelOrPattern) {
-    return subscriptions.stream()
-        .filter(subscription -> subscription.matches(channelOrPattern))
-        .collect(Collectors.toList());
+  public interface ForEachConsumer {
+    void accept(byte[] subscriptionName, String channelToMatch, Client client,
+        Subscription subscription);
+  }
+
+  public void forEachSubscription(byte[] channel, ForEachConsumer action) {
+    channelSubscriptions.foreachSubscription(channel, action);
+    patternSubscriptions.foreachSubscription(channel, action);
   }
 
   /**
    * Return a list of all subscribed channel names (not including subscribed patterns).
    */
   public List<byte[]> findChannelNames() {
-    ObjectOpenCustomHashSet<byte[]> channelNames =
-        new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-
-    subscriptions.stream()
-        .filter(s -> s instanceof ChannelSubscription)
-        .forEach(channel -> channelNames.add(channel.getSubscriptionName()));
-
-    return new ArrayList<>(channelNames);
+    return channelSubscriptions.getIds();
   }
 
   /**
@@ -96,66 +88,36 @@ public class Subscriptions {
    * @param pattern the glob pattern to search for
    */
   public List<byte[]> findChannelNames(byte[] pattern) {
-
-    GlobPattern globPattern = new GlobPattern(bytesToString(pattern));
-
-    return findChannelNames()
-        .stream()
-        .filter(name -> globPattern.matches(bytesToString(name)))
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Return a list consisting of pairs {@code channelName, subscriptionCount}.
-   *
-   * @param names a list of the names to consider. This should not include any patterns.
-   */
-  public List<Object> findNumberOfSubscribersPerChannel(List<byte[]> names) {
-    List<Object> result = new ArrayList<>();
-
-    names.forEach(name -> {
-      Long subscriptionCount = findSubscriptions(name)
-          .stream()
-          .filter(subscription -> subscription instanceof ChannelSubscription)
-          .count();
-
-      result.add(name);
-      result.add(subscriptionCount);
-    });
-
-    return result;
+    return channelSubscriptions.getIds(pattern);
   }
 
   /**
    * Return a count of all pattern subscriptions including duplicates.
    */
-  public long findNumberOfPatternSubscriptions() {
-    return subscriptions.stream()
-        .filter(subscription -> subscription instanceof PatternSubscription)
-        .count();
+  public int getPatternSubscriptionCount() {
+    return patternSubscriptions.getSubscriptionCount();
   }
 
-  /**
-   * Add a new subscription
-   */
   @VisibleForTesting
-  void add(Subscription subscription) {
-    subscriptions.add(subscription);
+  int getChannelSubscriptionCount() {
+    return channelSubscriptions.getSubscriptionCount();
+  }
+
+  Subscription addChannel(byte[] channel, Client client) {
+    return channelSubscriptions.add(channel, client);
+  }
+
+  Subscription addPattern(byte[] pattern, Client client) {
+    return patternSubscriptions.add(pattern, client);
   }
 
   /**
    * Remove all subscriptions for a given client
    */
   public void remove(Client client) {
-    subscriptions.removeIf(subscription -> subscription.matchesClient(client));
-  }
-
-  /**
-   * Remove a single subscription
-   */
-  @VisibleForTesting
-  boolean remove(Object channel, Client client) {
-    return subscriptions.removeIf(subscription -> subscription.isEqualTo(channel, client));
+    channelSubscriptions.remove(client);
+    patternSubscriptions.remove(client);
+    client.clearSubscriptions();
   }
 
   /**
@@ -163,37 +125,71 @@ public class Subscriptions {
    */
   @VisibleForTesting
   int size() {
-    return subscriptions.size();
+    // this is only used by tests so performance is not an issue
+    return getChannelSubscriptionCount() + getPatternSubscriptionCount();
   }
 
-  public synchronized SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context,
-      Client client) {
-    Subscription createdSubscription = null;
-    if (!exists(channel, client)) {
-      createdSubscription = new ChannelSubscription(client, channel, context, this);
-      add(createdSubscription);
-    }
-    long channelCount = findSubscriptions(client).size();
+  public SubscribeResult subscribe(byte[] channel, Client client) {
+    Subscription createdSubscription = addChannel(channel, client);
+    long channelCount = client.getSubscriptionCount();
     return new SubscribeResult(createdSubscription, channelCount, channel);
   }
 
-  public SubscribeResult psubscribe(byte[] patternBytes, ExecutionHandlerContext context,
-      Client client) {
-    GlobPattern pattern = new GlobPattern(bytesToString(patternBytes));
-    Subscription createdSubscription = null;
-    synchronized (this) {
-      if (!exists(pattern, client)) {
-        createdSubscription = new PatternSubscription(client, pattern, context, this);
-        add(createdSubscription);
-      }
-      long channelCount = findSubscriptions(client).size();
-      return new SubscribeResult(createdSubscription, channelCount, patternBytes);
-    }
+  public SubscribeResult psubscribe(byte[] patternBytes, Client client) {
+    Subscription createdSubscription = addPattern(patternBytes, client);
+    long channelCount = client.getSubscriptionCount();
+    return new SubscribeResult(createdSubscription, channelCount, patternBytes);
   }
 
-  public synchronized long unsubscribe(Object channelOrPattern, Client client) {
-    remove(channelOrPattern, client);
-    return findSubscriptions(client).size();
+  public Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client) {
+    if (channels.isEmpty()) {
+      channels = client.getChannelSubscriptions();
+      if (channels.isEmpty()) {
+        return EMPTY_UNSUBSCRIBE_RESULT;
+      }
+    }
+    Collection<Collection<?>> response = new ArrayList<>(channels.size());
+    for (byte[] channel : channels) {
+      long subscriptionCount = unsubscribe(channel, client);
+      response.add(createUnsubscribeItem(true, channel, subscriptionCount));
+    }
+    return response;
   }
+
+  public Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client) {
+    if (patterns.isEmpty()) {
+      patterns = client.getPatternSubscriptions();
+      if (patterns.isEmpty()) {
+        return EMPTY_PUNSUBSCRIBE_RESULT;
+      }
+    }
+    Collection<Collection<?>> response = new ArrayList<>(patterns.size());
+    for (byte[] pattern : patterns) {
+      long subscriptionCount = punsubscribe(pattern, client);
+      response.add(createUnsubscribeItem(false, pattern, subscriptionCount));
+    }
+    return response;
+  }
+
+  private long unsubscribe(byte[] channel, Client client) {
+    if (client.removeChannelSubscription(channel)) {
+      channelSubscriptions.remove(channel, client);
+    }
+    return client.getSubscriptionCount();
+  }
+
+  private long punsubscribe(byte[] patternBytes, Client client) {
+    if (client.removePatternSubscription(patternBytes)) {
+      patternSubscriptions.remove(patternBytes, client);
+    }
+    return client.getSubscriptionCount();
+  }
+
+  private static List<Object> createUnsubscribeItem(boolean channel, byte[] channelOrPattern,
+      long subscriptionCount) {
+    return Arrays.asList(channel ? bUNSUBSCRIBE : bPUNSUBSCRIBE, channelOrPattern,
+        subscriptionCount);
+  }
+
 
 }

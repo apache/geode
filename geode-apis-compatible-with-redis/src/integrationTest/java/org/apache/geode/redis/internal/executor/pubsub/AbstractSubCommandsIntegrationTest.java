@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.PUBSUB_CHANNELS;
 import static redis.clients.jedis.Protocol.PUBSUB_NUMSUB;
+import static redis.clients.jedis.Protocol.PUBSUB_NUM_PAT;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -288,6 +289,14 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   }
 
   /** -- NUMPAT-- **/
+
+  @Test
+  public void numpat_shouldError_givenTooManyArguments() {
+    assertAtMostNArgsForSubCommand(introspector,
+        Protocol.Command.PUBSUB,
+        PUBSUB_NUM_PAT.getBytes(),
+        0);
+  }
 
   @Test
   public void numpat_shouldReturnCountOfAllPatternSubscriptions_includingDuplicates() {

@@ -15,15 +15,13 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import static org.apache.geode.redis.internal.pubsub.Subscription.Type.CHANNEL;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -31,44 +29,9 @@ public class UnsubscribeExecutor extends AbstractExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
-    List<byte[]> channelNames = extractChannelNames(command);
-    if (channelNames.isEmpty()) {
-      channelNames = context.getPubSub().findSubscriptionNames(context.getClient(), CHANNEL);
-    }
-
-    Collection<Collection<?>> response = unsubscribe(context, channelNames);
-
+    List<byte[]> channelNames = command.getCommandArguments();
+    Client client = context.getClient();
+    Collection<Collection<?>> response = context.getPubSub().unsubscribe(channelNames, client);
     return RedisResponse.flattenedArray(response);
   }
-
-  private List<byte[]> extractChannelNames(Command command) {
-    return command.getProcessedCommand().stream().skip(1).collect(Collectors.toList());
-  }
-
-  private Collection<Collection<?>> unsubscribe(ExecutionHandlerContext context,
-      List<byte[]> channelNames) {
-    Collection<Collection<?>> response = new ArrayList<>();
-
-    if (channelNames.isEmpty()) {
-      response.add(createItem(null, 0));
-    } else {
-      for (byte[] channel : channelNames) {
-        long subscriptionCount = context.getPubSub().unsubscribe(channel, context.getClient());
-
-        response.add(createItem(channel, subscriptionCount));
-      }
-    }
-
-    return response;
-  }
-
-  private ArrayList<Object> createItem(byte[] channelName, long subscriptionCount) {
-    ArrayList<Object> oneItem = new ArrayList<>();
-    oneItem.add("unsubscribe");
-    oneItem.add(channelName);
-    oneItem.add(subscriptionCount);
-    return oneItem;
-  }
-
 }

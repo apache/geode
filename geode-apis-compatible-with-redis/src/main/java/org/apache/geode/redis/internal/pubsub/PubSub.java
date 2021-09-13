@@ -16,12 +16,11 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
@@ -49,55 +48,37 @@ public interface PubSub {
    * Subscribe to a channel
    *
    * @param channel to subscribe to
-   * @param context ExecutionHandlerContext which will handle the client response
-   * @param client a Client instance making the request
+   * @param client which will handle the client response
    * @return the result of the subscribe
    */
-  SubscribeResult subscribe(byte[] channel, ExecutionHandlerContext context, Client client);
+  SubscribeResult subscribe(byte[] channel, Client client);
 
   /**
    * Subscribe to a pattern
    *
    * @param pattern glob pattern to subscribe to
-   * @param context ExecutionHandlerContext which will handle the client response
-   * @param client a Client instance making the request
+   * @param client which will handle the client response
    * @return the result of the subscribe
    */
-  SubscribeResult psubscribe(byte[] pattern, ExecutionHandlerContext context, Client client);
+  SubscribeResult psubscribe(byte[] pattern, Client client);
 
   /**
    * Unsubscribe a client from a channel
    *
-   * @param channel the channel to unsubscribe from
+   * @param channels the channels to unsubscribe from
    * @param client the Client which is to be unsubscribed
-   * @return the number of channels still subscribed to by the client
+   * @return result will contain a nested Collection for each channel unsubscribed from.
    */
-  long unsubscribe(byte[] channel, Client client);
+  Collection<Collection<?>> unsubscribe(List<byte[]> channels, Client client);
 
   /**
    * Unsubscribe from a previously subscribed pattern
    *
-   * @param pattern the channel to unsubscribe from
+   * @param patterns the patterns to unsubscribe from
    * @param client the Client which is to be unsubscribed
-   * @return the number of channels still subscribed to by the client
+   * @return result will contain a nested Collection for each pattern unsubscribed from.
    */
-  long punsubscribe(GlobPattern pattern, Client client);
-
-  /**
-   * Return a list of channel names or patterns that a client has subscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels or patterns
-   */
-  List<byte[]> findSubscriptionNames(Client client, Subscription.Type type);
-
-  /**
-   * Return a list of channel names and patterns that a client has subscribed to
-   *
-   * @param client the Client which is to be queried
-   * @return the list of channels and patterns
-   */
-  List<byte[]> findSubscriptionNames(Client client);
+  Collection<Collection<?>> punsubscribe(List<byte[]> patterns, Client client);
 
   /**
    * Return a list of all subscribed channel names (not including subscribed patterns).
@@ -124,5 +105,10 @@ public interface PubSub {
   /**
    * Return a count of all pattern subscriptions including duplicates.
    */
-  Long findNumberOfSubscribedPatterns();
+  long findNumberOfSubscribedPatterns();
+
+  /**
+   * Should be called when the given client disconnects from the server.
+   */
+  void clientDisconnect(Client client);
 }

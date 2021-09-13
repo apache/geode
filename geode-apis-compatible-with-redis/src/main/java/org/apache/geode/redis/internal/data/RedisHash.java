@@ -48,6 +48,7 @@ import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCusto
 import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
@@ -254,7 +255,7 @@ public class RedisHash extends AbstractRedisData {
   private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
       byte[] value) {
     if (matchPattern != null) {
-      if (matchPattern.matcher(bytesToString(key)).matches()) {
+      if (GlobPattern.matches(matchPattern, key)) {
         resultList.add(key);
         resultList.add(value);
       }

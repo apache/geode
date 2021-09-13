@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import static java.util.Arrays.asList;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSUBSCRIBE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -23,6 +26,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.SubscribeResult;
+import org.apache.geode.redis.internal.pubsub.Subscription;
 
 public class SubscribeExecutor extends AbstractExecutor {
 
@@ -30,28 +34,28 @@ public class SubscribeExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    Collection<SubscribeResult> results = new ArrayList<>();
-    for (int i = 1; i < command.getProcessedCommand().size(); i++) {
-      byte[] channelName = command.getProcessedCommand().get(i);
+    Collection<SubscribeResult> results = new ArrayList<>(command.getCommandArguments().size());
+    for (byte[] channelName : command.getCommandArguments()) {
       SubscribeResult result =
-          context.getPubSub().subscribe(channelName, context, context.getClient());
+          context.getPubSub().subscribe(channelName, context.getClient());
       results.add(result);
     }
 
-    Collection<Collection<?>> items = new ArrayList<>();
-    for (SubscribeResult result : results) {
-      Collection<Object> item = new ArrayList<>();
-      item.add("subscribe");
-      item.add(result.getChannel());
-      item.add(result.getChannelCount());
+    return createSubscribeResponse(results, bSUBSCRIBE);
+  }
 
-      items.add(item);
+  static RedisResponse createSubscribeResponse(Collection<SubscribeResult> results,
+      byte[] messageType) {
+    Collection<Collection<?>> items = new ArrayList<>(results.size());
+    for (SubscribeResult result : results) {
+      items.add(asList(messageType, result.getChannel(), result.getChannelCount()));
     }
 
     Runnable callback = () -> {
       for (SubscribeResult result : results) {
-        if (result.getSubscription() != null) {
-          result.getSubscription().readyToPublish();
+        Subscription subscription = result.getSubscription();
+        if (subscription != null) {
+          subscription.readyToPublish();
         }
       }
     };

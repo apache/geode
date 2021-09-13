@@ -16,18 +16,50 @@
 
 package org.apache.geode.redis.internal.netty;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.pubsub.PubSub;
 
 
 public class Client {
-  private Channel channel;
+  private static final Logger logger = LogService.getLogger();
 
-  public Client(Channel remoteAddress) {
+  private final Channel channel;
+  private final ByteBufAllocator byteBufAllocator;
+  /**
+   * The subscription sets do not need to be thread safe
+   * because they are only used by a single thread as it
+   * does pubsub operations for a particular Client.
+   */
+  private final Set<byte[]> channelSubscriptions =
+      new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+  private final Set<byte[]> patternSubscriptions =
+      new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
+
+  public Client(Channel remoteAddress, PubSub pubsub) {
     this.channel = remoteAddress;
+    this.byteBufAllocator = this.channel.alloc();
+    channel.closeFuture().addListener(future -> pubsub.clientDisconnect(this));
+  }
+
+  public String getRemoteAddress() {
+    return channel.remoteAddress().toString();
   }
 
   @Override
@@ -47,16 +79,72 @@ public class Client {
     return Objects.hash(channel);
   }
 
-  public void addShutdownListener(
-      GenericFutureListener<? extends Future<? super Void>> shutdownListener) {
-    channel.closeFuture().addListener(shutdownListener);
-  }
-
-  public boolean isDead() {
-    return !this.channel.isOpen();
-  }
-
   public String toString() {
     return channel.toString();
   }
+
+  public boolean hasSubscriptions() {
+    return !channelSubscriptions.isEmpty() || !patternSubscriptions.isEmpty();
+  }
+
+  public long getSubscriptionCount() {
+    return channelSubscriptions.size() + patternSubscriptions.size();
+  }
+
+  public void clearSubscriptions() {
+    channelSubscriptions.clear();
+    patternSubscriptions.clear();
+  }
+
+  public boolean addChannelSubscription(byte[] channel) {
+    return channelSubscriptions.add(channel);
+  }
+
+  public boolean addPatternSubscription(byte[] pattern) {
+    return patternSubscriptions.add(pattern);
+  }
+
+  public boolean removeChannelSubscription(byte[] channel) {
+    return channelSubscriptions.remove(channel);
+  }
+
+  public boolean removePatternSubscription(byte[] pattern) {
+    return patternSubscriptions.remove(pattern);
+  }
+
+  public List<byte[]> getChannelSubscriptions() {
+    if (channelSubscriptions.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new ArrayList<>(channelSubscriptions);
+  }
+
+  public List<byte[]> getPatternSubscriptions() {
+    if (patternSubscriptions.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return new ArrayList<>(patternSubscriptions);
+  }
+
+  public ChannelFuture writeToChannel(RedisResponse response) {
+    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
+        .addListener((ChannelFutureListener) f -> {
+          response.afterWrite();
+          logResponse(response, channel.remoteAddress(), f.cause());
+        });
+  }
+
+  private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
+    if (logger.isDebugEnabled() && response != null) {
+      ByteBuf buf = response.encode(new UnpooledByteBufAllocator(false));
+      if (cause == null) {
+        logger.debug("Redis command returned: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage);
+      } else {
+        logger.debug("Redis command FAILED to return: {} - {}",
+            Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
+      }
+    }
+  }
+
 }

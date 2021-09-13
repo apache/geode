@@ -15,7 +15,6 @@
  */
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +38,13 @@ public class KeysExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    String glob = bytesToString(commandElems.get(1));
+    byte[] glob = commandElems.get(1);
     Set<RedisKey> allKeys = getDataRegion(context).keySet();
     List<RedisKey> matchingKeys = new ArrayList<>();
 
     Pattern pattern;
     try {
-      pattern = GlobPattern.compile(glob);
+      pattern = GlobPattern.createPattern(glob);
     } catch (PatternSyntaxException e) {
       logger.warn(
           "Could not compile the pattern: '{}' due to the following exception: '{}'. KEYS will return an empty list.",

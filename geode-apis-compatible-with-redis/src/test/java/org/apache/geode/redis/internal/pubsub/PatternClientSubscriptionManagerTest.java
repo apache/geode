@@ -11,54 +11,18 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.pubsub;
 
-package org.apache.geode.redis.mocks;
 
-import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscription;
 
-public class DummySubscription implements Subscription {
+public class PatternClientSubscriptionManagerTest extends ChannelClientSubscriptionManagerTest {
 
   @Override
-  public Type getType() {
-    return Type.CHANNEL;
+  protected ClientSubscriptionManager createManager(Client client, byte[] pattern,
+      Subscription subscription) {
+    return new PatternClientSubscriptionManager(client, pattern, subscription);
   }
-
-  @Override
-  public boolean isEqualTo(Object channelOrPattern, Client client) {
-    return false;
-  }
-
-  @Override
-  public void publishMessage(byte[] channel, byte[] message) {}
-
-  @Override
-  public boolean matchesClient(Client client) {
-    return false;
-  }
-
-  @Override
-  public boolean matches(byte[] channel) {
-    return false;
-  }
-
-  @Override
-  public List<Object> createResponse(byte[] channel, byte[] message) {
-    return null;
-  }
-
-  @Override
-  public byte[] getSubscriptionName() {
-    return null;
-  }
-
-  @Override
-  public void readyToPublish() {}
-
-  @Override
-  public void shutdown() {}
 }

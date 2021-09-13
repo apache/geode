@@ -35,22 +35,26 @@ public class PubSubExecutor implements Executor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commands = command.getProcessedCommand();
-    byte[] subCommand = commands.get(1);
+    List<byte[]> args = command.getCommandArguments();
+    byte[] subCommand = args.get(0);
 
     if (equalsIgnoreCaseBytes(subCommand, bCHANNELS)) {
-      if (commands.size() > 3) {
+      if (args.size() > 2) {
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
       }
-      List<byte[]> channelsResponse = doChannels(commands, context);
+      List<byte[]> channelsResponse = doChannels(args, context);
       return RedisResponse.array(channelsResponse);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMSUB)) {
       List<Object> numSubresponse = context.getPubSub()
-          .findNumberOfSubscribersPerChannel(commands.subList(2, commands.size()));
+          .findNumberOfSubscribersPerChannel(args.subList(1, args.size()));
       return RedisResponse.array(numSubresponse);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMPAT)) {
-      Long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
+      if (args.size() > 1) {
+        return RedisResponse
+            .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
+      }
+      long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
       return RedisResponse.integer(numPatResponse);
     }
 
@@ -58,16 +62,12 @@ public class PubSubExecutor implements Executor {
         .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, bytesToString(subCommand)));
   }
 
-  private List<byte[]> doChannels(List<byte[]> processedCommand, ExecutionHandlerContext context) {
-    List<byte[]> response;
-
-    if (processedCommand.size() > 2) {
-      response = context.getPubSub().findChannelNames(processedCommand.get(2));
+  private List<byte[]> doChannels(List<byte[]> args, ExecutionHandlerContext context) {
+    if (args.size() > 1) {
+      return context.getPubSub().findChannelNames(args.get(1));
     } else {
-      response = context.getPubSub().findChannelNames();
+      return context.getPubSub().findChannelNames();
     }
-
-    return response;
   }
 
 }

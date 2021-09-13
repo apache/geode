@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -111,6 +112,10 @@ public class RedisResponse {
         return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
     });
+  }
+
+  public static RedisResponse array(Object... items) {
+    return array(Arrays.asList(items));
   }
 
   public static RedisResponse emptyArray() {

@@ -16,73 +16,59 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import java.util.Objects;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * A class for POSIX glob pattern with brace expansions.
+ * This class is a factory for Pattern instances using
+ * the static factory method {@link #createPattern(byte[])}.
+ * To see if a string matches a pattern
+ * use {@link #matches(Pattern, CharSequence)} or
+ * {@link #matches(Pattern, byte[])}.
  */
 public class GlobPattern {
   private static final char BACKSLASH = '\\';
-  private final Pattern compiled;
-  private final String globPattern;
-  private boolean hasWildcard = false;
+
+  private GlobPattern() {
+    // no instances allowed
+  }
 
   /**
-   * Construct the glob pattern object with a glob pattern string
+   * Match input against the given glob pattern
    *
-   * @param globPattern the glob pattern string
-   */
-  public GlobPattern(String globPattern) {
-    this.compiled = createPattern(globPattern);
-    this.globPattern = globPattern;
-  }
-
-  /**
-   * @return the compiled pattern
-   */
-  public Pattern compiled() {
-    return compiled;
-  }
-
-  /**
-   * @return the original glob pattern
-   */
-  public String globPattern() {
-    return globPattern;
-  }
-
-  /**
-   * Compile glob pattern string
-   *
-   * @param globPattern the glob pattern
-   * @return the pattern object
-   */
-  public static Pattern compile(String globPattern) {
-    return new GlobPattern(globPattern).compiled();
-  }
-
-  /**
-   * Match input against the compiled glob pattern
-   *
-   * @param s input chars
+   * @param pattern the pattern obtained from {@link #createPattern(byte[])}
+   * @param input the chars to match against pattern
    * @return true for successful matches
    */
-  public boolean matches(CharSequence s) {
-    return compiled.matcher(s).matches();
+  public static boolean matches(Pattern pattern, CharSequence input) {
+    return pattern.matcher(input).matches();
   }
 
   /**
-   * Set and compile a glob pattern
+   * Match input against the given glob pattern
    *
-   * @param glob the glob pattern string
+   * @param pattern the pattern obtained from {@link #createPattern(byte[])}
+   * @param inputBytes the bytes to match against pattern
+   * @return true for successful matches
    */
-  private Pattern createPattern(String glob) {
+  public static boolean matches(Pattern pattern, byte[] inputBytes) {
+    return matches(pattern, bytesToString(inputBytes));
+  }
+
+  /**
+   * Compile the given glob style pattern bytes into
+   * an instance of Pattern.
+   *
+   * @param globBytes the glob pattern as a byte array
+   * @return A regex pattern to recognize the given glob pattern.
+   */
+  public static Pattern createPattern(byte[] globBytes) {
+    String glob = bytesToString(globBytes);
     StringBuilder regex = new StringBuilder();
     int setOpen = 0;
     int len = glob.length();
-    hasWildcard = false;
 
     for (int i = 0; i < len; i++) {
       char c = glob.charAt(i);
@@ -107,18 +93,15 @@ public class GlobPattern {
           break;
         case '*':
           regex.append('.');
-          hasWildcard = true;
           break;
         case '?':
           regex.append('.');
-          hasWildcard = true;
           continue;
         case '[':
           if (setOpen > 0) {
             regex.append(BACKSLASH);
           }
           setOpen++;
-          hasWildcard = true;
           break;
         case '^': // ^ inside [...] can be unescaped
           if (setOpen == 0) {
@@ -140,24 +123,4 @@ public class GlobPattern {
     return Pattern.compile(regex.toString(), Pattern.DOTALL | Pattern.MULTILINE);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof GlobPattern)) {
-      return false;
-    }
-    GlobPattern that = (GlobPattern) o;
-    return this.compiled.pattern().equals(that.compiled.pattern());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(compiled, hasWildcard);
-  }
-
-  private static void error(String message, String pattern, int pos) {
-    throw new PatternSyntaxException(message, pattern, pos);
-  }
 }

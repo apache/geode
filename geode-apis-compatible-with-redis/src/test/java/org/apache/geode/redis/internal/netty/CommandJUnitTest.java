@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -67,5 +68,20 @@ public class CommandJUnitTest {
     cmd = new Command(list3);
     assertThat(cmd.getKey()).isNotNull();
     assertThat(cmd.getStringKey()).isEqualTo("Arg1");
+  }
+
+  @Test
+  public void verifyGetCommandArguments() {
+    Command cmd = new Command(Arrays.asList(stringToBytes("cmd")));
+    assertThat(cmd.getCommandArguments()).isEmpty();
+
+    cmd = new Command(Arrays.asList(stringToBytes("cmd"), stringToBytes("arg1")));
+    assertThat(cmd.getCommandArguments()).containsExactly(stringToBytes("arg1"));
+
+    cmd = new Command(
+        Arrays.asList(stringToBytes("cmd"), stringToBytes("arg1"), stringToBytes("arg2")));
+    assertThat(cmd.getCommandArguments()).containsExactly(stringToBytes("arg1"),
+        stringToBytes("arg2"));
+
   }
 }
