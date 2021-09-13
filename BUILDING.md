@@ -103,5 +103,5 @@ The following steps have been tested with **IntelliJ IDEA 2020.3.3**
    Some optional sanity tests to make sure things are working properly:
     * Try looking up classes using **Navigate -> Class...**
     * Open and run a distributed test such as BasicDistributedTest in geode-core.
-    * Create a new java class and ensure the Apache license is automatically added to the top of the
+    * Create a new Java class and ensure the Apache license is automatically added to the top of the
       file with no blank line before the package line.

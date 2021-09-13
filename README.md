@@ -1,6 +1,10 @@
-[<img src="https://geode.apache.org/img/Apache_Geode_logo.png" align="center"/>](http://geode.apache.org)
+<div align="center">
+    
+[![Apache Geode logo](https://geode.apache.org/img/Apache_Geode_logo.png)](http://geode.apache.org)
 
 [![Build Status](https://concourse.apachegeode-ci.info/api/v1/teams/main/pipelines/apache-develop-main/badge)](https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.geode/geode-core/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](https://formulae.brew.sh/formula/apache-geode) [![Docker Pulls](https://img.shields.io/docker/pulls/apachegeode/geode.svg)](https://hub.docker.com/r/apachegeode/geode/) [![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/geode.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/geode/alerts/) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/geode.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/geode/context:java) [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/apache/geode.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/geode/context:javascript) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/apache/geode.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/geode/context:python)
+
+</div>
 
 ## Contents
 1. [Overview](#overview)
@@ -11,8 +15,8 @@
 6. [Application Development](#development)
 7. [Documentation](https://geode.apache.org/docs/)
 8. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
-9. [How to Contribute?](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute)
-10. [Export Control](#export)
+9. [How to Contribute](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute)
+10.[Export Control](#export)
 
 ## <a name="overview"></a>Overview
 
@@ -40,7 +44,7 @@ latency and 24x7 availability requirements.
 You can download Apache Geode from the
 [website](https://geode.apache.org/releases/), run a Docker
 [image](https://hub.docker.com/r/apachegeode/geode/), or install with
-[homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
+[Homebrew](https://formulae.brew.sh/formula/apache-geode) on OSX. Application developers
 can load dependencies from [Maven
 Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22).
 
