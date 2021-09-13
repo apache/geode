@@ -104,6 +104,7 @@ dependencies {
   }
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
+    exclude module: 'geode-web-api'
   }
 }
 

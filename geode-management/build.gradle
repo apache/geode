@@ -49,7 +49,9 @@ dependencies {
   testCompileOnly(platform(project(':boms:geode-all-bom')))
   testCompileOnly('io.swagger:swagger-annotations')
 
-  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-management'
+  }
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.awaitility:awaitility')

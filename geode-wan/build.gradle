@@ -45,7 +45,9 @@ dependencies {
 
 
   distributedTestImplementation(project(':geode-gfsh'))
-  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-wan'
+  }
   distributedTestImplementation(project(':geode-junit'))
 
   distributedTestImplementation('mx4j:mx4j')
@@ -62,7 +64,9 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-junit'))
-  upgradeTestImplementation(project(':geode-dunit'))
+  upgradeTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-wan'
+  }
 
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.assertj:assertj-core')

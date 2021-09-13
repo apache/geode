@@ -41,11 +41,15 @@ dependencies {
     testImplementation('org.springframework:spring-test')
     testImplementation(project(':geode-junit'))
 
-    integrationTestImplementation(project(':geode-dunit'))
+    integrationTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-gfsh'
+    }
     integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntimeOnly('org.apache.derby:derby')
     
-    distributedTestImplementation(project(':geode-dunit'))
+    distributedTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-gfsh'
+    }
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
@@ -53,7 +57,9 @@ dependencies {
     testCompileOnly('io.swagger:swagger-annotations')
 
     upgradeTestImplementation(project(':geode-junit'))
-    upgradeTestImplementation(project(':geode-dunit'))
+    upgradeTestImplementation(project(':geode-dunit')) {
+        exclude module: 'geode-gfsh'
+    }
 
     upgradeTestImplementation('org.awaitility:awaitility')
     upgradeTestImplementation('org.assertj:assertj-core')
