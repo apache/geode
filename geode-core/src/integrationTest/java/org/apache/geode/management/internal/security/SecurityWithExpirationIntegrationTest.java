@@ -46,12 +46,11 @@ public class SecurityWithExpirationIntegrationTest {
   @After
   public void after() throws Exception {
     securityService.logout();
-    ExpirableSecurityManager.reset();
   }
 
   @Test
   public void testThrowAuthenticationExpiredException() {
-    ExpirableSecurityManager.addExpiredUser("data");
+    getSecurityManager().addExpiredUser("data");
     this.securityService.login(loginCredentials("data", "data"));
     assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
         .isInstanceOf(AuthenticationExpiredException.class);
@@ -62,5 +61,9 @@ public class SecurityWithExpirationIntegrationTest {
     credentials.put(ResourceConstants.USER_NAME, username);
     credentials.put(ResourceConstants.PASSWORD, password);
     return credentials;
+  }
+
+  private ExpirableSecurityManager getSecurityManager() {
+    return (ExpirableSecurityManager) securityService.getSecurityManager();
   }
 }

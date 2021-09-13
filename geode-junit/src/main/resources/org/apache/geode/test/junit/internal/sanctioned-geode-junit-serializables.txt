@@ -68,6 +68,7 @@ org/apache/geode/pdx/Day,false
 org/apache/geode/pdx/DomainObjectPdxAuto$Day,false
 org/apache/geode/pdx/DomainObjectPdxAutoNoDefaultConstructor$Day,false
 org/apache/geode/pdx/SimpleClass$SimpleEnum,false
+org/apache/geode/security/ExpirableSecurityManager,false,authorizedOps:java/util/Map,expired_users:java/util/Set,unauthorizedOps:java/util/Map
 org/apache/geode/security/query/data/PdxQueryTestObject,false,age:int,id:int,name:java/lang/String,shouldThrowException:boolean
 org/apache/geode/security/query/data/PdxTrade,false,cusip:java/lang/String,id:java/lang/String,price:int,shares:int
 org/apache/geode/security/query/data/QueryTestObject,false,dateField:java/util/Date,id:int,mapField:java/util/Map,name:java/lang/String

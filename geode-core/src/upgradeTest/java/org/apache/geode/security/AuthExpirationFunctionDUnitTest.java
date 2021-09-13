@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -94,12 +93,6 @@ public class AuthExpirationFunctionDUnitTest {
         serverVM, clientVM);
   }
 
-  @After
-  public void after() {
-    // make sure after each test, the values of the ExpirationManager are reset
-    serverVM.invoke(ExpirableSecurityManager::reset);
-  }
-
   @Test
   public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed() {
     clientVM.invoke(() -> {
@@ -112,7 +105,7 @@ public class AuthExpirationFunctionDUnitTest {
     });
 
     // expire the current user
-    serverVM.invoke(() -> ExpirableSecurityManager.addExpiredUser("data1"));
+    serverVM.invoke(() -> getSecurityManager().addExpiredUser("data1"));
 
     // do a second function execution, if this is successful, it means new credentials are provided
     clientVM.invoke(() -> {
@@ -126,17 +119,23 @@ public class AuthExpirationFunctionDUnitTest {
 
     // all put operation succeeded
     serverVM.invoke(() -> {
-      assertThat(ExpirableSecurityManager.getExpiredUsers().size()).isEqualTo(1);
-      assertThat(ExpirableSecurityManager.getExpiredUsers().contains("data1")).isTrue();
-      Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
+      ExpirableSecurityManager securityManager = getSecurityManager();
+      assertThat(securityManager.getExpiredUsers().size()).isEqualTo(1);
+      assertThat(securityManager.getExpiredUsers().contains("data1")).isTrue();
+      Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
       assertThat(authorizedOps.get("data1")).asList().hasSize(1);
       assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
       assertThat(authorizedOps.get("data2")).asList().hasSize(1);
       assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
-      Map<String, List<String>> unauthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+      Map<String, List<String>> unauthorizedOps = securityManager.getUnAuthorizedOps();
       assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
       assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
       return authorizedOps.get("data1");
     });
+  }
+
+  private static ExpirableSecurityManager getSecurityManager() {
+    return (ExpirableSecurityManager) ClusterStartupRule.getCache().getSecurityService()
+        .getSecurityManager();
   }
 }

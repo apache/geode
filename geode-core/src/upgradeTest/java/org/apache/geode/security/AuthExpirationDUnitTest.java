@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -71,12 +70,6 @@ public class AuthExpirationDUnitTest {
       .withSecurityManager(ExpirableSecurityManager.class)
       .withRegion(RegionShortcut.REPLICATE, "region");
 
-  @After
-  public void after() {
-    // make sure after each test, the values of the ExpirationManager are reset
-    ExpirableSecurityManager.reset();
-  }
-
   @Test
   public void clientShouldReAuthenticateWhenCredentialExpiredAndOperationSucceed()
       throws Exception {
@@ -97,7 +90,8 @@ public class AuthExpirationDUnitTest {
     });
 
     // expire the current user
-    ExpirableSecurityManager.addExpiredUser("user1");
+    ExpirableSecurityManager securityManager = getSecurityManager();
+    securityManager.addExpiredUser("user1");
 
     // do a second put, if this is successful, it means new credentials are provided
     clientVM.invoke(() -> {
@@ -111,8 +105,8 @@ public class AuthExpirationDUnitTest {
     // all put operation succeeded
     Region<Object, Object> region = server.getCache().getRegion("/region");
     assertThat(region.size()).isEqualTo(2);
-    Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
-    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
+    Map<String, List<String>> unAuthorizedOps = securityManager.getUnAuthorizedOps();
     assertThat(authorizedOps.keySet().size()).isEqualTo(2);
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:0");
     assertThat(authorizedOps.get("user2")).asList().containsExactly("DATA:WRITE:region:1");
@@ -149,8 +143,8 @@ public class AuthExpirationDUnitTest {
       region.put(1, "value1");
     });
 
-    ExpirableSecurityManager.addExpiredUser("user1");
-
+    ExpirableSecurityManager securityManager = getSecurityManager();
+    securityManager.addExpiredUser("user1");
     clientVM.invoke(() -> {
 
       Region<Object, Object> region = user0Service.getRegion("/region");
@@ -167,16 +161,19 @@ public class AuthExpirationDUnitTest {
     Region<Object, Object> region = server.getCache().getRegion("/region");
     assertThat(region.size()).isEqualTo(4);
 
-    Map<String, List<String>> authorizedOps = ExpirableSecurityManager.getAuthorizedOps();
+    Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
     assertThat(authorizedOps.keySet().size()).isEqualTo(3);
     assertThat(authorizedOps.get("user0")).asList().containsExactly("DATA:WRITE:region:0",
         "DATA:WRITE:region:2");
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:1");
     assertThat(authorizedOps.get("user1_extended")).asList().containsExactly("DATA:WRITE:region:3");
 
-    Map<String, List<String>> unAuthorizedOps = ExpirableSecurityManager.getUnAuthorizedOps();
+    Map<String, List<String>> unAuthorizedOps = securityManager.getUnAuthorizedOps();
     assertThat(unAuthorizedOps.keySet().size()).isEqualTo(1);
     assertThat(unAuthorizedOps.get("user1")).asList().containsExactly("DATA:WRITE:region:3");
   }
 
+  private ExpirableSecurityManager getSecurityManager() {
+    return (ExpirableSecurityManager) server.getCache().getSecurityService().getSecurityManager();
+  }
 }
