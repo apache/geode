@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.internal.WANSanctionedSerializablesService;
@@ -29,7 +31,7 @@ public class AnalyzeWANSerializablesIntegrationTest extends AnalyzeSerializables
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return WANSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(WANSanctionedSerializablesService.class);
   }
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.rest.internal.WebApiSanctionedSerializablesService;
@@ -29,7 +31,7 @@ public class AnalyzeWebApiSerializablesIntegrationTest extends AnalyzeSerializab
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return WebApiSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(WebApiSanctionedSerializablesService.class);
   }
 }

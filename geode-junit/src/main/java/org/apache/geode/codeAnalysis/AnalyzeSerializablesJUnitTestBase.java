@@ -14,7 +14,6 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static java.util.Collections.emptyList;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 import static org.assertj.core.api.Assertions.fail;
@@ -29,8 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +72,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase
   private final String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
 
-  protected List<ClassAndVariableDetails> expectedSerializables;
+  protected final List<ClassAndVariableDetails> expectedSerializables = new ArrayList<>();
 
   @Before
   public void setUp() throws Exception {
@@ -97,11 +98,45 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       System.out.println(
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
-      fail(diff + FAIL_MESSAGE, toBuildPathString(getResourceAsFile(EXCLUDED_CLASSES_TXT)),
-          actualSerializablesFile.getAbsolutePath(),
-          mainResourceToSourcePath(
-              getResource(getModuleClass(), expectedSerializablesFileName).toURI()));
+
+      String codeAnalysisPackageDir = getPackageDirForClass(getClass());
+      Path excludedClassesSourceFile = INTEGRATION_TEST_RESOURCES_SOURCE_ROOT
+          .resolve(codeAnalysisPackageDir)
+          .resolve(EXCLUDED_CLASSES_TXT);
+
+      String failureMessage = getModuleClass()
+          .map(clazz -> failWithServiceMessage(
+              actualSerializablesFile, diff, excludedClassesSourceFile, clazz))
+          .orElse(failWithoutServiceMessage(
+              diff, excludedClassesSourceFile));
+
+      fail(failureMessage);
     }
+  }
+
+  private String failWithServiceMessage(File actualSerializablesFile,
+      String diff,
+      Path excludedClassesSourceFile,
+      Class<?> serviceClass) {
+    Path sanctionedSerializablesSourceFile =
+        getSanctionedSerializablesSourceFileForServiceClass(serviceClass);
+    return String.format(diff + FAIL_MESSAGE,
+        excludedClassesSourceFile,
+        actualSerializablesFile.getAbsolutePath(),
+        sanctionedSerializablesSourceFile);
+  }
+
+  private String failWithoutServiceMessage(String diff,
+      Path excludedClassesSourceFile) {
+    return String.format(diff + FAIL_MESSAGE_NO_SERVICE,
+        excludedClassesSourceFile);
+  }
+
+  private Path getSanctionedSerializablesSourceFileForServiceClass(Class<?> serviceClass) {
+    String moduleServicePackageDir = getPackageDirForClass(serviceClass);
+    return MAIN_RESOURCES_SOURCE_ROOT
+        .resolve(moduleServicePackageDir)
+        .resolve(expectedSerializablesFileName);
   }
 
   @Test
@@ -238,15 +273,17 @@ public abstract class AnalyzeSerializablesJUnitTestBase
   }
 
   public void loadExpectedSerializables() throws Exception {
-    if (expectedSerializablesFileName == null) {
-      expectedSerializables = emptyList();
-    } else {
-      try (InputStream expectedSerializablesStream =
-          getResourceAsStream(getModuleClass(), expectedSerializablesFileName)) {
-        // the expectedSerializablesStream will be automatically closed when we exit this block
-        expectedSerializables =
-            CompiledClassUtils.loadClassesAndVariables(expectedSerializablesStream);
-      }
+    getModuleClass().ifPresent(this::loadSanctionedSerializables);
+  }
+
+  private void loadSanctionedSerializables(Class<?> clazz) {
+    try (InputStream expectedSerializablesStream =
+        getResourceAsStream(clazz, expectedSerializablesFileName)) {
+      // the expectedSerializablesStream will be automatically closed when we exit this block
+      expectedSerializables.addAll(
+          CompiledClassUtils.loadClassesAndVariables(expectedSerializablesStream));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
@@ -342,5 +379,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       System.out.println("Unable to load actual class " + name + ": " + e);
     }
     return false;
+  }
+
+  private static String getPackageDirForClass(Class<?> theClass) {
+    return theClass.getPackage().getName().replace(".", File.separator);
   }
 }
