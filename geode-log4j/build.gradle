@@ -27,13 +27,12 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation('org.apache.commons:commons-lang3')
-
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
+  implementation('commons-io:commons-io')
 
   //This routes slf4j logs to log4j. Shiro and micrometer use slf4j
   runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
     ext.optional = true
   }
   //This routes commons logging logs to log4j. Several apache commons dependencies use commons logging
@@ -58,6 +57,7 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
+  testImplementation('com.github.stefanbirkner:system-rules')
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -66,6 +66,9 @@ dependencies {
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::tests')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::test-sources')
   integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.mockito:mockito-core')
 
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -79,4 +82,3 @@ dependencies {
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
-

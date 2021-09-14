@@ -28,7 +28,9 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-webapp')
   implementation('org.eclipse.jetty:jetty-server')
   implementation('org.apache.commons:commons-lang3')
-  
+  implementation('org.eclipse.jetty:jetty-http')
+  implementation('org.eclipse.jetty:jetty-util')
+
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
@@ -37,4 +39,7 @@ dependencies {
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit'))
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 }

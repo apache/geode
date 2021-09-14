@@ -99,6 +99,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
+        api(group: 'com.vaadin.external.google', name: 'android-json', version: '0.0.20131108.vaadin1')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
@@ -120,6 +121,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
+        api(group: 'javax.transaction', name: 'javax.transaction-api', version: get('javax.transaction-api.version'))
         api(group: 'javax.ejb', name: 'ejb-api', version: '3.0')
         api(group: 'javax.mail', name: 'javax.mail-api', version: '1.6.2')
         api(group: 'javax.resource', name: 'javax.resource-api', version: '1.7.1')
@@ -128,7 +130,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'joda-time', name: 'joda-time', version: '2.10.9')
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
-        api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
+        api(group: 'mysql', name: 'mysql-connector-java', version: '8.0.26')
         api(group: 'net.java.dev.jna', name: 'jna', version: '5.9.0')
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.9.0')
         api(group: 'net.minidev', name: 'json-smart', version: '2.4.7')
@@ -146,13 +148,12 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.20.2')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.1.0')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.7')
-        api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
-        api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
+        api(group: 'org.buildobjects', name: 'jproc', version: '2.6.2')
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
+        api(group: 'org.jctools', name: 'jctools-core', version: '3.3.0')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '3.12.4')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
@@ -167,8 +168,11 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.6.3')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
+        api(group: 'xerces', name: 'xmlParserAPIs', version: '2.6.1')
+        api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
       }
     }
+
 
     dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.version')) {
       entry('jackson-annotations')
@@ -217,6 +221,19 @@ class DependencyConstraints implements Plugin<Project> {
       entry('lucene-test-framework')
     }
 
+    dependencySet(group: 'org.codehaus.cargo', version: '1.9.7') {
+      entry('cargo-core-api-container')
+      entry('cargo-core-uberjar')
+      entry('cargo-core-api-generic')
+    }
+
+    dependencySet(group: 'org.eclipse.jetty', version: get('jetty.version')) {
+      entry('jetty-server')
+      entry('jetty-webapp')
+      entry('jetty-http')
+      entry('jetty-util')
+    }
+
     dependencySet(group: 'org.hamcrest', version: '2.2') {
       entry('hamcrest')
     }
@@ -245,6 +262,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-context')
       entry('spring-core')
       entry('spring-expression')
+      entry('spring-jcl')
       entry('spring-oxm')
       entry('spring-test')
       entry('spring-tx')

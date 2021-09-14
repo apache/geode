@@ -42,6 +42,7 @@ task downloadJdbcJars(type:Copy) {
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
+  jdbcTestingJars(platform(project(':boms:geode-all-bom')))
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
@@ -81,18 +82,15 @@ dependencies {
     ext.optional = true
   }
   implementation('org.springframework.shell:spring-shell') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
     ext.optional = true
   }
   implementation('com.healthmarketscience.rmiio:rmiio')
+  implementation('commons-io:commons-io')
 
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.assertj:assertj-core')
@@ -105,7 +103,6 @@ dependencies {
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
   acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
   }
   acceptanceTestImplementation('junit:junit')
   acceptanceTestImplementation('org.assertj:assertj-core')
@@ -118,7 +115,7 @@ dependencies {
   acceptanceTestRuntimeOnly('org.apache.derby:derby')
   acceptanceTestRuntimeOnly('org.postgresql:postgresql')
 
-  jdbcTestingJars('mysql:mysql-connector-java:8.0.26')
+  jdbcTestingJars('mysql:mysql-connector-java')
 }
 
 integrationTest.forkEvery 0

@@ -64,31 +64,20 @@ dependencies {
   implementation('org.springframework.security:spring-security-oauth2-jose')
 
   implementation('org.springframework.security:spring-security-config') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-expression'
   }
   implementation('org.springframework.security:spring-security-ldap') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
   }
   implementation('org.springframework.security:spring-security-web') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-asm'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-jdbc'
   }
   implementation('org.springframework:spring-context')
   implementation('org.springframework:spring-web')
   runtimeOnly('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
   }
   implementation('org.springframework:spring-tx')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('org.springframework.security:spring-security-crypto')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 
@@ -107,6 +96,10 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation('org.springframework:spring-test')
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
 
   integrationTestImplementation(project(':geode-core'))
@@ -122,9 +115,12 @@ dependencies {
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
-
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.hamcrest:hamcrest')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.springframework:spring-core')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {
@@ -135,6 +131,7 @@ dependencies {
   }
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
   uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestImplementation('com.vaadin.external.google:android-json')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

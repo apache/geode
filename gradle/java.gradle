@@ -124,7 +124,7 @@ gradle.taskGraph.whenReady({ graph ->
 
 configurations {
   testOutput {
-    extendsFrom testCompile
+    extendsFrom testImplementation
     description 'a dependency that exposes test artifacts'
   }
 }

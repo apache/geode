@@ -38,16 +38,19 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('junit:junit')
   testImplementation('org.mockito:mockito-core')
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('io.micrometer:micrometer-core')
+  testImplementation('org.awaitility:awaitility')
 
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.mockito:mockito-core')
 
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-junit'))
-
   distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('junit:junit')
@@ -58,6 +61,7 @@ dependencies {
   distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
 
 
   upgradeTestImplementation(project(':geode-gfsh'))
@@ -67,7 +71,7 @@ dependencies {
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.assertj:assertj-core')
   upgradeTestImplementation('junit:junit')
-  upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
+  upgradeTestRuntimeOnly('xerces:xercesImpl')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

@@ -32,19 +32,25 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
+  implementation('io.swagger:swagger-annotations')
+  implementation('org.apache.httpcomponents:httpcore')
+  implementation('org.springframework:spring-core')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
   compileOnly('io.springfox:springfox-swagger2') {
-    exclude module: 'slf4j-api'
-    exclude module: "jackson-annotations"
   }
 
   testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('org.mockito:mockito-core')
 
   testCompileOnly(platform(project(':boms:geode-all-bom')))
   testCompileOnly('io.swagger:swagger-annotations')

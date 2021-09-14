@@ -32,11 +32,11 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation('org.apache.lucene:lucene-analyzers-common')
   implementation('org.apache.lucene:lucene-queryparser') {
-    exclude module: 'lucene-sandbox'
   }
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
   implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.springframework.shell:spring-shell')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
@@ -51,6 +51,10 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
 
 
   distributedTestImplementation(project(':geode-junit'))
@@ -58,21 +62,36 @@ dependencies {
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('org.hamcrest:hamcrest')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.mockito:mockito-core')
 
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
   integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('org.hamcrest:hamcrest')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.mockito:mockito-core')
 
 
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('junit:junit')
 
 
   performanceTestImplementation(project(':geode-junit'))
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))
+  performanceTestImplementation('junit:junit')
 }
 
 //The lucene integration tests don't have any issues that requiring forking

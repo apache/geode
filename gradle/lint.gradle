@@ -19,11 +19,18 @@ allprojects {
   apply plugin: 'nebula.lint'
   gradleLint.rules = []
   gradleLint.rules += 'overridden-dependency-version'
-  gradleLint.rules += 'unused-dependency'
+//  gradleLint.rules += 'unused-dependency' ; // broken due to Error from [com.netflix.nebula.lint.rule.GradleLintRule$1] processing source file [null]
   gradleLint.rules += 'unused-exclude-by-dep'
   gradleLint.rules += 'unused-exclude-by-conf'
+  gradleLint.rules += 'undeclared-dependency'
+  gradleLint.rules += 'archaic-wrapper'
+  gradleLint.rules += 'deprecated-dependency-configuration'
+  gradleLint.rules += 'deprecated-task-operator'
+  gradleLint.rules += 'empty-closure-rule'
+//  gradleLint.rules += 'duplicate-dependency-class' ; // broken due to Error from [com.netflix.nebula.lint.rule.GradleLintRule$1] processing source file [null]
 
   gradleLint.alwaysRun = false
   fixGradleLint.mustRunAfter(':combineReports')
+  fixLintGradle.mustRunAfter(':combineReports')
   lintGradle.mustRunAfter(':combineReports')
 }

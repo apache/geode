@@ -27,7 +27,6 @@ compileJava {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
@@ -35,8 +34,8 @@ dependencies {
   compileOnly(project(':geode-unsafe'))
   compileOnly(project(':geode-gfsh'))
 
+
   api('junit:junit') {
-    exclude module: 'hamcrest'
   }
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
@@ -45,22 +44,28 @@ dependencies {
   api('com.fasterxml.jackson.core:jackson-annotations')
   api('com.fasterxml.jackson.core:jackson-databind')
   api('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
   }
   api('com.google.guava:guava')
   api('com.jayway.jsonpath:json-path')
   api('commons-io:commons-io')
-  
+
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
-  
+
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
-  
+
   api('org.skyscreamer:jsonassert')
+  api('javax.transaction:javax.transaction-api')
+  api('org.apache.shiro:shiro-core')
+  api('org.hamcrest:hamcrest-core')
+  api('org.springframework.shell:spring-shell')
+
 
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation(project(':geode-common'))
+
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))

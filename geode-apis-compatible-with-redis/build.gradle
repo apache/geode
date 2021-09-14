@@ -43,6 +43,8 @@ dependencies {
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
   implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil-core')
+  implementation('org.apache.shiro:shiro-core')
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
@@ -50,12 +52,19 @@ dependencies {
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.pholser:junit-quickcheck-generators')
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation('com.google.guava:guava')
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
   commonTestImplementation('org.testcontainers:testcontainers')
   commonTestImplementation('redis.clients:jedis')
   commonTestImplementation('org.apache.logging.log4j:log4j-core')
+  commonTestImplementation('com.github.docker-java:docker-java-api')
+  commonTestImplementation('junit:junit')
+  commonTestImplementation('org.assertj:assertj-core')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
@@ -64,8 +73,17 @@ dependencies {
   integrationTestImplementation('io.lettuce:lettuce-core')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
-  integrationTestImplementation('org.buildobjects:jproc:2.6.2')
+  integrationTestImplementation('org.buildobjects:jproc')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('com.google.guava:guava')
+  integrationTestImplementation('io.netty:netty-transport')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.springframework.shell:spring-shell')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+
   integrationTestRuntimeOnly(project(':geode-log4j'))
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
@@ -77,16 +95,17 @@ dependencies {
   acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
-    exclude module: 'spring-boot-starter-logging'
-    exclude module: 'spring-boot-starter-tomcat'
+    exclude module: 'spring-boot-starter-logging' ; // avoid conflict between log4j-slf4j-impl and log4j-to-slf4j
+    //    exclude module: 'spring-boot-starter-tomcat'
   }
   acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
   acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
-  acceptanceTestImplementation('org.buildobjects:jproc:2.6.2')
+  acceptanceTestImplementation('org.buildobjects:jproc')
   acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
   acceptanceTestImplementation('io.lettuce:lettuce-core')
-  acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
+  acceptanceTestImplementation('junit:junit')
+  acceptanceTestImplementation('org.assertj:assertj-core')
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
@@ -97,10 +116,23 @@ dependencies {
   distributedTestImplementation('io.lettuce:lettuce-core')
   distributedTestImplementation('io.github.resilience4j:resilience4j-retry')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
-    exclude module: 'spring-boot-starter-logging'
-    exclude module: 'spring-boot-starter-tomcat'
+    exclude module: 'spring-boot-starter-logging' ; // avoid conflict between log4j-slf4j-impl and log4j-to-slf4j
+    //    exclude module: 'spring-boot-starter-tomcat'
   }
   distributedTestImplementation('org.springframework.session:spring-session-data-redis')
+  distributedTestImplementation('org.apache.tomcat.embed:tomcat-embed-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.springframework.boot:spring-boot-autoconfigure')
+  distributedTestImplementation('org.springframework.boot:spring-boot')
+  distributedTestImplementation('org.springframework.data:spring-data-redis')
+  distributedTestImplementation('org.springframework.session:spring-session-core')
+  distributedTestImplementation('org.springframework:spring-context')
+  distributedTestImplementation('org.springframework:spring-core')
+  distributedTestImplementation('org.springframework:spring-web')
+  distributedTestImplementation('org.springframework:spring-webmvc')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('io.netty:netty-handler')
 }
 
 acceptanceTest {

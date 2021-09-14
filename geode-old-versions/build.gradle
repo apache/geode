@@ -115,9 +115,9 @@ tasks.named('clean') {
 project.createGeodeClasspathsFile.mustRunAfter(clean)
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('downloadAndUnzipFile', true))
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('enumerateArchiveContents', true))
-tasks.named('build') {
-  dependsOn(tasks.named('createGeodeClasspathsFile'))
-}
+//tasks.named('build') {
+//  dependsOn(tasks.named('createGeodeClasspathsFile'))
+//}
 
 configurations {
   oldVersions

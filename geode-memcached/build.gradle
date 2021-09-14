@@ -37,6 +37,8 @@ dependencies {
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation('net.spy:spymemcached')
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
 
   distributedTestImplementation(project(':geode-dunit'))
 }

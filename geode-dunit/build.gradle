@@ -43,18 +43,10 @@ dependencies {
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
   implementation('org.springframework.shell:spring-shell') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
     ext.optional = true
   }
   implementation('com.google.guava:guava')
   implementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
   }
 
   implementation('org.assertj:assertj-core')
@@ -63,14 +55,17 @@ dependencies {
   implementation('pl.pragmatists:JUnitParams')
 
   implementation('junit:junit') {
-    exclude module: 'hamcrest'
   }
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('jline:jline')
+  implementation('org.apache.shiro:shiro-core')
+  implementation('org.hamcrest:hamcrest-core')
+  implementation('org.hamcrest:hamcrest')
 }
 
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
-

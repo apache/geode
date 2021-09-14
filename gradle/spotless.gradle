@@ -131,21 +131,23 @@ spotless {
     // Spotless will not run on unchanged files unless this number changes.
     bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
 
+    greclipse()
+
     custom 'Use single-quote in project directives.', {
       it.replaceAll(/project\(":([^"]*)"\)$/, 'project(\':$1\')')
     }
 
     custom 'Use parenthesis in single-line gradle dependency declarations.', {
-      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->
+      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) (?!\()([^{\n]*)\n/, { original, declaration, dep ->
         "\n${declaration}(${dep})\n"
       })
     }
 
     custom 'Do not pad spaces before parenthesis in gradle dependency declaration.', {
-      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime)(?:Only)?) +\(/, '\n$1(')
+      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/, '\n$1(')
     }
-
     indentWithSpaces(2)
+    endWithNewline()
   }
 }
 

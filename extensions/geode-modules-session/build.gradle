@@ -42,8 +42,6 @@ dependencies {
   implementation('org.slf4j:slf4j-api')
 
   integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
-    exclude group: 'jboss'
-    exclude group: 'xerces'
   }
   integrationTestImplementation('commons-io:commons-io')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
@@ -56,11 +54,10 @@ dependencies {
   integrationTestImplementation('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version'))
   integrationTestImplementation('org.eclipse.jetty:jetty-util')
   integrationTestImplementation('org.httpunit:httpunit') {
-    exclude group: 'javax.servlet'
     // this version of httpunit contains very outdated xercesImpl
-    exclude group: 'xerces'
   }
   integrationTestImplementation('org.slf4j:slf4j-api')
+  integrationTestImplementation('javax.servlet:servlet-api')
 
   integrationTestRuntimeOnly('xerces:xercesImpl')
 }

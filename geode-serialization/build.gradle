@@ -31,6 +31,7 @@ dependencies {
 
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
+  implementation('it.unimi.dsi:fastutil-core')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.jetbrains:annotations')
@@ -39,12 +40,12 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   testImplementation(project(':geode-concurrency-test'))
-
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation('org.apache.bcel:bcel')
   testImplementation('org.mockito:mockito-core')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
+  testImplementation('com.tngtech.archunit:archunit')
 
 
   integrationTestImplementation(project(':geode-junit')) {
@@ -54,6 +55,9 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('junit:junit')
+
+
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }
@@ -61,6 +65,8 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+
+
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
@@ -68,5 +74,3 @@ distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
-
-

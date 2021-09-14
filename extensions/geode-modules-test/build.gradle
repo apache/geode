@@ -20,15 +20,26 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 dependencies {
+  api(project(':extensions:geode-modules'))
+
   // main
   implementation(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-dunit'))
   implementation('org.springframework:spring-core')
   implementation('org.httpunit:httpunit')
   implementation('pl.pragmatists:JUnitParams')
+  implementation('commons-io:commons-io')
+  implementation('javax.servlet:servlet-api')
+  implementation('junit:junit')
+  implementation('org.assertj:assertj-core')
+  implementation('org.mockito:mockito-core')
+  implementation('xerces:xmlParserAPIs')
+  implementation('xml-apis:xml-apis')
 
-  api(project(':extensions:geode-modules'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:catalina:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
 }

@@ -42,25 +42,19 @@ dependencies {
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
-    exclude module: 'commons-io'
   }
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind'){
-    exclude module: 'jackson-annotations'
   }
 
   compileOnly('io.swagger:swagger-annotations')
 
   implementation('io.springfox:springfox-swagger2') {
-    exclude module: 'slf4j-api'
-    exclude module: 'jackson-annotations'
-    exclude module: 'swagger-annotations'
   }
 
   implementation('io.springfox:springfox-swagger-ui') {
-    exclude module: 'slf4j-api'
   }
 
   implementation('org.springframework:spring-beans')
@@ -70,22 +64,19 @@ dependencies {
   implementation('org.springframework:spring-web')
   implementation('org.springframework:spring-webmvc')
   implementation('org.springframework.hateoas:spring-hateoas') {
-    exclude module: 'aopalliance'
-    exclude module: 'commons-logging'
-    exclude module: 'objenesis'
-    exclude module: 'slf4j-api'
-    exclude module: 'spring-core'
-    exclude module: 'spring-plugin-core'
+    exclude module: 'spring-plugin-core' ;// inclusion of this transitive dependency breaks integration testing
   }
   implementation('org.springframework:spring-aspects') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
   }
   implementation('org.springframework:spring-oxm') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-core'
-    exclude module: 'spring-beans'
   }
+  implementation('com.google.guava:guava')
+  implementation('io.springfox:springfox-core')
+  implementation('io.springfox:springfox-spi')
+  implementation('io.springfox:springfox-spring-web')
+  implementation('org.apache.shiro:shiro-core')
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-core')
   compileOnly('org.apache.logging.log4j:log4j-api')
 
 
@@ -94,10 +85,13 @@ dependencies {
   }
   testImplementation(project(':geode-core'))
   testImplementation('javax.servlet:javax.servlet-api')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+
 
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework.security:spring-security-test')
-
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -105,6 +99,13 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestImplementation('com.jayway.jsonpath:json-path')
+  integrationTestImplementation('com.vaadin.external.google:android-json')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest')
+  integrationTestImplementation('org.skyscreamer:jsonassert')
 }
 
 sourceSets {

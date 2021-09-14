@@ -30,6 +30,12 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation('javax.servlet:javax.servlet-api')
   implementation('org.apache.commons:commons-lang3')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('org.apache.httpcomponents:httpcore')
+  implementation('org.codehaus.cargo:cargo-core-api-container')
+  implementation('org.codehaus.cargo:cargo-core-api-generic')
+  implementation('org.codehaus.cargo:cargo-core-api-util')
+
   compileOnly(project(':geode-tcp-server'))
   compileOnly('com.fasterxml.jackson.core:jackson-databind')
   compileOnly('commons-io:commons-io')
@@ -39,4 +45,3 @@ dependencies {
   compileOnly('org.assertj:assertj-core')
   compileOnly('org.codehaus.cargo:cargo-core-uberjar')
 }
-

@@ -21,66 +21,95 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
-    api(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
-    api(project(':geode-core'))
-    api(project(':geode-common'))
+  api(project(':geode-core'))
+  api(project(':geode-common'))
 
-    implementation(project(':geode-logging'))
-    implementation(project(':geode-membership'))
-    implementation(project(':geode-serialization'))
-    implementation(project(':geode-unsafe'))
-    implementation('org.springframework:spring-web')
-    implementation('org.apache.commons:commons-lang3')
-    implementation('com.healthmarketscience.rmiio:rmiio')
-    implementation('com.fasterxml.jackson.core:jackson-databind')
-    implementation('io.swagger:swagger-annotations')
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-unsafe'))
+  implementation('org.springframework:spring-web')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('com.healthmarketscience.rmiio:rmiio')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('io.swagger:swagger-annotations')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('commons-collections:commons-collections')
+  implementation('commons-io:commons-io')
+  implementation('io.micrometer:micrometer-core')
+  implementation('jline:jline')
+  implementation('org.apache.shiro:shiro-core')
 
-//    //Find bugs is used in multiple places in the code to suppress findbugs warnings
-    testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
-    testImplementation('org.springframework:spring-test')
-    testImplementation(project(':geode-junit'))
 
-    integrationTestImplementation(project(':geode-dunit'))
-    integrationTestImplementation('pl.pragmatists:JUnitParams')
-    integrationTestRuntimeOnly('org.apache.derby:derby')
-    
-    distributedTestImplementation(project(':geode-dunit'))
-    distributedTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestRuntimeOnly('org.apache.derby:derby')
+  testImplementation(project(':geode-junit'))
+  //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
+  testImplementation('org.springframework:spring-test')
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('com.google.guava:guava')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
 
-    testCompileOnly(platform(project(':boms:geode-all-bom')))
-    testCompileOnly('io.swagger:swagger-annotations')
 
-    upgradeTestImplementation(project(':geode-junit'))
-    upgradeTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
 
-    upgradeTestImplementation('org.awaitility:awaitility')
-    upgradeTestImplementation('org.assertj:assertj-core')
-    upgradeTestImplementation('junit:junit')
-    upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  integrationTestRuntimeOnly('org.apache.derby:derby')
 
-    implementation('net.sf.jopt-simple:jopt-simple')
 
-    //Log4j is used everywhere
-    implementation('org.apache.logging.log4j:log4j-api')
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('com.google.guava:guava')
+  distributedTestImplementation('javax.resource:javax.resource-api')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.hamcrest:hamcrest')
 
-    //Spring core is used by the the gfsh cli
-    implementation('org.springframework:spring-core') {
-        ext.optional = true
-    }
+  distributedTestRuntimeOnly('org.apache.derby:derby')
 
-    //Spring shell is used by the gfsh cli. It's unclear why we can exclude
-    //So many transitive dependencies - are these really optional?
-    //GfshCommand is a public API class that depends on spring shell
-    api('org.springframework.shell:spring-shell') {
-        exclude module: 'aopalliance'
-        exclude module: 'asm'
-        exclude module: 'cglib'
-        exclude module: 'guava'
-        exclude module: 'spring-aop'
-        exclude module: 'spring-context-support'
-        exclude module: 'spring-core'
-    }
+
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('io.swagger:swagger-annotations')
+
+
+  upgradeTestImplementation(project(':geode-junit'))
+  upgradeTestImplementation(project(':geode-dunit'))
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('junit:junit')
+  upgradeTestRuntimeOnly('xerces:xmlParserAPIs')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+
+  implementation('net.sf.jopt-simple:jopt-simple')
+
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
+
+  //Spring core is used by the the gfsh cli
+  implementation('org.springframework:spring-core') {
+    ext.optional = true
+  }
+
+  //Spring shell is used by the gfsh cli. It's unclear why we can exclude
+  //So many transitive dependencies - are these really optional?
+  //GfshCommand is a public API class that depends on spring shell
+  api('org.springframework.shell:spring-shell') {
+    exclude module: 'aopalliance'
+    exclude module: 'asm'
+    exclude module: 'cglib'
+    exclude module: 'guava'
+    exclude module: 'spring-aop'
+    exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
+  }
 }

@@ -61,22 +61,16 @@ dependencies {
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
-    exclude module: 'commons-io'
   }
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind') {
-    exclude module: 'jackson-annotations'
   }
 
   compileOnly('io.swagger:swagger-annotations')
 
   implementation('io.springfox:springfox-swagger2') {
-    exclude module: 'slf4j-api'
-    exclude module: 'jackson-annotations'
-    exclude module: 'swagger-annotations'
   }
   implementation('io.springfox:springfox-swagger-ui') {
-    exclude module: 'slf4j-api'
   }
 
   implementation('org.springframework:spring-beans')
@@ -86,23 +80,22 @@ dependencies {
   implementation('org.springframework:spring-web')
   implementation('org.springframework:spring-webmvc')
   implementation('org.springframework.hateoas:spring-hateoas') {
-    exclude module: 'aopalliance'
-    exclude module: 'commons-logging'
-    exclude module: 'objenesis'
-    exclude module: 'slf4j-api'
-    exclude module: 'spring-core'
-    exclude module: 'spring-plugin-core'
+    exclude module: 'spring-plugin-core' ;// inclusion of this transitive dependency breaks integration testing
   }
   implementation('org.springframework:spring-aspects') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
   }
   implementation('org.springframework:spring-oxm') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-core'
-    exclude module: 'spring-beans'
   }
+  implementation('com.google.guava:guava')
+  implementation('io.springfox:springfox-core')
+  implementation('io.springfox:springfox-spi')
+  implementation('io.springfox:springfox-spring-web')
+  implementation('org.apache.shiro:shiro-core')
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-core')
+  implementation('org.springframework:spring-jcl')
   compileOnly('org.apache.logging.log4j:log4j-api')
+
 
   commonTestImplementation(project(':geode-core'))
   commonTestImplementation(project(':geode-junit')) {
@@ -111,40 +104,48 @@ dependencies {
   commonTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  commonTestImplementation(sourceSets.main.output)
   commonTestImplementation('org.springframework:spring-test')
   commonTestImplementation('org.springframework:spring-webmvc')
   commonTestImplementation('org.springframework.security:spring-security-test')
-  commonTestImplementation(project(':geode-web-management'))
+  commonTestImplementation('junit:junit')
+  commonTestImplementation('org.mockito:mockito-core')
+
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-core'))
   testImplementation('javax.servlet:javax.servlet-api')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+
 
   integrationTestImplementation(sourceSets.commonTest.output)
-
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
-
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('junit:junit:4.13.2')
   integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
   }
 
-  distributedTestImplementation(sourceSets.commonTest.output)
 
+  distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('org.springframework:spring-test')
   distributedTestImplementation('org.springframework:spring-webmvc')
   distributedTestImplementation('org.springframework.security:spring-security-test')
-
   distributedTestImplementation(project(':geode-core'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -152,9 +153,13 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.hamcrest:hamcrest')
+  distributedTestImplementation('junit:junit')
 
   distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
   }
 }
 

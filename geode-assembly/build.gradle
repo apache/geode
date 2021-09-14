@@ -102,6 +102,14 @@ configurations {
   }
 }
 
+// geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
+// end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
+// dependencies should be a part of geodeArchives and should not need to be added as individual
+// dependencies here.
+configurations.getByName("acceptanceTestImplementation") {
+  extendsFrom configurations.getByName("geodeArchives")
+}
+
 publishing {
   publications {
     maven(MavenPublication) {
@@ -186,6 +194,8 @@ dependencies {
     exclude module: 'geode-core'
   }
   testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
@@ -211,12 +221,25 @@ dependencies {
   integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
   integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation('javax.servlet:javax.servlet-api')
-
+  integrationTestImplementation('com.fasterxml.jackson.core:jackson-core')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('com.jayway.jsonpath:json-path')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.springframework:spring-core')
+  integrationTestImplementation('commons-io:commons-io')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('com.fasterxml.jackson.core:jackson-databind')
+  integrationTestImplementation('org.apache.httpcomponents:httpcore')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest')
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
+
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('io.swagger:swagger-annotations')
@@ -234,30 +257,45 @@ dependencies {
   }
   distributedTestImplementation(project(':extensions:session-testing-war'))
   distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
-  distributedTestImplementation('org.apache.httpcomponents:httpclient')
-  distributedTestImplementation('org.springframework:spring-web')
   distributedTestImplementation(project(':geode-management'))
   distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
+  distributedTestImplementation('com.fasterxml.jackson.core:jackson-databind')
+  distributedTestImplementation('commons-io:commons-io')
   distributedTestImplementation('javax.servlet:javax.servlet-api')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.apache.commons:commons-lang3')
+  distributedTestImplementation('org.apache.httpcomponents:httpclient')
+  distributedTestImplementation('org.apache.httpcomponents:httpcore')
+  distributedTestImplementation('org.apache.logging.log4j:log4j-api')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.codehaus.cargo:cargo-core-api-container')
+  distributedTestImplementation('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestImplementation('org.hamcrest:hamcrest')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.springframework:spring-web')
 
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestImplementation('org.codehaus.cargo:cargo-core-uberjar')
-
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
-  // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
-  // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
-  // dependencies should be a part of geodeArchives and should not need to be added as individual
-  // dependencies here.
-  acceptanceTestImplementation(configurations.geodeArchives)
+
   acceptanceTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
+  acceptanceTestImplementation('com.fasterxml.jackson.core:jackson-databind')
+  acceptanceTestImplementation('com.github.docker-java:docker-java-api')
+  acceptanceTestImplementation('commons-io:commons-io')
+  acceptanceTestImplementation('io.micrometer:micrometer-core')
+  acceptanceTestImplementation('junit:junit')
+  acceptanceTestImplementation('org.apache.commons:commons-lang3')
+  acceptanceTestImplementation('org.apache.logging.log4j:log4j-api')
+  acceptanceTestImplementation('org.assertj:assertj-core')
+  acceptanceTestImplementation('org.awaitility:awaitility')
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
@@ -275,6 +313,8 @@ dependencies {
   uiTestImplementation('org.seleniumhq.selenium:selenium-api')
   uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
+  uiTestImplementation('org.assertj:assertj-core')
+  uiTestImplementation('junit:junit')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
@@ -287,8 +327,13 @@ dependencies {
     exclude module: 'geode-core'
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
-
   upgradeTestImplementation('org.apache.httpcomponents:httpclient')
+  upgradeTestImplementation('com.fasterxml.jackson.core:jackson-databind')
+  upgradeTestImplementation('org.apache.commons:commons-lang3')
+  upgradeTestImplementation('org.apache.httpcomponents:httpcore')
+  upgradeTestImplementation('com.fasterxml.jackson.core:jackson-core')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('junit:junit')
 
   upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
   upgradeTestCompileOnly('io.swagger:swagger-annotations')
@@ -305,14 +350,12 @@ dependencies {
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
   gfshDependencies ('org.springframework:spring-web') {
-    exclude module: 'spring-core'
-    exclude module: 'commons-logging'
   }
 }
 
 acceptanceTest {
-    // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
-    systemProperty 'projectGroup', project.group
+  // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
+  systemProperty 'projectGroup', project.group
 }
 
 tasks.register('defaultDistributionConfig', JavaExec) {
@@ -348,17 +391,18 @@ tasks.register('defaultCacheConfig', JavaExec) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.geodeArchives.dependencies.collect { it.dependencyProject }
-    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
-    .collect { it.jar.archiveName }
+  .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
+  .collect { it.jar.archiveName }
 
   // then add all the dependencies of the dependent jars
   def depJars = configurations.geodeArchives.dependencies.collect {
     it.dependencyProject.findAll {
       !(it.name.contains('geode-web') ||
-        it.name.contains('geode-pulse'))
+          it.name.contains('geode-pulse'))
     }.collect {
-      it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
-          it.contains('geode-all-bom') ||
+      it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
+        !(
+            it.contains('geode-all-bom') ||
 
             // exclude mx4j, once the deprecated code is deleted we can remove these entirely
             it.contains('commons-digester') ||
@@ -380,7 +424,7 @@ def cp = {
             it.contains('spring-context') ||
             it.contains('spring-expression') ||
             it.contains('spring-web')
-        )}
+            )}
     }
   }.flatten()
 
@@ -553,7 +597,8 @@ distributions {
 
       with copySpec {
         into('lib')
-        from { dependentProjectNames.collect {
+        from {
+          dependentProjectNames.collect {
             [
               project(':'.concat(it)).configurations.runtimeClasspath,
               project(':'.concat(it)).configurations.archives.allArtifacts.files
@@ -607,8 +652,9 @@ distributions {
 }
 // Distribution plugin does not allow configuring of the task, only the contents. So we set
 // compression and classifier here
-[tasks.named('distTar'),
- tasks.named('srcDistTar'),
+[
+  tasks.named('distTar'),
+  tasks.named('srcDistTar'),
 ]*.configure {
   compression Compression.GZIP
   archiveExtension='tgz'
@@ -621,10 +667,11 @@ tasks.named('srcDistTar').configure {
   classifier 'src'
 }
 
-[tasks.named('distZip'),
- tasks.named('srcDistZip'),
- tasks.named('dockerfileZip'),
- ]*.configure {
+[
+  tasks.named('distZip'),
+  tasks.named('srcDistZip'),
+  tasks.named('dockerfileZip'),
+]*.configure {
   enabled = false
 }
 
@@ -660,11 +707,11 @@ task dumpInstalledJars(dependsOn: installDist) {
 
     installDir.include("**/*.war").visit{ file ->
       if(!file.isDirectory()) {
-          FileTree warContents = zipTree(file.file)
-          println ""
-          println file.name
-          println("==========================")
-          printJars(warContents)
+        FileTree warContents = zipTree(file.file)
+        println ""
+        println file.name
+        println("==========================")
+        printJars(warContents)
       }
     }
   }
