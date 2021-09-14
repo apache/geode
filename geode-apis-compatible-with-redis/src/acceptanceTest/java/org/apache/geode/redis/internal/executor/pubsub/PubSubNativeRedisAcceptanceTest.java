@@ -81,10 +81,9 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
     // This test consumes a lot of sockets and any subsequent tests may fail because of spurious
     // bind exceptions. Even though sockets are closed, they will remain in TIME_WAIT state so we
     // need to wait for that to clear up. It shouldn't take more than a minute or so.
-    // There will be a better solution for this from GEODE-9495, but for now a thread sleep is the
-    // simplest way to wait for the sockets to be out of the TIME_WAIT state. The timeout of 240 sec
-    // was chosen because that is the default duration for TIME_WAIT on Windows. The timeouts for
-    // both mac and linux are significantly shorter.
+    // For now a thread sleep is the simplest way to wait for the sockets to be out of the TIME_WAIT
+    // state. The default timeout of 240 sec was chosen because that is the default duration for
+    // TIME_WAIT on Windows. The timeouts for both mac and linux are significantly shorter.
     Thread.sleep(socketTimeWaitMsec);
   }
 
