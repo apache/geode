@@ -575,45 +575,6 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void ensureSetConsistency_whenRunningConcurrently() {
-    int scoreCount = 1000;
-    Map<String, Double> scores1 = buildMapOfMembersAndScores(1, 15);
-    Map<String, Double> scores2 = buildMapOfMembersAndScores(3, 18);
-    Map<String, Double> scores3 = buildMapOfMembersAndScores(4, 14);
-
-    jedis.zadd(KEY1, scores1);
-    jedis.zadd(KEY2, scores2);
-    jedis.zadd(KEY3, scores3);
-
-    Set<Tuple> expectedMinScores = new HashSet<>();
-    Set<Tuple> expectedMaxScores = new HashSet<>();
-    for (int i = 4; i <= 14; i++) {
-      expectedMinScores.add(tupleMinOfScores("player" + i, scores1, scores2, scores3));
-      expectedMaxScores.add(tupleMaxOfScores("player" + i, scores1, scores2, scores3));
-    }
-
-    // new ConcurrentLoopingThreads(1000,
-    // i -> jedis.zadd(KEY1, (double) i, "member-" + i),
-    // i -> jedis.zadd(KEY2, (double) i, "member-" + i),
-    // i -> jedis.zadd(KEY3, (double) i, "member-" + i),
-    // i -> jedis.zinterstore("maxSet", new ZParams().aggregate(ZParams.Aggregate.MAX),
-    jedis.zinterstore("maxSet", new ZParams().aggregate(ZParams.Aggregate.MAX),
-        KEY1, KEY2, KEY3);
-    // This ensures that the lock ordering for keys is working
-    // i -> jedis.zinterstore("minSet", new ZParams().aggregate(ZParams.Aggregate.MIN),
-    jedis.zinterstore("minSet", new ZParams().aggregate(ZParams.Aggregate.MIN),
-        KEY1, KEY2, KEY3);// )
-    // .runWithAction(() -> {
-    Set<Tuple> maxSet = jedis.zrangeWithScores("maxSet", 0, scoreCount);
-    Set<Tuple> minSet = jedis.zrangeWithScores("minSet", 0, scoreCount);
-    assertThat(maxSet).hasSize(scoreCount);
-    assertThat(minSet).hasSize(scoreCount);
-    assertThatActualScoresAreVeryCloseToExpectedScores(expectedMaxScores, maxSet);
-    assertThatActualScoresAreVeryCloseToExpectedScores(expectedMinScores, minSet);
-    // });
-  }
-
-  @Test
   public void ensureSetConsistency_andNoExceptions_whenRunningConcurrently() {
     int scoreCount = 1000;
     jedis.zadd("{A}ones", buildMapOfMembersAndScores(0, scoreCount - 1));

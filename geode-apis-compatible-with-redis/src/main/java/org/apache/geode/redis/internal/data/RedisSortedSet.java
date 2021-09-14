@@ -301,7 +301,7 @@ public class RedisSortedSet extends AbstractRedisData {
       }
 
       double weight = keyWeight.getWeight();
-      RedisSortedSet weightedSet = new RedisSortedSet(Collections.emptyList());
+      RedisSortedSet weightedSet = new RedisSortedSet();
 
       for (AbstractOrderedSetEntry entry : set.members.values()) {
         OrderedSetEntry existingValue = members.get(entry.member);
@@ -314,6 +314,8 @@ public class RedisSortedSet extends AbstractRedisData {
             score = 0;
           } else if (weight == 1) {
             score = entry.getScore();
+          } else if (Double.isInfinite(weight) && entry.score == 0D) {
+            score = 0D;
           } else {
             double newScore = entry.score * weight;
             if (Double.isNaN(newScore)) {
@@ -322,7 +324,7 @@ public class RedisSortedSet extends AbstractRedisData {
               score = newScore;
             }
           }
-          weightedSet.memberAdd(entry.member, Coder.doubleToBytes(score));
+          weightedSet.memberAdd(entry.member, score);
         }
       }
       sets.add(weightedSet);
@@ -655,7 +657,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private RedisSortedSet getIntersection(List<RedisSortedSet> sets, ZAggregator aggregator) {
-    RedisSortedSet retVal = new RedisSortedSet(Collections.emptyList());
+    RedisSortedSet retVal = new RedisSortedSet();
 
     for (RedisSortedSet set : sets) {
       for (OrderedSetEntry entry : set.members.values()) {
@@ -672,7 +674,7 @@ public class RedisSortedSet extends AbstractRedisData {
           if (newScore.isNaN()) {
             throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
           }
-          retVal.memberAdd(entry.getMember(), Coder.doubleToBytes(newScore));
+          retVal.memberAdd(entry.getMember(), newScore);
         }
       }
     }
@@ -690,11 +692,11 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     if (sets.get(0).members.containsKey(member)) {
-      Double score = sets.get(0).members.get(member).score;
-      if (score.isNaN()) {
+      double score = sets.get(0).members.get(member).score;
+      if (Double.isNaN(score)) {
         return Double.NaN;
       }
-      if (runningTotal.isInfinite() || score.isInfinite()) {
+      if (runningTotal.isInfinite() || Double.isInfinite(score)) {
         if (runningTotal == -score) {
           return Double.NaN;
         }
@@ -809,7 +811,7 @@ public class RedisSortedSet extends AbstractRedisData {
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
     byte[] member;
-    Double score;
+    double score = 0D;
 
     private AbstractOrderedSetEntry() {}
 
