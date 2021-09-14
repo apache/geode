@@ -802,8 +802,13 @@ public class CompactRangeIndex extends AbstractIndex {
               if (runtimeItr != null) {
                 runtimeItr.setCurrent(value);
               }
-              if (ok && runtimeItr != null && iterOps != null) {
-                ok = QueryUtils.applyCondition(iterOps, context);
+              try {
+                if (ok && runtimeItr != null) {
+                  observer.beforeIterationEvaluation(iterOps, value);
+                  ok = QueryUtils.applyCondition(iterOps, context);
+                }
+              } finally {
+                observer.afterIterationEvaluation(ok);
               }
               if (ok) {
                 applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
@@ -836,9 +841,12 @@ public class CompactRangeIndex extends AbstractIndex {
             if (runtimeItr != null) {
               runtimeItr.setCurrent(value);
             }
-            if (ok && runtimeItr != null && iterOps != null) {
-              observer.beforeIterationEvaluation(iterOps, context);
-              ok = QueryUtils.applyCondition(iterOps, context);
+            try {
+              if (ok && runtimeItr != null) {
+                observer.beforeIterationEvaluation(iterOps, value);
+                ok = QueryUtils.applyCondition(iterOps, context);
+              }
+            } finally {
               observer.afterIterationEvaluation(ok);
             }
             if (ok) {

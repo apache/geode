@@ -114,6 +114,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   @Test
@@ -154,6 +155,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   /**
@@ -199,6 +201,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   /**
@@ -242,6 +245,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   /**
@@ -284,6 +288,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   @Test
@@ -320,6 +325,7 @@ public class QueryTraceJUnitTest {
     assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
 
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   @Test
@@ -358,6 +364,8 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
+
   }
 
   @Test
@@ -395,6 +403,7 @@ public class QueryTraceJUnitTest {
 
     // The query should return all elements in region.
     assertEquals(region.size(), results.size());
+    QueryObserverHolder.reset();
   }
 
   @Test
