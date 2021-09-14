@@ -46,8 +46,7 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
             new InputStreamReader(process.getInputStream()));
         String line = reader.readLine();
         socketTimeWaitMsec = Long.parseLong(line.trim());
-      } catch (NumberFormatException nfe) {
-      } catch (IOException ioe){
+      } catch (NumberFormatException | IOException ignored) {
       }
     } else if (SystemUtils.IS_OS_MAC) {
       try {
@@ -60,22 +59,20 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
           socketTimeWaitMsec = 2 * Long.parseLong(parts[1].trim());
           System.out.println("TIME_WAIT: " + socketTimeWaitMsec);
         }
-      } catch (NumberFormatException ignored) {
-      } catch (IOException ignored){
+      } catch (NumberFormatException | IOException ignored) {
       }
     } else if (SystemUtils.IS_OS_WINDOWS) {
-      // get Windows TIME_WAIT
       try {
-        process = Runtime.getRuntime().exec("reg query HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters /v TcpTimedWaitDelay");
+        process = Runtime.getRuntime().exec(
+            "reg query HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters /v TcpTimedWaitDelay");
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(process.getInputStream()));
         String line = reader.readLine();
         socketTimeWaitMsec = Long.parseLong(line.trim());
-      } catch (NumberFormatException ignored) {
-      } catch (IOException ignored){
+      } catch (NumberFormatException | IOException ignored) {
       }
     }
-    // Just leave timeout at the default if it's some other OS
+    // Just leave timeout at the default if it's some other OS or there's a problem getting OS value
   }
 
 
