@@ -65,7 +65,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
-  public static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private MemberMap members;
   private final ScoreSet scoreSet = new ScoreSet();
