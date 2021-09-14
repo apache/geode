@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -343,14 +342,17 @@ public class AuthExpirationFunctionDUnitTest {
     Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(3);
-    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
     assertThat(authorizedOps.get("data2")).asList().hasSize(3);
-    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(3);
-    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
   }
 
   private List<Object> collectSecurityManagerResults(MemberVM vm) {
@@ -365,7 +367,8 @@ public class AuthExpirationFunctionDUnitTest {
   }
 
   @SafeVarargs
-  private final Map<String, List<String>> collectVMOps(int resultPosition, List<Object>... results) {
+  private final Map<String, List<String>> collectVMOps(int resultPosition,
+      List<Object>... results) {
     return Arrays.stream(results)
         .map(result -> (Map<String, List<String>>) result.get(resultPosition))
         .reduce((opsOne, opsTwo) -> {
@@ -384,7 +387,7 @@ public class AuthExpirationFunctionDUnitTest {
   @SafeVarargs
   private final Set<String> combineExpiredUsers(List<Object>... results) {
     return Arrays.stream(results)
-        .map(result -> (Set<String>)result.get(0))
+        .map(result -> (Set<String>) result.get(0))
         .reduce((eUsers1, eUsers2) -> {
           eUsers1.addAll(eUsers2);
           return eUsers1;
@@ -392,7 +395,8 @@ public class AuthExpirationFunctionDUnitTest {
   }
 
   private static ExpirableSecurityManager getSecurityManager() {
-    return (ExpirableSecurityManager) Objects.requireNonNull(ClusterStartupRule.getCache()).getSecurityService()
+    return (ExpirableSecurityManager) Objects.requireNonNull(ClusterStartupRule.getCache())
+        .getSecurityService()
         .getSecurityManager();
   }
 }
