@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.netty;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -48,7 +47,6 @@ import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
 import io.netty.handler.ssl.util.TrustManagerFactoryWrapper;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -59,6 +57,7 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
 import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
@@ -88,11 +87,12 @@ public class NettyRedisServer {
   private final Channel serverChannel;
   private final int serverPort;
   private final DistributedMember member;
+  private final SecurityService securityService;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
-      DistributedMember member) {
+      DistributedMember member, SecurityService securityService) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -100,6 +100,7 @@ public class NettyRedisServer {
     this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.member = member;
+    this.securityService = securityService;
 
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException(
@@ -156,9 +157,7 @@ public class NettyRedisServer {
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
-    String redisPassword = configSupplier.get().getRedisPassword();
-    final byte[] redisPasswordBytes =
-        StringUtils.isBlank(redisPassword) ? null : stringToBytes(redisPassword);
+    String redisUsername = configSupplier.get().getRedisUsername();
 
     return new ChannelInitializer<SocketChannel>() {
       @Override
@@ -174,8 +173,8 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisPasswordBytes,
-                getPort(), member));
+                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsername,
+                getPort(), member, securityService));
       }
     };
   }

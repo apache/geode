@@ -85,6 +85,7 @@ dependencies {
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   acceptanceTestImplementation('org.buildobjects:jproc:2.6.2')
   acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
+  acceptanceTestImplementation('io.lettuce:lettuce-core')
   acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))

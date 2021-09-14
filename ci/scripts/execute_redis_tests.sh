@@ -35,8 +35,9 @@ export JAVA_HOME=${JAVA_TEST_PATH}
   --name=server1 \
   --compatible-with-redis-port=6380 \
   --compatible-with-redis-bind-address=127.0.0.1 \
-  --compatible-with-redis-password=foobar \
+  --compatible-with-redis-username=foobar \
   --server-port=0 \
+  --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager \
   --J=-Dgemfire.jmx-manager=true \
   --J=-Dgemfire.jmx-manager-start=true \
   --J=-Dgemfire.jmx-manager-port=1099

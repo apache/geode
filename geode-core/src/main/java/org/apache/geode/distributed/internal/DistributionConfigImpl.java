@@ -497,7 +497,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private Boolean redisEnabled = DEFAULT_REDIS_ENABLED;
 
-  private String redisPassword = DEFAULT_REDIS_PASSWORD;
+  private String redisUsername = DEFAULT_REDIS_USERNAME;
 
   /**
    * port on which GeodeRedisServer is started
@@ -794,7 +794,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     memcachedBindAddress = other.getMemcachedBindAddress();
     redisPort = other.getRedisPort();
     redisBindAddress = other.getRedisBindAddress();
-    redisPassword = other.getRedisPassword();
+    redisUsername = other.getRedisUsername();
     redisEnabled = other.getRedisEnabled();
     userCommandPackages = other.getUserCommandPackages();
 
@@ -3305,7 +3305,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(memcachedProtocol, that.memcachedProtocol)
         .append(memcachedBindAddress, that.memcachedBindAddress)
         .append(redisBindAddress, that.redisBindAddress)
-        .append(redisPassword, that.redisPassword)
+        .append(redisUsername, that.redisUsername)
         .append(redisPort, that.redisPort)
         .append(redisEnabled, that.redisEnabled)
         .append(jmxManagerBindAddress, that.jmxManagerBindAddress)
@@ -3402,7 +3402,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(loadSharedConfigurationFromDir).append(clusterConfigDir).append(httpServicePort)
         .append(httpServiceBindAddress).append(startDevRestApi).append(memcachedPort)
         .append(memcachedProtocol).append(memcachedBindAddress).append(distributedTransactions)
-        .append(redisPort).append(redisBindAddress).append(redisPassword)
+        .append(redisPort).append(redisBindAddress).append(redisUsername)
         .append(redisEnabled).append(jmxManager)
         .append(jmxManagerStart).append(jmxManagerPort).append(jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients).append(jmxManagerPasswordFile)
@@ -3524,13 +3524,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getRedisPassword() {
-    return redisPassword;
+  public String getRedisUsername() {
+    return redisUsername;
   }
 
   @Override
-  public void setRedisPassword(String password) {
-    redisPassword = password;
+  public void setRedisUsername(String username) {
+    redisUsername = username;
   }
 
   @Override

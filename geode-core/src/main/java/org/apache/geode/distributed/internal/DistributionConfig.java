@@ -113,8 +113,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
@@ -3515,24 +3515,24 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   boolean DEFAULT_REDIS_ENABLED = false;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
+   * Returns the value of the {@link ConfigurationProperties#REDIS_USERNAME} property
    * <p>
    * Returns the value of the
-   * {@link ConfigurationProperties#REDIS_PASSWORD} property
+   * {@link ConfigurationProperties#REDIS_USERNAME} property
    *
-   * @return the authentication password for GeodeRedisServer
+   * @return the authentication username for GeodeRedisServer
    *
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_PASSWORD)
-  String getRedisPassword();
+  @ConfigAttributeGetter(name = REDIS_USERNAME)
+  String getRedisUsername();
 
-  @ConfigAttributeSetter(name = REDIS_PASSWORD)
-  void setRedisPassword(String password);
+  @ConfigAttributeSetter(name = REDIS_USERNAME)
+  void setRedisUsername(String username);
 
   @ConfigAttribute(type = String.class)
-  String REDIS_PASSWORD_NAME = REDIS_PASSWORD;
-  String DEFAULT_REDIS_PASSWORD = "";
+  String REDIS_USERNAME_NAME = REDIS_USERNAME;
+  String DEFAULT_REDIS_USERNAME = "default";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
