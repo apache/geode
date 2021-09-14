@@ -31,6 +31,7 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,10 +98,21 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       System.out.println(
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
       System.out.println(diff);
-      fail(diff + FAIL_MESSAGE, toBuildPathString(getResourceAsFile(EXCLUDED_CLASSES_TXT)),
+
+      String codeAnalysisPackageDir = getPackageDirForClass(getClass());
+      Path excludedClassesSourceFile = INTEGRATION_TEST_RESOURCES_SOURCE_ROOT
+          .resolve(codeAnalysisPackageDir)
+          .resolve(EXCLUDED_CLASSES_TXT);
+
+      String moduleServicePackageDir = getPackageDirForClass(getModuleClass());
+      Path sanctionedSerializablesSourceFile = MAIN_RESOURCES_SOURCE_ROOT
+          .resolve(moduleServicePackageDir)
+          .resolve(expectedSerializablesFileName);
+
+      fail(diff + FAIL_MESSAGE,
+          excludedClassesSourceFile,
           actualSerializablesFile.getAbsolutePath(),
-          mainResourceToSourcePath(
-              getResource(getModuleClass(), expectedSerializablesFileName).toURI()));
+          sanctionedSerializablesSourceFile);
     }
   }
 
@@ -342,5 +354,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase
       System.out.println("Unable to load actual class " + name + ": " + e);
     }
     return false;
+  }
+
+  private static String getPackageDirForClass(Class<?> theClass) {
+    return theClass.getPackage().getName().replace(".", File.separator);
   }
 }

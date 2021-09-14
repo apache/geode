@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,17 +61,18 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
   private static final Path MODULE_ROOT = Paths.get("..", "..", "..").toAbsolutePath().normalize();
   private static final Path SOURCE_ROOT = MODULE_ROOT.resolve(Paths.get("src"));
-  private static final Path TEST_RESOURCES_SOURCE_ROOT =
+  static final Path INTEGRATION_TEST_RESOURCES_SOURCE_ROOT =
       SOURCE_ROOT.resolve(Paths.get("integrationTest", "resources"));
-  private static final Path BUILD_RESOURCES_ROOT =
-      MODULE_ROOT.resolve(Paths.get("build", "resources"));
+  static final Path MAIN_RESOURCES_SOURCE_ROOT =
+      SOURCE_ROOT.resolve(Paths.get("main", "resources"));
 
-  private static final String NEW_LINE = System.getProperty("line.separator");
-
-  static final String FAIL_MESSAGE = NEW_LINE + NEW_LINE
-      + "If the class is not persisted or sent over the wire add it to the file " + NEW_LINE + "%s"
-      + NEW_LINE + "Otherwise if this doesn't break backward compatibility, copy the file "
-      + NEW_LINE + "%s to " + NEW_LINE + "%s.";
+  static final String FAIL_MESSAGE = "%n" +
+      "If the class is not persisted or sent over the wire, add it to the file%n" +
+      "    %s%n" +
+      "Otherwise, if this doesn't break backward compatibility, copy the file%n" +
+      "    %s%n" +
+      "    to %n" +
+      "    %s%n";
 
   static final String EXCLUDED_CLASSES_TXT = "excludedClasses.txt";
   private static final String ACTUAL_DATA_SERIALIZABLES_DAT = "actualDataSerializables.dat";
@@ -234,7 +234,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     }
   }
 
-  String toBuildPathString(File file) {
+  private String toBuildPathString(File file) {
     if (file == null) {
       return null;
     }
@@ -242,23 +242,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
   }
 
   private String toTestResourcesSourcePathString(Path relativeFilePath) {
-    return TEST_RESOURCES_SOURCE_ROOT.resolve(relativeFilePath).normalize().toString();
-  }
-
-  /**
-   * <pre>
-   * FROM:
-   * /Users/user/dev/geode/geode-junit/build/resources/main/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
-   *
-   * TO:
-   * /Users/user/dev/geode/geode-junit/src/main/resources/org/apache/geode/test/junit/internal/sanctioned-geode-junit-serializables.txt
-   * </pre>
-   */
-  String mainResourceToSourcePath(URI buildResourceURI) {
-    Path mainBuildResources = BUILD_RESOURCES_ROOT.resolve(Paths.get("main"));
-    Path mainSourceResources = SOURCE_ROOT.resolve(Paths.get("main", "resources"));
-    Path relativeFilePath = mainBuildResources.relativize(Paths.get(buildResourceURI));
-    return mainSourceResources.resolve(relativeFilePath).toString();
+    return INTEGRATION_TEST_RESOURCES_SOURCE_ROOT.resolve(relativeFilePath).normalize().toString();
   }
 
   List<String> loadExcludedClasses(File excludedClassesFile) throws IOException {
@@ -388,7 +372,7 @@ public abstract class AnalyzeDataSerializablesJUnitTestBase {
     return getResource(associatedClass, resourceName).openStream();
   }
 
-  static URL getResource(final Class<?> classInSamePackage, final String resourceName) {
+  private static URL getResource(final Class<?> classInSamePackage, final String resourceName) {
     return classInSamePackage.getResource(resourceName);
   }
 }
