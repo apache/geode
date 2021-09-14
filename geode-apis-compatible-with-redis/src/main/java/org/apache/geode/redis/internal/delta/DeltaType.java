@@ -20,5 +20,6 @@ public enum DeltaType {
   ADDS,
   REMS,
   TIMESTAMP,
-  APPEND
+  APPEND,
+  ZADDS
 }

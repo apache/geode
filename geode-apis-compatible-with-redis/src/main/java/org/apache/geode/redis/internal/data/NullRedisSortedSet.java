@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static java.util.Collections.singletonList;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +28,12 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptio
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.netty.Coder;
 
 class NullRedisSortedSet extends RedisSortedSet {
 
   NullRedisSortedSet() {
-    super(new ArrayList<>());
+    super(new ArrayList<>(), new double[0]);
   }
 
   @Override
@@ -39,8 +42,8 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      ZAddOptions options) {
+  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> members,
+      double[] scores, ZAddOptions options) {
     if (options.isXX()) {
       if (options.isINCR()) {
         return null;
@@ -49,10 +52,10 @@ class NullRedisSortedSet extends RedisSortedSet {
     }
 
     if (options.isINCR()) {
-      return zaddIncr(region, key, membersToAdd);
+      return zaddIncr(region, key, members.get(0), scores[0]);
     }
 
-    RedisSortedSet sortedSet = new RedisSortedSet(membersToAdd);
+    RedisSortedSet sortedSet = new RedisSortedSet(members, scores);
     region.create(key, sortedSet);
 
     return sortedSet.getSortedSetSize();
@@ -64,16 +67,13 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double increment,
       byte[] member) {
-    List<byte[]> valuesToAdd = new ArrayList<>();
-    valuesToAdd.add(increment);
-    valuesToAdd.add(member);
+    RedisSortedSet sortedSet = new RedisSortedSet(singletonList(member), new double[] {increment});
 
-    RedisSortedSet sortedSet = new RedisSortedSet(valuesToAdd);
     region.create(key, sortedSet);
 
-    return increment;
+    return Coder.doubleToBytes(increment);
   }
 
   @Override
@@ -143,11 +143,9 @@ class NullRedisSortedSet extends RedisSortedSet {
     return null;
   }
 
-  private Object zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
-      List<byte[]> membersToAdd) {
+  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key, byte[] member,
+      double increment) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.
-    byte[] increment = membersToAdd.get(0);
-    byte[] member = membersToAdd.get(1);
     return zincrby(region, key, increment, member);
   }
 }

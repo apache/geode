@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.collections;
 
-import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -350,8 +349,7 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     for (int i = 0; i < initialNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       byte[] member = key;
-      byte[] scoreBytes = String.valueOf(i).getBytes();
-      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, i);
       initialElements.put(key, value);
     }
     RedisSortedSet.MemberMap hash = new RedisSortedSet.MemberMap(initialElements);
@@ -364,8 +362,8 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
       byte[] member = key;
-      byte[] scoreBytes = String.valueOf(totalNumberOfElements - i).getBytes();
-      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, scoreBytes);
+      double score = totalNumberOfElements - i;
+      RedisSortedSet.OrderedSetEntry value = new RedisSortedSet.OrderedSetEntry(member, score);
       hash.put(key, value);
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }
@@ -373,18 +371,13 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     // Update values and confirm that size changes as expected
     for (int i = initialNumberOfElements; i < totalNumberOfElements; ++i) {
       byte[] key = {(byte) i};
-      byte[] member = key;
-      byte[] scoreBytes = String.valueOf(i).getBytes();
       RedisSortedSet.OrderedSetEntry value = hash.get(key);
-      byte[] oldScoreBytes = value.getScoreBytes();
-      int scoreDelta = memoryOverhead(scoreBytes)
-          - memoryOverhead(oldScoreBytes);
 
       int oldSize = hash.getSizeInBytes();
-      value.updateScore(scoreBytes);
+      value.updateScore(i);
       int sizeDelta = hash.getSizeInBytes() - oldSize;
 
-      assertThat(sizeDelta).isEqualTo(scoreDelta);
+      assertThat(sizeDelta).isZero();
 
       assertThat(hash.getSizeInBytes()).isEqualTo(sizer.sizeof(hash));
     }

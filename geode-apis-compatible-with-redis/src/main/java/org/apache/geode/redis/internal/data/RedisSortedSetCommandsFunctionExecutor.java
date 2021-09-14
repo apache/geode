@@ -42,9 +42,11 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public Object zadd(RedisKey key, List<byte[]> scoresAndMembersToAdd, ZAddOptions options) {
+  public Object zadd(RedisKey key, List<byte[]> membersToAdd, double[] scoresToAdd,
+      ZAddOptions options) {
     return stripedExecute(key,
-        () -> getRedisSortedSet(key, false).zadd(getRegion(), key, scoresAndMembersToAdd, options));
+        () -> getRedisSortedSet(key, false).zadd(getRegion(), key, membersToAdd, scoresToAdd,
+            options));
   }
 
   public long zcard(RedisKey key) {
@@ -57,7 +59,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public byte[] zincrby(RedisKey key, byte[] increment, byte[] member) {
+  public byte[] zincrby(RedisKey key, double increment, byte[] member) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zincrby(getRegion(), key, increment, member));
   }
@@ -163,8 +165,8 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     getRegionProvider().orderForLocking(keysToLock);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet(Collections.emptyList()).zunionstore(getRegionProvider(),
-            destinationKey, keyWeights, aggregator));
+        () -> new RedisSortedSet(Collections.emptyList(), new double[0])
+            .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
   }
 
 }

@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ZADD_OPTION_NX_XX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -50,8 +52,19 @@ public class ZAddExecutor extends AbstractExecutor {
       return RedisResponse.error(zAddExecutorState.exceptionMessage);
     }
 
-    Object retVal = redisSortedSetCommands.zadd(command.getKey(),
-        new ArrayList<>(commandElements.subList(optionsFoundCount + 2, commandElements.size())),
+    int size = (commandElements.size() - optionsFoundCount - 2) / 2;
+    List<byte[]> members = new ArrayList<>(size);
+    double[] scores = new double[size];
+    int n = 0;
+    for (int i = optionsFoundCount + 2; i < commandElements.size(); i += 2, n++) {
+      try {
+        scores[n] = Coder.bytesToDouble(commandElements.get(i));
+      } catch (NumberFormatException e) {
+        throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
+      }
+      members.add(commandElements.get(i + 1));
+    }
+    Object retVal = redisSortedSetCommands.zadd(command.getKey(), members, scores,
         makeOptions(zAddExecutorState));
     if (zAddExecutorState.incrFound) {
       if (retVal == null) {

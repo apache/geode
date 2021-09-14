@@ -16,10 +16,13 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -29,7 +32,12 @@ public class ZIncrByExecutor extends AbstractExecutor {
     RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    byte[] increment = commandElements.get(2);
+    double increment;
+    try {
+      increment = Coder.bytesToDouble(commandElements.get(2));
+    } catch (NumberFormatException e) {
+      return RedisResponse.error(ERROR_NOT_A_VALID_FLOAT);
+    }
     byte[] member = commandElements.get(3);
 
     byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);

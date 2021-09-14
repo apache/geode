@@ -48,16 +48,10 @@ public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Do
         score = 0.0;
       } else {
         score = bytesToDouble(Arrays.copyOfRange(bytes, 1, bytes.length));
-        if (Double.isNaN(score)) {
-          throw new NumberFormatException();
-        }
       }
       return new RangeLimit<>(score, true);
     } else {
       score = bytesToDouble(bytes);
-      if (Double.isNaN(score)) {
-        throw new NumberFormatException();
-      }
       return new RangeLimit<>(score, false);
     }
   }

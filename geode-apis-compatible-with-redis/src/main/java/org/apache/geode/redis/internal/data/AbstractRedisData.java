@@ -45,6 +45,7 @@ import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaType;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.TimestampDeltaInfo;
+import org.apache.geode.redis.internal.delta.ZAddsDeltaInfo;
 
 public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
@@ -200,6 +201,15 @@ public abstract class AbstractRedisData implements RedisData {
         byte[] byteArray = DataSerializer.readByteArray(in);
         applyDelta(new AppendDeltaInfo(byteArray, sequence));
         break;
+      case ZADDS:
+        int numMembers = DataSerializer.readPrimitiveInt(in);
+        ZAddsDeltaInfo delta = new ZAddsDeltaInfo(numMembers);
+        for (int i = 0; i < numMembers; i++) {
+          byte[] member = DataSerializer.readByteArray(in);
+          double score = DataSerializer.readPrimitiveDouble(in);
+          delta.add(member, score);
+        }
+        applyDelta(delta);
     }
   }
 

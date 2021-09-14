@@ -16,13 +16,14 @@
 package org.apache.geode.redis.internal.netty;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.lang.Double.NaN;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
@@ -42,7 +43,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFIN
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERIOD;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
@@ -52,7 +52,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -60,6 +59,7 @@ import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
@@ -411,9 +411,21 @@ public class Coder {
       return NEGATIVE_INFINITY;
     }
     if (isNaN(bytes)) {
-      return NaN;
+      throw new NumberFormatException();
     }
-    return Double.parseDouble(bytesToString(bytes));
+
+    try {
+      String d = bytesToString(bytes);
+      if (d.equalsIgnoreCase(P_INF)) {
+        return Double.POSITIVE_INFINITY;
+      } else if (d.equalsIgnoreCase(N_INF)) {
+        return Double.NEGATIVE_INFINITY;
+      } else {
+        return Double.parseDouble(d);
+      }
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+    }
   }
 
   /**
@@ -505,14 +517,6 @@ public class Coder {
     } else {
       return (int) toBeNarrowed;
     }
-  }
-
-  public static byte[] stripTrailingZeroFromDouble(byte[] doubleBytes) {
-    if (doubleBytes.length > 1 && doubleBytes[doubleBytes.length - 2] == bPERIOD
-        && doubleBytes[doubleBytes.length - 1] == NUMBER_0_BYTE) {
-      return Arrays.copyOfRange(doubleBytes, 0, doubleBytes.length - 2);
-    }
-    return doubleBytes;
   }
 
   /**

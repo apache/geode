@@ -18,30 +18,24 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
-import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
-import static org.apache.geode.redis.internal.netty.Coder.stripTrailingZeroFromDouble;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -50,9 +44,9 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.delta.ZAddsDeltaInfo;
 import org.apache.geode.redis.internal.executor.sortedset.AbstractSortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
@@ -73,14 +67,12 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
   }
 
-  RedisSortedSet(List<byte[]> members) {
-    this.members = new MemberMap(members.size() / 2);
+  RedisSortedSet(List<byte[]> members, double[] scores) {
+    this.members = new MemberMap(members.size());
 
-    Iterator<byte[]> iterator = members.iterator();
-
-    while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      byte[] member = iterator.next();
+    for (int i = 0; i < members.size(); i++) {
+      double score = scores[i];
+      byte[] member = members.get(i);
       memberAdd(member, score);
     }
   }
@@ -94,9 +86,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
   @Override
   protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof AddsDeltaInfo) {
-      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      membersAddAll(addsDeltaInfo);
+    if (deltaInfo instanceof ZAddsDeltaInfo) {
+      ZAddsDeltaInfo zaddsDeltaInfo = (ZAddsDeltaInfo) deltaInfo;
+      membersAddAll(zaddsDeltaInfo);
     } else {
       RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
       membersRemoveAll(remsDeltaInfo);
@@ -119,11 +111,11 @@ public class RedisSortedSet extends AbstractRedisData {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    int size = InternalDataSerializer.readPrimitiveInt(in);
+    int size = DataSerializer.readPrimitiveInt(in);
     members = new MemberMap(size);
     for (int i = 0; i < size; i++) {
-      byte[] member = InternalDataSerializer.readByteArray(in);
-      byte[] score = InternalDataSerializer.readByteArray(in);
+      byte[] member = DataSerializer.readByteArray(in);
+      double score = DataSerializer.readPrimitiveDouble(in);
       OrderedSetEntry newEntry = new OrderedSetEntry(member, score);
       members.put(member, newEntry);
       scoreSet.add(newEntry);
@@ -160,40 +152,39 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_ID;
   }
 
-  protected synchronized byte[] memberAdd(byte[] memberToAdd, byte[] scoreToAdd) {
-    OrderedSetEntry existingEntry = members.get(memberToAdd);
-    if (existingEntry == null) {
+  protected synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
+    OrderedSetEntry entry = members.get(memberToAdd);
+    if (entry == null) {
       OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
       members.put(memberToAdd, newEntry);
       scoreSet.add(newEntry);
-      return null;
+      return MemberAddResult.CREATE;
     } else {
-      scoreSet.remove(existingEntry);
-      byte[] oldScore = existingEntry.scoreBytes;
-      existingEntry.updateScore(stripTrailingZeroFromDouble(scoreToAdd));
-      members.put(memberToAdd, existingEntry);
-      scoreSet.add(existingEntry);
-      return oldScore;
+      if (entry.score == scoreToAdd) {
+        return MemberAddResult.NO_OP;
+      }
+      scoreSet.remove(entry);
+      entry.updateScore(scoreToAdd);
+      scoreSet.add(entry);
+      return MemberAddResult.UPDATE;
     }
   }
 
-  synchronized byte[] memberRemove(byte[] member) {
-    byte[] oldValue = null;
+  synchronized boolean memberRemove(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.remove(member);
     if (orderedSetEntry != null) {
       scoreSet.remove(orderedSetEntry);
-      oldValue = orderedSetEntry.getScoreBytes();
+      return true;
     }
 
-    return oldValue;
+    return false;
   }
 
-  private synchronized void membersAddAll(AddsDeltaInfo addsDeltaInfo) {
-    Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
-    while (iterator.hasNext()) {
-      byte[] member = iterator.next();
-      byte[] score = iterator.next();
-      memberAdd(member, score);
+  private synchronized void membersAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
+    List<byte[]> members = zaddsDeltaInfo.getZAddMembers();
+    double[] scores = zaddsDeltaInfo.getZAddScores();
+    for (int i = 0; i < members.size(); i++) {
+      memberAdd(members.get(i), scores[i]);
     }
   }
 
@@ -210,34 +201,39 @@ public class RedisSortedSet extends AbstractRedisData {
    * @return the number of members actually added OR incremented value if INCR option specified
    */
   Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
-      ZAddOptions options) {
+      double[] scoresToAdd, ZAddOptions options) {
     if (options.isINCR()) {
-      return zaddIncr(region, key, membersToAdd, options);
+      // if INCR, only one score and member can be added
+      return zaddIncr(region, key, membersToAdd.get(0), scoresToAdd[0], options);
     }
-    AddsDeltaInfo deltaInfo = null;
-    Iterator<byte[]> iterator = membersToAdd.iterator();
+
+    ZAddsDeltaInfo deltaInfo = null;
     int initialSize = scoreSet.size();
     int changesCount = 0;
-    while (iterator.hasNext()) {
-      byte[] score = iterator.next();
-      byte[] member = iterator.next();
+
+    for (int i = 0; i < membersToAdd.size(); i++) {
+      double score = scoresToAdd[i];
+      byte[] member = membersToAdd.get(i);
       if (options.isNX() && members.containsKey(member)) {
         continue;
       }
       if (options.isXX() && !members.containsKey(member)) {
         continue;
       }
-      byte[] oldScore = memberAdd(member, score);
-      if (options.isCH() && oldScore != null
-          && !Arrays.equals(oldScore, stripTrailingZeroFromDouble(score))) {
+      MemberAddResult addResult = memberAdd(member, score);
+
+      if (options.isCH() && addResult.equals(MemberAddResult.UPDATE)) {
         changesCount++;
       }
 
-      if (deltaInfo == null) {
-        deltaInfo = new AddsDeltaInfo(new ArrayList<>());
+      if (!addResult.equals(MemberAddResult.NO_OP)) {
+        if (deltaInfo == null) {
+          deltaInfo = new ZAddsDeltaInfo(membersToAdd.size());
+          deltaInfo.add(member, score);
+        } else {
+          deltaInfo.add(member, score);
+        }
       }
-      deltaInfo.add(member);
-      deltaInfo.add(score);
     }
 
     storeChanges(region, key, deltaInfo);
@@ -262,30 +258,27 @@ public class RedisSortedSet extends AbstractRedisData {
     return maxIndex - minIndex;
   }
 
-  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, byte[] increment,
-      byte[] member) {
+  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double incr, byte[] member) {
+    double score;
     OrderedSetEntry orderedSetEntry = members.get(member);
-    double incr = processByteArrayAsDouble(increment);
 
     if (orderedSetEntry != null) {
-      double byteScore = orderedSetEntry.getScore();
-      incr += byteScore;
+      score = orderedSetEntry.getScore() + incr;
 
-      if (Double.isNaN(incr)) {
+      if (Double.isNaN(score)) {
         throw new NumberFormatException(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
       }
+    } else {
+      score = incr;
     }
 
-    byte[] byteIncr = doubleToBytes(incr);
-    memberAdd(member, byteIncr);
+    if (!(memberAdd(member, score) == MemberAddResult.NO_OP)) {
+      ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(1);
+      deltaInfo.add(member, score);
+      storeChanges(region, key, deltaInfo);
+    }
 
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(new ArrayList<>());
-    deltaInfo.add(member);
-    deltaInfo.add(byteIncr);
-
-    storeChanges(region, key, deltaInfo);
-
-    return byteIncr;
+    return Coder.doubleToBytes(score);
   }
 
   long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -340,7 +333,7 @@ public class RedisSortedSet extends AbstractRedisData {
     int membersRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
     for (byte[] memberToRemove : membersToRemove) {
-      if (memberRemove(memberToRemove) != null) {
+      if (memberRemove(memberToRemove)) {
         if (deltaInfo == null) {
           deltaInfo = new RemsDeltaInfo();
         }
@@ -390,7 +383,7 @@ public class RedisSortedSet extends AbstractRedisData {
   byte[] zscore(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry != null) {
-      return orderedSetEntry.getScoreBytes();
+      return Coder.doubleToBytes(orderedSetEntry.getScore());
     }
     return null;
   }
@@ -408,23 +401,23 @@ public class RedisSortedSet extends AbstractRedisData {
       for (AbstractOrderedSetEntry entry : set.members.values()) {
         OrderedSetEntry existingValue = members.get(entry.member);
         if (existingValue == null) {
-          byte[] scoreBytes;
+          double score;
           // Redis math and Java math are different when handling infinity. Specifically:
           // Java: INFINITY * 0 = NaN
           // Redis: INFINITY * 0 = 0
           if (weight == 0) {
-            scoreBytes = bZERO;
+            score = 0;
           } else if (weight == 1) {
-            scoreBytes = entry.getScoreBytes();
+            score = entry.getScore();
           } else {
             double newScore = entry.score * weight;
             if (Double.isNaN(newScore)) {
-              scoreBytes = entry.getScoreBytes();
+              score = entry.getScore();
             } else {
-              scoreBytes = Coder.doubleToBytes(entry.score * weight);
+              score = newScore;
             }
           }
-          members.put(entry.member, new OrderedSetEntry(entry.member, scoreBytes));
+          members.put(entry.member, new OrderedSetEntry(entry.member, score));
           continue;
         }
 
@@ -454,7 +447,7 @@ public class RedisSortedSet extends AbstractRedisData {
       members.remove(entry.member);
 
       result.add(entry.member);
-      result.add(entry.scoreBytes);
+      result.add(Coder.doubleToBytes(entry.score));
       deltaInfo.add(entry.member);
     }
 
@@ -485,11 +478,9 @@ public class RedisSortedSet extends AbstractRedisData {
     return entriesRemoved;
   }
 
-  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key,
-      List<byte[]> membersToAdd, ZAddOptions options) {
+  private byte[] zaddIncr(Region<RedisKey, RedisData> region, RedisKey key, byte[] member,
+      double increment, ZAddOptions options) {
     // for zadd incr option, only one incrementing element pair is allowed to get here.
-    byte[] increment = membersToAdd.get(0);
-    byte[] member = membersToAdd.get(1);
     if (options.isNX() && members.containsKey(member)) {
       return null;
     }
@@ -572,7 +563,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
       result.add(entry.member);
       if (rangeOptions.isWithScores()) {
-        result.add(entry.scoreBytes);
+        result.add(Coder.doubleToBytes(entry.score));
       }
     }
     return result;
@@ -601,18 +592,6 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public KnownVersion[] getSerializationVersions() {
     return null;
-  }
-
-  public static double processByteArrayAsDouble(byte[] value) {
-    try {
-      double doubleValue = bytesToDouble(value);
-      if (Double.isNaN(doubleValue)) {
-        throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-      }
-      return doubleValue;
-    } catch (NumberFormatException nfe) {
-      throw new NumberFormatException(ERROR_NOT_A_VALID_FLOAT);
-    }
   }
 
   // Comparison to allow the use of bLEAST_MEMBER_NAME and bGREATEST_MEMBER_NAME to always be less
@@ -660,7 +639,6 @@ public class RedisSortedSet extends AbstractRedisData {
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
     byte[] member;
-    byte[] scoreBytes;
     double score;
 
     private AbstractOrderedSetEntry() {}
@@ -676,10 +654,6 @@ public class RedisSortedSet extends AbstractRedisData {
 
     public byte[] getMember() {
       return member;
-    }
-
-    public byte[] getScoreBytes() {
-      return scoreBytes;
     }
 
     public double getScore() {
@@ -700,10 +674,9 @@ public class RedisSortedSet extends AbstractRedisData {
 
     public static final int ORDERED_SET_ENTRY_OVERHEAD = memoryOverhead(OrderedSetEntry.class);
 
-    public OrderedSetEntry(byte[] member, byte[] score) {
+    public OrderedSetEntry(byte[] member, double score) {
       this.member = member;
-      this.scoreBytes = stripTrailingZeroFromDouble(score);
-      this.score = processByteArrayAsDouble(score);
+      this.score = score;
     }
 
     @Override
@@ -715,21 +688,12 @@ public class RedisSortedSet extends AbstractRedisData {
     public int getSizeInBytes() {
       // don't include the member size since it is accounted
       // for as the key on the Hash.
-      return ORDERED_SET_ENTRY_OVERHEAD + memoryOverhead(scoreBytes);
-    }
-
-    public void updateScore(byte[] newScore) {
-      if (!Arrays.equals(newScore, scoreBytes)) {
-        scoreBytes = newScore;
-        score = processByteArrayAsDouble(newScore);
-      }
+      return ORDERED_SET_ENTRY_OVERHEAD;
     }
 
     public double updateScore(double newScore) {
       score = newScore;
-      scoreBytes = Coder.doubleToBytes(newScore);
-
-      return score;
+      return newScore;
     }
   }
 
@@ -741,7 +705,6 @@ public class RedisSortedSet extends AbstractRedisData {
       // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
       // this entry should act as if it is greater than the entry it's being compared to
       this.member = isExclusive ^ isMinimum ? bLEAST_MEMBER_NAME : bGREATEST_MEMBER_NAME;
-      this.scoreBytes = null;
       this.score = score;
     }
 
@@ -817,16 +780,12 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     public void toData(DataOutput out) throws IOException {
-      InternalDataSerializer.writePrimitiveInt(size(), out);
-      final int maxIndex = getMaxIndex();
-      for (int pos = 0; pos < maxIndex; ++pos) {
-        OrderedSetEntry value = getValueAtIndex(pos);
-        if (value != null) {
-          byte[] member = value.getMember();
-          byte[] score = value.getScoreBytes();
-          InternalDataSerializer.writeByteArray(member, out);
-          InternalDataSerializer.writeByteArray(score, out);
-        }
+      DataSerializer.writePrimitiveInt(size(), out);
+      for (Map.Entry<byte[], OrderedSetEntry> entry : entrySet()) {
+        byte[] member = entry.getKey();
+        double score = entry.getValue().getScore();
+        DataSerializer.writeByteArray(member, out);
+        DataSerializer.writePrimitiveDouble(score, out);
       }
     }
   }
@@ -838,4 +797,9 @@ public class RedisSortedSet extends AbstractRedisData {
   public static class ScoreSet extends OrderStatisticsTree<AbstractOrderedSetEntry> {
   }
 
+  private enum MemberAddResult {
+    CREATE,
+    UPDATE,
+    NO_OP
+  }
 }
