@@ -15,8 +15,14 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
@@ -25,9 +31,53 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
 
   private static final Logger logger = LogService.getLogger();
+  private static long socketTimeWaitMsec = 240000;
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
+
+  @BeforeClass
+  public static void runOnce() throws IOException {
+    Process process;
+    if (SystemUtils.IS_OS_LINUX) {
+      try {
+        process = Runtime.getRuntime().exec("cat /proc/sys/net/ipv4/tcp_fin_timeout");
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream()));
+        String line = reader.readLine();
+        socketTimeWaitMsec = Long.parseLong(line.trim());
+      } catch (NumberFormatException nfe) {
+      } catch (IOException ioe){
+      }
+    } else if (SystemUtils.IS_OS_MAC) {
+      try {
+        process = Runtime.getRuntime().exec("sysctl net.inet.tcp.msl");
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream()));
+        String line = reader.readLine();
+        String[] parts = line.split(":");
+        if (parts.length == 2) {
+          socketTimeWaitMsec = 2 * Long.parseLong(parts[1].trim());
+          System.out.println("TIME_WAIT: " + socketTimeWaitMsec);
+        }
+      } catch (NumberFormatException ignored) {
+      } catch (IOException ignored){
+      }
+    } else if (SystemUtils.IS_OS_WINDOWS) {
+      // get Windows TIME_WAIT
+      try {
+        process = Runtime.getRuntime().exec("reg query HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters /v TcpTimedWaitDelay");
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream()));
+        String line = reader.readLine();
+        socketTimeWaitMsec = Long.parseLong(line.trim());
+      } catch (NumberFormatException ignored) {
+      } catch (IOException ignored){
+      }
+    }
+    // Just leave timeout at the default if it's some other OS
+  }
+
 
   @AfterClass
   public static void cleanup() throws InterruptedException {
@@ -38,7 +88,7 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
     // simplest way to wait for the sockets to be out of the TIME_WAIT state. The timeout of 240 sec
     // was chosen because that is the default duration for TIME_WAIT on Windows. The timeouts for
     // both mac and linux are significantly shorter.
-    Thread.sleep(240000);
+    Thread.sleep(socketTimeWaitMsec);
   }
 
   @Override
