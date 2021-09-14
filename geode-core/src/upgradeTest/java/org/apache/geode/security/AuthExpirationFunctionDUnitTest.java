@@ -14,19 +14,28 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.execute.FunctionService.onRegion;
 import static org.apache.geode.cache.execute.FunctionService.onServer;
+import static org.apache.geode.cache.execute.FunctionService.onServers;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.SecurityManager.PASSWORD;
+import static org.apache.geode.security.SecurityManager.USER_NAME;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,16 +44,19 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.security.TestFunctions;
-import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -65,77 +77,322 @@ public class AuthExpirationFunctionDUnitTest {
     return Arrays.asList(CURRENT_VERSION, RELEASE_VERSION);
   }
 
-  private MemberVM serverVM;
-  private ClientVM clientVM;
+  private MemberVM serverVM0;
+  private MemberVM serverVM1;
+  private MemberVM serverVM2;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
+
+  @Rule
+  public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   @Before
-  public void setup() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
-    properties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.management.internal.security.TestFunctions*");
-    serverVM = lsRule.startServerVM(0, properties);
+  public void setup() {
+    MemberVM locatorVM =
+        lsRule.startLocatorVM(0, l -> l.withSecurityManager(ExpirableSecurityManager.class));
+    int locatorPort = locatorVM.getPort();
 
-    serverVM.invoke(() -> {
+    Properties serverProperties = new Properties();
+    serverProperties.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
+    serverProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.security.TestFunctions*");
+    serverProperties.setProperty(GROUPS, "group");
+    serverProperties.setProperty(USER_NAME, "test");
+    serverProperties.setProperty(PASSWORD, "test");
+
+    serverVM0 = lsRule.startServerVM(1, serverProperties, locatorPort);
+    serverVM1 = lsRule.startServerVM(2, serverProperties, locatorPort);
+    serverVM2 = lsRule.startServerVM(3, serverProperties, locatorPort);
+
+    VMProvider.invokeInEveryMember(() -> {
       Objects.requireNonNull(ClusterStartupRule.getCache())
           .createRegionFactory(RegionShortcut.REPLICATE).create("region");
-    });
-    int serverPort = serverVM.getPort();
-    clientVM = lsRule.startClientVM(1, clientVersion, c1 -> c1
-        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
-        .withPoolSubscription(true)
-        .withServerConnection(serverPort));
+      Objects.requireNonNull(ClusterStartupRule.getCache())
+          .createRegionFactory(RegionShortcut.PARTITION).create("partitionRegion");
+    }, serverVM0, serverVM1, serverVM2);
 
     VMProvider.invokeInEveryMember(() -> writeFunction = new TestFunctions.WriteFunction(),
-        serverVM, clientVM);
+        serverVM0, serverVM1, serverVM2);
+
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locatorPort);
   }
 
   @Test
-  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionSucceed() {
-    clientVM.invoke(() -> {
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assertThat(clientCache).isNotNull();
-      UpdatableUserAuthInitialize.setUser("data1");
-      ResultCollector rc = onServer(clientCache.getDefaultPool()).execute(writeFunction);
-      assertThat(((ArrayList) rc.getResult()).get(0))
-          .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
-    });
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionOnServerSucceed()
+      throws Exception {
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("data1");
+    writeFunction = new TestFunctions.WriteFunction();
+
+    ResultCollector rc = onServer(clientCache.getDefaultPool()).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
     // expire the current user
-    serverVM.invoke(() -> getSecurityManager().addExpiredUser("data1"));
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("data1"),
+        serverVM0, serverVM1, serverVM2);
 
     // do a second function execution, if this is successful, it means new credentials are provided
-    clientVM.invoke(() -> {
-      ClientCache clientCache = ClusterStartupRule.getClientCache();
-      assertThat(clientCache).isNotNull();
-      UpdatableUserAuthInitialize.setUser("data2");
-      ResultCollector rc = onServer(clientCache.getDefaultPool()).execute(writeFunction);
-      assertThat(((ArrayList) rc.getResult()).get(0))
-          .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
-    });
+    UpdatableUserAuthInitialize.setUser("data2");
+    rc = onServer(clientCache.getDefaultPool()).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all put operation succeeded
-    serverVM.invoke(() -> {
+    // all function invocation authorizations are recorded
+    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
+    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
+    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
+
+    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(combinedExpiredUsers.size()).isEqualTo(1);
+    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(authorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
+
+    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+  }
+
+  @Test
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionOnServersSucceed()
+      throws Exception {
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("data1");
+    writeFunction = new TestFunctions.WriteFunction();
+
+    ResultCollector rc = onServers(clientCache.getDefaultPool()).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // expire the current user
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("data1"),
+        serverVM0, serverVM1, serverVM2);
+
+    // do a second function execution, if this is successful, it means new credentials are provided
+    UpdatableUserAuthInitialize.setUser("data2");
+    rc = onServers(clientCache.getDefaultPool()).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // all function invocation authorizations are recorded
+    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
+    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
+    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
+
+    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(combinedExpiredUsers.size()).isEqualTo(1);
+    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(authorizedOps.get("data1")).asList().hasSize(3);
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().hasSize(3);
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
+
+    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(unauthorizedOps.get("data1")).asList().hasSize(3);
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
+        "DATA:WRITE");
+  }
+
+  @Test
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionOnRegionSucceed()
+      throws Exception {
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("data1");
+    Region<Object, Object> region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+    writeFunction = new TestFunctions.WriteFunction();
+
+    ResultCollector rc = onRegion(region).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // expire the current user
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("data1"),
+        serverVM0, serverVM1, serverVM2);
+
+    // do a second function execution, if this is successful, it means new credentials are provided
+    UpdatableUserAuthInitialize.setUser("data2");
+    rc = onRegion(region).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // all function invocation authorizations are recorded
+    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
+    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
+    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
+
+    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(combinedExpiredUsers.size()).isEqualTo(1);
+    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(authorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
+
+    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+  }
+
+  @Test
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionOnServerWithRegionServiceSucceed()
+      throws Exception {
+    clientCacheRule.withMultiUser(true);
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("data1");
+    writeFunction = new TestFunctions.WriteFunction();
+
+    Properties userSecurityProperties = new Properties();
+    userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
+        UpdatableUserAuthInitialize.class.getName());
+    RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
+
+    ResultCollector rc = onServer(regionService).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // expire the current user
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("data1"),
+        serverVM0, serverVM1, serverVM2);
+
+    // do a second function execution, if this is successful, it means new credentials are provided
+    UpdatableUserAuthInitialize.setUser("data2");
+    rc = onServer(regionService).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // all function invocation authorizations are recorded
+    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
+    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
+    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
+
+    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(combinedExpiredUsers.size()).isEqualTo(1);
+    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(authorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().hasSize(1);
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
+
+    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
+  }
+
+  @Test
+  public void clientShouldReAuthenticateWhenCredentialExpiredAndFunctionExecutionOnServersWithRegionServiceSucceed()
+      throws Exception {
+    clientCacheRule.withMultiUser(true);
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("data1");
+    writeFunction = new TestFunctions.WriteFunction();
+
+    Properties userSecurityProperties = new Properties();
+    userSecurityProperties.put(SECURITY_CLIENT_AUTH_INIT,
+        UpdatableUserAuthInitialize.class.getName());
+    RegionService regionService = clientCache.createAuthenticatedView(userSecurityProperties);
+
+    ResultCollector rc = onServers(regionService).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // expire the current user
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("data1"),
+        serverVM0, serverVM1, serverVM2);
+
+    // do a second function execution, if this is successful, it means new credentials are provided
+    UpdatableUserAuthInitialize.setUser("data2");
+    rc = onServers(regionService).execute(writeFunction);
+    assertThat(((ArrayList) rc.getResult()).get(0))
+        .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
+
+    // all function invocation authorizations are recorded
+    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
+    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
+    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
+
+    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(combinedExpiredUsers.size()).isEqualTo(1);
+    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(authorizedOps.get("data1")).asList().hasSize(3);
+    assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).asList().hasSize(3);
+    assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+
+    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+
+    assertThat(unauthorizedOps.get("data1")).asList().hasSize(3);
+    assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
+  }
+
+  private List<Object> collectSecurityManagerResults(MemberVM vm) {
+    return vm.invoke(() -> {
       ExpirableSecurityManager securityManager = getSecurityManager();
-      assertThat(securityManager.getExpiredUsers().size()).isEqualTo(1);
-      assertThat(securityManager.getExpiredUsers().contains("data1")).isTrue();
-      Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
-      assertThat(authorizedOps.get("data1")).asList().hasSize(1);
-      assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
-      assertThat(authorizedOps.get("data2")).asList().hasSize(1);
-      assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
-      Map<String, List<String>> unauthorizedOps = securityManager.getUnAuthorizedOps();
-      assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
-      assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
-      return authorizedOps.get("data1");
+      List<Object> resultsList = new ArrayList<>();
+      resultsList.add(securityManager.getExpiredUsers());
+      resultsList.add(securityManager.getAuthorizedOps());
+      resultsList.add(securityManager.getUnAuthorizedOps());
+      return resultsList;
     });
   }
 
+  @SafeVarargs
+  private final Map<String, List<String>> collectVMOps(int resultPosition, List<Object>... results) {
+    return Arrays.stream(results)
+        .map(result -> (Map<String, List<String>>) result.get(resultPosition))
+        .reduce((opsOne, opsTwo) -> {
+          opsTwo.keySet().forEach(key -> {
+            List<String> combinedList = opsOne.get(key);
+            if (combinedList == null) {
+              combinedList = new ArrayList<>();
+            }
+            combinedList.addAll(opsTwo.get(key));
+            opsOne.put(key, combinedList);
+          });
+          return opsOne;
+        }).orElse(new HashMap<>());
+  }
+
+  @SafeVarargs
+  private final Set<String> combineExpiredUsers(List<Object>... results) {
+    return Arrays.stream(results)
+        .map(result -> (Set<String>)result.get(0))
+        .reduce((eUsers1, eUsers2) -> {
+          eUsers1.addAll(eUsers2);
+          return eUsers1;
+        }).orElse(new HashSet<>());
+  }
+
   private static ExpirableSecurityManager getSecurityManager() {
-    return (ExpirableSecurityManager) ClusterStartupRule.getCache().getSecurityService()
+    return (ExpirableSecurityManager) Objects.requireNonNull(ClusterStartupRule.getCache()).getSecurityService()
         .getSecurityManager();
   }
 }
