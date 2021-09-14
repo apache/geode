@@ -99,6 +99,9 @@ public class MSetDUnitTest {
               int count = 0;
               List<String> values = jedis.mget(keys);
               for (String v : values) {
+                if (v == null) {
+                  continue;
+                }
                 count += v.startsWith("valueOne") ? 1 : -1;
               }
               assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
@@ -140,6 +143,9 @@ public class MSetDUnitTest {
                 int count = 0;
                 List<String> values = jedis.mget(keys);
                 for (String v : values) {
+                  if (v == null) {
+                    continue;
+                  }
                   count += v.startsWith("valueOne") ? 1 : -1;
                 }
                 assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
