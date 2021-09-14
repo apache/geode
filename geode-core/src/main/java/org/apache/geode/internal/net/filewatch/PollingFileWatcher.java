@@ -36,8 +36,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * and remote file systems.
  * </p>
  */
-final class PollingFileWatcher {
-  private static final long PERIOD_SECONDS = 10;
+public final class PollingFileWatcher {
+  public static final long PERIOD_SECONDS = 10;
   private static final Logger logger = LogService.getLogger();
 
   private final Path path;
