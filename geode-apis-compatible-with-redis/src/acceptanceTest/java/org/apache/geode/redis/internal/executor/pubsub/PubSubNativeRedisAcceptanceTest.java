@@ -40,13 +40,13 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
   public static void runOnce() throws IOException {
     if (SystemUtils.IS_OS_LINUX) {
       try {
-        String line = getCommandOutput("cat /proc/sys/net/ipv4/tcp_fin_timeout");
+        String line = getCommandOutput("cat", "/proc/sys/net/ipv4/tcp_fin_timeout");
         socketTimeWaitMsec = Long.parseLong(line.trim());
       } catch (NumberFormatException | IOException ignored) {
       }
     } else if (SystemUtils.IS_OS_MAC) {
       try {
-        String line = getCommandOutput("sysctl net.inet.tcp.msl");
+        String line = getCommandOutput("sysctl", "net.inet.tcp.msl");
         String[] parts = line.split(":");
         if (parts.length == 2) {
           socketTimeWaitMsec = 2 * Long.parseLong(parts[1].trim());
@@ -57,11 +57,15 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
     // Just leave timeout at the default if it's some other OS or there's a problem getting OS value
   }
 
-  private static String getCommandOutput(String commandString) throws IOException {
-    Process process = Runtime.getRuntime().exec(commandString);
-    BufferedReader reader = new BufferedReader(
-        new InputStreamReader(process.getInputStream()));
-    return reader.readLine();
+  private static String getCommandOutput(String... commandStringElements) throws IOException {
+    Process process = new ProcessBuilder(commandStringElements).start();
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(process.getInputStream()))) {
+      return reader.readLine();
+    } finally {
+      // Probably overkill but ensures test leaves no orphaned processes
+      process.destroy();
+    }
   }
 
   @AfterClass
