@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -67,7 +66,7 @@ public class RedisSet extends AbstractRedisData {
    */
   public RedisSet() {}
 
-  Pair<BigInteger, List<Object>> sscan(Pattern matchPattern, int count, BigInteger cursor) {
+  Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count, BigInteger cursor) {
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     BigInteger beforeCursor = new BigInteger("0");
@@ -81,7 +80,7 @@ public class RedisSet extends AbstractRedisData {
       }
 
       if (matchPattern != null) {
-        if (GlobPattern.matches(matchPattern, value)) {
+        if (matchPattern.matches(value)) {
           returnList.add(value);
           numElements++;
         }

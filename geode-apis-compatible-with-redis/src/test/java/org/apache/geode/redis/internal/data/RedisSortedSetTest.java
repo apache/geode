@@ -44,7 +44,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import junitparams.JUnitParamsRunner;
@@ -65,6 +64,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
@@ -363,8 +363,9 @@ public class RedisSortedSetTest {
 
   @Test
   public void zscanOnlyReturnsElementsMatchingPattern() {
-    ImmutablePair<Integer, List<byte[]>> result = rangeSortedSet.zscan(Pattern.compile("member1.*"),
-        (int) rangeSortedSet.zcard(), 0);
+    ImmutablePair<Integer, List<byte[]>> result =
+        rangeSortedSet.zscan(new GlobPattern(stringToBytes("member1*")),
+            (int) rangeSortedSet.zcard(), 0);
 
     List<String> fieldsAndValues =
         result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());

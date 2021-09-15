@@ -15,7 +15,6 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import java.util.regex.Pattern;
 
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
@@ -28,20 +27,20 @@ class PatternClientSubscriptionManager
    * have the same pattern, its compiled form is kept in this field
    * instead of on each PatternSubscription instance.
    */
-  private final Pattern pattern;
+  private final GlobPattern pattern;
 
   public PatternClientSubscriptionManager(Client client, byte[] patternBytes,
       Subscription subscription) {
     super(client, subscription);
-    pattern = GlobPattern.createPattern(patternBytes);
+    pattern = new GlobPattern(patternBytes);
   }
 
-  private boolean matches(String channel) {
-    return GlobPattern.matches(pattern, channel);
+  private boolean matches(byte[] channel) {
+    return pattern.matches(channel);
   }
 
   @Override
-  public int getSubscriptionCount(String channel) {
+  public int getSubscriptionCount(byte[] channel) {
     if (matches(channel)) {
       return getSubscriptionCount();
     }
@@ -49,7 +48,7 @@ class PatternClientSubscriptionManager
   }
 
   @Override
-  public void forEachSubscription(byte[] subscriptionName, String channelToMatch,
+  public void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch,
       ForEachConsumer action) {
     if (matches(channelToMatch)) {
       super.forEachSubscription(subscriptionName, channelToMatch, action);

@@ -40,7 +40,7 @@ public class ChannelClientSubscriptionManagerTest {
   @Test
   public void newManagerHasOneSubscription() {
     assertThat(createManager().getSubscriptionCount()).isOne();
-    assertThat(createManager().getSubscriptionCount("channel")).isOne();
+    assertThat(createManager().getSubscriptionCount(stringToBytes("channel"))).isOne();
   }
 
   @Test
@@ -52,9 +52,9 @@ public class ChannelClientSubscriptionManagerTest {
     manager.remove(client);
 
     assertThat(manager.getSubscriptionCount()).isZero();
-    assertThat(manager.getSubscriptionCount("channel")).isZero();
+    assertThat(manager.getSubscriptionCount(stringToBytes("channel"))).isZero();
     Collection<Collection<Object>> foreachResults = new ArrayList<>();
-    manager.forEachSubscription(null, "channel",
+    manager.forEachSubscription(null, stringToBytes("channel"),
         (subName, toMatch, c, sub) -> foreachResults.add(asList(subName, toMatch, c, sub)));
     assertThat(foreachResults).isEmpty();
   }
@@ -71,11 +71,12 @@ public class ChannelClientSubscriptionManagerTest {
     assertThat(removeResult).isFalse();
     assertThat(addResult).isFalse();
     assertThat(manager.getSubscriptionCount()).isZero();
-    assertThat(manager.getSubscriptionCount("channel")).isZero();
+    assertThat(manager.getSubscriptionCount(stringToBytes("channel"))).isZero();
   }
 
   @Test
   public void secondAddReturnsTrue() {
+    byte[] channel = stringToBytes("channel");
     Client client = mock(Client.class);
     Subscription subscription = mock(Subscription.class);
     ClientSubscriptionManager manager = createManager(client, stringToBytes("*"), subscription);
@@ -86,14 +87,14 @@ public class ChannelClientSubscriptionManagerTest {
 
     assertThat(result).isTrue();
     assertThat(manager.getSubscriptionCount()).isEqualTo(2);
-    assertThat(manager.getSubscriptionCount("channel")).isEqualTo(2);
+    assertThat(manager.getSubscriptionCount(channel)).isEqualTo(2);
     Collection<Collection<Object>> foreachResults = new ArrayList<>();
     byte[] subName = stringToBytes("subName");
-    manager.forEachSubscription(subName, "channel",
+    manager.forEachSubscription(subName, channel,
         (sn, toMatch, c, sub) -> foreachResults.add(asList(sn, toMatch, c, sub)));
     assertThat(foreachResults).containsExactlyInAnyOrder(
-        asList(subName, "channel", client, subscription),
-        asList(subName, "channel", client2, subscription2));
+        asList(subName, channel, client, subscription),
+        asList(subName, channel, client2, subscription2));
   }
 
   @Test
@@ -112,13 +113,14 @@ public class ChannelClientSubscriptionManagerTest {
     assertThat(removeResult).isTrue();
     assertThat(addResult).isTrue();
     assertThat(manager.getSubscriptionCount()).isEqualTo(2);
-    assertThat(manager.getSubscriptionCount("channel")).isEqualTo(2);
+    byte[] channel = stringToBytes("channel");
+    assertThat(manager.getSubscriptionCount(channel)).isEqualTo(2);
     Collection<Collection<Object>> foreachResults = new ArrayList<>();
     byte[] subName = stringToBytes("subName");
-    manager.forEachSubscription(subName, "channel",
+    manager.forEachSubscription(subName, channel,
         (sn, toMatch, c, sub) -> foreachResults.add(asList(sn, toMatch, c, sub)));
     assertThat(foreachResults).containsExactlyInAnyOrder(
-        asList(subName, "channel", client, subscription),
-        asList(subName, "channel", client2, subscription2));
+        asList(subName, channel, client, subscription),
+        asList(subName, channel, client2, subscription2));
   }
 }

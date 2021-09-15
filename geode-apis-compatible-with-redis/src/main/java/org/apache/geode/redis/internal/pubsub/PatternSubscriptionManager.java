@@ -15,9 +15,7 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
@@ -28,29 +26,22 @@ class PatternSubscriptionManager
   @Override
   protected ClientSubscriptionManager createClientManager(
       Client client, byte[] patternBytes, Subscription subscription) {
-    try {
-      return new PatternClientSubscriptionManager(client, patternBytes, subscription);
-    } catch (PatternSyntaxException ex) {
-      client.removePatternSubscription(patternBytes);
-      throw ex;
-    }
+    return new PatternClientSubscriptionManager(client, patternBytes, subscription);
   }
 
   @Override
   public int getSubscriptionCount(byte[] channel) {
     int result = 0;
-    final String channelString = bytesToString(channel);
     for (ClientSubscriptionManager manager : clientManagers.values()) {
-      result += manager.getSubscriptionCount(channelString);
+      result += manager.getSubscriptionCount(channel);
     }
     return result;
   }
 
   @Override
   public void foreachSubscription(byte[] channel, ForEachConsumer action) {
-    final String channelString = bytesToString(channel);
     clientManagers.forEach((id, manager) -> manager.forEachSubscription(id.getSubscriptionIdBytes(),
-        channelString, action));
+        channel, action));
   }
 
   @Override

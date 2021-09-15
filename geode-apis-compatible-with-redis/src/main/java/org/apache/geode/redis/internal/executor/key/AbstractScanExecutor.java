@@ -26,8 +26,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
@@ -104,20 +102,9 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
         }
       }
 
-      Pattern matchPattern;
-      try {
-        matchPattern = convertGlobToRegex(globPattern);
-      } catch (PatternSyntaxException e) {
-        logger.warn(
-            "Could not compile the pattern: '{}' due to the following exception: '{}'. {} will return an empty list.",
-            globPattern, e.getMessage(), command.getCommandType().name());
-
-        return RedisResponse.emptyScan();
-      }
-
       Pair<Integer, List<byte[]>> scanResult;
       try {
-        scanResult = executeScan(context, key, matchPattern, count, cursor);
+        scanResult = executeScan(context, key, convertGlobToRegex(globPattern), count, cursor);
       } catch (IllegalArgumentException ex) {
         return RedisResponse.error(ERROR_NOT_INTEGER);
       }
@@ -128,18 +115,18 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
 
   /**
    * @param pattern A glob pattern.
-   * @return A regex pattern to recognize the given glob pattern.
+   * @return a GlobPattern that can be used to match pattern
    */
   @VisibleForTesting
-  public Pattern convertGlobToRegex(byte[] pattern) {
+  public GlobPattern convertGlobToRegex(byte[] pattern) {
     if (pattern == null) {
       return null;
     }
-    return GlobPattern.createPattern(pattern);
+    return new GlobPattern(pattern);
   }
 
   protected abstract Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context,
-      RedisKey key, Pattern pattern, int count, int cursor);
+      RedisKey key, GlobPattern pattern, int count, int cursor);
 
   protected abstract RedisDataType getDataType();
 }

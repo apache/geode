@@ -24,13 +24,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
 
 public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
@@ -104,7 +104,7 @@ public class RedisSetCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern, int count,
+  public Pair<BigInteger, List<Object>> sscan(RedisKey key, GlobPattern matchPattern, int count,
       BigInteger cursor) {
     return stripedExecute(key, () -> getRedisSet(key, true).sscan(matchPattern, count, cursor));
   }

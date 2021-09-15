@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -233,7 +232,8 @@ public class RedisHash extends AbstractRedisData {
     return result;
   }
 
-  public ImmutablePair<Integer, List<byte[]>> hscan(Pattern matchPattern, int count, int cursor) {
+  public ImmutablePair<Integer, List<byte[]>> hscan(GlobPattern matchPattern, int count,
+      int cursor) {
     // No need to allocate more space than it's possible to use given the size of the hash. We need
     // to add 1 to hlen() to ensure that if count > hash.size(), we return a cursor of 0
     long maximumCapacity = 2L * Math.min(count, hlen() + 1);
@@ -251,10 +251,10 @@ public class RedisHash extends AbstractRedisData {
     return new ImmutablePair<>(cursor, resultList);
   }
 
-  private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
+  private void addIfMatching(GlobPattern matchPattern, List<byte[]> resultList, byte[] key,
       byte[] value) {
     if (matchPattern != null) {
-      if (GlobPattern.matches(matchPattern, key)) {
+      if (matchPattern.matches(key)) {
         resultList.add(key);
         resultList.add(value);
       }

@@ -29,16 +29,14 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.Command;
@@ -53,7 +51,6 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     String cursorString = bytesToString(commandElems.get(2));
     BigInteger cursor;
-    Pattern matchPattern;
     byte[] globPattern = null;
     int count = DEFAULT_COUNT;
 
@@ -108,17 +105,8 @@ public class SScanExecutor extends AbstractScanExecutor {
       }
     }
 
-    try {
-      matchPattern = convertGlobToRegex(globPattern);
-    } catch (PatternSyntaxException e) {
-      LogService.getLogger().warn(
-          "Could not compile the pattern: '{}' due to the following exception: '{}'. SSCAN will return an empty list.",
-          globPattern, e.getMessage());
-      return RedisResponse.emptyScan();
-    }
-
     Pair<BigInteger, List<Object>> scanResult =
-        context.getSetCommands().sscan(key, matchPattern, count, cursor);
+        context.getSetCommands().sscan(key, convertGlobToRegex(globPattern), count, cursor);
 
     context.setSscanCursor(scanResult.getLeft());
 
@@ -128,7 +116,7 @@ public class SScanExecutor extends AbstractScanExecutor {
   // TODO: When SSCAN is supported, refactor to use these methods and not override executeCommand()
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
-      Pattern pattern, int count, int cursor) {
+      GlobPattern pattern, int count, int cursor) {
     return null;
   }
 
