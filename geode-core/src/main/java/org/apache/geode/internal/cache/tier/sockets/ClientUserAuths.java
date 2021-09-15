@@ -57,12 +57,11 @@ public class ClientUserAuths {
     if (existingUniqueId == 0 || existingUniqueId == NOT_A_USER_ID) {
       newId = getNextID();
     } else {
-      // the user re-authenticate back, remove the existing subject, reuse the uniqueId
-      removeSubject(existingUniqueId);
       newId = existingUniqueId;
     }
 
-    uniqueIdVsSubject.put(newId, subject);
+    Subject oldSubject = uniqueIdVsSubject.put(newId, subject);
+    removeSubject(oldSubject);
     logger.debug("Subject of {} added.", newId);
     return newId;
   }
@@ -99,19 +98,20 @@ public class ClientUserAuths {
     return uniqueIdVsSubject.get(userId);
   }
 
-  public boolean removeSubject(final Long userId) {
-    final Subject subject = uniqueIdVsSubject.remove(userId);
+  public void removeSubject(final Long userId) {
     logger.debug("Subject of {} removed.", userId);
+    removeSubject(uniqueIdVsSubject.remove(userId));
+  }
+
+  @VisibleForTesting
+  void removeSubject(Subject subject) {
     if (subject == null) {
-      return false;
+      return;
     }
-
     if (subject.getPrincipal() == null) {
-      return false;
+      return;
     }
-
     subject.logout();
-    return true;
   }
 
   public UserAuthAttributes getUserAuthAttributes(final String cqName) {
@@ -194,7 +194,7 @@ public class ClientUserAuths {
         // from serverConnection class
         cleanUserAuth(userAuth);
       } else if (fromCacheClientProxy && userAuth.isDurable()) {
-        // from cacheclientProxy class
+        // from CacheClientProxy class
         cleanUserAuth(userAuth);
       }
     }
