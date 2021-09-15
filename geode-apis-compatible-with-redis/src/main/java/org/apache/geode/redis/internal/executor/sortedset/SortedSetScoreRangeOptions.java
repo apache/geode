@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A_FLOAT;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToDouble;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEFT_PAREN;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +41,7 @@ public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Do
 
   private RangeLimit<Double> parseOneRangeArgument(byte[] bytes) {
     double score;
-    if (bytes[0] == bLEFT_PAREN) {
+    if (bytes[0] == (byte) '(') {
       // A value of "(" is equivalent to "(0"
       if (bytes.length == 1) {
         score = 0.0;

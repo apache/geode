@@ -15,8 +15,6 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEFT_BRACE_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RIGHT_BRACE_ID;
 
 import org.apache.geode.redis.internal.executor.cluster.CRC16;
 
@@ -35,7 +33,7 @@ public class KeyHashUtil {
     int endHashtag;
 
     for (startHashtag = 0; startHashtag < key.length; startHashtag++) {
-      if (key[startHashtag] == LEFT_BRACE_ID) {
+      if (key[startHashtag] == (byte) '{') {
         break;
       }
     }
@@ -46,7 +44,7 @@ public class KeyHashUtil {
     }
 
     for (endHashtag = startHashtag + 1; endHashtag < key.length; endHashtag++) {
-      if (key[endHashtag] == RIGHT_BRACE_ID) {
+      if (key[endHashtag] == (byte) '}') {
         break;
       }
     }

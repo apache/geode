@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.connection;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SELECT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
 
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -28,7 +27,7 @@ public class SelectExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     byte[] dbIndexBytes = command.getBytesKey();
-    if (dbIndexBytes.length == 1 && dbIndexBytes[0] == NUMBER_0_BYTE) {
+    if (dbIndexBytes.length == 1 && dbIndexBytes[0] == (byte) '0') {
       return RedisResponse.ok();
     }
     return RedisResponse.error(ERROR_SELECT);
