@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -284,6 +285,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     server1Site2 = clusterStartupRule.startServerVM(5, locatorSite2.getPort());
     server2Site2 = clusterStartupRule.startServerVM(6, locatorSite2.getPort());
 
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
     verifyGatewaySenderState(false, false);
 
     Set<String> keys = clientSite2.invoke(() -> doPutsInRange(20, 35));
@@ -342,6 +344,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     thread.join();
     thread1.join();
 
+    server1Site2.invoke(() -> checkQueueSize("ln", 0));
     verifyGatewaySenderState(false, false);
 
     // check that partition region is created and that accepts new traffic
@@ -412,10 +415,10 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     thread.join();
     thread1.join();
 
-    verifyGatewaySenderState(false, false);
     if (isParallel.equals("true")) {
       server1Site2.invoke(() -> checkQueueSize("ln", keysQueued.size()));
     }
+    verifyGatewaySenderState(false, false);
     executeGfshCommand(CliStrings.START_GATEWAYSENDER);
     verifyGatewaySenderState(true, false);
 
@@ -682,11 +685,11 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
     int totalSize = 0;
     Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
     if (sender.isParallel()) {
-      if (queues != null) {
-        for (RegionQueue q : queues) {
-          ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
-          totalSize += prQ.size();
-        }
+      // Parallel gateway sender queues must be not null when recovered in stopped state
+      assertNotNull(queues);
+      for (RegionQueue q : queues) {
+        ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
+        totalSize += prQ.size();
       }
     } else {
       if (queues != null) {
