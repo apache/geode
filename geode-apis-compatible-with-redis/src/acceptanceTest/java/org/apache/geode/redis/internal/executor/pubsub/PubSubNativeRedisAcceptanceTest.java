@@ -57,7 +57,6 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
         String[] parts = line.split(":");
         if (parts.length == 2) {
           socketTimeWaitMsec = 2 * Long.parseLong(parts[1].trim());
-          System.out.println("TIME_WAIT: " + socketTimeWaitMsec);
         }
       } catch (NumberFormatException | IOException ignored) {
       }
