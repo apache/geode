@@ -242,7 +242,8 @@ public class DistributedEventTracker implements EventTracker {
             }
             if (evh.getKeySequenceIdSize() > 0) {
               for (Map.Entry<Object, Long> entry : evh.getKeySequenceId().entrySet()) {
-                if (!oldEvh.getKeySequenceId().containsKey(entry.getKey())) {
+                if (oldEvh.getKeySequenceIdSize() > 0
+                    && !oldEvh.getKeySequenceId().containsKey(entry.getKey())) {
                   oldEvh.getKeySequenceId().put(entry.getKey(), entry.getValue());
                 }
               }

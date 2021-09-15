@@ -20,7 +20,7 @@ import static org.apache.geode.internal.serialization.StaticSerialization.getVer
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.DataSerializable;
@@ -58,7 +58,9 @@ public class EventSequenceNumberHolder implements DataSerializable {
    */
   private VersionTag versionTag;
 
-  private final Map<Object, Long> keySequenceIdMap = new HashMap<Object, Long>();
+  private Map<Object, Long> keySequenceIdMap = null;
+
+  private final int limit = 150;
 
   // for debugging
   // transient Exception context;
@@ -72,6 +74,11 @@ public class EventSequenceNumberHolder implements DataSerializable {
     this.lastSequenceNumber = id;
     this.versionTag = versionTag;
     if (key != null) {
+      keySequenceIdMap = new LinkedHashMap<Object, Long>() {
+        protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
+          return size() > limit;
+        }
+      };
       keySequenceIdMap.put(key, id);
     }
   }
@@ -156,6 +163,8 @@ public class EventSequenceNumberHolder implements DataSerializable {
   }
 
   public int getKeySequenceIdSize() {
+    if (keySequenceIdMap == null)
+      return 0;
     return keySequenceIdMap.size();
   }
 
