@@ -1569,7 +1569,8 @@ public class HARegionQueueJUnitTest {
     regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
     regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
 
-    verify(mockClientUpdateMessage).setClientCqs(mockClientCqConcurrentMap);
+    verify(mockClientUpdateMessage).addOrSetClientCqs(mockClientProxyMembershipId,
+        mockClientCqConcurrentMap);
     verify(mockClientUpdateMessage).addClientInterestList(mockClientProxyMembershipId,
         true);
 

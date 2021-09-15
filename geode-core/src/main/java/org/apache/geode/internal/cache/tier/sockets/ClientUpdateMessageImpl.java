@@ -589,6 +589,14 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return _clientCqs;
   }
 
+  public void addOrSetClientCqs(ClientProxyMembershipID proxyID, ClientCqConcurrentMap clientCqs) {
+    if (_clientCqs == null) {
+      _clientCqs = clientCqs;
+    } else {
+      _clientCqs.put(proxyID, clientCqs.get(proxyID));
+    }
+  }
+
   synchronized void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
     if (_clientCqs == null) {
       _clientCqs = new ClientCqConcurrentMap();

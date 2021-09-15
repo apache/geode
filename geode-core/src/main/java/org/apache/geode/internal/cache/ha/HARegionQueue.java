@@ -3494,7 +3494,7 @@ public class HARegionQueue implements RegionQueue {
       if (haEventWrapper.getClientCqs() != null) {
         CqNameToOp clientCQ = haEventWrapper.getClientCqs().get(proxyID);
         if (clientCQ != null) {
-          msg.setClientCqs(haEventWrapper.getClientCqs());
+          msg.addOrSetClientCqs(proxyID, haEventWrapper.getClientCqs());
         }
       }
 

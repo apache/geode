@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -41,9 +42,23 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class ClientUpdateMessageImplTest implements Serializable {
   private final ClientProxyMembershipID client1 = mock(ClientProxyMembershipID.class);
   private final ClientProxyMembershipID client2 = mock(ClientProxyMembershipID.class);
+  private final ClientUpdateMessageImpl.ClientCqConcurrentMap clientCqs =
+      new ClientUpdateMessageImpl.ClientCqConcurrentMap();
 
   @Rule
   public ExecutorServiceRule executorService = new ExecutorServiceRule();
+
+  @Before
+  public void setUp() {
+    ClientUpdateMessageImpl.CqNameToOpHashMap cqs1 =
+        new ClientUpdateMessageImpl.CqNameToOpHashMap(2);
+    cqs1.add("cqName1", 1);
+    cqs1.add("cqName2", 2);
+    clientCqs.put(client1, cqs1);
+    ClientUpdateMessageImpl.CqNameToOpSingleEntry cqs2 =
+        new ClientUpdateMessageImpl.CqNameToOpSingleEntry("cqName3", 3);
+    clientCqs.put(client2, cqs2);
+  }
 
   @Test
   public void addInterestedClientTest() {
@@ -178,6 +193,38 @@ public class ClientUpdateMessageImplTest implements Serializable {
     for (Future<Void> future : futures) {
       future.get();
     }
+  }
+
+  @Test
+  public void addOrSetClientCqsCanSetIfCqsMapIsNull() {
+    ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
+
+    clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs()).isEqualTo(clientCqs);
+  }
+
+  @Test
+  public void addOrSetClientCqsCanAddCqsIfCqsMapNotNull() {
+    ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    clientUpdateMessageImpl.addClientCq(clientProxyMembershipID, "cqName", 10);
+
+    clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().size()).isEqualTo(2);
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client1)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpHashMap.class);
+    ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =
+        (ClientUpdateMessageImpl.CqNameToOpHashMap) clientUpdateMessageImpl.getClientCqs()
+            .get(client1);
+    assertThat(client1Cqs.get("cqName1")).isEqualTo(1);
+    assertThat(client1Cqs.get("cqName2")).isEqualTo(2);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(clientProxyMembershipID)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpSingleEntry.class);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isNull();
   }
 
 }

@@ -23,7 +23,6 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
@@ -131,7 +130,7 @@ public class CqDUnitTest implements Serializable {
   }
 
   private void verifyCQListenerInvocations() {
-    await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       QueryService cqService = clientCacheRule.getClientCache().getQueryService();
       CqListener cqListener = cqService.getCq(cqName).getCqAttributes().getCqListener();
 
