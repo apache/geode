@@ -17,9 +17,10 @@ package org.apache.geode.security;
 import static org.apache.geode.cache.execute.FunctionService.onRegion;
 import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.cache.execute.FunctionService.onServers;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.combineSecurityManagerResults;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.apache.geode.security.SecurityManager.PASSWORD;
 import static org.apache.geode.security.SecurityManager.USER_NAME;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
@@ -28,8 +29,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +95,6 @@ public class AuthExpirationFunctionDUnitTest {
     serverProperties.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
     serverProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.management.internal.security.TestFunctions*");
-    serverProperties.setProperty(GROUPS, "group");
     serverProperties.setProperty(USER_NAME, "test");
     serverProperties.setProperty(PASSWORD, "test");
 
@@ -141,23 +139,21 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(((ArrayList) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all function invocation authorizations are recorded
-    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
-    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
-    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
 
-    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+    ExpirableSecurityManager consolidated =
+        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+    Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
 
     assertThat(combinedExpiredUsers.size()).isEqualTo(1);
     assertThat(combinedExpiredUsers.contains("data1")).isTrue();
-    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(1);
     assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
     assertThat(authorizedOps.get("data2")).asList().hasSize(1);
     assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
 
-    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
     assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
@@ -184,16 +180,13 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(((ArrayList) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all function invocation authorizations are recorded
-    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
-    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
-    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
-
-    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+    ExpirableSecurityManager consolidated =
+        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+    Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
 
     assertThat(combinedExpiredUsers.size()).isEqualTo(1);
     assertThat(combinedExpiredUsers.contains("data1")).isTrue();
-    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(3);
     assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
@@ -202,7 +195,7 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
         "DATA:WRITE");
 
-    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(3);
     assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
@@ -232,23 +225,20 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(((ArrayList) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all function invocation authorizations are recorded
-    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
-    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
-    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
-
-    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+    ExpirableSecurityManager consolidated =
+        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+    Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
 
     assertThat(combinedExpiredUsers.size()).isEqualTo(1);
     assertThat(combinedExpiredUsers.contains("data1")).isTrue();
-    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(1);
     assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
     assertThat(authorizedOps.get("data2")).asList().hasSize(1);
     assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
 
-    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
     assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
@@ -281,23 +271,20 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(((ArrayList) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all function invocation authorizations are recorded
-    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
-    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
-    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
-
-    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+    ExpirableSecurityManager consolidated =
+        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+    Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
 
     assertThat(combinedExpiredUsers.size()).isEqualTo(1);
     assertThat(combinedExpiredUsers.contains("data1")).isTrue();
-    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(1);
     assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
     assertThat(authorizedOps.get("data2")).asList().hasSize(1);
     assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE");
 
-    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(1);
     assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE");
@@ -330,16 +317,14 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(((ArrayList) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
-    // all function invocation authorizations are recorded
-    List<Object> resultsVM0 = collectSecurityManagerResults(serverVM0);
-    List<Object> resultsVM1 = collectSecurityManagerResults(serverVM1);
-    List<Object> resultsVM2 = collectSecurityManagerResults(serverVM2);
 
-    Set<String> combinedExpiredUsers = combineExpiredUsers(resultsVM0, resultsVM1, resultsVM2);
+    ExpirableSecurityManager consolidated =
+        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+    Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
 
     assertThat(combinedExpiredUsers.size()).isEqualTo(1);
     assertThat(combinedExpiredUsers.contains("data1")).isTrue();
-    Map<String, List<String>> authorizedOps = collectVMOps(1, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
 
     assertThat(authorizedOps.get("data1")).asList().hasSize(3);
     assertThat(authorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
@@ -348,55 +333,10 @@ public class AuthExpirationFunctionDUnitTest {
     assertThat(authorizedOps.get("data2")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
         "DATA:WRITE");
 
-    Map<String, List<String>> unauthorizedOps = collectVMOps(2, resultsVM0, resultsVM1, resultsVM2);
+    Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
 
     assertThat(unauthorizedOps.get("data1")).asList().hasSize(3);
     assertThat(unauthorizedOps.get("data1")).asList().containsExactly("DATA:WRITE", "DATA:WRITE",
         "DATA:WRITE");
-  }
-
-  private List<Object> collectSecurityManagerResults(MemberVM vm) {
-    return vm.invoke(() -> {
-      ExpirableSecurityManager securityManager = getSecurityManager();
-      List<Object> resultsList = new ArrayList<>();
-      resultsList.add(securityManager.getExpiredUsers());
-      resultsList.add(securityManager.getAuthorizedOps());
-      resultsList.add(securityManager.getUnAuthorizedOps());
-      return resultsList;
-    });
-  }
-
-  @SafeVarargs
-  private final Map<String, List<String>> collectVMOps(int resultPosition,
-      List<Object>... results) {
-    return Arrays.stream(results)
-        .map(result -> (Map<String, List<String>>) result.get(resultPosition))
-        .reduce((opsOne, opsTwo) -> {
-          opsTwo.keySet().forEach(key -> {
-            List<String> combinedList = opsOne.get(key);
-            if (combinedList == null) {
-              combinedList = new ArrayList<>();
-            }
-            combinedList.addAll(opsTwo.get(key));
-            opsOne.put(key, combinedList);
-          });
-          return opsOne;
-        }).orElse(new HashMap<>());
-  }
-
-  @SafeVarargs
-  private final Set<String> combineExpiredUsers(List<Object>... results) {
-    return Arrays.stream(results)
-        .map(result -> (Set<String>) result.get(0))
-        .reduce((eUsers1, eUsers2) -> {
-          eUsers1.addAll(eUsers2);
-          return eUsers1;
-        }).orElse(new HashSet<>());
-  }
-
-  private static ExpirableSecurityManager getSecurityManager() {
-    return (ExpirableSecurityManager) Objects.requireNonNull(ClusterStartupRule.getCache())
-        .getSecurityService()
-        .getSecurityManager();
   }
 }
