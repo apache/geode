@@ -88,7 +88,8 @@ public class AuthExpirationFunctionDUnitTest {
   @Before
   public void setup() {
     MemberVM locatorVM =
-        clusterStartupRule.startLocatorVM(0, l -> l.withSecurityManager(ExpirableSecurityManager.class));
+        clusterStartupRule.startLocatorVM(0,
+            l -> l.withSecurityManager(ExpirableSecurityManager.class));
     int locatorPort = locatorVM.getPort();
 
     Properties serverProperties = new Properties();
@@ -298,7 +299,7 @@ public class AuthExpirationFunctionDUnitTest {
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
 
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.toArray()) .containsExactly("data1");
+    assertThat(combinedExpiredUsers.toArray()).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
     assertThat(authorizedOps.get("data1").toArray())
