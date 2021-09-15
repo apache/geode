@@ -14,11 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,19 +26,17 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationTest {
 
   private JedisCluster jedis;
-  private final String hashTag = "{111}";
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String HASHTAG = "{111}";
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -62,28 +59,104 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
 
   @Test
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
-    assertThatThrownBy(() -> jedis.sendCommand(hashTag, Protocol.Command.MSETNX, "key1" + hashTag,
-        "value1", "key2" + hashTag, "value2", "key3" + hashTag))
-            .hasMessageContaining("ERR wrong number of arguments");
+    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSETNX"
+    assertThatThrownBy(
+        () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSETNX, "key1" + HASHTAG, "value1",
+            "key2" + HASHTAG, "value2", "key3" + HASHTAG))
+                .hasMessageContaining("ERR wrong number of arguments");
+  }
+
+  @Test
+  public void givenDifferentSlots_returnsError() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand("key1", Protocol.Command.MSETNX, "key1", "value1", "key2",
+            "value2"))
+                .hasMessageContaining("CROSSSLOT Keys in request don't hash to the same slot");
+  }
+
+  @Test
+  public void testMSet_clearsExpiration() {
+    jedis.setex("foo", 20L, "bar");
+    jedis.mset("foo", "baz");
+
+    assertThat(jedis.ttl("foo")).isEqualTo(-1);
   }
 
   @Test
   public void testMSetNX() {
-    Set<String> keysAndVals = new HashSet<String>();
-    for (int i = 0; i < 2 * 5; i++) {
-      keysAndVals.add(randString() + hashTag);
+    int KEY_COUNT = 5;
+    String[] keys = new String[KEY_COUNT];
+
+    for (int i = 0; i < keys.length; i++) {
+      keys[i] = HASHTAG + "key" + i;
     }
-    String[] keysAndValsArray = keysAndVals.toArray(new String[0]);
-    long response = jedis.msetnx(keysAndValsArray);
+    String[] keysAndValues = makeKeysAndValues(keys, "valueOne");
+
+    long response = jedis.msetnx(keysAndValues);
 
     assertThat(response).isEqualTo(1);
 
-    long response2 = jedis.msetnx(keysAndValsArray[0], randString());
+    long response2 = jedis.msetnx(keysAndValues[0], randString());
 
     assertThat(response2).isEqualTo(0);
-    assertThat(keysAndValsArray[1]).isEqualTo(jedis.get(keysAndValsArray[0]));
+    assertThat(keysAndValues[1]).isEqualTo(jedis.get(keysAndValues[0]));
   }
+
+  @Test
+  public void testMSet_setsKeysAndReturnsCorrectValues() {
+    int keyCount = 5;
+    String[] keyvals = new String[(keyCount * 2)];
+    String[] keys = new String[keyCount];
+    String[] vals = new String[keyCount];
+    for (int i = 0; i < keyCount; i++) {
+      String key = randString() + HASHTAG;
+      String val = randString();
+      keyvals[2 * i] = key;
+      keyvals[2 * i + 1] = val;
+      keys[i] = key;
+      vals[i] = val;
+    }
+
+    long resultString = jedis.msetnx(keyvals);
+    assertThat(resultString).isEqualTo(1);
+
+    assertThat(jedis.mget(keys)).containsExactly(vals);
+  }
+
+  @Test
+  public void testMSet_concurrentInstances_mustBeAtomic() {
+    int KEY_COUNT = 5000;
+    String[] keys = new String[KEY_COUNT];
+
+    for (int i = 0; i < keys.length; i++) {
+      keys[i] = HASHTAG + "key" + i;
+    }
+    String[] keysAndValues1 = makeKeysAndValues(keys, "valueOne");
+    String[] keysAndValues2 = makeKeysAndValues(keys, "valueTwo");
+
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.msetnx(keysAndValues1),
+        i -> jedis.msetnx(keysAndValues2))
+            .runWithAction(() -> {
+              assertThat(jedis.mget(keys)).satisfiesAnyOf(
+                  values -> assertThat(values)
+                      .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
+                  values -> assertThat(values)
+                      .allSatisfy(value -> assertThat(value).startsWith("valueTwo")));
+              flushAll();
+            });
+  }
+
+  private String[] makeKeysAndValues(String[] keys, String valueBase) {
+    String[] keysValues = new String[keys.length * 2];
+    for (int i = 0; i < keys.length * 2; i += 2) {
+      keysValues[i] = keys[i / 2];
+      keysValues[i + 1] = valueBase + i;
+    }
+
+    return keysValues;
+  }
+
 
   private String randString() {
     return Long.toHexString(Double.doubleToLongBits(Math.random()));

@@ -14,45 +14,27 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MSetExecutor extends AbstractExecutor {
+public class MSetExecutor extends AbstractMSetExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
-    List<byte[]> commandElems = command.getCommandArguments();
-    RedisStringCommands stringCommands = context.getStringCommands();
-
-    int numElements = commandElems.size() / 2;
-    List<RedisKey> keys = new ArrayList<>(numElements);
-    List<byte[]> values = new ArrayList<>(numElements);
-
-    RedisKey previousKey = null;
-    for (int i = 0; i < commandElems.size(); i += 2) {
-      RedisKey key = new RedisKey(commandElems.get(i));
-
-      if (previousKey != null && key.getBucketId() != previousKey.getBucketId()) {
-        return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
-      }
-      keys.add(key);
-      values.add(commandElems.get(i + 1));
-
-      previousKey = key;
-    }
-
-    stringCommands.mset(keys, values);
-
-    return RedisResponse.ok();
+  protected void executeMSet(RedisStringCommands stringCommands, List<RedisKey> keys,
+      List<byte[]> values) {
+    stringCommands.mset(keys, values, false);
   }
 
+  @Override
+  protected RedisResponse getKeyExistsErrorResponse() {
+    // for MSET this is not an error, so if this is called there is a programming logic error
+    throw new AssertionError("MSET should not error when target key exists");
+  }
+
+  @Override
+  protected RedisResponse getSuccessResponse() {
+    return RedisResponse.ok();
+  }
 }
