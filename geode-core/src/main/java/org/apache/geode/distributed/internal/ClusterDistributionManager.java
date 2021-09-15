@@ -2332,6 +2332,15 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
+    public void setShutdownCause(Exception shutdownCause) {
+      if (shutdownCause != null && !(shutdownCause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", shutdownCause);
+        shutdownCause = new ForcedDisconnectException(shutdownCause.getMessage());
+      }
+      dm.setRootCause(shutdownCause);
+    }
+
+    @Override
     public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
@@ -2407,15 +2416,6 @@ public class ClusterDistributionManager implements DistributionManager {
       if (!dm.getConfig().getDisableAutoReconnect()) {
         dm.getCache().saveCacheXmlForReconnect();
       }
-    }
-
-    @Override
-    public void setShutdownCause(Exception shutdownCause) {
-      if (shutdownCause != null && !(shutdownCause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", shutdownCause);
-        shutdownCause = new ForcedDisconnectException(shutdownCause.getMessage());
-      }
-      dm.setRootCause(shutdownCause);
     }
   }
 
