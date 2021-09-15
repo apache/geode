@@ -27,7 +27,6 @@ import static org.apache.geode.security.SecurityManager.USER_NAME;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -125,7 +124,7 @@ public class AuthExpirationFunctionDUnitTest {
     writeFunction = new TestFunctions.WriteFunction();
 
     ResultCollector rc = onServer(clientCache.getDefaultPool()).execute(writeFunction);
-    assertThat(((ArrayList) rc.getResult()).get(0))
+    assertThat(((List) rc.getResult()).get(0))
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
     // expire the current user
