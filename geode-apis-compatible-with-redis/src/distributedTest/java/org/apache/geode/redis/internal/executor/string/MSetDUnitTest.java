@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -28,8 +29,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -67,6 +70,10 @@ public class MSetDUnitTest {
     clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
+    // Ensure that buckets are created using a connection with a fairly high timeout since
+    // clusterNodes does not get retried.
+    new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT).clusterNodes();
+
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 5000, 20);
   }
 
@@ -108,6 +115,7 @@ public class MSetDUnitTest {
             });
   }
 
+  @Ignore("GEODE-9604")
   @Test
   public void testMSet_crashDoesNotLeaveInconsistencies() throws Exception {
     int KEY_COUNT = 1000;
