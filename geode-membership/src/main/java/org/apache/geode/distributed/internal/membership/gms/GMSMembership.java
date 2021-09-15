@@ -1790,7 +1790,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       services.setShutdownCause(shutdownCause);
       services.getCancelCriterion().cancel(reason);
 
-      listener.setForceDisconnecting(true);
+      listener.setShutdownCause(shutdownCause);
 
       if (!inhibitForceDisconnectLogging) {
         logger.fatal(

@@ -278,8 +278,6 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private volatile Throwable rootCause = null;
 
-  private volatile boolean isForceDisconnecting = false;
-
   /**
    * @see #closeInProgress
    */
@@ -2313,11 +2311,7 @@ public class ClusterDistributionManager implements DistributionManager {
     public void membershipFailure(String reason, Throwable t) {
       dm.exceptionInThreads = true;
       Throwable cause = t;
-      if (cause != null && !(cause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", cause);
-        cause = new ForcedDisconnectException(cause.getMessage());
-      }
-      dm.setRootCause(cause);
+      setShutdownCause((Exception) cause);
       try {
         List<MembershipTestHook> testHooks = dm.getMembershipTestHooks();
         if (testHooks != null) {
@@ -2416,8 +2410,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void setForceDisconnecting(boolean forceDisconnecting) {
-      dm.setForceDisconnecting(forceDisconnecting);
+    public void setShutdownCause(Exception shutdownCause) {
+      if (shutdownCause != null && !(shutdownCause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", shutdownCause);
+        shutdownCause = new ForcedDisconnectException(shutdownCause.getMessage());
+      }
+      dm.setRootCause(shutdownCause);
     }
   }
 
@@ -2655,16 +2653,6 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void setRootCause(Throwable t) {
     rootCause = t;
-  }
-
-  @Override
-  public void setForceDisconnecting(boolean isForceDisconnecting) {
-    this.isForceDisconnecting = isForceDisconnecting;
-  }
-
-  @Override
-  public boolean isForceDisconnecting() {
-    return isForceDisconnecting;
   }
 
   /*

@@ -304,22 +304,6 @@ public interface DistributionManager extends ReplySender {
   Throwable getRootCause();
 
   /**
-   * Set if DM is being force disconnected
-   *
-   * @param forceDisconnecting if DM is being force disconnected
-   */
-  default void setForceDisconnecting(boolean forceDisconnecting) {}
-
-  /**
-   * return if DM is being force disconnected
-   *
-   * @return the underlying isForceDisconnecting
-   */
-  default boolean isForceDisconnecting() {
-    return false;
-  }
-
-  /**
    * Return all members that are on the the this host
    *
    * @return set of {@link InternalDistributedMember} including this VM
