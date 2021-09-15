@@ -1797,6 +1797,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       if (this.isReconnectingDS()) {
+        listener.setShutdownCause(shutdownCause);
         logger.info("Reconnecting system failed to connect");
         uncleanShutdown(reason,
             new MemberDisconnectedException("reconnecting system failed to connect"));
@@ -1805,8 +1806,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       try {
         listener.saveConfig();
-        listener.setShutdownCause(shutdownCause);
       } finally {
+        listener.setShutdownCause(shutdownCause);
         new LoggingThread("DisconnectThread", false, () -> {
           lifecycleListener.forcedDisconnect();
           uncleanShutdown(reason, shutdownCause);
