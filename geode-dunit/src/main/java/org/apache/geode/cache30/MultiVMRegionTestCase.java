@@ -96,6 +96,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.EntryExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -107,6 +108,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -3818,14 +3820,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // and before vm2 puts any instance of LongWrapper in the region
       // This is to avoid async disk store FlusherThread serializing any instance of LongWrapper
       // before the LongWrapperSerializer is registered
-      vm0.invoke(() -> {
-        waitForLongWrapperSerializerRegistration();
-      });
+      vm0.invoke("waitForLongWrapperSerializerRegistration",
+          this::waitForLongWrapperSerializerRegistration);
 
-      vm1.invoke(() -> {
-        // see the comments in "get" CacheSerializableRunnable above
-        waitForLongWrapperSerializerRegistration();
-      });
+      // see the comments in "get" CacheSerializableRunnable above
+      vm1.invoke("waitForLongWrapperSerializerRegistration",
+          this::waitForLongWrapperSerializerRegistration);
 
       vm2.invoke("Put long", () -> {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -3857,7 +3857,19 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // responses.
     } finally {
       Wait.pause(1500);
+      Stream.of(vm0, vm1, vm2).forEach(vm -> vm.invoke("Flush disk store",
+          () -> flushDiskStore(name)));
       unregisterAllSerializers();
+    }
+  }
+
+  private void flushDiskStore(String name) {
+    if (getRootRegion() != null && getRootRegion().getSubregion(name) != null) {
+      DiskStoreImpl diskStore =
+          ((DiskRecoveryStore) getRootRegion().getSubregion(name)).getDiskStore();
+      if (diskStore != null) {
+        diskStore.flush();
+      }
     }
   }
 
