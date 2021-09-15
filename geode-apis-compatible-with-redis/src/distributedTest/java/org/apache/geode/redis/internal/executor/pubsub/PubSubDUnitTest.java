@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -33,7 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -70,27 +70,29 @@ public class PubSubDUnitTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static final String LOCAL_HOST = "127.0.0.1";
-  private static Jedis subscriber1;
-  private static Jedis subscriber2;
-  private static Jedis publisher1;
-  private static Jedis publisher2;
+  private Jedis subscriber1;
+  private Jedis subscriber2;
+  private Jedis publisher1;
+  private Jedis publisher2;
 
   private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
-  private static MemberVM server4;
-  private static MemberVM server5;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+  private MemberVM server4;
+  private MemberVM server5;
 
-  private static int redisServerPort1;
-  private static int redisServerPort2;
-  private static int redisServerPort3;
-  private static int redisServerPort4;
+  private int redisServerPort1;
+  private int redisServerPort2;
+  private int redisServerPort3;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     locator = cluster.startLocatorVM(0);
+  }
 
+  @Before
+  public void before() throws Exception {
     int locatorPort = locator.getPort();
     SerializableFunction<ServerStarterRule> operator = x -> x
         .withSystemProperty("io.netty.eventLoopThreads", "10")
@@ -113,7 +115,7 @@ public class PubSubDUnitTest {
     redisServerPort1 = cluster.getRedisPort(1);
     redisServerPort2 = cluster.getRedisPort(2);
     redisServerPort3 = cluster.getRedisPort(3);
-    redisServerPort4 = cluster.getRedisPort(4);
+    int redisServerPort4 = cluster.getRedisPort(4);
 
     subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1, 120000);
     subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2, 120000);
@@ -123,8 +125,8 @@ public class PubSubDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @After
+  public void tearDown() {
     subscriber1.disconnect();
     subscriber2.disconnect();
     publisher1.disconnect();
@@ -158,9 +160,7 @@ public class PubSubDUnitTest {
           Jedis client = getConnection(random);
           clients.add(client);
 
-          Future<Void> f = executor.submit(() -> {
-            client.subscribe(mockSubscriber, channelName);
-          });
+          Future<Void> f = executor.submit(() -> client.subscribe(mockSubscriber, channelName));
           subscribeFutures.add(f);
         }
 
@@ -227,9 +227,6 @@ public class PubSubDUnitTest {
 
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
     GeodeAwaitility.await().untilAsserted(subscriber2Future::get);
-
-    restartServerVM1();
-    reconnectSubscriber1();
   }
 
   @Test
@@ -275,9 +272,6 @@ public class PubSubDUnitTest {
     } catch (ExecutionException e) {
       // exception expected since we killed server 2
     }
-
-    restartServerVM2();
-    reconnectSubscriber2();
   }
 
   @Test
@@ -309,9 +303,6 @@ public class PubSubDUnitTest {
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
 
     GeodeAwaitility.await().untilAsserted(subscriber1Future::get);
-
-    restartServerVM2();
-    reconnectSubscriber2();
   }
 
   @Test
@@ -477,37 +468,9 @@ public class PubSubDUnitTest {
       clients.set(candy, client);
     }
 
-    GeodeAwaitility.await().untilAsserted(() -> future.get());
+    GeodeAwaitility.await().untilAsserted(future::get);
 
     clients.forEach(Jedis::close);
-  }
-
-  private void restartServerVM1() {
-    cluster.startRedisVM(1, locator.getPort());
-    waitForRestart();
-    redisServerPort1 = cluster.getRedisPort(1);
-  }
-
-  private void restartServerVM2() {
-    cluster.startRedisVM(2, locator.getPort());
-    waitForRestart();
-    redisServerPort2 = cluster.getRedisPort(2);
-  }
-
-  private void waitForRestart() {
-    await().untilAsserted(
-        () -> gfsh.executeAndAssertThat("list members").statusIsSuccess().hasTableSection()
-            .hasColumn("Name")
-            .containsOnly("locator-0", "server-1", "server-2", "server-3", "server-4",
-                "server-5"));
-  }
-
-  private void reconnectSubscriber1() {
-    subscriber1 = new Jedis(LOCAL_HOST, redisServerPort1);
-  }
-
-  private void reconnectSubscriber2() {
-    subscriber2 = new Jedis(LOCAL_HOST, redisServerPort2);
   }
 
   private Jedis getConnection(Random random) {
@@ -524,7 +487,7 @@ public class PubSubDUnitTest {
           if (client != null) {
             client.close();
           }
-        } catch (Exception exception) {
+        } catch (Exception ignored) {
         }
       }
     }

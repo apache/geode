@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal;
 
+import static java.util.Collections.singleton;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_DATA;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
@@ -26,7 +27,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,10 +36,9 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -300,14 +299,18 @@ public class RegionProvider {
     return keyCommands;
   }
 
+  @SuppressWarnings("unchecked")
   public Set<DistributedMember> getRegionMembers() {
-    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
+    InternalDistributedMember myId =
+        partitionedRegion.getDistributionManager().getDistributionManagerId();
+    Set<InternalDistributedMember> otherIds =
+        partitionedRegion.getRegionAdvisor().adviseDataStore();
+    if (otherIds.isEmpty()) {
+      return singleton(myId);
+    } else {
+      otherIds.add(myId);
+      return (Set<DistributedMember>) (Set<?>) otherIds;
     }
-
-    return membersWithDataRegion;
   }
 
   /**
