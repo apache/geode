@@ -74,10 +74,10 @@ index 8978631e0..33c10eb15 100644
      } elseif {$opt eq {--port}} {
          set ::port $arg
 diff --git a/tests/unit/auth.tcl b/tests/unit/auth.tcl
-index 633cda95c..03857205d 100644
+index 633cda95c..beaf711a4 100644
 --- a/tests/unit/auth.tcl
 +++ b/tests/unit/auth.tcl
-@@ -1,9 +1,10 @@
+@@ -1,15 +1,16 @@
 -start_server {tags {"auth"}} {
 -    test {AUTH fails if there is no password configured server side} {
 -        catch {r auth foo} err
@@ -94,6 +94,13 @@ index 633cda95c..03857205d 100644
  
  start_server {tags {"auth"} overrides {requirepass foobar}} {
      test {AUTH fails when a wrong password is given} {
+         catch {r auth wrong!} err
+         set _ $err
+-    } {ERR*invalid password}
++    } {WRONGPASS invalid username-password pair or user is disabled.}
+ 
+     test {Arbitrary command gives an error when AUTH is required} {
+         catch {r set foo bar} err
 diff --git a/tests/unit/dump.tcl b/tests/unit/dump.tcl
 index 4c4e5d075..18bb694f2 100644
 --- a/tests/unit/dump.tcl

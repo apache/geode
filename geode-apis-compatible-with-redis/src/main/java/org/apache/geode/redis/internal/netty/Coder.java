@@ -46,6 +46,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGPASS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
 
 import java.io.UnsupportedEncodingException;
@@ -225,13 +226,12 @@ public class Coder {
     return getErrorResponse0(buffer, bCROSSSLOT, error);
   }
 
+  public static ByteBuf getWrongpassResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bWRONGPASS, error);
+  }
+
   public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(bBUSYKEY);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
-    return buffer;
+    return getErrorResponse0(buffer, bBUSYKEY, error);
   }
 
   public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
