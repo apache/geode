@@ -20,13 +20,11 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
@@ -49,7 +46,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractScanExecutor extends AbstractExecutor {
   private static final Logger logger = LogService.getLogger();
-  public static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
   protected final int DEFAULT_COUNT = 10;
 
   @Override
@@ -58,8 +54,8 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
 
     int cursor;
     try {
-      cursor = getIntCursor(bytesToString(commandElems.get(2)));
-    } catch (RedisException ex) {
+      cursor = narrowLongToInt(bytesToLong(commandElems.get(2)));
+    } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_CURSOR);
     }
 
@@ -140,29 +136,6 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
       return null;
     }
     return GlobPattern.createPattern(pattern);
-  }
-
-  // Redis allows values for CURSOR up to UNSIGNED_LONG_CAPACITY, but internally it only makes sense
-  // for us to use values up to Integer.MAX_VALUE, so safely narrow any cursor values to int here
-  @VisibleForTesting
-  public int getIntCursor(String cursorString) {
-    BigInteger tempCursor;
-
-    try {
-      tempCursor = new BigInteger(cursorString).abs();
-    } catch (NumberFormatException e) {
-      throw new RedisException(ERROR_CURSOR);
-    }
-
-    if (tempCursor.compareTo(UNSIGNED_LONG_CAPACITY) > 0) {
-      throw new RedisException(ERROR_CURSOR);
-    }
-
-    try {
-      return tempCursor.intValueExact();
-    } catch (ArithmeticException ex) {
-      return Integer.MAX_VALUE;
-    }
   }
 
   protected abstract Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context,

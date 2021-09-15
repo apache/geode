@@ -252,10 +252,9 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void shouldNotError_givenCursorEqualToUnsignedLongMaxValue() {
+  public void shouldNotError_givenCursorEqualToLongMaxValue() {
     jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
-    jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
-        UNSIGNED_LONG_CAPACITY.toString());
+    jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, String.valueOf(Long.MAX_VALUE));
   }
 
   @Test

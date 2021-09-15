@@ -14,11 +14,17 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class ZScanIntegrationTest extends AbstractZScanIntegrationTest {
+  String GREATER_THAN_LONG_MAX = "9_223_372_036_854_775_808";
 
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -28,4 +34,15 @@ public class ZScanIntegrationTest extends AbstractZScanIntegrationTest {
     return server.getPort();
   }
 
+  // Redis allows CURSOR values up to UNSIGNED_LONG_CAPACITY, but behaviour for CURSOR values
+  // greater than Integer.MAX_VALUE is undefined, so we choose to return an error if a value greater
+  // than Long.MAX_VALUE is passed
+  @Test
+  public void shouldReturnError_givenCursorGreaterThanLongMaxValue() {
+    jedis.zadd(KEY, SCORE_ONE, MEMBER_ONE);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZSCAN, KEY,
+        GREATER_THAN_LONG_MAX))
+            .hasMessageContaining(ERROR_CURSOR);
+  }
 }

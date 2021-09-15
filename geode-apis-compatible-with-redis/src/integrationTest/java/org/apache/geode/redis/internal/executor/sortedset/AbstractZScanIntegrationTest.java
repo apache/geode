@@ -252,9 +252,9 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void shouldNotError_givenCursorEqualToUnsignedLongMaxValue() {
+  public void shouldNotError_givenCursorEqualToLongMaxValue() {
     jedis.zadd(KEY, SCORE_ONE, MEMBER_ONE);
-    jedis.sendCommand(KEY, Protocol.Command.ZSCAN, KEY, UNSIGNED_LONG_CAPACITY.toString());
+    jedis.sendCommand(KEY, Protocol.Command.ZSCAN, KEY, String.valueOf(Long.MAX_VALUE));
   }
 
   @Test

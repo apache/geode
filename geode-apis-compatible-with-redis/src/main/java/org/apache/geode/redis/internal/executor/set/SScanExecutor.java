@@ -45,6 +45,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SScanExecutor extends AbstractScanExecutor {
+  private static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
