@@ -2279,12 +2279,12 @@ public class HARegionQueue implements RegionQueue {
         throw new InterruptedException();
       }
 
+      if (putPermits.decrementAndGet() >= 0) {
+        return;
+      }
+
       long startTime = System.currentTimeMillis();
       synchronized (this.permitMon) {
-
-        if (putPermits.decrementAndGet() >= 0) {
-          return;
-        }
 
         long duration = (System.currentTimeMillis() - startTime);
 
