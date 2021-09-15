@@ -12,30 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.hash;
+package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import org.apache.geode.redis.internal.data.RedisDataType;
-import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class HScanExecutor extends AbstractScanExecutor {
+public class ZScanExecutorTest {
+  AbstractScanExecutor scanExecutor;
 
-  @Override
-  protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
-      Pattern pattern, int count, int cursor) {
-    return context.getHashCommands().hscan(key, pattern, count, cursor);
+  @Before
+  public void setUp() {
+    scanExecutor = spy(new ZScanExecutor());
   }
 
-  @Override
-  protected RedisDataType getDataType() {
-    return REDIS_HASH;
+  @Test
+  public void convertGlobToRegex_handlesNullPattern() {
+    assertThat(scanExecutor.convertGlobToRegex(null)).isNull();
   }
 }

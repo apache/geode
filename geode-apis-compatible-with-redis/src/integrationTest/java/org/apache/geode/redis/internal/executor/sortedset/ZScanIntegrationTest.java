@@ -12,9 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.hash;
-
-
+package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,7 +23,7 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
+public class ZScanIntegrationTest extends AbstractZScanIntegrationTest {
   String GREATER_THAN_LONG_MAX = "9_223_372_036_854_775_808";
 
   @ClassRule
@@ -41,9 +39,9 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
   // than Long.MAX_VALUE is passed
   @Test
   public void shouldReturnError_givenCursorGreaterThanLongMaxValue() {
-    jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
+    jedis.zadd(KEY, SCORE_ONE, MEMBER_ONE);
 
-    assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZSCAN, KEY,
         GREATER_THAN_LONG_MAX))
             .hasMessageContaining(ERROR_CURSOR);
   }

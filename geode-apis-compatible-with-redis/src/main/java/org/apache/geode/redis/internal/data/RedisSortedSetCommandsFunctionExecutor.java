@@ -20,6 +20,9 @@ package org.apache.geode.redis.internal.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
@@ -144,6 +147,13 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zrevrank(RedisKey key, byte[] member) {
     return stripedExecute(key, () -> getRedisSortedSet(key, true).zrevrank(member));
+  }
+
+  @Override
+  public Pair<Integer, List<byte[]>> zscan(RedisKey key, Pattern matchPattern, int count,
+      int cursor) {
+    return stripedExecute(key,
+        () -> getRedisSortedSet(key, true).zscan(matchPattern, count, cursor));
   }
 
   @Override

@@ -105,6 +105,7 @@ import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByLexExecutor
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByScoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.ZScanExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZUnionStoreExecutor;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
@@ -247,6 +248,8 @@ public enum RedisCommandType {
   ZREVRANGEBYLEX(new ZRevRangeByLexExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
   ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
+  ZSCAN(new ZScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
+      new OddParameterRequirements(ERROR_SYNTAX)),
   ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
   ZUNIONSTORE(new ZUnionStoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
 

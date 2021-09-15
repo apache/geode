@@ -244,10 +244,9 @@ public class RedisHash extends AbstractRedisData {
       throw new IllegalArgumentException("Requested array size exceeds VM limit");
     }
     List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
-    do {
-      cursor = hash.scan(cursor, 1,
-          (list, key, value) -> addIfMatching(matchPattern, list, key, value), resultList);
-    } while (cursor != 0 && resultList.size() < maximumCapacity);
+
+    cursor = hash.scan(cursor, count,
+        (list, key, value) -> addIfMatching(matchPattern, list, key, value), resultList);
 
     return new ImmutablePair<>(cursor, resultList);
   }

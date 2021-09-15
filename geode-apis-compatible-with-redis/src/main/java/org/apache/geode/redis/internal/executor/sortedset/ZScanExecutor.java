@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.hash;
+package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,16 +26,16 @@ import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class HScanExecutor extends AbstractScanExecutor {
+public class ZScanExecutor extends AbstractScanExecutor {
 
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
       Pattern pattern, int count, int cursor) {
-    return context.getHashCommands().hscan(key, pattern, count, cursor);
+    return context.getSortedSetCommands().zscan(key, pattern, count, cursor);
   }
 
   @Override
   protected RedisDataType getDataType() {
-    return REDIS_HASH;
+    return REDIS_SORTED_SET;
   }
 }

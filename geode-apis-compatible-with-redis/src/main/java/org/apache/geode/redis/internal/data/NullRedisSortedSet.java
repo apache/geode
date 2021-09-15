@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;

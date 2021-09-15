@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -44,6 +45,7 @@ import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SScanExecutor extends AbstractScanExecutor {
+  private static final BigInteger UNSIGNED_LONG_CAPACITY = new BigInteger("18446744073709551615");
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -120,6 +122,18 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     context.setSscanCursor(scanResult.getLeft());
 
-    return RedisResponse.scan(scanResult.getLeft(), scanResult.getRight());
+    return RedisResponse.scan(scanResult.getLeft().intValue(), scanResult.getRight());
+  }
+
+  // TODO: When SSCAN is supported, refactor to use these methods and not override executeCommand()
+  @Override
+  protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
+      Pattern pattern, int count, int cursor) {
+    return null;
+  }
+
+  @Override
+  protected RedisDataType getDataType() {
+    return null;
   }
 }

@@ -20,6 +20,8 @@ import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
 
@@ -32,6 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -40,6 +46,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.collections.OrderStatisticsTree;
@@ -58,6 +65,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSortedSet extends AbstractRedisData {
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
+  private static final Logger logger = LogService.getLogger();
 
   private MemberMap members;
   private final ScoreSet scoreSet = new ScoreSet();
@@ -380,6 +388,24 @@ public class RedisSortedSet extends AbstractRedisData {
     return scoreSet.size() - scoreSet.indexOf(orderedSetEntry) - 1;
   }
 
+  ImmutablePair<Integer, List<byte[]>> zscan(Pattern matchPattern, int count, int cursor) {
+    // No need to allocate more space than it's possible to use given the size of the sorted set. We
+    // need to add 1 to zcard() to ensure that if count > members.size(), we return a cursor of 0
+    long maximumCapacity = 2L * Math.min(count, zcard() + 1);
+    if (maximumCapacity > Integer.MAX_VALUE) {
+      logger.info(
+          "The size of the data to be returned by zscan, {}, exceeds the maximum capacity of an array. A value for the ZSCAN COUNT argument less than {} should be used",
+          maximumCapacity, Integer.MAX_VALUE / 2);
+      throw new IllegalArgumentException("Requested array size exceeds VM limit");
+    }
+    List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
+
+    cursor = members.scan(cursor, count,
+        (list, key, value) -> addIfMatching(matchPattern, list, key, value.score), resultList);
+
+    return new ImmutablePair<>(cursor, resultList);
+  }
+
   byte[] zscore(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry != null) {
@@ -567,6 +593,19 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
     return result;
+  }
+
+  private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
+      double score) {
+    if (matchPattern != null) {
+      if (matchPattern.matcher(bytesToString(key)).matches()) {
+        resultList.add(key);
+        resultList.add(doubleToBytes(score));
+      }
+    } else {
+      resultList.add(key);
+      resultList.add(doubleToBytes(score));
+    }
   }
 
   @Override

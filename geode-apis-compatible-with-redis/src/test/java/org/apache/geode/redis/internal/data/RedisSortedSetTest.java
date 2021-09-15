@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -43,9 +44,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -355,6 +359,27 @@ public class RedisSortedSetTest {
             Arrays.asList("command".getBytes(), "key".getBytes(), "-".getBytes(), "+".getBytes()),
             false);
     assertThat(sortedSet.zlexcount(lexOptions)).isEqualTo(5);
+  }
+
+  @Test
+  public void zscanOnlyReturnsElementsMatchingPattern() {
+    ImmutablePair<Integer, List<byte[]>> result = rangeSortedSet.zscan(Pattern.compile("member1.*"),
+        (int) rangeSortedSet.zcard(), 0);
+
+    List<String> fieldsAndValues =
+        result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());
+
+    assertThat(fieldsAndValues).containsExactlyInAnyOrder("member1", "1", "member10", "1.9",
+        "member11", "2", "member12", "2.1");
+  }
+
+  @Test
+  public void zscanThrowsWhenReturnedArrayListLengthWouldExceedVMLimit() {
+    RedisSortedSet sortedSet = spy(new RedisSortedSet());
+    doReturn(Integer.MAX_VALUE - 10L).when(sortedSet).zcard();
+
+    assertThatThrownBy(() -> sortedSet.zscan(null, Integer.MAX_VALUE - 10, 0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
