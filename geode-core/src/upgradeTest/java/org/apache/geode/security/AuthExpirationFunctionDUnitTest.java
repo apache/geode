@@ -106,8 +106,6 @@ public class AuthExpirationFunctionDUnitTest {
     VMProvider.invokeInEveryMember(() -> {
       Objects.requireNonNull(ClusterStartupRule.getCache())
           .createRegionFactory(RegionShortcut.REPLICATE).create("region");
-      Objects.requireNonNull(ClusterStartupRule.getCache())
-          .createRegionFactory(RegionShortcut.PARTITION).create("partitionRegion");
     }, serverVM0, serverVM1, serverVM2);
 
     VMProvider.invokeInEveryMember(() -> writeFunction = new TestFunctions.WriteFunction(),
