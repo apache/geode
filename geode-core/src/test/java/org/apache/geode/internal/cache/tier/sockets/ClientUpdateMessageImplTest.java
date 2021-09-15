@@ -148,7 +148,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     addClientCqConcurrently(clientUpdateMessageImpl, numOfEvents, cqEvents, cqNames, clients);
 
-    assertThat(clientUpdateMessageImpl.getClientCqs().size()).isEqualTo(2);
+    assertThat(clientUpdateMessageImpl.getClientCqs()).hasSize(2);
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client1)).isInstanceOf(
         ClientUpdateMessageImpl.CqNameToOpHashMap.class);
     ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =
@@ -212,7 +212,7 @@ public class ClientUpdateMessageImplTest implements Serializable {
 
     clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
 
-    assertThat(clientUpdateMessageImpl.getClientCqs().size()).isEqualTo(2);
+    assertThat(clientUpdateMessageImpl.getClientCqs()).hasSize(2);
     assertThat(clientUpdateMessageImpl.getClientCqs().get(client1)).isInstanceOf(
         ClientUpdateMessageImpl.CqNameToOpHashMap.class);
     ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =

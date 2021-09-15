@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,7 +134,7 @@ public class CqDUnitTest implements Serializable {
       QueryService cqService = clientCacheRule.getClientCache().getQueryService();
       CqListener cqListener = cqService.getCq(cqName).getCqAttributes().getCqListener();
 
-      assertEquals(totalCQInvocations, ((TestCqListener) cqListener).numEvents.get());
+      assertThat(totalCQInvocations).isEqualTo(((TestCqListener) cqListener).numEvents.get());
     });
   }
 
