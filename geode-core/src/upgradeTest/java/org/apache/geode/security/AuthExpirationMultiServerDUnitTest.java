@@ -15,11 +15,12 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.combineSecurityManagerResults;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -142,7 +143,7 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
     UpdatableUserAuthInitialize.setUser("user2");
     IntStream.range(0, 100).forEach(i -> region.put(i, "value" + i));
 
-    ExpirableSecurityManager consolidated = gatherAuthorizedAndUnauthorizedOps(server1, server2);
+    ExpirableSecurityManager consolidated = combineSecurityManagerResults(server1, server2);
     Map<String, List<String>> authorized = consolidated.getAuthorizedOps();
     Map<String, List<String>> unAuthorized = consolidated.getUnAuthorizedOps();
 
@@ -173,8 +174,7 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
             AuthenticationRequiredException.class, AuthenticationExpiredException.class);
       }
     }
-    ExpirableSecurityManager consolidated =
-        gatherAuthorizedAndUnauthorizedOps(server1, server2);
+    ExpirableSecurityManager consolidated = combineSecurityManagerResults(server1, server2);
     assertThat(consolidated.getAuthorizedOps().keySet()).isEmpty();
   }
 
@@ -182,24 +182,5 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
     MemberVM.invokeInEveryMember(() -> {
       getSecurityManager().addExpiredUser(user);
     }, locator, server1, server2);
-  }
-
-  private ExpirableSecurityManager gatherAuthorizedAndUnauthorizedOps(MemberVM... vms) {
-    List<ExpirableSecurityManager> results = new ArrayList<>();
-    for (MemberVM vm : vms) {
-      results.add(vm.invoke(() -> getSecurityManager()));
-    }
-
-    ExpirableSecurityManager consolidated = new ExpirableSecurityManager();
-    for (ExpirableSecurityManager result : results) {
-      consolidated.getAuthorizedOps().putAll(result.getAuthorizedOps());
-      consolidated.getUnAuthorizedOps().putAll(result.getUnAuthorizedOps());
-    }
-    return consolidated;
-  }
-
-  private static ExpirableSecurityManager getSecurityManager() {
-    return (ExpirableSecurityManager) ClusterStartupRule.getCache().getSecurityService()
-        .getSecurityManager();
   }
 }
