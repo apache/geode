@@ -21,7 +21,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMBER_0_BYTE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
@@ -33,9 +32,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_S
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bERR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_A;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLOWERCASE_Z;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
@@ -43,7 +39,6 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFIN
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGPASS;
@@ -361,7 +356,7 @@ public class Coder {
     boolean isNegative = false;
     long result = 0; // Accumulates negatively (avoid MIN_VALUE overflow).
     int i = 0;
-    if (bytes[0] == bMINUS) {
+    if (bytes[0] == (byte) '-') {
       isNegative = true;
       i++;
       if (length == 1) {
@@ -369,7 +364,7 @@ public class Coder {
       } else if (bytes[1] == digitToAscii(0)) {
         throw createNumberFormatException(bytes); // redis does not allow -0*
       }
-    } else if (bytes[0] == bPLUS) {
+    } else if (bytes[0] == (byte) '+') {
       throw createNumberFormatException(bytes); // redis does not allow +*
     }
     while (i < length) {
@@ -477,7 +472,7 @@ public class Coder {
   }
 
   private static boolean isLowerCase(byte value) {
-    return value >= bLOWERCASE_A && value <= bLOWERCASE_Z;
+    return value >= (byte) 'a' && value <= (byte) 'z';
   }
 
   public static boolean isInfinity(byte[] bytes) {
@@ -584,7 +579,7 @@ public class Coder {
     byte[] result = new byte[resultSize];
     int resultIdx = 0;
     if (negative) {
-      result[resultIdx++] = bMINUS;
+      result[resultIdx++] = (byte) '-';
     }
     if (quotient < 0) {
       result[resultIdx++] = digitToAscii(-quotient);
@@ -629,7 +624,7 @@ public class Coder {
       bytes[--bytePos] = digitToAscii(-intQuotient);
     }
     if (negative) {
-      bytes[--bytePos] = bMINUS;
+      bytes[--bytePos] = (byte) '-';
     }
     return bytes;
   }
@@ -666,12 +661,12 @@ public class Coder {
    * NOTE: the caller is responsible for ensuring that 'digit' is in the correct range.
    */
   public static byte digitToAscii(int digit) {
-    return (byte) (NUMBER_0_BYTE + digit);
+    return (byte) ((byte) '0' + digit);
   }
 
   public static int asciiToDigit(byte ascii) {
-    if (ascii >= NUMBER_0_BYTE && ascii <= NUMBER_0_BYTE + 9) {
-      return ascii - NUMBER_0_BYTE;
+    if (ascii >= (byte) '0' && ascii <= (byte) '0' + 9) {
+      return ascii - (byte) '0';
     }
     return -1;
   }

@@ -20,13 +20,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
-/**
- * Important note
- * <p>
- * Do not use '' <-- java primitive chars. Redis uses {@link Coder#CHARSET} encoding so we should
- * not risk java handling char to byte conversions, rather just hard code {@link Coder#CHARSET}
- * chars as bytes
- */
 public class StringBytesGlossary {
 
   // ********** Single byte RedisResponse identifier constants **********
@@ -54,16 +47,6 @@ public class StringBytesGlossary {
    * byte identifier of an integer
    */
   public static final byte INTEGER_ID = ':';
-
-  /**
-   * byte identifier of an left paren
-   */
-  public static final byte LEFT_BRACE_ID = '{';
-
-  /**
-   * byte identifier of an right paren
-   */
-  public static final byte RIGHT_BRACE_ID = '}';
 
   // ********** RedisResponse constants **********
   /**
@@ -205,10 +188,6 @@ public class StringBytesGlossary {
   public static final byte[] bWITHSCORES = stringToBytes("WITHSCORES");
   @MakeImmutable
   public static final byte[] bLIMIT = stringToBytes("LIMIT");
-  public static final byte bPLUS = SIMPLE_STRING_ID; // +
-  public static final byte bMINUS = ERROR_ID; // -
-
-  public static final byte[] bZERO = stringToBytes("0");
 
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
@@ -241,25 +220,6 @@ public class StringBytesGlossary {
   public static final byte[] bNaN = stringToBytes(NaN);
 
   // ********** Miscellaneous constants for convenience **********
-  /**
-   * byte value of the number 0
-   */
-  public static final byte NUMBER_0_BYTE = '0';
-
-  /**
-   * byte value of the number 1
-   */
-  public static final byte NUMBER_1_BYTE = '1';
-
-  public static final byte bLOWERCASE_A = 'a';
-
-  public static final byte bLOWERCASE_Z = 'z';
-
-  public static final byte bLEFT_PAREN = '(';
-
-  public static final byte bLEFT_SQUARE_BRACKET = '[';
-
-  public static final byte bPERIOD = '.';
 
   public static final String PING_RESPONSE = "PONG";
 

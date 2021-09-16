@@ -20,10 +20,6 @@ import static org.apache.geode.redis.internal.data.RedisSortedSet.checkDummyMemb
 import static org.apache.geode.redis.internal.data.RedisSortedSet.javaImplementationOfAnsiCMemCmp;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEFT_PAREN;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEFT_SQUARE_BRACKET;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMINUS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPLUS;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,25 +46,25 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
     boolean isExclusive;
     byte[] value;
     if (bytes.length == 1) {
-      if (bytes[0] == bPLUS) {
+      if (bytes[0] == (byte) '+') {
         isExclusive = false;
         value = bGREATEST_MEMBER_NAME;
-      } else if (bytes[0] == bMINUS) {
+      } else if (bytes[0] == (byte) '-') {
         isExclusive = false;
         value = bLEAST_MEMBER_NAME;
-      } else if (bytes[0] == bLEFT_PAREN) {
+      } else if (bytes[0] == (byte) '(') {
         isExclusive = true;
         value = new byte[0];
-      } else if (bytes[0] == bLEFT_SQUARE_BRACKET) {
+      } else if (bytes[0] == (byte) '[') {
         isExclusive = false;
         value = new byte[0];
       } else {
         throw new RedisException(ERROR_MIN_MAX_NOT_A_VALID_STRING);
       }
-    } else if (bytes[0] == bLEFT_PAREN) {
+    } else if (bytes[0] == (byte) '(') {
       isExclusive = true;
       value = Arrays.copyOfRange(bytes, 1, bytes.length);
-    } else if (bytes[0] == bLEFT_SQUARE_BRACKET) {
+    } else if (bytes[0] == (byte) '[') {
       isExclusive = false;
       value = Arrays.copyOfRange(bytes, 1, bytes.length);
     } else {
