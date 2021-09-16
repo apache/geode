@@ -26,7 +26,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SE
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,9 +35,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -154,7 +151,7 @@ public class RegionProvider {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(key, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
-      throw createRedisDataMovedException((RedisKey) key);
+      throw createRedisDataMovedException(key);
     } catch (RedisException bex) {
       throw bex;
     } catch (Exception ex) {
@@ -167,7 +164,7 @@ public class RegionProvider {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(keysToLock, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
-      throw createRedisDataMovedException((RedisKey) key);
+      throw createRedisDataMovedException(key);
     } catch (RedisException bex) {
       throw bex;
     } catch (Exception ex) {
@@ -300,14 +297,9 @@ public class RegionProvider {
     return keyCommands;
   }
 
-  public Set<DistributedMember> getRegionMembers() {
-    PartitionRegionInfo info = PartitionRegionHelper.getPartitionRegionInfo(dataRegion);
-    Set<DistributedMember> membersWithDataRegion = new HashSet<>();
-    for (PartitionMemberInfo memberInfo : info.getPartitionMemberInfo()) {
-      membersWithDataRegion.add(memberInfo.getDistributedMember());
-    }
-
-    return membersWithDataRegion;
+  @SuppressWarnings("unchecked")
+  public Set<DistributedMember> getRemoteRegionMembers() {
+    return (Set<DistributedMember>) (Set<?>) partitionedRegion.getRegionAdvisor().adviseDataStore();
   }
 
   /**

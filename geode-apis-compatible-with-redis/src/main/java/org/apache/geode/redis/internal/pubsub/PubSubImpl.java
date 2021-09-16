@@ -50,8 +50,6 @@ import org.apache.geode.redis.internal.services.StripedRunnable;
  * expecting to receive published messages.
  */
 public class PubSubImpl implements PubSub {
-  public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
-
   private static final int MAX_PUBLISH_THREAD_COUNT =
       Integer.getInteger("redis.max-publish-thread-count", 10);
 
@@ -122,14 +120,25 @@ public class PubSubImpl implements PubSub {
 
   @SuppressWarnings("unchecked")
   private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
-    Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
+    Set<DistributedMember> remoteMembers = regionProvider.getRemoteRegionMembers();
     try {
-      ResultCollector<?, ?> resultCollector = FunctionService
-          .onMembers(membersWithDataRegion)
-          .setArguments(new Object[] {channel, message})
-          .execute(REDIS_PUB_SUB_FUNCTION_ID);
-      // block until execute completes
-      resultCollector.getResult();
+      ResultCollector<?, ?> resultCollector = null;
+      try {
+        if (!remoteMembers.isEmpty()) {
+          // send function to remotes
+          resultCollector = FunctionService
+              .onMembers(remoteMembers)
+              .setArguments(new byte[][] {channel, message})
+              .execute(PublishFunction.ID);
+        }
+      } finally {
+        // execute it locally
+        publishMessageToLocalSubscribers(channel, message);
+        if (resultCollector != null) {
+          // block until remote execute completes
+          resultCollector.getResult();
+        }
+      }
     } catch (Exception e) {
       // the onMembers contract is for execute to throw an exception
       // if one of the members goes down.
@@ -152,35 +161,7 @@ public class PubSubImpl implements PubSub {
   }
 
   private void registerPublishFunction() {
-    FunctionService.registerFunction(new InternalFunction<Object[]>() {
-      @Override
-      public String getId() {
-        return REDIS_PUB_SUB_FUNCTION_ID;
-      }
-
-      @Override
-      public void execute(FunctionContext<Object[]> context) {
-        Object[] publishMessage = context.getArguments();
-        publishMessageToLocalSubscribers((byte[]) publishMessage[0], (byte[]) publishMessage[1]);
-        context.getResultSender().lastResult(true);
-      }
-
-      /**
-       * Since the publish process uses an onMembers function call, we don't want to re-publish
-       * to members if one fails.
-       * TODO: Revisit this in the event that we instead use an onMember call against individual
-       * members.
-       */
-      @Override
-      public boolean isHA() {
-        return false;
-      }
-
-      @Override
-      public boolean hasResult() {
-        return true; // this is needed to preserve ordering
-      }
-    });
+    FunctionService.registerFunction(new PublishFunction(this));
   }
 
   @Override
@@ -231,4 +212,46 @@ public class PubSubImpl implements PubSub {
             client, channel, message));
   }
 
+  private static class PublishFunction implements InternalFunction<byte[][]> {
+    public static final String ID = "redisPubSubFunctionID";
+    /**
+     * this class is never serialized (since it implemented getId)
+     * but make tools happy by setting its serialVersionUID.
+     */
+    private static final long serialVersionUID = -1L;
+
+    private final PubSubImpl pubSub;
+
+    public PublishFunction(PubSubImpl pubSub) {
+      this.pubSub = pubSub;
+    }
+
+    @Override
+    public String getId() {
+      return ID;
+    }
+
+    @Override
+    public void execute(FunctionContext<byte[][]> context) {
+      byte[][] publishMessage = context.getArguments();
+      pubSub.publishMessageToLocalSubscribers(publishMessage[0], publishMessage[1]);
+      context.getResultSender().lastResult(true);
+    }
+
+    /**
+     * Since the publish process uses an onMembers function call, we don't want to re-publish
+     * to members if one fails.
+     * TODO: Revisit this in the event that we instead use an onMember call against individual
+     * members.
+     */
+    @Override
+    public boolean isHA() {
+      return false;
+    }
+
+    @Override
+    public boolean hasResult() {
+      return true; // this is needed to preserve ordering
+    }
+  }
 }
