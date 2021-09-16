@@ -20,7 +20,6 @@ package org.apache.geode.redis.internal.data;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 import org.apache.geode.redis.internal.executor.key.RestoreOptions;
@@ -28,9 +27,8 @@ import org.apache.geode.redis.internal.executor.key.RestoreOptions;
 public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor implements
     RedisKeyCommands {
 
-  public RedisKeyCommandsFunctionExecutor(RegionProvider regionProvider,
-      CacheTransactionManager txManager) {
-    super(regionProvider, txManager);
+  public RedisKeyCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   @Override

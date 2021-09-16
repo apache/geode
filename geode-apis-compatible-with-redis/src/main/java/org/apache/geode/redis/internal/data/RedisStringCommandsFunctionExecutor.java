@@ -21,18 +21,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisStringCommands {
+    implements RedisStringCommands {
 
-  public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider,
-      CacheTransactionManager txManager) {
-    super(regionProvider, txManager);
+  public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisString getRedisString(RedisKey key, boolean updateStats) {
@@ -156,21 +153,12 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
     // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
     // in the same bucket we can use any key for this.
-    return stripedExecute(keysToLock.get(0), keysToLock, () -> mset0(keys, values));
+    return stripedExecuteInTransaction(keysToLock.get(0), keysToLock, () -> mset0(keys, values));
   }
 
   private Void mset0(List<RedisKey> keys, List<byte[]> values) {
-    CacheTransactionManager txManager = getTransactionManager();
-    try {
-      txManager.begin();
-      for (int i = 0; i < keys.size(); i++) {
-        setRedisString(getRegionProvider(), keys.get(i), values.get(i));
-      }
-      txManager.commit();
-    } finally {
-      if (txManager.exists()) {
-        txManager.rollback();
-      }
+    for (int i = 0; i < keys.size(); i++) {
+      setRedisString(getRegionProvider(), keys.get(i), values.get(i));
     }
     return null;
   }

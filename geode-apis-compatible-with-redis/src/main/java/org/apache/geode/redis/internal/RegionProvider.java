@@ -94,6 +94,7 @@ public class RegionProvider {
   private final SlotAdvisor slotAdvisor;
   private final StripedCoordinator stripedCoordinator;
   private final RedisStats redisStats;
+  private final CacheTransactionManager txManager;
 
   static {
     NULL_TYPES.put(REDIS_STRING, NULL_REDIS_STRING);
@@ -122,13 +123,13 @@ public class RegionProvider {
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
     partitionedRegion = (PartitionedRegion) dataRegion;
 
-    CacheTransactionManager txManager = cache.getCacheTransactionManager();
+    txManager = cache.getCacheTransactionManager();
 
-    stringCommands = new RedisStringCommandsFunctionExecutor(this, txManager);
-    setCommands = new RedisSetCommandsFunctionExecutor(this, txManager);
-    hashCommands = new RedisHashCommandsFunctionExecutor(this, txManager);
-    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this, txManager);
-    keyCommands = new RedisKeyCommandsFunctionExecutor(this, txManager);
+    stringCommands = new RedisStringCommandsFunctionExecutor(this);
+    setCommands = new RedisSetCommandsFunctionExecutor(this);
+    hashCommands = new RedisHashCommandsFunctionExecutor(this);
+    sortedSetCommands = new RedisSortedSetCommandsFunctionExecutor(this);
+    keyCommands = new RedisKeyCommandsFunctionExecutor(this);
 
     slotAdvisor = new SlotAdvisor(dataRegion, cache.getMyId());
   }
@@ -173,6 +174,42 @@ public class RegionProvider {
     } catch (Exception ex) {
       throw new RedisException(ex);
     }
+  }
+
+  /**
+   * Execute the given Callable in the context of a GemFire transaction. On failure there is no
+   * attempt to retry.
+   */
+  public <T> T executeInTransaction(RedisKey key, Callable<T> callable) {
+    Callable<T> txWrappedCallable = getTxWrappedCallable(callable);
+    return execute(key, txWrappedCallable);
+  }
+
+  /**
+   * Execute the given Callable in the context of a GemFire transaction. On failure there is no
+   * attempt to retry.
+   */
+  public <T> T executeInTransaction(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
+    Callable<T> txWrappedCallable = getTxWrappedCallable(callable);
+    return execute(key, keysToLock, txWrappedCallable);
+  }
+
+  private <T> Callable<T> getTxWrappedCallable(Callable<T> callable) {
+    Callable<T> txWrappedCallable = () -> {
+      T result;
+      try {
+        txManager.begin();
+        result = callable.call();
+        txManager.commit();
+      } finally {
+        if (txManager.exists()) {
+          txManager.rollback();
+        }
+      }
+
+      return result;
+    };
+    return txWrappedCallable;
   }
 
   public RedisData getRedisData(RedisKey key) {

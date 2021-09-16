@@ -37,9 +37,8 @@ import org.apache.geode.redis.internal.executor.sortedset.ZKeyWeight;
 public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
     implements RedisSortedSetCommands {
 
-  public RedisSortedSetCommandsFunctionExecutor(RegionProvider regionProvider,
-      CacheTransactionManager txManager) {
-    super(regionProvider, txManager);
+  public RedisSortedSetCommandsFunctionExecutor(RegionProvider regionProvider) {
+    super(regionProvider);
   }
 
   private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {

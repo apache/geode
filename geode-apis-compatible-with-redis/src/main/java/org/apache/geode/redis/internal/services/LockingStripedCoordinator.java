@@ -45,8 +45,8 @@ public class LockingStripedCoordinator implements StripedCoordinator {
   @Override
   public <T> T execute(RedisKey stripeId, Callable<T> callable) {
     Lock lock = getLock(stripeId);
+    lock.lock();
     try {
-      lock.lock();
       return callable.call();
     } catch (RuntimeException re) {
       throw re;
@@ -60,9 +60,10 @@ public class LockingStripedCoordinator implements StripedCoordinator {
   @Override
   public <T> T execute(List<RedisKey> stripeIds, Callable<T> callable) {
     Lock[] locks = getLocks(stripeIds);
+    int lockIndex = 0;
     try {
-      for (int i = 0; i < locks.length; i++) {
-        locks[i].lock();
+      for (; lockIndex < locks.length; lockIndex++) {
+        locks[lockIndex].lock();
       }
       return callable.call();
     } catch (RuntimeException re) {
@@ -70,7 +71,7 @@ public class LockingStripedCoordinator implements StripedCoordinator {
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      for (int i = locks.length - 1; i >= 0; i--) {
+      for (int i = lockIndex - 1; i >= 0; i--) {
         locks[i].unlock();
       }
     }
