@@ -41,7 +41,7 @@ public class SortedSetScoreRangeOptions extends AbstractSortedSetRangeOptions<Do
 
   private RangeLimit<Double> parseOneRangeArgument(byte[] bytes) {
     double score;
-    if (bytes[0] == (byte) '(') {
+    if (bytes[0] == '(') {
       // A value of "(" is equivalent to "(0"
       if (bytes.length == 1) {
         score = 0.0;

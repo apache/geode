@@ -356,7 +356,7 @@ public class Coder {
     boolean isNegative = false;
     long result = 0; // Accumulates negatively (avoid MIN_VALUE overflow).
     int i = 0;
-    if (bytes[0] == (byte) '-') {
+    if (bytes[0] == '-') {
       isNegative = true;
       i++;
       if (length == 1) {
@@ -364,7 +364,7 @@ public class Coder {
       } else if (bytes[1] == digitToAscii(0)) {
         throw createNumberFormatException(bytes); // redis does not allow -0*
       }
-    } else if (bytes[0] == (byte) '+') {
+    } else if (bytes[0] == '+') {
       throw createNumberFormatException(bytes); // redis does not allow +*
     }
     while (i < length) {
@@ -472,7 +472,7 @@ public class Coder {
   }
 
   private static boolean isLowerCase(byte value) {
-    return value >= (byte) 'a' && value <= (byte) 'z';
+    return value >= 'a' && value <= 'z';
   }
 
   public static boolean isInfinity(byte[] bytes) {
@@ -579,7 +579,7 @@ public class Coder {
     byte[] result = new byte[resultSize];
     int resultIdx = 0;
     if (negative) {
-      result[resultIdx++] = (byte) '-';
+      result[resultIdx++] = '-';
     }
     if (quotient < 0) {
       result[resultIdx++] = digitToAscii(-quotient);
@@ -624,7 +624,7 @@ public class Coder {
       bytes[--bytePos] = digitToAscii(-intQuotient);
     }
     if (negative) {
-      bytes[--bytePos] = (byte) '-';
+      bytes[--bytePos] = '-';
     }
     return bytes;
   }
@@ -661,12 +661,12 @@ public class Coder {
    * NOTE: the caller is responsible for ensuring that 'digit' is in the correct range.
    */
   public static byte digitToAscii(int digit) {
-    return (byte) ((byte) '0' + digit);
+    return (byte) ('0' + digit);
   }
 
   public static int asciiToDigit(byte ascii) {
-    if (ascii >= (byte) '0' && ascii <= (byte) '0' + 9) {
-      return ascii - (byte) '0';
+    if (ascii >= '0' && ascii <= '0' + 9) {
+      return ascii - '0';
     }
     return -1;
   }
