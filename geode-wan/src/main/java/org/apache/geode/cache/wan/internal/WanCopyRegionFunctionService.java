@@ -15,18 +15,29 @@
 
 package org.apache.geode.cache.wan.internal;
 
-import java.util.concurrent.Executor;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class WanCopyRegionFunctionService implements CacheService {
 
-  private ExecutorService wanCopyRegionFunctionExecutionPool;
+  private volatile ExecutorService wanCopyRegionFunctionExecutionPool;
+
+  /**
+   * Contains the ongoing executions of WanCopyRegionFunction
+   */
+  private final Map<String, Future<CliFunctionResult>> executions =
+      new ConcurrentHashMap<>();
 
   @Override
   public boolean init(Cache cache) {
@@ -62,7 +73,51 @@ public class WanCopyRegionFunctionService implements CacheService {
     }
   }
 
-  public Executor getExecutor() {
-    return wanCopyRegionFunctionExecutionPool;
+  public CliFunctionResult execute(Callable<CliFunctionResult> callable,
+      String regionName, String senderId) throws InterruptedException, ExecutionException,
+      WanCopyRegionFunctionServiceAlreadyRunningException {
+    String executionName = getExecutionName(regionName, senderId);
+    Future<CliFunctionResult> future = null;
+    try {
+      synchronized (executions) {
+        if (executions.containsKey(executionName)) {
+          throw new WanCopyRegionFunctionServiceAlreadyRunningException(
+              "There is already an execution running for " + regionName + " and " + senderId);
+        }
+        future = wanCopyRegionFunctionExecutionPool.submit(callable);
+        executions.put(executionName, future);
+      }
+      return future.get();
+    } finally {
+      if (future != null) {
+        executions.remove(executionName);
+      }
+    }
+  }
+
+  public boolean cancel(String regionName, String senderId) {
+    Future<CliFunctionResult> execution = executions.remove(getExecutionName(regionName, senderId));
+    if (execution == null) {
+      return false;
+    }
+    execution.cancel(true);
+    return true;
+  }
+
+  public String cancelAll() {
+    String executionsString = executions.keySet().toString();
+    for (Future<CliFunctionResult> execution : executions.values()) {
+      execution.cancel(true);
+    }
+    executions.clear();
+    return executionsString;
+  }
+
+  public int getNumberOfCurrentExecutions() {
+    return executions.size();
+  }
+
+  private String getExecutionName(String regionName, String senderId) {
+    return "(" + regionName + "," + senderId + ")";
   }
 }

@@ -14,13 +14,15 @@
  */
 package org.apache.geode.cache.wan.internal.cli.commands;
 
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__BATCHSIZE;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__CANCEL;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MAXRATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class WanCopyRegionCommandTest {
@@ -38,10 +40,10 @@ public class WanCopyRegionCommandTest {
   @Test
   public void verifyDefaultValues() {
     GfshParseResult result = gfsh.parse("wan-copy region --region=myregion --sender-id=ln");
-    assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__MAXRATE)).isEqualTo("0");
-    assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__BATCHSIZE))
+    assertThat(result.getParamValueAsString(WAN_COPY_REGION__MAXRATE)).isEqualTo("0");
+    assertThat(result.getParamValueAsString(WAN_COPY_REGION__BATCHSIZE))
         .isEqualTo("1000");
-    assertThat(result.getParamValueAsString(CliStrings.WAN_COPY_REGION__CANCEL))
+    assertThat(result.getParamValueAsString(WAN_COPY_REGION__CANCEL))
         .isEqualTo("false");
   }
 }

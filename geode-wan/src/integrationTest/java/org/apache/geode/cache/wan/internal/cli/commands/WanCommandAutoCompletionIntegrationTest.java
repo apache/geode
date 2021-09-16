@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
 
 @Category(GfshTest.class)
-public class GfshParserAutoCompletionIntegrationTest {
+public class WanCommandAutoCompletionIntegrationTest {
 
   @Rule
   public GfshParserRule gfshParserRule = new GfshParserRule();

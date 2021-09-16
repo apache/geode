@@ -15,21 +15,22 @@
 package org.apache.geode.cache.wan.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__BATCHSIZE;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__CANCEL;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MAXRATE;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__COPIED__ENTRIES;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__EXECUTION__CANCELED;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__REGION__NOT__FOUND;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__REGION;
+import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__SENDERID;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__BATCHSIZE;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__CANCEL;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MAXRATE;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__COPIED__ENTRIES;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__EXECUTION__CANCELED;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__REGION__NOT__FOUND;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__REGION;
-import static org.apache.geode.management.internal.i18n.CliStrings.WAN_COPY_REGION__SENDERID;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Condition;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,9 +61,10 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.management.internal.cli.functions.WanCopyRegionFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -78,6 +81,8 @@ import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
 @Category({WanTest.class})
 public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
+  protected static VM vm8;
+
   private static final long serialVersionUID = 1L;
 
   private enum Gateway {
@@ -92,6 +97,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   @Rule
   public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
+
+  @BeforeClass
+  public static void beforeClassWanCopyRegionCommandDUnitTest() {
+    vm8 = VM.getVM(8);
+  }
 
   @Test
   public void testUnsuccessfulExecution_RegionNotFound() throws Exception {
@@ -218,7 +228,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           new Condition<>(s -> s.startsWith("Error ("), "Error");
       Condition<String> senderNotPrimary = new Condition<>(
           s -> s.equals(CliStrings
-              .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
+              .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
                   senderIdInA)),
           "sender not primary");
       command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
@@ -404,19 +414,19 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasSize(1);
     result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
         .containsExactly("ERROR");
-    Condition<String> startsWithRegionDestroyedError;
+    Condition<String> regionDestroyedError;
     if (isPartitionedRegion && !isParallelGatewaySender) {
-      startsWithRegionDestroyedError = new Condition<>(
+      regionDestroyedError = new Condition<>(
           s -> (s.startsWith(
               "Execution failed. Error: org.apache.geode.cache.RegionDestroyedException: ")),
           "execution error");
     } else {
-      startsWithRegionDestroyedError = new Condition<>(
+      regionDestroyedError = new Condition<>(
           s -> (s.startsWith("Error (Region destroyed) in operation after having copied")),
           "execution error");
     }
     result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, startsWithRegionDestroyedError);
+        .asList().haveExactly(1, regionDestroyedError);
   }
 
   @Test
@@ -495,7 +505,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     Condition<String> exceptionError = new Condition<>(
-        s -> s.equals(CliStrings.format(CliStrings.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
+        s -> s.equals(CliStrings.format(WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
             regionName, senderIdInA)),
         "already running");
     if (useParallel) {
@@ -508,7 +518,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
       Condition<String> senderNotPrimary = new Condition<>(
           s -> s.equals(CliStrings
-              .format(CliStrings.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
+              .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
                   senderIdInA)),
           "sender not primary");
       command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
@@ -1250,7 +1260,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   private int getNumberOfCurrentExecutionsInServers(List<VM> vmList) {
     return vmList.stream()
-        .map((vm) -> vm.invoke(WanCopyRegionFunction::getNumberOfCurrentExecutions))
+        .map((vm) -> vm.invoke(() -> ((InternalCache) cache)
+            .getService(WanCopyRegionFunctionService.class).getNumberOfCurrentExecutions()))
         .reduce(0, Integer::sum);
   }
 }

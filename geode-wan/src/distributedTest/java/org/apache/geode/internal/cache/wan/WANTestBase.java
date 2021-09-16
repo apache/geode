@@ -209,7 +209,6 @@ public class WANTestBase extends DistributedTestCase {
   protected static VM vm5;
   protected static VM vm6;
   protected static VM vm7;
-  protected static VM vm8;
 
   protected static QueueListener listener1;
   protected static QueueListener listener2;
@@ -237,7 +236,6 @@ public class WANTestBase extends DistributedTestCase {
     vm5 = getHost(0).getVM(5);
     vm6 = getHost(0).getVM(6);
     vm7 = getHost(0).getVM(7);
-    vm8 = getHost(0).getVM(8);
   }
 
   @Before
