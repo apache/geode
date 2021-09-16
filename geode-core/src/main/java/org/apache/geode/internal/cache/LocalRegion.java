@@ -2802,6 +2802,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       holder = new VersionTagHolder();
       value = mySRP.get(key, aCallbackArgument, holder);
       fromServer = value != null;
+      if (fromServer) {
+        getCachePerfStats().incMisses();
+      }
     }
 
     /*
