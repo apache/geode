@@ -24,11 +24,10 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.DecoderException;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
-import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.CancelException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.security.SecurityService;
@@ -163,13 +162,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return RedisResponse.error(rootCause.getMessage());
     } else if (rootCause instanceof LowMemoryException) {
       return RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
-    } else if (rootCause instanceof DecoderException
-        && rootCause.getCause() instanceof RedisCommandParserException) {
+    } else if (rootCause instanceof RedisCommandParserException) {
       return RedisResponse
           .error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + rootCause.getMessage());
-    } else if (rootCause instanceof InterruptedException
-        || rootCause instanceof CacheClosedException) {
-      return RedisResponse.error(RedisConstants.SERVER_ERROR_SHUTDOWN);
+    } else if (rootCause instanceof InterruptedException || rootCause instanceof CancelException) {
+      logger
+          .warn("Closing Redis client connection because the server doing this operation departed: "
+              + rootCause.getMessage());
+      channelInactive(ctx);
+      return null;
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), rootCause);

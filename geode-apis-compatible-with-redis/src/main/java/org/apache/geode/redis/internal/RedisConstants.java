@@ -24,14 +24,11 @@ public class RedisConstants {
       "The command received by GeodeRedisServer was improperly formatted";
   public static final String SERVER_ERROR_MESSAGE =
       "The server had an internal error please try again";
-  public static final String SERVER_ERROR_SHUTDOWN = "The server is shutting down";
   public static final String ERROR_SELECT = "Only DB 0 supported";
   public static final String ERROR_CURSOR = "invalid cursor";
   public static final String ERROR_UNKNOWN_COMMAND =
       "unknown command `%s`, with args beginning with: %s";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
-  public static final String ERROR_NO_PASS = "Client sent AUTH, but no password is set";
-  public static final String ERROR_INVALID_PWD = "invalid password";
   public static final String ERROR_NOT_AUTH = "NOAUTH Authentication required.";
   public static final String ERROR_WRONG_TYPE =
       "Operation against a key holding the wrong kind of value";
