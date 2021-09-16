@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-import static java.util.Collections.singleton;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_DATA;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
@@ -38,7 +37,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -153,7 +151,7 @@ public class RegionProvider {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(key, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
-      throw createRedisDataMovedException((RedisKey) key);
+      throw createRedisDataMovedException(key);
     } catch (RedisException bex) {
       throw bex;
     } catch (Exception ex) {
@@ -166,7 +164,7 @@ public class RegionProvider {
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(keysToLock, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
-      throw createRedisDataMovedException((RedisKey) key);
+      throw createRedisDataMovedException(key);
     } catch (RedisException bex) {
       throw bex;
     } catch (Exception ex) {
@@ -300,17 +298,8 @@ public class RegionProvider {
   }
 
   @SuppressWarnings("unchecked")
-  public Set<DistributedMember> getRegionMembers() {
-    InternalDistributedMember myId =
-        partitionedRegion.getDistributionManager().getDistributionManagerId();
-    Set<InternalDistributedMember> otherIds =
-        partitionedRegion.getRegionAdvisor().adviseDataStore();
-    if (otherIds.isEmpty()) {
-      return singleton(myId);
-    } else {
-      otherIds.add(myId);
-      return (Set<DistributedMember>) (Set<?>) otherIds;
-    }
+  public Set<DistributedMember> getRemoteRegionMembers() {
+    return (Set<DistributedMember>) (Set<?>) partitionedRegion.getRegionAdvisor().adviseDataStore();
   }
 
   /**

@@ -120,14 +120,25 @@ public class PubSubImpl implements PubSub {
 
   @SuppressWarnings("unchecked")
   private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
-    Set<DistributedMember> membersWithDataRegion = regionProvider.getRegionMembers();
+    Set<DistributedMember> remoteMembers = regionProvider.getRemoteRegionMembers();
     try {
-      ResultCollector<?, ?> resultCollector = FunctionService
-          .onMembers(membersWithDataRegion)
-          .setArguments(new byte[][] {channel, message})
-          .execute(PublishFunction.ID);
-      // block until execute completes
-      resultCollector.getResult();
+      ResultCollector<?, ?> resultCollector = null;
+      try {
+        if (!remoteMembers.isEmpty()) {
+          // send function to remotes
+          resultCollector = FunctionService
+              .onMembers(remoteMembers)
+              .setArguments(new byte[][] {channel, message})
+              .execute(PublishFunction.ID);
+        }
+      } finally {
+        // execute it locally
+        publishMessageToLocalSubscribers(channel, message);
+        if (resultCollector != null) {
+          // block until remote execute completes
+          resultCollector.getResult();
+        }
+      }
     } catch (Exception e) {
       // the onMembers contract is for execute to throw an exception
       // if one of the members goes down.
