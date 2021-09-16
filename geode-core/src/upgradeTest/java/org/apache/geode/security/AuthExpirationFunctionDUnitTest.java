@@ -25,7 +25,7 @@ import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurit
 import static org.apache.geode.security.SecurityManager.PASSWORD;
 import static org.apache.geode.security.SecurityManager.USER_NAME;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -141,14 +141,14 @@ public class AuthExpirationFunctionDUnitTest {
     ExpirableSecurityManager consolidated =
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.toArray()).containsExactly("data1");
+    assertThat(combinedExpiredUsers).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
-    assertThat(authorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
-    assertThat(authorizedOps.get("data2").toArray()).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data1")).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).containsExactly("DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
-    assertThat(unauthorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
+    assertThat(unauthorizedOps.get("data1")).containsExactly("DATA:WRITE");
   }
 
   @Test
@@ -175,16 +175,16 @@ public class AuthExpirationFunctionDUnitTest {
     ExpirableSecurityManager consolidated =
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.contains("data1")).isTrue();
+    assertThat(combinedExpiredUsers).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
-    assertThat(authorizedOps.get("data1").toArray())
+    assertThat(authorizedOps.get("data1"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
-    assertThat(authorizedOps.get("data2").toArray())
+    assertThat(authorizedOps.get("data2"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
-    assertThat(unauthorizedOps.get("data1").toArray())
+    assertThat(unauthorizedOps.get("data1"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
   }
 
@@ -214,14 +214,14 @@ public class AuthExpirationFunctionDUnitTest {
     ExpirableSecurityManager consolidated =
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.toArray()).containsExactly("data1");
+    assertThat(combinedExpiredUsers).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
-    assertThat(authorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
-    assertThat(authorizedOps.get("data2").toArray()).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data1")).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).containsExactly("DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
-    assertThat(unauthorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
+    assertThat(unauthorizedOps.get("data1")).containsExactly("DATA:WRITE");
   }
 
   @Test
@@ -254,14 +254,14 @@ public class AuthExpirationFunctionDUnitTest {
     ExpirableSecurityManager consolidated =
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.toArray()).containsExactly("data1");
+    assertThat(combinedExpiredUsers).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
-    assertThat(authorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
-    assertThat(authorizedOps.get("data2").toArray()).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data1")).containsExactly("DATA:WRITE");
+    assertThat(authorizedOps.get("data2")).containsExactly("DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
-    assertThat(unauthorizedOps.get("data1").toArray()).containsExactly("DATA:WRITE");
+    assertThat(unauthorizedOps.get("data1")).containsExactly("DATA:WRITE");
   }
 
   @Test
@@ -296,16 +296,16 @@ public class AuthExpirationFunctionDUnitTest {
         combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
 
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
-    assertThat(combinedExpiredUsers.toArray()).containsExactly("data1");
+    assertThat(combinedExpiredUsers).containsExactly("data1");
 
     Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
-    assertThat(authorizedOps.get("data1").toArray())
+    assertThat(authorizedOps.get("data1"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
-    assertThat(authorizedOps.get("data2").toArray())
+    assertThat(authorizedOps.get("data2"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
 
     Map<String, List<String>> unauthorizedOps = consolidated.getUnAuthorizedOps();
-    assertThat(unauthorizedOps.get("data1").toArray())
+    assertThat(unauthorizedOps.get("data1"))
         .containsExactly("DATA:WRITE", "DATA:WRITE", "DATA:WRITE");
   }
 }
