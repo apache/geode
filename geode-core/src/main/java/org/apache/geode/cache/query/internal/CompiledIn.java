@@ -524,7 +524,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
     }
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     try {
       Object evalColln = evaluateColln(context);
       observer.beforeIndexLookup(indexInfo._index, TOK_EQ, evalColln);

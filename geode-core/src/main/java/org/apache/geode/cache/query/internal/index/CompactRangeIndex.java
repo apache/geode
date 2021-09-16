@@ -746,7 +746,13 @@ public class CompactRangeIndex extends AbstractIndex {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer;
+    if (context != null) {
+      observer = context.getObserver();
+    } else {
+      observer = QueryObserverHolder.getInstance();
+    }
+
     boolean limitApplied = false;
     if (entriesIter == null || (limitApplied = verifyLimit(result, limit))) {
       if (limitApplied) {
@@ -803,8 +809,13 @@ public class CompactRangeIndex extends AbstractIndex {
               if (runtimeItr != null) {
                 runtimeItr.setCurrent(value);
               }
-              if (ok && runtimeItr != null && iterOps != null) {
-                ok = QueryUtils.applyCondition(iterOps, context);
+              try {
+                if (ok && runtimeItr != null) {
+                  observer.beforeIterationEvaluation(iterOps, value);
+                  ok = QueryUtils.applyCondition(iterOps, context);
+                }
+              } finally {
+                observer.afterIterationEvaluation(ok);
               }
               if (ok) {
                 applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
@@ -837,8 +848,13 @@ public class CompactRangeIndex extends AbstractIndex {
             if (runtimeItr != null) {
               runtimeItr.setCurrent(value);
             }
-            if (ok && runtimeItr != null && iterOps != null) {
-              ok = QueryUtils.applyCondition(iterOps, context);
+            try {
+              if (ok && runtimeItr != null) {
+                observer.beforeIterationEvaluation(iterOps, value);
+                ok = QueryUtils.applyCondition(iterOps, context);
+              }
+            } finally {
+              observer.afterIterationEvaluation(ok);
             }
             if (ok) {
               if (context != null && context.isCqQueryContext()) {

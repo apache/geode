@@ -21,6 +21,8 @@ package org.apache.geode.cache.query.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
 
@@ -60,7 +62,9 @@ public class StructSetJUnitTest {
     assertTrue(!set1.retainAll(set2));
     assertEquals(2, set1.size());
     assertEquals(2, set2.size());
-    SelectResults sr = QueryUtils.intersection(set1, set2, null);
+    ExecutionContext context = mock(ExecutionContext.class);
+    when(context.getObserver()).thenReturn(new QueryObserverAdapter());
+    SelectResults sr = QueryUtils.intersection(set1, set2, context);
     assertEquals(2, sr.size());
   }
 }

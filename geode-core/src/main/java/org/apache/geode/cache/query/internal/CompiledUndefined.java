@@ -100,7 +100,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     }
     int op = _is_defined ? TOK_NE : TOK_EQ;
     Object key = QueryService.UNDEFINED;
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     try {
       observer.beforeIndexLookup(idxInfo[0]._index, op, key);
       context.cachePut(CompiledValue.INDEX_INFO, idxInfo[0]);

@@ -53,6 +53,7 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexInfo;
 import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.cache.query.internal.QueryMonitor;
+import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.StructFields;
@@ -1802,6 +1803,7 @@ public abstract class AbstractIndex implements IndexProtocol {
         return;
       }
 
+      QueryObserver observer = context.getObserver();
       for (Object o : this.map.entrySet()) {
         // Check if query execution on this thread is canceled.
         QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
@@ -1826,9 +1828,14 @@ public abstract class AbstractIndex implements IndexProtocol {
                     // Compare the value in index with value in RegionEntry.
                     ok = verifyEntryAndIndexValue(entry, o1, context);
                   }
-                  if (ok && runtimeItr != null) {
-                    runtimeItr.setCurrent(o1);
-                    ok = QueryUtils.applyCondition(iterOp, context);
+                  try {
+                    if (ok && runtimeItr != null) {
+                      runtimeItr.setCurrent(o1);
+                      observer.beforeIterationEvaluation(iterOp, o1);
+                      ok = QueryUtils.applyCondition(iterOp, context);
+                    }
+                  } finally {
+                    observer.afterIterationEvaluation(ok);
                   }
                   if (ok) {
                     applyProjection(projAttrib, context, result, o1, intermediateResults,
@@ -1846,9 +1853,14 @@ public abstract class AbstractIndex implements IndexProtocol {
                   // Compare the value in index with value in RegionEntry.
                   ok = verifyEntryAndIndexValue(entry, o1, context);
                 }
-                if (ok && runtimeItr != null) {
-                  runtimeItr.setCurrent(o1);
-                  ok = QueryUtils.applyCondition(iterOp, context);
+                try {
+                  if (ok && runtimeItr != null) {
+                    runtimeItr.setCurrent(o1);
+                    observer.beforeIterationEvaluation(iterOp, o1);
+                    ok = QueryUtils.applyCondition(iterOp, context);
+                  }
+                } finally {
+                  observer.afterIterationEvaluation(ok);
                 }
                 if (ok) {
                   applyProjection(projAttrib, context, result, o1, intermediateResults,
@@ -1865,9 +1877,14 @@ public abstract class AbstractIndex implements IndexProtocol {
               // Compare the value in index with in RegionEntry.
               ok = verifyEntryAndIndexValue(entry, value, context);
             }
-            if (ok && runtimeItr != null) {
-              runtimeItr.setCurrent(value);
-              ok = QueryUtils.applyCondition(iterOp, context);
+            try {
+              if (ok && runtimeItr != null) {
+                runtimeItr.setCurrent(value);
+                observer.beforeIterationEvaluation(iterOp, value);
+                ok = QueryUtils.applyCondition(iterOp, context);
+              }
+            } finally {
+              observer.afterIterationEvaluation(ok);
             }
             if (ok) {
               if (context.isCqQueryContext()) {

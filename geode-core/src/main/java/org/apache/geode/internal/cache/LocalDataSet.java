@@ -188,7 +188,7 @@ public class LocalDataSet implements Region, QueryExecutor {
       startTime = NanoTimer.getTime();
     }
 
-    QueryObserver indexObserver = query.startTrace();
+    QueryObserver indexObserver = query.startTrace(executionContext);
 
     try {
       result = this.proxy.executeQuery(query, executionContext, parameters, buckets);

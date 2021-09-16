@@ -134,6 +134,8 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToFieldsMap =
       ThreadLocal.withInitial(HashMap::new);
 
+  private QueryObserver oldQueryObserver = null;
+
   static Map<String, Set<String>> getPdxClasstofieldsmap() {
     return pdxClassToFieldsMap.get();
   }
@@ -231,7 +233,7 @@ public class DefaultQuery implements Query {
     try {
       // Setting the readSerialized flag for local queries
       this.cache.setPdxReadSerializedOverride(true);
-      indexObserver = this.startTrace();
+      indexObserver = this.startTrace(context);
       if (qe != null) {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_EXECUTION,
@@ -335,7 +337,7 @@ public class DefaultQuery implements Query {
 
   public Object executeUsingContext(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     long startTime = statisticsClock.getTime();
     TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     try {
@@ -742,12 +744,12 @@ public class DefaultQuery implements Query {
 
     Object result = null;
     try {
-      indexObserver = startTrace();
+      final ExecutionContext executionContext = new ExecutionContext(null, cache);
+      indexObserver = startTrace(executionContext);
       if (qe != null) {
         LocalDataSet localDataSet =
             (LocalDataSet) PartitionRegionHelper.getLocalDataForContext(context);
         Set<Integer> buckets = localDataSet.getBucketSet();
-        final ExecutionContext executionContext = new ExecutionContext(null, cache);
         result = qe.executeQuery(this, executionContext, params, buckets);
         return result;
       } else {
@@ -770,7 +772,7 @@ public class DefaultQuery implements Query {
     return this.isQueryWithFunctionContext;
   }
 
-  public QueryObserver startTrace() {
+  public QueryObserver startTrace(ExecutionContext context) {
     QueryObserver queryObserver = null;
     if (this.traceOn && this.cache != null) {
 
@@ -779,7 +781,8 @@ public class DefaultQuery implements Query {
         queryObserver = qo;
       } else if (!QueryObserverHolder.hasObserver()) {
         queryObserver = new IndexTrackingQueryObserver();
-        QueryObserverHolder.setInstance(queryObserver);
+        oldQueryObserver = QueryObserverHolder.setInstance(queryObserver);
+        context.setObserver(queryObserver);
       } else {
         queryObserver = qo;
       }
@@ -800,6 +803,9 @@ public class DefaultQuery implements Query {
           DefaultQuery.getLogMessage(indexObserver, startTime, resultSize, this.queryString);
       logger.info(queryVerboseMsg);
     }
+    if (oldQueryObserver != null) {
+      QueryObserverHolder.setInstance(oldQueryObserver);
+    }
   }
 
   public void endTrace(QueryObserver indexObserver, long startTime, Collection<Collection> result) {
@@ -815,6 +821,9 @@ public class DefaultQuery implements Query {
       if (logger.isInfoEnabled()) {
         logger.info(queryVerboseMsg);
       }
+    }
+    if (oldQueryObserver != null) {
+      QueryObserverHolder.setInstance(oldQueryObserver);
     }
   }
 
