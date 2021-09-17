@@ -2336,7 +2336,7 @@ public class HARegionQueue implements RegionQueue {
     /* Do not call this method directly from anywhere except checkQueueSizeConstraint */
 
     /**
-     * This function should always be called under a lock on putGuard & permitMon obejct
+     * This function should always be called under a lock on permitMon obejct
      *
      * @return int current Put permits
      */
@@ -2348,8 +2348,8 @@ public class HARegionQueue implements RegionQueue {
     /**
      * Implemented to reduce contention between concurrent take/remove operations and put . The
      * reconciliation between take side put permits & put side put permits happens only if theput
-     * side put permits are exhausted. In HARehionQueue base class this is a NOOP function. This was
-     * added in case a put operation which has reduced the put permit optmistically but due to some
+     * side put permits are exhausted. In HARegionQueue base class this is a NOOP function. This was
+     * added in case a put operation which has reduced the put permit optimistically but due to some
      * reason ( most likely because of duplicate event) was not added in the queue. In such case it
      * will increment take side permit without notifying any waiting thread
      */
@@ -2362,8 +2362,8 @@ public class HARegionQueue implements RegionQueue {
 
     /**
      * Implemented to reduce contention between concurrent take/remove operations and put . The
-     * reconciliation between take side put permits & put side put permits happens only if theput
-     * side put permits are exhausted. In HARehionQueue base class this is a NOOP function
+     * reconciliation between take side put permits & put side put permits happens only if the put
+     * side put permits are exhausted. In HARegionQueue base class this is a NOOP function
      */
     @Override
     void incrementTakeSidePutPermits() {
