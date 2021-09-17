@@ -29,6 +29,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class UnsupportedCommandsIntegrationTest {
@@ -48,29 +49,29 @@ public class UnsupportedCommandsIntegrationTest {
 
   @Test
   public void shouldNotError_givenCallToUnsupportedCommand_whenEnableUnSupportedCommandsFlagSet() {
+    assertThat(RedisCommandType.UNLINK.isUnsupported()).isTrue();
     server.setEnableUnsupportedCommands(true);
 
-    final String NEW_VALUE = "new value";
     jedis.set("key", "value");
 
-    jedis.mset("key", NEW_VALUE);
+    jedis.unlink("key");
 
-    String actual = jedis.get("key");
-    assertThat(actual).isEqualTo(NEW_VALUE);
+    assertThat(jedis.get("key")).isNull();
   }
 
   @Test
   public void shouldReturnUnknownCommandMessage_givenCallToUnsupportedCommand_whenEnableUnSupportedCommandsFlagNotSet() {
+    assertThat(RedisCommandType.UNLINK.isUnsupported()).isTrue();
     server.setEnableUnsupportedCommands(false);
 
     final String KEY = "key";
     final String NEW_VALUE = "changed value";
     final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, "BITCOUNT", "`" + KEY + "`", NEW_VALUE);
+        String.format(ERROR_UNKNOWN_COMMAND, "UNLINK", "`" + KEY + "`", NEW_VALUE);
     jedis.set(KEY, "value");
 
     assertThatThrownBy(
-        () -> jedis.bitcount(KEY))
+        () -> jedis.unlink(KEY))
             .hasMessageContaining(EXPECTED_ERROR_MSG);
   }
 

@@ -102,17 +102,11 @@ public class MSetDUnitTest {
         i -> jedis.mset(keysAndValues1),
         i -> jedis.mset(keysAndValues2),
         i -> clusterStartUp.moveBucketForKey(keys[0]))
-            .runWithAction(() -> {
-              int count = 0;
-              List<String> values = jedis.mget(keys);
-              for (String v : values) {
-                if (v == null) {
-                  continue;
-                }
-                count += v.startsWith("valueOne") ? 1 : -1;
-              }
-              assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
-            });
+            .runWithAction(() -> assertThat(jedis.mget(keys)).satisfiesAnyOf(
+                values -> assertThat(values)
+                    .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
+                values -> assertThat(values)
+                    .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
   }
 
   @Ignore("GEODE-9604")

@@ -19,8 +19,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,14 +108,11 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
     new ConcurrentLoopingThreads(1000,
         i -> jedis.mset(keysAndValues1),
         i -> jedis.mset(keysAndValues2))
-            .runWithAction(() -> {
-              int count = 0;
-              List<String> values = jedis.mget(keys);
-              for (String v : values) {
-                count += v.startsWith("valueOne") ? 1 : -1;
-              }
-              assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
-            });
+            .runWithAction(() -> assertThat(jedis.mget(keys)).satisfiesAnyOf(
+                values -> assertThat(values)
+                    .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
+                values -> assertThat(values)
+                    .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
   }
 
   private String[] makeKeysAndValues(String[] keys, String valueBase) {

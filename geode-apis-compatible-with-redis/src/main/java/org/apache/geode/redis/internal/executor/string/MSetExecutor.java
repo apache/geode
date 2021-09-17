@@ -27,20 +27,18 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetExecutor extends AbstractExecutor {
 
-  private static final String SUCCESS = "OK";
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    List<byte[]> commandElems = command.getProcessedCommand();
+    List<byte[]> commandElems = command.getCommandArguments();
     RedisStringCommands stringCommands = context.getStringCommands();
 
-    int numElements = (commandElems.size() - 1) / 2;
+    int numElements = commandElems.size() / 2;
     List<RedisKey> keys = new ArrayList<>(numElements);
     List<byte[]> values = new ArrayList<>(numElements);
 
     RedisKey previousKey = null;
-    for (int i = 1; i < commandElems.size(); i += 2) {
+    for (int i = 0; i < commandElems.size(); i += 2) {
       RedisKey key = new RedisKey(commandElems.get(i));
 
       if (previousKey != null && key.getBucketId() != previousKey.getBucketId()) {
@@ -54,7 +52,7 @@ public class MSetExecutor extends AbstractExecutor {
 
     stringCommands.mset(keys, values);
 
-    return RedisResponse.string(SUCCESS);
+    return RedisResponse.ok();
   }
 
 }

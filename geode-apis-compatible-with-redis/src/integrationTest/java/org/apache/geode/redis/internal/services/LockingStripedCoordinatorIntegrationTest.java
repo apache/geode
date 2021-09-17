@@ -15,19 +15,24 @@
 
 package org.apache.geode.redis.internal.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class LockingStripedCoordinatorIntegrationTest {
 
   @Test
   public void concurrentLockRequestsDoNotDeadlock() {
     int keysToLock = 1000;
+    int iterations = 10000;
     StripedCoordinator coordinator = new LockingStripedCoordinator();
     List<RedisKey> keyList = new ArrayList<>(keysToLock);
     List<RedisKey> reversedKeyList = new ArrayList<>(keysToLock);
@@ -40,14 +45,21 @@ public class LockingStripedCoordinatorIntegrationTest {
       reversedKeyList.add(keyList.get(i));
     }
 
-    new ConcurrentLoopingThreads(10000,
+    AtomicInteger execCounter = new AtomicInteger(0);
+    ConcurrentLoopingThreads loops = new ConcurrentLoopingThreads(iterations,
         i -> {
           List<RedisKey> keys = new ArrayList<>(keyList);
-          coordinator.execute(keys, () -> "OK");
+          coordinator.execute(keys, execCounter::incrementAndGet);
         },
         i -> {
           List<RedisKey> keys = new ArrayList<>(reversedKeyList);
-          coordinator.execute(keys, () -> "OK");
-        }).run();
+          coordinator.execute(keys, execCounter::incrementAndGet);
+        });
+
+    loops.start();
+    // Will hang if there is a deadlock
+    GeodeAwaitility.await().untilAsserted(loops::await);
+
+    assertThat(execCounter.get()).isEqualTo(2 * iterations);
   }
 }
