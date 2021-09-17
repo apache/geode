@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -42,10 +41,11 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(OQLQueryTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class GroupJunctionIntegrationTest {
   private static final int ENTRIES = 1000;
   private static final String REGION_NAME = "testRegion";

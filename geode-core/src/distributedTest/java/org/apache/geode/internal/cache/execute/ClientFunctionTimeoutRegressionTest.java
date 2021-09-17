@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
@@ -61,6 +60,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Server should terminate client function execution when it times out. Client sends
@@ -71,7 +71,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * gemfire.CLIENT_FUNCTION_TIMEOUT property is set
  */
 @Category(FunctionServiceTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class ClientFunctionTimeoutRegressionTest implements Serializable {
 

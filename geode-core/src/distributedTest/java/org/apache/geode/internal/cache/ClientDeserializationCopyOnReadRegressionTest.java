@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,6 +56,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Client side deserialization should not throw EOFException when copy-on-read is true.
@@ -67,7 +67,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * @since GemFire bugfix5.7
  */
 @Category({ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerTestCase {
 

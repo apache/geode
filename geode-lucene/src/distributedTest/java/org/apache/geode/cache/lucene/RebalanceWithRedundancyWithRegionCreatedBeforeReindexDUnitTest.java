@@ -21,7 +21,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -48,9 +47,10 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
     extends LuceneQueriesAccessorBase {
 

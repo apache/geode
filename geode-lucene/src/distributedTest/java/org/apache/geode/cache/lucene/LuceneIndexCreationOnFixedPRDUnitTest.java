@@ -17,15 +17,15 @@ package org.apache.geode.cache.lucene;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneIndexCreationOnFixedPRDUnitTest extends LuceneIndexCreationDUnitTest {
 
   @Override

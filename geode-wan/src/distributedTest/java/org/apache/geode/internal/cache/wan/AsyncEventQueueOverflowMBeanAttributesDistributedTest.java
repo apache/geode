@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,9 +36,10 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({WanTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends AsyncEventQueueTestBase {
 
   @Test

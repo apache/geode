@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.ObjectName;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -102,13 +101,14 @@ import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * This is a test of how persistent distributed regions recover. This test makes sure that when
  * multiple VMs are persisting the same region, they recover with the latest data during recovery.
  */
 @Category(PersistenceTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 

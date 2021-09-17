@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Rule;
@@ -36,9 +35,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(OQLQueryTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class JoinQueriesIntegrationTest {
 
   @Rule

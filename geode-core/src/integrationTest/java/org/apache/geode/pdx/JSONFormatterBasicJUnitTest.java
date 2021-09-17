@@ -16,7 +16,6 @@ package org.apache.geode.pdx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,13 +28,14 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * A test class to document and make clear what JSONFormatter will and won't parse as far as simple
  * examples.
  */
 @Category({RestAPITest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class JSONFormatterBasicJUnitTest {
   // This is needed because the JsonFormatter needs to access the PDX region, which requires a
   // running Cache.

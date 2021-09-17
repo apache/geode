@@ -59,7 +59,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -118,6 +117,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Tests putAll for c/s. Also tests removeAll
@@ -125,7 +125,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * @since GemFire 5.0.23
  */
 @Category({ClientServerTest.class, ClientSubscriptionTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial,NumericCastThatLosesPrecision")
 public class PutAllClientServerDistributedTest implements Serializable {
 

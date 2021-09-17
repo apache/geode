@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
@@ -42,6 +41,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that
@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  *
  */
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
   private static final long serialVersionUID = 1L;

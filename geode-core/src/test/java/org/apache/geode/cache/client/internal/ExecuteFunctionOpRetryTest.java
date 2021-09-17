@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Test;
@@ -42,13 +41,14 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test retry counts for onServer() function execution (via ExecuteFunctionOp).
  * Convince ourselves they aren't going to ever be infinite!
  */
 @Category({ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class ExecuteFunctionOpRetryTest {
 
   private static final boolean IS_FN_SERIALIZATION_REQUIRED = false;

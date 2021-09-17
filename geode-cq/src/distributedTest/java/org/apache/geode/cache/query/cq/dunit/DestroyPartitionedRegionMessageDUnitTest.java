@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -48,8 +47,9 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @Category(ClientSubscriptionTest.class)
 public class DestroyPartitionedRegionMessageDUnitTest implements Serializable {
   private MemberVM server1, server2;

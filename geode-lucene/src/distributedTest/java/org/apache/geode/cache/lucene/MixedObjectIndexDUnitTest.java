@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,9 +36,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 
   protected RegionTestableType[] getPartitionRegionTypes() {

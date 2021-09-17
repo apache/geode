@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Test;
@@ -44,6 +43,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test retry counts on single-hop onRegion() function execution (via
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * Ensure they are never infinite!
  */
 @Category({ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 
 public class ExecuteRegionFunctionSingleHopOpRetryTest {
 

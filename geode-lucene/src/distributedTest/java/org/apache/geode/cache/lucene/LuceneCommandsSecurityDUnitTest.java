@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.util.Properties;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,9 +42,10 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({SecurityTest.class, LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneCommandsSecurityDUnitTest {
 
   @Rule
