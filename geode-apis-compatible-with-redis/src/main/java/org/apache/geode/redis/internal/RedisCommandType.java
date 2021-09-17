@@ -70,6 +70,7 @@ import org.apache.geode.redis.internal.executor.key.PExpireExecutor;
 import org.apache.geode.redis.internal.executor.key.PTTLExecutor;
 import org.apache.geode.redis.internal.executor.key.PersistExecutor;
 import org.apache.geode.redis.internal.executor.key.RenameExecutor;
+import org.apache.geode.redis.internal.executor.key.RenameNXExecutor;
 import org.apache.geode.redis.internal.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.executor.key.TTLExecutor;
@@ -151,6 +152,7 @@ import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.ClusterParameterRequirements;
+import org.apache.geode.redis.internal.parameters.ExactParameterRequirements;
 import org.apache.geode.redis.internal.parameters.Parameter;
 import org.apache.geode.redis.internal.parameters.SlowlogParameterRequirements;
 
@@ -184,6 +186,7 @@ public enum RedisCommandType {
   PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, FAST)),
   PTTL(new PTTLExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
   RENAME(new RenameExecutor(), SUPPORTED, new Parameter().exact(3).lastKey(2).flags(WRITE)),
+  RENAMENX(new RenameNXExecutor(), SUPPORTED, new Parameter().exact(3).lastKey(2).flags(WRITE)),
   RESTORE(new RestoreExecutor(), SUPPORTED, new Parameter().min(4).flags(WRITE, DENYOOM)),
   TTL(new TTLExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
   TYPE(new TypeExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),

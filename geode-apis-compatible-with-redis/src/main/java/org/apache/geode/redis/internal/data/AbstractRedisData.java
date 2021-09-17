@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
@@ -227,7 +227,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
     if (!replaceExisting) {
-      throw new RedisRestoreKeyExistsException(ERROR_RESTORE_KEY_EXISTS);
+      throw new RedisKeyExistsException(ERROR_KEY_EXISTS);
     }
 
     return restore(data);

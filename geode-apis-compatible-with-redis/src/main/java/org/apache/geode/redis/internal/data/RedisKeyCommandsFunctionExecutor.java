@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -135,12 +137,22 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public boolean rename(RedisKey oldKey, RedisKey newKey) {
+  public boolean rename(RedisKey oldKey, RedisKey newKey, boolean ifTargetNotExists) {
     List<RedisKey> lockOrdering = Arrays.asList(oldKey, newKey);
 
     return stripedExecute(oldKey, lockOrdering,
-        () -> getRedisData(oldKey).rename(getRegionProvider().getLocalDataRegion(), oldKey,
-            newKey));
+        () -> {
+          RedisData sourceData = getRedisData(oldKey);
+          // nonexistent source takes priority over nonexistent target
+          if (!sourceData.exists()) {
+            return false;
+          }
+          if (ifTargetNotExists && getRedisData(newKey).exists()) {
+            throw new RedisKeyExistsException(ERROR_KEY_EXISTS);
+          }
+          return sourceData.rename(getRegionProvider().getLocalDataRegion(), oldKey,
+              newKey);
+        });
   }
 
 }

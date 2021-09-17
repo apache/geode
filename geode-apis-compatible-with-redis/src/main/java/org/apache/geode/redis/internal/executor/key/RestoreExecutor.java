@@ -16,8 +16,8 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_TTL;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bABSTTL;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLACE;
@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisRestoreKeyExistsException;
+import org.apache.geode.redis.internal.data.RedisKeyExistsException;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -63,8 +63,8 @@ public class RestoreExecutor extends AbstractExecutor {
 
     try {
       context.getKeyCommands().restore(key, ttl, commandElems.get(3), options);
-    } catch (RedisRestoreKeyExistsException redisRestoreKeyExistsException) {
-      return RedisResponse.busykey(ERROR_RESTORE_KEY_EXISTS);
+    } catch (RedisKeyExistsException redisKeyExistsException) {
+      return RedisResponse.busykey(ERROR_KEY_EXISTS);
     }
 
     return RedisResponse.ok();
