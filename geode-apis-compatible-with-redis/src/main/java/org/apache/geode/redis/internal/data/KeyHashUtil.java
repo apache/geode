@@ -33,7 +33,7 @@ public class KeyHashUtil {
     int endHashtag;
 
     for (startHashtag = 0; startHashtag < key.length; startHashtag++) {
-      if (key[startHashtag] == (byte) '{') {
+      if (key[startHashtag] == '{') {
         break;
       }
     }
@@ -44,7 +44,7 @@ public class KeyHashUtil {
     }
 
     for (endHashtag = startHashtag + 1; endHashtag < key.length; endHashtag++) {
-      if (key[endHashtag] == (byte) '}') {
+      if (key[endHashtag] == '}') {
         break;
       }
     }

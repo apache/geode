@@ -27,7 +27,7 @@ public class SelectExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     byte[] dbIndexBytes = command.getBytesKey();
-    if (dbIndexBytes.length == 1 && dbIndexBytes[0] == (byte) '0') {
+    if (dbIndexBytes.length == 1 && dbIndexBytes[0] == '0') {
       return RedisResponse.ok();
     }
     return RedisResponse.error(ERROR_SELECT);

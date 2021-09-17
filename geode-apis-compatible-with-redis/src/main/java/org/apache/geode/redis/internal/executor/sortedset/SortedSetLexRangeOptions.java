@@ -46,25 +46,25 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
     boolean isExclusive;
     byte[] value;
     if (bytes.length == 1) {
-      if (bytes[0] == (byte) '+') {
+      if (bytes[0] == '+') {
         isExclusive = false;
         value = bGREATEST_MEMBER_NAME;
-      } else if (bytes[0] == (byte) '-') {
+      } else if (bytes[0] == '-') {
         isExclusive = false;
         value = bLEAST_MEMBER_NAME;
-      } else if (bytes[0] == (byte) '(') {
+      } else if (bytes[0] == '(') {
         isExclusive = true;
         value = new byte[0];
-      } else if (bytes[0] == (byte) '[') {
+      } else if (bytes[0] == '[') {
         isExclusive = false;
         value = new byte[0];
       } else {
         throw new RedisException(ERROR_MIN_MAX_NOT_A_VALID_STRING);
       }
-    } else if (bytes[0] == (byte) '(') {
+    } else if (bytes[0] == '(') {
       isExclusive = true;
       value = Arrays.copyOfRange(bytes, 1, bytes.length);
-    } else if (bytes[0] == (byte) '[') {
+    } else if (bytes[0] == '[') {
       isExclusive = false;
       value = Arrays.copyOfRange(bytes, 1, bytes.length);
     } else {
