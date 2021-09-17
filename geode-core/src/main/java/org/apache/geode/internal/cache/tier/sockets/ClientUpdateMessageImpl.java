@@ -1038,33 +1038,29 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return this._clientCqs;
   }
 
-  /**
-   * Add cqs for the given client.
-   *
-   */
-  public void addClientCqs(ClientProxyMembershipID clientId, CqNameToOp filteredCqs) {
-    if (this._clientCqs == null) {
-      this._clientCqs = new ClientCqConcurrentMap();
-      this._hasCqs = true;
+  public void addOrSetClientCqs(ClientProxyMembershipID proxyID, ClientCqConcurrentMap clientCqs) {
+    if (_clientCqs == null) {
+      _clientCqs = clientCqs;
+    } else {
+      _clientCqs.put(proxyID, clientCqs.get(proxyID));
     }
-    this._clientCqs.put(clientId, filteredCqs);
   }
 
-  void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
-    if (this._clientCqs == null) {
-      this._clientCqs = new ClientCqConcurrentMap();
-      this._hasCqs = true;
+  synchronized void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
+    if (_clientCqs == null) {
+      _clientCqs = new ClientCqConcurrentMap();
+      _hasCqs = true;
     }
-    CqNameToOp cqInfo = this._clientCqs.get(clientId);
+    CqNameToOp cqInfo = _clientCqs.get(clientId);
     if (cqInfo == null) {
       cqInfo = new CqNameToOpSingleEntry(cqName, cqEvent);
-      this._clientCqs.put(clientId, cqInfo);
+      _clientCqs.put(clientId, cqInfo);
     } else if (!cqInfo.isFull()) {
       cqInfo.add(cqName, cqEvent);
     } else {
       cqInfo = new CqNameToOpHashMap((CqNameToOpSingleEntry) cqInfo);
       cqInfo.add(cqName, cqEvent);
-      this._clientCqs.put(clientId, cqInfo);
+      _clientCqs.put(clientId, cqInfo);
     }
   }
 

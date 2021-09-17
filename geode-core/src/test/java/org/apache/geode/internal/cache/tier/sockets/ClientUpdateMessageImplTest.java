@@ -22,7 +22,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.CopyHelper;
@@ -32,8 +37,29 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class ClientUpdateMessageImplTest implements Serializable {
+  private final ClientProxyMembershipID client1 = mock(ClientProxyMembershipID.class);
+  private final ClientProxyMembershipID client2 = mock(ClientProxyMembershipID.class);
+  private final ClientUpdateMessageImpl.ClientCqConcurrentMap clientCqs =
+      new ClientUpdateMessageImpl.ClientCqConcurrentMap();
+
+  @Rule
+  public ExecutorServiceRule executorService = new ExecutorServiceRule();
+
+  @Before
+  public void setUp() {
+    ClientUpdateMessageImpl.CqNameToOpHashMap cqs1 =
+        new ClientUpdateMessageImpl.CqNameToOpHashMap(2);
+    cqs1.add("cqName1", 1);
+    cqs1.add("cqName2", 2);
+    clientCqs.put(client1, cqs1);
+    ClientUpdateMessageImpl.CqNameToOpSingleEntry cqs2 =
+        new ClientUpdateMessageImpl.CqNameToOpSingleEntry("cqName3", 3);
+    clientCqs.put(client2, cqs2);
+  }
+
   @Test
   public void addInterestedClientTest() {
     ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
@@ -109,4 +135,96 @@ public class ClientUpdateMessageImplTest implements Serializable {
     when(localRegion.getName()).thenReturn(regionName);
     return new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE, null, null);
   }
+
+  @Test
+  public void addClientCqCanBeExecutedConcurrently() throws Exception {
+    ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
+
+    int numOfEvents = 4;
+    int[] cqEvents = new int[numOfEvents];
+    String[] cqNames = new String[numOfEvents];
+    ClientProxyMembershipID[] clients = new ClientProxyMembershipID[numOfEvents];
+    prepareCqInfo(numOfEvents, cqEvents, cqNames, clients);
+
+    addClientCqConcurrently(clientUpdateMessageImpl, numOfEvents, cqEvents, cqNames, clients);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs()).hasSize(2);
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client1)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpHashMap.class);
+    ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =
+        (ClientUpdateMessageImpl.CqNameToOpHashMap) clientUpdateMessageImpl.getClientCqs()
+            .get(client1);
+    for (int i = 0; i < 3; i++) {
+      assertThat(client1Cqs.get("cqName" + i)).isEqualTo(i);
+    }
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpSingleEntry.class);
+    ClientUpdateMessageImpl.CqNameToOpSingleEntry client2Cqs =
+        (ClientUpdateMessageImpl.CqNameToOpSingleEntry) clientUpdateMessageImpl.getClientCqs()
+            .get(client2);
+    assertThat(client2Cqs.isEmpty()).isFalse();
+  }
+
+  private void prepareCqInfo(int numOfEvents, int[] cqEvents, String[] cqNames,
+      ClientProxyMembershipID[] clients) {
+    for (int i = 0; i < numOfEvents; i++) {
+      cqEvents[i] = i;
+      cqNames[i] = "cqName" + i;
+      if (i < 3) {
+        clients[i] = client1;
+      } else {
+        clients[i] = client2;
+      }
+    }
+  }
+
+  private void addClientCqConcurrently(ClientUpdateMessageImpl clientUpdateMessageImpl,
+      int numOfEvents, int[] cqEvents, String[] cqNames, ClientProxyMembershipID[] clients)
+      throws InterruptedException, java.util.concurrent.ExecutionException {
+    List<Future<Void>> futures = new ArrayList<>();
+    for (int i = 0; i < numOfEvents; i++) {
+      ClientProxyMembershipID client = clients[i];
+      String cqName = cqNames[i];
+      int cqEvent = cqEvents[i];
+      futures.add(executorService
+          .submit(() -> clientUpdateMessageImpl.addClientCq(client, cqName, cqEvent)));
+    }
+    for (Future<Void> future : futures) {
+      future.get();
+    }
+  }
+
+  @Test
+  public void addOrSetClientCqsCanSetIfCqsMapIsNull() {
+    ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
+
+    clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs()).isEqualTo(clientCqs);
+  }
+
+  @Test
+  public void addOrSetClientCqsCanAddCqsIfCqsMapNotNull() {
+    ClientUpdateMessageImpl clientUpdateMessageImpl = new ClientUpdateMessageImpl();
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    clientUpdateMessageImpl.addClientCq(clientProxyMembershipID, "cqName", 10);
+
+    clientUpdateMessageImpl.addOrSetClientCqs(client1, clientCqs);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs()).hasSize(2);
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client1)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpHashMap.class);
+    ClientUpdateMessageImpl.CqNameToOpHashMap client1Cqs =
+        (ClientUpdateMessageImpl.CqNameToOpHashMap) clientUpdateMessageImpl.getClientCqs()
+            .get(client1);
+    assertThat(client1Cqs.get("cqName1")).isEqualTo(1);
+    assertThat(client1Cqs.get("cqName2")).isEqualTo(2);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(clientProxyMembershipID)).isInstanceOf(
+        ClientUpdateMessageImpl.CqNameToOpSingleEntry.class);
+
+    assertThat(clientUpdateMessageImpl.getClientCqs().get(client2)).isNull();
+  }
+
 }

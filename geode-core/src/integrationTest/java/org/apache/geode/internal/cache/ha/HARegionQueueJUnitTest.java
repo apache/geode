@@ -1569,9 +1569,9 @@ public class HARegionQueueJUnitTest {
     regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
     regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
 
-    verify(mockClientUpdateMessage, times(1)).addClientCqs(mockClientProxyMembershipId,
-        mockCqNameToOp);
-    verify(mockClientUpdateMessage, times(1)).addClientInterestList(mockClientProxyMembershipId,
+    verify(mockClientUpdateMessage).addOrSetClientCqs(mockClientProxyMembershipId,
+        mockClientCqConcurrentMap);
+    verify(mockClientUpdateMessage).addClientInterestList(mockClientProxyMembershipId,
         true);
 
     // Mock that the ClientUpdateMessage is only interested in invalidates, then do another put
