@@ -20,9 +20,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.runners.DHERunner;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(DHERunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class DHETest {
   @Test
   public void notTaggedNotParameterized() {}
