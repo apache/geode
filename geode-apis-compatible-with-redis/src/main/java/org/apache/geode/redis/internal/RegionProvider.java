@@ -25,6 +25,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketLockException;
+import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
@@ -302,6 +306,14 @@ public class RegionProvider {
     return (Set<DistributedMember>) (Set<?>) partitionedRegion.getRegionAdvisor().adviseDataStore();
   }
 
+  @SuppressWarnings("unchecked")
+  public Set<DistributedMember> getRegionMembers() {
+    Set<DistributedMember> result = (Set<DistributedMember>) (Set<?>) partitionedRegion
+        .getRegionAdvisor().adviseDataStore(true);
+    result.add(partitionedRegion.getCache().getMyId());
+    return result;
+  }
+
   /**
    * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
    * Note that the list of keys is sorted in place.
@@ -321,4 +333,15 @@ public class RegionProvider {
     }
   }
 
+  private HeapMemoryMonitor getHeapMemoryMonitor() {
+    return InternalResourceManager.getInternalResourceManager(partitionedRegion.getCache())
+        .getHeapMonitor();
+  }
+
+  public Set<DistributedMember> getCriticalMembers() {
+    if (MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      return Collections.emptySet();
+    }
+    return getHeapMemoryMonitor().getHeapCriticalMembersFrom(getRegionMembers());
+  }
 }
