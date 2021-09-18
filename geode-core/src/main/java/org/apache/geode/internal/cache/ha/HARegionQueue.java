@@ -2257,10 +2257,11 @@ public class HARegionQueue implements RegionQueue {
     }
 
     /**
-     * Checks whether a put operation should block or proceed based on the capacity constraint of
+     * This method operates on an HAContainerMap.
+     * It checks whether a put operation should block or proceed based on the capacity constraint of
      * the Queue. Initially it checks only via Put Side Put Permits. If it is exhausted it checks
      * the take side put permits using the appropriate lock. If the queue's capacity is exhausted
-     * then the thread goes into a finite wait state holding the Put Guard lock for the duration of
+     * then the thread goes into a finite wait state holding the Permit Mon lock for the duration of
      * EVENT_ENQUEUE_WAIT_TIME after which the thread proceeds to enqueue the event, allowing the
      * putPermits go negative, if needed. Thus, no put thread is blocked for more than
      * EVENT_ENQUEUE_WAIT_TIME.
@@ -2330,10 +2331,7 @@ public class HARegionQueue implements RegionQueue {
           }
         }
       } // synchronized (this.permitMon)
-
     }
-
-    /* Do not call this method directly from anywhere except checkQueueSizeConstraint */
 
     /**
      * This function should always be called under a lock on permitMon obejct
