@@ -63,7 +63,7 @@ public class Subscriptions {
   }
 
   public interface ForEachConsumer {
-    void accept(byte[] subscriptionName, String channelToMatch, Client client,
+    void accept(byte[] subscriptionName, byte[] channelToMatch, Client client,
         Subscription subscription);
   }
 

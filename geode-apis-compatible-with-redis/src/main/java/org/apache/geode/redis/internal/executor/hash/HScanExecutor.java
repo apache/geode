@@ -17,12 +17,12 @@ package org.apache.geode.redis.internal.executor.hash;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_HASH;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.key.AbstractScanExecutor;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -30,7 +30,7 @@ public class HScanExecutor extends AbstractScanExecutor {
 
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
-      Pattern pattern, int count, int cursor) {
+      GlobPattern pattern, int count, int cursor) {
     return context.getHashCommands().hscan(key, pattern, count, cursor);
   }
 

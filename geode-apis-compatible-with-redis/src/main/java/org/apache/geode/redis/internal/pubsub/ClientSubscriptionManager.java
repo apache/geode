@@ -36,7 +36,7 @@ interface ClientSubscriptionManager {
    * @param channelToMatch if non-null and the manager supports matching
    *        then only invoke action for subscriptions that match this.
    */
-  void forEachSubscription(byte[] subscriptionName, String channelToMatch, ForEachConsumer action);
+  void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch, ForEachConsumer action);
 
   /**
    * return how many subscriptions this manager has.
@@ -50,7 +50,7 @@ interface ClientSubscriptionManager {
    * that the channel needs to match.
    * For managers without a pattern all subscriptions match.
    */
-  int getSubscriptionCount(String channel);
+  int getSubscriptionCount(byte[] channel);
 
   /**
    * Adds the given subscription for the given client to this manager.

@@ -20,7 +20,6 @@ import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
@@ -34,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
@@ -54,6 +52,7 @@ import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCusto
 import org.apache.geode.redis.internal.delta.DeltaInfo;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.delta.ZAddsDeltaInfo;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.sortedset.AbstractSortedSetRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
@@ -388,7 +387,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return scoreSet.size() - scoreSet.indexOf(orderedSetEntry) - 1;
   }
 
-  ImmutablePair<Integer, List<byte[]>> zscan(Pattern matchPattern, int count, int cursor) {
+  ImmutablePair<Integer, List<byte[]>> zscan(GlobPattern matchPattern, int count, int cursor) {
     // No need to allocate more space than it's possible to use given the size of the sorted set. We
     // need to add 1 to zcard() to ensure that if count > members.size(), we return a cursor of 0
     long maximumCapacity = 2L * Math.min(count, zcard() + 1);
@@ -595,10 +594,10 @@ public class RedisSortedSet extends AbstractRedisData {
     return result;
   }
 
-  private void addIfMatching(Pattern matchPattern, List<byte[]> resultList, byte[] key,
+  private void addIfMatching(GlobPattern matchPattern, List<byte[]> resultList, byte[] key,
       double score) {
     if (matchPattern != null) {
-      if (matchPattern.matcher(bytesToString(key)).matches()) {
+      if (matchPattern.matches(key)) {
         resultList.add(key);
         resultList.add(doubleToBytes(score));
       }

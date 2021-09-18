@@ -43,12 +43,12 @@ class ChannelClientSubscriptionManager
   }
 
   @Override
-  public int getSubscriptionCount(String channel) {
+  public int getSubscriptionCount(byte[] channel) {
     return size.get();
   }
 
   @Override
-  public void forEachSubscription(byte[] subscriptionName, String channelToMatch,
+  public void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch,
       ForEachConsumer action) {
     subscriptionMap
         .forEach((client, subscription) -> action.accept(subscriptionName, channelToMatch, client,

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -46,11 +45,11 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
 
   @Override
   public List<byte[]> getIds(byte[] pattern) {
-    final Pattern globPattern = GlobPattern.createPattern(pattern);
+    final GlobPattern globPattern = new GlobPattern(pattern);
     final ArrayList<byte[]> result = new ArrayList<>();
     for (SubscriptionId key : clientManagers.keySet()) {
       byte[] idBytes = key.getSubscriptionIdBytes();
-      if (GlobPattern.matches(globPattern, idBytes)) {
+      if (globPattern.matches(idBytes)) {
         result.add(idBytes);
       }
     }
@@ -117,7 +116,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
   private static final ClientSubscriptionManager EMPTY_CLIENT_MANAGER =
       new ClientSubscriptionManager() {
         @Override
-        public void forEachSubscription(byte[] subscriptionName, String channelToMatch,
+        public void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch,
             Subscriptions.ForEachConsumer action) {}
 
         @Override
@@ -126,7 +125,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
         }
 
         @Override
-        public int getSubscriptionCount(String channel) {
+        public int getSubscriptionCount(byte[] channel) {
           return 0;
         }
 

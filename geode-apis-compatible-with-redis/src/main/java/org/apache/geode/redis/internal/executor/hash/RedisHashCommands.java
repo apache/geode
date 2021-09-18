@@ -18,11 +18,11 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 
 public interface RedisHashCommands {
   int hset(RedisKey key, List<byte[]> fieldsToSet, boolean NX);
@@ -45,7 +45,7 @@ public interface RedisHashCommands {
 
   Collection<byte[]> hkeys(RedisKey key);
 
-  Pair<Integer, List<byte[]>> hscan(RedisKey key, Pattern matchPattern, int count, int cursor);
+  Pair<Integer, List<byte[]>> hscan(RedisKey key, GlobPattern matchPattern, int count, int cursor);
 
   byte[] hincrby(RedisKey key, byte[] field, long increment);
 

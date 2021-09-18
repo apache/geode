@@ -16,111 +16,113 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-
-import java.util.regex.Pattern;
-
 /**
  * A class for POSIX glob pattern with brace expansions.
- * This class is a factory for Pattern instances using
- * the static factory method {@link #createPattern(byte[])}.
- * To see if a string matches a pattern
- * use {@link #matches(Pattern, CharSequence)} or
- * {@link #matches(Pattern, byte[])}.
+ * This code is derived from native redis utl.c stringmatchlen.
  */
 public class GlobPattern {
-  private static final char BACKSLASH = '\\';
+  private final byte[] pattern;
 
-  private GlobPattern() {
-    // no instances allowed
+  public GlobPattern(byte[] patternBytes) {
+    pattern = patternBytes;
   }
 
-  /**
-   * Match input against the given glob pattern
-   *
-   * @param pattern the pattern obtained from {@link #createPattern(byte[])}
-   * @param input the chars to match against pattern
-   * @return true for successful matches
-   */
-  public static boolean matches(Pattern pattern, CharSequence input) {
-    return pattern.matcher(input).matches();
+  public boolean matches(byte[] bytes) {
+    return matches(0, bytes, 0);
   }
 
-  /**
-   * Match input against the given glob pattern
-   *
-   * @param pattern the pattern obtained from {@link #createPattern(byte[])}
-   * @param inputBytes the bytes to match against pattern
-   * @return true for successful matches
-   */
-  public static boolean matches(Pattern pattern, byte[] inputBytes) {
-    return matches(pattern, bytesToString(inputBytes));
-  }
-
-  /**
-   * Compile the given glob style pattern bytes into
-   * an instance of Pattern.
-   *
-   * @param globBytes the glob pattern as a byte array
-   * @return A regex pattern to recognize the given glob pattern.
-   */
-  public static Pattern createPattern(byte[] globBytes) {
-    String glob = bytesToString(globBytes);
-    StringBuilder regex = new StringBuilder();
-    int setOpen = 0;
-    int len = glob.length();
-
-    for (int i = 0; i < len; i++) {
-      char c = glob.charAt(i);
-
-      switch (c) {
-        case BACKSLASH:
-          if (++i < len) {
-            regex.append(c).append(glob.charAt(i));
-            continue;
+  private boolean matches(int patternIdx, byte[] string, int stringIdx) {
+    while (patternIdx < pattern.length && stringIdx < string.length) {
+      switch (pattern[patternIdx]) {
+        case '*': {
+          while (patternIdx + 1 < pattern.length && pattern[patternIdx + 1] == '*') {
+            patternIdx++;
           }
-          break;
-        case '.':
-        case '$':
-        case '(':
-        case ')':
-        case '|':
-        case '+':
-        case '{':
-        case '!':
-          // escape regex special chars that are not glob special chars
-          regex.append(BACKSLASH);
-          break;
-        case '*':
-          regex.append('.');
-          break;
-        case '?':
-          regex.append('.');
-          continue;
-        case '[':
-          if (setOpen > 0) {
-            regex.append(BACKSLASH);
+          if ((pattern.length - patternIdx) == 1) {
+            return true; /* match */
           }
-          setOpen++;
-          break;
-        case '^': // ^ inside [...] can be unescaped
-          if (setOpen == 0) {
-            regex.append(BACKSLASH);
+          while (stringIdx < string.length) {
+            if (matches(patternIdx + 1, string, stringIdx)) {
+              return true; /* match */
+            }
+            stringIdx++;
           }
+          return false; /* no match */
+        }
+        case '?': {
+          stringIdx++;
           break;
-        case ']':
-          setOpen = 0;
+        }
+        case '[': {
+          boolean not = false;
+          boolean match = false;
+
+          patternIdx++;
+          if (patternIdx < pattern.length) {
+            not = pattern[patternIdx] == '^';
+            if (not) {
+              patternIdx++;
+            }
+          }
+          while (patternIdx < pattern.length && pattern[patternIdx] != ']') {
+            if (pattern[patternIdx] == '\\' && (pattern.length - patternIdx) >= 2) {
+              patternIdx++;
+              if (pattern[patternIdx] == string[stringIdx]) {
+                match = true;
+              }
+            } else if ((pattern.length - patternIdx) >= 3 && pattern[patternIdx + 1] == '-') {
+              int start = pattern[patternIdx];
+              int end = pattern[patternIdx + 2];
+              int c = string[stringIdx];
+              if (start > end) {
+                int t = start;
+                start = end;
+                end = t;
+              }
+              patternIdx += 2;
+              if (c >= start && c <= end) {
+                match = true;
+              }
+            } else {
+              if (pattern[patternIdx] == string[stringIdx]) {
+                match = true;
+              }
+            }
+            patternIdx++;
+          }
+          if (patternIdx == pattern.length) {
+            patternIdx--;
+          }
+          if (not) {
+            match = !match;
+          }
+          if (!match) {
+            return false; /* no match */
+          }
+          stringIdx++;
           break;
+        }
+        case '\\': {
+          if ((pattern.length - patternIdx) >= 2) {
+            patternIdx++;
+          }
+          /* fall through */
+        }
         default:
+          if (pattern[patternIdx] != string[stringIdx]) {
+            return false; /* no match */
+          }
+          stringIdx++;
+          break;
       }
-      regex.append(c);
+      patternIdx++;
+      if (stringIdx == string.length) {
+        while (patternIdx < pattern.length && pattern[patternIdx] == '*') {
+          patternIdx++;
+        }
+        break;
+      }
     }
-
-    if (setOpen > 0) {
-      regex.append(']');
-    }
-
-    return Pattern.compile(regex.toString(), Pattern.DOTALL | Pattern.MULTILINE);
+    return patternIdx == pattern.length && stringIdx == string.length;
   }
-
 }

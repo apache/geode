@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHashTest {
@@ -201,7 +201,8 @@ public class RedisHashTest {
   @Test
   public void hscanOnlyReturnsElementsMatchingPattern() {
     RedisHash hash = createRedisHash("ak1", "v1", "k2", "v2", "ak3", "v3", "k4", "v4");
-    ImmutablePair<Integer, List<byte[]>> result = hash.hscan(Pattern.compile("a.*"), 3, 0);
+    ImmutablePair<Integer, List<byte[]>> result =
+        hash.hscan(new GlobPattern(stringToBytes("a*")), 3, 0);
 
     List<String> fieldsAndValues =
         result.right.stream().map(Coder::bytesToString).collect(Collectors.toList());

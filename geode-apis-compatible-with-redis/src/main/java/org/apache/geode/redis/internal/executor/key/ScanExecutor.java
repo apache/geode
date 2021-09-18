@@ -28,13 +28,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -51,7 +48,6 @@ public class ScanExecutor extends AbstractScanExecutor {
 
     String cursorString = command.getStringKey();
     BigInteger cursor;
-    Pattern matchPattern;
     byte[] globPattern = null;
     int count = DEFAULT_COUNT;
 
@@ -92,24 +88,15 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
     }
 
-    try {
-      matchPattern = convertGlobToRegex(globPattern);
-    } catch (PatternSyntaxException e) {
-      LogService.getLogger().warn(
-          "Could not compile the pattern: '{}' due to the following exception: '{}'. SCAN will return an empty list.",
-          globPattern, e.getMessage());
-      return RedisResponse.emptyScan();
-    }
-
     Pair<BigInteger, List<Object>> scanResult =
-        scan(getDataRegion(context).keySet(), matchPattern, count, cursor);
+        scan(getDataRegion(context).keySet(), convertGlobToRegex(globPattern), count, cursor);
     context.setScanCursor(scanResult.getLeft());
 
     return RedisResponse.scan(scanResult.getLeft().intValue(), scanResult.getRight());
   }
 
   private Pair<BigInteger, List<Object>> scan(Collection<RedisKey> list,
-      Pattern matchPattern,
+      GlobPattern matchPattern,
       int count, BigInteger cursor) {
     List<Object> returnList = new ArrayList<>();
     int size = list.size();
@@ -124,7 +111,7 @@ public class ScanExecutor extends AbstractScanExecutor {
       }
 
       if (matchPattern != null) {
-        if (GlobPattern.matches(matchPattern, key.toString())) {
+        if (matchPattern.matches(key.toBytes())) {
           returnList.add(key);
           numElements++;
         }
@@ -149,7 +136,7 @@ public class ScanExecutor extends AbstractScanExecutor {
   // TODO: When SCAN is supported, refactor to use these methods and not override executeCommand()
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
-      Pattern pattern, int count, int cursor) {
+      GlobPattern pattern, int count, int cursor) {
     return null;
   }
 

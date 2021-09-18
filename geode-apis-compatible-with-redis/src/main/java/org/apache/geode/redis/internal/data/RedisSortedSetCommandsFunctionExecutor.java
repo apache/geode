@@ -20,11 +20,11 @@ package org.apache.geode.redis.internal.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
@@ -150,7 +150,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   }
 
   @Override
-  public Pair<Integer, List<byte[]>> zscan(RedisKey key, Pattern matchPattern, int count,
+  public Pair<Integer, List<byte[]>> zscan(RedisKey key, GlobPattern matchPattern, int count,
       int cursor) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, true).zscan(matchPattern, count, cursor));

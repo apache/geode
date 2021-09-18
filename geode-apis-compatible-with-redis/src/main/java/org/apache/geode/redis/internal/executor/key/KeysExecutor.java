@@ -19,8 +19,6 @@ package org.apache.geode.redis.internal.executor.key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -40,22 +38,14 @@ public class KeysExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     byte[] glob = commandElems.get(1);
     Set<RedisKey> allKeys = getDataRegion(context).keySet();
-    List<RedisKey> matchingKeys = new ArrayList<>();
+    List<byte[]> matchingKeys = new ArrayList<>();
 
-    Pattern pattern;
-    try {
-      pattern = GlobPattern.createPattern(glob);
-    } catch (PatternSyntaxException e) {
-      logger.warn(
-          "Could not compile the pattern: '{}' due to the following exception: '{}'. KEYS will return an empty list.",
-          glob, e.getMessage());
-      return RedisResponse.emptyArray();
-    }
+    GlobPattern pattern = new GlobPattern(glob);
 
-    for (RedisKey bytesKey : allKeys) {
-      String key = bytesKey.toString();
-      if (pattern.matcher(key).matches()) {
-        matchingKeys.add(bytesKey);
+    for (RedisKey key : allKeys) {
+      byte[] keyBytes = key.toBytes();
+      if (pattern.matches(keyBytes)) {
+        matchingKeys.add(keyBytes);
       }
     }
 

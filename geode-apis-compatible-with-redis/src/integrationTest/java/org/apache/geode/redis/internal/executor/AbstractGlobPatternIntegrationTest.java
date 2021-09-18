@@ -252,4 +252,41 @@ public abstract class AbstractGlobPatternIntegrationTest implements RedisIntegra
 
     assertThat(jedis.keys("\\\\*")).containsExactlyInAnyOrder("\\", "\\!");
   }
+
+  @Test
+  public void escapedC_matchesVerbatim() {
+    jedis.set("\\C", "value");
+    jedis.set("\\Ca", "value");
+    jedis.set("b\\C", "value");
+
+    assertThat(jedis.keys("\\\\C")).containsExactlyInAnyOrder("\\C");
+  }
+
+  @Test
+  public void patternMatchIsCaseSensitive() {
+    jedis.set("a", "value");
+    jedis.set("A", "value");
+
+    assertThat(jedis.keys("A")).containsExactlyInAnyOrder("A");
+    assertThat(jedis.keys("a")).containsExactlyInAnyOrder("a");
+    assertThat(jedis.keys("[a-z]")).containsExactlyInAnyOrder("a");
+    assertThat(jedis.keys("[Z-A]")).containsExactlyInAnyOrder("A");
+    assertThat(jedis.keys("[aA]")).containsExactlyInAnyOrder("A", "a");
+  }
+
+  @Test
+  public void doubleQuote_matchesVerbatim() {
+    String key = "\"quotedKey\"";
+    jedis.set(key, "value");
+    assertThat(jedis.keys("quotedKey")).isEmpty();
+    assertThat(jedis.keys("\"*\"")).containsExactlyInAnyOrder(key);
+  }
+
+  @Test
+  public void embeddedWildCardMatches() {
+    jedis.set("foobar", "value");
+    jedis.set("foo123bar", "value");
+    jedis.set("foo123bar!", "value");
+    assertThat(jedis.keys("foo******bar")).containsExactlyInAnyOrder("foobar", "foo123bar");
+  }
 }

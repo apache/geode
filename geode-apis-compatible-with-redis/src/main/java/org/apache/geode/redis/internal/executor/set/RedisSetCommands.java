@@ -19,11 +19,11 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.GlobPattern;
 
 public interface RedisSetCommands {
 
@@ -43,7 +43,7 @@ public interface RedisSetCommands {
 
   Collection<byte[]> spop(RedisKey key, int popCount);
 
-  Pair<BigInteger, List<Object>> sscan(RedisKey key, Pattern matchPattern, int count,
+  Pair<BigInteger, List<Object>> sscan(RedisKey key, GlobPattern matchPattern, int count,
       BigInteger cursor);
 
   int sunionstore(RedisKey destination, List<RedisKey> setKeys);

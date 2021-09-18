@@ -24,14 +24,12 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -147,17 +145,6 @@ public class SubscriptionsJUnitTest {
     assertThat(result.getSubscription()).isNull();
     assertThat(client.getSubscriptionCount()).isOne();
     assertThat(client.getPatternSubscriptions()).containsExactlyInAnyOrder(pattern);
-  }
-
-  @Test
-  public void psubscribeCleanUpAfterFailedSubscribe() {
-    Client client = createClient();
-    final byte[] pattern = stringToBytes("\\C");
-
-    assertThatThrownBy(() -> subscriptions.psubscribe(pattern, client))
-        .isInstanceOf(PatternSyntaxException.class);
-
-    assertThat(client.getSubscriptionCount()).isZero();
   }
 
   @Test
