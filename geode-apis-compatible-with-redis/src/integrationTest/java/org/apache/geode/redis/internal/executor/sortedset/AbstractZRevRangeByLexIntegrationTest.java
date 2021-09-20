@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -41,8 +40,9 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public abstract class AbstractZRevRangeByLexIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
   public static final int SCORE = 1;

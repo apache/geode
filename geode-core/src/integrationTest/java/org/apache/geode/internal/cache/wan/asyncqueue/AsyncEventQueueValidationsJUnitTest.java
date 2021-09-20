@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -199,13 +198,17 @@ public class AsyncEventQueueValidationsJUnitTest {
   }
 
   private Object[] getCacheXmlFileBaseNames() {
-    return $(new Object[] {"testSerialAsyncEventQueueConfiguredFromXmlUsesFilter"},
-        new Object[] {"testParallelAsyncEventQueueConfiguredFromXmlUsesFilter"});
+    return new Object[] {
+        new Object[] {"testSerialAsyncEventQueueConfiguredFromXmlUsesFilter"},
+        new Object[] {"testParallelAsyncEventQueueConfiguredFromXmlUsesFilter"}
+    };
   }
 
   private Object[] getCacheXmlFileBaseNamesForPauseTests() {
-    return $(new Object[] {"testSerialAsyncEventQueueConfiguredFromXmlStartsPaused"},
-        new Object[] {"testParallelAsyncEventQueueConfiguredFromXmlStartsPaused"});
+    return new Object[] {
+        new Object[] {"testSerialAsyncEventQueueConfiguredFromXmlStartsPaused"},
+        new Object[] {"testParallelAsyncEventQueueConfiguredFromXmlStartsPaused"}
+    };
   }
 
 }

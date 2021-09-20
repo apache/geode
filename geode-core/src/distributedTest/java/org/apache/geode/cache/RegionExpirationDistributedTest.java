@@ -26,7 +26,6 @@ import static org.mockito.Mockito.timeout;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test Region expiration - both time-to-live and idle timeout.
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 3.0
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class RegionExpirationDistributedTest implements Serializable {
 

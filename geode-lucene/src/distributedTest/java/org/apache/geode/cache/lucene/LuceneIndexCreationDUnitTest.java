@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS;
@@ -378,7 +377,13 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   }
 
   protected Object[] getXmlAndExceptionMessages() {
-    return $(
+    // Currently setting a null analyzer is not a valid xml configuration: <lucene:field
+    // name="field2" analyzer="null"/>
+    // new Object[] { "verifyDifferentFieldAnalyzersFails2",
+    // CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1 },
+    // new Object[] { "verifyDifferentFieldAnalyzersFails3",
+    // CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2 },
+    return new Object[] {
         new Object[] {"verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {"verifyDifferentFieldAnalyzerSizesFails1",
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS_2},
@@ -386,17 +391,11 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {"verifyDifferentFieldAnalyzersFails1",
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2},
-        // Currently setting a null analyzer is not a valid xml configuration: <lucene:field
-        // name="field2" analyzer="null"/>
-        // new Object[] { "verifyDifferentFieldAnalyzersFails2",
-        // CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1 },
-        // new Object[] { "verifyDifferentFieldAnalyzersFails3",
-        // CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2 },
         new Object[] {"verifyDifferentIndexNamesFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES},
         new Object[] {"verifyDifferentIndexesFails1",
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1},
         new Object[] {"verifyDifferentIndexesFails2",
-            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2});
+            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2}};
   }
 
   @Test

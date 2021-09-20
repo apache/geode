@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
@@ -34,12 +33,13 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * TestCase that emulates the conditions that entry destroy with concurrent destroy region or cache
  * close event will get expected Exception.
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class DestroyEntryDuringCloseIntegrationTest {
 
   private static final String KEY = "KEY";

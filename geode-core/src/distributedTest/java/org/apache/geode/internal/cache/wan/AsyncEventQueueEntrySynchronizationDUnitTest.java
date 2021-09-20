@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import junitparams.Parameters;
@@ -46,8 +45,10 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueueTestBase {
 
   private static Object[] getRegionShortcuts() {
-    return $(new Object[] {RegionShortcut.PARTITION_REDUNDANT, false, true},
-        new Object[] {RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, true, true});
+    return new Object[] {
+        new Object[] {RegionShortcut.PARTITION_REDUNDANT, false, true},
+        new Object[] {RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, true, true}
+    };
   }
 
   @Test

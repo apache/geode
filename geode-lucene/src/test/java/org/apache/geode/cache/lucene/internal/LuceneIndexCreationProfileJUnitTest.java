@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1;
@@ -68,11 +67,13 @@ public class LuceneIndexCreationProfileJUnitTest {
   }
 
   private Object[] getSerializationProfiles() {
-    return $(new Object[] {getOneFieldLuceneIndexCreationProfile()},
+    return new Object[] {
+        new Object[] {getOneFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile()},
         new Object[] {getDummySerializerCreationProfile()},
-        new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()});
+        new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()}
+    };
   }
 
   @Test
@@ -88,9 +89,11 @@ public class LuceneIndexCreationProfileJUnitTest {
   }
 
   private Object[] getProfileWithSerializer() {
-    return $(new Object[] {getDefaultSerializerCreationProfile(), "HeterogeneousLuceneSerializer"},
+    return new Object[] {
+        new Object[] {getDefaultSerializerCreationProfile(), "HeterogeneousLuceneSerializer"},
         new Object[] {getDummySerializerCreationProfile(), "DummyLuceneSerializer"}, new Object[] {
-            getHeterogeneousLuceneSerializerCreationProfile(), "HeterogeneousLuceneSerializer"});
+            getHeterogeneousLuceneSerializerCreationProfile(), "HeterogeneousLuceneSerializer"}
+    };
   }
 
   private LuceneIndexCreationProfile getDefaultSerializerCreationProfile() {
@@ -117,7 +120,7 @@ public class LuceneIndexCreationProfileJUnitTest {
   }
 
   private Object[] getCheckCompatibilityProfiles() {
-    return $(
+    return new Object[] {
         new Object[] {getOneFieldLuceneIndexCreationProfile(),
             getTwoFieldLuceneIndexCreationProfile(), CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {getTwoFieldLuceneIndexCreationProfile(),
@@ -140,7 +143,8 @@ public class LuceneIndexCreationProfileJUnitTest {
             getHeterogeneousLuceneSerializerCreationProfile(), null},
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile(),
             getNullField2AnalyzerLuceneIndexCreationProfile(),
-            LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2});
+            LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2}
+    };
   }
 
   private LuceneIndexCreationProfile getOneFieldLuceneIndexCreationProfile() {

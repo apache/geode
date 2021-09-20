@@ -29,7 +29,6 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -52,9 +51,10 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.util.internal.GeodeGlossary;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class SetOperationJTAJUnitTest {
   private static final Logger logger = LogService.getLogger();
   private static final String REGION_NAME = "region1";

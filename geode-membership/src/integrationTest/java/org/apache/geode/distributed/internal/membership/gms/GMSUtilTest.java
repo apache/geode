@@ -22,15 +22,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.net.InetAddress;
 import java.util.List;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class GMSUtilTest {
 
   static final int PORT = 1234; // any old port--no need to have anything actually bound here

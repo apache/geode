@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
@@ -236,11 +235,13 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   }
 
   private static Object[] getRegionShortcuts() {
-    return $(new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
+    return new Object[] {
+        new Object[] {PARTITION}, new Object[] {PARTITION_REDUNDANT},
         new Object[] {PARTITION_PERSISTENT}, new Object[] {PARTITION_REDUNDANT_PERSISTENT},
         new Object[] {PARTITION_OVERFLOW}, new Object[] {PARTITION_REDUNDANT_OVERFLOW},
         new Object[] {PARTITION_PERSISTENT_OVERFLOW},
-        new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW});
+        new Object[] {PARTITION_REDUNDANT_PERSISTENT_OVERFLOW}
+    };
   }
 
 }
