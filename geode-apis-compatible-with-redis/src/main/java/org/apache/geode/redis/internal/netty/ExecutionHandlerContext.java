@@ -89,10 +89,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   static {
     String resourcePermission = System.getProperty("redis.resource-permission",
-            "DATA:WRITE:" + RegionProvider.REDIS_DATA_REGION);
+        "DATA:WRITE:" + RegionProvider.REDIS_DATA_REGION);
     String[] parts = resourcePermission.split(":");
     if (parts.length != 3) {
-      parts = new String[]{"DATA", "WRITE", RegionProvider.REDIS_DATA_REGION};
+      parts = new String[] {"DATA", "WRITE", RegionProvider.REDIS_DATA_REGION};
     }
 
     RESOURCE_PERMISSION = new ResourcePermission(parts[0], parts[1], parts[2]);

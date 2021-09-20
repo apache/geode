@@ -107,7 +107,8 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_lettuceV6AuthClient_passes() throws Exception {
     setupCacheWithSecurity();
 
-    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", getUsername(), getPort()));
+    RedisURI uri =
+        RedisURI.create(String.format("redis://%s@localhost:%d", getUsername(), getPort()));
     RedisClient client = RedisClient.create(uri);
 
     client.connect().sync().ping();
