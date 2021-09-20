@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -27,6 +26,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.AuthenticationExpiredException;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ExpirableSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -43,15 +43,17 @@ public class SecurityWithExpirationIntegrationTest {
     securityService = SecurityServiceFactory.create(this.props);
   }
 
-  @After
-  public void after() throws Exception {
-    securityService.logout();
+  @Test
+  public void testAuthenticationWhenUserExpired() {
+    getSecurityManager().addExpiredUser("data");
+    assertThatThrownBy(() -> this.securityService.login(loginCredentials("data", "data")))
+        .isInstanceOf(AuthenticationFailedException.class);
   }
 
   @Test
-  public void testThrowAuthenticationExpiredException() {
-    getSecurityManager().addExpiredUser("data");
+  public void testAuthorizationWhenUserExpired() {
     this.securityService.login(loginCredentials("data", "data"));
+    getSecurityManager().addExpiredUser("data");
     assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
         .isInstanceOf(AuthenticationExpiredException.class);
   }

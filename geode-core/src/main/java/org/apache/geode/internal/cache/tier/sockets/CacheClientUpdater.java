@@ -47,6 +47,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.SocketFactory;
+import org.apache.geode.cache.client.internal.AuthenticateUserOp;
 import org.apache.geode.cache.client.internal.ClientUpdater;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
@@ -1655,6 +1656,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
             case MessageType.LOCAL_DESTROY:
               handleDestroy(clientMessage);
               break;
+            case MessageType.CLIENT_RE_AUTHENTICATE:
+              handleAuthenticate();
+              break;
             case MessageType.LOCAL_DESTROY_REGION:
               handleDestroyRegion(clientMessage);
               break;
@@ -1761,6 +1765,18 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // 2. if there is some other race condition with continueProcessing flag
       this.qManager.checkEndpoint(this, this.endpoint);
     }
+  }
+
+  private void handleAuthenticate() {
+    // if client is in multi-user mode, the CacheClientUpdater (at this point)
+    // can't differentiate which user this message is intended to. so throw exception for now
+    // one possible solution is re-authenticate all users in this client
+    if (qManager.getPool().getMultiuserAuthentication()) {
+      throw new UnsupportedOperationException(
+          "Multi-user mode doesn't support re-authentication. This client will be closed.");
+    }
+    Long userId = AuthenticateUserOp.executeOn(location, qManager.getPool());
+    location.setUserId(userId);
   }
 
   /**

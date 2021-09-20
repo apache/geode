@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.cache.EntryEventImpl.deserialize;
+import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
@@ -28,6 +31,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -40,16 +45,22 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueAttributes;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Class <code>MessageDispatcher</code> is a <code>Thread</code> that processes messages bound for
@@ -68,6 +79,12 @@ public class MessageDispatcher extends LoggingThread {
    * Key in the system property from which the slow starting time value will be retrieved
    */
   private static final String KEY_SLOW_START_TIME_FOR_TESTING = "slowStartTimeForTesting";
+
+
+  /**
+   * Default value in milliseconds for waiting for re-authentication
+   */
+  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = 5000;
 
   /**
    * The queue of messages to be sent to the client
@@ -124,46 +141,50 @@ public class MessageDispatcher extends LoggingThread {
    */
   protected MessageDispatcher(CacheClientProxy proxy, String name,
       StatisticsClock statisticsClock) throws CacheException {
-    super(name);
+    this(proxy, name, getMessageQueue(proxy, statisticsClock));
+  }
 
-    _proxy = proxy;
-
-    // Create the event conflator
-    // this._eventConflator = new BridgeEventConflator
-
-    // Create the message queue
+  private static HARegionQueue getMessageQueue(CacheClientProxy proxy,
+      StatisticsClock statisticsClock) {
     try {
       HARegionQueueAttributes harq = new HARegionQueueAttributes();
       harq.setBlockingQueueCapacity(proxy._maximumMessageCount);
       harq.setExpiryTime(proxy._messageTimeToLive);
       ((HAContainerWrapper) proxy._cacheClientNotifier.getHaContainer())
-          .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
+          .putProxy(HARegionQueue.createRegionName(proxy.getHARegionName()), proxy);
       boolean createDurableQueue = proxy.proxyID.isDurable();
       boolean canHandleDelta =
           InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-              && !(_proxy.clientConflation == Handshake.CONFLATION_ON);
+              && !(proxy.clientConflation == Handshake.CONFLATION_ON);
       if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
         logger.debug("Creating a {} subscription queue for {}",
             createDurableQueue ? "durable" : "non-durable",
             proxy.getProxyID());
       }
-      _messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
-          getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
+      return HARegionQueue.getHARegionQueueInstance(proxy.getHARegionName(),
+          proxy.getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
           proxy._cacheClientNotifier.getHaContainer(), proxy.getProxyID(),
-          _proxy.clientConflation, _proxy.isPrimary(), canHandleDelta, statisticsClock);
-      // Check if interests were registered during HARegion GII.
-      if (_proxy.hasRegisteredInterested()) {
-        _messageQueue.setHasRegisteredInterest(true);
-      }
+          proxy.clientConflation, proxy.isPrimary(), canHandleDelta, statisticsClock);
     } catch (CancelException | RegionExistsException e) {
       throw e;
     } catch (Exception e) {
-      getCache().getCancelCriterion().checkCancelInProgress(e);
+      proxy.getCache().getCancelCriterion().checkCancelInProgress(e);
       throw new CacheException(
           "Exception occurred while trying to create a message queue.",
           e) {
         private static final long serialVersionUID = 0L;
       };
+    }
+  }
+
+  protected MessageDispatcher(CacheClientProxy proxy, String name, HARegionQueue messageQueue)
+      throws CacheException {
+    super(name);
+    _proxy = proxy;
+    _messageQueue = messageQueue;
+    // Check if interests were registered during HARegion GII.
+    if (proxy.hasRegisteredInterested()) {
+      _messageQueue.setHasRegisteredInterest(true);
     }
   }
 
@@ -335,10 +356,14 @@ public class MessageDispatcher extends LoggingThread {
       logger.debug("{}: Beginning to process events", this);
     }
 
+    long reAuthenticateWaitTime =
+        getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
+
     ClientMessage clientMessage = null;
+    long wait_for_re_auth_start_time = -1;
     while (!isStopped()) {
       // SystemFailure.checkFailure(); DM's stopper does this
-      if (_proxy._cache.getCancelCriterion().isCancelInProgress()) {
+      if (getCache().getCancelCriterion().isCancelInProgress()) {
         break;
       }
       try {
@@ -362,31 +387,68 @@ public class MessageDispatcher extends LoggingThread {
           }
           waitForResumption();
         }
-        try {
-          clientMessage = (ClientMessage) _messageQueue.peek();
-        } catch (RegionDestroyedException skipped) {
-          break;
+
+        // if message is not delivered due to authentication expiation, this clientMessage
+        // would not be null.
+        if (clientMessage == null) {
+          try {
+            clientMessage = (ClientMessage) _messageQueue.peek();
+          } catch (RegionDestroyedException skipped) {
+            break;
+          }
         }
+
         getStatistics().setQueueSize(_messageQueue.size());
         if (isStopped()) {
           break;
         }
-        if (clientMessage != null) {
-          // Process the message
-          long start = getStatistics().startTime();
-          //// BUGFIX for BUG#38206 and BUG#37791
-          boolean isDispatched = dispatchMessage(clientMessage);
-          getStatistics().endMessage(start);
-          if (isDispatched) {
+
+        if (clientMessage == null) {
+          _messageQueue.remove();
+          continue;
+        }
+
+        // Process the message
+        long start = getStatistics().startTime();
+        try {
+          if (dispatchMessage(clientMessage)) {
+            getStatistics().endMessage(start);
             _messageQueue.remove();
             if (clientMessage instanceof ClientMarkerMessageImpl) {
               getProxy().setMarkerEnqueued(false);
             }
           }
-        } else {
+          clientMessage = null;
+          wait_for_re_auth_start_time = -1;
+        } catch (NotAuthorizedException notAuthorized) {
+          // behave as if the message is dispatched, remove from the queue
+          logger.info("skip delivering message: " + clientMessage, notAuthorized);
           _messageQueue.remove();
+          clientMessage = null;
+        } catch (AuthenticationExpiredException expired) {
+          if (wait_for_re_auth_start_time == -1) {
+            wait_for_re_auth_start_time = System.currentTimeMillis();
+            // only send the message to clients who can handle the message
+            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+              EventID eventId = createEventId();
+              sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
+            }
+            // We wait for all versions of clients to re-authenticate. For older clients we still
+            // wait, just in case client will perform some operations to
+            // trigger credential refresh on its own.
+            Thread.sleep(200);
+          } else {
+            long elapsedTime = System.currentTimeMillis() - wait_for_re_auth_start_time;
+            if (elapsedTime > reAuthenticateWaitTime) {
+              logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
+                  + "ms. Unregister this client proxy.");
+              pauseOrUnregisterProxy(expired);
+            } else {
+              Thread.sleep(200);
+            }
+          }
         }
-        clientMessage = null;
+
       } catch (MessageTooLargeException e) {
         logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
       } catch (IOException e) {
@@ -520,7 +582,20 @@ public class MessageDispatcher extends LoggingThread {
     }
   }
 
-  private void pauseOrUnregisterProxy(Throwable t) {
+  @NotNull
+  @VisibleForTesting
+  protected Long getSystemProperty(String key, long defaultValue) {
+    return SystemPropertyHelper.getProductLongProperty(key, defaultValue);
+  }
+
+  @NotNull
+  @VisibleForTesting
+  protected EventID createEventId() {
+    return new EventID(getCache().getDistributedSystem());
+  }
+
+  @VisibleForTesting
+  protected void pauseOrUnregisterProxy(Throwable t) {
     if (getProxy().isDurable()) {
       try {
         getProxy().pauseDispatching();
@@ -568,11 +643,12 @@ public class MessageDispatcher extends LoggingThread {
 
     final Message message;
     if (clientMessage instanceof ClientUpdateMessage) {
-      byte[] latestValue = (byte[]) ((ClientUpdateMessage) clientMessage).getValue();
+      ClientUpdateMessage clientUpdateMessage = (ClientUpdateMessage) clientMessage;
+      byte[] latestValue = (byte[]) clientUpdateMessage.getValue();
       if (logger.isTraceEnabled()) {
         StringBuilder msg = new StringBuilder(100);
         msg.append(this).append(": Using latest value: ").append(Arrays.toString(latestValue));
-        if (((ClientUpdateMessage) clientMessage).valueIsObject()) {
+        if (clientUpdateMessage.valueIsObject()) {
           if (latestValue != null) {
             msg.append(" (").append(deserialize(latestValue)).append(")");
           }
@@ -581,6 +657,28 @@ public class MessageDispatcher extends LoggingThread {
         logger.trace(msg.toString());
       }
 
+      // authorize the message before dispatching
+      SecurityService securityService = getCache().getSecurityService();
+      // for legacy security, we don't support auth expiration
+      if (securityService.isIntegratedSecurity()) {
+        if (getProxy().getSubject() != null) {
+          securityService.authorize(getResourcePermission(clientUpdateMessage),
+              getProxy().getSubject());
+        } else {
+          // if it's multi-user mode
+          ClientUpdateMessageImpl.CqNameToOp clientCq =
+              clientUpdateMessage.getClientCq(getProxy().getProxyID());
+          if (clientCq != null) {
+            String[] names = clientCq.getNames();
+            for (String cqName : names) {
+              Subject subject = getProxy().getSubject(cqName);
+              if (subject != null) {
+                securityService.authorize(getResourcePermission(clientUpdateMessage), subject);
+              }
+            }
+          }
+        }
+      }
       message = ((ClientUpdateMessageImpl) clientMessage).getMessage(getProxy(), latestValue);
 
       if (CacheClientProxy.AFTER_MESSAGE_CREATION_FLAG) {
@@ -609,7 +707,17 @@ public class MessageDispatcher extends LoggingThread {
     return isDispatched;
   }
 
-  private void sendMessage(Message message) throws IOException {
+  @NotNull
+  private ResourcePermission getResourcePermission(ClientUpdateMessage message) {
+    String regionName = message.getRegionName();
+    Object key = message.getKeyOfInterest();
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ,
+        regionName, key == null ? null : key.toString());
+  }
+
+  @VisibleForTesting
+  protected void sendMessage(Message message) throws IOException {
     if (message == null) {
       return;
     }

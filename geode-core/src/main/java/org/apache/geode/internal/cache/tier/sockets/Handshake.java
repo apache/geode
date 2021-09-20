@@ -424,7 +424,6 @@ public abstract class Handshake {
   }
 
   protected Properties getCredentials(DistributedMember member) {
-
     String authInitMethod = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
     return getCredentials(authInitMethod, this.system.getSecurityProperties(), member, false,
         (InternalLogWriter) this.system.getLogWriter(),

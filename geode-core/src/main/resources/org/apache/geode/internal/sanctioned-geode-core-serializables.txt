@@ -352,7 +352,7 @@ org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedArgs,true,1,ex
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedExportFunction,true,1
 org/apache/geode/internal/cache/tier/BatchException,true,-6707074107791305564,_index:int
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
-org/apache/geode/internal/cache/tier/sockets/MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/MessageDispatcher
+org/apache/geode/internal/cache/tier/sockets/MessageDispatcher$1,true,0
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
 org/apache/geode/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 org/apache/geode/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false

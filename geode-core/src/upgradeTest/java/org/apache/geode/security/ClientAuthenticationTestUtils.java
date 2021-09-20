@@ -21,8 +21,8 @@ import static org.apache.geode.security.SecurityTestUtils.getCache;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -121,29 +121,30 @@ public abstract class ClientAuthenticationTestUtils {
     region.registerInterestRegex(".*");
   }
 
+
   protected static ExpirableSecurityManager combineSecurityManagerResults(MemberVM... vms) {
-    return Arrays.stream(vms)
-        .map(vm -> vm.invoke(ClientAuthenticationTestUtils::getSecurityManager))
-        .reduce((securityManager0, securityManager1) -> {
-          securityManager0.getExpiredUsers().addAll(securityManager1.getExpiredUsers());
-          securityManager1.getAuthorizedOps().keySet().forEach(key -> {
-            List<String> authOps = securityManager0.getAuthorizedOps().get(key);
-            if (authOps == null) {
-              authOps = new ArrayList<>();
-            }
-            authOps.addAll(securityManager1.getAuthorizedOps().get(key));
-            securityManager0.getAuthorizedOps().put(key, authOps);
-          });
-          securityManager1.getUnAuthorizedOps().keySet().forEach(key -> {
-            List<String> unAuthOps = securityManager0.getUnAuthorizedOps().get(key);
-            if (unAuthOps == null) {
-              unAuthOps = new ArrayList<>();
-            }
-            unAuthOps.addAll(securityManager1.getUnAuthorizedOps().get(key));
-            securityManager0.getUnAuthorizedOps().put(key, unAuthOps);
-          });
-          return securityManager0;
-        }).orElse(new ExpirableSecurityManager());
+    List<ExpirableSecurityManager> results = new ArrayList<>();
+    for (MemberVM vm : vms) {
+      results.add(vm.invoke(() -> getSecurityManager()));
+    }
+
+    ExpirableSecurityManager consolidated = new ExpirableSecurityManager();
+    for (ExpirableSecurityManager result : results) {
+      consolidated.getExpiredUsers().addAll(result.getExpiredUsers());
+      combine(consolidated.getAuthorizedOps(), result.getAuthorizedOps());
+      combine(consolidated.getUnAuthorizedOps(), result.getUnAuthorizedOps());
+    }
+    return consolidated;
+  }
+
+  protected static void combine(Map<String, List<String>> to, Map<String, List<String>> from) {
+    for (String key : from.keySet()) {
+      if (to.containsKey(key)) {
+        to.get(key).addAll(from.get(key));
+      } else {
+        to.put(key, from.get(key));
+      }
+    }
   }
 
   protected static ExpirableSecurityManager getSecurityManager() {

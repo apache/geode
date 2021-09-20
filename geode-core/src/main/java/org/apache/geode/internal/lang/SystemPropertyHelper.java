@@ -107,6 +107,13 @@ public class SystemPropertyHelper {
       "get-transaction-events-from-queue-wait-time-ms";
 
   /**
+   * Milliseconds to wait for the client to re-authenticate back before unregister this client
+   * proxy. If client re-authenticate back successfully within this period, messages will continue
+   * to be delivered to the client
+   */
+  public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
+
+  /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *
@@ -136,6 +143,41 @@ public class SystemPropertyHelper {
     } else {
       return Optional.empty();
     }
+  }
+
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the Long value of the system property
+   */
+  public static Optional<Long> getProductLongProperty(String name) {
+    Long propertyValue = Long.getLong(GEODE_PREFIX + name);
+    if (propertyValue == null) {
+      propertyValue = Long.getLong(GEMFIRE_PREFIX + name);
+    }
+
+    if (propertyValue != null) {
+      return Optional.of(propertyValue);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return the integer value of the system property if exits or the default value
+   */
+  public static Integer getProductIntegerProperty(String name, int defaultValue) {
+    return getProductIntegerProperty(name).orElse(defaultValue);
+  }
+
+  public static Long getProductLongProperty(String name, long defaultValue) {
+    return getProductLongProperty(name).orElse(defaultValue);
   }
 
   /**
@@ -190,4 +232,5 @@ public class SystemPropertyHelper {
   public static boolean restoreIdleExpirationBehavior() {
     return getProductBooleanProperty("restoreIdleExpirationBehavior").orElse(false);
   }
+
 }

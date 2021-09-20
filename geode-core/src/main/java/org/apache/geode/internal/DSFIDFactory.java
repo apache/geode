@@ -368,6 +368,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientInterestMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientMarkerMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientPingMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
@@ -699,6 +700,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(STATE_STABILIZATION_MESSAGE, StateStabilizationMessage.class);
     serializer.registerDSFID(STATE_STABILIZED_MESSAGE, StateStabilizedMessage.class);
     serializer.registerDSFID(CLIENT_MARKER_MESSAGE_IMPL, ClientMarkerMessageImpl.class);
+    serializer.registerDSFID(CLIENT_RE_AUTHENTICATE, ClientReAuthenticateMessage.class);
     serializer.registerDSFID(TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE,
         TXLockUpdateParticipantsMessage.class);
     serializer.registerDSFID(TX_ORIGINATOR_RECOVERY_MESSAGE, TXOriginatorRecoveryMessage.class);

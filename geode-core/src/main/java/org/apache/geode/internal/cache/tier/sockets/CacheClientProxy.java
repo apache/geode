@@ -216,11 +216,14 @@ public class CacheClientProxy implements ClientSession {
    */
   boolean keepalive = false;
 
+  /**
+   * for single user environment
+   */
   private AccessControl postAuthzCallback;
   private Subject subject;
 
   /**
-   * For multiuser environment..
+   * used for cq name to subject/auth mapping, always initialized in single/multi user casees
    */
   private ClientUserAuths clientUserAuths;
 
@@ -345,19 +348,15 @@ public class CacheClientProxy implements ClientSession {
     initializeClientAuths();
   }
 
-  private void initializeClientAuths() {
-    if (AcceptorImpl.isPostAuthzCallbackPresent()) {
-      clientUserAuths = ServerConnection.getClientUserAuths(proxyID);
-    }
+  void initializeClientAuths() {
+    clientUserAuths = ServerConnection.getClientUserAuths(proxyID);
   }
 
   private void reinitializeClientAuths() {
-    if (clientUserAuths != null && AcceptorImpl.isPostAuthzCallbackPresent()) {
-      synchronized (clientUserAuthsLock) {
-        ClientUserAuths newClientAuth = ServerConnection.getClientUserAuths(proxyID);
-        newClientAuth.fillPreviousCQAuth(clientUserAuths);
-        clientUserAuths = newClientAuth;
-      }
+    synchronized (clientUserAuthsLock) {
+      ClientUserAuths newClientAuth = ServerConnection.getClientUserAuths(proxyID);
+      newClientAuth.fillPreviousCQAuth(clientUserAuths);
+      clientUserAuths = newClientAuth;
     }
   }
 
@@ -372,7 +371,6 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public void setSubject(Subject subject) {
-    // TODO:hitesh synchronization
     synchronized (clientUserAuthsLock) {
       if (this.subject != null) {
         this.subject.logout();
@@ -381,13 +379,14 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
-    if (postAuthzCallback == null) // only for multiuser
-    {
-      if (clientUserAuths != null) {
-        clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
-      }
+  protected Subject getSubject(String cqName) {
+    synchronized (clientUserAuthsLock) {
+      return clientUserAuths.getSubject(cqName);
     }
+  }
+
+  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
+    clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
   }
 
   private void initializeTransientFields(Socket socket, ClientProxyMembershipID pid, boolean ip,
@@ -782,7 +781,8 @@ public class CacheClientProxy implements ClientSession {
         if (postAuthzCallback != null) {// for single user
           postAuthzCallback.close();
           postAuthzCallback = null;
-        } else if (clientUserAuths != null) {// for multiple users
+        }
+        if (clientUserAuths != null) {// for multiple users
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
@@ -1219,14 +1219,6 @@ public class CacheClientProxy implements ClientSession {
     _cacheClientNotifier.deliverInterestChange(proxyID, message);
   }
 
-  /*
-   * protected void addFilterRegisteredClients(String regionName, Object keyOfInterest) { try {
-   * this._cacheClientNotifier.addFilterRegisteredClients(regionName, this.proxyID); } catch
-   * (RegionDestroyedException e) {
-   * logger.warn(LocalizedStrings.CacheClientProxy_0_INTEREST_REG_FOR_0_FAILED, regionName + "->" +
-   * keyOfInterest, e); } }
-   */
-
   /**
    * Registers interest in the input region name and key
    *
@@ -1526,8 +1518,6 @@ public class CacheClientProxy implements ClientSession {
    *
    */
   protected void deliverMessage(Conflatable conflatable) {
-    ThreadState state = securityService.bindSubject(subject);
-
     final ClientUpdateMessage clientMessage;
     if (conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper) conflatable).getClientUpdateMessage();
@@ -1537,12 +1527,21 @@ public class CacheClientProxy implements ClientSession {
 
     _statistics.incMessagesReceived();
 
-    // post process
-    if (securityService.needPostProcess()) {
-      Object oldValue = clientMessage.getValue();
-      Object newValue = securityService.postProcess(clientMessage.getRegionName(),
-          clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
-      clientMessage.setLatestValue(newValue);
+    // post process for single-user mode. We don't do post process for multi-user mode
+    if (subject != null) {
+      ThreadState state = securityService.bindSubject(subject);
+      try {
+        if (securityService.needPostProcess()) {
+          Object oldValue = clientMessage.getValue();
+          Object newValue = securityService.postProcess(clientMessage.getRegionName(),
+              clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+          clientMessage.setLatestValue(newValue);
+        }
+      } finally {
+        if (state != null) {
+          state.clear();
+        }
+      }
     }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {
@@ -1567,10 +1566,6 @@ public class CacheClientProxy implements ClientSession {
       }
 
       _statistics.incMessagesFailedQueued();
-    }
-
-    if (state != null) {
-      state.clear();
     }
   }
 

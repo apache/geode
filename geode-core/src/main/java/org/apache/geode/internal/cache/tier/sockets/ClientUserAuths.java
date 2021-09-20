@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.client.internal.AuthenticateUserOp.NOT_A_USER_ID;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -37,6 +39,7 @@ public class ClientUserAuths {
   private final ConcurrentMap<String, UserAuthAttributes> cqNameVsUserAuth =
       new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, Subject> uniqueIdVsSubject = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
   private final int m_seed;
 
@@ -49,8 +52,16 @@ public class ClientUserAuths {
     return newId;
   }
 
-  public Long putSubject(Subject subject) {
-    final Long newId = getNextID();
+  public Long putSubject(Subject subject, long existingUniqueId) {
+    final Long newId;
+    if (existingUniqueId == 0 || existingUniqueId == NOT_A_USER_ID) {
+      newId = getNextID();
+    } else {
+      // the user re-authenticate back, remove the existing subject, reuse the uniqueId
+      removeSubject(existingUniqueId);
+      newId = existingUniqueId;
+    }
+
     uniqueIdVsSubject.put(newId, subject);
     logger.debug("Subject of {} added.", newId);
     return newId;
@@ -62,7 +73,7 @@ public class ClientUserAuths {
     m_firstId = uniqueIdGenerator.nextLong();
   }
 
-  private synchronized long getNextID() {
+  synchronized long getNextID() {
     final long uniqueId = uniqueIdGenerator.nextLong();
     if (uniqueId == m_firstId) {
       uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
@@ -95,12 +106,24 @@ public class ClientUserAuths {
       return false;
     }
 
+    if (subject.getPrincipal() == null) {
+      return false;
+    }
+
     subject.logout();
     return true;
   }
 
   public UserAuthAttributes getUserAuthAttributes(final String cqName) {
     return cqNameVsUserAuth.get(cqName);
+  }
+
+  public Subject getSubject(final String cqName) {
+    Long uniqueId = cqNameVsUniqueId.get(cqName);
+    if (uniqueId != null) {
+      return uniqueIdVsSubject.get(uniqueId);
+    }
+    return null;
   }
 
   public void setUserAuthAttributesForCq(final String cqName, final Long uniqueId,
@@ -122,6 +145,7 @@ public class ClientUserAuths {
         }
       }
     }
+    cqNameVsUniqueId.put(cqName, uniqueId);
   }
 
   public void removeUserAuthAttributesForCq(final String cqName, final boolean isDurable) {
@@ -129,6 +153,7 @@ public class ClientUserAuths {
     if (uaa != null && isDurable) {
       uaa.unsetDurable();
     }
+    cqNameVsUniqueId.remove(cqName);
   }
 
   public void removeUserId(final Long userId, final boolean keepAlive) {

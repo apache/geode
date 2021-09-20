@@ -1729,6 +1729,10 @@ org/apache/geode/internal/cache/tier/sockets/ClientProxyMembershipID,2
 fromData,19
 toData,19
 
+org/apache/geode/internal/cache/tier/sockets/ClientReAuthenticateMessage,2
+fromData,10
+toData,10
+
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage,2
 fromData,63
 toData,59

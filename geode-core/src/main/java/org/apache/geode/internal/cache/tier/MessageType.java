@@ -380,10 +380,15 @@ public class MessageType {
   public static final int PUT_ALL_WITH_CALLBACK = 108;
 
   public static final int REMOVE_ALL = 109;
+
+  /**
+   * @since Geode 1.15
+   */
+  public static final int CLIENT_RE_AUTHENTICATE = 110;
   /**
    * Must be equal to last valid message id.
    */
-  private static final int LAST_VALID_MESSAGE_ID = REMOVE_ALL;
+  private static final int LAST_VALID_MESSAGE_ID = CLIENT_RE_AUTHENTICATE;
 
 
   public static boolean validate(int messageType) {

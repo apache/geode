@@ -25,6 +25,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -129,7 +130,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     String className = theThrowable.getClass().getName();
 
     // backward compatibility for authentication expiration
-    if (clientVersion.isOlderThan(KnownVersion.GEODE_1_15_0)) {
+    if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)) {
       if (className.equals(AuthenticationExpiredException.class.getName())) {
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }

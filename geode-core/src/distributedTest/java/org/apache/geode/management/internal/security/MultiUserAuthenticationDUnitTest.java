@@ -16,8 +16,12 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -31,6 +35,14 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -98,6 +110,66 @@ public class MultiUserAuthenticationDUnitTest {
       regionService1.close();
       regionService2.close();
       cache.close();
+    }
+  }
+
+  @Test
+  public void multiUserCQ() throws Exception {
+    int locatorPort = locator.getPort();
+    client.withCacheSetup(f -> f.setPoolSubscriptionEnabled(true)
+        .setPoolMultiuserAuthentication(true)
+        .addPoolLocator("localhost", locatorPort))
+        .createCache();
+
+    // both are able to read data
+    RegionService regionService1 = client.createAuthenticatedView("data", "data");
+    RegionService regionService2 = client.createAuthenticatedView("dataRead", "dataRead");
+
+    EventsCqListner listener1 = createAndExecuteCQ(regionService1.getQueryService(), "cq1",
+        "select * from /region r where r.length<=2");
+    EventsCqListner listener2 = createAndExecuteCQ(regionService2.getQueryService(), "cq2",
+        "select * from /region r where r.length>=2");
+
+    // put 3 data in the region
+    gfsh.executeAndAssertThat("put --region=region --key=1 --value=1");
+    gfsh.executeAndAssertThat("put --region=region --key=11 --value=11");
+    gfsh.executeAndAssertThat("put --region=region --key=111 --value=111");
+
+    await().untilAsserted(
+        () -> assertThat(listener1.getKeys())
+            .containsExactly("1", "11"));
+
+    await().untilAsserted(
+        () -> assertThat(listener2.getKeys())
+            .containsExactly("11", "111"));
+
+  }
+
+  private static EventsCqListner createAndExecuteCQ(QueryService queryService, String cqName,
+      String query)
+      throws CqExistsException, CqException, RegionNotFoundException {
+    CqAttributesFactory cqaf = new CqAttributesFactory();
+    EventsCqListner listener = new EventsCqListner();
+    cqaf.addCqListener(listener);
+
+    CqQuery cq = queryService.newCq(cqName, query, cqaf.create());
+    cq.execute();
+    return listener;
+  }
+
+  private static class EventsCqListner implements CqListener {
+    private List<String> keys = new ArrayList<>();
+
+    @Override
+    public void onEvent(CqEvent aCqEvent) {
+      keys.add(aCqEvent.getKey().toString());
+    }
+
+    @Override
+    public void onError(CqEvent aCqEvent) {}
+
+    public List<String> getKeys() {
+      return keys;
     }
   }
 }
