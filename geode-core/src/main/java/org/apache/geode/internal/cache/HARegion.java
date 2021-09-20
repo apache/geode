@@ -87,10 +87,6 @@ public class HARegion extends DistributedRegion {
     return buf;
   }
 
-  // protected Object conditionalCopy(Object o) {
-  // return o;
-  // }
-
   private volatile HARegionQueue owningQueue;
 
   HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
@@ -177,17 +173,11 @@ public class HARegion extends DistributedRegion {
       final boolean forceNewEntry) throws EntryNotFoundException {
     Object key = event.getKey();
     if (key instanceof Long) {
-      boolean removedFromAvID = false;
-      Conflatable conflatable = null;
-      try {
-        conflatable = (Conflatable) this.get(key);
-        removedFromAvID =
-            !this.owningQueue.isPrimary() && this.owningQueue.destroyFromAvailableIDs((Long) key);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        getCancelCriterion().checkCancelInProgress(ie);
-        return;
-      }
+      boolean removedFromAvID;
+      Conflatable conflatable;
+      conflatable = (Conflatable) this.get(key);
+      removedFromAvID =
+          !this.owningQueue.isPrimary() && this.owningQueue.destroyFromAvailableIDs((Long) key);
       if (!removedFromAvID) {
         return;
       }
@@ -201,7 +191,6 @@ public class HARegion extends DistributedRegion {
       this.owningQueue.stats.incEventsExpired();
     }
     this.entries.invalidate(event, invokeCallbacks, forceNewEntry, false);
-    return;
 
   }
 
@@ -261,13 +250,6 @@ public class HARegion extends DistributedRegion {
     return (HARegion) region;
   }
 
-  public boolean isPrimaryQueue() {
-    if (this.owningQueue != null) {
-      return this.owningQueue.isPrimary();
-    }
-    return false;
-  }
-
   public HARegionQueue getOwner() {
     // fix for bug #41634 - don't release a reference to the owning queue until
     // it is fully initialized. The previous implementation of this rule did
@@ -307,13 +289,6 @@ public class HARegion extends DistributedRegion {
     return false;
   }
 
-  // re-implemented from LocalRegion to avoid recording the event in GemFireCache
-  // before it's applied to the cache's region
-  // public boolean hasSeenClientEvent(InternalCacheEvent event) {
-  // return false;
-  // }
-
-  protected void notifyGatewayHub(EnumListenerEvent operation, EntryEventImpl event) {}
 
   /**
    * This method is overriden so as to make isOriginRemote true always so that the operation is
@@ -345,11 +320,7 @@ public class HARegion extends DistributedRegion {
       throws TimeoutException, IOException, ClassNotFoundException {
     // Set this region in the ProxyBucketRegion early so that profile exchange will
     // perform the correct fillInProfile method
-    // try {
     super.initialize(snapshotInputStream, imageTarget, internalRegionArgs);
-    // } finally {
-    // this.giiProviderStates = null;
-    // }
   }
 
   /**
@@ -391,8 +362,6 @@ public class HARegion extends DistributedRegion {
             re = basicPutEntry(event, 0L);
           } finally {
             event.release();
-          }
-          if (txState == null) {
           }
         } catch (CacheWriterException cwe) {
           // @todo smenon Log the exception
@@ -462,7 +431,7 @@ public class HARegion extends DistributedRegion {
     return null;
   }
 
-  /*
+  /**
    * Record cache event state for a potential initial image provider. This is used to install event
    * state when the sender is selected as initial image provider.
    *
@@ -528,8 +497,8 @@ public class HARegion extends DistributedRegion {
 
     public boolean noPrimaryOrHasRegisteredInterest() {
       Profile[] locProfiles = this.profiles; // grab current profiles
-      for (int i = 0; i < locProfiles.length; i++) {
-        HAProfile p = (HAProfile) locProfiles[i];
+      for (Profile locProfile : locProfiles) {
+        HAProfile p = (HAProfile) locProfile;
         if (p.isPrimary) {
           return p.hasRegisteredInterest;
         }
