@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.executor.connection;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,22 +54,33 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     return port;
   }
 
+  @Override
+  public String getUsername() {
+    return "dataWrite";
+  }
+
+  @Override
+  public String getPassword() {
+    return "dataWrite";
+  }
+
   public void setupCacheWithSecurity() throws Exception {
-    setupCache(true, true);
+    setupCache(getUsername(), true);
   }
 
   public void setupCacheWithoutSecurity() throws Exception {
-    setupCache(false, false);
+    setupCache(null, false);
   }
 
-  private void setupCache(boolean withUsername, boolean withSecurityManager) throws Exception {
+  private void setupCache(String username, boolean withSecurityManager) throws Exception {
+    System.setProperty("io.netty.eventLoopThreads", "1");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
-    if (withUsername) {
-      cf.set(ConfigurationProperties.REDIS_USERNAME, USERNAME);
+    if (username != null) {
+      cf.set(ConfigurationProperties.REDIS_USERNAME, username);
     }
     if (withSecurityManager) {
       cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
@@ -77,13 +89,15 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     server.getRegionProvider().getSlotAdvisor().getBucketSlots();
     this.jedis = new Jedis("localhost", port, 100000);
+
+    System.clearProperty("io.netty.eventLoopThreads");
   }
 
   @Test
   public void testAuthConfig() throws Exception {
     setupCacheWithSecurity();
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
-    assertThat(iD.getConfig().getRedisUsername()).isEqualTo(USERNAME);
+    assertThat(iD.getConfig().getRedisUsername()).isEqualTo(getUsername());
   }
 
   @Test
@@ -100,6 +114,40 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     assertThatThrownBy(() -> jedis.auth("username", "password"))
         .hasMessageContaining(RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
+  }
+
+  @Test
+  public void givenSecurity_accessWithCorrectAuthorization_passes() throws Exception {
+    setupCacheWithSecurity();
+
+    jedis.auth("dataWrite", "dataWrite");
+
+    assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurity_multipleClientsConnectIndependently() throws Exception {
+    setupCacheWithSecurity();
+
+    jedis.auth("dataWrite", "dataWrite");
+    assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
+
+    try (Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
+      assertThatThrownBy(() -> jedis2.set("foo", "bar"))
+          .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHENTICATED);
+    }
+  }
+
+  @Test
+  public void givenSecurity_accessWithIncorrectAuthorization_fails() throws Exception {
+    setupCacheWithSecurity();
+
+    // Authentication is successful
+    jedis.auth("dataWriteOther", "dataWriteOther");
+
+    // Permissions are incorrect
+    assertThatThrownBy(() -> jedis.set("foo", "bar"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
   }
 
 }

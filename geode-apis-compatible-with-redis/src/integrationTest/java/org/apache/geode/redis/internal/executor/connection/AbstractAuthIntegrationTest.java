@@ -26,9 +26,6 @@ import redis.clients.jedis.Protocol;
 
 public abstract class AbstractAuthIntegrationTest {
 
-  static final String USERNAME = "default";
-  // Since we're going to use a SimpleSecurityManager where password == username means success
-  static final String PASSWORD = USERNAME;
   Jedis jedis;
 
   protected abstract void setupCacheWithSecurity() throws Exception;
@@ -36,6 +33,10 @@ public abstract class AbstractAuthIntegrationTest {
   protected abstract void setupCacheWithoutSecurity() throws Exception;
 
   protected abstract int getPort();
+
+  protected abstract String getUsername();
+
+  protected abstract String getPassword();
 
   @Test
   public void givenSecurity_authWithIncorrectNumberOfArguments_fails() throws Exception {
@@ -51,10 +52,10 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_clientCanAuthAfterFailedAuth_passes() throws Exception {
     setupCacheWithSecurity();
 
-    assertThatThrownBy(() -> jedis.auth(USERNAME, "wrongpwd"))
+    assertThatThrownBy(() -> jedis.auth(getUsername(), "wrongpwd"))
         .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
 
-    assertThat(jedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
@@ -65,7 +66,7 @@ public abstract class AbstractAuthIntegrationTest {
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
         .hasMessage("NOAUTH Authentication required.");
 
-    assertThat(jedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
 
     jedis.set("foo", "bar"); // No exception
   }
@@ -74,7 +75,7 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authWithCorrectPasswordForDefaultUser_passes() throws Exception {
     setupCacheWithSecurity();
 
-    assertThat(jedis.auth(PASSWORD)).isEqualTo("OK");
+    assertThat(jedis.auth(getPassword())).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
   }
 
@@ -92,7 +93,7 @@ public abstract class AbstractAuthIntegrationTest {
     Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
     Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
 
-    assertThat(authorizedJedis.auth(USERNAME, PASSWORD)).isEqualTo("OK");
+    assertThat(authorizedJedis.auth(getUsername(), getPassword())).isEqualTo("OK");
     assertThat(authorizedJedis.set("foo", "bar")).isEqualTo("OK");
 
     assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
@@ -106,7 +107,7 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_lettuceV6AuthClient_passes() throws Exception {
     setupCacheWithSecurity();
 
-    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", USERNAME, getPort()));
+    RedisURI uri = RedisURI.create(String.format("redis://%s@localhost:%d", getUsername(), getPort()));
     RedisClient client = RedisClient.create(uri);
 
     client.connect().sync().ping();

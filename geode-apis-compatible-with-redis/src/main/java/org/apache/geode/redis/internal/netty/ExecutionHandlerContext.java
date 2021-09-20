@@ -15,6 +15,8 @@
  */
 package org.apache.geode.redis.internal.netty;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +50,8 @@ import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 
 /**
@@ -63,6 +67,8 @@ import org.apache.geode.security.SecurityManager;
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
+
+  private static final ResourcePermission RESOURCE_PERMISSION;
 
   private final Client client;
   private final RegionProvider regionProvider;
@@ -80,6 +86,17 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final int serverPort;
 
   private Subject subject;
+
+  static {
+    String resourcePermission = System.getProperty("redis.resource-permission",
+            "DATA:WRITE:" + RegionProvider.REDIS_DATA_REGION);
+    String[] parts = resourcePermission.split(":");
+    if (parts.length != 3) {
+      parts = new String[]{"DATA", "WRITE", RegionProvider.REDIS_DATA_REGION};
+    }
+
+    RESOURCE_PERMISSION = new ResourcePermission(parts[0], parts[1], parts[2]);
+  }
 
   /**
    * Default constructor for execution contexts.
@@ -219,6 +236,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
+      if (!isAuthorized()) {
+        writeToChannel(RedisResponse.error(ERROR_NOT_AUTHORIZED));
+        return;
+      }
+
       if (command.isUnsupported() && !allowUnsupportedCommands()) {
         writeToChannel(new UnknownExecutor().executeCommand(command, this));
         return;
@@ -258,7 +280,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
     } else {
-      response = RedisResponse.customError(RedisConstants.ERROR_NOT_AUTH);
+      response = RedisResponse.noAuth(RedisConstants.ERROR_NOT_AUTHENTICATED);
     }
     return response;
   }
@@ -296,6 +318,23 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   public boolean isAuthenticated() {
     return (!securityService.isIntegratedSecurity()) || subject != null;
+  }
+
+  public boolean isAuthorized() {
+    if (!securityService.isIntegratedSecurity()) {
+      return true;
+    }
+
+    if (subject == null) {
+      return false;
+    }
+
+    try {
+      securityService.authorize(RESOURCE_PERMISSION, subject);
+    } catch (NotAuthorizedException nex) {
+      return false;
+    }
+    return true;
   }
 
   /**

@@ -149,12 +149,12 @@ public class RedisResponse {
     return new RedisResponse((bba) -> Coder.getWrongpassResponse(bba, error));
   }
 
-  public static RedisResponse customError(String error) {
-    return new RedisResponse((buffer) -> Coder.getCustomErrorResponse(buffer, error));
-  }
-
   public static RedisResponse wrongType(String error) {
     return new RedisResponse((buffer) -> Coder.getWrongTypeResponse(buffer, error));
+  }
+
+  public static RedisResponse noAuth(String error) {
+    return new RedisResponse((buffer) -> Coder.getNoAuthResponse(buffer, error));
   }
 
   public static RedisResponse scan(int cursor, List<?> scanResult) {
