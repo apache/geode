@@ -8,15 +8,15 @@
 
 ## Contents
 1. [Overview](#overview)
-2. [How to Get Apache Geode](#obtaining)
-3. [Main Concepts and Components](#concepts)
-4. [Location of Directions for Building from Source](#building)
-5. [Geode in 5 minutes](#started)
-6. [Application Development](#development)
-7. [Documentation](https://geode.apache.org/docs/)
-8. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
-9. [How to Contribute](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute)
-10.[Export Control](#export)
+1. [How to Get Apache Geode](#obtaining)
+1. [Main Concepts and Components](#concepts)
+1. [Location of Directions for Building from Source](#building)
+1. [Geode in 5 minutes](#started)
+1. [Application Development](#development)
+1. [Documentation](https://geode.apache.org/docs/)
+1. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
+1. [How to Contribute](https://cwiki.apache.org/confluence/display/GEODE/How+bto+Contribute)
+1. [Export Control](#export)
 
 ## <a name="overview"></a>Overview
 
