@@ -43,8 +43,8 @@ public class AnalyzeDUnitSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return DUnitSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(DUnitSanctionedSerializablesService.class);
   }
 
   @Override
