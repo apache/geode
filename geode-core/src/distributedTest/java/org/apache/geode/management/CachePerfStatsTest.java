@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -39,6 +40,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -55,6 +57,7 @@ public class CachePerfStatsTest implements Serializable {
   private String regionNamePartitioned;
   private String regionNameReplicated;
   private VM server1;
+  private VM server2;
   private int port1;
 
   @Rule
@@ -72,6 +75,7 @@ public class CachePerfStatsTest implements Serializable {
   @Before
   public void setUp() {
     server1 = getVM(0);
+    server2 = getVM(1);
     hostName = getHostName();
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionNamePartitioned = uniqueName + "_partition_region";
@@ -115,8 +119,8 @@ public class CachePerfStatsTest implements Serializable {
     port1 = server1.invoke(this::createReplicatedServerRegion);
     createClientReplicatedRegion(port1);
 
-    TXManagerImpl txManager =
-        (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
+    CacheTransactionManager txManager =
+        clientCacheRule.getClientCache().getCacheTransactionManager();
 
     int numOfOps = 10;
     int numOfMissedOps = 3;
@@ -139,8 +143,8 @@ public class CachePerfStatsTest implements Serializable {
     port1 = server1.invoke(this::createServerRegion);
     createClientRegion(port1);
 
-    TXManagerImpl txManager =
-        (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
+    CacheTransactionManager txManager =
+        clientCacheRule.getClientCache().getCacheTransactionManager();
 
     int numOfOps = 10;
     int numOfMissedOps = 3;
@@ -158,6 +162,35 @@ public class CachePerfStatsTest implements Serializable {
         () -> validateGetsRates(regionNamePartitioned, numOfOps + numOfMissedOps, numOfMissedOps));
   }
 
+  @Test
+  public void testGetsRatesTransactionAndPartitionedMissLocallyAndGetRemotely() {
+    port1 = server1.invoke(this::createServerRegion);
+    server2.invoke(this::createServerRegion);
+    createClientRegion(port1);
+
+    int numOfOps = 10;
+    putData(numOfOps, regionNamePartitioned);
+
+    getDataTransaction(numOfOps, regionNamePartitioned);
+
+    long numberOfMisses = server2.invoke(() -> {
+      InternalCache cache = cacheRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionNamePartitioned);
+      PartitionedRegionDataStore dataStore = region.getDataStore();
+
+      long numberOfEntries = 0;
+      for (int i = 0; i <= 113; i++) {
+        if (dataStore.getLocalBucketById(i) != null) {
+          numberOfEntries++;
+        }
+      }
+      return numberOfEntries;
+    });
+
+    server1.invoke(
+        () -> validateGetsRates(regionNamePartitioned, numOfOps, (int) numberOfMisses));
+  }
+
   private void putData(int numberOfEntries, String name) {
     Region<Object, Object> region = clientCacheRule.getClientCache().getRegion(name);
     for (int key = 0; key < numberOfEntries; key++) {
@@ -170,6 +203,17 @@ public class CachePerfStatsTest implements Serializable {
     Region<Object, Object> region = clientCacheRule.getClientCache().getRegion(name);
     for (int key = 0; key < numberOfEntries; key++) {
       region.get(key);
+    }
+  }
+
+  private void getDataTransaction(int numberOfEntries, String name) {
+    TXManagerImpl txManager =
+        (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
+    Region<Object, Object> region = clientCacheRule.getClientCache().getRegion(name);
+    for (int key = 0; key < numberOfEntries; key++) {
+      txManager.begin();
+      region.get(key);
+      txManager.commit();
     }
   }
 

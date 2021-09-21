@@ -4842,6 +4842,9 @@ public class PartitionedRegion extends LocalRegion
     if (logger.isDebugEnabled()) {
       logger.debug("getRemotely: got value {} for key {}", value, key);
     }
+    if (value != null) {
+      getCachePerfStats().incMisses();
+    }
     return value;
   }
 
