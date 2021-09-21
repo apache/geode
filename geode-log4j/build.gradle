@@ -79,4 +79,3 @@ dependencies {
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
-

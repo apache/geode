@@ -39,4 +39,3 @@ dependencies {
   compileOnly('org.assertj:assertj-core')
   compileOnly('org.codehaus.cargo:cargo-core-uberjar')
 }
-

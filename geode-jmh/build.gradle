@@ -34,17 +34,21 @@ dependencies {
 jar {
   manifest {
     attributes(
-            'Premain-Class': 'org.apache.geode.benchmark.jmh.profilers.ObjectSizeAgent'
-    )
+        'Premain-Class': 'org.apache.geode.benchmark.jmh.profilers.ObjectSizeAgent'
+        )
   }
 }
 
 test {
-  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  jvmArgs += [
+    '-javaagent:' + jar.outputs.files.singleFile
+  ]
   dependsOn jar
 }
 
 repeatUnitTest {
-  jvmArgs += ['-javaagent:' + jar.outputs.files.singleFile]
+  jvmArgs += [
+    '-javaagent:' + jar.outputs.files.singleFile
+  ]
   dependsOn jar
 }

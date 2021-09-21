@@ -32,4 +32,3 @@ dependencies {
   implementation('org.apache.lucene:lucene-test-framework')
   implementation('org.mockito:mockito-core')
 }
-

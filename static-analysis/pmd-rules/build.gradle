@@ -19,7 +19,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 dependencies {
-    implementation(platform(project(':boms:geode-all-bom')))
-    implementation('net.sourceforge.pmd:pmd-java')
-    testImplementation('net.sourceforge.pmd:pmd-test')
+  implementation(platform(project(':boms:geode-all-bom')))
+  implementation('net.sourceforge.pmd:pmd-java')
+  testImplementation('net.sourceforge.pmd:pmd-test')
 }

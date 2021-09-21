@@ -14,24 +14,24 @@
  */
 
 plugins {
-    id 'java'
-    id 'application'
+  id 'java'
+  id 'application'
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+  mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-    compile("${project.group}:geode-core:${project.version}")
-    runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.12.0')
+  compile("${project.group}:geode-core:${project.version}")
+  runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.12.0')
 }
 
 application {
-    mainClassName = 'ServerTestApp'
+  mainClassName = 'ServerTestApp'
 }
 
 run {
-    environment['GEODE_HOME'] = "${findProperty('geodeHome')}"
+  environment['GEODE_HOME'] = "${findProperty('geodeHome')}"
 }
