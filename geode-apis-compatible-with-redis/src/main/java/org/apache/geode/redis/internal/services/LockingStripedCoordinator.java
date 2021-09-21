@@ -59,10 +59,8 @@ public class LockingStripedCoordinator implements StripedCoordinator {
 
   @Override
   public <T> T execute(List<RedisKey> stripeIds, Callable<T> callable) {
-    Lock[] locks = getLocks(stripeIds);
-    for (int i = 0; i < locks.length; i++) {
-      locks[i].lock();
-    }
+    stripeIds.sort(this::compareStripes);
+    stripeIds.forEach(k -> getLock(k).lock());
     try {
       return callable.call();
     } catch (RuntimeException re) {
@@ -70,26 +68,12 @@ public class LockingStripedCoordinator implements StripedCoordinator {
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
-      for (int i = locks.length - 1; i >= 0; i--) {
-        locks[i].unlock();
-      }
+      stripeIds.forEach(k -> getLock(k).unlock());
     }
   }
 
   private Lock getLock(RedisKey stripeId) {
     return locks[getStripeIndex(stripeId)];
-  }
-
-  private Lock[] getLocks(List<RedisKey> stripeIds) {
-    // Sort multiple keys in a consistent manner so that locking always happens in the same order
-    // across multiple keys.
-    stripeIds.sort(this::compareStripes);
-    Lock[] locks = new Lock[stripeIds.size()];
-    for (int i = 0; i < stripeIds.size(); i++) {
-      locks[i] = getLock(stripeIds.get(i));
-    }
-
-    return locks;
   }
 
   private int getStripeIndex(Object stripeId) {

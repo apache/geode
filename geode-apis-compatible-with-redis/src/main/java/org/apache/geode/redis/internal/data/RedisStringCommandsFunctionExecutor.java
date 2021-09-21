@@ -158,7 +158,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
   private Void mset0(List<RedisKey> keys, List<byte[]> values) {
     for (int i = 0; i < keys.size(); i++) {
-      setRedisString(getRegionProvider(), keys.get(i), values.get(i));
+      set(getRegionProvider(), keys.get(i), values.get(i), null);
     }
     return null;
   }

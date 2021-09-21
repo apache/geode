@@ -74,6 +74,22 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
+  public void testMSet_clearsExpiration() {
+    jedis.setex("foo", 20L, "bar");
+    jedis.mset("foo", "baz");
+
+    assertThat(jedis.ttl("foo")).isEqualTo(-1);
+  }
+
+  @Test
+  public void testMSet_overwritesExistingValue() {
+    jedis.hset("key", "foo", "bar");
+    jedis.mset("key", "baz");
+
+    assertThat(jedis.get("key")).isEqualTo("baz");
+  }
+
+  @Test
   public void testMSet_setsKeysAndReturnsCorrectValues() {
     int keyCount = 5;
     String[] keyvals = new String[(keyCount * 2)];
