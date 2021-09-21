@@ -14,13 +14,14 @@
  */
 package org.apache.geode.test.junit.runners;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static org.junit.runner.Description.createTestDescription;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
@@ -46,99 +47,103 @@ import org.junit.runners.model.InitializationError;
  * {@code Category} annotations. And it changes {@code JUnitParamsRunner}'s filtering to exclude a
  * parameterized test method if any of its parameterizations are excluded.
  * <p>
- * <strong>Problem:</strong> There is no longer a way to execute a subset of the parameterizations
- * of a single test. If you try to execute a single parameterization of a method, the adapted filter
- * excludes the entire method and all of its parameterizations.
+ * <strong>Problem:</strong> This runner makes it impossible to execute a subset of the
+ * parameterizations of a single test. If you exclude even one parameterization of a test method,
+ * this runner excludes all of that test method's parameterizations.
  */
 public class GeodeParamsRunner extends JUnitParamsRunner {
+  private static final String EXCLUDE_FILTER_PREFIX = "exclude ";
+  private final Map<String, String> testNameToSuiteName = new HashMap<>();
+
   public GeodeParamsRunner(Class<?> testClass) throws InitializationError {
     super(testClass);
   }
 
   /**
-   * Overrides {@link JUnitParamsRunner#describeMethod(FrameworkMethod)} to restore an omitted
+   * Overrides {@link JUnitParamsRunner#describeMethod(FrameworkMethod)} to restore any discarded
    * {@link Category} annotation.
    */
   @Override
   public Description describeMethod(FrameworkMethod method) {
-    Description paramsDescription = super.describeMethod(method);
-    return restoreMethodCategory(paramsDescription, method.getMethod());
-  }
-
-  /**
-   * Overrides {@link JUnitParamsRunner#filter} to exclude a "parameterized method container" if
-   * the given filter would exclude a parameterization of that method.
-   */
-  @Override
-  public void filter(Filter filter) throws NoTestsRemainException {
-    super.filter(ExcludeParameterizedTestMethodByName.adapt(filter));
-  }
-
-  private static Description restoreMethodCategory(Description description, Method method) {
+    Description description = super.describeMethod(method);
     if (description.isTest()) {
       return description;
     }
+    recordTestNamesToSuiteName(description);
+    return attachCategory(description, method.getMethod());
+  }
+
+  private void recordTestNamesToSuiteName(Description suite) {
+    Class<?> testClass = suite.getChildren().get(0).getTestClass();
+    String suiteName = format("%s(%s)", suite.getDisplayName(), testClass.getName());
+    suite.getChildren().stream()
+        .map(Description::getDisplayName)
+        .forEach(testName -> testNameToSuiteName.put(testName, suiteName));
+  }
+
+  /**
+   * Overrides {@link JUnitParamsRunner#filter} to exclude a suite if the given filter would
+   * exclude any of the suites tests.
+   */
+  @Override
+  public void filter(Filter filter) throws NoTestsRemainException {
+    super.filter(vintageCompatibleExcludeFilter(filter, testNameToSuiteName::get));
+  }
+
+  private static Description attachCategory(Description description, Method method) {
     Category categories = method.getAnnotation(Category.class);
     if (isNull(categories)) {
       return description;
     }
     Description restoredDescription = description.childlessCopy();
     description.getChildren().stream()
-        .map(testDescription -> addTestCategory(testDescription, categories))
+        .map(testDescription -> addCategory(testDescription, categories))
         .forEach(restoredDescription::addChild);
     return restoredDescription;
   }
 
-  private static Description addTestCategory(Description testDescription, Category categories) {
+  private static Description addCategory(Description testDescription, Category categories) {
     Class<?> testClass = testDescription.getTestClass();
     String displayName = testDescription.getMethodName();
     return createTestDescription(testClass, displayName, categories);
   }
 
   /**
+   * Adapts a JUnit Vintage exclude filter to exclude a suite if the filter would exclude any of
+   * the suite's tests.
+   */
+  public static Filter vintageCompatibleExcludeFilter(Filter originalFilter,
+      Function<String, String> toSuite) {
+    String filterDescription = originalFilter.describe();
+    if (!filterDescription.startsWith(EXCLUDE_FILTER_PREFIX)) {
+      return originalFilter;
+    }
+    String excludedTestName = filterDescription.substring(EXCLUDE_FILTER_PREFIX.length());
+    String suiteName = toSuite.apply(excludedTestName);
+    if (isNull(suiteName)) {
+      return originalFilter;
+    }
+    return new ExcludeByName(suiteName);
+  }
+
+  /**
    * Rejects a description if its display name is the given name.
    */
-  private static class ExcludeParameterizedTestMethodByName extends Filter {
-    // Finds the method name in a test description's display name or an exclude filter's name.
-    private static final String METHOD_NAME_REGEX = "([a-zA-Z0-9_]+)\\(.*";
-    private static final Pattern METHOD_NAME = Pattern.compile(METHOD_NAME_REGEX);
-    // Detects whether a filter is a JUnit Vintage "exclude test by name" filter.
-    private static final Pattern EXCLUDE_FILTER_NAME = Pattern.compile("exclude " + METHOD_NAME);
+  private static class ExcludeByName extends Filter {
+    private final String excludedName;
 
-    private final String nameToExclude;
-
-    public ExcludeParameterizedTestMethodByName(String nameToExclude) {
-      this.nameToExclude = nameToExclude;
+    public ExcludeByName(String name) {
+      excludedName = name;
     }
 
     @Override
     public boolean shouldRun(Description description) {
-      String displayName = description.getDisplayName();
-      Matcher methodNameExtractor = METHOD_NAME.matcher(displayName);
-      if (!methodNameExtractor.matches()) {
-        return false;
-      }
-      String methodName = methodNameExtractor.group(1);
-      return !Objects.equals(methodName, nameToExclude);
+      return !description.getDisplayName().equals(excludedName);
     }
 
     @Override
     public String describe() {
-      return "exclude " + nameToExclude;
-    }
-
-    /**
-     * Adapts a JUnit Vintage "exclude" filter to exclude a parameterized method if the filter would
-     * exclude any of the parameterizations.
-     */
-    public static Filter adapt(Filter originalFilter) {
-      String filterName = originalFilter.describe();
-      Matcher excludeFilterMatcher = EXCLUDE_FILTER_NAME.matcher(filterName);
-      if (!excludeFilterMatcher.matches()) {
-        return originalFilter;
-      }
-      String methodNameToExclude = excludeFilterMatcher.group(1);
-      return new ExcludeParameterizedTestMethodByName(methodNameToExclude);
+      return "exclude suite " + excludedName;
     }
   }
 }
