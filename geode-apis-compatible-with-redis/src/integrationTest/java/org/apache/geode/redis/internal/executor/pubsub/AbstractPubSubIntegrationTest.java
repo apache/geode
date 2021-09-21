@@ -757,10 +757,12 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
     mockSubscriber.prepareMessagesReceivedLatch(1);
+    mockSubscriber.preparePMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
 
     assertThat(result).isEqualTo(2);
     mockSubscriber.awaitMessagesReceived();
+    mockSubscriber.awaitPMessagesReceived();
 
     mockSubscriber.punsubscribe("salutations");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
