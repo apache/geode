@@ -1824,19 +1824,8 @@ public abstract class AbstractIndex implements IndexProtocol {
               synchronized (value) {
                 for (Object o1 : ((Iterable) value)) {
                   boolean ok = true;
-                  if (reUpdateInProgress) {
-                    // Compare the value in index with value in RegionEntry.
-                    ok = verifyEntryAndIndexValue(entry, o1, context);
-                  }
-                  try {
-                    if (ok && runtimeItr != null) {
-                      runtimeItr.setCurrent(o1);
-                      observer.beforeIterationEvaluation(iterOp, o1);
-                      ok = QueryUtils.applyCondition(iterOp, context);
-                    }
-                  } finally {
-                    observer.afterIterationEvaluation(ok);
-                  }
+                  ok = applyCondition(iterOp, runtimeItr, context, observer, o1, entry,
+                      reUpdateInProgress, ok);
                   if (ok) {
                     applyProjection(projAttrib, context, result, o1, intermediateResults,
                         isIntersection);
@@ -1849,19 +1838,8 @@ public abstract class AbstractIndex implements IndexProtocol {
             } else {
               for (Object o1 : ((Iterable) value)) {
                 boolean ok = true;
-                if (reUpdateInProgress) {
-                  // Compare the value in index with value in RegionEntry.
-                  ok = verifyEntryAndIndexValue(entry, o1, context);
-                }
-                try {
-                  if (ok && runtimeItr != null) {
-                    runtimeItr.setCurrent(o1);
-                    observer.beforeIterationEvaluation(iterOp, o1);
-                    ok = QueryUtils.applyCondition(iterOp, context);
-                  }
-                } finally {
-                  observer.afterIterationEvaluation(ok);
-                }
+                ok = applyCondition(iterOp, runtimeItr, context, observer, o1, entry,
+                    reUpdateInProgress, ok);
                 if (ok) {
                   applyProjection(projAttrib, context, result, o1, intermediateResults,
                       isIntersection);
@@ -1873,19 +1851,8 @@ public abstract class AbstractIndex implements IndexProtocol {
             }
           } else {
             boolean ok = true;
-            if (reUpdateInProgress) {
-              // Compare the value in index with in RegionEntry.
-              ok = verifyEntryAndIndexValue(entry, value, context);
-            }
-            try {
-              if (ok && runtimeItr != null) {
-                runtimeItr.setCurrent(value);
-                observer.beforeIterationEvaluation(iterOp, value);
-                ok = QueryUtils.applyCondition(iterOp, context);
-              }
-            } finally {
-              observer.afterIterationEvaluation(ok);
-            }
+            ok = applyCondition(iterOp, runtimeItr, context, observer, value, entry,
+                reUpdateInProgress, ok);
             if (ok) {
               if (context.isCqQueryContext()) {
                 result.add(new CqEntry(((RegionEntry) e.getKey()).getKey(), value));
@@ -1897,6 +1864,26 @@ public abstract class AbstractIndex implements IndexProtocol {
           }
         }
       }
+    }
+
+    private boolean applyCondition(CompiledValue iterOp, RuntimeIterator runtimeItr,
+        ExecutionContext context, QueryObserver observer, Object value, RegionEntry entry,
+        boolean reUpdateInProgress, boolean ok) throws FunctionDomainException,
+        TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+      if (reUpdateInProgress) {
+        // Compare the value in index with in RegionEntry.
+        ok = verifyEntryAndIndexValue(entry, value, context);
+      }
+      try {
+        if (ok && runtimeItr != null) {
+          runtimeItr.setCurrent(value);
+          observer.beforeIterationEvaluation(iterOp, value);
+          ok = QueryUtils.applyCondition(iterOp, context);
+        }
+      } finally {
+        observer.afterIterationEvaluation(ok);
+      }
+      return ok;
     }
 
     private boolean verifyLimit(Collection result, int limit, ExecutionContext context) {

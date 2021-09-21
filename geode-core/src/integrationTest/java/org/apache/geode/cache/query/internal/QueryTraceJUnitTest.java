@@ -324,6 +324,7 @@ public class QueryTraceJUnitTest {
     BeforeQueryExecutionHook hook = (BeforeQueryExecutionHook) DefaultQuery.testHook;
     assertThat(hook.getObserver()).isInstanceOf(IndexTrackingQueryObserver.class);
 
+    // The query should return all elements in region.
     assertEquals(region.size(), results.size());
     QueryObserverHolder.reset();
   }

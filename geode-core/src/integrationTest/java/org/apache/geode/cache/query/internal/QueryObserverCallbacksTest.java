@@ -18,6 +18,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -251,8 +252,8 @@ public class QueryObserverCallbacksTest {
         "select count(*) from " + SEPARATOR + "portfolio p");
 
     query.execute();
-    verify(myQueryObserver, times(0)).beforeIterationEvaluation(any(), any());
-    verify(myQueryObserver, times(0)).afterIterationEvaluation(any());
+    verify(myQueryObserver, never()).beforeIterationEvaluation(any(), any());
+    verify(myQueryObserver, never()).afterIterationEvaluation(any());
   }
 
   @Test
