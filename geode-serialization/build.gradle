@@ -68,5 +68,3 @@ distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
-
-

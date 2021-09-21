@@ -311,8 +311,8 @@ dependencies {
 }
 
 acceptanceTest {
-    // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
-    systemProperty 'projectGroup', project.group
+  // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
+  systemProperty 'projectGroup', project.group
 }
 
 tasks.register('defaultDistributionConfig', JavaExec) {
@@ -348,17 +348,18 @@ tasks.register('defaultCacheConfig', JavaExec) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.geodeArchives.dependencies.collect { it.dependencyProject }
-    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
-    .collect { it.jar.archiveName }
+  .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
+  .collect { it.jar.archiveName }
 
   // then add all the dependencies of the dependent jars
   def depJars = configurations.geodeArchives.dependencies.collect {
     it.dependencyProject.findAll {
       !(it.name.contains('geode-web') ||
-        it.name.contains('geode-pulse'))
+          it.name.contains('geode-pulse'))
     }.collect {
-      it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
-          it.contains('geode-all-bom') ||
+      it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
+        !(
+            it.contains('geode-all-bom') ||
 
             // exclude mx4j, once the deprecated code is deleted we can remove these entirely
             it.contains('commons-digester') ||
@@ -380,7 +381,7 @@ def cp = {
             it.contains('spring-context') ||
             it.contains('spring-expression') ||
             it.contains('spring-web')
-        )}
+            )}
     }
   }.flatten()
 
@@ -553,7 +554,8 @@ distributions {
 
       with copySpec {
         into('lib')
-        from { dependentProjectNames.collect {
+        from {
+          dependentProjectNames.collect {
             [
               project(':'.concat(it)).configurations.runtimeClasspath,
               project(':'.concat(it)).configurations.archives.allArtifacts.files
@@ -607,8 +609,9 @@ distributions {
 }
 // Distribution plugin does not allow configuring of the task, only the contents. So we set
 // compression and classifier here
-[tasks.named('distTar'),
- tasks.named('srcDistTar'),
+[
+  tasks.named('distTar'),
+  tasks.named('srcDistTar'),
 ]*.configure {
   compression Compression.GZIP
   archiveExtension='tgz'
@@ -621,10 +624,11 @@ tasks.named('srcDistTar').configure {
   classifier 'src'
 }
 
-[tasks.named('distZip'),
- tasks.named('srcDistZip'),
- tasks.named('dockerfileZip'),
- ]*.configure {
+[
+  tasks.named('distZip'),
+  tasks.named('srcDistZip'),
+  tasks.named('dockerfileZip'),
+]*.configure {
   enabled = false
 }
 
@@ -660,11 +664,11 @@ task dumpInstalledJars(dependsOn: installDist) {
 
     installDir.include("**/*.war").visit{ file ->
       if(!file.isDirectory()) {
-          FileTree warContents = zipTree(file.file)
-          println ""
-          println file.name
-          println("==========================")
-          printJars(warContents)
+        FileTree warContents = zipTree(file.file)
+        println ""
+        println file.name
+        println("==========================")
+        printJars(warContents)
       }
     }
   }

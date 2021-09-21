@@ -20,57 +20,56 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
-    api(platform(project(':boms:geode-all-bom')))
-    compileOnly(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
 
-    // Geode-common has annotations and other pieces used by geode-logging
-    api(project(':geode-common'))
+  // Geode-common has annotations and other pieces used by geode-logging
+  api(project(':geode-common'))
 
-    implementation(project(':geode-logging'))
-    implementation(project(':geode-serialization'))
-    implementation(project(':geode-tcp-server'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
 
-    implementation('org.apache.logging.log4j:log4j-api')
-    implementation('org.jgroups:jgroups')
-    implementation('org.apache.commons:commons-lang3')
-    implementation('it.unimi.dsi:fastutil')
-    implementation('com.github.stephenc.findbugs:findbugs-annotations')
-    //Commons validator is used to validate inet addresses in membership
-    implementation('commons-validator:commons-validator')
-    //Jgroups is a core component of our membership system.
-    implementation('org.jgroups:jgroups')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.jgroups:jgroups')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('it.unimi.dsi:fastutil')
+  implementation('com.github.stephenc.findbugs:findbugs-annotations')
+  //Commons validator is used to validate inet addresses in membership
+  implementation('commons-validator:commons-validator')
+  //Jgroups is a core component of our membership system.
+  implementation('org.jgroups:jgroups')
 
-    compileOnly('org.jetbrains:annotations')
-
-
-    testImplementation(project(':geode-junit'))
-    testImplementation(project(':geode-concurrency-test'))
-
-    testImplementation('org.mockito:mockito-core')
-    testImplementation('junit:junit')
-    testImplementation('org.assertj:assertj-core')
-    testImplementation('com.tngtech.archunit:archunit-junit4')
+  compileOnly('org.jetbrains:annotations')
 
 
+  testImplementation(project(':geode-junit'))
+  testImplementation(project(':geode-concurrency-test'))
 
-    integrationTestImplementation(project(':geode-junit'))
-    integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-    integrationTestImplementation('pl.pragmatists:JUnitParams')
-
-    integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
-
-
-    distributedTestImplementation(project(':geode-junit'))
-    distributedTestImplementation(project(':geode-dunit'))
-    distributedTestImplementation('pl.pragmatists:JUnitParams')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('com.tngtech.archunit:archunit-junit4')
 
 
 
-    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+
+  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
+
+
+  distributedTestImplementation(project(':geode-junit'))
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+
+
+
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {
-    // Some tests have inner tests that should be ignored
-    exclude "**/*\$*.class"
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
 }
-

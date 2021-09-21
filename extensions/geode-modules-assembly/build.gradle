@@ -236,7 +236,12 @@ tasks.register('distTcServer30', Zip) {
   configure(configureTcServer30Assembly)
 }
 
-task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
+task dist(type: Task, dependsOn: [
+  'distTcServer',
+  'distTcServer30',
+  'distTomcat',
+  'distAppServer'
+])
 
 build.dependsOn dist
 

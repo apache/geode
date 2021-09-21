@@ -42,4 +42,3 @@ dependencies {
   implementation('org.seleniumhq.selenium:selenium-chrome-driver')
   implementation('org.seleniumhq.selenium:selenium-support')
 }
-
