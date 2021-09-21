@@ -30,8 +30,6 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-serialization'))
-
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
   implementation('mx4j:mx4j') {
@@ -119,6 +117,8 @@ dependencies {
 
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
+  integrationTestImplementation(project(':geode-serialization'))
+
   integrationTestImplementation('org.springframework:spring-test')
   integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')

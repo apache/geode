@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.memcached.MemcachedSanctionedSerializablesService;
@@ -29,7 +31,7 @@ public class AnalyzeMemcachedSerializablesIntegrationTest
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return MemcachedSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(MemcachedSanctionedSerializablesService.class);
   }
 }
