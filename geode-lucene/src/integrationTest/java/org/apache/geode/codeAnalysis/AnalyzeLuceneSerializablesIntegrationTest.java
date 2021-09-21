@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneSanctionedSerializablesService;
@@ -29,7 +31,7 @@ public class AnalyzeLuceneSerializablesIntegrationTest extends AnalyzeSerializab
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return LuceneSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(LuceneSanctionedSerializablesService.class);
   }
 }

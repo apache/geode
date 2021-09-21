@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.redis.internal.RedisSanctionedSerializablesService;
@@ -28,7 +30,7 @@ public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return RedisSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(RedisSanctionedSerializablesService.class);
   }
 }

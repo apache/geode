@@ -17,6 +17,7 @@ package org.apache.geode.codeAnalysis;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Optional;
 
 import org.junit.experimental.categories.Category;
 
@@ -45,8 +46,8 @@ public class AnalyzeMembershipSerializablesIntegrationTest
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return Services.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(Services.class);
   }
 
   @Override
