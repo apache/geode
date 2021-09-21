@@ -118,6 +118,8 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
+  integrationTestCompile(project(':geode-serialization'))
+
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
   integrationTestCompile('org.powermock:powermock-api-mockito2')
