@@ -14,10 +14,11 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.tools.pulse.internal.PulseSanctionedSerializablesService;
 
 @Category(SerializationTest.class)
 public class AnalyzePulseSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
@@ -28,7 +29,7 @@ public class AnalyzePulseSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return PulseSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.empty();
   }
 }

@@ -17,6 +17,7 @@ package org.apache.geode.codeAnalysis;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.experimental.categories.Category;
@@ -38,8 +39,8 @@ public class AnalyzeJUnitSerializablesIntegrationTest extends AnalyzeSerializabl
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return JUnitSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(JUnitSanctionedSerializablesService.class);
   }
 
   @Override
