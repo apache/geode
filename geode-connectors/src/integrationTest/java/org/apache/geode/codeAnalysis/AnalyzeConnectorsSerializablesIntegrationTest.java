@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.ConnectorsSanctionedSerializablesService;
@@ -29,7 +31,7 @@ public class AnalyzeConnectorsSerializablesIntegrationTest
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return ConnectorsSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(ConnectorsSanctionedSerializablesService.class);
   }
 }

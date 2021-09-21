@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import java.util.Optional;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.GfshSanctionedSerializablesService;
@@ -28,7 +30,7 @@ public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializable
   }
 
   @Override
-  protected Class<?> getModuleClass() {
-    return GfshSanctionedSerializablesService.class;
+  protected Optional<Class<?>> getModuleClass() {
+    return Optional.of(GfshSanctionedSerializablesService.class);
   }
 }
