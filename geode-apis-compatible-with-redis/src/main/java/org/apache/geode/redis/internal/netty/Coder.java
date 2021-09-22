@@ -232,14 +232,6 @@ public class Coder {
     return getErrorResponse0(buffer, bNOAUTH, error);
   }
 
-  public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
-    return buffer;
-  }
-
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
     return getIntegerResponse(buffer, intToBytes(integer));
   }
