@@ -71,5 +71,7 @@ public interface MembershipListener<ID extends MemberIdentifier> {
    */
   void saveConfig();
 
-  default void setShutdownCause(Exception shutdownCause) {};
+  default Throwable setShutdownCause(Throwable t) {
+    return t;
+  }
 }

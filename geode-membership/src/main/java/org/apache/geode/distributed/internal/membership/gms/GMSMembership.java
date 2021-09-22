@@ -1775,6 +1775,24 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       handleOrDeferSuspect(s);
     }
 
+    private void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
+      logger.info("Reconnecting system failed to connect");
+      listener.setShutdownCause(shutdownCause);
+      uncleanShutdown(reason,
+          new MemberDisconnectedException("reconnecting system failed to connect"));
+    }
+
+    private void uncleanShutdownDS(String reason, Exception shutdownCause) {
+      try {
+        listener.saveConfig();
+      } finally {
+        new LoggingThread("DisconnectThread", false, () -> {
+          lifecycleListener.forcedDisconnect();
+          listener.setShutdownCause(shutdownCause);
+          uncleanShutdown(reason, shutdownCause);
+        }).start();
+      }
+    }
 
     @Override
     public void forceDisconnect(final String reason) {
@@ -1797,21 +1815,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       if (this.isReconnectingDS()) {
-        listener.setShutdownCause(shutdownCause);
-        logger.info("Reconnecting system failed to connect");
-        uncleanShutdown(reason,
-            new MemberDisconnectedException("reconnecting system failed to connect"));
-        return;
-      }
-
-      try {
-        listener.saveConfig();
-      } finally {
-        listener.setShutdownCause(shutdownCause);
-        new LoggingThread("DisconnectThread", false, () -> {
-          lifecycleListener.forcedDisconnect();
-          uncleanShutdown(reason, shutdownCause);
-        }).start();
+        uncleanShutdownReconnectingDS(reason, shutdownCause);
+      } else {
+        uncleanShutdownDS(reason, shutdownCause);
       }
     }
 

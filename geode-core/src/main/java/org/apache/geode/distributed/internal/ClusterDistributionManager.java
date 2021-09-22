@@ -2310,8 +2310,7 @@ public class ClusterDistributionManager implements DistributionManager {
     @Override
     public void membershipFailure(String reason, Throwable t) {
       dm.exceptionInThreads = true;
-      Throwable cause = t;
-      setShutdownCause((Exception) cause);
+      Throwable cause = setShutdownCause(t);
       try {
         List<MembershipTestHook> testHooks = dm.getMembershipTestHooks();
         if (testHooks != null) {
@@ -2332,12 +2331,13 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void setShutdownCause(Exception shutdownCause) {
-      if (shutdownCause != null && !(shutdownCause instanceof ForcedDisconnectException)) {
-        logger.info("cluster membership failed due to ", shutdownCause);
-        shutdownCause = new ForcedDisconnectException(shutdownCause.getMessage());
+    public Throwable setShutdownCause(Throwable cause) {
+      if (cause != null && !(cause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", cause);
+        cause = new ForcedDisconnectException(cause.getMessage());
       }
-      dm.setRootCause(shutdownCause);
+      dm.setRootCause(cause);
+      return cause;
     }
 
     @Override
@@ -2418,6 +2418,7 @@ public class ClusterDistributionManager implements DistributionManager {
       }
     }
   }
+
 
   private abstract static class MemberEvent {
 
