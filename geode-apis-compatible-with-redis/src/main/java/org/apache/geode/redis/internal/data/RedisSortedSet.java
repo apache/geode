@@ -317,11 +317,9 @@ public class RedisSortedSet extends AbstractRedisData {
           } else if (Double.isInfinite(weight) && entry.score == 0D) {
             score = 0D;
           } else {
-            double newScore = entry.score * weight;
-            if (Double.isNaN(newScore)) {
+            score = entry.score * weight;
+            if (Double.isNaN(score)) {
               throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
-            } else {
-              score = newScore;
             }
           }
           weightedSet.memberAdd(entry.member, score);
@@ -658,87 +656,80 @@ public class RedisSortedSet extends AbstractRedisData {
 
   private RedisSortedSet getIntersection(List<RedisSortedSet> sets, ZAggregator aggregator) {
     RedisSortedSet retVal = new RedisSortedSet();
+    RedisSortedSet smallestSet = sets.get(0);
 
     for (RedisSortedSet set : sets) {
-      for (OrderedSetEntry entry : set.members.values()) {
-        Double newScore;
-        if (aggregator.equals(ZAggregator.SUM)) {
-          newScore = recursivelySumScoresForMember(sets, entry.member, 0D);
-        } else if (aggregator.equals(ZAggregator.MAX)) {
-          newScore = recursivelyGetMaxScoreForMember(sets, entry.member, Double.MIN_VALUE);
-        } else {
-          newScore = recursivelyGetMinScoreForMember(sets, entry.member, Double.MAX_VALUE);
-        }
+      if (set.getSortedSetSize() < smallestSet.getSortedSetSize()) {
+        smallestSet = set;
+      }
+    }
 
-        if (newScore != null) {
-          if (newScore.isNaN()) {
-            throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
-          }
-          retVal.memberAdd(entry.getMember(), newScore);
+    for (byte[] member : smallestSet.members.keySet()) {
+      Double newScore;
+      if (aggregator.equals(ZAggregator.SUM)) {
+        newScore = getSumOfScoresForMember(sets, member, retVal);
+      } else if (aggregator.equals(ZAggregator.MAX)) {
+        newScore = getMaxScoreForMember(sets, member, retVal);
+      } else {
+        newScore = getMinScoreForMember(sets, member, retVal);
+      }
+
+      if (newScore != null) {
+        if (newScore.isNaN()) {
+          throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
         }
+        retVal.memberAdd(member, newScore);
       }
     }
     return retVal;
   }
 
-  private Double recursivelySumScoresForMember(List<RedisSortedSet> sets, byte[] member,
-      Double runningTotal) {
-    if (sets.isEmpty()) {
-      return runningTotal;
-    }
-
-    if (runningTotal.isNaN()) {
-      return runningTotal;
-    }
-
-    if (sets.get(0).members.containsKey(member)) {
-      double score = sets.get(0).members.get(member).score;
-      if (Double.isNaN(score)) {
-        return Double.NaN;
+  private Double getSumOfScoresForMember(List<RedisSortedSet> sets, byte[] member,
+      RedisSortedSet retVal) {
+    double runningTotal = 0;
+    for (RedisSortedSet set : sets) {
+      if (set.members.containsKey(member)) {
+        runningTotal += set.members.get(member).score;
+      } else {
+        return null;
       }
-      if (runningTotal.isInfinite() || Double.isInfinite(score)) {
-        if (runningTotal == -score) {
-          return Double.NaN;
+    }
+    retVal.memberAdd(member, runningTotal);
+    return runningTotal;
+  }
+
+  private Double getMaxScoreForMember(List<RedisSortedSet> sets, byte[] member,
+      RedisSortedSet retVal) {
+    double runningMax = Double.MIN_VALUE;
+    for (RedisSortedSet set : sets) {
+      if (set.members.containsKey(member)) {
+        double newScore = set.members.get(member).score;
+        if (newScore > runningMax) {
+          runningMax = newScore;
         }
-      }
-      runningTotal += score;
-      return recursivelySumScoresForMember(sets.subList(1, sets.size()), member, runningTotal);
-    }
-    return null;
-  }
-
-  private Double recursivelyGetMaxScoreForMember(List<RedisSortedSet> sets, byte[] member,
-      Double maxScore) {
-    if (sets.isEmpty()) {
-      return maxScore;
-    }
-
-    if (sets.get(0).members.containsKey(member)) {
-      double score = sets.get(0).members.get(member).score;
-      maxScore = recursivelyGetMaxScoreForMember(sets.subList(1, sets.size()), member, maxScore);
-      if (maxScore == null) {
+      } else {
         return null;
       }
-      return Math.max(score, maxScore);
     }
-    return null;
+    retVal.memberAdd(member, runningMax);
+    return runningMax;
   }
 
-  private Double recursivelyGetMinScoreForMember(List<RedisSortedSet> sets, byte[] member,
-      Double minScore) {
-    if (sets.isEmpty()) {
-      return minScore;
-    }
-
-    if (sets.get(0).members.containsKey(member)) {
-      double score = sets.get(0).members.get(member).score;
-      minScore = recursivelyGetMinScoreForMember(sets.subList(1, sets.size()), member, minScore);
-      if (minScore == null) {
+  private Double getMinScoreForMember(List<RedisSortedSet> sets, byte[] member,
+      RedisSortedSet retVal) {
+    double runningMin = Double.MAX_VALUE;
+    for (RedisSortedSet set : sets) {
+      if (set.members.containsKey(member)) {
+        double newScore = set.members.get(member).score;
+        if (newScore < runningMin) {
+          runningMin = newScore;
+        }
+      } else {
         return null;
       }
-      return Math.min(score, minScore);
     }
-    return null;
+    retVal.memberAdd(member, runningMin);
+    return runningMin;
   }
 
   @Override

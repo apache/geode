@@ -115,7 +115,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldError_givenWeightNotANumber() {
+  public void shouldError_givenWeightNotAFloat() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
             KEY1, "WEIGHTS", "not-a-number"))
@@ -502,7 +502,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
 
     Set<Tuple> expected = new HashSet<>();
     for (int i = 6; i <= 10; i++) {
-      expected.add(tupleMaxOfScores("player" + i, scores1, scores2, scores3));
+      expected.add(new Tuple("player" + i, score));
     }
 
     Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
