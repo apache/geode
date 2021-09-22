@@ -59,7 +59,6 @@ public class LuceneIndexCreationProfileJUnitTest {
   @Test
   @Parameters(method = "getSerializationProfiles")
   public void testSerialization(LuceneIndexCreationProfile profile) {
-    LuceneServiceImpl.registerDataSerializables();
     LuceneIndexCreationProfile copy = CopyHelper.deepCopy(profile);
     assertEquals(profile.getIndexName(), copy.getIndexName());
     assertEquals(profile.getAnalyzerClass(), copy.getAnalyzerClass());

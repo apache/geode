@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -335,6 +336,16 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }).create();
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
+
+    ServiceLoader<DSFIDLoader> loaders = ServiceLoader.load(DSFIDLoader.class);
+    for (DSFIDLoader loader : loaders) {
+      try {
+        loader.registerDSFIDs(dsfidSerializer);
+      } catch (Exception ex) {
+        logger.warn("Data serializable fixed ID loader '" + loader.getClass().getName() +
+            "' failed", ex);
+      }
+    }
   }
 
   /**

@@ -29,23 +29,19 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.DSFIDLoader;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
+public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID,
+    DSFIDLoader {
 
   @Immutable
   private static final KnownVersion[] KNOWN_VERSIONS = {KnownVersion.GEODE_1_6_0};
-
-  static {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(CLI_FUNCTION_RESULT,
-        CliFunctionResult.class);
-
-  }
 
   private String memberIdOrName;
   private Serializable[] serializables = new String[0];
@@ -55,7 +51,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private StatusState state;
 
   public enum StatusState {
-    OK, ERROR, IGNORABLE
+    OK, ERROR, IGNORABLE;
   }
 
   @Deprecated
@@ -223,6 +219,11 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLI_FUNCTION_RESULT;
+  }
+
+  @Override
+  public void registerDSFIDs(DSFIDSerializer serializer) {
+    serializer.registerDSFID(CLI_FUNCTION_RESULT, CliFunctionResult.class);
   }
 
   @Override

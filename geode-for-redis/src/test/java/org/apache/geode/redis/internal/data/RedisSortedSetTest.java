@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 
 import junitparams.Parameters;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -57,9 +56,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
@@ -83,13 +80,6 @@ public class RedisSortedSetTest {
           "1.0", member1, "1.1", member2, "1.2", "member3", "1.3", "member4",
           "1.4", "member5", "1.5", "member6", "1.6", "member7", "1.7", "member8",
           "1.8", "member9", "1.9", "member10", "2.0", "member11", "2.1", "member12");
-
-  @BeforeClass
-  public static void beforeClass() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_SORTED_SET_ID,
-        RedisSortedSet.class);
-  }
 
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {

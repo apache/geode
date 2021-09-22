@@ -27,37 +27,16 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.internal.GatewayReceiverFactoryImpl;
 import org.apache.geode.cache.wan.internal.GatewaySenderFactoryImpl;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.DSFIDLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
-public class WANFactoryImpl implements WANFactory {
+public class WANFactoryImpl implements WANFactory, DSFIDLoader {
 
   @Override
-  public void initialize() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
-        RemoteLocatorJoinRequest.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
-        RemoteLocatorJoinResponse.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
-        RemoteLocatorRequest.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
-        LocatorJoinMessage.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
-        RemoteLocatorPingRequest.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
-        RemoteLocatorPingResponse.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
-        RemoteLocatorResponse.class);
-  }
+  public void initialize() {}
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
@@ -77,5 +56,23 @@ public class WANFactoryImpl implements WANFactory {
   @Override
   public LocatorMembershipListener createLocatorMembershipListener() {
     return new LocatorMembershipListenerImpl();
+  }
+
+  @Override
+  public void registerDSFIDs(DSFIDSerializer serializer) {
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
+        RemoteLocatorJoinRequest.class);
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
+        RemoteLocatorJoinResponse.class);
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
+        RemoteLocatorRequest.class);
+    serializer.registerDSFID(DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
+        LocatorJoinMessage.class);
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
+        RemoteLocatorPingRequest.class);
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
+        RemoteLocatorPingResponse.class);
+    serializer.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
+        RemoteLocatorResponse.class);
   }
 }

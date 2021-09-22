@@ -24,7 +24,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -42,8 +41,6 @@ public class LuceneQueryFunctionContextJUnitTest {
 
   @Test
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
-
     LuceneQueryProvider provider = new StringQueryProvider("text", DEFAULT_FIELD);
     CollectorManager<TopEntriesCollector> manager = new TopEntriesCollectorManager("test");
     LuceneFunctionContext<TopEntriesCollector> context =

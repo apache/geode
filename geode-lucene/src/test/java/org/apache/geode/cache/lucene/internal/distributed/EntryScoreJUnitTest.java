@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -28,7 +27,6 @@ public class EntryScoreJUnitTest {
 
   @Test
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     EntryScore<String> entry = new EntryScore<String>("entry", .1f);
     EntryScore<String> copy = CopyHelper.deepCopy(entry);
     assertEquals("entry", copy.getKey());

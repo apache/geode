@@ -35,19 +35,12 @@ import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.data.RedisHash;
-import org.apache.geode.redis.internal.data.RedisSet;
-import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.data.RedisString;
 
 public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegrationTest {
 
@@ -55,22 +48,6 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   protected JedisCluster jedis;
   private static String STRING_VALUE;
   private static byte[] RESTORE_BYTES;
-
-  @BeforeClass
-  public static void setupClass() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_SET_ID,
-        RedisSet.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_STRING_ID,
-        RedisString.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_HASH_ID,
-        RedisHash.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_SORTED_SET_ID,
-        RedisSortedSet.class);
-  }
 
   @Before
   public void setup() {

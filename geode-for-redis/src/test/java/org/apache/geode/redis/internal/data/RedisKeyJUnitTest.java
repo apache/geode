@@ -18,22 +18,13 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class RedisKeyJUnitTest {
-
-  @BeforeClass
-  public static void classSetup() {
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.REDIS_KEY, RedisKey.class);
-  }
 
   @Test
   public void testSerialization() throws Exception {

@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager.ListScanner;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -95,7 +94,6 @@ public class TopEntriesCollectorJUnitTest {
 
   @Test
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager("id", 213);
     TopEntriesCollectorManager copy = CopyHelper.deepCopy(manager);
     assertEquals("id", copy.getId());
@@ -104,7 +102,6 @@ public class TopEntriesCollectorJUnitTest {
 
   @Test
   public void testCollectorSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     TopEntriesCollector collector = new TopEntriesCollector("collector", 345);
     TopEntriesCollector copy = CopyHelper.deepCopy(collector);
     assertEquals("collector", copy.getName());
