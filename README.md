@@ -15,7 +15,7 @@
 1. [Application Development](#development)
 1. [Documentation](https://geode.apache.org/docs/)
 1. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
-1. [How to Contribute](https://cwiki.apache.org/confluence/display/GEODE/How+bto+Contribute)
+1. [How to Contribute](https://cwiki.apache.org/confluence/display/GEODE/How+to+Contribute)
 1. [Export Control](#export)
 
 ## <a name="overview"></a>Overview
