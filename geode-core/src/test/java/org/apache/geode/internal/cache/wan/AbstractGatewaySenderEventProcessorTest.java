@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Include;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,7 +31,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 
 public class AbstractGatewaySenderEventProcessorTest {
 
-  private RegionQueue queue = mock(RegionQueue.class);
+  private final RegionQueue queue = mock(RegionQueue.class);
 
   @Test
   public void eventQueueSizeReturnsQueueSize() {
@@ -48,5 +52,31 @@ public class AbstractGatewaySenderEventProcessorTest {
     assertThat(processor.eventQueueSize()).isEqualTo(0);
 
     verify(queue, never()).size();
+  }
+
+  @Test
+  public void getTransactionMetadataDispositionIncludedWhenSenderMustGroupTransactionEventsTrue() {
+    final AbstractGatewaySenderEventProcessor processor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    final AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    when(processor.getSender()).thenReturn(sender);
+    when(sender.mustGroupTransactionEvents()).thenReturn(true);
+    when(processor.getTransactionMetadataDisposition(anyBoolean())).thenCallRealMethod();
+
+    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(Include);
+    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(IncludeLastEvent);
+  }
+
+  @Test
+  public void getTransactionMetadataDispositionExcludedWhenSenderMustGroupTransactionEventsFalse() {
+    final AbstractGatewaySenderEventProcessor processor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    final AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    when(sender.mustGroupTransactionEvents()).thenReturn(false);
+    when(processor.getSender()).thenReturn(sender);
+    when(processor.getTransactionMetadataDisposition(anyBoolean())).thenCallRealMethod();
+
+    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(Exclude);
+    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(Exclude);
   }
 }
