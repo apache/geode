@@ -701,7 +701,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         // nope - it's from a pre-GEODE client or WAN site
       }
     }
-    convertIpToHostnameIfNeeded();
   }
 
   public void fromDataPre_GEODE_1_15_0_0(DataInput in, DeserializationContext context)
@@ -718,22 +717,22 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   /**
-   * In older versions of Geode {@link MemberData#getHostName()} can return an IP address
-   * if network partition is enabled. Also, older versions of Geode don't use bind-address for
-   * SNI endpoint identification and do a reverse lookup to find the fully qualified hostname.
-   * This can become a problem if TLS certificate doesn't have the fully qualified name in it
-   * as a Subject Alternate Name, therefore this behavior was changed to preserve the bind-address.
+   * In older versions of Geode {@link MemberData#getHostName()} can return an IP address if
+   * network partition detection is enabled. If SSL endpoint identification is enabled,
+   * those product versions supply the result of a reverse lookup to the TLS handshake API.
+   * Endpoint identification will fail if e.g. the lookup returned a fully-qualified name but
+   * the certificate had just a (non-fully-qualified) hostname in a Subject Alternate Name field.
    *
-   * During a rolling upgrade, we need to ensure that {@link MemberData#getHostName()} returns
-   * a hostname because it might be later used for SNI endpoint identification.
+   * In version 1.15.0 member identifiers were changed so that if a bind address is specified,
+   * that exact string will be carried as the host name. That gives the administrator better control
+   * over endpoint identification. When upgrading from earlier versions we convert any IP numbers
+   * to hostnames via reverse lookup here.
    */
   private void convertIpToHostnameIfNeeded() {
-    if (memberData.isNetworkPartitionDetectionEnabled()) {
-      final InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
-      final boolean isIpAddress = inetAddressValidator.isValid(memberData.getHostName());
-      if (isIpAddress) {
-        memberData.setHostName(getHost());
-      }
+    final InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
+    final boolean isIpAddress = inetAddressValidator.isValid(memberData.getHostName());
+    if (isIpAddress) {
+      memberData.setHostName(getHost());
     }
   }
 

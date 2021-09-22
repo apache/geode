@@ -3,7 +3,7 @@ fromData,121
 toData,72
 
 org/apache/geode/distributed/internal/membership/gms/MemberIdentifierImpl,6
-fromData,42
+fromData,38
 fromDataPre_GEODE_1_15_0_0,20
 fromDataPre_GFE_9_0_0_0,10
 toData,35
