@@ -120,4 +120,12 @@ public class CacheClientProxyTest {
     verify(securityService, never()).bindSubject(subject);
     verify(securityService, never()).postProcess(any(), any(), any(), anyBoolean());
   }
+
+  @Test
+  public void replacingSubjectShouldNotLogout() {
+    proxy = spy(new CacheClientProxy(cache, notifier, socket, id, true, (byte) 1, version, 1L, true,
+        securityService, subject, clock, statsFactory, proxyStatsFactory, dispatcherFactory));
+    proxy.setSubject(mock(Subject.class));
+    verify(subject, never()).logout();
+  }
 }

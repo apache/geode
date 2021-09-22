@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +51,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -76,7 +76,7 @@ public class AuthExpirationDUnitTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     // only test versions greater than or equal to 1.14.0
-    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
+    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo("1.15.0");
   }
 
   @Rule
@@ -307,7 +307,7 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void cqOlderClientWillNotReAuthenticate() throws Exception {
+  public void cqOlderClientWillNotReAuthenticateAutomatically() throws Exception {
     // this test should only test the older client
     if (TestVersion.compare(clientVersion, test_start_version) > 0) {
       return;
@@ -333,10 +333,20 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       // even user gets refreshed, the old client wouldn't be able to send in the new credentials
       UpdatableUserAuthInitialize.setUser("user2");
-      await().during(6, TimeUnit.SECONDS)
+      await().during(10, TimeUnit.SECONDS)
           .untilAsserted(
               () -> assertThat(CQLISTENER0.getKeys())
                   .containsExactly("1"));
+
+      // queue is closed, client would re-connect with the new credential, but the old queue is lost
+      Region<Object, Object> clientRegion =
+          ClusterStartupRule.clientCacheRule.createProxyRegion("region");
+      clientRegion.put("3", "value3");
+
+      await()
+          .untilAsserted(
+              () -> assertThat(CQLISTENER0.getKeys())
+                  .containsExactly("1", "3"));
     });
     Map<String, List<String>> authorizedOps = securityManager.getAuthorizedOps();
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:READ:region",
@@ -528,7 +538,12 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterestWithSlowReAuth() throws Exception {
+  public void newClient_registeredInterest_slowReAuth_policyDefault() throws Exception {
+    // this test only test the newer client
+    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+      return;
+    }
+
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -544,6 +559,9 @@ public class AuthExpirationDUnitTest {
       UpdatableUserAuthInitialize.setUser("user1");
       Region<Object, Object> region = ClusterStartupRule.getClientCache()
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+
+      // this test will succeed because when clients re-connects, it will re-register inteest
+      // a new queue will be created with all the data. Old queue is destroyed.
       region.registerInterestForAllKeys();
       UpdatableUserAuthInitialize.setUser("user11");
       // wait for time longer than server's max time to wait to ree-authenticate
@@ -569,10 +587,108 @@ public class AuthExpirationDUnitTest {
     });
 
     // user1 should not be used to put any keys to the region
-    Condition<String> keyPermission =
-        new Condition<>(s -> s.matches("DATA:READ:region:key*"), "keyPermission");
-    assertThat(getSecurityManager().getAuthorizedOps().get("user1")).areNot(keyPermission);
+    assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region");
+    assertThat(getSecurityManager().getUnAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region:key0");
   }
+
+  @Test
+  public void newClient_registeredInterest_slowReAuth_policyNone_durableClient() throws Exception {
+    // this test only test the newer client
+    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+      return;
+    }
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withProperty(ConfigurationProperties.DURABLE_CLIENT_ID, "123456")
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> region = clientCache
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+
+      // use InterestResultPolicy.NONE to make sure the old queue is still around
+      region.registerInterestForAllKeys(InterestResultPolicy.NONE);
+      clientCache.readyForEvents();
+      UpdatableUserAuthInitialize.setUser("user11");
+      // wait for time longer than server's max time to wait to re-authenticate
+      UpdatableUserAuthInitialize.setWaitTime(6000);
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+    Region<Object, Object> region = server.getCache().getRegion("/region");
+    IntStream.range(0, 100).forEach(i -> region.put("key" + i, "value" + i));
+
+    // make sure this client recovers and get all the events and will be able to do client operation
+    clientVM.invoke(() -> {
+      Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
+      await().untilAsserted(
+          () -> assertThat(clientRegion.keySet()).hasSize(100));
+      clientRegion.put("key100", "value100");
+    });
+
+    // user1 should not be used to put any keys to the region
+    assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region");
+    assertThat(getSecurityManager().getUnAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region:key0");
+  }
+
+  @Test
+  public void newClient_registeredInterest_slowReAuth_policyNone_nonDurableClient()
+      throws Exception {
+    // this test only test the newer client
+    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+      return;
+    }
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> region = clientCache
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+
+      // use InterestResultPolicy.NONE to make sure the old queue is still around
+      region.registerInterestForAllKeys(InterestResultPolicy.NONE);
+      UpdatableUserAuthInitialize.setUser("user11");
+      // wait for time longer than server's max time to wait to ree-authenticate
+      UpdatableUserAuthInitialize.setWaitTime(6000);
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+    Region<Object, Object> region = server.getCache().getRegion("/region");
+    IntStream.range(0, 100).forEach(i -> region.put("key" + i, "value" + i));
+
+    // client will recover but there will be message loss
+    clientVM.invoke(() -> {
+      Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
+      await().during(10, TimeUnit.SECONDS).untilAsserted(
+          () -> assertThat(clientRegion.keySet()).hasSizeLessThan(100));
+      clientRegion.put("key100", "value100");
+    });
+
+    // user1 should not be used to put any keys to the region
+    assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region");
+    assertThat(getSecurityManager().getAuthorizedOps().get("user11"))
+        .contains("DATA:WRITE:region:key100");
+    assertThat(getSecurityManager().getUnAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:region:key0");
+  }
+
+
 
   @Test
   public void registeredInterestWithFailedReAuth() throws Exception {
