@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,9 +38,10 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(OQLQueryTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class QCompilerTest {
   private QueryExecutionContext context;
 

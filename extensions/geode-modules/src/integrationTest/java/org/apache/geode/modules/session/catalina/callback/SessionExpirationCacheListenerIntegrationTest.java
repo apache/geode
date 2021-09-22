@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpSession;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.juli.logging.Log;
 import org.junit.Before;
@@ -42,8 +41,9 @@ import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.SessionCache;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class SessionExpirationCacheListenerIntegrationTest {
   private static final String KEY = "key1";
   private static final String REGION_NAME = "sessions";

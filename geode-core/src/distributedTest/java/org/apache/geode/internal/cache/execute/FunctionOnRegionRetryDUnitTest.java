@@ -15,10 +15,8 @@
 package org.apache.geode.internal.cache.execute;
 
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Test;
@@ -26,9 +24,10 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class FunctionOnRegionRetryDUnitTest extends FunctionRetryTestBase {
 

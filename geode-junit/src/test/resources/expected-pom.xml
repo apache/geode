@@ -138,5 +138,10 @@
       <artifactId>jsonassert</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>pl.pragmatists</groupId>
+      <artifactId>JUnitParams</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 </project>

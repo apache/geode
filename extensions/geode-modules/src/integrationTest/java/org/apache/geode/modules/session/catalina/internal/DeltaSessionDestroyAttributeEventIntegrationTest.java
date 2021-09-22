@@ -18,15 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.modules.session.catalina.DeltaSession;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class DeltaSessionDestroyAttributeEventIntegrationTest
     extends AbstractDeltaSessionIntegrationTest {
 

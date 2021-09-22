@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -34,13 +33,14 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 
 /**
  * Test ExecutionRegionFunctionOpImpl class
  */
 @Category({ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class ExecuteRegionFunctionOpImplTest {
 
   @Test

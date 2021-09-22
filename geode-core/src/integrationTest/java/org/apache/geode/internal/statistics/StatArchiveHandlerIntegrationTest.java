@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,12 +33,13 @@ import org.junit.runner.RunWith;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.test.junit.categories.StatisticsTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Tests behavior that interacts with file system.
  */
 @Category({StatisticsTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class StatArchiveHandlerIntegrationTest {
 
   private File dir;

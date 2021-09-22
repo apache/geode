@@ -28,7 +28,6 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Rule;
@@ -57,10 +56,11 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(AEQTest.class)
 @SuppressWarnings("serial")
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implements Serializable {
 
   private MemberVM locator;

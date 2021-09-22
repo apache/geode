@@ -31,7 +31,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -51,13 +50,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * The purpose of RebalanceOperationComplexDistributedTest is to test rebalances
  * across zones and to ensure that enforceUniqueZone behavior of redundancy zones
  * is working correctly.
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class RebalanceOperationComplexDistributedTest implements Serializable {
   public static final int EXPECTED_BUCKET_COUNT = 113;
   public static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getSeconds();

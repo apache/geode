@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,9 +35,10 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.AEQTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({AEQTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class CommonAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;

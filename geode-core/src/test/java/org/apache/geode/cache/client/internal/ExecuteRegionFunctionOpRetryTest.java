@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.Collections;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Test;
@@ -47,13 +46,14 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test retry counts on multi-hop on onRegion() function execution (via ExecuteRegionFunctionOp).
  * Ensure they are never infinite!
  */
 @Category({ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class ExecuteRegionFunctionOpRetryTest {
 
   private ExecuteFunctionTestSupport testSupport;

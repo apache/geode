@@ -29,7 +29,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,8 +45,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AttributeDescriptorTest {
   private static final String PUBLIC_NO_ACCESSORS = "publicAttributeWithoutAccessors";
   private static final String PUBLIC_ACCESSOR_BY_NAME = "publicAttributeWithPublicAccessor";

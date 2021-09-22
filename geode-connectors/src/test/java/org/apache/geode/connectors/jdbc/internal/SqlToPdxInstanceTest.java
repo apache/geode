@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Date;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +37,9 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class SqlToPdxInstanceTest {
 
   private static final String COLUMN_NAME_1 = "columnName1";

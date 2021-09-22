@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,9 +46,10 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({SecurityTest.class, LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
 
   @Test
