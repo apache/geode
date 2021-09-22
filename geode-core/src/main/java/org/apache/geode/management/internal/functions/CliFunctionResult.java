@@ -37,8 +37,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID,
-    DSFIDLoader {
+public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
 
   @Immutable
   private static final KnownVersion[] KNOWN_VERSIONS = {KnownVersion.GEODE_1_6_0};
@@ -219,11 +218,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLI_FUNCTION_RESULT;
-  }
-
-  @Override
-  public void registerDSFIDs(DSFIDSerializer serializer) {
-    serializer.registerDSFID(CLI_FUNCTION_RESULT, CliFunctionResult.class);
   }
 
   @Override
