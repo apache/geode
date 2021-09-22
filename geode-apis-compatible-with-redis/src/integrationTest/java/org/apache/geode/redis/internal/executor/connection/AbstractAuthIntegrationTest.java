@@ -87,6 +87,13 @@ public abstract class AbstractAuthIntegrationTest {
         .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
   }
 
+  /**
+   * Authentication and authorization is sometimes implemented and handled using thread locals.
+   * Our security implementation can do this but the way it's used here does not (and must not)
+   * since netty threads are shared between connections. This test should be using a single netty
+   * thread so that we can be sure that multiple connections will not inadvertently leak auth data
+   * between them.
+   */
   @Test
   public void givenSecurity_separateClientRequest_doNotInteract() throws Exception {
     setupCacheWithSecurity();

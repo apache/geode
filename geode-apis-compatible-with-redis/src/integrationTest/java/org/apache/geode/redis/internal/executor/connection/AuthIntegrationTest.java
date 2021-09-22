@@ -73,6 +73,10 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
   }
 
   private void setupCache(String username, boolean withSecurityManager) throws Exception {
+    /**
+     * See {@link #givenSecurity_separateClientRequest_doNotInteract} for some reasoning behind
+     * setting this value.
+     */
     System.setProperty("io.netty.eventLoopThreads", "1");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     CacheFactory cf = new CacheFactory();
