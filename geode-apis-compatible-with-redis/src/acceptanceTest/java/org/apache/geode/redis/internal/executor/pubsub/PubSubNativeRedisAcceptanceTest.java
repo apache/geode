@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -31,7 +32,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
 
   private static final Logger logger = LogService.getLogger();
-  private static long socketTimeWaitMsec = 240000;
+  private static long socketTimeWaitMsec = 90000;
 
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
@@ -40,8 +41,12 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
   public static void runOnce() throws IOException {
     if (SystemUtils.IS_OS_LINUX) {
       try {
-        String line = getCommandOutput("cat", "/proc/sys/net/ipv4/tcp_fin_timeout");
-        socketTimeWaitMsec = Long.parseLong(line.trim());
+        BufferedReader bufferedReader =
+            new BufferedReader(new FileReader("/proc/sys/net/ipv4/tcp_fin_timeout"));
+        String line = bufferedReader.readLine();
+        if (line != null) {
+          socketTimeWaitMsec = Long.parseLong(line.trim());
+        }
       } catch (NumberFormatException | IOException ignored) {
       }
     } else if (SystemUtils.IS_OS_MAC) {
@@ -74,8 +79,9 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
     // bind exceptions. Even though sockets are closed, they will remain in TIME_WAIT state so we
     // need to wait for that to clear up. It shouldn't take more than a minute or so.
     // For now a thread sleep is the simplest way to wait for the sockets to be out of the TIME_WAIT
-    // state. The default timeout of 240 sec was chosen because that is the default duration for
-    // TIME_WAIT on Windows. The timeouts for both mac and linux are significantly shorter.
+    // state. The default timeout of 90 sec was chosen because that is comfortably larger than the
+    // default TIME_WAIT on Linux (60 sec) or OSX (30 sec).
+    // Windows has a default TIME_WAIT of 240 sec, but the CI pipelines do not current use Windows.
     Thread.sleep(socketTimeWaitMsec);
   }
 
