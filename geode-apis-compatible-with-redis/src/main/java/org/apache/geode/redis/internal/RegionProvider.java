@@ -197,12 +197,15 @@ public class RegionProvider {
   private <T> Callable<T> getTxWrappedCallable(Callable<T> callable) {
     Callable<T> txWrappedCallable = () -> {
       T result;
+      boolean success = false;
+      txManager.begin();
       try {
-        txManager.begin();
         result = callable.call();
-        txManager.commit();
+        success = true;
       } finally {
-        if (txManager.exists()) {
+        if (success) {
+          txManager.commit();
+        } else {
           txManager.rollback();
         }
       }
