@@ -57,21 +57,20 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
-    List<RedisKey> sourceKeys = new ArrayList<>((int) numKeys);
-    List<Double> weights = new ArrayList<>((int) numKeys);
+    List<ZKeyWeight> keyWeights = new ArrayList<>((int) numKeys);
     ZAggregator aggregator = ZAggregator.SUM;
 
     while (argIterator.hasNext()) {
       byte[] arg = argIterator.next();
 
-      if (sourceKeys.size() < numKeys) {
-        sourceKeys.add(new RedisKey(arg));
+      if (keyWeights.size() < numKeys) {
+        keyWeights.add(new ZKeyWeight(new RedisKey(arg), 1D));
         continue;
       }
 
       arg = toUpperCaseBytes(arg);
       if (Arrays.equals(arg, bWEIGHTS)) {
-        if (!weights.isEmpty()) {
+        if (!allWeightsAreOne(keyWeights)) {
           return RedisResponse.error(ERROR_SYNTAX);
         }
         for (int i = 0; i < numKeys; i++) {
@@ -79,7 +78,7 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
             return RedisResponse.error(ERROR_SYNTAX);
           }
           try {
-            weights.add(Coder.bytesToDouble(argIterator.next()));
+            keyWeights.get(i).setWeight(Coder.bytesToDouble(argIterator.next()));
           } catch (NumberFormatException nex) {
             return RedisResponse.error(ERROR_WEIGHT_NOT_A_FLOAT);
           }
@@ -100,26 +99,29 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
-    if (sourceKeys.size() != numKeys) {
+    if (keyWeights.size() != numKeys) {
       return RedisResponse.error(ERROR_SYNTAX);
     }
 
     int bucket = command.getKey().getBucketId();
-    for (RedisKey key : sourceKeys) {
-      if (key.getBucketId() != bucket) {
+    for (ZKeyWeight keyWeight : keyWeights) {
+      if (keyWeight.getKey().getBucketId() != bucket) {
         return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
       }
-    }
-
-    List<ZKeyWeight> keyWeights = new ArrayList<>((int) numKeys);
-    for (int i = 0; i < sourceKeys.size(); i++) {
-      double weight = weights.isEmpty() ? 1 : weights.get(i);
-      keyWeights.add(new ZKeyWeight(sourceKeys.get(i), weight));
     }
 
     long result = getResult(context, command, keyWeights, aggregator);
 
     return RedisResponse.integer(result);
+  }
+
+  private boolean allWeightsAreOne(List<ZKeyWeight> keyWeights) {
+    for (ZKeyWeight key : keyWeights) {
+      if (key.getWeight() != 1D) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public abstract long getResult(ExecutionHandlerContext context, Command command,

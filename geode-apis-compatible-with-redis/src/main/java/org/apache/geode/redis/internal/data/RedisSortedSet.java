@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OPERATION_PRODUCED_NAN;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
@@ -301,10 +300,10 @@ public class RedisSortedSet extends AbstractRedisData {
       }
 
       double weight = keyWeight.getWeight();
-      RedisSortedSet weightedSet = new RedisSortedSet();
+      RedisSortedSet weightedSet = new RedisSortedSet(Collections.emptyList(), new double[] {});
 
       for (AbstractOrderedSetEntry entry : set.members.values()) {
-        OrderedSetEntry existingValue = members.get(entry.member);
+        OrderedSetEntry existingValue = members.get(entry.getMember());
         if (existingValue == null) {
           double score;
           // Redis math and Java math are different when handling infinity. Specifically:
@@ -318,9 +317,6 @@ public class RedisSortedSet extends AbstractRedisData {
             score = 0D;
           } else {
             score = entry.score * weight;
-            if (Double.isNaN(score)) {
-              throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
-            }
           }
           weightedSet.memberAdd(entry.member, score);
         }
@@ -655,7 +651,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   private RedisSortedSet getIntersection(List<RedisSortedSet> sets, ZAggregator aggregator) {
-    RedisSortedSet retVal = new RedisSortedSet();
+    RedisSortedSet retVal = new RedisSortedSet(Collections.emptyList(), new double[] {});
     RedisSortedSet smallestSet = sets.get(0);
 
     for (RedisSortedSet set : sets) {

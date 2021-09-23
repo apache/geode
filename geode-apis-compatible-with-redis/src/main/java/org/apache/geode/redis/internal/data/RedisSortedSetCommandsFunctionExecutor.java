@@ -73,7 +73,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     List<RedisKey> keysToLock = lockKeys(destinationKey, keyWeights);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet()
+        () -> new RedisSortedSet(Collections.emptyList(), new double[] {})
             .zinterstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
   }
 

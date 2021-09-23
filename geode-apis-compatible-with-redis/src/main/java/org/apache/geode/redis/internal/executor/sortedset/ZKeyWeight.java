@@ -23,7 +23,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
  */
 public class ZKeyWeight {
   private final RedisKey key;
-  private final double weight;
+  private double weight;
 
   public ZKeyWeight(RedisKey key, double weight) {
     this.key = key;
@@ -36,5 +36,9 @@ public class ZKeyWeight {
 
   public double getWeight() {
     return weight;
+  }
+
+  public void setWeight(double weight) {
+    this.weight = weight;
   }
 }
