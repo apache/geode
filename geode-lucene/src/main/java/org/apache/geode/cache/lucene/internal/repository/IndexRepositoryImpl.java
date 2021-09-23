@@ -29,7 +29,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.util.BytesRef;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -143,8 +145,9 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
     long start = stats.startRepositoryQuery();
-    int totalHits = 0;
+    long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
+    searcher.setSimilarity(new LuceneSimilarity());
     try {
       TopDocs docs = searcher.search(query, limit);
       totalHits = docs.totalHits;
@@ -225,6 +228,33 @@ public class IndexRepositoryImpl implements IndexRepository {
         // ignore
         return 0;
       }
+    }
+  }
+
+  private static class LuceneSimilarity extends TFIDFSimilarity {
+    @Override
+    public float tf(float freq) {
+      return (float) Math.sqrt(freq);
+    }
+
+    @Override
+    public float idf(long docFreq, long docCount) {
+      return (float) Math.sqrt((docCount) / (1 + docFreq) + 1);
+    }
+
+    @Override
+    public float lengthNorm(int length) {
+      return (float) (1 / Math.sqrt(length));
+    }
+
+    @Override
+    public float sloppyFreq(int distance) {
+      return 0;
+    }
+
+    @Override
+    public float scorePayload(int doc, int start, int end, BytesRef payload) {
+      return 1;
     }
   }
 }

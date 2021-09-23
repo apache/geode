@@ -555,27 +555,32 @@
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-analyzers-common</artifactId>
-        <version>6.6.6</version>
+        <version>7.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-analyzers-phonetic</artifactId>
-        <version>6.6.6</version>
+        <version>7.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
-        <version>6.6.6</version>
+        <version>7.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-queryparser</artifactId>
-        <version>6.6.6</version>
+        <version>7.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-test-framework</artifactId>
-        <version>6.6.6</version>
+        <version>7.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-backward-codecs</artifactId>
+        <version>7.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>

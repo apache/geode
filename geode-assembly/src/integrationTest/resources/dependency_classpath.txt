@@ -81,10 +81,10 @@ jetty-util-9.4.43.v20210629.jar
 log4j-slf4j-impl-2.14.1.jar
 log4j-core-2.14.1.jar
 log4j-jul-2.14.1.jar
-lucene-analyzers-phonetic-6.6.6.jar
-lucene-analyzers-common-6.6.6.jar
-lucene-queryparser-6.6.6.jar
-lucene-core-6.6.6.jar
-lucene-queries-6.6.6.jar
+lucene-analyzers-phonetic-7.1.0.jar
+lucene-analyzers-common-7.1.0.jar
+lucene-queryparser-7.1.0.jar
+lucene-core-7.1.0.jar
+lucene-queries-7.1.0.jar
 geo-0.7.7.jar
 netty-all-4.1.67.Final.jar

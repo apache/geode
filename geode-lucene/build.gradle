@@ -68,6 +68,7 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
+  upgradeTestImplementation('org.apache.lucene:lucene-backward-codecs')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
 
