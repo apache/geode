@@ -321,12 +321,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public boolean isAuthorized() {
-    if (!securityService.isIntegratedSecurity()) {
-      return true;
-    }
-
     if (subject == null) {
-      return false;
+      return true;
     }
 
     try {
