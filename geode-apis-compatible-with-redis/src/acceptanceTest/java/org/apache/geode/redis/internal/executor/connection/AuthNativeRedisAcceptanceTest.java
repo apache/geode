@@ -43,10 +43,20 @@ public class AuthNativeRedisAcceptanceTest extends AbstractAuthIntegrationTest {
   }
 
   @Override
+  public String getUsername() {
+    return "default";
+  }
+
+  @Override
+  public String getPassword() {
+    return "default";
+  }
+
+  @Override
   public void setupCacheWithSecurity() {
     redisContainer =
         new GenericContainer<>(REDIS_DOCKER_IMAGE).withExposedPorts(6379)
-            .withCommand("redis-server --requirepass " + PASSWORD);
+            .withCommand("redis-server --requirepass " + getPassword());
     redisContainer.start();
     jedis = new Jedis("localhost", redisContainer.getFirstMappedPort(), REDIS_CLIENT_TIMEOUT);
   }

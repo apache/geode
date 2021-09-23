@@ -34,6 +34,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNOAUTH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
@@ -227,12 +228,8 @@ public class Coder {
     return getErrorResponse0(buffer, bBUSYKEY, error);
   }
 
-  public static ByteBuf getCustomErrorResponse(ByteBuf buffer, String error) {
-    byte[] errorAr = stringToBytes(error);
-    buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
-    return buffer;
+  public static ByteBuf getNoAuthResponse(ByteBuf buffer, String error) {
+    return getErrorResponse0(buffer, bNOAUTH, error);
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
