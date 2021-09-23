@@ -78,23 +78,25 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
      * setting this value.
      */
     System.setProperty("io.netty.eventLoopThreads", "1");
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    if (username != null) {
-      cf.set(ConfigurationProperties.REDIS_USERNAME, username);
+    try {
+      port = AvailablePortHelper.getRandomAvailableTCPPort();
+      CacheFactory cf = new CacheFactory();
+      cf.set(LOG_LEVEL, "error");
+      cf.set(MCAST_PORT, "0");
+      cf.set(LOCATORS, "");
+      if (username != null) {
+        cf.set(ConfigurationProperties.REDIS_USERNAME, username);
+      }
+      if (withSecurityManager) {
+        cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+      }
+      cache = cf.create();
+      server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
+      server.getRegionProvider().getSlotAdvisor().getBucketSlots();
+      this.jedis = new Jedis("localhost", port, 100000);
+    } finally {
+      System.clearProperty("io.netty.eventLoopThreads");
     }
-    if (withSecurityManager) {
-      cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-    }
-    cache = cf.create();
-    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
-    server.getRegionProvider().getSlotAdvisor().getBucketSlots();
-    this.jedis = new Jedis("localhost", port, 100000);
-
-    System.clearProperty("io.netty.eventLoopThreads");
   }
 
   @Test
