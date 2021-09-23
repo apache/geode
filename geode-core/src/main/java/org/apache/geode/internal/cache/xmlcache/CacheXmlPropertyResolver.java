@@ -122,7 +122,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
       if (ignoreUnresolvedProperties) {
         // Do Nothing
       } else {
-        logger.error("Format of the string {} used for perameterization is unresolvable",
+        logger.error("Format of the string {} used for parameterization is unresolvable",
             stringWithPrefixAndSuffix);
       }
     }
