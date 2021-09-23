@@ -1564,7 +1564,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @VisibleForTesting
   public void forceDisconnect(String reason) {
-    this.gmsManager.forceDisconnect(reason);
+    getGMSManager().forceDisconnect(reason);
   }
 
   /**
@@ -1775,14 +1775,14 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       handleOrDeferSuspect(s);
     }
 
-    private void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
+    void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
       logger.info("Reconnecting system failed to connect");
       listener.setShutdownCause(shutdownCause);
       uncleanShutdown(reason,
           new MemberDisconnectedException("reconnecting system failed to connect"));
     }
 
-    private void uncleanShutdownDS(String reason, Exception shutdownCause) {
+    void uncleanShutdownDS(String reason, Exception shutdownCause) {
       try {
         listener.saveConfig();
       } finally {

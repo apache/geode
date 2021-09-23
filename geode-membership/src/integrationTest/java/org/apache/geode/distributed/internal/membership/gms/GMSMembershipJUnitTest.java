@@ -22,11 +22,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +48,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
+import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
@@ -197,7 +202,54 @@ public class GMSMembershipJUnitTest {
     }
   }
 
+  @Test
+  public void testForceDisconnectUncleanShutdownDS() throws Exception {
+    final String reason = "For testing";
+    manager = spy(manager);
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    MemberIdentifier myGMSMemberId = myMemberId;
+    List<MemberIdentifier> gmsMembers =
+        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
+    manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
 
+    manager.inhibitForcedDisconnectLogging(true);
+    GMSMembership.ManagerImpl managerImpl = (GMSMembership.ManagerImpl) manager.getGMSManager();
+    managerImpl = spy(managerImpl);
+    when(manager.getGMSManager()).thenReturn(managerImpl);
+
+    manager.forceDisconnect(reason);
+    InOrder inOrder = inOrder(managerImpl, directChannelCallback, listener);
+    inOrder.verify(managerImpl, times(1)).uncleanShutdownDS(eq(reason),
+        isA(MemberDisconnectedException.class));
+    inOrder.verify(directChannelCallback, timeout(3000).times(1)).forcedDisconnect();
+    inOrder.verify(listener, timeout(3000).times(1))
+        .setShutdownCause(isA(MemberDisconnectedException.class));
+  }
+
+  @Test
+  public void testForceDisconnectUncleanShutdownReconnectingDS() throws Exception {
+    final String reason = "For testing reconnect";
+    manager = spy(manager);
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    MemberIdentifier myGMSMemberId = myMemberId;
+    List<MemberIdentifier> gmsMembers =
+        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
+    manager.getGMSManager().installView(new GMSMembershipView<>(myGMSMemberId, 1, gmsMembers));
+
+    manager.inhibitForcedDisconnectLogging(true);
+    GMSMembership.ManagerImpl managerImpl = (GMSMembership.ManagerImpl) manager.getGMSManager();
+    managerImpl = spy(managerImpl);
+    when(manager.getGMSManager()).thenReturn(managerImpl);
+    when(managerImpl.isReconnectingDS()).thenReturn(true);
+
+    manager.forceDisconnect(reason);
+    InOrder inOrder = inOrder(managerImpl, directChannelCallback, listener);
+    inOrder.verify(managerImpl, times(1)).uncleanShutdownReconnectingDS(eq(reason),
+        isA(MemberDisconnectedException.class));
+    inOrder.verify(listener, times(1)).setShutdownCause(isA(MemberDisconnectedException.class));
+  }
 
   private GMSMembershipView createView(MemberIdentifier creator, int viewId,
       List<MemberIdentifier> members) {
@@ -328,7 +380,7 @@ public class GMSMembershipJUnitTest {
     final Message msg = mock(Message.class);
     when(msg.dropMessageWhenMembershipIsPlayingDead()).thenReturn(true);
 
-    final GMSMembership spy = Mockito.spy(manager);
+    final GMSMembership spy = spy(manager);
 
     spy.beSick();
     spy.getGMSManager().start();
