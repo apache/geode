@@ -720,11 +720,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  @Override
-  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
-    retriesToGetTransactionEventsFromQueue = retries;
-  }
-
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
     boolean enqueue = true;
     for (GatewayEventFilter filter : getGatewayEventFilters()) {

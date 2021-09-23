@@ -57,7 +57,6 @@ public interface GatewaySenderFactory {
    */
   GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries);
 
-
   /**
    * Adds a <code>GatewayEventFilter</code>
    *
