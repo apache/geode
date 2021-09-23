@@ -27,9 +27,9 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.internal.GatewayReceiverFactoryImpl;
 import org.apache.geode.cache.wan.internal.GatewaySenderFactoryImpl;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
-import org.apache.geode.internal.DSFIDLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.serialization.DSFIDLoader;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 

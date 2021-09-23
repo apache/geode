@@ -13,10 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
-import org.apache.geode.internal.serialization.DSFIDSerializer;
 
+/**
+ * Service loader interface used to register Data Serializable Fixed IDs. Geode
+ * {@code CacheService}s should implement this SPI instead of explicitly registering DSFIDs during
+ * service initialization.
+ */
 public interface DSFIDLoader {
   void registerDSFIDs(DSFIDSerializer serializer);
 }

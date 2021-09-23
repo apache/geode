@@ -29,8 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSFIDLoader;
-import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;

@@ -109,6 +109,7 @@ import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DSFIDLoader;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
