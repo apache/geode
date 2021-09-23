@@ -21,17 +21,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
 import org.apache.geode.NativeRedisTestRule;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTest {
-
-  private static final Logger logger = LogService.getLogger();
   private static long socketTimeWaitMsec = 90000;
 
   @ClassRule
