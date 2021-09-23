@@ -45,7 +45,7 @@ public class PubSubNativeRedisAcceptanceTest extends AbstractPubSubIntegrationTe
             new BufferedReader(new FileReader("/proc/sys/net/ipv4/tcp_fin_timeout"));
         String line = bufferedReader.readLine();
         if (line != null) {
-          socketTimeWaitMsec = Long.parseLong(line.trim());
+          socketTimeWaitMsec = 1000 * Long.parseLong(line.trim());
         }
       } catch (NumberFormatException | IOException ignored) {
       }
