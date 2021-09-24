@@ -76,7 +76,7 @@ public class AuthExpirationDUnitTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     // only test versions greater than or equal to 1.14.0
-    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo("1.15.0");
+    return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
   }
 
   @Rule
