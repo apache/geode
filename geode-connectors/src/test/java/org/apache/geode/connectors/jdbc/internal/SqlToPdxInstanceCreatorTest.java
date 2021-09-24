@@ -22,7 +22,6 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +33,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class SqlToPdxInstanceCreatorTest {
 
   private static final String COLUMN_NAME_1 = "columnName1";

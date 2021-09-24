@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.BeforeClass;
@@ -69,8 +68,9 @@ import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptio
 import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class RedisSortedSetTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 

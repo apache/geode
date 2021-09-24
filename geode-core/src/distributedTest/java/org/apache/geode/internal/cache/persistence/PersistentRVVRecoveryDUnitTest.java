@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -86,9 +85,10 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.PersistenceTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(PersistenceTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
 

@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.Properties;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -52,6 +51,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Test creates a local region. Creates and removes index in a parallel running thread. Then
@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  * and checks for UNDEFINED values in result set of the query.
  */
 @Category({OQLIndexTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 

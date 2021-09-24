@@ -21,7 +21,6 @@ import java.util.Enumeration;
 
 import javax.servlet.http.HttpSession;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +31,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LocalSessionCacheLoaderIntegrationTest {
   private static final String SESSION_ID = "id";
   private static final String REGION_NAME = "sessions";

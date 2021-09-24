@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,12 +39,13 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Tests of lucene index creation that use persistence
  */
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTest {
 
   @Rule

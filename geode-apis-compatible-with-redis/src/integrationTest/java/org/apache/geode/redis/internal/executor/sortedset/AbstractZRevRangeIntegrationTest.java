@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -40,8 +39,9 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrationTest {
   private static final String MEMBER_BASE_NAME = "member";
   private static final String KEY = "key";

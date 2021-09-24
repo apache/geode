@@ -30,7 +30,6 @@ import static org.mockito.Mockito.verify;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -55,13 +54,14 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Tests transaction expiration functionality
  *
  * @since GemFire 4.0
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class TXExpirationIntegrationTest {
 
   private static final String REGION_NAME =

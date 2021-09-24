@@ -20,14 +20,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AbstractCompiledValueTestJUnitTest {
 
   private CompiledValue[] getCompiledValuesWhichDoNotImplementGetReceiver() {

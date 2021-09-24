@@ -29,7 +29,6 @@ import java.util.UUID;
 
 import javax.servlet.ServletException;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.catalina.Context;
 import org.apache.catalina.Manager;
@@ -40,8 +39,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveIntegrationTest {
   private Request request;
   private Response response;

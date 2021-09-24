@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,8 +39,9 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class ClientCachingProxyRegionDistributedTest implements Serializable {
   protected static final List<String> KEYS = Arrays.asList("Key1", "Key2");
   protected static final List<String> VALUES = Arrays.asList("Value1", "Value2");

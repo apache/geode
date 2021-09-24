@@ -19,6 +19,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -44,7 +44,6 @@ import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -62,9 +61,10 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(GeodeParamsRunner.class)
+@FixMethodOrder(NAME_ASCENDING)
 public class AggregateFunctionsQueryDUnitTest implements Serializable {
   private static final String regionName = "portfolio";
   private static MemberVM locator, server1, server2, server3, server4;

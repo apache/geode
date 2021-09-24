@@ -60,7 +60,7 @@ dependencies {
 
   api('org.skyscreamer:jsonassert')
 
-  testImplementation('pl.pragmatists:JUnitParams')
+  implementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))
