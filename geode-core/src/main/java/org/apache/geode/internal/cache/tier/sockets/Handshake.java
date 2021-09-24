@@ -412,6 +412,7 @@ public abstract class Handshake {
       } finally {
         auth.close();
       }
+      logger.info("Handshake.getCredentials: " + credentials);
     } catch (GemFireSecurityException ex) {
       throw ex;
     } catch (Exception ex) {

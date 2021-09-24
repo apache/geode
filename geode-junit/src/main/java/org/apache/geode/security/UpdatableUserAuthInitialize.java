@@ -16,7 +16,6 @@
 package org.apache.geode.security;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.distributed.DistributedMember;
 
@@ -29,23 +28,22 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class UpdatableUserAuthInitialize implements AuthInitialize {
   // use static field for ease of testing since there is only one instance of this in each VM
-  private static final AtomicReference<String> user = new AtomicReference<>();
+  private static volatile String user = "";
   // this is used to simulate a slow client in milliseconds
-  private static final AtomicReference<Long> waitTime = new AtomicReference<>(0L);
+  private static volatile Long waitTime = 0L;
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
     Properties credentials = new Properties();
-    credentials.put("security-username", user.get());
-    credentials.put("security-password", user.get());
+    credentials.put("security-username", user);
+    credentials.put("security-password", user);
 
-    Long timeToWait = waitTime.get();
-    if (timeToWait < 0) {
+    if (waitTime < 0) {
       throw new AuthenticationFailedException("Something wrong happened.");
-    } else if (timeToWait > 0) {
+    } else if (waitTime > 0) {
       try {
-        Thread.sleep(timeToWait);
+        Thread.sleep(waitTime);
       } catch (InterruptedException e) {
         throw new RuntimeException(e.getMessage(), e);
       }
@@ -54,19 +52,19 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
   }
 
   public static String getUser() {
-    return user.get();
+    return user;
   }
 
   public static void setUser(String newValue) {
-    user.set(newValue);
+    user = newValue;
   }
 
   public static void setWaitTime(long newValue) {
-    waitTime.set(newValue);
+    waitTime = newValue;
   }
 
   public static void reset() {
-    user.set(null);
-    waitTime.set(0L);
+    user = "";
+    waitTime = 0L;
   }
 }

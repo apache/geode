@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +53,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -486,12 +488,11 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterestForInterestPolicyNone() throws Exception {
+  public void registeredInterest_PolicyNone_non_durableClient() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
-            .withCacheSetup(
-                ccf -> ccf.setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(0))
+            .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
@@ -504,10 +505,14 @@ public class AuthExpirationDUnitTest {
     Region<Object, Object> region = server.getCache().getRegion("/region");
     region.put("1", "value1");
     clientVM.invoke(() -> {
+      Region<Object, Object> clientRegion =
+          ClusterStartupRule.getClientCache().getRegion("region");
+      await().during(10, TimeUnit.SECONDS).untilAsserted(
+          () -> assertThat(clientRegion.keySet()).containsExactly("1"));
       UpdatableUserAuthInitialize.setUser("user2");
     });
-    getSecurityManager().addExpiredUser("user1");
 
+    getSecurityManager().addExpiredUser("user1");
     region.put("2", "value2");
 
     // for old client, server close the proxy, client have reconnect mechanism which
@@ -518,7 +523,7 @@ public class AuthExpirationDUnitTest {
         Region<Object, Object> clientRegion =
             ClusterStartupRule.getClientCache().getRegion("region");
         await().during(10, TimeUnit.SECONDS).untilAsserted(
-            () -> assertThat(clientRegion.keySet().size()).isLessThan(2));
+            () -> assertThat(clientRegion.keySet()).isEmpty());
         // but client will reconnect successfully using the 2nd user
         clientRegion.put("2", "value2");
       });
@@ -528,7 +533,7 @@ public class AuthExpirationDUnitTest {
         Region<Object, Object> clientRegion =
             ClusterStartupRule.getClientCache().getRegion("region");
         await().untilAsserted(
-            () -> assertThat(clientRegion.keySet()).hasSize(2));
+            () -> assertThat(clientRegion.keySet()).containsExactly("1", "2"));
       });
     }
 
@@ -536,6 +541,63 @@ public class AuthExpirationDUnitTest {
     assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
         .doesNotContain("DATA:READ:region:2");
   }
+
+  @Test
+  public void registeredInterestForInterestPolicyNone_durableClient() throws Exception {
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withProperty(DURABLE_CLIENT_ID, "123456")
+            .withServerConnection(serverPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> clientRegion = clientCache
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+      clientRegion.registerInterestForAllKeys(InterestResultPolicy.NONE);
+      clientCache.readyForEvents();
+    });
+
+    Region<Object, Object> region = server.getCache().getRegion("/region");
+    region.put("1", "value1");
+    clientVM.invoke(() -> {
+      Region<Object, Object> clientRegion =
+          ClusterStartupRule.getClientCache().getRegion("region");
+      await().untilAsserted(
+          () -> assertThat(clientRegion.keySet()).containsExactly("1"));
+      UpdatableUserAuthInitialize.setUser("user2");
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+    region.put("2", "value2");
+
+    // for durable client, the key "2" will eventually be delivered to the clients
+    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+      clientVM.invoke(() -> {
+        Region<Object, Object> clientRegion =
+            ClusterStartupRule.getClientCache().getRegion("region");
+        await().during(10, TimeUnit.SECONDS).untilAsserted(
+            () -> assertThat(clientRegion.keySet()).containsExactly("2"));
+        // but client will reconnect successfully using the 2nd user
+        clientRegion.put("2", "value2");
+      });
+    } else {
+      // new client would have no message loss
+      clientVM.invoke(() -> {
+        Region<Object, Object> clientRegion =
+            ClusterStartupRule.getClientCache().getRegion("region");
+        await().untilAsserted(
+            () -> assertThat(clientRegion.keySet()).containsExactly("1", "2"));
+      });
+    }
+
+    // user1 should not be used to put key2 to the region in any cases
+    assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
+        .doesNotContain("DATA:READ:region:2");
+  }
+
 
   @Test
   public void newClient_registeredInterest_slowReAuth_policyDefault() throws Exception {
@@ -602,7 +664,7 @@ public class AuthExpirationDUnitTest {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
-            .withProperty(ConfigurationProperties.DURABLE_CLIENT_ID, "123456")
+            .withProperty(DURABLE_CLIENT_ID, "123456")
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
 
@@ -691,7 +753,7 @@ public class AuthExpirationDUnitTest {
 
 
   @Test
-  public void registeredInterestWithFailedReAuth() throws Exception {
+  public void registeredInterest_FailedReAuth_non_durableClient() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -715,10 +777,53 @@ public class AuthExpirationDUnitTest {
     clientVM.invoke(() -> {
       IgnoredException.addIgnoredException(AuthenticationFailedException.class);
       Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
-      await().during(2, TimeUnit.SECONDS).untilAsserted(() -> assertThat(clientRegion).isEmpty());
+      await().during(10, TimeUnit.SECONDS).untilAsserted(() -> assertThat(clientRegion).isEmpty());
       assertThatThrownBy(() -> clientRegion.put("key100", "value100"))
           .hasCauseInstanceOf(AuthenticationFailedException.class);
     });
+
+    // client can't re-authenticate back, no CacheClientProxy exists (old queue destroyed)
+    assertThat(server.getServer().getAllClientSessions()).isEmpty();
+  }
+
+  @Test
+  public void registeredInterest_FailedReAuth_durableClient() throws Exception {
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withProperty(DURABLE_CLIENT_ID, "123456")
+            .withProperty(DURABLE_CLIENT_TIMEOUT, "10")
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> region = clientCache
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
+      region.registerInterestForAllKeys();
+      UpdatableUserAuthInitialize.setUser("user11");
+      clientCache.readyForEvents();
+      // invalid wait time will cause re-auth to throw exception
+      UpdatableUserAuthInitialize.setWaitTime(-1);
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+    Region<Object, Object> region = server.getCache().getRegion("/region");
+    IntStream.range(0, 10).forEach(i -> region.put("key" + i, "value" + i));
+
+    clientVM.invoke(() -> {
+      IgnoredException.addIgnoredException(AuthenticationFailedException.class);
+      Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
+      await().during(10, TimeUnit.SECONDS).untilAsserted(() -> assertThat(clientRegion).isEmpty());
+    });
+
+    // since we set a timeout, queue will be destroyed
+    await().untilAsserted(() -> assertThat(getDurableClientProxy("123456")).isNull());
+  }
+
+  private CacheClientProxy getDurableClientProxy(String durableId) {
+    return (CacheClientProxy) server.getServer().getClientSession(durableId);
   }
 
   private void startClientWithCQ() throws Exception {

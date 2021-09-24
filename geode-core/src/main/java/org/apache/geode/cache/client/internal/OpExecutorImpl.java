@@ -36,6 +36,7 @@ import org.apache.geode.CopyException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
@@ -693,30 +694,33 @@ public class OpExecutorImpl implements ExecutablePool {
     return message;
   }
 
-  private void authenticateIfRequired(final Connection connection, final Op op) {
+  @VisibleForTesting
+  void authenticateIfRequired(final Connection connection, final Op op) {
     if (!connection.getServer().getRequiresCredentials()) {
       return;
     }
 
+    if (!((AbstractOp) op).needsUserId()) {
+      return;
+    }
+
     if (pool.getMultiuserAuthentication()) {
-      if (((AbstractOp) op).needsUserId()) {
-        final UserAttributes ua = UserAttributes.userAttributes.get();
-        if (ua != null) {
-          if (!ua.getServerToId().containsKey(connection.getServer())) {
-            authenticateMultiuser(pool, connection, ua);
-          }
-        }
+      final UserAttributes ua = UserAttributes.userAttributes.get();
+      if (ua == null || ua.getServerToId().containsKey(connection.getServer())) {
+        return;
       }
-    } else if (((AbstractOp) op).needsUserId()) {
+      authenticateMultiuser(pool, connection, ua);
+      return;
+    }
+
+    if (connection.getServer().getUserId() == -1) {
       // This should not be reached, but keeping this code here in case it is reached.
-      if (connection.getServer().getUserId() == -1) {
-        final Connection wrappedConnection = connection.getWrappedConnection();
-        connection.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, pool));
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "OpExecutorImpl.execute() - single user mode - authenticated this user on {}",
-              connection);
-        }
+      final Connection wrappedConnection = connection.getWrappedConnection();
+      connection.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, pool));
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "OpExecutorImpl.execute() - single user mode - authenticated this user on {}",
+            connection);
       }
     }
   }

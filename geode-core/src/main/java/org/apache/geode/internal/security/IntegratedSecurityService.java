@@ -159,8 +159,16 @@ public class IntegratedSecurityService implements SecurityService {
       currentUser.login(token);
     } catch (ShiroException e) {
       logger.info("error logging in: " + token.getPrincipal());
+      Throwable cause = e.getCause();
+      if (cause == null) {
+        throw new AuthenticationFailedException(
+            "Authentication error. Please check your credentials.", e);
+      }
+      if (cause instanceof AuthenticationFailedException) {
+        throw (AuthenticationFailedException) cause;
+      }
       throw new AuthenticationFailedException(
-          "Authentication error. Please check your credentials.", e);
+          "Authentication error. Please check your credentials.", cause);
     }
 
     Session currentSession = currentUser.getSession();
