@@ -47,7 +47,7 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
       try {
         Thread.sleep(timeToWait);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e.getMessage(), e);
       }
     }
     return credentials;

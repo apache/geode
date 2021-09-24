@@ -568,7 +568,7 @@ public class AuthExpirationDUnitTest {
       UpdatableUserAuthInitialize.setWaitTime(6000);
     });
 
-    AsyncInvocation invokePut = client2.invokeAsync(() -> {
+    AsyncInvocation<Void> invokePut = client2.invokeAsync(() -> {
       UpdatableUserAuthInitialize.setUser("user2");
       Region<Object, Object> region = ClusterStartupRule.getClientCache()
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
