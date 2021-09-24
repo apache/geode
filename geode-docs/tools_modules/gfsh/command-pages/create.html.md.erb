@@ -368,9 +368,10 @@ unless the `--groups` or `--members` option is specified.
 If the gateway receiver creation succeeds on at least one member,
 this `gfsh` command exits with an exit code indicating success.
 
-
 Outputs a tabular format status of each member's gateway receiver,
 independent of the success or failure of the creation.
+
+**Note:** Regions that are expected to receive events from a remote cluster must be created before the gateway receiver. Otherwise, `create region` command may fail if events are being received before the region exists.
 
 See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite_overview.html).
 
