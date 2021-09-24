@@ -91,6 +91,7 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
     maps.put(user.toString(), list);
   }
 
+  @Override
   public void close() {
     expired_users.clear();
     authorizedOps.clear();

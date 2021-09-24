@@ -327,7 +327,7 @@ public class QueueManagerImpl implements QueueManager {
       }
       if (primary.sendClientReady()) {
         try {
-          logger.info("Sending ready for events to primary: {}", primary);
+          logger.info("readyForEvents: Sending ready for events to primary: {}", primary);
           ReadyForEventsOp.execute(pool, primary);
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {
@@ -342,7 +342,7 @@ public class QueueManagerImpl implements QueueManager {
 
   private void readyForEventsAfterFailover(QueueConnectionImpl primary) {
     try {
-      logger.info("Sending ready for events to primary: {}", primary);
+      logger.info("readyForEventsAfterFailover: Sending ready for events to primary: {}", primary);
       ReadyForEventsOp.execute(pool, primary);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {

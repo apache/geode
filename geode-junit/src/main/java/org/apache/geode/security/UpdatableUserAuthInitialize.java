@@ -17,8 +17,11 @@ package org.apache.geode.security;
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * this is used in conjunction with ExpirableSecurityManager. It will create a new set of
@@ -28,6 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
  * make sure reset is called after each test to clean things up.
  */
 public class UpdatableUserAuthInitialize implements AuthInitialize {
+  private static Logger logger = LogService.getLogger();
   private static final String TEST_UPDATABLE_USER = "test.updatable.user";
   private static final String TEST_UPDATABLE_WAIT_TIME = "test.updatable.waitTime";
   // use static field for ease of testing since there is only one instance of this in each VM
@@ -46,8 +50,8 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
     Properties credentials = new Properties();
-    credentials.put("security-username", user);
-    credentials.put("security-password", user);
+    credentials.setProperty("security-username", user);
+    credentials.setProperty("security-password", user);
 
     if (waitTime < 0) {
       throw new AuthenticationFailedException("Something wrong happened.");

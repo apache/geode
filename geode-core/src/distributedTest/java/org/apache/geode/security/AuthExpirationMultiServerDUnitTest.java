@@ -1,4 +1,5 @@
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -11,17 +12,19 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.collectSecurityManagers;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExecuteCQ;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.getSecurityManager;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.apache.geode.security.AuthExpirationDUnitTest.createAndExecuteCQ;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.collectSecurityManagers;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -37,8 +40,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.security.AuthExpirationDUnitTest.EventsCqListner;
 import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -80,6 +83,7 @@ public class AuthExpirationMultiServerDUnitTest {
   @After
   public void after() {
     UpdatableUserAuthInitialize.reset();
+    closeSecurityManager();
   }
 
   @Test
@@ -305,6 +309,63 @@ public class AuthExpirationMultiServerDUnitTest {
     assertThat(unAuthorizedOps.get("user1")).isNotEmpty();
   }
 
+  @Test
+  public void peerStillCommunicateWhenCredentialExpired() throws Exception {
+    // expire the peer to peer users
+    expireUserOnAllVms("test");
+    // do puts using a client
+    UpdatableUserAuthInitialize.setUser("user1");
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locator.getPort());
+    clientCacheRule.createCache();
+    Region<Object, Object> region = clientCacheRule.createProxyRegion(REPLICATE_REGION);
+    IntStream.range(0, 10).forEach(i -> region.put("key" + i, "value" + i));
+
+    // assert that data still get into all servers
+    MemberVM.invokeInEveryMember(() -> {
+      Region<Object, Object> serverRegion =
+          ClusterStartupRule.getCache().getRegion(REPLICATE_REGION);
+      assertThat(serverRegion).hasSize(10);
+    }, server1, server2);
+  }
+
+  @Test
+  public void putAll() throws Exception {
+    int locatorPort = locator.getPort();
+    // do putAll using a client
+    ClientVM client = cluster.startClientVM(3,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withLocatorConnection(locatorPort));
+    AsyncInvocation invokePut = client.invokeAsync(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      Region<Object, Object> proxyRegion =
+          ClusterStartupRule.getClientCache()
+              .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+              .create(PARTITION_REGION);
+      Map<String, String> values = new HashMap<>();
+      IntStream.range(0, 1000).forEach(i -> values.put("key" + i, "value" + i));
+      proxyRegion.putAll(values);
+    });
+
+    client.invoke(() -> {
+      await().until(() -> getProxyRegion() != null);
+      await().until(() -> !getProxyRegion().isEmpty());
+      UpdatableUserAuthInitialize.setUser("user2");
+    });
+
+    expireUserOnAllVms("user1");
+    invokePut.await();
+
+    ExpirableSecurityManager securityManager = collectSecurityManagers(server1, server2);
+    assertThat(securityManager.getAuthorizedOps()).hasSize(1);
+    assertThat(securityManager.getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:WRITE:partitionRegion");
+    assertThat(securityManager.getUnAuthorizedOps()).isEmpty();
+  }
+
   private static Region<Object, Object> getProxyRegion() {
     return ClusterStartupRule.getClientCache().getRegion(PARTITION_REGION);
   }
@@ -312,6 +373,12 @@ public class AuthExpirationMultiServerDUnitTest {
   private void expireUserOnAllVms(String user) {
     MemberVM.invokeInEveryMember(() -> {
       getSecurityManager().addExpiredUser(user);
+    }, locator, server1, server2);
+  }
+
+  private void closeSecurityManager() {
+    MemberVM.invokeInEveryMember(() -> {
+      getSecurityManager().close();
     }, locator, server1, server2);
   }
 }

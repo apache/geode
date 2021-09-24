@@ -1,4 +1,5 @@
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -11,17 +12,18 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.security;
 
 import static org.apache.geode.cache.execute.FunctionService.onRegion;
 import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.cache.execute.FunctionService.onServers;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.collectSecurityManagers;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.getSecurityManager;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.collectSecurityManagers;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.apache.geode.security.SecurityManager.PASSWORD;
 import static org.apache.geode.security.SecurityManager.USER_NAME;
 import static org.apache.geode.test.version.VersionManager.CURRENT_VERSION;

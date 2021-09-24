@@ -20,15 +20,9 @@ import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
 import static org.apache.geode.security.SecurityTestUtils.getCache;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
  * Extracted from ClientAuthenticationDUnitTest
@@ -119,37 +113,5 @@ public abstract class ClientAuthenticationTestUtils {
     Region region = getCache().getRegion(REGION_NAME);
     assertNotNull(region);
     region.registerInterestRegex(".*");
-  }
-
-
-  protected static ExpirableSecurityManager collectSecurityManagers(MemberVM... vms) {
-    List<ExpirableSecurityManager> results = new ArrayList<>();
-    for (MemberVM vm : vms) {
-      results.add(vm.invoke(() -> getSecurityManager()));
-    }
-
-    ExpirableSecurityManager consolidated = new ExpirableSecurityManager();
-    for (ExpirableSecurityManager result : results) {
-      consolidated.getExpiredUsers().addAll(result.getExpiredUsers());
-      combine(consolidated.getAuthorizedOps(), result.getAuthorizedOps());
-      combine(consolidated.getUnAuthorizedOps(), result.getUnAuthorizedOps());
-    }
-    return consolidated;
-  }
-
-  protected static void combine(Map<String, List<String>> to, Map<String, List<String>> from) {
-    for (String key : from.keySet()) {
-      if (to.containsKey(key)) {
-        to.get(key).addAll(from.get(key));
-      } else {
-        to.put(key, from.get(key));
-      }
-    }
-  }
-
-  protected static ExpirableSecurityManager getSecurityManager() {
-    return (ExpirableSecurityManager) Objects.requireNonNull(ClusterStartupRule.getCache())
-        .getSecurityService()
-        .getSecurityManager();
   }
 }
