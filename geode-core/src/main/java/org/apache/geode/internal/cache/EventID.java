@@ -797,7 +797,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     long sequenceID = (HARegionQueue.INIT_OF_SEQUENCEID + 1);
 
     @MakeNotStatic
-    private static final AtomicLong atmLong = new AtomicLong(0);
+    private static final AtomicLong atmLong = new AtomicLong(System.currentTimeMillis());
 
     ThreadAndSequenceIDWrapper() {
       threadID = atmLong.incrementAndGet();
