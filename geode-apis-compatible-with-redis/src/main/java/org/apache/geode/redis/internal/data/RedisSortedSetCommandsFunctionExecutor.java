@@ -70,7 +70,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zinterstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    List<RedisKey> keysToLock = lockKeys(destinationKey, keyWeights);
+    List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
 
     return stripedExecute(destinationKey, keysToLock,
         () -> new RedisSortedSet(Collections.emptyList(), new double[] {})
@@ -174,7 +174,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
-    List<RedisKey> keysToLock = lockKeys(destinationKey, keyWeights);
+    List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
     for (ZKeyWeight kw : keyWeights) {
       getRegionProvider().ensureKeyIsLocal(kw.getKey());
       keysToLock.add(kw.getKey());
@@ -183,12 +183,12 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     keysToLock.add(destinationKey);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet(Collections.emptyList(), new double[0])
+        () -> new RedisSortedSet(0)
             .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
   }
 
   /************* Helper Methods *************/
-  private List<RedisKey> lockKeys(RedisKey destinationKey, List<ZKeyWeight> keyWeights) {
+  private List<RedisKey> getKeysToLock(RedisKey destinationKey, List<ZKeyWeight> keyWeights) {
     List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight kw : keyWeights) {
       getRegionProvider().ensureKeyIsLocal(kw.getKey());

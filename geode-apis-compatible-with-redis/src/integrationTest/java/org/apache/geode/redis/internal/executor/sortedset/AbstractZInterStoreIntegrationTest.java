@@ -101,6 +101,20 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldError_givenNumKeysOfZero() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "0", KEY1, KEY2))
+            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED);
+  }
+
+  @Test
+  public void shouldError_givenNegativeNumKeys() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "-2", KEY1, KEY2))
+            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED);
+  }
+
+  @Test
   public void shouldError_givenTooManyWeights() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
@@ -302,16 +316,13 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void shouldStoreIntersection_givenOneSetDoesNotExist() {
+  public void shouldStoreEmptyIntersection_givenOneSetDoesNotExist() {
     Map<String, Double> scores = buildMapOfMembersAndScores(1, 10);
-    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
     jedis.zadd(KEY1, scores);
 
-    assertThat(jedis.zinterstore(NEW_SET, KEY1, KEY2)).isEqualTo(scores.size());
+    assertThat(jedis.zinterstore(NEW_SET, KEY1, KEY2)).isEqualTo(0);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
-
-    assertThatActualScoresAreVeryCloseToExpectedScores(expectedResults, results);
+    assertThat(jedis.zrangeWithScores(NEW_SET, 0, 10)).isEmpty();
   }
 
   @Test
@@ -347,6 +358,15 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
+  }
+
+  @Test
+  public void shouldStoreSumOfZero_whenAddingNegativeAndPositiveInfinity() {
+    String member = "member";
+    jedis.zadd(KEY1, Double.POSITIVE_INFINITY, member);
+    jedis.zadd(KEY2, Double.NEGATIVE_INFINITY, member);
+    assertThat(jedis.zinterstore(NEW_SET, KEY1, KEY2)).isOne();
+    assertThat(jedis.zscore(NEW_SET, member)).isZero();
   }
 
   @Test

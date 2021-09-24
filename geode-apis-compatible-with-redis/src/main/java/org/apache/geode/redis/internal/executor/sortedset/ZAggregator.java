@@ -23,7 +23,15 @@ import java.util.function.BiFunction;
  */
 public enum ZAggregator {
 
-  SUM(Double::sum),
+  SUM((score1, score2) -> {
+    // in native redis, adding -inf and +inf results in 0. java math returns NaN
+    if (score1.isInfinite() && score2.isInfinite()) {
+      if (score1 == -score2) {
+        return 0D;
+      }
+    }
+    return Double.sum(score1, score2);
+  }),
   MIN(Math::min),
   MAX(Math::max);
 
