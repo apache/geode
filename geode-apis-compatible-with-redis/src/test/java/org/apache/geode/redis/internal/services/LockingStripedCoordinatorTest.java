@@ -13,23 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.executor;
+package org.apache.geode.redis.internal.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.services.StripedCoordinator;
-import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 
-public class SynchronizedStripedCoordinatorTest {
+public class LockingStripedCoordinatorTest {
 
   @Test
   public void handleMinNegativeHashCode() {
     Hashy hashy = new Hashy(Integer.MIN_VALUE);
 
-    StripedCoordinator executor = new SynchronizedStripedCoordinator();
+    StripedCoordinator executor = new LockingStripedCoordinator();
     String result = executor.execute(hashy, () -> "OK");
     assertThat(result).isEqualTo("OK");
   }
@@ -38,9 +39,22 @@ public class SynchronizedStripedCoordinatorTest {
   public void handleMaxPositiveHashCode() {
     Hashy hashy = new Hashy(Integer.MAX_VALUE);
 
-    StripedCoordinator executor = new SynchronizedStripedCoordinator();
+    StripedCoordinator executor = new LockingStripedCoordinator();
     String result = executor.execute(hashy, () -> "OK");
     assertThat(result).isEqualTo("OK");
+  }
+
+  @Test
+  public void handleStripeCollisionsForSameExecution() {
+    List<RedisKey> keys = new ArrayList<>();
+    keys.add(new Hashy(1));
+    keys.add(new Hashy(2));
+    keys.add(new Hashy(3));
+
+    StripedCoordinator coordinator = new LockingStripedCoordinator(1);
+
+    assertThat(coordinator.execute(keys, () -> "OK"))
+        .isEqualTo("OK");
   }
 
   private static class Hashy extends RedisKey {

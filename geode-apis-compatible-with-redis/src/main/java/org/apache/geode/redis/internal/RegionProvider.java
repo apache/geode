@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -93,6 +94,7 @@ public class RegionProvider {
   private final SlotAdvisor slotAdvisor;
   private final StripedCoordinator stripedCoordinator;
   private final RedisStats redisStats;
+  private final CacheTransactionManager txManager;
 
   static {
     NULL_TYPES.put(REDIS_STRING, NULL_REDIS_STRING);
@@ -120,6 +122,8 @@ public class RegionProvider {
 
     dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
     partitionedRegion = (PartitionedRegion) dataRegion;
+
+    txManager = cache.getCacheTransactionManager();
 
     stringCommands = new RedisStringCommandsFunctionExecutor(this);
     setCommands = new RedisSetCommandsFunctionExecutor(this);
@@ -170,6 +174,45 @@ public class RegionProvider {
     } catch (Exception ex) {
       throw new RedisException(ex);
     }
+  }
+
+  /**
+   * Execute the given Callable in the context of a GemFire transaction. On failure there is no
+   * attempt to retry.
+   */
+  public <T> T executeInTransaction(RedisKey key, Callable<T> callable) {
+    Callable<T> txWrappedCallable = getTxWrappedCallable(callable);
+    return execute(key, txWrappedCallable);
+  }
+
+  /**
+   * Execute the given Callable in the context of a GemFire transaction. On failure there is no
+   * attempt to retry.
+   */
+  public <T> T executeInTransaction(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
+    Callable<T> txWrappedCallable = getTxWrappedCallable(callable);
+    return execute(key, keysToLock, txWrappedCallable);
+  }
+
+  private <T> Callable<T> getTxWrappedCallable(Callable<T> callable) {
+    Callable<T> txWrappedCallable = () -> {
+      T result;
+      boolean success = false;
+      txManager.begin();
+      try {
+        result = callable.call();
+        success = true;
+      } finally {
+        if (success) {
+          txManager.commit();
+        } else {
+          txManager.rollback();
+        }
+      }
+
+      return result;
+    };
+    return txWrappedCallable;
   }
 
   public RedisData getRedisData(RedisKey key) {
@@ -300,14 +343,6 @@ public class RegionProvider {
   @SuppressWarnings("unchecked")
   public Set<DistributedMember> getRemoteRegionMembers() {
     return (Set<DistributedMember>) (Set<?>) partitionedRegion.getRegionAdvisor().adviseDataStore();
-  }
-
-  /**
-   * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
-   * Note that the list of keys is sorted in place.
-   */
-  public void orderForLocking(List<RedisKey> keys) {
-    keys.sort(stripedCoordinator::compareStripes);
   }
 
   /**

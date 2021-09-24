@@ -32,12 +32,12 @@ import org.apache.geode.redis.internal.RegionProvider;
 public abstract class RedisDataCommandsFunctionExecutor {
   private final RegionProvider regionProvider;
 
-  protected RegionProvider getRegionProvider() {
-    return regionProvider;
-  }
-
   protected RedisDataCommandsFunctionExecutor(RegionProvider regionProvider) {
     this.regionProvider = regionProvider;
+  }
+
+  protected RegionProvider getRegionProvider() {
+    return regionProvider;
   }
 
   protected Region<RedisKey, RedisData> getRegion() {
@@ -50,6 +50,11 @@ public abstract class RedisDataCommandsFunctionExecutor {
 
   protected <T> T stripedExecute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
     return regionProvider.execute(key, keysToLock, callable);
+  }
+
+  protected <T> T stripedExecuteInTransaction(RedisKey key, List<RedisKey> keysToLock,
+      Callable<T> callable) {
+    return regionProvider.executeInTransaction(key, keysToLock, callable);
   }
 
   protected RedisData getRedisData(RedisKey key) {

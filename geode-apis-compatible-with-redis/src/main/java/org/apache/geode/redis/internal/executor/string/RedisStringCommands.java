@@ -57,4 +57,6 @@ public interface RedisStringCommands {
   int setrange(RedisKey key, int offset, byte[] value);
 
   byte[] mget(RedisKey key);
+
+  Void mset(List<RedisKey> keys, List<byte[]> values);
 }

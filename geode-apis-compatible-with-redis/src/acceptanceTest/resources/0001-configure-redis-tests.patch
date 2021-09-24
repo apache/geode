@@ -1370,9 +1370,34 @@ index 7b467f1c4..21f0721c4 100644
              assert_encoding $type setres
              assert_equal [list 195 196 197 198 199 $large] [lsort [r smembers setres]]
 diff --git a/tests/unit/type/string.tcl b/tests/unit/type/string.tcl
-index 7122fd987..12c323fc2 100644
+index 7122fd987..2274c82cc 100644
 --- a/tests/unit/type/string.tcl
 +++ b/tests/unit/type/string.tcl
+@@ -130,8 +130,8 @@ start_server {tags {"string"}} {
+     } {bar xyz}
+ 
+     test {MSET base case} {
+-        r mset x 10 y "foo bar" z "x x x x x x x\n\n\r\n"
+-        r mget x y z
++        r mset "{A}x" 10 "{A}y" "foo bar" "{A}z" "x x x x x x x\n\n\r\n"
++        r mget "{A}x" "{A}y" "{A}z"
+     } [list 10 {foo bar} "x x x x x x x\n\n\r\n"]
+ 
+     test {MSET wrong number of args} {
+@@ -140,11 +140,11 @@ start_server {tags {"string"}} {
+     } {*wrong number*}
+ 
+     test {MSETNX with already existent key} {
+-        list [r msetnx x1 xxx y2 yyy x 20] [r exists x1] [r exists y2]
++        list [r msetnx "{A}x1" xxx "{A}y2" yyy "{A}x" 20] [r exists "{A}x1"] [r exists "{A}y2"]
+     } {0 0 0}
+ 
+     test {MSETNX with not existing keys} {
+-        list [r msetnx x1 xxx y2 yyy] [r get x1] [r get y2]
++        list [r msetnx "{A}x1" xxx "{A}y2" yyy] [r get "{A}x1"] [r get "{A}y2"]
+     } {1 xxx yyy}
+ 
+     test "STRLEN against non-existing key" {
 @@ -188,11 +188,11 @@ start_server {tags {"string"}} {
          assert_equal [binary format B* 00010011] [r get mykey]
      }
