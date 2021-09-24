@@ -58,35 +58,35 @@ public class AuthenticationExpiredWANDunitTest {
   @Rule
   public RestoreSystemProperties restore = new RestoreSystemProperties();
 
-  private MemberVM locator0VM;
-  private MemberVM server0VM;
-  private MemberVM server1VM;
+  private MemberVM locator;
+  private MemberVM server;
+  private MemberVM remoteServer;
 
   @Before
   public void init() {
 
-    locator0VM = clusterStartupRule.startLocatorVM(0,
-        l -> l.withProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName())
+    locator = clusterStartupRule.startLocatorVM(0,
+        l -> l.withSecurityManager(ExpirableSecurityManager.class)
             .withProperty(DISTRIBUTED_SYSTEM_ID, "1"));
 
-    int locator0Port = locator0VM.getPort();
-    MemberVM locator1VM = clusterStartupRule.startLocatorVM(1,
-        l -> l.withProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName())
-            .withProperty(REMOTE_LOCATORS, "localhost[" + locator0Port + "]")
+    int locatorPort = locator.getPort();
+    MemberVM remoteLocator = clusterStartupRule.startLocatorVM(1,
+        l -> l.withSecurityManager(ExpirableSecurityManager.class)
+            .withProperty(REMOTE_LOCATORS, "localhost[" + locatorPort + "]")
             .withProperty(DISTRIBUTED_SYSTEM_ID, "2"));
 
-    server0VM = clusterStartupRule.startServerVM(2,
+    server = clusterStartupRule.startServerVM(2,
         s -> s.withSecurityManager(ExpirableSecurityManager.class)
             .withCredential("test", "test")
-            .withConnectionToLocator(locator0Port));
+            .withConnectionToLocator(locatorPort));
 
-    int locator1Port = locator1VM.getPort();
-    server1VM = clusterStartupRule.startServerVM(3,
+    int locator1Port = remoteLocator.getPort();
+    remoteServer = clusterStartupRule.startServerVM(3,
         s -> s.withSecurityManager(ExpirableSecurityManager.class)
             .withCredential("test", "test")
             .withConnectionToLocator(locator1Port));
 
-    server1VM.invoke(() -> {
+    remoteServer.invoke(() -> {
       InternalCache internalCache = ClusterStartupRule.getCache();
       assertThat(internalCache).isNotNull();
 
@@ -98,7 +98,7 @@ public class AuthenticationExpiredWANDunitTest {
       internalCache.createRegionFactory(REPLICATE).create("regionName");
     });
 
-    server0VM.invoke(() -> {
+    server.invoke(() -> {
       InternalCache internalCache = ClusterStartupRule.getCache();
       assertThat(internalCache).isNotNull();
 
@@ -109,9 +109,6 @@ public class AuthenticationExpiredWANDunitTest {
     });
   }
 
-  @After
-  public void cleanup() {}
-
   @Test
   public void clientCanPutWithExpirationOnWAN() throws Exception {
     String regionName = "regionName";
@@ -120,19 +117,19 @@ public class AuthenticationExpiredWANDunitTest {
     clientCacheRule
         .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
         .withPoolSubscription(true)
-        .withLocatorConnection(locator0VM.getPort());
+        .withLocatorConnection(locator.getPort());
 
     clientCacheRule.createCache();
     Region<Object, Object> region = clientCacheRule.createProxyRegion(regionName);
     region.put("0", "value0");
 
-    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("user1"), locator0VM,
-        server0VM);
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("user1"), locator,
+        server);
 
     UpdatableUserAuthInitialize.setUser("user2");
     region.put("1", "value1");
 
-    server0VM.invoke(() -> {
+    server.invoke(() -> {
       InternalCache internalCache = ClusterStartupRule.getCache();
       assertThat(internalCache).isNotNull();
 
@@ -152,7 +149,7 @@ public class AuthenticationExpiredWANDunitTest {
           .containsExactly("DATA:WRITE:regionName:1");
     });
 
-    server1VM.invoke(() -> {
+    remoteServer.invoke(() -> {
       InternalCache internalCache = ClusterStartupRule.getCache();
       assertThat(internalCache).isNotNull();
 
