@@ -18,6 +18,7 @@ import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1307,6 +1308,16 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.warn("QueueRemovalThread ignored cancellation");
       }
     }
+  }
+
+  @VisibleForTesting
+  long getLastPeekedId() {
+    return lastPeekedId.get();
+  }
+
+  @VisibleForTesting
+  Set<Long> getExtraPeekedIds() {
+    return Collections.unmodifiableSet(extraPeekedIds);
   }
 
   public static class SerialGatewaySenderQueueMetaRegion extends DistributedRegion {
