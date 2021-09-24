@@ -209,13 +209,12 @@ class DependencyConstraints implements Plugin<Project> {
       entry('log4j-slf4j-impl')
     }
 
-    dependencySet(group: 'org.apache.lucene', version: '7.1.0') {
+    dependencySet(group: 'org.apache.lucene', version: '6.6.6') {
       entry('lucene-analyzers-common')
       entry('lucene-analyzers-phonetic')
       entry('lucene-core')
       entry('lucene-queryparser')
       entry('lucene-test-framework')
-      entry('lucene-backward-codecs')
     }
 
     dependencySet(group: 'org.hamcrest', version: '2.2') {

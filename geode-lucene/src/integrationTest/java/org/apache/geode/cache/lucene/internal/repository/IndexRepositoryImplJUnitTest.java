@@ -200,7 +200,7 @@ public class IndexRepositoryImplJUnitTest {
     repo.commit();
     checkQuery("Cream", "s", "key2", "key4");
     verify(stats, times(1)).startRepositoryQuery();
-    verify(stats, times(1)).endRepositoryQuery(anyLong(), eq(2l));
+    verify(stats, times(1)).endRepositoryQuery(anyLong(), eq(2));
   }
 
   @Test

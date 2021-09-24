@@ -69,6 +69,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.version.VersionManager;
 
 public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4DistributedTestCase {
+
   protected File[] testingDirs = new File[3];
 
   protected static String INDEX_NAME = "index";
@@ -224,33 +225,12 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
 
   void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
-      boolean skipVerification,
       int expectedRegionSize, int start, int end, VM... vms) throws Exception {
     // do puts
     putSerializableObject(putter, regionName, start, end);
 
     // verify present in others
-
-    if (!skipVerification) {
-      verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
-    }
-  }
-
-  public boolean hasLuceneVersionMismatch(Host host) {
-    for (VM vm : host.getAllVMs()) {
-      int currentVersionOrdinal = 0;
-      for (KnownVersion productVersion : KnownVersion.getAllVersions()) {
-        if (vm.getVersion().equals(productVersion.getName())) {
-          currentVersionOrdinal = productVersion.ordinal();
-        } else if (vm.getVersion().equals(VersionManager.CURRENT_VERSION)) {
-          currentVersionOrdinal = KnownVersion.CURRENT_ORDINAL;
-        }
-      }
-      if (currentVersionOrdinal < KnownVersion.GEODE_1_15_0.ordinal()) {
-        return true;
-      }
-    }
-    return false;
+    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
   }
 
   void putSerializableObject(VM putter, String regionName, int start, int end)
@@ -315,12 +295,22 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected Collection executeLuceneQuery(Object luceneQuery)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     Collection results = null;
-    await().ignoreExceptions().untilAsserted(() -> {
-      luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
-    });
-    results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
-
+    int retryCount = 10;
+    while (true) {
+      try {
+        results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+        break;
+      } catch (Exception ex) {
+        if (!ex.getCause().getMessage().contains("currently indexing")) {
+          throw ex;
+        }
+        if (--retryCount == 0) {
+          throw ex;
+        }
+      }
+    }
     return results;
+
   }
 
   protected void verifyLuceneQueryResultInEachVM(String regionName, int expectedRegionSize,
