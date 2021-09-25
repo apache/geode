@@ -138,8 +138,7 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
 
   private void startClusterAndDoFunctionCalls(File locatorLog, File serverLog, int iteration) {
     locatorPort = locator.invoke(() -> startLocator(locatorLog));
-    server.invoke(() -> createCacheServer(serverLog));
-    server.invoke(this::createDiskRegionIfNotExist);
+    server.invoke(() -> createCacheServerAndDiskRegion(serverLog));
     client.invoke(this::setClientRegion);
     client.invoke(() -> clientCacheRule.getClientCache().readyForEvents());
     client.invoke(this::callFunctions);
@@ -156,10 +155,12 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
     return locator.getPort();
   }
 
-  private void createCacheServer(File logFile) throws Exception {
+  private void createCacheServerAndDiskRegion(File logFile) throws Exception {
     Properties systemProperties = new Properties();
     systemProperties.setProperty("gemfire.jg-bind-port", Integer.toString(uniquePort));
     cacheRule.createCache(createServerConfig(logFile), systemProperties);
+
+    createDiskRegionIfNotExist();
 
     CacheServer server = cacheRule.getCache().addCacheServer();
     server.setPort(0);
