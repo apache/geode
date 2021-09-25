@@ -75,7 +75,8 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
 
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()), server1, server2);
       int expectedRegionSize = 10;
-      putSerializableObject(server1, regionName, 0, 10);
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 0,
+          10, server1, server2);
       locator1 = rollLocatorToCurrent(locator1, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
 
@@ -85,35 +86,23 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 15,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
           25, server2);
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 15,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
           25, server1);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 20,
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 20,
           30, server2);
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 20,
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 20,
           30, server1);
 
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 25,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 25,
           35, server1, server2);
       expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 30,
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 30,
           40, server1, server2);
 
     } finally {

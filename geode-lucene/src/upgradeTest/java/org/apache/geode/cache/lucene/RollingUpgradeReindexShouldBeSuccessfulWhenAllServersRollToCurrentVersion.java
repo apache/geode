@@ -106,9 +106,7 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
       ai2.checkException();
 
       expectedRegionSize += 10;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName,
-          hasLuceneVersionMismatch(host),
-          expectedRegionSize, 15,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 15,
           25, server1, server2);
 
     } finally {

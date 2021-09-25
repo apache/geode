@@ -120,7 +120,7 @@ public class LuceneIndexStats {
   /**
    * @param start the timestamp taken when the operation started
    */
-  public void endRepositoryQuery(long start, final long totalHits) {
+  public void endRepositoryQuery(long start, final int totalHits) {
     stats.incLong(repositoryQueryExecutionTimeId, getStatTime() - start);
     stats.incInt(repositoryQueryExecutionsInProgressId, -1);
     stats.incInt(repositoryQueryExecutionsId, 1);

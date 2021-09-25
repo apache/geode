@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.serialization.KnownVersion;
 
 public class IndexRepositoryFactoryTest {
   private Integer bucketId;
@@ -120,15 +119,6 @@ public class IndexRepositoryFactoryTest {
     when(oldRepository.isClosed()).thenReturn(true);
     when(fileAndChunkBucketAdvisor.isPrimary()).thenReturn(true).thenReturn(false);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(false);
-
-    IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
-        serializer, userRegion, oldRepository, luceneIndex);
-    assertThat(indexRepository).isNull();
-  }
-
-  @Test
-  public void finishComputingRepositoryShouldReturnNullWhenThereIsOlderMember() throws IOException {
-    when(userRegion.getCache().hasMemberOlderThan(KnownVersion.GEODE_1_15_0)).thenReturn(false);
 
     IndexRepository indexRepository = indexRepositoryFactory.finishComputingRepository(0,
         serializer, userRegion, oldRepository, luceneIndex);

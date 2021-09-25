@@ -66,7 +66,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClockSupplier;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -587,6 +586,4 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
   void lockDiskStore(String diskStoreName);
 
   void unlockDiskStore(String diskStoreName);
-
-  boolean hasMemberOlderThan(KnownVersion version);
 }
