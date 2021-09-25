@@ -350,37 +350,6 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize();
   }
 
-
-
-  // double weight = keyWeight.getWeight();
-  // RedisSortedSet weightedSet = new RedisSortedSet(keyWeights.size());
-  //
-  // for (AbstractOrderedSetEntry entry : set.members.values()) {
-  // double score;
-  // // Redis math and Java math are different when handling infinity. Specifically:
-  // // Java: INFINITY * 0 = NaN
-  // // Redis: INFINITY * 0 = 0
-  // if (weight == 0) {
-  // score = 0;
-  // } else if (weight == 1) {
-  // score = entry.getScore();
-  // } else if (Double.isInfinite(weight) && entry.getScore() == 0D) {
-  // score = 0D;
-  // } else {
-  // score = entry.getScore() * weight;
-  // }
-  // weightedSet.memberAdd(entry.getMember(), score);
-  // }
-  // sets.add(weightedSet);
-  // }
-  //
-  // computeIntersection(sets, aggregator);
-  //
-  // regionProvider.getLocalDataRegion().put(key, this);
-  //
-  // return this.getSortedSetSize();
-  // }
-
   long zlexcount(SortedSetLexRangeOptions lexOptions) {
     int minIndex = lexOptions.getRangeIndex(scoreSet, true);
     if (minIndex >= scoreSet.size()) {

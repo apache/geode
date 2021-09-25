@@ -410,8 +410,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) (i * 10));
 
     jedis.zunionstore(KEY1,
-        new ZParams().weights(1, 10).aggregate(ZParams.Aggregate.MAX), KEY1,
-        KEY2);
+        new ZParams().weights(1, 10).aggregate(ZParams.Aggregate.MAX), KEY1, KEY2);
 
     Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 20);
 

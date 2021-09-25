@@ -40,113 +40,82 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
-    boolean weightsFound = false;
-
     ListIterator<byte[]> argIterator = commandElements.listIterator();
+    RedisResponse syntaxErrorResponse = RedisResponse.error(ERROR_SYNTAX);
+
     // Skip command and destination key
     argIterator.next();
     argIterator.next();
 
+    // get the number of keys
     int numKeys;
     try {
       numKeys = narrowLongToInt(Coder.bytesToLong(argIterator.next()));
+      if (numKeys > commandElements.size() - 2) {
+        return syntaxErrorResponse;
+      } else if (numKeys <= 0) {
+        return RedisResponse.error(ERROR_KEY_REQUIRED);
+      }
     } catch (NumberFormatException ex) {
-      return RedisResponse.error(ERROR_SYNTAX);
-    }
-
-    // Rough validation so that we can use numKeys to initialize the array sizes below.
-    if (numKeys > commandElements.size() - 2) {
-      return RedisResponse.error(ERROR_SYNTAX);
-    }
-
-    if (numKeys <= 0) {
-      return RedisResponse.error(ERROR_KEY_REQUIRED);
+      return syntaxErrorResponse;
     }
 
     List<ZKeyWeight> keyWeights = new ArrayList<>(numKeys);
     ZAggregator aggregator = ZAggregator.SUM;
     byte[] argument;
-    boolean aggOrWeightFound = false;
-    boolean aggregateFound = false;
 
-    do {
-      int numWeights = 0;
+    // get all the keys
+    for (int i = 0; i < numKeys; i++) {
+      if (!argIterator.hasNext()) {
+        return syntaxErrorResponse;
+      }
       argument = argIterator.next();
+      if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)
+          || Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
+        return syntaxErrorResponse;
+      }
+      keyWeights.add(new ZKeyWeight(new RedisKey(argument), 1D));
+    }
 
-      if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
-        aggOrWeightFound = true;
-
+    while (argIterator.hasNext()) {
+      argument = argIterator.next();
+      // found AGGREGATE keyword; parse aggregate
+      if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
         if (!argIterator.hasNext()) {
-          return RedisResponse.error(ERROR_SYNTAX);
+          return syntaxErrorResponse;
         }
-
-        // start parsing weights
-        for (int i = 0; argIterator.hasNext(); i++) {
-          argument = argIterator.next();
-
-          if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
-            if (numWeights == numKeys) {
-              break;
-            } else {
-              return RedisResponse.error(ERROR_SYNTAX);
-            }
+        argument = argIterator.next();
+        if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
+          return syntaxErrorResponse; // there must be an aggregate between 'AGGREGATE' & 'WEIGHTS'
+        }
+        try {
+          aggregator = ZAggregator.valueOf(Coder.bytesToString(toUpperCaseBytes(argument)));
+        } catch (IllegalArgumentException e) {
+          return syntaxErrorResponse;
+        }
+        // found WEIGHTS keyword; parse weights
+      } else if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
+        for (int i = 0; i < numKeys; i++) {
+          if (!argIterator.hasNext()) {
+            return syntaxErrorResponse;
           }
-
-          if (keyWeights.size() > numKeys || i >= numKeys) {
-            return RedisResponse.error(ERROR_SYNTAX);
+          argument = argIterator.next();
+          if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
+            return syntaxErrorResponse; // there must be # weights between 'WEIGHTS' & 'AGGREGATE'
           }
           try {
-            double arg = Coder.bytesToDouble(argument);
-            keyWeights.get(i).setWeight(arg);
-            numWeights++;
+            keyWeights.get(i).setWeight(Coder.bytesToDouble(argument));
           } catch (NumberFormatException e) {
             return RedisResponse.error(ERROR_WEIGHT_NOT_A_FLOAT);
           }
         }
-
-        if (numWeights != numKeys) {
-          return RedisResponse.error(ERROR_SYNTAX);
-        }
-
-
-      } else if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
-        aggOrWeightFound = true;
-
-        // the iterator must have at least one more, and we must have the expected number of keys
-        if (!argIterator.hasNext() || keyWeights.size() != numKeys) {
-          return RedisResponse.error(ERROR_SYNTAX);
-        }
-
-        // start parsing aggregates
-        argument = argIterator.next();
-        if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
-          // if we've found at least one aggregate before the weights keyword then we're good
-          if (aggregateFound) {
-            break;
-          } else {
-            return RedisResponse.error(ERROR_SYNTAX);
-          }
-        }
-
-        try {
-          aggregator = ZAggregator.valueOf(Coder.bytesToString(toUpperCaseBytes(argument)));
-        } catch (IllegalArgumentException e) {
-          return RedisResponse.error(ERROR_SYNTAX);
-        }
-        aggregateFound = true;
-
       } else {
-        // otherwise it's a key
-        if (aggOrWeightFound || keyWeights.size() > numKeys) {
-          return RedisResponse.error(ERROR_SYNTAX);
-        }
-        keyWeights.add(new ZKeyWeight(new RedisKey(argument), 1D));
+        return syntaxErrorResponse;
       }
-
-    } while (argIterator.hasNext());
+    }
 
     if (keyWeights.size() != numKeys) {
-      return RedisResponse.error(ERROR_SYNTAX);
+      return syntaxErrorResponse;
     }
 
     int slot = command.getKey().getSlot();
@@ -157,64 +126,6 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
     }
 
     return RedisResponse.integer(getResult(context, command, keyWeights, aggregator));
-
-
-    //
-    //
-    // while (argIterator.hasNext()) {
-    // byte[] arg = argIterator.next();
-    //
-    // if (keyWeights.size() < numKeys) {
-    // keyWeights.add(new ZKeyWeight(new RedisKey(arg), 1D));
-    // continue;
-    // }
-    //
-    // arg = toUpperCaseBytes(arg);
-    // if (Arrays.equals(arg, bWEIGHTS)) {
-    // if (weightsFound) {
-    // return RedisResponse.error(ERROR_SYNTAX);
-    // } else {
-    // weightsFound = true;
-    // }
-    // for (int i = 0; i < numKeys; i++) {
-    // if (!argIterator.hasNext()) {
-    // return RedisResponse.error(ERROR_SYNTAX);
-    // }
-    // try {
-    // keyWeights.get(i).setWeight(Coder.bytesToDouble(argIterator.next()));
-    // } catch (NumberFormatException nex) {
-    // return RedisResponse.error(ERROR_WEIGHT_NOT_A_FLOAT);
-    // }
-    // }
-    // continue;
-    // }
-    //
-    // if (Arrays.equals(arg, bAGGREGATE)) {
-    // try {
-    // aggregator = ZAggregator.valueOf(Coder.bytesToString(argIterator.next()));
-    // } catch (IllegalArgumentException | NoSuchElementException e) {
-    // return RedisResponse.error(ERROR_SYNTAX);
-    // }
-    // continue;
-    // }
-    //
-    // // End up here if we have finished parsing keys and encounter another option other than
-    // // WEIGHTS and AGGREGATE
-    // return RedisResponse.error(ERROR_SYNTAX);
-    // }
-    //
-    // if (keyWeights.size() != numKeys) {
-    // return RedisResponse.error(ERROR_SYNTAX);
-    // }
-    //
-    // int slot = command.getKey().getSlot();
-    // for (ZKeyWeight keyWeight : keyWeights) {
-    // if (keyWeight.getKey().getSlot() != slot) {
-    // return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
-    // }
-    // }
-    //
-    // return RedisResponse.integer(getResult(context, command, keyWeights, aggregator));
   }
 
   public abstract long getResult(ExecutionHandlerContext context, Command command,
