@@ -65,6 +65,7 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
+import org.apache.geode.redis.internal.executor.server.CommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
@@ -135,15 +136,9 @@ import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.ClusterParameterRequirements;
-import org.apache.geode.redis.internal.parameters.EvenParameterRequirements;
-import org.apache.geode.redis.internal.parameters.ExactParameterRequirements;
-import org.apache.geode.redis.internal.parameters.MaximumParameterRequirements;
-import org.apache.geode.redis.internal.parameters.MinimumParameterRequirements;
-import org.apache.geode.redis.internal.parameters.OddParameterRequirements;
-import org.apache.geode.redis.internal.parameters.ParameterRequirements;
+import org.apache.geode.redis.internal.parameters.Parameter;
 import org.apache.geode.redis.internal.parameters.SlowlogParameterRequirements;
 import org.apache.geode.redis.internal.parameters.SpopParameterRequirements;
-import org.apache.geode.redis.internal.parameters.UnspecifiedParameterRequirements;
 
 /**
  * The redis command type used by the server. Each command is directly from the redis protocol.
@@ -155,130 +150,123 @@ public enum RedisCommandType {
    ***************************************/
 
   /*************** Connection ****************/
-  AUTH(new AuthExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
-  ECHO(new EchoExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  PING(new PingExecutor(), SUPPORTED, new MaximumParameterRequirements(2)),
-  QUIT(new QuitExecutor(), SUPPORTED),
+  AUTH(new AuthExecutor(), SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)),
+  ECHO(new EchoExecutor(), SUPPORTED, new Parameter().exact(2).firstKey(0)),
+  PING(new PingExecutor(), SUPPORTED, new Parameter().min(1).max(2).firstKey(0)),
+  QUIT(new QuitExecutor(), SUPPORTED, new Parameter().firstKey(0)),
 
   /*************** Keys ******************/
 
-  DEL(new DelExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  DUMP(new DumpExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  EXISTS(new ExistsExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  EXPIRE(new ExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  KEYS(new KeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  PERSIST(new PersistExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  PEXPIRE(new PExpireExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  PTTL(new PTTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  RENAME(new RenameExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  RESTORE(new RestoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  TTL(new TTLExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  TYPE(new TypeExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  DEL(new DelExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1)),
+  DUMP(new DumpExecutor(), SUPPORTED, new Parameter().exact(2)),
+  EXISTS(new ExistsExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1)),
+  EXPIRE(new ExpireExecutor(), SUPPORTED, new Parameter().exact(3)),
+  EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new Parameter().exact(3)),
+  KEYS(new KeysExecutor(), SUPPORTED, new Parameter().exact(2).firstKey(0)),
+  PERSIST(new PersistExecutor(), SUPPORTED, new Parameter().exact(2)),
+  PEXPIRE(new PExpireExecutor(), SUPPORTED, new Parameter().exact(3)),
+  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new Parameter().exact(3)),
+  PTTL(new PTTLExecutor(), SUPPORTED, new Parameter().exact(2)),
+  RENAME(new RenameExecutor(), SUPPORTED, new Parameter().exact(3).lastKey(2)),
+  RESTORE(new RestoreExecutor(), SUPPORTED, new Parameter().min(4)),
+  TTL(new TTLExecutor(), SUPPORTED, new Parameter().exact(2)),
+  TYPE(new TypeExecutor(), SUPPORTED, new Parameter().exact(2)),
 
   /************* Strings *****************/
 
-  APPEND(new AppendExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  DECR(new DecrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  DECRBY(new DecrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  GET(new GetExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  GETSET(new GetSetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  INCRBY(new IncrByExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  INCR(new IncrExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  GETRANGE(new GetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  MGET(new MGetExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  MSET(new MSetExecutor(), SUPPORTED,
-      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
-  PSETEX(new PSetEXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  SET(new SetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  SETEX(new SetEXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  SETNX(new SetNXExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  SETRANGE(new SetRangeExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  STRLEN(new StrlenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  APPEND(new AppendExecutor(), SUPPORTED, new Parameter().exact(3)),
+  DECR(new DecrExecutor(), SUPPORTED, new Parameter().exact(2)),
+  DECRBY(new DecrByExecutor(), SUPPORTED, new Parameter().exact(3)),
+  GET(new GetExecutor(), SUPPORTED, new Parameter().exact(2)),
+  GETSET(new GetSetExecutor(), SUPPORTED, new Parameter().exact(3)),
+  INCRBY(new IncrByExecutor(), SUPPORTED, new Parameter().exact(3)),
+  INCR(new IncrExecutor(), SUPPORTED, new Parameter().exact(2)),
+  GETRANGE(new GetRangeExecutor(), SUPPORTED, new Parameter().exact(4)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED, new Parameter().exact(3)),
+  MGET(new MGetExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1)),
+  MSET(new MSetExecutor(), UNSUPPORTED, new Parameter().min(3).odd().lastKey(-1).step(2)),
+  PSETEX(new PSetEXExecutor(), SUPPORTED, new Parameter().exact(4)),
+  SET(new SetExecutor(), SUPPORTED, new Parameter().min(3)),
+  SETEX(new SetEXExecutor(), SUPPORTED, new Parameter().exact(4)),
+  SETNX(new SetNXExecutor(), SUPPORTED, new Parameter().exact(3)),
+  SETRANGE(new SetRangeExecutor(), SUPPORTED, new Parameter().exact(4)),
+  STRLEN(new StrlenExecutor(), SUPPORTED, new Parameter().exact(2)),
 
   /************* Hashes *****************/
 
-  HDEL(new HDelExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  HGET(new HGetExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  HGETALL(new HGetAllExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  HINCRBYFLOAT(new HIncrByFloatExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  HLEN(new HLenExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  HMGET(new HMGetExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  HMSET(new HMSetExecutor(), SUPPORTED,
-      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HSET(new HSetExecutor(), SUPPORTED,
-      new MinimumParameterRequirements(4).and(new EvenParameterRequirements())),
-  HSETNX(new HSetNXExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  HSTRLEN(new HStrLenExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  HINCRBY(new HIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  HVALS(new HValsExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  HSCAN(new HScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
-  HEXISTS(new HExistsExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  HKEYS(new HKeysExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
+  HDEL(new HDelExecutor(), SUPPORTED, new Parameter().min(3)),
+  HGET(new HGetExecutor(), SUPPORTED, new Parameter().exact(3)),
+  HGETALL(new HGetAllExecutor(), SUPPORTED, new Parameter().exact(2)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), SUPPORTED, new Parameter().exact(4)),
+  HLEN(new HLenExecutor(), SUPPORTED, new Parameter().exact(2)),
+  HMGET(new HMGetExecutor(), SUPPORTED, new Parameter().min(3)),
+  HMSET(new HMSetExecutor(), SUPPORTED, new Parameter().min(4).even()),
+  HSET(new HSetExecutor(), SUPPORTED, new Parameter().min(4).even()),
+  HSETNX(new HSetNXExecutor(), SUPPORTED, new Parameter().exact(4)),
+  HSTRLEN(new HStrLenExecutor(), SUPPORTED, new Parameter().exact(3)),
+  HINCRBY(new HIncrByExecutor(), SUPPORTED, new Parameter().exact(4)),
+  HVALS(new HValsExecutor(), SUPPORTED, new Parameter().exact(2)),
+  HSCAN(new HScanExecutor(), SUPPORTED, new Parameter().min(3).odd()),
+  HEXISTS(new HExistsExecutor(), SUPPORTED, new Parameter().exact(3)),
+  HKEYS(new HKeysExecutor(), SUPPORTED, new Parameter().exact(2)),
 
   /************* Sets *****************/
 
-  SADD(new SAddExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  SMEMBERS(new SMembersExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  SREM(new SRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
+  SADD(new SAddExecutor(), SUPPORTED, new Parameter().min(3)),
+  SMEMBERS(new SMembersExecutor(), SUPPORTED, new Parameter().exact(2)),
+  SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3)),
 
   /************ Sorted Sets **************/
 
-  ZADD(new ZAddExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZCARD(new ZCardExecutor(), SUPPORTED, new ExactParameterRequirements(2)),
-  ZCOUNT(new ZCountExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZINTERSTORE(new ZInterStoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZLEXCOUNT(new ZLexCountExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZPOPMAX(new ZPopMaxExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
-  ZPOPMIN(new ZPopMinExecutor(), SUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX))),
-  ZRANGE(new ZRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
-      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
-  ZRANGEBYLEX(new ZRangeByLexExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZRANK(new ZRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  ZREM(new ZRemExecutor(), SUPPORTED, new MinimumParameterRequirements(3)),
-  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor(), SUPPORTED, new ExactParameterRequirements(4)),
-  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new MinimumParameterRequirements(4)
-      .and(new MaximumParameterRequirements(5, ERROR_SYNTAX))),
-  ZREVRANGEBYLEX(new ZRevRangeByLexExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
-  ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  ZSCAN(new ZScanExecutor(), SUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
-  ZSCORE(new ZScoreExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  ZUNIONSTORE(new ZUnionStoreExecutor(), SUPPORTED, new MinimumParameterRequirements(4)),
+  ZADD(new ZAddExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZCARD(new ZCardExecutor(), SUPPORTED, new Parameter().exact(2)),
+  ZCOUNT(new ZCountExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZINTERSTORE(new ZInterStoreExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZLEXCOUNT(new ZLexCountExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZPOPMAX(new ZPopMaxExecutor(), SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX)),
+  ZPOPMIN(new ZPopMinExecutor(), SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX)),
+  ZRANGE(new ZRangeExecutor(), SUPPORTED, new Parameter().min(4).max(5, ERROR_SYNTAX)),
+  ZRANGEBYLEX(new ZRangeByLexExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZRANK(new ZRankExecutor(), SUPPORTED, new Parameter().exact(3)),
+  ZREM(new ZRemExecutor(), SUPPORTED, new Parameter().min(3)),
+  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor(), SUPPORTED, new Parameter().exact(4)),
+  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED, new Parameter().min(4).max(5, ERROR_SYNTAX)),
+  ZREVRANGEBYLEX(new ZRevRangeByLexExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED, new Parameter().min(4)),
+  ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new Parameter().exact(3)),
+  ZSCAN(new ZScanExecutor(), SUPPORTED, new Parameter().min(3).odd(ERROR_SYNTAX)),
+  ZSCORE(new ZScoreExecutor(), SUPPORTED, new Parameter().exact(3)),
+  ZUNIONSTORE(new ZUnionStoreExecutor(), SUPPORTED, new Parameter().min(4)),
 
   /************* Server *****************/
-  SLOWLOG(new SlowlogExecutor(), SUPPORTED, new SlowlogParameterRequirements()),
-  INFO(new InfoExecutor(), SUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
+  COMMAND(new CommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0)),
+  SLOWLOG(new SlowlogExecutor(), SUPPORTED, new Parameter().min(2)
+      .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)),
+  INFO(new InfoExecutor(), SUPPORTED, new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)),
 
   /********** Publish Subscribe **********/
-  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  PUBLISH(new PublishExecutor(), SUPPORTED, new ExactParameterRequirements(3)),
-  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
-  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
-  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new MinimumParameterRequirements(1)),
-  PUBSUB(new PubSubExecutor(), SUPPORTED, new MinimumParameterRequirements(2)),
+  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new Parameter().min(2).firstKey(0)),
+  PUBLISH(new PublishExecutor(), SUPPORTED, new Parameter().exact(3).firstKey(0)),
+  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED, new Parameter().min(2).firstKey(0)),
+  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0)),
+  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0)),
+  PUBSUB(new PubSubExecutor(), SUPPORTED, new Parameter().min(2).firstKey(0)),
 
   /************* Cluster *****************/
-  CLUSTER(new ClusterExecutor(), SUPPORTED, new ClusterParameterRequirements()),
+  CLUSTER(new ClusterExecutor(), SUPPORTED, new Parameter().min(2)
+      .custom(ClusterParameterRequirements.checkParameters()).firstKey(0)),
 
   /***************************************
    ********* Internal Commands ***********
    ***************************************/
   // do not call these directly, only to be used in other commands
-  INTERNALPTTL(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(2)),
-  INTERNALTYPE(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(2)),
-  INTERNALSMEMBERS(new UnknownExecutor(), INTERNAL, new ExactParameterRequirements(3)),
+  INTERNALPTTL(new UnknownExecutor(), INTERNAL, new Parameter().exact(2)),
+  INTERNALTYPE(new UnknownExecutor(), INTERNAL, new Parameter().exact(2)),
+  INTERNALSMEMBERS(new UnknownExecutor(), INTERNAL, new Parameter().exact(3)),
 
   /***************************************
    ******** Unsupported Commands *********
@@ -286,48 +274,49 @@ public enum RedisCommandType {
 
   /*************** Connection *************/
 
-  SELECT(new SelectExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
+  SELECT(new SelectExecutor(), UNSUPPORTED, new Parameter().exact(2).firstKey(0)),
 
   /*************** Keys ******************/
 
-  SCAN(new ScanExecutor(), UNSUPPORTED,
-      new EvenParameterRequirements(ERROR_SYNTAX).and(new MinimumParameterRequirements(2))),
-  UNLINK(new DelExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
+  SCAN(new ScanExecutor(), UNSUPPORTED, new Parameter().min(2).even(ERROR_SYNTAX).firstKey(0)),
+  UNLINK(new DelExecutor(), UNSUPPORTED, new Parameter().min(2).lastKey(-1)),
 
   /************** Strings ****************/
 
-  BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
-  BITOP(new BitOpExecutor(), UNSUPPORTED, new MinimumParameterRequirements(4)),
-  BITPOS(new BitPosExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  GETBIT(new GetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  MSETNX(new MSetNXExecutor(), UNSUPPORTED,
-      new MinimumParameterRequirements(3).and(new OddParameterRequirements())),
-  SETBIT(new SetBitExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
+  BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new Parameter().min(2)),
+  BITOP(new BitOpExecutor(), UNSUPPORTED, new Parameter().min(4).firstKey(2).lastKey(-1)),
+  BITPOS(new BitPosExecutor(), UNSUPPORTED, new Parameter().min(3)),
+  GETBIT(new GetBitExecutor(), UNSUPPORTED, new Parameter().exact(3)),
+  MSETNX(new MSetNXExecutor(), UNSUPPORTED, new Parameter().min(3).odd().lastKey(-1).step(2)),
+  SETBIT(new SetBitExecutor(), UNSUPPORTED, new Parameter().exact(4)),
 
   /**************** Sets *****************/
 
-  SCARD(new SCardExecutor(), UNSUPPORTED, new ExactParameterRequirements(2)),
-  SDIFF(new SDiffExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
-  SDIFFSTORE(new SDiffStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  SINTER(new SInterExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
-  SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
-  SISMEMBER(new SIsMemberExecutor(), UNSUPPORTED, new ExactParameterRequirements(3)),
-  SMOVE(new SMoveExecutor(), UNSUPPORTED, new ExactParameterRequirements(4)),
-  SPOP(new SPopExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)
-      .and(new MaximumParameterRequirements(3, ERROR_SYNTAX)).and(new SpopParameterRequirements())),
-  SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
-  SSCAN(new SScanExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3),
-      new OddParameterRequirements(ERROR_SYNTAX)),
-  SUNION(new SUnionExecutor(), UNSUPPORTED, new MinimumParameterRequirements(2)),
-  SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new MinimumParameterRequirements(3)),
+  SCARD(new SCardExecutor(), UNSUPPORTED, new Parameter().exact(2)),
+  SDIFF(new SDiffExecutor(), UNSUPPORTED, new Parameter().min(2).lastKey(-1)),
+  SDIFFSTORE(new SDiffStoreExecutor(), UNSUPPORTED, new Parameter().min(3).lastKey(-1)),
+  SINTER(new SInterExecutor(), UNSUPPORTED, new Parameter().min(2).lastKey(-1)),
+  SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED, new Parameter().min(3).lastKey(-1)),
+  SISMEMBER(new SIsMemberExecutor(), UNSUPPORTED, new Parameter().exact(3)),
+  SMOVE(new SMoveExecutor(), UNSUPPORTED, new Parameter().exact(4).lastKey(2)),
+  SPOP(new SPopExecutor(), UNSUPPORTED, new Parameter().min(2).max(3)
+      .custom(SpopParameterRequirements.checkParameters())),
+  SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED, new Parameter().min(2)),
+  SSCAN(new SScanExecutor(), UNSUPPORTED, new Parameter().min(3),
+      new Parameter().odd(ERROR_SYNTAX).firstKey(0)),
+  SUNION(new SUnionExecutor(), UNSUPPORTED, new Parameter().min(2).lastKey(-1)),
+  SUNIONSTORE(new SUnionStoreExecutor(), UNSUPPORTED, new Parameter().min(3).lastKey(-1)),
 
   /*************** Server ****************/
 
-  DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED, new MaximumParameterRequirements(2, ERROR_SYNTAX)),
-  TIME(new TimeExecutor(), UNSUPPORTED, new ExactParameterRequirements(1)),
+  DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new Parameter().exact(1).firstKey(0)),
+  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)),
+  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)),
+  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)),
+  TIME(new TimeExecutor(), UNSUPPORTED, new Parameter().exact(1).firstKey(0)),
 
   /***************************************
    *********** Unknown Commands **********
@@ -335,26 +324,44 @@ public enum RedisCommandType {
   UNKNOWN(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN);
 
   private final Executor executor;
-  private final ParameterRequirements parameterRequirements;
-  private final ParameterRequirements deferredParameterRequirements;
+  private final Parameter parameterRequirements;
+  private final Parameter deferredParameterRequirements;
   private final RedisCommandSupportLevel supportLevel;
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel) {
-    this(executor, supportLevel, new UnspecifiedParameterRequirements());
+    this(executor, supportLevel, new Parameter().custom((c, e) -> {
+    }));
   }
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
-      ParameterRequirements parameterRequirements) {
-    this(executor, supportLevel, parameterRequirements, new UnspecifiedParameterRequirements());
+      Parameter parameterRequirements) {
+    this(executor, supportLevel, parameterRequirements, new Parameter().custom((c, e) -> {
+    }));
   }
 
   RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
-      ParameterRequirements parameterRequirements,
-      ParameterRequirements deferredParameterRequirements) {
+      Parameter parameterRequirements,
+      Parameter deferredParameterRequirements) {
     this.executor = executor;
     this.supportLevel = supportLevel;
     this.parameterRequirements = parameterRequirements;
     this.deferredParameterRequirements = deferredParameterRequirements;
+  }
+
+  public int arity() {
+    return parameterRequirements.getArity();
+  }
+
+  public int firstKey() {
+    return parameterRequirements.getFirstKey();
+  }
+
+  public int lastKey() {
+    return parameterRequirements.getLastKey();
+  }
+
+  public int step() {
+    return parameterRequirements.getStep();
   }
 
   public boolean isSupported() {

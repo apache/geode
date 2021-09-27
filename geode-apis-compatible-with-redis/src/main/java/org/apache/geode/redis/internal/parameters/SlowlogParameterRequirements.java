@@ -24,27 +24,31 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
 
+import java.util.function.BiConsumer;
+
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SlowlogParameterRequirements implements ParameterRequirements {
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    int numberOfArguments = command.getProcessedCommand().size();
+public class SlowlogParameterRequirements {
 
-    if (numberOfArguments < 2) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    } else if (numberOfArguments == 2) {
-      confirmKnownSubcommands(command);
-    } else if (numberOfArguments == 3) {
-      confirmArgumentsToGetSubcommand(command);
-    } else { // numberOfArguments > 3
-      throw new RedisParametersMismatchException(
-          String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
-    }
+  public static BiConsumer<Command, ExecutionHandlerContext> checkParameters() {
+    return (command, context) -> {
+      int numberOfArguments = command.getProcessedCommand().size();
+
+      if (numberOfArguments < 2) {
+        throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
+      } else if (numberOfArguments == 2) {
+        confirmKnownSubcommands(command);
+      } else if (numberOfArguments == 3) {
+        confirmArgumentsToGetSubcommand(command);
+      } else { // numberOfArguments > 3
+        throw new RedisParametersMismatchException(
+            String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, command.getStringKey()));
+      }
+    };
   }
 
-  private void confirmKnownSubcommands(Command command) {
+  private static void confirmKnownSubcommands(Command command) {
     byte[] bytes = command.getBytesKey();
     if (!equalsIgnoreCaseBytes(bytes, bRESET) &&
         !equalsIgnoreCaseBytes(bytes, bLEN) &&
@@ -54,7 +58,7 @@ public class SlowlogParameterRequirements implements ParameterRequirements {
     }
   }
 
-  private void confirmArgumentsToGetSubcommand(Command command) {
+  private static void confirmArgumentsToGetSubcommand(Command command) {
     byte[] bytes = command.getBytesKey();
     if (!equalsIgnoreCaseBytes(bytes, bGET)) {
       throw new RedisParametersMismatchException(

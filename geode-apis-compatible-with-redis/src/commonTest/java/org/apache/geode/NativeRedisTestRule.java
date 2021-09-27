@@ -30,13 +30,20 @@ import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 public class NativeRedisTestRule extends ExternalResource implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
+  private static final String DEFAULT_REDIS_IMAGE = "redis:5.0.6";
 
   private GenericContainer<?> redisContainer;
   private final RuleChain delegate;
+  private final String dockerImage;
   private final int PORT_TO_EXPOSE = 6379;
   private int max_clients = 10000;
 
   public NativeRedisTestRule() {
+    this(DEFAULT_REDIS_IMAGE);
+  }
+
+  public NativeRedisTestRule(String dockerImage) {
+    this.dockerImage = dockerImage;
     delegate = RuleChain
         // Docker compose does not work on windows in CI. Ignore this test on windows
         // Using a RuleChain to make sure we ignore the test before the rule comes into play
@@ -64,7 +71,7 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
       public void evaluate() throws Throwable {
 
         redisContainer =
-            new GenericContainer<>("redis:5.0.6")
+            new GenericContainer<>(dockerImage)
                 .withExposedPorts(PORT_TO_EXPOSE)
                 .withCommand("redis-server --maxclients " + max_clients);
 
