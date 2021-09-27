@@ -206,7 +206,7 @@ public class StatusRedundancyCommandDUnitTest {
   }
 
   @Test
-  public void statusRedundancyReturnsEmptyRegionStatusAsSatisfied() {
+  public void statusRedundancyReturnsEmptyRegionStatusCorrectly() {
     createRegion();
     doPutAndRemove();
     String command = new CommandStringBuilder(STATUS_REDUNDANCY).getCommandString();
