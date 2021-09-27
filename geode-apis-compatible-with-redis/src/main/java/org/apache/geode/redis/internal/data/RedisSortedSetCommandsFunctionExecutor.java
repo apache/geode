@@ -197,7 +197,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     getRegionProvider().ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
 
-    getRegionProvider().orderForLocking(keysToLock);
     return keysToLock;
   }
 }

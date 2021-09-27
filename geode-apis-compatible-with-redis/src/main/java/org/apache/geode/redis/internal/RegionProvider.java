@@ -346,14 +346,6 @@ public class RegionProvider {
   }
 
   /**
-   * A means to consistently order multiple keys for locking to avoid typical deadlock situations.
-   * Note that the list of keys is sorted in place.
-   */
-  public void orderForLocking(List<RedisKey> keys) {
-    keys.sort(stripedCoordinator::compareStripes);
-  }
-
-  /**
    * Check if a key would be stored locally (in a primary bucket on this server). Otherwise throw a
    * {@link RedisDataMovedException}. Note that this will not check for the actual existence of the
    * key.

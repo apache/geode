@@ -721,10 +721,10 @@ public class RedisSortedSet extends AbstractRedisData {
   private Double getMaxScoreForMember(List<RedisSortedSet> sets, byte[] member) {
     double runningMax = Double.MIN_VALUE;
     for (RedisSortedSet set : sets) {
-      if (set.members.containsKey(member)) {
-        double newScore = set.members.get(member).getScore();
-        if (newScore > runningMax) {
-          runningMax = newScore;
+      OrderedSetEntry m;
+      if ((m = set.members.get(member)) != null) {
+        if (m.getScore() > runningMax) {
+          runningMax = m.getScore();
         }
       } else {
         return null;

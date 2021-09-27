@@ -702,15 +702,48 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     return tuples;
   }
 
+  @Test
+  public void test_assertThatActualScoresAreVeryCloseToExpectedScores() {
+    Set<Tuple> actualResult = new HashSet<>(3);
+    Set<Tuple> expectedResult = new HashSet<>(2);
+
+    actualResult.add(new Tuple("element1", 1.0));
+    expectedResult.add(new Tuple("element1", 1.0));
+
+    actualResult.add(new Tuple("element2", 2.0));
+    expectedResult.add(new Tuple("element2", 2.0));
+
+    actualResult.add(new Tuple("element3", 3.0));
+
+    // actual has more elements than expected
+    assertThatThrownBy(
+        () -> assertThatActualScoresAreVeryCloseToExpectedScores(expectedResult, actualResult))
+            .isInstanceOf(AssertionError.class);
+
+    expectedResult.add(new Tuple("element3", 3.0));
+    expectedResult.add(new Tuple("element4", 4.0));
+
+    // actual has fewer elements than expected
+    assertThatThrownBy(
+        () -> assertThatActualScoresAreVeryCloseToExpectedScores(expectedResult, actualResult))
+            .isInstanceOf(AssertionError.class);
+  }
+
   private void assertThatActualScoresAreVeryCloseToExpectedScores(
       Set<Tuple> expectedResults, Set<Tuple> results) {
+    assertThat(expectedResults.size()).isEqualTo(results.size());
+
     for (Tuple expectedResult : expectedResults) {
+      boolean resultFound = false;
       for (Tuple actualResult : results) {
         if (Objects.equals(actualResult.getElement(), expectedResult.getElement())) {
           assertThat(actualResult.getScore()).isCloseTo(expectedResult.getScore(),
               Offset.offset(0.0001D));
+          resultFound = true;
+          break;
         }
       }
+      assertThat(resultFound).isTrue();
     }
   }
 }
