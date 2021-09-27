@@ -197,12 +197,22 @@ public class StatusRedundancyCommandDUnitTest {
   }
 
   @Test
-  public void statusRedundancyReturnsEmptyRegionStatusAsNonRedundantCopies() {
+  public void statusRedundancyReturnsRegionWithNoBucketsCreatedStatusAsNoRedundantCopies() {
     createRegion();
     String command = new CommandStringBuilder(STATUS_REDUNDANCY).getCommandString();
     CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess();
     verifyGfshOutput(commandResult, Collections.singletonList(EMPTY_REGION), new ArrayList<>(),
         new ArrayList<>());
+  }
+
+  @Test
+  public void statusRedundancyReturnsEmptyRegionStatusAsSatisfied() {
+    createRegion();
+    doPutAndRemove();
+    String command = new CommandStringBuilder(STATUS_REDUNDANCY).getCommandString();
+    CommandResultAssert commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    verifyGfshOutput(commandResult, new ArrayList<>(), new ArrayList<>(),
+        Collections.singletonList(EMPTY_REGION));
   }
 
   private void createRegion() {
@@ -211,6 +221,15 @@ public class StatusRedundancyCommandDUnitTest {
       cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).create(EMPTY_REGION);
     }));
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + EMPTY_REGION, 2);
+  }
+
+  private void doPutAndRemove() {
+    servers.get(0).invoke(() -> {
+      InternalCache cache = Objects.requireNonNull(ClusterStartupRule.getCache());
+      Region<Object, Object> region = cache.getRegion(EMPTY_REGION);
+      region.put(1, 1);
+      region.remove(1);
+    });
   }
 
   private void createAndPopulateRegions() {

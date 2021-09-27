@@ -45,7 +45,7 @@ public class SerializableRegionRedundancyStatusImplTest {
   }
 
   @Test
-  public void redundancyStatusOfAnEmptyRegionIsEqualToNoRedundantCopies() {
+  public void redundancyStatusOfRegionWithNoBucketsCreatedIsEqualToNoRedundantCopies() {
     when(prMock.getPartitionAttributes().getTotalNumBuckets()).thenReturn(113);
     when(prMock.getRegionAdvisor().getBucketRedundancy(anyInt())).thenReturn(-1);
     when(prMock.getRedundantCopies()).thenReturn(1);
