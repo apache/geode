@@ -90,6 +90,7 @@ public class CommandIntegrationTest {
     softly.assertAll();
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, CommandStructure> processRawCommands(List<Object> rawCommands) {
     Map<String, CommandStructure> commands = new HashMap<>();
 
