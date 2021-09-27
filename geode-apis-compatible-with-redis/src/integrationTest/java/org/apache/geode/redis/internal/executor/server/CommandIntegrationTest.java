@@ -81,6 +81,8 @@ public class CommandIntegrationTest {
     assertThat(actual).as("no metadata for " + expected.name).isNotNull();
     SoftAssertions softly = new SoftAssertions();
     softly.assertThat(actual.arity).as(expected.name + ".arity").isEqualTo(expected.arity);
+    softly.assertThat(actual.flags).as(expected.name + ".flags")
+        .containsExactlyInAnyOrderElementsOf(expected.flags);
     softly.assertThat(actual.firstKey).as(expected.name + ".firstKey").isEqualTo(expected.firstKey);
     softly.assertThat(actual.lastKey).as(expected.name + ".lastKey").isEqualTo(expected.lastKey);
     softly.assertThat(actual.stepCount).as(expected.name + ".stepCount")
@@ -94,12 +96,16 @@ public class CommandIntegrationTest {
     for (Object rawEntry : rawCommands) {
       List<Object> entry = (List<Object>) rawEntry;
       String key = (String) entry.get(0);
+      List<String> flags = new ArrayList<>();
+      flags.addAll((List<String>) entry.get(2));
+
       CommandStructure cmd = new CommandStructure(
           key,
-          (Long) entry.get(1),
-          (Long) entry.get(3),
-          (Long) entry.get(4),
-          (Long) entry.get(5));
+          (long) entry.get(1),
+          flags,
+          (long) entry.get(3),
+          (long) entry.get(4),
+          (long) entry.get(5));
 
       commands.put(key, cmd);
     }
@@ -108,15 +114,18 @@ public class CommandIntegrationTest {
   }
 
   private static class CommandStructure {
-    String name;
-    long arity;
-    long firstKey;
-    long lastKey;
-    long stepCount;
+    final String name;
+    final long arity;
+    final long firstKey;
+    final List<String> flags;
+    final long lastKey;
+    final long stepCount;
 
-    public CommandStructure(String name, long arity, long firstKey, long lastKey, long stepCount) {
+    public CommandStructure(String name, long arity, List<String> flags, long firstKey,
+        long lastKey, long stepCount) {
       this.name = name;
       this.arity = arity;
+      this.flags = flags;
       this.firstKey = firstKey;
       this.lastKey = lastKey;
       this.stepCount = stepCount;

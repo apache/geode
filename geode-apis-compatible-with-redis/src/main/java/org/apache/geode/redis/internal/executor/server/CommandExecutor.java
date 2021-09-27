@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
@@ -39,7 +40,7 @@ public class CommandExecutor extends AbstractExecutor {
       List<Object> oneCommand = new ArrayList<>();
       oneCommand.add(type.name().toLowerCase());
       oneCommand.add(type.arity());
-      oneCommand.add(new ArrayList<>());
+      oneCommand.add(type.flags().stream().map(Enum::name).collect(Collectors.toList()));
       oneCommand.add(type.firstKey());
       oneCommand.add(type.lastKey());
       oneCommand.add(type.step());

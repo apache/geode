@@ -16,15 +16,18 @@
 package org.apache.geode.redis.internal.parameters;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class Parameter {
 
   private int arity;
+  private List<RedisCommandType.Flag> flags = new ArrayList<>();
   private int firstKey = 1;
   private int lastKey = 1;
   private int step = 1;
@@ -38,6 +41,10 @@ public class Parameter {
     return arity;
   }
 
+  public List<RedisCommandType.Flag> getFlags() {
+    return flags;
+  }
+
   public int getFirstKey() {
     return firstKey;
   }
@@ -48,6 +55,11 @@ public class Parameter {
 
   public int getStep() {
     return step;
+  }
+
+  public Parameter flags(RedisCommandType.Flag... flags) {
+    this.flags = Arrays.asList(flags);
+    return this;
   }
 
   public Parameter exact(int exact) {
