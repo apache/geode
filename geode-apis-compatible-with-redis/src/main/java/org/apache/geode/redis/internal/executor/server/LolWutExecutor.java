@@ -22,6 +22,7 @@ import java.util.Random;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -29,84 +30,110 @@ public class LolWutExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
                                       ExecutionHandlerContext context) {
-    StringBuilder mazeString = new StringBuilder();
-    final int width = 40;
-    int height = 10;
+    long height = 10;
     List<byte[]> commands = command.getProcessedCommand();
     if (commands.size() > 1) {
-      // get and validate height argument
+      for(int i=1; i< commands.size(); i++) {
+        if (Coder.bytesToString(commands.get(i)).equalsIgnoreCase("version")) {
+          i += 1; // skip next arg, we only have one version for now
+        } else {
+          height = Coder.bytesToLong(commands.get(i));
+        }
+      }
     }
 
-    int[] left = new int[width];
-    left[0] = 1;
-    int[] right = new int[width];
+    return RedisResponse.bulkString(makeArbitraryHeightMaze(height));
+  }
 
-    // Top of maze
-    for (int i = width; --i > 0; left[i] = right[i] = i) {
-      mazeString.append("._");
-    }
+  // Adapted from code here: https://tromp.github.io/maze.html
+  public static String makeArbitraryHeightMaze(long height) {
+    StringBuilder mazeString = new StringBuilder();
+    final int width = 40;
+    int[] leftLinks = new int[width];
+    int[] rightLinks = new int[width];
 
-    // Entrance
-    mazeString.append("\n ");
-
-    // Do a row of the maze
-    int temp;
     Random rand = new Random();
+    leftLinks[0] = 1;
+
+    mazeTopAndEntrance(mazeString, width, leftLinks, rightLinks);
+
+    mazeRows(mazeString, height, width, leftLinks, rightLinks, rand);
+
+    mazeBottomRow(mazeString, width, leftLinks, rightLinks, rand);
+
+    mazeString.append("\n " + KnownVersion.getCurrentVersion().toString() + "\n");
+
+    return mazeString.toString();
+  }
+
+  private static void mazeTopAndEntrance(StringBuilder mazeString, int width, int[] leftLinks,
+                                         int[] rightLinks) {
+    int tempIndex;
+    for (tempIndex = width; --tempIndex > 0;
+         leftLinks[tempIndex] = rightLinks[tempIndex] = tempIndex) {
+      mazeString.append("._"); // top walls
+    }
+    mazeString.append("\n "); // Open wall for entrance at top left
+  }
+
+  private static void mazeRows(StringBuilder mazeString, long height,
+                               int width, int[] leftLinks,
+                               int[] rightLinks, Random rand) {
+    int currentCell;
+    String first;
+    String second;
+    int tempIndex;
     while (--height > 0) {
-      String first;
-      String second;
-      for (int i = width; --i > 0; /* */) {
-        if ((i != (temp = left[i - 1])) && rand.nextBoolean()) {
-          // connect to cell to right
-          right[temp] = right[i];
-          left[right[i]] = temp;
-          right[i] = i - 1;
-          left[i - 1] = i;
+      for (currentCell = width; --currentCell > 0; ) {
+        if (currentCell != (tempIndex = leftLinks[currentCell - 1])
+            && rand.nextBoolean()) { // connect cell to cell on right?
+          rightLinks[tempIndex] = rightLinks[currentCell];
+          leftLinks[rightLinks[currentCell]] = tempIndex;
+          rightLinks[currentCell] = currentCell - 1;
+          leftLinks[currentCell - 1] = currentCell;
           second = ".";
         } else {
-          // block cell to right
-          second = "|";
+          second = "|"; // wall to the right
         }
-        if ((i != (temp = left[i])) && rand.nextBoolean()) {
-          // block off cell below
-          right[temp] = right[i];
-          left[right[i]] = temp;
-          left[i] = i;
-          right[i] = i;
-          first = "_";
+        if (currentCell != (tempIndex = leftLinks[currentCell])
+            && rand.nextBoolean())  { // omit down-connection?
+          rightLinks[tempIndex] = rightLinks[currentCell];
+          leftLinks[rightLinks[currentCell]] = tempIndex;
+          leftLinks[currentCell] = currentCell;
+          rightLinks[currentCell] = currentCell;
+          first = "_"; // wall downward
         } else {
-          // leave open lower wall
-          first = " ";
+          first = " "; // no wall downward
         }
         mazeString.append(first);
         mazeString.append(second);
       }
       mazeString.append("\n|");
     }
+  }
 
-    // Handle last row
-    for (int i = width; --i > 0; ) {
-      if ((i != (temp = left[i - 1])) && (i == right[i] || rand.nextBoolean())) {
-        left[right[temp]] = right[i] = temp;
-        left[(right[i] = i - 1)] = i;
+  private static void mazeBottomRow(StringBuilder mazeString, int width, int[] leftLinks,
+                                    int[] rightLinks, Random rand) {
+    int currentCell;
+    int tempIndex;
+    for (currentCell = width; --currentCell > 0; ) {
+      if (currentCell != (tempIndex = leftLinks[currentCell - 1]) && (
+          currentCell == rightLinks[currentCell] || rand.nextBoolean())) {
+        leftLinks[rightLinks[tempIndex] = rightLinks[currentCell]] = tempIndex;
+        leftLinks[rightLinks[currentCell] = currentCell - 1] = currentCell;
         mazeString.append("_.");
       } else {
-        mazeString.append('_');
-        if (i==1) {
-          mazeString.append(" "); // Exit
+        if (currentCell == 1) {
+          mazeString.append("_ "); // maze exit
         } else {
-          mazeString.append('|');
+          mazeString.append("_|"); // regular wall
         }
       }
-
-      temp = left[i];
-      right[temp] = right[i];
-      left[right[i]] = temp;
-      left[i] = i;
-      right[i] = i;
+      tempIndex = leftLinks[currentCell];
+      rightLinks[tempIndex] = rightLinks[currentCell];
+      leftLinks[rightLinks[currentCell]] = tempIndex;
+      leftLinks[currentCell] = currentCell;
+      rightLinks[currentCell] = currentCell;
     }
-    mazeString.append("\n " + KnownVersion.getCurrentVersion().toString() + "\n");
-
-    return RedisResponse.bulkString(mazeString.toString());
   }
 }
