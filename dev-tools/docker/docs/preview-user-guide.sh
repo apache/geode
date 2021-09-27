@@ -18,20 +18,28 @@
 
 function cleanup {
   rm Gemfile Gemfile.lock
-  rm -r geode-book geode-docs
 }
 
 trap cleanup EXIT
 
-set -x -e
+set -x
 
-mkdir -p geode-book
-mkdir -p geode-docs
-
+# Gemfile & Gemfile.lock are copied to avoid including the whole
+# geode-book folder to the image context
 cp ../../../geode-book/Gemfile* .
-cp -r ../../../geode-book geode-book
-cp -r ../../../geode-docs geode-docs
 
 docker build -t geodedocs/temp:1.0 .
 
-docker run -it -p 9292:9292 geodedocs/temp:1.0 /bin/bash -c "cd geode-book && bundle exec bookbinder bind local && cd final_app && bundle exec rackup --host=0.0.0.0"
+# "geode-book/final_app" and "geode-book/output" are created inside the container,
+# so it is necessary to use the current user to avoid these folders owned by
+# root user.
+export UID=$(id -u)
+export GID=$(id -g)
+docker run -it -p 9292:9292 --user $UID:$GID \
+    --workdir="/home/$USER" \
+    --volume="/etc/group:/etc/group:ro" \
+    --volume="/etc/passwd:/etc/passwd:ro" \
+    --volume="/etc/shadow:/etc/shadow:ro" \
+    --volume="$(pwd)/../../../geode-book:/geode-book:rw" \
+    --volume="$(pwd)/../../../geode-docs:/geode-docs:rw" \
+    geodedocs/temp:1.0 /bin/bash -c "cd /geode-book && bundle exec bookbinder bind local && cd final_app && bundle exec rackup --host=0.0.0.0"
