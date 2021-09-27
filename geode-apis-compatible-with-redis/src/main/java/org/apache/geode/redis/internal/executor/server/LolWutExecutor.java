@@ -29,11 +29,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class LolWutExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
-                                      ExecutionHandlerContext context) {
+      ExecutionHandlerContext context) {
     long height = 10;
     List<byte[]> commands = command.getProcessedCommand();
     if (commands.size() > 1) {
-      for(int i=1; i< commands.size(); i++) {
+      for (int i = 1; i < commands.size(); i++) {
         if (Coder.bytesToString(commands.get(i)).equalsIgnoreCase("version")) {
           i += 1; // skip next arg, we only have one version for now
         } else {
@@ -67,24 +67,24 @@ public class LolWutExecutor extends AbstractExecutor {
   }
 
   private static void mazeTopAndEntrance(StringBuilder mazeString, int width, int[] leftLinks,
-                                         int[] rightLinks) {
+      int[] rightLinks) {
     int tempIndex;
-    for (tempIndex = width; --tempIndex > 0;
-         leftLinks[tempIndex] = rightLinks[tempIndex] = tempIndex) {
+    for (tempIndex = width; --tempIndex > 0; leftLinks[tempIndex] =
+        rightLinks[tempIndex] = tempIndex) {
       mazeString.append("._"); // top walls
     }
     mazeString.append("\n "); // Open wall for entrance at top left
   }
 
   private static void mazeRows(StringBuilder mazeString, long height,
-                               int width, int[] leftLinks,
-                               int[] rightLinks, Random rand) {
+      int width, int[] leftLinks,
+      int[] rightLinks, Random rand) {
     int currentCell;
     String first;
     String second;
     int tempIndex;
     while (--height > 0) {
-      for (currentCell = width; --currentCell > 0; ) {
+      for (currentCell = width; --currentCell > 0;) {
         if (currentCell != (tempIndex = leftLinks[currentCell - 1])
             && rand.nextBoolean()) { // connect cell to cell on right?
           rightLinks[tempIndex] = rightLinks[currentCell];
@@ -96,7 +96,7 @@ public class LolWutExecutor extends AbstractExecutor {
           second = "|"; // wall to the right
         }
         if (currentCell != (tempIndex = leftLinks[currentCell])
-            && rand.nextBoolean())  { // omit down-connection?
+            && rand.nextBoolean()) { // omit down-connection?
           rightLinks[tempIndex] = rightLinks[currentCell];
           leftLinks[rightLinks[currentCell]] = tempIndex;
           leftLinks[currentCell] = currentCell;
@@ -113,12 +113,12 @@ public class LolWutExecutor extends AbstractExecutor {
   }
 
   private static void mazeBottomRow(StringBuilder mazeString, int width, int[] leftLinks,
-                                    int[] rightLinks, Random rand) {
+      int[] rightLinks, Random rand) {
     int currentCell;
     int tempIndex;
-    for (currentCell = width; --currentCell > 0; ) {
-      if (currentCell != (tempIndex = leftLinks[currentCell - 1]) && (
-          currentCell == rightLinks[currentCell] || rand.nextBoolean())) {
+    for (currentCell = width; --currentCell > 0;) {
+      if (currentCell != (tempIndex = leftLinks[currentCell - 1])
+          && (currentCell == rightLinks[currentCell] || rand.nextBoolean())) {
         leftLinks[rightLinks[tempIndex] = rightLinks[currentCell]] = tempIndex;
         leftLinks[rightLinks[currentCell] = currentCell - 1] = currentCell;
         mazeString.append("_.");
