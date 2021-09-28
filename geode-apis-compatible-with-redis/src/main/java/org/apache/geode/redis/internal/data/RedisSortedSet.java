@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_OPERATION_PRODUCED_NAN;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
@@ -667,87 +666,6 @@ public class RedisSortedSet extends AbstractRedisData {
       resultList.add(key);
       resultList.add(doubleToBytes(score));
     }
-  }
-
-  private void computeIntersection(List<RedisSortedSet> sets, ZAggregator aggregator) {
-    RedisSortedSet retVal = new RedisSortedSet(Collections.emptyList(), new double[] {});
-    RedisSortedSet smallestSet = sets.get(0);
-
-    for (RedisSortedSet set : sets) {
-      if (set.getSortedSetSize() < smallestSet.getSortedSetSize()) {
-        smallestSet = set;
-      }
-    }
-
-    for (byte[] member : smallestSet.members.keySet()) {
-      Double newScore;
-      if (aggregator.equals(ZAggregator.SUM)) {
-        newScore = getSumOfScoresForMember(sets, member);
-      } else if (aggregator.equals(ZAggregator.MAX)) {
-        newScore = getMaxScoreForMember(sets, member);
-      } else {
-        newScore = getMinScoreForMember(sets, member);
-      }
-
-      if (newScore != null) {
-        if (newScore.isNaN()) {
-          throw new ArithmeticException(ERROR_OPERATION_PRODUCED_NAN);
-        }
-        retVal.memberAdd(member, newScore);
-      }
-    }
-  }
-
-  private Double getSumOfScoresForMember(List<RedisSortedSet> sets, byte[] memberName) {
-    OrderedSetEntry member;
-    double runningTotal = 0;
-
-    for (RedisSortedSet set : sets) {
-      if ((member = set.members.get(memberName)) != null) {
-        if (Double.isInfinite(runningTotal) && member.getScore() == -runningTotal) {
-          runningTotal = 0;
-        } else {
-          runningTotal += member.getScore();
-        }
-      } else {
-        return null;
-      }
-    }
-
-    this.memberAdd(memberName, runningTotal);
-    return runningTotal;
-  }
-
-  private Double getMaxScoreForMember(List<RedisSortedSet> sets, byte[] member) {
-    double runningMax = Double.MIN_VALUE;
-    for (RedisSortedSet set : sets) {
-      OrderedSetEntry m;
-      if ((m = set.members.get(member)) != null) {
-        if (m.getScore() > runningMax) {
-          runningMax = m.getScore();
-        }
-      } else {
-        return null;
-      }
-    }
-    this.memberAdd(member, runningMax);
-    return runningMax;
-  }
-
-  private Double getMinScoreForMember(List<RedisSortedSet> sets, byte[] member) {
-    double runningMin = Double.MAX_VALUE;
-    for (RedisSortedSet set : sets) {
-      if (set.members.containsKey(member)) {
-        double newScore = set.members.get(member).getScore();
-        if (newScore < runningMin) {
-          runningMin = newScore;
-        }
-      } else {
-        return null;
-      }
-    }
-    this.memberAdd(member, runningMin);
-    return runningMin;
   }
 
   @Override
