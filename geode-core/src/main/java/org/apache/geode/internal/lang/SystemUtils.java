@@ -14,10 +14,15 @@
  */
 package org.apache.geode.internal.lang;
 
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.JavaVersion;
 
 /**
  * The SystemUtils class is an abstract utility class for working with, invoking methods and
@@ -49,6 +54,16 @@ public class SystemUtils {
   public static final String SOLARIS_OS_NAME = "SunOS";
 
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+  /**
+   * Is the Java version the requested version.
+   *
+   * @param requiredVersion the required version
+   * @return true if the actual version is the required version
+   */
+  public static boolean isJavaVersion(final JavaVersion requiredVersion) {
+    return isJavaVersionAtLeast(requiredVersion) && isJavaVersionAtMost(requiredVersion);
+  }
 
   /**
    * Utility method to determine whether the Java application process is executing on the Apple JVM.

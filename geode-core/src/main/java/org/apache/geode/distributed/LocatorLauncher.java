@@ -22,6 +22,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
 
 import java.io.File;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -88,6 +91,12 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.filter.DelegatingGlobalSerialFilterFactory;
+import org.apache.geode.internal.serialization.filter.DistributedSerializableObjectConfig;
+import org.apache.geode.internal.serialization.filter.GlobalSerialFilter;
+import org.apache.geode.internal.serialization.filter.Java8GlobalSerialFilterConfigurationFactory;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
@@ -709,10 +718,28 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see org.apache.geode.distributed.AbstractLauncher.Status#ONLINE
    * @see org.apache.geode.distributed.AbstractLauncher.Status#STARTING
    */
-  @SuppressWarnings("deprecation")
   public LocatorState start() {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
+
+      // TODO:KIRK: write new LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest
+
+      SerializableObjectConfig serializableObjectConfig =
+          new DistributedSerializableObjectConfig(getDistributedSystemProperties());
+
+      String filterPattern = new SanctionedSerializablesFilterPattern()
+          .append(serializableObjectConfig.getFilterPatternIfEnabled())
+          .pattern();
+
+      Set<String> sanctionedClasses =
+          loadSanctionedClassNames(loadSanctionedSerializablesServices());
+
+      GlobalSerialFilter globalSerialFilter = new DelegatingGlobalSerialFilterFactory()
+          .create(filterPattern, sanctionedClasses);
+
+      new Java8GlobalSerialFilterConfigurationFactory()
+          .create(globalSerialFilter)
+          .configure();
 
       try {
         this.process =
