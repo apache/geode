@@ -223,8 +223,7 @@ public class GMSMembershipJUnitTest {
     inOrder.verify(managerImpl, times(1)).uncleanShutdownDS(eq(reason),
         isA(MemberDisconnectedException.class));
     inOrder.verify(directChannelCallback, timeout(3000).times(1)).forcedDisconnect();
-    inOrder.verify(listener, timeout(3000).times(1))
-        .setShutdownCause(isA(MemberDisconnectedException.class));
+    inOrder.verify(listener, timeout(3000).times(1)).forcedDisconnectHappened(eq(reason));
   }
 
   @Test
@@ -245,10 +244,11 @@ public class GMSMembershipJUnitTest {
     when(managerImpl.isReconnectingDS()).thenReturn(true);
 
     manager.forceDisconnect(reason);
-    InOrder inOrder = inOrder(managerImpl, directChannelCallback, listener);
+    InOrder inOrder = inOrder(services, managerImpl, listener);
+    inOrder.verify(services, times(1)).setShutdownCause(isA(MemberDisconnectedException.class));
     inOrder.verify(managerImpl, times(1)).uncleanShutdownReconnectingDS(eq(reason),
         isA(MemberDisconnectedException.class));
-    inOrder.verify(listener, times(1)).setShutdownCause(isA(MemberDisconnectedException.class));
+    inOrder.verify(listener, times(1)).forcedDisconnectHappened(eq(reason));
   }
 
   private GMSMembershipView createView(MemberIdentifier creator, int viewId,

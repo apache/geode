@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -44,8 +43,7 @@ public class ClusterDistributionManagerTest {
     ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
     ClusterDistributionManager.DMListener listener =
         new ClusterDistributionManager.DMListener(manager);
-    Throwable retCause = listener.setShutdownCause(new MemberDisconnectedException("For Testing"));
+    listener.forcedDisconnectHappened("For Testing");
     verify(manager, times(1)).setRootCause(isA(ForcedDisconnectException.class));
-    assertThat(retCause).isInstanceOf(ForcedDisconnectException.class);
   }
 }
