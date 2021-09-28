@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
 import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_13_0;
 import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_14_0;
 import static org.apache.geode.internal.serialization.KnownVersion.GEODE_1_8_0;
@@ -270,8 +273,7 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null, GatewaySenderEventImpl.TransactionMetadataDisposition.Include);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null, INCLUDE);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNotNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isFalse();
@@ -282,9 +284,8 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null,
-            GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null,
+            INCLUDE_LAST_EVENT);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNotNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isTrue();
@@ -295,8 +296,7 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(mock(TransactionId.class));
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null, GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null, EXCLUDE);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isFalse();
@@ -308,8 +308,7 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(null);
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null, GatewaySenderEventImpl.TransactionMetadataDisposition.Include);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null, INCLUDE);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isFalse();
@@ -321,9 +320,8 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(null);
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null,
-            GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null,
+            INCLUDE_LAST_EVENT);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isFalse();
@@ -335,8 +333,7 @@ public class GatewaySenderEventImplTest {
     final EntryEventImpl cacheEvent = mockEntryEventImpl(null);
 
     final GatewaySenderEventImpl gatewaySenderEvent =
-        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE,
-            cacheEvent, null, GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude);
+        new GatewaySenderEventImpl(EnumListenerEvent.AFTER_CREATE, cacheEvent, null, EXCLUDE);
 
     assertThat(gatewaySenderEvent.getTransactionId()).isNull();
     assertThat(gatewaySenderEvent.isLastEventInTransaction()).isFalse();

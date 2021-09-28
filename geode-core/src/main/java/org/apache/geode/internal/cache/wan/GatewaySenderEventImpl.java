@@ -15,8 +15,8 @@
 
 package org.apache.geode.internal.cache.wan;
 
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -244,7 +244,7 @@ public class GatewaySenderEventImpl
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> event,
       Object substituteValue) throws IOException {
-    this(operation, event, substituteValue, true, TransactionMetadataDisposition.Exclude);
+    this(operation, event, substituteValue, true, EXCLUDE);
   }
 
   @Retained
@@ -321,10 +321,10 @@ public class GatewaySenderEventImpl
     }
     isConcurrencyConflict = event.isConcurrencyConflict();
 
-    if (transactionMetadataDisposition != Exclude) {
+    if (transactionMetadataDisposition != EXCLUDE) {
       transactionId = event.getTransactionId();
       isLastEventInTransaction =
-          transactionMetadataDisposition == IncludeLastEvent && null != transactionId;
+          transactionMetadataDisposition == INCLUDE_LAST_EVENT && null != transactionId;
     }
   }
 
@@ -1360,15 +1360,15 @@ public class GatewaySenderEventImpl
     /**
      * Transaction metadata should be excluded from the event.
      */
-    Exclude,
+    EXCLUDE,
     /**
      * Transaction metadata should be included in the event.
      */
-    Include,
+    INCLUDE,
     /**
      * Transaction metadata should be included in the event and this is the last event in the
      * transaction.
      */
-    IncludeLastEvent,
+    INCLUDE_LAST_EVENT,
   }
 }

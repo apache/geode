@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Include;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -63,8 +63,8 @@ public class AbstractGatewaySenderEventProcessorTest {
     when(sender.mustGroupTransactionEvents()).thenReturn(true);
     when(processor.getTransactionMetadataDisposition(anyBoolean())).thenCallRealMethod();
 
-    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(Include);
-    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(IncludeLastEvent);
+    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(INCLUDE);
+    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(INCLUDE_LAST_EVENT);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class AbstractGatewaySenderEventProcessorTest {
     when(processor.getSender()).thenReturn(sender);
     when(processor.getTransactionMetadataDisposition(anyBoolean())).thenCallRealMethod();
 
-    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(Exclude);
-    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(Exclude);
+    assertThat(processor.getTransactionMetadataDisposition(false)).isEqualTo(EXCLUDE);
+    assertThat(processor.getTransactionMetadataDisposition(true)).isEqualTo(EXCLUDE);
   }
 }

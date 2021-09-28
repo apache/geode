@@ -15,9 +15,9 @@
 package org.apache.geode.internal.cache.wan;
 
 import static java.lang.Boolean.TRUE;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Exclude;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.Include;
-import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.IncludeLastEvent;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
@@ -1230,9 +1230,14 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   protected GatewaySenderEventImpl.TransactionMetadataDisposition getTransactionMetadataDisposition(
       final boolean isLastEventInTransaction) {
-    return getSender().mustGroupTransactionEvents()
-        ? isLastEventInTransaction ? IncludeLastEvent : Include
-        : Exclude;
+    if (getSender().mustGroupTransactionEvents()) {
+      if (isLastEventInTransaction) {
+        return INCLUDE_LAST_EVENT;
+      }
+      return INCLUDE;
+    } else {
+      return EXCLUDE;
+    }
   }
 
   public void removeCacheListener() {}
