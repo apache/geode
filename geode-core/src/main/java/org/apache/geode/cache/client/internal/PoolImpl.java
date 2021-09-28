@@ -1512,7 +1512,7 @@ public class PoolImpl implements InternalPool {
     return cache.keepDurableSubscriptionsAlive();
   }
 
-  ArrayList<ProxyCache> getProxyCacheList() {
+  public ArrayList<ProxyCache> getProxyCacheList() {
     return proxyCacheList;
   }
 

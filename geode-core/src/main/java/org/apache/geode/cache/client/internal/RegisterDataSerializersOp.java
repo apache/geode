@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
@@ -28,16 +29,45 @@ import org.apache.geode.internal.util.BlobHelper;
 
 public class RegisterDataSerializersOp {
 
+  private static void tryAllAuthedUsers(PoolImpl pool, AbstractOp op) {
+    ArrayList<ProxyCache> proxyCacheList = pool.getProxyCacheList();
+    Exception lastException = null;
+
+    for (ProxyCache proxyCache : proxyCacheList) {
+      UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
+      try {
+        pool.execute(op);
+        return;
+      } catch (Exception exception) {
+        lastException = exception;
+      }
+    }
+
+    throw new UnsupportedOperationException(lastException);
+  }
+
   public static void execute(ExecutablePool pool, DataSerializer[] dataSerializers,
       EventID eventId) {
+    PoolImpl poolImpl = (PoolImpl) pool;
     AbstractOp op = new RegisterDataSerializersOpImpl(dataSerializers, eventId);
-    pool.execute(op);
+
+    if (poolImpl.getMultiuserAuthentication()) {
+      tryAllAuthedUsers(poolImpl, op);
+    } else {
+      pool.execute(op);
+    }
   }
 
   public static void execute(ExecutablePool pool, SerializerAttributesHolder[] holders,
       EventID eventId) {
+    PoolImpl poolImpl = (PoolImpl) pool;
     AbstractOp op = new RegisterDataSerializersOpImpl(holders, eventId);
-    pool.execute(op);
+
+    if (poolImpl.getMultiuserAuthentication()) {
+      tryAllAuthedUsers(poolImpl, op);
+    } else {
+      pool.execute(op);
+    }
   }
 
   private RegisterDataSerializersOp() {

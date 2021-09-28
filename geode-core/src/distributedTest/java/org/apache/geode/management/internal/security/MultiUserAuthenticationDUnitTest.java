@@ -18,8 +18,12 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -30,6 +34,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
@@ -43,6 +49,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -53,9 +60,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({SecurityTest.class})
 public class MultiUserAuthenticationDUnitTest {
-
-  private static int SESSION_COUNT = 2;
-  private static int KEY_COUNT = 2;
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -77,6 +81,7 @@ public class MultiUserAuthenticationDUnitTest {
     Properties serverProps = new Properties();
     serverProps.setProperty("security-username", "cluster");
     serverProps.setProperty("security-password", "cluster");
+    serverProps.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, "*");
     lsRule.startServerVM(1, serverProps, locator.getPort());
     lsRule.startServerVM(2, serverProps, locator.getPort());
 
@@ -85,9 +90,72 @@ public class MultiUserAuthenticationDUnitTest {
     gfsh.executeAndAssertThat("create region --name=region --type=PARTITION").statusIsSuccess();
   }
 
+
+  private static class TestObject implements DataSerializable {
+
+    private String id;
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeString(id, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException {
+      id = DataSerializer.readString(in);
+    }
+  }
+
+  private static class TestObjectDataSerializer extends DataSerializer implements Serializable {
+
+    @Override
+    public Class<?>[] getSupportedClasses() {
+      return new Class<?>[] {TestObject.class};
+    }
+
+    @Override
+    public boolean toData(Object o, DataOutput out) {
+      return o instanceof TestObject;
+    }
+
+    @Override
+    public Object fromData(DataInput in) {
+      return new TestObject();
+    }
+
+    @Override
+    public int getId() {
+      return 99;
+    }
+  }
+
+
+  @Test
+  public void validatePropogationOfDataSerializersInMultUserAuthMode() throws Exception {
+    int locatorPort = locator.getPort();
+    ClientCache cache = client.withCacheSetup(f -> f.setPoolSubscriptionEnabled(true)
+        .setPoolMultiuserAuthentication(true)
+        .addPoolLocator("localhost", locatorPort))
+        .createCache();
+    RegionService regionService1 = client.createAuthenticatedView("data", "data");
+
+    cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+
+    Region<String, TestObject> region = regionService1.getRegion(SEPARATOR + "region");
+
+    DataSerializer.register(TestObjectDataSerializer.class);
+
+    String key = "TestObject";
+    region.put(key, new TestObject());
+
+    regionService1.close();
+    cache.close();
+  }
+
   @Test
   public void multiAuthenticatedView() throws Exception {
     int locatorPort = locator.getPort();
+    int SESSION_COUNT = 2;
     for (int i = 0; i < SESSION_COUNT; i++) {
       ClientCache cache = client.withCacheSetup(f -> f.setPoolSubscriptionEnabled(true)
           .setPoolMultiuserAuthentication(true)
@@ -99,8 +167,9 @@ public class MultiUserAuthenticationDUnitTest {
 
       cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
 
-      Region region = regionService1.getRegion(SEPARATOR + "region");
-      Region region2 = regionService2.getRegion(SEPARATOR + "region");
+      Region<String, String> region = regionService1.getRegion(SEPARATOR + "region");
+      Region<String, String> region2 = regionService2.getRegion(SEPARATOR + "region");
+      int KEY_COUNT = 2;
       for (int j = 0; j < KEY_COUNT; j++) {
         String value = i + "" + j;
         region.put(value, value);
@@ -158,7 +227,7 @@ public class MultiUserAuthenticationDUnitTest {
   }
 
   private static class EventsCqListner implements CqListener {
-    private List<String> keys = new ArrayList<>();
+    private final List<String> keys = new ArrayList<>();
 
     @Override
     public void onEvent(CqEvent aCqEvent) {
