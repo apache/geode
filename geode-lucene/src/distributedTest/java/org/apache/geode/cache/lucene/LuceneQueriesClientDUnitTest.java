@@ -16,7 +16,6 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
@@ -28,9 +27,10 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
 
   @Override

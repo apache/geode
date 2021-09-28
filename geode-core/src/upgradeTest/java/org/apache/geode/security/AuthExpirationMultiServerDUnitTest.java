@@ -15,16 +15,18 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.combineSecurityManagerResults;
+import static org.apache.geode.security.AuthExpirationDUnitTest.createAndExecuteCQ;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.collectSecurityManagers;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,42 +34,50 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.security.AuthExpirationDUnitTest.EventsCqListner;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
 
 @Category({SecurityTest.class})
-public class AuthExpirationMultiServerDUnitTest implements Serializable {
+public class AuthExpirationMultiServerDUnitTest {
   public static final String REPLICATE_REGION = "replicateRegion";
   public static final String PARTITION_REGION = "partitionRegion";
   private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
-  private int locatorPort;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Rule
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
   @Before
   public void setup() {
-    locator = lsRule.startLocatorVM(0, l -> l.withSecurityManager(ExpirableSecurityManager.class));
-    locatorPort = locator.getPort();
-    server1 = lsRule.startServerVM(1, s -> s.withSecurityManager(ExpirableSecurityManager.class)
+    locator = cluster.startLocatorVM(0, l -> l.withSecurityManager(ExpirableSecurityManager.class));
+    int locatorPort = locator.getPort();
+    server1 = cluster.startServerVM(1, s -> s.withSecurityManager(ExpirableSecurityManager.class)
         .withCredential("test", "test")
         .withRegion(RegionShortcut.REPLICATE, REPLICATE_REGION)
         .withRegion(RegionShortcut.PARTITION, PARTITION_REGION)
         .withConnectionToLocator(locatorPort));
-    server2 = lsRule.startServerVM(2, s -> s.withSecurityManager(ExpirableSecurityManager.class)
+    server2 = cluster.startServerVM(2, s -> s.withSecurityManager(ExpirableSecurityManager.class)
         .withCredential("test", "test")
         .withRegion(RegionShortcut.REPLICATE, REPLICATE_REGION)
         .withRegion(RegionShortcut.PARTITION, PARTITION_REGION)
         .withConnectionToLocator(locatorPort));
+  }
+
+  @After
+  public void after() {
+    UpdatableUserAuthInitialize.reset();
   }
 
   @Test
@@ -143,7 +153,7 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
     UpdatableUserAuthInitialize.setUser("user2");
     IntStream.range(0, 100).forEach(i -> region.put(i, "value" + i));
 
-    ExpirableSecurityManager consolidated = combineSecurityManagerResults(server1, server2);
+    ExpirableSecurityManager consolidated = collectSecurityManagers(server1, server2);
     Map<String, List<String>> authorized = consolidated.getAuthorizedOps();
     Map<String, List<String>> unAuthorized = consolidated.getUnAuthorizedOps();
 
@@ -174,8 +184,73 @@ public class AuthExpirationMultiServerDUnitTest implements Serializable {
             AuthenticationRequiredException.class, AuthenticationExpiredException.class);
       }
     }
-    ExpirableSecurityManager consolidated = combineSecurityManagerResults(server1, server2);
+    ExpirableSecurityManager consolidated = collectSecurityManagers(server1, server2);
     assertThat(consolidated.getAuthorizedOps().keySet()).isEmpty();
+  }
+
+  @Test
+  public void cqWithMultiServer() throws Exception {
+    int locatorPort = locator.getPort();
+    UpdatableUserAuthInitialize.setUser("user1");
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locatorPort);
+    ClientCache cache = clientCacheRule.createCache();
+    EventsCqListner listener =
+        createAndExecuteCQ(cache.getQueryService(), "cq1", "select * from /" + PARTITION_REGION);
+
+    UpdatableUserAuthInitialize.setUser("user2");
+    expireUserOnAllVms("user1");
+    doPutsUsingAnotherClient(locatorPort, "user3", 100);
+
+    // make sure listener still gets all the events
+    await().untilAsserted(() -> assertThat(listener.getKeys()).hasSize(100));
+    ExpirableSecurityManager securityManager = collectSecurityManagers(server1, server2);
+    assertThat(securityManager.getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:partitionRegion");
+    assertThat(securityManager.getUnAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:partitionRegion:key0");
+  }
+
+  private void doPutsUsingAnotherClient(int locatorPort, String user, int size) throws Exception {
+    // create another client to do puts
+    ClientVM client = cluster.startClientVM(3,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withLocatorConnection(locatorPort));
+    client.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser(user);
+      Region<Object, Object> proxyRegion =
+          ClusterStartupRule.clientCacheRule.createProxyRegion(PARTITION_REGION);
+      IntStream.range(0, size).forEach(i -> proxyRegion.put("key" + i, "value" + i));
+    });
+  }
+
+  @Test
+  public void registerInterestsWithMultiServers() throws Exception {
+    int locatorPort = locator.getPort();
+    UpdatableUserAuthInitialize.setUser("user1");
+    ClientCache cache = clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locatorPort).createCache();
+    Region<Object, Object> clientRegion =
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+            .create(PARTITION_REGION);
+    clientRegion.registerInterestForAllKeys();
+    UpdatableUserAuthInitialize.setUser("User2");
+
+    expireUserOnAllVms("user1");
+    doPutsUsingAnotherClient(locatorPort, "user3", 100);
+
+    // make sure clientRegion gets all the events
+    await().untilAsserted(() -> assertThat(clientRegion).hasSize(100));
+    ExpirableSecurityManager securityManager = collectSecurityManagers(server1, server2);
+    assertThat(securityManager.getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:partitionRegion");
+    assertThat(securityManager.getUnAuthorizedOps().get("user1"))
+        .containsExactly("DATA:READ:partitionRegion:key0");
   }
 
   private void expireUserOnAllVms(String user) {

@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.ComparisonFailure;
@@ -39,7 +38,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.MultipleFailureException;
 
-@RunWith(JUnitParamsRunner.class)
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
+
+@RunWith(GeodeParamsRunner.class)
 public class ConcurrencyRuleTest {
   private final AtomicBoolean invoked = new AtomicBoolean();
   private final AtomicBoolean retVal = new AtomicBoolean();

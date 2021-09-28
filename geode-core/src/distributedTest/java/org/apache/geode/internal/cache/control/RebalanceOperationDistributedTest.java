@@ -56,7 +56,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
@@ -111,6 +110,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -119,7 +119,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <p>
  * TODO test colocated regions where members aren't consistent in which regions they have
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class RebalanceOperationDistributedTest extends CacheTestCase {
 

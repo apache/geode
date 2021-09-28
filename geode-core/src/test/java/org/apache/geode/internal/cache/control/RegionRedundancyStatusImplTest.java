@@ -26,7 +26,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -35,8 +34,9 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.runtime.RegionRedundancyStatus;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class RegionRedundancyStatusImplTest {
 
   private PartitionedRegion mockRegion;

@@ -38,7 +38,6 @@ import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.NamedParameters;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -73,9 +72,10 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({OQLQueryTest.class, SecurityTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class QueryConfigurationServiceConstraintsDistributedTest implements Serializable {
 

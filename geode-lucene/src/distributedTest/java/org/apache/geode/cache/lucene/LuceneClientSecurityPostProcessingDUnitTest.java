@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,9 +52,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({SecurityTest.class, LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneClientSecurityPostProcessingDUnitTest extends LuceneQueriesAccessorBase {
 
   private VM accessor2;

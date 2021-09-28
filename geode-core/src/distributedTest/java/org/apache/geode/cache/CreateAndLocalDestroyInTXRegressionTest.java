@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import java.io.Serializable;
 import java.util.function.Consumer;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Create and LocalDestroy/LocalInvalidate should create event with NewValue
@@ -50,7 +50,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  * @since GemFire 5.0
  */
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
 

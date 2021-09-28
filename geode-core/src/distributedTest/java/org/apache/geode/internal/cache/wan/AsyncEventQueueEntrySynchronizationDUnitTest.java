@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.wan;
 import static junitparams.JUnitParamsRunner.$;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,9 +39,10 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.junit.categories.AEQTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({AEQTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueueTestBase {
 
   private static Object[] getRegionShortcuts() {

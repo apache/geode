@@ -1099,12 +1099,9 @@ public class ServerConnection implements Runnable {
 
       try {
         // first try integrated security
-        boolean removed = clientUserAuths.removeSubject(aIds.getUniqueId());
-
-        // if not successful, try the old way
-        if (!removed) {
-          clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
-        }
+        clientUserAuths.removeSubject(aIds.getUniqueId());
+        // then, try the old way
+        clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
       } catch (NullPointerException exception) {
         logger.debug("Exception", exception);
       }
@@ -1174,8 +1171,7 @@ public class ServerConnection implements Runnable {
           (InternalLogWriter) system.getSecurityLogWriter(), proxyId.getDistributedMember(),
           securityService);
       if (principal instanceof Subject) {
-        Subject subject = (Subject) principal;
-        uniqueId = putSubject(subject, existingUniqueId);
+        uniqueId = putSubject((Subject) principal, existingUniqueId);
       } else {
         // this sets principal in map as well....
         uniqueId = getUniqueId((Principal) principal);

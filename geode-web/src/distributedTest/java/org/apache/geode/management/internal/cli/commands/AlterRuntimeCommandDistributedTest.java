@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,9 +52,10 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(GfshTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AlterRuntimeCommandDistributedTest {
 
   @Rule

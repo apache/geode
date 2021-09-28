@@ -14,6 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -24,23 +27,32 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetExecutor extends AbstractExecutor {
 
-  private static final String SUCCESS = "OK";
-
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
-    List<byte[]> commandElems = command.getProcessedCommand();
+    List<byte[]> commandElems = command.getCommandArguments();
     RedisStringCommands stringCommands = context.getStringCommands();
 
-    // TODO: make this atomic
-    for (int i = 1; i < commandElems.size(); i += 2) {
-      byte[] keyArray = commandElems.get(i);
-      RedisKey key = new RedisKey(keyArray);
-      byte[] valueArray = commandElems.get(i + 1);
-      stringCommands.set(key, valueArray, null);
+    int numElements = commandElems.size() / 2;
+    List<RedisKey> keys = new ArrayList<>(numElements);
+    List<byte[]> values = new ArrayList<>(numElements);
+
+    RedisKey previousKey = null;
+    for (int i = 0; i < commandElems.size(); i += 2) {
+      RedisKey key = new RedisKey(commandElems.get(i));
+
+      if (previousKey != null && key.getBucketId() != previousKey.getBucketId()) {
+        return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
+      }
+      keys.add(key);
+      values.add(commandElems.get(i + 1));
+
+      previousKey = key;
     }
 
-    return RedisResponse.string(SUCCESS);
+    stringCommands.mset(keys, values);
+
+    return RedisResponse.ok();
   }
 
 }

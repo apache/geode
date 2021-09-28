@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,9 +37,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
   protected static final int PAGE_SIZE = 2;
   protected static final int FLUSH_WAIT_TIME_MS = 60000;

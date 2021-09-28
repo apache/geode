@@ -30,6 +30,8 @@ import org.apache.geode.distributed.DistributedMember;
 public class UpdatableUserAuthInitialize implements AuthInitialize {
   // use static field for ease of testing since there is only one instance of this in each VM
   private static final AtomicReference<String> user = new AtomicReference<>();
+  // this is used to simulate a slow client in milliseconds
+  private static final AtomicReference<Long> waitTime = new AtomicReference<>(0L);
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
@@ -38,6 +40,16 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     credentials.put("security-username", user.get());
     credentials.put("security-password", user.get());
 
+    Long timeToWait = waitTime.get();
+    if (timeToWait < 0) {
+      throw new AuthenticationFailedException("Something wrong happened.");
+    } else if (timeToWait > 0) {
+      try {
+        Thread.sleep(timeToWait);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+    }
     return credentials;
   }
 
@@ -49,7 +61,12 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     user.set(newValue);
   }
 
+  public static void setWaitTime(long newValue) {
+    waitTime.set(newValue);
+  }
+
   public static void reset() {
     user.set(null);
+    waitTime.set(0L);
   }
 }

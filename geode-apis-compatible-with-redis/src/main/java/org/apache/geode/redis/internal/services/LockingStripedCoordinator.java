@@ -17,64 +17,67 @@ package org.apache.geode.redis.internal.services;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
- * Implements {@link StripedCoordinator} by using
- * synchronization. The thread that calls execute will also be the thread that does the work. But it
- * will do it under synchronization. The hashCode of the stripeId is used to associate the id with a
- * stripe.
+ * Implements {@link StripedCoordinator} by using {@link ReentrantLock}s synchronization. The thread
+ * that calls execute will also be the thread that does the work. But it will do it under
+ * synchronization. The hashCode of the stripeId is used to associate the id with a stripe.
  */
-public class SynchronizedStripedCoordinator implements StripedCoordinator {
+public class LockingStripedCoordinator implements StripedCoordinator {
   private static final int DEFAULT_CONCURRENCY_LEVEL = 4093; // use a prime
-  private final Object[] syncs;
+  private final ReentrantLock[] locks;
 
-  public SynchronizedStripedCoordinator() {
+  public LockingStripedCoordinator() {
     this(DEFAULT_CONCURRENCY_LEVEL);
   }
 
-  public SynchronizedStripedCoordinator(int concurrencyLevel) {
-    syncs = new Object[concurrencyLevel];
+  public LockingStripedCoordinator(int concurrencyLevel) {
+    locks = new ReentrantLock[concurrencyLevel];
     for (int i = 0; i < concurrencyLevel; i++) {
-      syncs[i] = new Object();
+      locks[i] = new ReentrantLock();
     }
   }
 
   @Override
   public <T> T execute(RedisKey stripeId, Callable<T> callable) {
-    synchronized (getSync(stripeId)) {
-      try {
-        return callable.call();
-      } catch (RuntimeException re) {
-        throw re;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+    Lock lock = getLock(stripeId);
+    lock.lock();
+    try {
+      return callable.call();
+    } catch (RuntimeException re) {
+      throw re;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
     }
   }
 
   @Override
   public <T> T execute(List<RedisKey> stripeIds, Callable<T> callable) {
-    return execute(stripeIds, 0, callable);
+    stripeIds.sort(this::compareStripes);
+    stripeIds.forEach(k -> getLock(k).lock());
+    try {
+      return callable.call();
+    } catch (RuntimeException re) {
+      throw re;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      stripeIds.forEach(k -> getLock(k).unlock());
+    }
   }
 
-  private <T> T execute(List<RedisKey> stripeIds, int index, Callable<T> callable) {
-    if (index + 1 == stripeIds.size()) {
-      return execute(stripeIds.get(index), callable);
-    }
-
-    synchronized (getSync(stripeIds.get(index))) {
-      return execute(stripeIds, ++index, callable);
-    }
-  }
-
-  private Object getSync(Object stripeId) {
-    return syncs[getStripeIndex(stripeId)];
+  private Lock getLock(RedisKey stripeId) {
+    return locks[getStripeIndex(stripeId)];
   }
 
   private int getStripeIndex(Object stripeId) {
-    return Math.abs(stripeId.hashCode() % syncs.length);
+    return Math.abs(stripeId.hashCode() % locks.length);
   }
 
   @Override

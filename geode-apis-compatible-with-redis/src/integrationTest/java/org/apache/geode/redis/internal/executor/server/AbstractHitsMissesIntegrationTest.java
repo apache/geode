@@ -72,7 +72,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     jedis.sadd(SET_KEY, "cotton");
     jedis.hset(HASH_KEY, "green", "eggs");
     jedis.zadd(SORTED_SET_KEY, -2.0, "almonds");
-    jedis.mset(MAP_KEY_1, "fox", MAP_KEY_2, "box");
+    jedis.set(MAP_KEY_1, "fox");
+    jedis.set(MAP_KEY_2, "box");
   }
 
   @After

@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,9 +47,10 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(LuceneTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
 
   @Rule

@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Test;
@@ -34,6 +33,7 @@ import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * This test class adds more basic tests of lucene functionality for partitioned regions. These
@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  *
  */
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
 
   protected static int NUM_BUCKETS = 10;

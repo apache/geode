@@ -57,7 +57,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.apache.logging.log4j.Logger;
@@ -103,9 +102,10 @@ import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(RegionsTest.class)
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class PersistentColocatedPartitionedRegionDistributedTest implements Serializable {
 

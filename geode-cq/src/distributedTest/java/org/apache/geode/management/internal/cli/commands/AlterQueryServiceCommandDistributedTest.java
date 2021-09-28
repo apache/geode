@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -45,8 +44,9 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AlterQueryServiceCommandDistributedTest {
   private static final String REPLICATE_REGION_NAME = "ReplicateRegion";
   private static final String PARTITION_REGION_NAME = "PartitionRegion";

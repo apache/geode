@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
@@ -46,9 +45,10 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
 import org.apache.geode.test.junit.categories.AEQTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({AEQTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AsyncEventQueueValidationsJUnitTest {
 
   private Cache cache;

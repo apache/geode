@@ -95,21 +95,8 @@ sender or receiver.
 In order to connect with a locator or a server that does authentication,
 a client will need to set its credential, composed of the two properties
 `security-username` and `security-password`.
-Choose one of these two ways to accomplish this:
+Follow these steps to accomplish this:
 
-- Set the `security-username` and `security-password` properties for the client
-using the API:
-
-    ``` pre
-    Properties properties = new Properties();
-    properties.setProperty("security-username", "exampleuser23");
-    properties.setProperty("security-password", "xyz1234");
-    ClientCache cache = new ClientCacheFactory(properties).create();
-    ```
-
-    Take care that credentials set in this manner are not accessible
-    to observers of the code.
- 
 - Implement `AuthInitialize` interface for the client.
 
     - Set the property `security-client-auth-init`,
@@ -138,6 +125,23 @@ using the API:
     it wishes.
     It might look up values in a database or another external resource,
     or it might prompt for values.
+
+- Set the `security-username` and `security-password` properties for the client
+  in a way that can be accessed by the `getCredentials` implementation in the
+  `AuthInitialize`. This can be done via the APIs, properties file or other external
+  sources:
+
+    ``` pre
+    Properties properties = new Properties();
+    properties.setProperty("security-username", "exampleuser23");
+    properties.setProperty("security-password", "xyz1234");
+    ClientCache cache = new ClientCacheFactory(properties).create();
+    ```
+
+    Take care that credentials set in this manner are not accessible
+    to observers of the code.
+ 
+
 
 ## How Other Components Set Their Credentials
 

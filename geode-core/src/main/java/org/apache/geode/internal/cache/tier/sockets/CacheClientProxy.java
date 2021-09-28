@@ -371,10 +371,9 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public void setSubject(Subject subject) {
+    // if we are replacing a subject here, the old subject's logout should be handled
+    // by the ClientUserAuths already
     synchronized (clientUserAuthsLock) {
-      if (this.subject != null) {
-        this.subject.logout();
-      }
       this.subject = subject;
     }
   }

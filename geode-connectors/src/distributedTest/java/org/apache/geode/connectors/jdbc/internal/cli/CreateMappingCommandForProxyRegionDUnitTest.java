@@ -39,7 +39,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
@@ -75,9 +74,10 @@ import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({JDBCConnectorTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class CreateMappingCommandForProxyRegionDUnitTest {
 
   private static final String TEST_REGION = "testRegion";

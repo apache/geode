@@ -43,8 +43,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
-import org.apache.geode.redis.internal.services.SynchronizedStripedCoordinator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractRenameIntegrationTest implements RedisIntegrationTest {
@@ -238,7 +238,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     String key1 = "{user1}keyz" + new Random().nextInt();
 
     RedisKey key1RedisKey = new RedisKey(key1.getBytes());
-    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
+    StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     int iterator = 0;
     String key2;
     do {
@@ -254,7 +254,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     Random random = new Random();
     String key1 = "{user1}keyz" + random.nextInt();
     RedisKey key1RedisKey = new RedisKey(key1.getBytes());
-    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
+    StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     Set<String> keys = new HashSet<>();
     keys.add(key1);
 
@@ -311,7 +311,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   private List<String> getKeysOnSameRandomStripe(int numKeysNeeded, Object toAvoid) {
 
-    StripedCoordinator stripedCoordinator = new SynchronizedStripedCoordinator();
+    StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
 
     List<String> keys = new ArrayList<>();
 

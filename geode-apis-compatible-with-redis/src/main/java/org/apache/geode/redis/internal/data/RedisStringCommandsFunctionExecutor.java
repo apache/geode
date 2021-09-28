@@ -26,8 +26,7 @@ import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
 
 public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFunctionExecutor
-    implements
-    RedisStringCommands {
+    implements RedisStringCommands {
 
   public RedisStringCommandsFunctionExecutor(RegionProvider regionProvider) {
     super(regionProvider);
@@ -142,6 +141,26 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
     byte bitIndex = (byte) (offset % 8);
     return stripedExecute(key,
         () -> getRedisString(key, false).setbit(getRegion(), key, value, byteIndex, bitIndex));
+  }
+
+  @Override
+  public Void mset(List<RedisKey> keys, List<byte[]> values) {
+    List<RedisKey> keysToLock = new ArrayList<>(keys.size());
+    for (RedisKey key : keys) {
+      getRegionProvider().ensureKeyIsLocal(key);
+      keysToLock.add(key);
+    }
+
+    // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
+    // in the same bucket we can use any key for this.
+    return stripedExecuteInTransaction(keysToLock.get(0), keysToLock, () -> mset0(keys, values));
+  }
+
+  private Void mset0(List<RedisKey> keys, List<byte[]> values) {
+    for (int i = 0; i < keys.size(); i++) {
+      set(getRegionProvider(), keys.get(i), values.get(i), null);
+    }
+    return null;
   }
 
   private boolean set(RegionProvider regionProvider, RedisKey key, byte[] value,

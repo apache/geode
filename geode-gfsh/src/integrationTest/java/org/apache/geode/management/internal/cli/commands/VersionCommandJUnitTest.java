@@ -24,7 +24,6 @@ import static org.apache.geode.internal.VersionDescription.SOURCE_REPOSITORY;
 import static org.apache.geode.internal.VersionDescription.SOURCE_REVISION;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -36,9 +35,10 @@ import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category({GfshTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class VersionCommandJUnitTest {
   private static final String[] EXPECTED_FULL_DATA =
       {BUILD_ID, BUILD_JAVA_VERSION, BUILD_PLATFORM, PRODUCT_NAME, PRODUCT_VERSION,

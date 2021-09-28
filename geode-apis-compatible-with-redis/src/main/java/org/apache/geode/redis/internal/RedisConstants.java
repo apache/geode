@@ -29,7 +29,8 @@ public class RedisConstants {
   public static final String ERROR_UNKNOWN_COMMAND =
       "unknown command `%s`, with args beginning with: %s";
   public static final String ERROR_OUT_OF_RANGE = "The number provided is out of range";
-  public static final String ERROR_NOT_AUTH = "NOAUTH Authentication required.";
+  public static final String ERROR_NOT_AUTHENTICATED = "Authentication required.";
+  public static final String ERROR_NOT_AUTHORIZED = "Authorization failed.";
   public static final String ERROR_WRONG_TYPE =
       "Operation against a key holding the wrong kind of value";
   public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";

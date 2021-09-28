@@ -37,7 +37,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,8 +52,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class OfflineDiskStoreCommandsDUnitTest implements Serializable {
   private static final String REGION_NAME = "testRegion";
   private static final String DISK_STORE_ID = "testDisk";

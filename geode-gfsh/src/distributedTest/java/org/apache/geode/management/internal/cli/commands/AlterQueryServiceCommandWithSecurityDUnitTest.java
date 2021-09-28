@@ -37,7 +37,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -59,8 +58,9 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class AlterQueryServiceCommandWithSecurityDUnitTest {
   private static final Class<RestrictedMethodAuthorizer> DEFAULT_AUTHORIZER_CLASS =
       RestrictedMethodAuthorizer.class;

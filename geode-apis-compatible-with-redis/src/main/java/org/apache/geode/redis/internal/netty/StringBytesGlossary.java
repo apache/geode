@@ -97,6 +97,9 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bWRONGPASS = stringToBytes("WRONGPASS ");
 
+  @MakeImmutable
+  public static final byte[] bNOAUTH = stringToBytes("NOAUTH ");
+
   // ********** Redis Command constants **********
 
   // ClusterExecutor

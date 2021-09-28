@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -22,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that
@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  *
  */
 @Category({LuceneTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class LuceneQueriesWithReindexFlagEnabledDUnitTest extends LuceneQueriesDUnitTest {
 
   private static final long serialVersionUID = 1L;

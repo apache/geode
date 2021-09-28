@@ -47,18 +47,21 @@ public class ClientUserAuthsTest {
   @Test
   public void putSubjectWithNegativeOneWillProduceNewId() throws Exception {
     Long uniqueId = auth.putSubject(subject1, -1);
+    verify(auth).removeSubject((Subject) null);
     assertThat(uniqueId).isEqualTo(123L);
   }
 
   @Test
   public void putSubjectWithZeroWillProduceNewId() throws Exception {
     Long uniqueId = auth.putSubject(subject1, 0);
+    verify(auth).removeSubject((Subject) null);
     assertThat(uniqueId).isEqualTo(123L);
   }
 
   @Test
   public void putSubjectWithExistingId() throws Exception {
     Long uniqueId = auth.putSubject(subject1, 456L);
+    verify(auth).removeSubject((Subject) null);
     assertThat(uniqueId).isEqualTo(456L);
   }
 
@@ -67,7 +70,7 @@ public class ClientUserAuthsTest {
     Long id1 = auth.putSubject(subject1, -1);
     Long id2 = auth.putSubject(subject2, id1);
     assertThat(id1).isEqualTo(id2);
-    verify(auth).removeSubject(eq(id1));
+    verify(auth).removeSubject(eq(subject1));
     verify(subject1).logout();
   }
 

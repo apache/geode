@@ -20,7 +20,7 @@ import static org.apache.geode.cache.execute.FunctionService.onServers;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.combineSecurityManagerResults;
+import static org.apache.geode.security.ClientAuthenticationTestUtils.collectSecurityManagers;
 import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.apache.geode.security.SecurityManager.PASSWORD;
 import static org.apache.geode.security.SecurityManager.USER_NAME;
@@ -139,7 +139,7 @@ public class AuthExpirationFunctionDUnitTest {
 
 
     ExpirableSecurityManager consolidated =
-        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+        collectSecurityManagers(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
     assertThat(combinedExpiredUsers).containsExactly("data1");
 
@@ -173,7 +173,7 @@ public class AuthExpirationFunctionDUnitTest {
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
     ExpirableSecurityManager consolidated =
-        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+        collectSecurityManagers(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
     assertThat(combinedExpiredUsers).containsExactly("data1");
 
@@ -212,7 +212,7 @@ public class AuthExpirationFunctionDUnitTest {
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
     ExpirableSecurityManager consolidated =
-        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+        collectSecurityManagers(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
     assertThat(combinedExpiredUsers).containsExactly("data1");
 
@@ -252,7 +252,7 @@ public class AuthExpirationFunctionDUnitTest {
         .isEqualTo(TestFunctions.WriteFunction.SUCCESS_OUTPUT);
 
     ExpirableSecurityManager consolidated =
-        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+        collectSecurityManagers(serverVM0, serverVM1, serverVM2);
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
     assertThat(combinedExpiredUsers).containsExactly("data1");
 
@@ -293,7 +293,7 @@ public class AuthExpirationFunctionDUnitTest {
 
 
     ExpirableSecurityManager consolidated =
-        combineSecurityManagerResults(serverVM0, serverVM1, serverVM2);
+        collectSecurityManagers(serverVM0, serverVM1, serverVM2);
 
     Set<String> combinedExpiredUsers = consolidated.getExpiredUsers();
     assertThat(combinedExpiredUsers).containsExactly("data1");

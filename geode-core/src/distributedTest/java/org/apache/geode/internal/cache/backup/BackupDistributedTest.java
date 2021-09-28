@@ -45,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.apache.commons.io.FileUtils;
@@ -89,6 +88,7 @@ import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 /**
  * Additional tests to consider adding:
@@ -98,7 +98,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <li>Test backing up and recovering while ops are in progress?
  * </ul>
  */
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @SuppressWarnings("serial")
 public class BackupDistributedTest extends JUnit4DistributedTestCase implements Serializable {
   private static final Logger logger = LogService.getLogger();

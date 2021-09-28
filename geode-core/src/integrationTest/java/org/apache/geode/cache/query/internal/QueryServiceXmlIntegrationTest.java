@@ -25,7 +25,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.apache.commons.io.FileUtils;
@@ -42,8 +41,9 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class QueryServiceXmlIntegrationTest {
 
   @Rule

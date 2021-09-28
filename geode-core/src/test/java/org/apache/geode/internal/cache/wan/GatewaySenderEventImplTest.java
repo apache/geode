@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,8 +57,9 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class GatewaySenderEventImplTest {
 
   private GemFireCacheImpl cache;

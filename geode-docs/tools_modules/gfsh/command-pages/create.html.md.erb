@@ -57,6 +57,17 @@ Create async-event-queues, disk-stores, gateway receivers, gateway senders, inde
 
     Create a region with given path and configuration.
 
+
+**Note:** The order in which components are created matters. For example, the recommendation for WAN setup is:
+
+- Create/start WAN senders first
+- Create Regions
+- Create/start WAN receivers last
+
+This assures that when WAN receivers are started, their associated regions are in place. Otherwise,
+the `create region` command may fail if events are received before the region exists.
+For more on this topic, see [Configuring a Multi-site (WAN) System](../../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html).
+
 ## <a id="topic_ryz_pb1_dk" class="no-quick-link"></a>create async-event-queue
 
 Creates an asynchronous event queue for batching events before they are delivered by a gateway sender.
@@ -367,7 +378,6 @@ unless the `--groups` or `--members` option is specified.
 
 If the gateway receiver creation succeeds on at least one member,
 this `gfsh` command exits with an exit code indicating success.
-
 
 Outputs a tabular format status of each member's gateway receiver,
 independent of the success or failure of the creation.
