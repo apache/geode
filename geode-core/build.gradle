@@ -214,7 +214,7 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
 
   //Jackson databind is used in gfsh, and also in pdx
-  implementation('com.fasterxml.jackson.core:jackson-databind')
+  api('com.fasterxml.jackson.core:jackson-databind')
 
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
@@ -288,7 +288,7 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
 
 
-  implementation('io.swagger:swagger-annotations') {
+  api('io.swagger:swagger-annotations') {
     ext.optional = true
   }
 

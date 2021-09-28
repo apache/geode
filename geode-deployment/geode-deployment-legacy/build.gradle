@@ -26,10 +26,8 @@ dependencies {
 
   implementation(project(':geode-core'))
   implementation(project(':geode-common'))
-  implementation('io.swagger:swagger-annotations')
 
   compileOnly(project(':geode-logging'))
-  compileOnly('com.fasterxml.jackson.core:jackson-databind')
 
   testImplementation(project(':geode-junit'))
 

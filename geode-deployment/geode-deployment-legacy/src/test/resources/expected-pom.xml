@@ -56,10 +56,5 @@
       <artifactId>geode-common</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <scope>runtime</scope>
-    </dependency>
   </dependencies>
 </project>
