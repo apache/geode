@@ -127,10 +127,10 @@ public class Parameter {
     return this;
   }
 
-  public Parameter odd(String customeError) {
+  public Parameter odd(String customError) {
     predicates.add((c, e) -> {
       if (c.getProcessedCommand().size() % 2 == 0) {
-        throw new RedisParametersMismatchException(customeError);
+        throw new RedisParametersMismatchException(customError);
       }
     });
     return this;
