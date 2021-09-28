@@ -344,7 +344,7 @@ public enum RedisCommandType {
       new Parameter().min(3).lastKey(-1).flags(write, denyoom)),
   SISMEMBER(new SIsMemberExecutor(), UNSUPPORTED, new Parameter().exact(3).flags(readonly, fast)),
   SMOVE(new SMoveExecutor(), UNSUPPORTED, new Parameter().exact(4).lastKey(2).flags(write, fast)),
-  SPOP(new SPopExecutor(), UNSUPPORTED, new Parameter().min(2).max(3)
+  SPOP(new SPopExecutor(), UNSUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX)
       .custom(SpopParameterRequirements.checkParameters()).flags(write, random, fast)),
   SRANDMEMBER(new SRandMemberExecutor(), UNSUPPORTED,
       new Parameter().min(2).flags(readonly, random)),
