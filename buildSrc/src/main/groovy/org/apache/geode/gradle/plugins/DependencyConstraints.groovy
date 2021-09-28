@@ -122,7 +122,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.67.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
-        api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
         api(group: 'javax.ejb', name: 'ejb-api', version: '3.0')
@@ -202,6 +201,11 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'io.springfox', version: '2.9.2') {
       entry('springfox-swagger-ui')
       entry('springfox-swagger2')
+    }
+
+    dependencySet(group: 'it.unimi.dsi', version: get('fastutil.version')) {
+      entry('fastutil')
+      entry('fastutil-core')
     }
 
     dependencySet(group: 'mx4j', version: '3.0.2') {
