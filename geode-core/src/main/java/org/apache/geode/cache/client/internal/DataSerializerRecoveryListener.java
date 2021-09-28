@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client.internal;
 
+import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class DataSerializerRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();
@@ -114,6 +116,12 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
         }
       } else {
         try {
+
+          Properties properties = new Properties();
+          properties.setProperty(ResourceConstants.USER_NAME, System.getProperties().getProperty(ResourceConstants.USER_NAME));
+          properties.setProperty(ResourceConstants.PASSWORD, System.getProperties().getProperty(ResourceConstants.PASSWORD));
+          UserAttributes.userAttributes.set(new UserAttributes(properties, pool));
+
           RegisterDataSerializersOp.execute(pool, holders, eventId);
         } catch (CancelException ignored) {
         } catch (RejectedExecutionException e) {
