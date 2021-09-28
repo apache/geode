@@ -130,7 +130,7 @@ spotless {
     // As the method name suggests, bump this number if any of the below "custom" rules change.
     // Spotless will not run on unchanged files unless this number changes.
     bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
-
+    toggleOffOn()
     greclipse()
 
     custom 'Use single-quote in project directives.', {
@@ -146,6 +146,13 @@ spotless {
     custom 'Do not pad spaces before parenthesis in gradle dependency declaration.', {
       it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/, '\n$1(')
     }
+
+    custom 'Drop version portion of dependency', {
+      it.replaceAll(/(\s*\S*(?:api|[cC]ompileOnly|[rR]untimeOnly|[iI]mplementation|[tT]est))\('([\w.-]+):([\w.-]+):([\w.-]+)'\)/, { original, declaration, group, name, version ->
+        "${declaration}('${group}:${name}')"
+      })
+    }
+
     indentWithSpaces(2)
     endWithNewline()
   }
