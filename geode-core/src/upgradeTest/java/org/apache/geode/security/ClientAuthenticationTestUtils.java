@@ -122,7 +122,7 @@ public abstract class ClientAuthenticationTestUtils {
   }
 
 
-  protected static ExpirableSecurityManager combineSecurityManagerResults(MemberVM... vms) {
+  protected static ExpirableSecurityManager collectSecurityManagers(MemberVM... vms) {
     List<ExpirableSecurityManager> results = new ArrayList<>();
     for (MemberVM vm : vms) {
       results.add(vm.invoke(() -> getSecurityManager()));
