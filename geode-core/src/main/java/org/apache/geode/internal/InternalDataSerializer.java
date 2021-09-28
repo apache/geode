@@ -85,6 +85,9 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.cache.client.internal.ProxyCache;
+import org.apache.geode.cache.client.internal.UserAttributes;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
@@ -953,7 +956,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
     // This method is only called when server connection and CacheClientUpdaterThread
     s.setEventId(eventId);
     s.setContext(context);
-    return _register(s, distribute);
+    return _register(s, null, distribute);
+  }
+
+
+  public static DataSerializer register(Class<? extends DataSerializer> c,
+      RegionService regionService, boolean distribute) {
+    final DataSerializer s = newInstance(c);
+    return _register(s, regionService, distribute);
   }
 
   /**
@@ -963,12 +973,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
    *        of the distributed system?
    * @see DataSerializer#register(Class)
    */
-  public static DataSerializer register(Class<? extends DataSerializer> c, boolean distribute) {
-    final DataSerializer s = newInstance(c);
-    return _register(s, distribute);
-  }
 
-  public static DataSerializer _register(DataSerializer s, boolean distribute) {
+  public static DataSerializer _register(DataSerializer s, RegionService regionService,
+      boolean distribute) {
     final int id = s.getId();
     DataSerializer dsForMarkers = s;
     if (id == 0) {
@@ -1070,6 +1077,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
       s.setEventId(new EventID(cache.getDistributedSystem()));
     }
 
+    if (regionService instanceof ProxyCache) {
+      ProxyCache proxyCache = (ProxyCache) regionService;
+      UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
+    }
+
     if (distribute) {
       // send a message to other peers telling them about a newly-registered
       // dataserializer, it also send event id of the originator along with the
@@ -1081,8 +1093,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
     // send it to all cache clients irrelevant of distribute
     // cache servers send it all the clients irrelevant of
     // originator VM
+    // if (regionService == null) {
+    // UserAttributes.userAttributes.set(null);
+    // }
     sendRegistrationMessageToClients(s);
-
     fireNewDataSerializer(s);
 
     return s;
@@ -3464,7 +3478,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         }
         s.setEventId(this.eventId);
         try {
-          InternalDataSerializer._register(s, false);
+          InternalDataSerializer._register(s, null, false);
         } catch (IllegalArgumentException | IllegalStateException ex) {
           logger.warn(
               "Could not register data serializer for class {} so both clients of this server and this server will not have this data serializer. Registration failed because: {}",

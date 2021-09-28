@@ -51,6 +51,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
@@ -2896,7 +2897,17 @@ public abstract class DataSerializer {
    */
   @SuppressWarnings("unchecked")
   public static DataSerializer register(Class<?> c) {
-    return InternalDataSerializer.register((Class<? extends DataSerializer>) c, true);
+    return InternalDataSerializer.register((Class<? extends DataSerializer>) c, null, true);
+  }
+
+  public static DataSerializer register(Class<?> c, boolean distribute) {
+    return InternalDataSerializer.register((Class<? extends DataSerializer>) c, null,
+        distribute);
+  }
+
+  public static DataSerializer register(Class<?> c, RegionService regionService) {
+    return InternalDataSerializer.register((Class<? extends DataSerializer>) c, regionService,
+        true);
   }
 
   /**
