@@ -175,9 +175,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
       ZAggregator aggregator) {
     List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
 
-    getRegionProvider().ensureKeyIsLocal(destinationKey);
-    keysToLock.add(destinationKey);
-
     return stripedExecute(destinationKey, keysToLock,
         () -> new RedisSortedSet(0)
             .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));

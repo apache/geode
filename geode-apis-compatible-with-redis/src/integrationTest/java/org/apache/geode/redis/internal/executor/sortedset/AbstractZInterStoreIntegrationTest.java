@@ -183,6 +183,13 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldError_givenNumKeysNotAnInteger() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "fish", KEY1, KEY2))
+            .hasMessage("ERR " + RedisConstants.ERROR_NOT_INTEGER);
+  }
+
+  @Test
   public void shouldStoreIntersection_givenWeightOfOne_andOneRedisSortedSet() {
     Map<String, Double> scores = buildMapOfMembersAndScores();
     Set<Tuple> expectedResults = convertToTuples(scores, (ignore, value) -> value);
