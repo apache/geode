@@ -73,6 +73,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMess
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.serialization.DSFIDLoader;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -83,7 +84,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * exceptional situations to see if Membership is shutting down.
  */
 @SuppressWarnings("ConstantConditions")
-public class Services<ID extends MemberIdentifier> {
+public class Services<ID extends MemberIdentifier> implements DSFIDLoader {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -156,6 +157,10 @@ public class Services<ID extends MemberIdentifier> {
     this.auth = authenticator;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
+  }
+
+  @Override
+  public void registerDSFIDs(DSFIDSerializer serializer) {
     registerSerializables(serializer);
   }
 
@@ -178,7 +183,6 @@ public class Services<ID extends MemberIdentifier> {
     serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
     serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
     serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
-
   }
 
   /**

@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBui
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorStatisticsNoOp;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -79,7 +78,6 @@ public class GMSLocatorRecoveryIntegrationTest {
   public void setUp() throws Exception {
 
     serializer = new DSFIDSerializerImpl();
-    Services.registerSerializables(serializer);
     KnownVersion current = KnownVersion.CURRENT; // force version initialization
 
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");

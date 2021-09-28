@@ -63,7 +63,6 @@ public class GMSLocatorIntegrationTest {
     view = new GMSMembershipView();
     services = mock(Services.class);
     DSFIDSerializer serializer = new DSFIDSerializerImpl();
-    Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     KnownVersion current = KnownVersion.CURRENT; // force Version static initialization to set
     // Version

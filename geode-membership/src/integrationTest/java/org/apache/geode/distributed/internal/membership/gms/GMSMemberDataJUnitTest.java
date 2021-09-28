@@ -49,7 +49,6 @@ public class GMSMemberDataJUnitTest {
   @Before
   public void setup() {
     dsfidSerializer = new DSFIDSerializerFactory().create();
-    Services.registerSerializables(dsfidSerializer);
   }
 
   @Test

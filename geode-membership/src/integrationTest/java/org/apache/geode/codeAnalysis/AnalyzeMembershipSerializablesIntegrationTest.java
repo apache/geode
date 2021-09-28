@@ -64,7 +64,5 @@ public class AnalyzeMembershipSerializablesIntegrationTest
   }
 
   @Override
-  protected void initializeSerializationService() {
-    Services.registerSerializables(dsfidSerializer);
-  }
+  protected void initializeSerializationService() {}
 }

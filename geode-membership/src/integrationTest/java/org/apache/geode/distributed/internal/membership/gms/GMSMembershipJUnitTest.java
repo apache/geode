@@ -174,7 +174,6 @@ public class GMSMembershipJUnitTest {
 
     DSFIDSerializer serializer = new DSFIDSerializerImpl();
     when(services.getSerializer()).thenReturn(serializer);
-    Services.registerSerializables(serializer);
   }
 
   @After
