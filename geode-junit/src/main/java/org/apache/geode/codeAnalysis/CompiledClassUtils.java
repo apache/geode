@@ -14,6 +14,8 @@
  */
 package org.apache.geode.codeAnalysis;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -300,11 +302,11 @@ public class CompiledClassUtils {
     String line;
     while ((line = in.readLine()) != null) {
       line = line.trim();
-      if (line.startsWith("#") || line.startsWith("//")) {
+      if (isBlank(line) || line.startsWith("#") || line.startsWith("//")) {
         // comment line
-      } else {
-        result.add(new ClassAndVariableDetails(line));
+        continue;
       }
+      result.add(new ClassAndVariableDetails(line));
     }
     return result;
   }
