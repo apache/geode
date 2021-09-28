@@ -70,10 +70,6 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
         return syntaxErrorResponse;
       }
       argument = argIterator.next();
-      if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)
-          || Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
-        return syntaxErrorResponse;
-      }
       keyWeights.add(new ZKeyWeight(new RedisKey(argument), 1D));
     }
 
@@ -85,9 +81,6 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
           return syntaxErrorResponse;
         }
         argument = argIterator.next();
-        if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
-          return syntaxErrorResponse; // there must be an aggregate between 'AGGREGATE' & 'WEIGHTS'
-        }
         try {
           aggregator = ZAggregator.valueOf(Coder.bytesToString(toUpperCaseBytes(argument)));
         } catch (IllegalArgumentException e) {
@@ -100,9 +93,6 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
             return syntaxErrorResponse;
           }
           argument = argIterator.next();
-          if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
-            return syntaxErrorResponse; // there must be # weights between 'WEIGHTS' & 'AGGREGATE'
-          }
           try {
             keyWeights.get(i).setWeight(Coder.bytesToDouble(argument));
           } catch (NumberFormatException e) {
@@ -112,10 +102,6 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
       } else {
         return syntaxErrorResponse;
       }
-    }
-
-    if (keyWeights.size() != numKeys) {
-      return syntaxErrorResponse;
     }
 
     int slot = command.getKey().getSlot();

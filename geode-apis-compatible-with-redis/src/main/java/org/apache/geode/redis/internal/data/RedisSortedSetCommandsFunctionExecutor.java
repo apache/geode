@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,8 +72,8 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
 
     return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet(Collections.emptyList(), new double[] {})
-            .zinterstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
+        () -> new RedisSortedSet(0))
+            .zinterstore(getRegionProvider(), destinationKey, keyWeights, aggregator);
   }
 
   @Override
@@ -175,10 +174,7 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   public long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
-    for (ZKeyWeight kw : keyWeights) {
-      getRegionProvider().ensureKeyIsLocal(kw.getKey());
-      keysToLock.add(kw.getKey());
-    }
+
     getRegionProvider().ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
 

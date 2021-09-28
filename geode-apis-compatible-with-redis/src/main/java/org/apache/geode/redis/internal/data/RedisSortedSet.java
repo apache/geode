@@ -737,8 +737,8 @@ public class RedisSortedSet extends AbstractRedisData {
   public abstract static class AbstractOrderedSetEntry
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
-    protected byte[] member;
-    protected double score = 0D;
+    byte[] member;
+    double score = 0D;
 
     private AbstractOrderedSetEntry() {}
 

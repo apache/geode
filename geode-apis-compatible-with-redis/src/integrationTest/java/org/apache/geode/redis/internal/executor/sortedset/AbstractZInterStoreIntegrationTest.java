@@ -175,6 +175,14 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldError_givenWeightsFollowedByCorrectNumberOfArgumentsIncludingAggregate() {
+    assertThatThrownBy(
+        () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "3",
+            KEY1, KEY2, KEY3, "WEIGHTS", "1", "AGGREGATE", "SUM"))
+                .hasMessage("ERR " + RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
+  }
+
+  @Test
   public void shouldStoreIntersection_givenWeightOfOne_andOneRedisSortedSet() {
     Map<String, Double> scores = buildMapOfMembersAndScores();
     Set<Tuple> expectedResults = convertToTuples(scores, (ignore, value) -> value);
@@ -592,6 +600,16 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expectedResults, results);
+  }
+
+  @Test
+  public void shouldNotError_givenKeysNamedWeightsOrAggregate() {
+    String weights = "WEIGHTS";
+    jedis.zadd(weights, 1, "member");
+    String aggregate = "AGGREGATE";
+    jedis.zadd(aggregate, 1, "member");
+    jedis.zinterstore(weights, weights, weights);
+    jedis.zinterstore(aggregate, aggregate, aggregate);
   }
 
   @Test
