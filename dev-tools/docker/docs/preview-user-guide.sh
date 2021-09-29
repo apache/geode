@@ -53,9 +53,6 @@ docker run -it -p 9292:9292 --user $UID:$GID \
 ug_version=`ls ${GEODE_BOOK}/final_app/public/docs/guide/`
 master_middleman_folder="${GEODE_BOOK}/output/master_middleman/source/docs/guide/${ug_version}"
 preprocessing_folder="${GEODE_BOOK}/output/preprocessing/sections/docs/guide/${ug_version}"
-echo $ug_version
-echo ${master_middleman_folder}
-echo ${preprocessing_folder}
 rm ${master_middleman_folder}
 rm ${preprocessing_folder}
 
