@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class LolWutExecutor extends AbstractExecutor {
 
+  public static final int MAX_MAZE_DIMENSION = 1024; // limit width and height
   public static final int DEFAULT_WIDTH = 40;
   public static final int DEFAULT_HEIGHT = 10;
   private static int width = DEFAULT_WIDTH;
@@ -39,8 +40,8 @@ public class LolWutExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
-    long inputWidth = -1;
-    long inputHeight = -1;
+    int inputWidth = -1;
+    int inputHeight = -1;
 
     List<byte[]> commands = command.getProcessedCommand();
     if (commands.size() > 1) {
@@ -50,9 +51,15 @@ public class LolWutExecutor extends AbstractExecutor {
         } else {
           try {
             if (inputWidth < 0) {
-              inputWidth = Coder.bytesToLong(commands.get(i));
+              inputWidth = Coder.narrowLongToInt(Coder.bytesToLong(commands.get(i)));
+              if (inputWidth > MAX_MAZE_DIMENSION) {
+                inputWidth = MAX_MAZE_DIMENSION;
+              }
             } else if (inputHeight < 0) {
-              inputHeight = Coder.bytesToLong(commands.get(i));
+              inputHeight = Coder.narrowLongToInt(Coder.bytesToLong(commands.get(i)));
+              if (inputHeight > MAX_MAZE_DIMENSION) {
+                inputHeight = MAX_MAZE_DIMENSION;
+              }
             } else {
               break; // all required args filled
             }
@@ -63,17 +70,17 @@ public class LolWutExecutor extends AbstractExecutor {
       }
     }
     if (inputHeight >= 0) {
-      height = (int) inputHeight;
+      height = inputHeight;
     }
     if (inputWidth >= 0) {
-      width = (int) inputWidth;
+      width = inputWidth;
     }
 
-    return RedisResponse.bulkString(makeArbitraryHeightMaze());
+    return RedisResponse.bulkString(makeArbitrarySizeMaze());
   }
 
   // Adapted from code here: https://tromp.github.io/maze.html
-  public static String makeArbitraryHeightMaze() {
+  private static String makeArbitrarySizeMaze() {
     StringBuilder mazeString = new StringBuilder();
     int[] leftLinks = new int[width];
     int[] rightLinks = new int[width];
@@ -85,7 +92,7 @@ public class LolWutExecutor extends AbstractExecutor {
 
     mazeRows(mazeString, leftLinks, rightLinks, rand);
 
-    mazeBottomRow(mazeString, leftLinks, rightLinks, rand);
+    mazeBottomRowAndExit(mazeString, leftLinks, rightLinks, rand);
 
     mazeString.append("\n " + KnownVersion.getCurrentVersion().toString() + "\n");
 
@@ -139,7 +146,7 @@ public class LolWutExecutor extends AbstractExecutor {
     }
   }
 
-  private static void mazeBottomRow(StringBuilder mazeString, int[] leftLinks,
+  private static void mazeBottomRowAndExit(StringBuilder mazeString, int[] leftLinks,
       int[] rightLinks, Random rand) {
     int currentCell;
     int tempIndex;
@@ -149,12 +156,12 @@ public class LolWutExecutor extends AbstractExecutor {
           && (currentCell == rightLinks[currentCell] || rand.nextBoolean())) {
         leftLinks[rightLinks[tempIndex] = rightLinks[currentCell]] = tempIndex;
         leftLinks[rightLinks[currentCell] = currentCell - 1] = currentCell;
-        mazeString.append("_.");
+        mazeString.append("_."); // no wall to right
       } else {
         if (currentCell == 1) {
           mazeString.append("_."); // maze exit
         } else {
-          mazeString.append("_|"); // regular wall
+          mazeString.append("_|"); // regular wall to right
         }
       }
       tempIndex = leftLinks[currentCell];
