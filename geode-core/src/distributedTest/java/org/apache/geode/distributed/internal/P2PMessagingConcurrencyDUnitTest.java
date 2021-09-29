@@ -15,11 +15,20 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +56,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class P2PMessagingConcurrencyDUnitTest {
 
   @Rule
-  public final DistributedRule distributedRule = new DistributedRule();
+  public final DistributedRule distributedRule = new DistributedRule(2);
 
   private VM sender;
   private VM receiver;
@@ -72,15 +81,71 @@ public class P2PMessagingConcurrencyDUnitTest {
 
     sender.invoke(() -> {
       final ClusterDistributionManager cdm = getCDM(locators);
-      final InternalDistributedMember localMember = cdm.getDistribution().getLocalMember();
-      final TestMessage msg = new TestMessage(localMember, receiverMember);
-      cdm.putOutgoing(msg);
+      final int seed = 1234;
+      final Random random = new Random(seed);
+
+      final int TASK_COUNT = 10;
+
+      final ExecutorService executor = Executors.newFixedThreadPool(TASK_COUNT);
+
+      final CountDownLatch latch = new CountDownLatch(TASK_COUNT);
+      final AtomicBoolean stop = new AtomicBoolean(false);
+      final LongAdder failedRecipientCount = new LongAdder();
+
+      final Runnable doSending = () -> {
+        try {
+          latch.countDown();
+          latch.await();
+        } catch (final InterruptedException e) {
+          throw new RuntimeException("doSending failed", e);
+        }
+        while (!stop.get()) {
+          final TestMessage msg = new TestMessage(receiverMember, random);
+          final Set<InternalDistributedMember> failedRecipients = cdm.putOutgoing(msg);
+          if (failedRecipients != null) {
+            failedRecipientCount.add(failedRecipients.size());
+          }
+        }
+      };
+
+      for (int i = 0; i < TASK_COUNT; ++i) {
+        executor.submit(doSending);
+      }
+
+      TimeUnit.SECONDS.sleep(5);
+
+      stop.set(true);
+
+      stop(executor);
+
+      assertThat(failedRecipientCount.sum()).as("message delivery failed").isZero();
     });
+  }
+
+  private static void stop(final ExecutorService executor) {
+    executor.shutdown();
+    try {
+      if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+        executor.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      executor.shutdownNow();
+    }
   }
 
   private static ClusterDistributionManager getCDM(final String locators) {
     final Properties props = new Properties();
+
     props.put("locators", locators);
+
+    /*
+     * This is something we intend to test!
+     * Send all messages, from all threads, on a single socket per recipient.
+     * maintenance tip: to see what kind of connection you're getting you can
+     * uncomment logging over in DirectChannel.sendToMany()
+     */
+    props.put("conserve-sockets", "true"); // careful: if you set to true it doesn't take hold!
+
     final CacheFactory cacheFactory = new CacheFactory(props);
     final Cache cache = cacheFactory.create();
 
@@ -90,14 +155,18 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   private static class TestMessage extends DistributionMessage {
 
-    TestMessage(final InternalDistributedMember sender,
-        final InternalDistributedMember receiver) {
-      setSender(sender);
+    private volatile Random random;
+
+    TestMessage(final InternalDistributedMember receiver,
+        final Random random) {
       setRecipient(receiver);
+      this.random = random;
     }
 
     // necessary for deserialization
-    public TestMessage() {}
+    public TestMessage() {
+      random = null;
+    }
 
     @Override
     public int getProcessorType() {
@@ -113,9 +182,6 @@ public class P2PMessagingConcurrencyDUnitTest {
     public void toData(final DataOutput out, final SerializationContext context)
         throws IOException {
       super.toData(out, context);
-
-      final int seed = 1234;
-      final Random random = new Random(seed);
 
       final int length = random.nextInt(32 * 1024 + 1); // 32 KiB + 1
 
@@ -137,9 +203,6 @@ public class P2PMessagingConcurrencyDUnitTest {
       final byte[] payload = new byte[length];
 
       in.readFully(payload);
-
-      // TODO: remove this diagnostic
-      System.out.println("RECEIVED: size: " + length);
     }
 
     @Override
