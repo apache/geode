@@ -145,7 +145,7 @@ public class PRHARedundancyProvider {
 
   private static final ThreadLocal<Boolean> forceLocalPrimaries = new ThreadLocal<>();
 
-  private static final int MAX_NUMBER_INTERVALS = 30;
+  private static final int MAX_NUMBER_INTERVALS = 31;
 
   private static final int SMALL_INTERVALS = 5;
   private static final int MEDIUM_INTERVALS = 10;
@@ -1729,11 +1729,9 @@ public class PRHARedundancyProvider {
   }
 
   void scheduleCreateMissingBuckets() {
-    if (partitionedRegion.getColocatedWith() != null) {
-      waitForColocationCompleted(partitionedRegion);
-      if (!ColocationHelper.isColocationComplete(partitionedRegion)) {
-        return;
-      }
+    if (partitionedRegion.getColocatedWith() != null &&
+        waitForColocationCompleted(partitionedRegion)) {
+
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
           partitionedRegion.getGemFireCache().getInternalResourceManager();
@@ -1907,12 +1905,12 @@ public class PRHARedundancyProvider {
   /**
    * Wait for Colocation to complete. Wait all nodes to Register this PartitionedRegion.
    */
-  private void waitForColocationCompleted(PartitionedRegion partitionedRegion) {
-    int count = 0;
+  private boolean waitForColocationCompleted(PartitionedRegion partitionedRegion) {
+    int retryCount = 0;
     int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
 
     while (!ColocationHelper.isColocationComplete(partitionedRegion)
-        && (count <= MAX_NUMBER_INTERVALS)) {
+        && (retryCount < MAX_NUMBER_INTERVALS)) {
 
       // Didn't time out. Sleep a bit and then continue
       boolean interrupted = Thread.interrupted();
@@ -1925,15 +1923,16 @@ public class PRHARedundancyProvider {
           Thread.currentThread().interrupt();
         }
       }
-      count++;
-      if (count == SMALL_INTERVALS) {
+      retryCount++;
+      if (retryCount == SMALL_INTERVALS) {
         sleepInterval = 2 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (count == MEDIUM_INTERVALS) {
+      } else if (retryCount == MEDIUM_INTERVALS) {
         sleepInterval = 5 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (count == LARGE_INTERVALS) {
+      } else if (retryCount == LARGE_INTERVALS) {
         sleepInterval = 10 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
       }
     }
+    return ColocationHelper.isColocationComplete(partitionedRegion);
 
   }
 
