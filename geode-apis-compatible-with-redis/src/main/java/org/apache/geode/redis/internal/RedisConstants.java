@@ -69,4 +69,6 @@ public class RedisConstants {
       "invalid username-password pair or user is disabled.";
   public static final String ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED =
       "AUTH called without a Security Manager configured.";
+  public static final String ERROR_KEY_REQUIRED =
+      "at least 1 input key is needed for ZUNIONSTORE/ZINTERSTORE";
 }

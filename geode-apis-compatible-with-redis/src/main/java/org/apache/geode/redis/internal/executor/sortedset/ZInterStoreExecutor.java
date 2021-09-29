@@ -12,36 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.function.BiFunction;
 
-/**
- * Enums representing aggregation functions used in {@link ZUnionStoreExecutor} and
- * {@link ZInterStoreExecutor}.
- */
-public enum ZAggregator {
+import java.util.List;
 
-  SUM((score1, score2) -> {
-    // in native redis, adding -inf and +inf results in 0. java math returns NaN
-    if (score1.isInfinite() && score2.isInfinite()) {
-      if (score1 == -score2) {
-        return 0D;
-      }
-    }
-    return Double.sum(score1, score2);
-  }),
-  MIN(Math::min),
-  MAX(Math::max);
+import org.apache.geode.redis.internal.netty.Command;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-  private final BiFunction<Double, Double, Double> function;
-
-  ZAggregator(BiFunction<Double, Double, Double> function) {
-    this.function = function;
+public class ZInterStoreExecutor extends ZStoreExecutor {
+  @Override
+  public long getResult(ExecutionHandlerContext context, Command command,
+      List<ZKeyWeight> keyWeights, ZAggregator aggregator) {
+    return context.getSortedSetCommands().zinterstore(command.getKey(), keyWeights, aggregator);
   }
 
-  public BiFunction<Double, Double, Double> getFunction() {
-    return function;
-  }
 }

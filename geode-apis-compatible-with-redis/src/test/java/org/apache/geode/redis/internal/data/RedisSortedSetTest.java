@@ -376,7 +376,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void zscanThrowsWhenReturnedArrayListLengthWouldExceedVMLimit() {
-    RedisSortedSet sortedSet = spy(new RedisSortedSet());
+    RedisSortedSet sortedSet = spy(new RedisSortedSet(Collections.emptyList(), new double[] {}));
     doReturn(Integer.MAX_VALUE - 10L).when(sortedSet).zcard();
 
     assertThatThrownBy(() -> sortedSet.zscan(null, Integer.MAX_VALUE - 10, 0))

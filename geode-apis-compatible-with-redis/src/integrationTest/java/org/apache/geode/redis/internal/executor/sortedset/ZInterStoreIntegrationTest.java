@@ -12,36 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.function.BiFunction;
+import org.junit.ClassRule;
 
-/**
- * Enums representing aggregation functions used in {@link ZUnionStoreExecutor} and
- * {@link ZInterStoreExecutor}.
- */
-public enum ZAggregator {
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-  SUM((score1, score2) -> {
-    // in native redis, adding -inf and +inf results in 0. java math returns NaN
-    if (score1.isInfinite() && score2.isInfinite()) {
-      if (score1 == -score2) {
-        return 0D;
-      }
-    }
-    return Double.sum(score1, score2);
-  }),
-  MIN(Math::min),
-  MAX(Math::max);
+public class ZInterStoreIntegrationTest extends AbstractZInterStoreIntegrationTest {
 
-  private final BiFunction<Double, Double, Double> function;
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
-  ZAggregator(BiFunction<Double, Double, Double> function) {
-    this.function = function;
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 
-  public BiFunction<Double, Double, Double> getFunction() {
-    return function;
-  }
 }

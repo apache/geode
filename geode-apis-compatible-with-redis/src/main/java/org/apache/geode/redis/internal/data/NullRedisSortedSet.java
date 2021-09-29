@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.singletonList;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,7 +31,7 @@ import org.apache.geode.redis.internal.netty.Coder;
 class NullRedisSortedSet extends RedisSortedSet {
 
   NullRedisSortedSet() {
-    super(new ArrayList<>(), new double[0]);
+    super(0);
   }
 
   @Override

@@ -84,6 +84,10 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
+  RedisSortedSet(int size) {
+    this.members = new MemberMap(size);
+  }
+
   protected int getSortedSetSize() {
     return scoreSet.size();
   }
@@ -183,7 +187,6 @@ public class RedisSortedSet extends AbstractRedisData {
       scoreSet.remove(orderedSetEntry);
       return true;
     }
-
     return false;
   }
 
@@ -286,6 +289,64 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     return Coder.doubleToBytes(score);
+  }
+
+  long zinterstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
+    for (ZKeyWeight keyWeight : keyWeights) {
+      RedisSortedSet set =
+          regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
+
+      if (set == NULL_REDIS_SORTED_SET) {
+        return 0;
+      } else {
+        sets.add(set);
+      }
+    }
+
+    RedisSortedSet smallestSet = sets.get(0);
+    for (RedisSortedSet set : sets) {
+      if (set.getSortedSetSize() < smallestSet.getSortedSetSize()) {
+        smallestSet = set;
+      }
+    }
+
+    for (byte[] member : smallestSet.members.keySet()) {
+      boolean addToSet = true;
+      double newScore;
+
+      if (aggregator.equals(ZAggregator.SUM)) {
+        newScore = 0;
+      } else if (aggregator.equals(ZAggregator.MAX)) {
+        newScore = Double.NEGATIVE_INFINITY;
+      } else {
+        newScore = Double.POSITIVE_INFINITY;
+      }
+      for (int i = 0; i < sets.size(); i++) {
+        RedisSortedSet otherSet = sets.get(i);
+        double weight = keyWeights.get(i).getWeight();
+        OrderedSetEntry otherEntry = otherSet.members.get(member);
+        if (otherEntry == null) {
+          addToSet = false;
+          break;
+        } else {
+          double otherScore = otherEntry.getScore();
+          if (weight == 0 || otherScore == 0) {
+            newScore = 0;
+          } else {
+            newScore = aggregator.getFunction().apply(newScore, otherScore * weight);
+          }
+        }
+      }
+      if (addToSet) {
+        memberAdd(member, newScore);
+      }
+    }
+
+    regionProvider.getLocalDataRegion().put(key, this);
+
+    return getSortedSetSize();
   }
 
   long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -424,7 +485,7 @@ public class RedisSortedSet extends AbstractRedisData {
       double weight = keyWeight.getWeight();
 
       for (AbstractOrderedSetEntry entry : set.members.values()) {
-        OrderedSetEntry existingValue = members.get(entry.member);
+        OrderedSetEntry existingValue = members.get(entry.getMember());
         if (existingValue == null) {
           double score;
           // Redis math and Java math are different when handling infinity. Specifically:
@@ -435,19 +496,19 @@ public class RedisSortedSet extends AbstractRedisData {
           } else if (weight == 1) {
             score = entry.getScore();
           } else {
-            double newScore = entry.score * weight;
+            double newScore = entry.getScore() * weight;
             if (Double.isNaN(newScore)) {
               score = entry.getScore();
             } else {
               score = newScore;
             }
           }
-          members.put(entry.member, new OrderedSetEntry(entry.member, score));
+          members.put(entry.getMember(), new OrderedSetEntry(entry.getMember(), score));
           continue;
         }
 
-        existingValue.updateScore(aggregator.getFunction().apply(existingValue.score,
-            entry.score * weight));
+        existingValue.updateScore(aggregator.getFunction().apply(existingValue.getScore(),
+            entry.getScore() * weight));
       }
     }
 
@@ -469,11 +530,11 @@ public class RedisSortedSet extends AbstractRedisData {
     while (scoresIterator.hasNext()) {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();
-      members.remove(entry.member);
+      members.remove(entry.getMember());
 
-      result.add(entry.member);
-      result.add(Coder.doubleToBytes(entry.score));
-      deltaInfo.add(entry.member);
+      result.add(entry.getMember());
+      result.add(Coder.doubleToBytes(entry.getScore()));
+      deltaInfo.add(entry.getMember());
     }
 
     storeChanges(region, key, deltaInfo);
@@ -493,9 +554,9 @@ public class RedisSortedSet extends AbstractRedisData {
     while (scoresIterator.hasNext()) {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();
-      members.remove(entry.member);
+      members.remove(entry.getMember());
       entriesRemoved++;
-      deltaInfo.add(entry.member);
+      deltaInfo.add(entry.getMember());
     }
 
     storeChanges(region, key, deltaInfo);
@@ -586,9 +647,9 @@ public class RedisSortedSet extends AbstractRedisData {
     while (entryIterator.hasNext()) {
       AbstractOrderedSetEntry entry = entryIterator.next();
 
-      result.add(entry.member);
+      result.add(entry.getMember());
       if (rangeOptions.isWithScores()) {
-        result.add(Coder.doubleToBytes(entry.score));
+        result.add(Coder.doubleToBytes(entry.getScore()));
       }
     }
     return result;
@@ -677,7 +738,7 @@ public class RedisSortedSet extends AbstractRedisData {
       implements Comparable<AbstractOrderedSetEntry>,
       Sizeable {
     byte[] member;
-    double score;
+    double score = 0D;
 
     private AbstractOrderedSetEntry() {}
 

@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -65,6 +64,16 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   public byte[] zincrby(RedisKey key, double increment, byte[] member) {
     return stripedExecute(key,
         () -> getRedisSortedSet(key, false).zincrby(getRegion(), key, increment, member));
+  }
+
+  @Override
+  public long zinterstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
+      ZAggregator aggregator) {
+    List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
+
+    return stripedExecute(destinationKey, keysToLock,
+        () -> new RedisSortedSet(0))
+            .zinterstore(getRegionProvider(), destinationKey, keyWeights, aggregator);
   }
 
   @Override
@@ -164,6 +173,15 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
   @Override
   public long zunionstore(RedisKey destinationKey, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
+    List<RedisKey> keysToLock = getKeysToLock(destinationKey, keyWeights);
+
+    return stripedExecute(destinationKey, keysToLock,
+        () -> new RedisSortedSet(0)
+            .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
+  }
+
+  /************* Helper Methods *************/
+  private List<RedisKey> getKeysToLock(RedisKey destinationKey, List<ZKeyWeight> keyWeights) {
     List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight kw : keyWeights) {
       getRegionProvider().ensureKeyIsLocal(kw.getKey());
@@ -172,9 +190,6 @@ public class RedisSortedSetCommandsFunctionExecutor extends RedisDataCommandsFun
     getRegionProvider().ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
 
-    return stripedExecute(destinationKey, keysToLock,
-        () -> new RedisSortedSet(Collections.emptyList(), new double[0])
-            .zunionstore(getRegionProvider(), destinationKey, keyWeights, aggregator));
+    return keysToLock;
   }
-
 }
