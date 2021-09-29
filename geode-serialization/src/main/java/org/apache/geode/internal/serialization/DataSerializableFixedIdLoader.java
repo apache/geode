@@ -21,6 +21,8 @@ package org.apache.geode.internal.serialization;
  * {@code CacheService}s should implement this SPI instead of explicitly registering DSFIDs during
  * service initialization.
  */
-public interface DSFIDLoader {
-  void registerDSFIDs(DSFIDSerializer serializer);
+public interface DataSerializableFixedIdLoader {
+
+  void register(DataSerializableFixedIdRegistrar serializer);
+
 }

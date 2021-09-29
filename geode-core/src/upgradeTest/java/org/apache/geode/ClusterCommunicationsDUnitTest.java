@@ -247,7 +247,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   @Test
   public void receiveBigResponse() {
     invokeInEveryVM(
-        () -> InternalDataSerializer.getDSFIDSerializer().registerDSFID(SERIAL_ACKED_MESSAGE,
+        () -> InternalDataSerializer.getDSFIDSerializer().register(SERIAL_ACKED_MESSAGE,
             SerialAckedMessageWithBigReply.class));
     try {
       int locatorPort = createLocator(getVM(0));
@@ -265,7 +265,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       });
     } finally {
       invokeInEveryVM(
-          () -> InternalDataSerializer.getDSFIDSerializer().registerDSFID(SERIAL_ACKED_MESSAGE,
+          () -> InternalDataSerializer.getDSFIDSerializer().register(SERIAL_ACKED_MESSAGE,
               SerialAckedMessage.class));
     }
   }

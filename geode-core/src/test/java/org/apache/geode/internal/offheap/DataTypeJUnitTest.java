@@ -119,13 +119,15 @@ public class DataTypeJUnitTest {
   @Test
   public void testDataSerializableFixedIDInt() throws IOException, ClassNotFoundException {
     assertFalse(
-        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
+        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+            .getDsfidmap2()
             .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+    InternalDataSerializer.getDSFIDSerializer().register(
         DummyIntDataSerializableFixedID.INT_SIZE_id,
         DummyIntDataSerializableFixedID.class);
     assertTrue(
-        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
+        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+            .getDsfidmap2()
             .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
 
     try {
@@ -141,10 +143,12 @@ public class DataTypeJUnitTest {
           + DummyIntDataSerializableFixedID.class.getName(),
           type);
     } finally {
-      ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
+      ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+          .getDsfidmap2()
           .remove(DummyIntDataSerializableFixedID.INT_SIZE_id);
       assertFalse(
-          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+              .getDsfidmap2()
               .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
     }
   }

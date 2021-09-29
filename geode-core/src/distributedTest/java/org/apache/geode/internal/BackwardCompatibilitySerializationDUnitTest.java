@@ -73,14 +73,14 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     baos = new ByteArrayOutputStream();
     // register TestMessage using an existing dsfid
     InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
+        .register(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     resetFlags();
     // reset the class mapped to the dsfid
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+    InternalDataSerializer.getDSFIDSerializer().register(
         DataSerializableFixedID.PUTALL_VERSIONS_LIST,
         EntryVersionsList.class);
     baos = null;
@@ -167,7 +167,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     for (int i = 0; i < 256; i++) {
       Constructor<?> cons =
-          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap()[i];
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+              .getDsfidmap()[i];
       if (!constdsfids.contains(i - Byte.MAX_VALUE - 1) && cons != null) {
         Object ds = cons.newInstance((Object[]) null);
         checkSupportForRollingUpgrade(ds);
@@ -176,8 +177,9 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     // some msgs require distributed system
     Cache c = getCache();
-    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
-        .getDsfidmap2().values()) {
+    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer
+        .getDSFIDSerializer())
+            .getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {
         DataSerializableFixedID ds = (DataSerializableFixedID) cons.newInstance((Object[]) null);

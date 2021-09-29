@@ -456,535 +456,535 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   private void registerDSFIDTypes(DSFIDSerializer serializer) {
-    serializer.registerDSFID(REGION_REDUNDANCY_STATUS,
+    serializer.register(REGION_REDUNDANCY_STATUS,
         SerializableRegionRedundancyStatusImpl.class);
-    serializer.registerDSFID(RESTORE_REDUNDANCY_RESULTS,
+    serializer.register(RESTORE_REDUNDANCY_RESULTS,
         SerializableRestoreRedundancyResultsImpl.class);
-    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
-    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
-    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
-    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
-    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
-    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
-    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
-    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
-    serializer.registerDSFID(CLI_FUNCTION_RESULT, CliFunctionResult.class);
-    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
-    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
-    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
-    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
-    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
-    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
-    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
-    serializer.registerDSFID(CLIENT_TOMBSTONE_MESSAGE, ClientTombstoneMessage.class);
-    serializer.registerDSFID(R_CLEAR_MSG, RemoteClearMessage.class);
-    serializer.registerDSFID(R_CLEAR_MSG_REPLY, RemoteClearReplyMessage.class);
-    serializer.registerDSFID(WAIT_FOR_VIEW_INSTALLATION, WaitForViewInstallation.class);
-    serializer.registerDSFID(DISPATCHED_AND_CURRENT_EVENTS, DispatchedAndCurrentEvents.class);
-    serializer.registerDSFID(DISTRIBUTED_MEMBER, InternalDistributedMember.class);
-    serializer.registerDSFID(UPDATE_MESSAGE, UpdateOperation.UpdateMessage.class);
-    serializer.registerDSFID(REPLY_MESSAGE, ReplyMessage.class);
-    serializer.registerDSFID(PR_DESTROY, DestroyMessage.class);
-    serializer.registerDSFID(CREATE_REGION_MESSAGE,
+    serializer.register(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.register(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.register(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.register(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.register(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.register(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.register(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.register(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.register(CLI_FUNCTION_RESULT, CliFunctionResult.class);
+    serializer.register(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.register(NETVIEW, GMSMembershipView.class);
+    serializer.register(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.register(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.register(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.register(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.register(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.register(JOIN_REQUEST, JoinRequestMessage.class);
+    serializer.register(CLIENT_TOMBSTONE_MESSAGE, ClientTombstoneMessage.class);
+    serializer.register(R_CLEAR_MSG, RemoteClearMessage.class);
+    serializer.register(R_CLEAR_MSG_REPLY, RemoteClearReplyMessage.class);
+    serializer.register(WAIT_FOR_VIEW_INSTALLATION, WaitForViewInstallation.class);
+    serializer.register(DISPATCHED_AND_CURRENT_EVENTS, DispatchedAndCurrentEvents.class);
+    serializer.register(DISTRIBUTED_MEMBER, InternalDistributedMember.class);
+    serializer.register(UPDATE_MESSAGE, UpdateOperation.UpdateMessage.class);
+    serializer.register(REPLY_MESSAGE, ReplyMessage.class);
+    serializer.register(PR_DESTROY, DestroyMessage.class);
+    serializer.register(CREATE_REGION_MESSAGE,
         CreateRegionProcessor.CreateRegionMessage.class);
-    serializer.registerDSFID(CREATE_REGION_REPLY_MESSAGE,
+    serializer.register(CREATE_REGION_REPLY_MESSAGE,
         CreateRegionProcessor.CreateRegionReplyMessage.class);
-    serializer.registerDSFID(REGION_STATE_MESSAGE, InitialImageOperation.RegionStateMessage.class);
-    serializer.registerDSFID(QUERY_MESSAGE, SearchLoadAndWriteProcessor.QueryMessage.class);
-    serializer.registerDSFID(RESPONSE_MESSAGE, SearchLoadAndWriteProcessor.ResponseMessage.class);
-    serializer.registerDSFID(NET_SEARCH_REQUEST_MESSAGE,
+    serializer.register(REGION_STATE_MESSAGE, InitialImageOperation.RegionStateMessage.class);
+    serializer.register(QUERY_MESSAGE, SearchLoadAndWriteProcessor.QueryMessage.class);
+    serializer.register(RESPONSE_MESSAGE, SearchLoadAndWriteProcessor.ResponseMessage.class);
+    serializer.register(NET_SEARCH_REQUEST_MESSAGE,
         SearchLoadAndWriteProcessor.NetSearchRequestMessage.class);
-    serializer.registerDSFID(NET_SEARCH_REPLY_MESSAGE,
+    serializer.register(NET_SEARCH_REPLY_MESSAGE,
         SearchLoadAndWriteProcessor.NetSearchReplyMessage.class);
-    serializer.registerDSFID(NET_LOAD_REQUEST_MESSAGE,
+    serializer.register(NET_LOAD_REQUEST_MESSAGE,
         SearchLoadAndWriteProcessor.NetLoadRequestMessage.class);
-    serializer.registerDSFID(NET_LOAD_REPLY_MESSAGE,
+    serializer.register(NET_LOAD_REPLY_MESSAGE,
         SearchLoadAndWriteProcessor.NetLoadReplyMessage.class);
-    serializer.registerDSFID(NET_WRITE_REQUEST_MESSAGE,
+    serializer.register(NET_WRITE_REQUEST_MESSAGE,
         SearchLoadAndWriteProcessor.NetWriteRequestMessage.class);
-    serializer.registerDSFID(NET_WRITE_REPLY_MESSAGE,
+    serializer.register(NET_WRITE_REPLY_MESSAGE,
         SearchLoadAndWriteProcessor.NetWriteReplyMessage.class);
-    serializer.registerDSFID(DLOCK_REQUEST_MESSAGE,
+    serializer.register(DLOCK_REQUEST_MESSAGE,
         DLockRequestProcessor.DLockRequestMessage.class);
-    serializer.registerDSFID(DLOCK_RESPONSE_MESSAGE,
+    serializer.register(DLOCK_RESPONSE_MESSAGE,
         DLockRequestProcessor.DLockResponseMessage.class);
-    serializer.registerDSFID(DLOCK_RELEASE_MESSAGE,
+    serializer.register(DLOCK_RELEASE_MESSAGE,
         DLockReleaseProcessor.DLockReleaseMessage.class);
-    serializer.registerDSFID(ADMIN_CACHE_EVENT_MESSAGE,
+    serializer.register(ADMIN_CACHE_EVENT_MESSAGE,
         SystemMemberCacheEventProcessor.SystemMemberCacheMessage.class);
-    serializer.registerDSFID(CQ_ENTRY_EVENT, CqEntry.class);
-    serializer.registerDSFID(REQUEST_IMAGE_MESSAGE,
+    serializer.register(CQ_ENTRY_EVENT, CqEntry.class);
+    serializer.register(REQUEST_IMAGE_MESSAGE,
         InitialImageOperation.RequestImageMessage.class);
-    serializer.registerDSFID(IMAGE_REPLY_MESSAGE, InitialImageOperation.ImageReplyMessage.class);
-    serializer.registerDSFID(IMAGE_ENTRY, InitialImageOperation.Entry.class);
-    serializer.registerDSFID(CLOSE_CACHE_MESSAGE, CloseCacheMessage.class);
-    serializer.registerDSFID(NON_GRANTOR_DESTROYED_MESSAGE,
+    serializer.register(IMAGE_REPLY_MESSAGE, InitialImageOperation.ImageReplyMessage.class);
+    serializer.register(IMAGE_ENTRY, InitialImageOperation.Entry.class);
+    serializer.register(CLOSE_CACHE_MESSAGE, CloseCacheMessage.class);
+    serializer.register(NON_GRANTOR_DESTROYED_MESSAGE,
         NonGrantorDestroyedProcessor.NonGrantorDestroyedMessage.class);
-    serializer.registerDSFID(DLOCK_RELEASE_REPLY,
+    serializer.register(DLOCK_RELEASE_REPLY,
         DLockReleaseProcessor.DLockReleaseReplyMessage.class);
-    serializer.registerDSFID(GRANTOR_REQUEST_MESSAGE,
+    serializer.register(GRANTOR_REQUEST_MESSAGE,
         GrantorRequestProcessor.GrantorRequestMessage.class);
-    serializer.registerDSFID(GRANTOR_INFO_REPLY_MESSAGE,
+    serializer.register(GRANTOR_INFO_REPLY_MESSAGE,
         GrantorRequestProcessor.GrantorInfoReplyMessage.class);
-    serializer.registerDSFID(ELDER_INIT_MESSAGE, ElderInitProcessor.ElderInitMessage.class);
-    serializer.registerDSFID(ELDER_INIT_REPLY_MESSAGE,
+    serializer.register(ELDER_INIT_MESSAGE, ElderInitProcessor.ElderInitMessage.class);
+    serializer.register(ELDER_INIT_REPLY_MESSAGE,
         ElderInitProcessor.ElderInitReplyMessage.class);
-    serializer.registerDSFID(DEPOSE_GRANTOR_MESSAGE,
+    serializer.register(DEPOSE_GRANTOR_MESSAGE,
         DeposeGrantorProcessor.DeposeGrantorMessage.class);
-    serializer.registerDSFID(STARTUP_MESSAGE, StartupMessage.class);
-    serializer.registerDSFID(STARTUP_RESPONSE_MESSAGE, StartupResponseMessage.class);
-    serializer.registerDSFID(STARTUP_RESPONSE_WITHVERSION_MESSAGE,
+    serializer.register(STARTUP_MESSAGE, StartupMessage.class);
+    serializer.register(STARTUP_RESPONSE_MESSAGE, StartupResponseMessage.class);
+    serializer.register(STARTUP_RESPONSE_WITHVERSION_MESSAGE,
         StartupResponseWithVersionMessage.class);
-    serializer.registerDSFID(SHUTDOWN_MESSAGE, ShutdownMessage.class);
-    serializer.registerDSFID(DESTROY_REGION_MESSAGE,
+    serializer.register(SHUTDOWN_MESSAGE, ShutdownMessage.class);
+    serializer.register(DESTROY_REGION_MESSAGE,
         DestroyRegionOperation.DestroyRegionMessage.class);
-    serializer.registerDSFID(PR_PUTALL_MESSAGE, PutAllPRMessage.class);
-    serializer.registerDSFID(PR_REMOVE_ALL_MESSAGE, RemoveAllPRMessage.class);
-    serializer.registerDSFID(PR_REMOVE_ALL_REPLY_MESSAGE,
+    serializer.register(PR_PUTALL_MESSAGE, PutAllPRMessage.class);
+    serializer.register(PR_REMOVE_ALL_MESSAGE, RemoveAllPRMessage.class);
+    serializer.register(PR_REMOVE_ALL_REPLY_MESSAGE,
         RemoveAllPRMessage.RemoveAllReplyMessage.class);
-    serializer.registerDSFID(REMOTE_REMOVE_ALL_MESSAGE, RemoteRemoveAllMessage.class);
-    serializer.registerDSFID(REMOTE_REMOVE_ALL_REPLY_MESSAGE,
+    serializer.register(REMOTE_REMOVE_ALL_MESSAGE, RemoteRemoveAllMessage.class);
+    serializer.register(REMOTE_REMOVE_ALL_REPLY_MESSAGE,
         RemoteRemoveAllMessage.RemoveAllReplyMessage.class);
-    serializer.registerDSFID(DISTTX_ROLLBACK_MESSAGE, DistTXRollbackMessage.class);
-    serializer.registerDSFID(DISTTX_COMMIT_MESSAGE, DistTXCommitMessage.class);
-    serializer.registerDSFID(DISTTX_PRE_COMMIT_MESSAGE, DistTXPrecommitMessage.class);
-    serializer.registerDSFID(DISTTX_ROLLBACK_REPLY_MESSAGE,
+    serializer.register(DISTTX_ROLLBACK_MESSAGE, DistTXRollbackMessage.class);
+    serializer.register(DISTTX_COMMIT_MESSAGE, DistTXCommitMessage.class);
+    serializer.register(DISTTX_PRE_COMMIT_MESSAGE, DistTXPrecommitMessage.class);
+    serializer.register(DISTTX_ROLLBACK_REPLY_MESSAGE,
         DistTXRollbackMessage.DistTXRollbackReplyMessage.class);
-    serializer.registerDSFID(DISTTX_COMMIT_REPLY_MESSAGE,
+    serializer.register(DISTTX_COMMIT_REPLY_MESSAGE,
         DistTXCommitMessage.DistTXCommitReplyMessage.class);
-    serializer.registerDSFID(DISTTX_PRE_COMMIT_REPLY_MESSAGE,
+    serializer.register(DISTTX_PRE_COMMIT_REPLY_MESSAGE,
         DistTXPrecommitMessage.DistTXPrecommitReplyMessage.class);
-    serializer.registerDSFID(PR_PUT_MESSAGE, PutMessage.class);
-    serializer.registerDSFID(INVALIDATE_MESSAGE, InvalidateOperation.InvalidateMessage.class);
-    serializer.registerDSFID(DESTROY_MESSAGE, DestroyOperation.DestroyMessage.class);
-    serializer.registerDSFID(DA_PROFILE, DistributionAdvisor.Profile.class);
-    serializer.registerDSFID(CACHE_PROFILE, CacheDistributionAdvisor.CacheProfile.class);
-    serializer.registerDSFID(HA_PROFILE, HARegion.HARegionAdvisor.HAProfile.class);
-    serializer.registerDSFID(ENTRY_EVENT, EntryEventImpl.class);
-    serializer.registerDSFID(UPDATE_ATTRIBUTES_MESSAGE,
+    serializer.register(PR_PUT_MESSAGE, PutMessage.class);
+    serializer.register(INVALIDATE_MESSAGE, InvalidateOperation.InvalidateMessage.class);
+    serializer.register(DESTROY_MESSAGE, DestroyOperation.DestroyMessage.class);
+    serializer.register(DA_PROFILE, DistributionAdvisor.Profile.class);
+    serializer.register(CACHE_PROFILE, CacheDistributionAdvisor.CacheProfile.class);
+    serializer.register(HA_PROFILE, HARegion.HARegionAdvisor.HAProfile.class);
+    serializer.register(ENTRY_EVENT, EntryEventImpl.class);
+    serializer.register(UPDATE_ATTRIBUTES_MESSAGE,
         UpdateAttributesProcessor.UpdateAttributesMessage.class);
-    serializer.registerDSFID(PROFILE_REPLY_MESSAGE,
+    serializer.register(PROFILE_REPLY_MESSAGE,
         UpdateAttributesProcessor.ProfileReplyMessage.class);
-    serializer.registerDSFID(PROFILES_REPLY_MESSAGE,
+    serializer.register(PROFILES_REPLY_MESSAGE,
         UpdateAttributesProcessor.ProfilesReplyMessage.class);
-    serializer.registerDSFID(REGION_EVENT, RegionEventImpl.class);
-    serializer.registerDSFID(TX_COMMIT_MESSAGE, TXCommitMessage.class);
-    serializer.registerDSFID(COMMIT_PROCESS_FOR_LOCKID_MESSAGE,
+    serializer.register(REGION_EVENT, RegionEventImpl.class);
+    serializer.register(TX_COMMIT_MESSAGE, TXCommitMessage.class);
+    serializer.register(COMMIT_PROCESS_FOR_LOCKID_MESSAGE,
         CommitProcessForLockIdMessage.class);
-    serializer.registerDSFID(COMMIT_PROCESS_FOR_TXID_MESSAGE, CommitProcessForTXIdMessage.class);
-    serializer.registerDSFID(FILTER_PROFILE, FilterProfile.class);
-    serializer.registerDSFID(REMOTE_PUTALL_REPLY_MESSAGE,
+    serializer.register(COMMIT_PROCESS_FOR_TXID_MESSAGE, CommitProcessForTXIdMessage.class);
+    serializer.register(FILTER_PROFILE, FilterProfile.class);
+    serializer.register(REMOTE_PUTALL_REPLY_MESSAGE,
         RemotePutAllMessage.PutAllReplyMessage.class);
-    serializer.registerDSFID(REMOTE_PUTALL_MESSAGE, RemotePutAllMessage.class);
-    serializer.registerDSFID(VERSION_TAG, VMVersionTag.class);
-    serializer.registerDSFID(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
-    serializer.registerDSFID(REMOVE_CACHESERVER_PROFILE_UPDATE,
+    serializer.register(REMOTE_PUTALL_MESSAGE, RemotePutAllMessage.class);
+    serializer.register(VERSION_TAG, VMVersionTag.class);
+    serializer.register(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
+    serializer.register(REMOVE_CACHESERVER_PROFILE_UPDATE,
         RemoveCacheServerProfileMessage.class);
-    serializer.registerDSFID(QUEUE_SYNCHRONIZATION_MESSAGE,
+    serializer.register(QUEUE_SYNCHRONIZATION_MESSAGE,
         QueueSynchronizationProcessor.QueueSynchronizationMessage.class);
-    serializer.registerDSFID(QUEUE_SYNCHRONIZATION_REPLY_MESSAGE,
+    serializer.register(QUEUE_SYNCHRONIZATION_REPLY_MESSAGE,
         QueueSynchronizationProcessor.QueueSynchronizationReplyMessage.class);
-    serializer.registerDSFID(SERVER_INTEREST_REGISTRATION_MESSAGE,
+    serializer.register(SERVER_INTEREST_REGISTRATION_MESSAGE,
         ServerInterestRegistrationMessage.class);
-    serializer.registerDSFID(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);
-    serializer.registerDSFID(PR_GET_MESSAGE, GetMessage.class);
-    serializer.registerDSFID(R_FETCH_ENTRY_MESSAGE, RemoteFetchEntryMessage.class);
-    serializer.registerDSFID(R_FETCH_ENTRY_REPLY_MESSAGE,
+    serializer.register(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);
+    serializer.register(PR_GET_MESSAGE, GetMessage.class);
+    serializer.register(R_FETCH_ENTRY_MESSAGE, RemoteFetchEntryMessage.class);
+    serializer.register(R_FETCH_ENTRY_REPLY_MESSAGE,
         RemoteFetchEntryMessage.FetchEntryReplyMessage.class);
-    serializer.registerDSFID(R_CONTAINS_MESSAGE, RemoteContainsKeyValueMessage.class);
-    serializer.registerDSFID(R_CONTAINS_REPLY_MESSAGE,
+    serializer.register(R_CONTAINS_MESSAGE, RemoteContainsKeyValueMessage.class);
+    serializer.register(R_CONTAINS_REPLY_MESSAGE,
         RemoteContainsKeyValueMessage.RemoteContainsKeyValueReplyMessage.class);
-    serializer.registerDSFID(R_DESTROY_MESSAGE, RemoteDestroyMessage.class);
-    serializer.registerDSFID(R_DESTROY_REPLY_MESSAGE,
+    serializer.register(R_DESTROY_MESSAGE, RemoteDestroyMessage.class);
+    serializer.register(R_DESTROY_REPLY_MESSAGE,
         RemoteDestroyMessage.DestroyReplyMessage.class);
-    serializer.registerDSFID(R_INVALIDATE_MESSAGE, RemoteInvalidateMessage.class);
-    serializer.registerDSFID(R_INVALIDATE_REPLY_MESSAGE,
+    serializer.register(R_INVALIDATE_MESSAGE, RemoteInvalidateMessage.class);
+    serializer.register(R_INVALIDATE_REPLY_MESSAGE,
         RemoteInvalidateMessage.InvalidateReplyMessage.class);
-    serializer.registerDSFID(R_GET_MESSAGE, RemoteGetMessage.class);
-    serializer.registerDSFID(R_GET_REPLY_MESSAGE, RemoteGetMessage.GetReplyMessage.class);
-    serializer.registerDSFID(R_PUT_MESSAGE, RemotePutMessage.class);
-    serializer.registerDSFID(R_PUT_REPLY_MESSAGE, RemotePutMessage.PutReplyMessage.class);
-    serializer.registerDSFID(R_SIZE_MESSAGE, RemoteSizeMessage.class);
-    serializer.registerDSFID(R_SIZE_REPLY_MESSAGE, RemoteSizeMessage.SizeReplyMessage.class);
-    serializer.registerDSFID(PR_DESTROY_REPLY_MESSAGE, DestroyMessage.DestroyReplyMessage.class);
-    serializer.registerDSFID(R_FETCH_KEYS_MESSAGE, RemoteFetchKeysMessage.class);
-    serializer.registerDSFID(R_FETCH_KEYS_REPLY,
+    serializer.register(R_GET_MESSAGE, RemoteGetMessage.class);
+    serializer.register(R_GET_REPLY_MESSAGE, RemoteGetMessage.GetReplyMessage.class);
+    serializer.register(R_PUT_MESSAGE, RemotePutMessage.class);
+    serializer.register(R_PUT_REPLY_MESSAGE, RemotePutMessage.PutReplyMessage.class);
+    serializer.register(R_SIZE_MESSAGE, RemoteSizeMessage.class);
+    serializer.register(R_SIZE_REPLY_MESSAGE, RemoteSizeMessage.SizeReplyMessage.class);
+    serializer.register(PR_DESTROY_REPLY_MESSAGE, DestroyMessage.DestroyReplyMessage.class);
+    serializer.register(R_FETCH_KEYS_MESSAGE, RemoteFetchKeysMessage.class);
+    serializer.register(R_FETCH_KEYS_REPLY,
         RemoteFetchKeysMessage.RemoteFetchKeysReplyMessage.class);
-    serializer.registerDSFID(R_REMOTE_COMMIT_REPLY_MESSAGE, TXRemoteCommitReplyMessage.class);
-    serializer.registerDSFID(TRANSACTION_LOCK_ID, TXLockIdImpl.class);
-    serializer.registerDSFID(PR_GET_REPLY_MESSAGE, GetReplyMessage.class);
-    serializer.registerDSFID(PR_NODE, Node.class);
-    serializer.registerDSFID(UPDATE_WITH_CONTEXT_MESSAGE,
+    serializer.register(R_REMOTE_COMMIT_REPLY_MESSAGE, TXRemoteCommitReplyMessage.class);
+    serializer.register(TRANSACTION_LOCK_ID, TXLockIdImpl.class);
+    serializer.register(PR_GET_REPLY_MESSAGE, GetReplyMessage.class);
+    serializer.register(PR_NODE, Node.class);
+    serializer.register(UPDATE_WITH_CONTEXT_MESSAGE,
         UpdateOperation.UpdateWithContextMessage.class);
-    serializer.registerDSFID(DESTROY_WITH_CONTEXT_MESSAGE,
+    serializer.register(DESTROY_WITH_CONTEXT_MESSAGE,
         DestroyOperation.DestroyWithContextMessage.class);
-    serializer.registerDSFID(INVALIDATE_WITH_CONTEXT_MESSAGE,
+    serializer.register(INVALIDATE_WITH_CONTEXT_MESSAGE,
         InvalidateOperation.InvalidateWithContextMessage.class);
-    serializer.registerDSFID(REGION_VERSION_VECTOR, VMRegionVersionVector.class);
-    serializer.registerDSFID(CLIENT_PROXY_MEMBERSHIPID, ClientProxyMembershipID.class);
-    serializer.registerDSFID(EVENT_ID, EventID.class);
-    serializer.registerDSFID(CLIENT_UPDATE_MESSAGE, ClientUpdateMessageImpl.class);
-    serializer.registerDSFID(CLEAR_REGION_MESSAGE_WITH_CONTEXT,
+    serializer.register(REGION_VERSION_VECTOR, VMRegionVersionVector.class);
+    serializer.register(CLIENT_PROXY_MEMBERSHIPID, ClientProxyMembershipID.class);
+    serializer.register(EVENT_ID, EventID.class);
+    serializer.register(CLIENT_UPDATE_MESSAGE, ClientUpdateMessageImpl.class);
+    serializer.register(CLEAR_REGION_MESSAGE_WITH_CONTEXT,
         ClearRegionWithContextMessage.class);
-    serializer.registerDSFID(CLIENT_INSTANTIATOR_MESSAGE, ClientInstantiatorMessage.class);
-    serializer.registerDSFID(CLIENT_DATASERIALIZER_MESSAGE, ClientDataSerializerMessage.class);
-    serializer.registerDSFID(REGISTRATION_MESSAGE, InternalInstantiator.RegistrationMessage.class);
-    serializer.registerDSFID(REGISTRATION_CONTEXT_MESSAGE,
+    serializer.register(CLIENT_INSTANTIATOR_MESSAGE, ClientInstantiatorMessage.class);
+    serializer.register(CLIENT_DATASERIALIZER_MESSAGE, ClientDataSerializerMessage.class);
+    serializer.register(REGISTRATION_MESSAGE, InternalInstantiator.RegistrationMessage.class);
+    serializer.register(REGISTRATION_CONTEXT_MESSAGE,
         InternalInstantiator.RegistrationContextMessage.class);
-    serializer.registerDSFID(RESULTS_COLLECTION_WRAPPER, ResultsCollectionWrapper.class);
-    serializer.registerDSFID(RESULTS_SET, ResultsSet.class);
-    serializer.registerDSFID(SORTED_RESULT_SET, SortedResultSet.class);
-    serializer.registerDSFID(SORTED_STRUCT_SET, SortedStructSet.class);
-    serializer.registerDSFID(NWAY_MERGE_RESULTS, NWayMergeResults.class);
-    serializer.registerDSFID(CUMULATIVE_RESULTS, CumulativeNonDistinctResults.class);
-    serializer.registerDSFID(UNDEFINED, Undefined.class);
-    serializer.registerDSFID(STRUCT_IMPL, StructImpl.class);
-    serializer.registerDSFID(STRUCT_SET, StructSet.class);
-    serializer.registerDSFID(END_OF_BUCKET, PRQueryProcessor.EndOfBucket.class);
-    serializer.registerDSFID(STRUCT_BAG, StructBag.class);
-    serializer.registerDSFID(LINKED_RESULTSET, LinkedResultSet.class);
-    serializer.registerDSFID(LINKED_STRUCTSET, LinkedStructSet.class);
-    serializer.registerDSFID(PR_BUCKET_BACKUP_MESSAGE, BucketBackupMessage.class);
-    serializer.registerDSFID(PR_BUCKET_PROFILE_UPDATE_MESSAGE, BucketProfileUpdateMessage.class);
-    serializer.registerDSFID(PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE,
+    serializer.register(RESULTS_COLLECTION_WRAPPER, ResultsCollectionWrapper.class);
+    serializer.register(RESULTS_SET, ResultsSet.class);
+    serializer.register(SORTED_RESULT_SET, SortedResultSet.class);
+    serializer.register(SORTED_STRUCT_SET, SortedStructSet.class);
+    serializer.register(NWAY_MERGE_RESULTS, NWayMergeResults.class);
+    serializer.register(CUMULATIVE_RESULTS, CumulativeNonDistinctResults.class);
+    serializer.register(UNDEFINED, Undefined.class);
+    serializer.register(STRUCT_IMPL, StructImpl.class);
+    serializer.register(STRUCT_SET, StructSet.class);
+    serializer.register(END_OF_BUCKET, PRQueryProcessor.EndOfBucket.class);
+    serializer.register(STRUCT_BAG, StructBag.class);
+    serializer.register(LINKED_RESULTSET, LinkedResultSet.class);
+    serializer.register(LINKED_STRUCTSET, LinkedStructSet.class);
+    serializer.register(PR_BUCKET_BACKUP_MESSAGE, BucketBackupMessage.class);
+    serializer.register(PR_BUCKET_PROFILE_UPDATE_MESSAGE, BucketProfileUpdateMessage.class);
+    serializer.register(PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE,
         AllBucketProfilesUpdateMessage.class);
-    serializer.registerDSFID(PR_BUCKET_SIZE_MESSAGE, BucketSizeMessage.class);
-    serializer.registerDSFID(PR_CONTAINS_KEY_VALUE_MESSAGE, ContainsKeyValueMessage.class);
-    serializer.registerDSFID(PR_DUMP_ALL_PR_CONFIG_MESSAGE, DumpAllPRConfigMessage.class);
-    serializer.registerDSFID(PR_DUMP_BUCKETS_MESSAGE, DumpBucketsMessage.class);
-    serializer.registerDSFID(PR_FETCH_ENTRIES_MESSAGE, FetchEntriesMessage.class);
-    serializer.registerDSFID(PR_FETCH_ENTRY_MESSAGE, FetchEntryMessage.class);
-    serializer.registerDSFID(PR_FETCH_KEYS_MESSAGE, FetchKeysMessage.class);
-    serializer.registerDSFID(PR_FLUSH_MESSAGE, FlushMessage.class);
-    serializer.registerDSFID(PR_IDENTITY_REQUEST_MESSAGE, IdentityRequestMessage.class);
-    serializer.registerDSFID(PR_IDENTITY_UPDATE_MESSAGE, IdentityUpdateMessage.class);
-    serializer.registerDSFID(PR_INDEX_CREATION_MSG, IndexCreationMsg.class);
-    serializer.registerDSFID(PR_MANAGE_BUCKET_MESSAGE, ManageBucketMessage.class);
-    serializer.registerDSFID(PR_PRIMARY_REQUEST_MESSAGE, PrimaryRequestMessage.class);
-    serializer.registerDSFID(PR_PRIMARY_REQUEST_REPLY_MESSAGE, PrimaryRequestReplyMessage.class);
-    serializer.registerDSFID(PR_SANITY_CHECK_MESSAGE, PRSanityCheckMessage.class);
-    serializer.registerDSFID(PR_PUTALL_REPLY_MESSAGE, PutAllReplyMessage.class);
-    serializer.registerDSFID(PR_PUT_REPLY_MESSAGE, PutReplyMessage.class);
-    serializer.registerDSFID(PR_QUERY_MESSAGE, QueryMessage.class);
-    serializer.registerDSFID(PR_REMOVE_INDEXES_MESSAGE, RemoveIndexesMessage.class);
-    serializer.registerDSFID(PR_REMOVE_INDEXES_REPLY_MESSAGE, RemoveIndexesReplyMessage.class);
-    serializer.registerDSFID(PR_SIZE_MESSAGE, SizeMessage.class);
-    serializer.registerDSFID(PR_SIZE_REPLY_MESSAGE, SizeReplyMessage.class);
-    serializer.registerDSFID(PR_BUCKET_SIZE_REPLY_MESSAGE, BucketSizeReplyMessage.class);
-    serializer.registerDSFID(PR_CONTAINS_KEY_VALUE_REPLY_MESSAGE,
+    serializer.register(PR_BUCKET_SIZE_MESSAGE, BucketSizeMessage.class);
+    serializer.register(PR_CONTAINS_KEY_VALUE_MESSAGE, ContainsKeyValueMessage.class);
+    serializer.register(PR_DUMP_ALL_PR_CONFIG_MESSAGE, DumpAllPRConfigMessage.class);
+    serializer.register(PR_DUMP_BUCKETS_MESSAGE, DumpBucketsMessage.class);
+    serializer.register(PR_FETCH_ENTRIES_MESSAGE, FetchEntriesMessage.class);
+    serializer.register(PR_FETCH_ENTRY_MESSAGE, FetchEntryMessage.class);
+    serializer.register(PR_FETCH_KEYS_MESSAGE, FetchKeysMessage.class);
+    serializer.register(PR_FLUSH_MESSAGE, FlushMessage.class);
+    serializer.register(PR_IDENTITY_REQUEST_MESSAGE, IdentityRequestMessage.class);
+    serializer.register(PR_IDENTITY_UPDATE_MESSAGE, IdentityUpdateMessage.class);
+    serializer.register(PR_INDEX_CREATION_MSG, IndexCreationMsg.class);
+    serializer.register(PR_MANAGE_BUCKET_MESSAGE, ManageBucketMessage.class);
+    serializer.register(PR_PRIMARY_REQUEST_MESSAGE, PrimaryRequestMessage.class);
+    serializer.register(PR_PRIMARY_REQUEST_REPLY_MESSAGE, PrimaryRequestReplyMessage.class);
+    serializer.register(PR_SANITY_CHECK_MESSAGE, PRSanityCheckMessage.class);
+    serializer.register(PR_PUTALL_REPLY_MESSAGE, PutAllReplyMessage.class);
+    serializer.register(PR_PUT_REPLY_MESSAGE, PutReplyMessage.class);
+    serializer.register(PR_QUERY_MESSAGE, QueryMessage.class);
+    serializer.register(PR_REMOVE_INDEXES_MESSAGE, RemoveIndexesMessage.class);
+    serializer.register(PR_REMOVE_INDEXES_REPLY_MESSAGE, RemoveIndexesReplyMessage.class);
+    serializer.register(PR_SIZE_MESSAGE, SizeMessage.class);
+    serializer.register(PR_SIZE_REPLY_MESSAGE, SizeReplyMessage.class);
+    serializer.register(PR_BUCKET_SIZE_REPLY_MESSAGE, BucketSizeReplyMessage.class);
+    serializer.register(PR_CONTAINS_KEY_VALUE_REPLY_MESSAGE,
         ContainsKeyValueReplyMessage.class);
-    serializer.registerDSFID(PR_FETCH_ENTRIES_REPLY_MESSAGE, FetchEntriesReplyMessage.class);
-    serializer.registerDSFID(PR_FETCH_ENTRY_REPLY_MESSAGE, FetchEntryReplyMessage.class);
-    serializer.registerDSFID(PR_IDENTITY_REPLY_MESSAGE, IdentityReplyMessage.class);
-    serializer.registerDSFID(PR_INDEX_CREATION_REPLY_MSG, IndexCreationReplyMsg.class);
-    serializer.registerDSFID(PR_MANAGE_BUCKET_REPLY_MESSAGE, ManageBucketReplyMessage.class);
-    serializer.registerDSFID(PR_FETCH_KEYS_REPLY_MESSAGE, FetchKeysReplyMessage.class);
-    serializer.registerDSFID(PR_DUMP_B2N_REGION_MSG, DumpB2NRegion.class);
-    serializer.registerDSFID(PR_DUMP_B2N_REPLY_MESSAGE, DumpB2NReplyMessage.class);
-    serializer.registerDSFID(DESTROY_PARTITIONED_REGION_MESSAGE,
+    serializer.register(PR_FETCH_ENTRIES_REPLY_MESSAGE, FetchEntriesReplyMessage.class);
+    serializer.register(PR_FETCH_ENTRY_REPLY_MESSAGE, FetchEntryReplyMessage.class);
+    serializer.register(PR_IDENTITY_REPLY_MESSAGE, IdentityReplyMessage.class);
+    serializer.register(PR_INDEX_CREATION_REPLY_MSG, IndexCreationReplyMsg.class);
+    serializer.register(PR_MANAGE_BUCKET_REPLY_MESSAGE, ManageBucketReplyMessage.class);
+    serializer.register(PR_FETCH_KEYS_REPLY_MESSAGE, FetchKeysReplyMessage.class);
+    serializer.register(PR_DUMP_B2N_REGION_MSG, DumpB2NRegion.class);
+    serializer.register(PR_DUMP_B2N_REPLY_MESSAGE, DumpB2NReplyMessage.class);
+    serializer.register(DESTROY_PARTITIONED_REGION_MESSAGE,
         DestroyPartitionedRegionMessage.class);
-    serializer.registerDSFID(INVALIDATE_PARTITIONED_REGION_MESSAGE,
+    serializer.register(INVALIDATE_PARTITIONED_REGION_MESSAGE,
         InvalidatePartitionedRegionMessage.class);
-    serializer.registerDSFID(COMMIT_PROCESS_QUERY_MESSAGE, CommitProcessQueryMessage.class);
-    serializer.registerDSFID(COMMIT_PROCESS_QUERY_REPLY_MESSAGE,
+    serializer.register(COMMIT_PROCESS_QUERY_MESSAGE, CommitProcessQueryMessage.class);
+    serializer.register(COMMIT_PROCESS_QUERY_REPLY_MESSAGE,
         CommitProcessQueryReplyMessage.class);
-    serializer.registerDSFID(DESTROY_REGION_WITH_CONTEXT_MESSAGE,
+    serializer.register(DESTROY_REGION_WITH_CONTEXT_MESSAGE,
         DestroyRegionOperation.DestroyRegionWithContextMessage.class);
-    serializer.registerDSFID(PUT_ALL_MESSAGE, PutAllMessage.class);
-    serializer.registerDSFID(REMOVE_ALL_MESSAGE, RemoveAllMessage.class);
-    serializer.registerDSFID(CLEAR_REGION_MESSAGE, ClearRegionMessage.class);
-    serializer.registerDSFID(TOMBSTONE_MESSAGE, TombstoneMessage.class);
-    serializer.registerDSFID(INVALIDATE_REGION_MESSAGE, InvalidateRegionMessage.class);
-    serializer.registerDSFID(STATE_MARKER_MESSAGE, StateMarkerMessage.class);
-    serializer.registerDSFID(STATE_STABILIZATION_MESSAGE, StateStabilizationMessage.class);
-    serializer.registerDSFID(STATE_STABILIZED_MESSAGE, StateStabilizedMessage.class);
-    serializer.registerDSFID(CLIENT_MARKER_MESSAGE_IMPL, ClientMarkerMessageImpl.class);
-    serializer.registerDSFID(CLIENT_RE_AUTHENTICATE, ClientReAuthenticateMessage.class);
-    serializer.registerDSFID(TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE,
+    serializer.register(PUT_ALL_MESSAGE, PutAllMessage.class);
+    serializer.register(REMOVE_ALL_MESSAGE, RemoveAllMessage.class);
+    serializer.register(CLEAR_REGION_MESSAGE, ClearRegionMessage.class);
+    serializer.register(TOMBSTONE_MESSAGE, TombstoneMessage.class);
+    serializer.register(INVALIDATE_REGION_MESSAGE, InvalidateRegionMessage.class);
+    serializer.register(STATE_MARKER_MESSAGE, StateMarkerMessage.class);
+    serializer.register(STATE_STABILIZATION_MESSAGE, StateStabilizationMessage.class);
+    serializer.register(STATE_STABILIZED_MESSAGE, StateStabilizedMessage.class);
+    serializer.register(CLIENT_MARKER_MESSAGE_IMPL, ClientMarkerMessageImpl.class);
+    serializer.register(CLIENT_RE_AUTHENTICATE, ClientReAuthenticateMessage.class);
+    serializer.register(TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE,
         TXLockUpdateParticipantsMessage.class);
-    serializer.registerDSFID(TX_ORIGINATOR_RECOVERY_MESSAGE, TXOriginatorRecoveryMessage.class);
-    serializer.registerDSFID(TX_ORIGINATOR_RECOVERY_REPLY_MESSAGE,
+    serializer.register(TX_ORIGINATOR_RECOVERY_MESSAGE, TXOriginatorRecoveryMessage.class);
+    serializer.register(TX_ORIGINATOR_RECOVERY_REPLY_MESSAGE,
         TXOriginatorRecoveryReplyMessage.class);
-    serializer.registerDSFID(TX_REMOTE_COMMIT_MESSAGE, TXRemoteCommitMessage.class);
-    serializer.registerDSFID(TX_REMOTE_ROLLBACK_MESSAGE, TXRemoteRollbackMessage.class);
-    serializer.registerDSFID(JTA_BEFORE_COMPLETION_MESSAGE, JtaBeforeCompletionMessage.class);
-    serializer.registerDSFID(JTA_AFTER_COMPLETION_MESSAGE, JtaAfterCompletionMessage.class);
-    serializer.registerDSFID(QUEUE_REMOVAL_MESSAGE, QueueRemovalMessage.class);
-    serializer.registerDSFID(DLOCK_RECOVER_GRANTOR_MESSAGE, DLockRecoverGrantorMessage.class);
-    serializer.registerDSFID(DLOCK_RECOVER_GRANTOR_REPLY_MESSAGE,
+    serializer.register(TX_REMOTE_COMMIT_MESSAGE, TXRemoteCommitMessage.class);
+    serializer.register(TX_REMOTE_ROLLBACK_MESSAGE, TXRemoteRollbackMessage.class);
+    serializer.register(JTA_BEFORE_COMPLETION_MESSAGE, JtaBeforeCompletionMessage.class);
+    serializer.register(JTA_AFTER_COMPLETION_MESSAGE, JtaAfterCompletionMessage.class);
+    serializer.register(QUEUE_REMOVAL_MESSAGE, QueueRemovalMessage.class);
+    serializer.register(DLOCK_RECOVER_GRANTOR_MESSAGE, DLockRecoverGrantorMessage.class);
+    serializer.register(DLOCK_RECOVER_GRANTOR_REPLY_MESSAGE,
         DLockRecoverGrantorReplyMessage.class);
-    serializer.registerDSFID(NON_GRANTOR_DESTROYED_REPLY_MESSAGE,
+    serializer.register(NON_GRANTOR_DESTROYED_REPLY_MESSAGE,
         NonGrantorDestroyedReplyMessage.class);
-    serializer.registerDSFID(IDS_REGISTRATION_MESSAGE,
+    serializer.register(IDS_REGISTRATION_MESSAGE,
         InternalDataSerializer.RegistrationMessage.class);
-    serializer.registerDSFID(PR_FETCH_PARTITION_DETAILS_MESSAGE,
+    serializer.register(PR_FETCH_PARTITION_DETAILS_MESSAGE,
         FetchPartitionDetailsMessage.class);
-    serializer.registerDSFID(PR_FETCH_PARTITION_DETAILS_REPLY,
+    serializer.register(PR_FETCH_PARTITION_DETAILS_REPLY,
         FetchPartitionDetailsReplyMessage.class);
-    serializer.registerDSFID(PR_DEPOSE_PRIMARY_BUCKET_MESSAGE, DeposePrimaryBucketMessage.class);
-    serializer.registerDSFID(PR_DEPOSE_PRIMARY_BUCKET_REPLY, DeposePrimaryBucketReplyMessage.class);
-    serializer.registerDSFID(PR_BECOME_PRIMARY_BUCKET_MESSAGE, BecomePrimaryBucketMessage.class);
-    serializer.registerDSFID(PR_BECOME_PRIMARY_BUCKET_REPLY, BecomePrimaryBucketReplyMessage.class);
-    serializer.registerDSFID(PR_REMOVE_BUCKET_MESSAGE, RemoveBucketMessage.class);
-    serializer.registerDSFID(EXPIRE_CLIENT_TRANSACTIONS,
+    serializer.register(PR_DEPOSE_PRIMARY_BUCKET_MESSAGE, DeposePrimaryBucketMessage.class);
+    serializer.register(PR_DEPOSE_PRIMARY_BUCKET_REPLY, DeposePrimaryBucketReplyMessage.class);
+    serializer.register(PR_BECOME_PRIMARY_BUCKET_MESSAGE, BecomePrimaryBucketMessage.class);
+    serializer.register(PR_BECOME_PRIMARY_BUCKET_REPLY, BecomePrimaryBucketReplyMessage.class);
+    serializer.register(PR_REMOVE_BUCKET_MESSAGE, RemoveBucketMessage.class);
+    serializer.register(EXPIRE_CLIENT_TRANSACTIONS,
         ExpireDisconnectedClientTransactionsMessage.class);
-    serializer.registerDSFID(PR_REMOVE_BUCKET_REPLY, RemoveBucketReplyMessage.class);
-    serializer.registerDSFID(PR_MOVE_BUCKET_MESSAGE, MoveBucketMessage.class);
-    serializer.registerDSFID(PR_MOVE_BUCKET_REPLY, MoveBucketReplyMessage.class);
-    serializer.registerDSFID(ADD_HEALTH_LISTENER_REQUEST, AddHealthListenerRequest.class);
-    serializer.registerDSFID(ADD_HEALTH_LISTENER_RESPONSE, AddHealthListenerResponse.class);
-    serializer.registerDSFID(ADD_STAT_LISTENER_REQUEST, AddStatListenerRequest.class);
-    serializer.registerDSFID(ADD_STAT_LISTENER_RESPONSE, AddStatListenerResponse.class);
-    serializer.registerDSFID(ADMIN_CONSOLE_DISCONNECT_MESSAGE, AdminConsoleDisconnectMessage.class);
-    serializer.registerDSFID(ADMIN_CONSOLE_MESSAGE, AdminConsoleMessage.class);
-    serializer.registerDSFID(MANAGER_STARTUP_MESSAGE, ManagerStartupMessage.class);
-    serializer.registerDSFID(JMX_MANAGER_LOCATOR_REQUEST, JmxManagerLocatorRequest.class);
-    serializer.registerDSFID(JMX_MANAGER_LOCATOR_RESPONSE, JmxManagerLocatorResponse.class);
-    serializer.registerDSFID(ADMIN_FAILURE_RESPONSE, AdminFailureResponse.class);
-    serializer.registerDSFID(ALERT_LEVEL_CHANGE_MESSAGE, AlertLevelChangeMessage.class);
-    serializer.registerDSFID(ALERT_LISTENER_MESSAGE, AlertListenerMessage.class);
-    serializer.registerDSFID(APP_CACHE_SNAPSHOT_MESSAGE, AppCacheSnapshotMessage.class);
-    serializer.registerDSFID(BRIDGE_SERVER_REQUEST, BridgeServerRequest.class);
-    serializer.registerDSFID(BRIDGE_SERVER_RESPONSE, BridgeServerResponse.class);
-    serializer.registerDSFID(CACHE_CONFIG_REQUEST, CacheConfigRequest.class);
-    serializer.registerDSFID(CACHE_CONFIG_RESPONSE, CacheConfigResponse.class);
-    serializer.registerDSFID(CACHE_INFO_REQUEST, CacheInfoRequest.class);
-    serializer.registerDSFID(CACHE_INFO_RESPONSE, CacheInfoResponse.class);
-    serializer.registerDSFID(CANCELLATION_MESSAGE, CancellationMessage.class);
-    serializer.registerDSFID(CANCEL_STAT_LISTENER_REQUEST, CancelStatListenerRequest.class);
-    serializer.registerDSFID(CANCEL_STAT_LISTENER_RESPONSE, CancelStatListenerResponse.class);
-    serializer.registerDSFID(DESTROY_ENTRY_MESSAGE, DestroyEntryMessage.class);
-    serializer.registerDSFID(ADMIN_DESTROY_REGION_MESSAGE, DestroyRegionMessage.class);
-    serializer.registerDSFID(FETCH_DIST_LOCK_INFO_REQUEST, FetchDistLockInfoRequest.class);
-    serializer.registerDSFID(FETCH_DIST_LOCK_INFO_RESPONSE, FetchDistLockInfoResponse.class);
-    serializer.registerDSFID(FETCH_HEALTH_DIAGNOSIS_REQUEST, FetchHealthDiagnosisRequest.class);
-    serializer.registerDSFID(FETCH_HEALTH_DIAGNOSIS_RESPONSE, FetchHealthDiagnosisResponse.class);
-    serializer.registerDSFID(FETCH_HOST_REQUEST, FetchHostRequest.class);
-    serializer.registerDSFID(FETCH_HOST_RESPONSE, FetchHostResponse.class);
-    serializer.registerDSFID(FETCH_RESOURCE_ATTRIBUTES_REQUEST,
+    serializer.register(PR_REMOVE_BUCKET_REPLY, RemoveBucketReplyMessage.class);
+    serializer.register(PR_MOVE_BUCKET_MESSAGE, MoveBucketMessage.class);
+    serializer.register(PR_MOVE_BUCKET_REPLY, MoveBucketReplyMessage.class);
+    serializer.register(ADD_HEALTH_LISTENER_REQUEST, AddHealthListenerRequest.class);
+    serializer.register(ADD_HEALTH_LISTENER_RESPONSE, AddHealthListenerResponse.class);
+    serializer.register(ADD_STAT_LISTENER_REQUEST, AddStatListenerRequest.class);
+    serializer.register(ADD_STAT_LISTENER_RESPONSE, AddStatListenerResponse.class);
+    serializer.register(ADMIN_CONSOLE_DISCONNECT_MESSAGE, AdminConsoleDisconnectMessage.class);
+    serializer.register(ADMIN_CONSOLE_MESSAGE, AdminConsoleMessage.class);
+    serializer.register(MANAGER_STARTUP_MESSAGE, ManagerStartupMessage.class);
+    serializer.register(JMX_MANAGER_LOCATOR_REQUEST, JmxManagerLocatorRequest.class);
+    serializer.register(JMX_MANAGER_LOCATOR_RESPONSE, JmxManagerLocatorResponse.class);
+    serializer.register(ADMIN_FAILURE_RESPONSE, AdminFailureResponse.class);
+    serializer.register(ALERT_LEVEL_CHANGE_MESSAGE, AlertLevelChangeMessage.class);
+    serializer.register(ALERT_LISTENER_MESSAGE, AlertListenerMessage.class);
+    serializer.register(APP_CACHE_SNAPSHOT_MESSAGE, AppCacheSnapshotMessage.class);
+    serializer.register(BRIDGE_SERVER_REQUEST, BridgeServerRequest.class);
+    serializer.register(BRIDGE_SERVER_RESPONSE, BridgeServerResponse.class);
+    serializer.register(CACHE_CONFIG_REQUEST, CacheConfigRequest.class);
+    serializer.register(CACHE_CONFIG_RESPONSE, CacheConfigResponse.class);
+    serializer.register(CACHE_INFO_REQUEST, CacheInfoRequest.class);
+    serializer.register(CACHE_INFO_RESPONSE, CacheInfoResponse.class);
+    serializer.register(CANCELLATION_MESSAGE, CancellationMessage.class);
+    serializer.register(CANCEL_STAT_LISTENER_REQUEST, CancelStatListenerRequest.class);
+    serializer.register(CANCEL_STAT_LISTENER_RESPONSE, CancelStatListenerResponse.class);
+    serializer.register(DESTROY_ENTRY_MESSAGE, DestroyEntryMessage.class);
+    serializer.register(ADMIN_DESTROY_REGION_MESSAGE, DestroyRegionMessage.class);
+    serializer.register(FETCH_DIST_LOCK_INFO_REQUEST, FetchDistLockInfoRequest.class);
+    serializer.register(FETCH_DIST_LOCK_INFO_RESPONSE, FetchDistLockInfoResponse.class);
+    serializer.register(FETCH_HEALTH_DIAGNOSIS_REQUEST, FetchHealthDiagnosisRequest.class);
+    serializer.register(FETCH_HEALTH_DIAGNOSIS_RESPONSE, FetchHealthDiagnosisResponse.class);
+    serializer.register(FETCH_HOST_REQUEST, FetchHostRequest.class);
+    serializer.register(FETCH_HOST_RESPONSE, FetchHostResponse.class);
+    serializer.register(FETCH_RESOURCE_ATTRIBUTES_REQUEST,
         FetchResourceAttributesRequest.class);
-    serializer.registerDSFID(FETCH_RESOURCE_ATTRIBUTES_RESPONSE,
+    serializer.register(FETCH_RESOURCE_ATTRIBUTES_RESPONSE,
         FetchResourceAttributesResponse.class);
-    serializer.registerDSFID(FETCH_STATS_REQUEST, FetchStatsRequest.class);
-    serializer.registerDSFID(FETCH_STATS_RESPONSE, FetchStatsResponse.class);
-    serializer.registerDSFID(FETCH_SYS_CFG_REQUEST, FetchSysCfgRequest.class);
-    serializer.registerDSFID(FETCH_SYS_CFG_RESPONSE, FetchSysCfgResponse.class);
-    serializer.registerDSFID(FLUSH_APP_CACHE_SNAPSHOT_MESSAGE, FlushAppCacheSnapshotMessage.class);
-    serializer.registerDSFID(HEALTH_LISTENER_MESSAGE, HealthListenerMessage.class);
-    serializer.registerDSFID(OBJECT_DETAILS_REQUEST, ObjectDetailsRequest.class);
-    serializer.registerDSFID(OBJECT_DETAILS_RESPONSE, ObjectDetailsResponse.class);
-    serializer.registerDSFID(OBJECT_NAMES_REQUEST, ObjectNamesRequest.class);
-    serializer.registerDSFID(LICENSE_INFO_REQUEST, LicenseInfoRequest.class);
-    serializer.registerDSFID(LICENSE_INFO_RESPONSE, LicenseInfoResponse.class);
-    serializer.registerDSFID(OBJECT_NAMES_RESPONSE, ObjectNamesResponse.class);
-    serializer.registerDSFID(REGION_ATTRIBUTES_REQUEST, RegionAttributesRequest.class);
-    serializer.registerDSFID(REGION_ATTRIBUTES_RESPONSE, RegionAttributesResponse.class);
-    serializer.registerDSFID(REGION_REQUEST, RegionRequest.class);
-    serializer.registerDSFID(REGION_RESPONSE, RegionResponse.class);
-    serializer.registerDSFID(REGION_SIZE_REQUEST, RegionSizeRequest.class);
-    serializer.registerDSFID(REGION_SIZE_RESPONSE, RegionSizeResponse.class);
-    serializer.registerDSFID(REGION_STATISTICS_REQUEST, RegionStatisticsRequest.class);
-    serializer.registerDSFID(REGION_STATISTICS_RESPONSE, RegionStatisticsResponse.class);
-    serializer.registerDSFID(REMOVE_HEALTH_LISTENER_REQUEST, RemoveHealthListenerRequest.class);
-    serializer.registerDSFID(REMOVE_HEALTH_LISTENER_RESPONSE, RemoveHealthListenerResponse.class);
-    serializer.registerDSFID(RESET_HEALTH_STATUS_REQUEST, ResetHealthStatusRequest.class);
-    serializer.registerDSFID(RESET_HEALTH_STATUS_RESPONSE, ResetHealthStatusResponse.class);
-    serializer.registerDSFID(ROOT_REGION_REQUEST, RootRegionRequest.class);
-    serializer.registerDSFID(ROOT_REGION_RESPONSE, RootRegionResponse.class);
-    serializer.registerDSFID(SNAPSHOT_RESULT_MESSAGE, SnapshotResultMessage.class);
-    serializer.registerDSFID(STAT_LISTENER_MESSAGE, StatListenerMessage.class);
-    serializer.registerDSFID(STORE_SYS_CFG_REQUEST, StoreSysCfgRequest.class);
-    serializer.registerDSFID(STORE_SYS_CFG_RESPONSE, StoreSysCfgResponse.class);
-    serializer.registerDSFID(SUB_REGION_REQUEST, SubRegionRequest.class);
-    serializer.registerDSFID(SUB_REGION_RESPONSE, SubRegionResponse.class);
-    serializer.registerDSFID(TAIL_LOG_REQUEST, TailLogRequest.class);
-    serializer.registerDSFID(TAIL_LOG_RESPONSE, TailLogResponse.class);
-    serializer.registerDSFID(VERSION_INFO_REQUEST, VersionInfoRequest.class);
-    serializer.registerDSFID(VERSION_INFO_RESPONSE, VersionInfoResponse.class);
-    serializer.registerDSFID(HIGH_PRIORITY_ACKED_MESSAGE, HighPriorityAckedMessage.class);
-    serializer.registerDSFID(SERIAL_ACKED_MESSAGE, SerialAckedMessage.class);
-    serializer.registerDSFID(BUCKET_PROFILE, BucketAdvisor.BucketProfile.class);
-    serializer.registerDSFID(SERVER_BUCKET_PROFILE, BucketAdvisor.ServerBucketProfile.class);
-    serializer.registerDSFID(PARTITION_PROFILE, RegionAdvisor.PartitionProfile.class);
-    serializer.registerDSFID(GATEWAY_SENDER_PROFILE,
+    serializer.register(FETCH_STATS_REQUEST, FetchStatsRequest.class);
+    serializer.register(FETCH_STATS_RESPONSE, FetchStatsResponse.class);
+    serializer.register(FETCH_SYS_CFG_REQUEST, FetchSysCfgRequest.class);
+    serializer.register(FETCH_SYS_CFG_RESPONSE, FetchSysCfgResponse.class);
+    serializer.register(FLUSH_APP_CACHE_SNAPSHOT_MESSAGE, FlushAppCacheSnapshotMessage.class);
+    serializer.register(HEALTH_LISTENER_MESSAGE, HealthListenerMessage.class);
+    serializer.register(OBJECT_DETAILS_REQUEST, ObjectDetailsRequest.class);
+    serializer.register(OBJECT_DETAILS_RESPONSE, ObjectDetailsResponse.class);
+    serializer.register(OBJECT_NAMES_REQUEST, ObjectNamesRequest.class);
+    serializer.register(LICENSE_INFO_REQUEST, LicenseInfoRequest.class);
+    serializer.register(LICENSE_INFO_RESPONSE, LicenseInfoResponse.class);
+    serializer.register(OBJECT_NAMES_RESPONSE, ObjectNamesResponse.class);
+    serializer.register(REGION_ATTRIBUTES_REQUEST, RegionAttributesRequest.class);
+    serializer.register(REGION_ATTRIBUTES_RESPONSE, RegionAttributesResponse.class);
+    serializer.register(REGION_REQUEST, RegionRequest.class);
+    serializer.register(REGION_RESPONSE, RegionResponse.class);
+    serializer.register(REGION_SIZE_REQUEST, RegionSizeRequest.class);
+    serializer.register(REGION_SIZE_RESPONSE, RegionSizeResponse.class);
+    serializer.register(REGION_STATISTICS_REQUEST, RegionStatisticsRequest.class);
+    serializer.register(REGION_STATISTICS_RESPONSE, RegionStatisticsResponse.class);
+    serializer.register(REMOVE_HEALTH_LISTENER_REQUEST, RemoveHealthListenerRequest.class);
+    serializer.register(REMOVE_HEALTH_LISTENER_RESPONSE, RemoveHealthListenerResponse.class);
+    serializer.register(RESET_HEALTH_STATUS_REQUEST, ResetHealthStatusRequest.class);
+    serializer.register(RESET_HEALTH_STATUS_RESPONSE, ResetHealthStatusResponse.class);
+    serializer.register(ROOT_REGION_REQUEST, RootRegionRequest.class);
+    serializer.register(ROOT_REGION_RESPONSE, RootRegionResponse.class);
+    serializer.register(SNAPSHOT_RESULT_MESSAGE, SnapshotResultMessage.class);
+    serializer.register(STAT_LISTENER_MESSAGE, StatListenerMessage.class);
+    serializer.register(STORE_SYS_CFG_REQUEST, StoreSysCfgRequest.class);
+    serializer.register(STORE_SYS_CFG_RESPONSE, StoreSysCfgResponse.class);
+    serializer.register(SUB_REGION_REQUEST, SubRegionRequest.class);
+    serializer.register(SUB_REGION_RESPONSE, SubRegionResponse.class);
+    serializer.register(TAIL_LOG_REQUEST, TailLogRequest.class);
+    serializer.register(TAIL_LOG_RESPONSE, TailLogResponse.class);
+    serializer.register(VERSION_INFO_REQUEST, VersionInfoRequest.class);
+    serializer.register(VERSION_INFO_RESPONSE, VersionInfoResponse.class);
+    serializer.register(HIGH_PRIORITY_ACKED_MESSAGE, HighPriorityAckedMessage.class);
+    serializer.register(SERIAL_ACKED_MESSAGE, SerialAckedMessage.class);
+    serializer.register(BUCKET_PROFILE, BucketAdvisor.BucketProfile.class);
+    serializer.register(SERVER_BUCKET_PROFILE, BucketAdvisor.ServerBucketProfile.class);
+    serializer.register(PARTITION_PROFILE, RegionAdvisor.PartitionProfile.class);
+    serializer.register(GATEWAY_SENDER_PROFILE,
         GatewaySenderAdvisor.GatewaySenderProfile.class);
-    serializer.registerDSFID(ROLE_EVENT, RoleEventImpl.class);
-    serializer.registerDSFID(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
-    serializer.registerDSFID(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
-    serializer.registerDSFID(PR_INVALIDATE_REPLY_MESSAGE,
+    serializer.register(ROLE_EVENT, RoleEventImpl.class);
+    serializer.register(CLIENT_REGION_EVENT, ClientRegionEventImpl.class);
+    serializer.register(PR_INVALIDATE_MESSAGE, InvalidateMessage.class);
+    serializer.register(PR_INVALIDATE_REPLY_MESSAGE,
         InvalidateMessage.InvalidateReplyMessage.class);
-    serializer.registerDSFID(TX_LOCK_UPDATE_PARTICIPANTS_REPLY_MESSAGE,
+    serializer.register(TX_LOCK_UPDATE_PARTICIPANTS_REPLY_MESSAGE,
         TXLockUpdateParticipantsReplyMessage.class);
-    serializer.registerDSFID(STREAMING_REPLY_MESSAGE, StreamingReplyMessage.class);
-    serializer.registerDSFID(PARTITION_REGION_CONFIG, PartitionRegionConfig.class);
-    serializer.registerDSFID(PREFER_BYTES_CACHED_DESERIALIZABLE,
+    serializer.register(STREAMING_REPLY_MESSAGE, StreamingReplyMessage.class);
+    serializer.register(PARTITION_REGION_CONFIG, PartitionRegionConfig.class);
+    serializer.register(PREFER_BYTES_CACHED_DESERIALIZABLE,
         PreferBytesCachedDeserializable.class);
-    serializer.registerDSFID(VM_CACHED_DESERIALIZABLE, VMCachedDeserializable.class);
-    serializer.registerDSFID(GATEWAY_SENDER_EVENT_IMPL, GatewaySenderEventImpl.class);
-    serializer.registerDSFID(SUSPEND_LOCKING_TOKEN, DLockService.SuspendLockingToken.class);
-    serializer.registerDSFID(OBJECT_TYPE_IMPL, ObjectTypeImpl.class);
-    serializer.registerDSFID(STRUCT_TYPE_IMPL, StructTypeImpl.class);
-    serializer.registerDSFID(COLLECTION_TYPE_IMPL, CollectionTypeImpl.class);
-    serializer.registerDSFID(TX_LOCK_BATCH, TXLockBatch.class);
-    serializer.registerDSFID(GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT,
+    serializer.register(VM_CACHED_DESERIALIZABLE, VMCachedDeserializable.class);
+    serializer.register(GATEWAY_SENDER_EVENT_IMPL, GatewaySenderEventImpl.class);
+    serializer.register(SUSPEND_LOCKING_TOKEN, DLockService.SuspendLockingToken.class);
+    serializer.register(OBJECT_TYPE_IMPL, ObjectTypeImpl.class);
+    serializer.register(STRUCT_TYPE_IMPL, StructTypeImpl.class);
+    serializer.register(COLLECTION_TYPE_IMPL, CollectionTypeImpl.class);
+    serializer.register(TX_LOCK_BATCH, TXLockBatch.class);
+    serializer.register(GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT,
         GatewaySenderEventCallbackArgument.class);
-    serializer.registerDSFID(MAP_TYPE_IMPL, MapTypeImpl.class);
-    serializer.registerDSFID(STORE_ALL_CACHED_DESERIALIZABLE, StoreAllCachedDeserializable.class);
-    serializer.registerDSFID(INTEREST_EVENT_MESSAGE, InterestEventMessage.class);
-    serializer.registerDSFID(INTEREST_EVENT_REPLY_MESSAGE, InterestEventReplyMessage.class);
-    serializer.registerDSFID(HA_EVENT_WRAPPER, HAEventWrapper.class);
-    serializer.registerDSFID(STAT_ALERTS_MGR_ASSIGN_MESSAGE, StatAlertsManagerAssignMessage.class);
-    serializer.registerDSFID(UPDATE_ALERTS_DEFN_MESSAGE, UpdateAlertDefinitionMessage.class);
-    serializer.registerDSFID(REFRESH_MEMBER_SNAP_REQUEST, RefreshMemberSnapshotRequest.class);
-    serializer.registerDSFID(REFRESH_MEMBER_SNAP_RESPONSE, RefreshMemberSnapshotResponse.class);
-    serializer.registerDSFID(REGION_SUB_SIZE_REQUEST, RegionSubRegionSizeRequest.class);
-    serializer.registerDSFID(REGION_SUB_SIZE_RESPONSE, RegionSubRegionsSizeResponse.class);
-    serializer.registerDSFID(CHANGE_REFRESH_INT_MESSAGE, ChangeRefreshIntervalMessage.class);
-    serializer.registerDSFID(ALERTS_NOTIF_MESSAGE, AlertsNotificationMessage.class);
-    serializer.registerDSFID(FIND_DURABLE_QUEUE, FindDurableQueueMessage.class);
-    serializer.registerDSFID(FIND_DURABLE_QUEUE_REPLY, FindDurableQueueReply.class);
-    serializer.registerDSFID(CACHE_SERVER_LOAD_MESSAGE, CacheServerLoadMessage.class);
-    serializer.registerDSFID(CACHE_SERVER_PROFILE, CacheServerProfile.class);
-    serializer.registerDSFID(CONTROLLER_PROFILE, ControllerProfile.class);
-    serializer.registerDSFID(DLOCK_QUERY_MESSAGE, DLockQueryProcessor.DLockQueryMessage.class);
-    serializer.registerDSFID(DLOCK_QUERY_REPLY, DLockQueryProcessor.DLockQueryReplyMessage.class);
-    serializer.registerDSFID(LOCATOR_LIST_REQUEST, LocatorListRequest.class);
-    serializer.registerDSFID(LOCATOR_LIST_RESPONSE, LocatorListResponse.class);
-    serializer.registerDSFID(CLIENT_CONNECTION_REQUEST, ClientConnectionRequest.class);
-    serializer.registerDSFID(CLIENT_CONNECTION_RESPONSE, ClientConnectionResponse.class);
-    serializer.registerDSFID(QUEUE_CONNECTION_REQUEST, QueueConnectionRequest.class);
-    serializer.registerDSFID(QUEUE_CONNECTION_RESPONSE, QueueConnectionResponse.class);
-    serializer.registerDSFID(CLIENT_REPLACEMENT_REQUEST, ClientReplacementRequest.class);
-    serializer.registerDSFID(OBJECT_PART_LIST, ObjectPartList.class);
-    serializer.registerDSFID(VERSIONED_OBJECT_LIST, VersionedObjectList.class);
-    serializer.registerDSFID(PUTALL_VERSIONS_LIST, EntryVersionsList.class);
-    serializer.registerDSFID(INITIAL_IMAGE_VERSIONED_OBJECT_LIST,
+    serializer.register(MAP_TYPE_IMPL, MapTypeImpl.class);
+    serializer.register(STORE_ALL_CACHED_DESERIALIZABLE, StoreAllCachedDeserializable.class);
+    serializer.register(INTEREST_EVENT_MESSAGE, InterestEventMessage.class);
+    serializer.register(INTEREST_EVENT_REPLY_MESSAGE, InterestEventReplyMessage.class);
+    serializer.register(HA_EVENT_WRAPPER, HAEventWrapper.class);
+    serializer.register(STAT_ALERTS_MGR_ASSIGN_MESSAGE, StatAlertsManagerAssignMessage.class);
+    serializer.register(UPDATE_ALERTS_DEFN_MESSAGE, UpdateAlertDefinitionMessage.class);
+    serializer.register(REFRESH_MEMBER_SNAP_REQUEST, RefreshMemberSnapshotRequest.class);
+    serializer.register(REFRESH_MEMBER_SNAP_RESPONSE, RefreshMemberSnapshotResponse.class);
+    serializer.register(REGION_SUB_SIZE_REQUEST, RegionSubRegionSizeRequest.class);
+    serializer.register(REGION_SUB_SIZE_RESPONSE, RegionSubRegionsSizeResponse.class);
+    serializer.register(CHANGE_REFRESH_INT_MESSAGE, ChangeRefreshIntervalMessage.class);
+    serializer.register(ALERTS_NOTIF_MESSAGE, AlertsNotificationMessage.class);
+    serializer.register(FIND_DURABLE_QUEUE, FindDurableQueueMessage.class);
+    serializer.register(FIND_DURABLE_QUEUE_REPLY, FindDurableQueueReply.class);
+    serializer.register(CACHE_SERVER_LOAD_MESSAGE, CacheServerLoadMessage.class);
+    serializer.register(CACHE_SERVER_PROFILE, CacheServerProfile.class);
+    serializer.register(CONTROLLER_PROFILE, ControllerProfile.class);
+    serializer.register(DLOCK_QUERY_MESSAGE, DLockQueryProcessor.DLockQueryMessage.class);
+    serializer.register(DLOCK_QUERY_REPLY, DLockQueryProcessor.DLockQueryReplyMessage.class);
+    serializer.register(LOCATOR_LIST_REQUEST, LocatorListRequest.class);
+    serializer.register(LOCATOR_LIST_RESPONSE, LocatorListResponse.class);
+    serializer.register(CLIENT_CONNECTION_REQUEST, ClientConnectionRequest.class);
+    serializer.register(CLIENT_CONNECTION_RESPONSE, ClientConnectionResponse.class);
+    serializer.register(QUEUE_CONNECTION_REQUEST, QueueConnectionRequest.class);
+    serializer.register(QUEUE_CONNECTION_RESPONSE, QueueConnectionResponse.class);
+    serializer.register(CLIENT_REPLACEMENT_REQUEST, ClientReplacementRequest.class);
+    serializer.register(OBJECT_PART_LIST, ObjectPartList.class);
+    serializer.register(VERSIONED_OBJECT_LIST, VersionedObjectList.class);
+    serializer.register(PUTALL_VERSIONS_LIST, EntryVersionsList.class);
+    serializer.register(INITIAL_IMAGE_VERSIONED_OBJECT_LIST,
         InitialImageVersionedEntryList.class);
-    serializer.registerDSFID(FIND_VERSION_TAG, FindVersionTagMessage.class);
-    serializer.registerDSFID(VERSION_TAG_REPLY, VersionTagReply.class);
-    serializer.registerDSFID(DURABLE_CLIENT_INFO_REQUEST, DurableClientInfoRequest.class);
-    serializer.registerDSFID(DURABLE_CLIENT_INFO_RESPONSE, DurableClientInfoResponse.class);
-    serializer.registerDSFID(CLIENT_INTEREST_MESSAGE, ClientInterestMessageImpl.class);
-    serializer.registerDSFID(LATEST_LAST_ACCESS_TIME_MESSAGE, LatestLastAccessTimeMessage.class);
-    serializer.registerDSFID(STAT_ALERT_DEFN_NUM_THRESHOLD, NumberThresholdDecoratorImpl.class);
-    serializer.registerDSFID(STAT_ALERT_DEFN_GAUGE_THRESHOLD, GaugeThresholdDecoratorImpl.class);
-    serializer.registerDSFID(CLIENT_HEALTH_STATS, ClientHealthStats.class);
-    serializer.registerDSFID(STAT_ALERT_NOTIFICATION, StatAlertNotification.class);
-    serializer.registerDSFID(FILTER_INFO_MESSAGE, InitialImageOperation.FilterInfoMessage.class);
-    serializer.registerDSFID(SIZED_BASED_LOAD_PROBE, SizedBasedLoadProbe.class);
-    serializer.registerDSFID(PR_MANAGE_BACKUP_BUCKET_MESSAGE, ManageBackupBucketMessage.class);
-    serializer.registerDSFID(PR_MANAGE_BACKUP_BUCKET_REPLY_MESSAGE,
+    serializer.register(FIND_VERSION_TAG, FindVersionTagMessage.class);
+    serializer.register(VERSION_TAG_REPLY, VersionTagReply.class);
+    serializer.register(DURABLE_CLIENT_INFO_REQUEST, DurableClientInfoRequest.class);
+    serializer.register(DURABLE_CLIENT_INFO_RESPONSE, DurableClientInfoResponse.class);
+    serializer.register(CLIENT_INTEREST_MESSAGE, ClientInterestMessageImpl.class);
+    serializer.register(LATEST_LAST_ACCESS_TIME_MESSAGE, LatestLastAccessTimeMessage.class);
+    serializer.register(STAT_ALERT_DEFN_NUM_THRESHOLD, NumberThresholdDecoratorImpl.class);
+    serializer.register(STAT_ALERT_DEFN_GAUGE_THRESHOLD, GaugeThresholdDecoratorImpl.class);
+    serializer.register(CLIENT_HEALTH_STATS, ClientHealthStats.class);
+    serializer.register(STAT_ALERT_NOTIFICATION, StatAlertNotification.class);
+    serializer.register(FILTER_INFO_MESSAGE, InitialImageOperation.FilterInfoMessage.class);
+    serializer.register(SIZED_BASED_LOAD_PROBE, SizedBasedLoadProbe.class);
+    serializer.register(PR_MANAGE_BACKUP_BUCKET_MESSAGE, ManageBackupBucketMessage.class);
+    serializer.register(PR_MANAGE_BACKUP_BUCKET_REPLY_MESSAGE,
         ManageBackupBucketReplyMessage.class);
-    serializer.registerDSFID(PR_CREATE_BUCKET_MESSAGE, CreateBucketMessage.class);
-    serializer.registerDSFID(PR_CREATE_BUCKET_REPLY_MESSAGE, CreateBucketReplyMessage.class);
-    serializer.registerDSFID(RESOURCE_MANAGER_PROFILE, ResourceManagerProfile.class);
-    serializer.registerDSFID(RESOURCE_PROFILE_MESSAGE, ResourceProfileMessage.class);
-    serializer.registerDSFID(JMX_MANAGER_PROFILE, JmxManagerProfile.class);
-    serializer.registerDSFID(JMX_MANAGER_PROFILE_MESSAGE, JmxManagerProfileMessage.class);
-    serializer.registerDSFID(CLIENT_DENYLIST_MESSAGE, ClientDenylistMessage.class);
-    serializer.registerDSFID(REMOVE_CLIENT_FROM_DENYLIST_MESSAGE,
+    serializer.register(PR_CREATE_BUCKET_MESSAGE, CreateBucketMessage.class);
+    serializer.register(PR_CREATE_BUCKET_REPLY_MESSAGE, CreateBucketReplyMessage.class);
+    serializer.register(RESOURCE_MANAGER_PROFILE, ResourceManagerProfile.class);
+    serializer.register(RESOURCE_PROFILE_MESSAGE, ResourceProfileMessage.class);
+    serializer.register(JMX_MANAGER_PROFILE, JmxManagerProfile.class);
+    serializer.register(JMX_MANAGER_PROFILE_MESSAGE, JmxManagerProfileMessage.class);
+    serializer.register(CLIENT_DENYLIST_MESSAGE, ClientDenylistMessage.class);
+    serializer.register(REMOVE_CLIENT_FROM_DENYLIST_MESSAGE,
         RemoveClientFromDenylistMessage.class);
-    serializer.registerDSFID(PR_FUNCTION_STREAMING_MESSAGE,
+    serializer.register(PR_FUNCTION_STREAMING_MESSAGE,
         PartitionedRegionFunctionStreamingMessage.class);
-    serializer.registerDSFID(MEMBER_FUNCTION_STREAMING_MESSAGE,
+    serializer.register(MEMBER_FUNCTION_STREAMING_MESSAGE,
         MemberFunctionStreamingMessage.class);
-    serializer.registerDSFID(DR_FUNCTION_STREAMING_MESSAGE,
+    serializer.register(DR_FUNCTION_STREAMING_MESSAGE,
         DistributedRegionFunctionStreamingMessage.class);
-    serializer.registerDSFID(FUNCTION_STREAMING_REPLY_MESSAGE, FunctionStreamingReplyMessage.class);
-    serializer.registerDSFID(GET_ALL_SERVERS_REQUEST, GetAllServersRequest.class);
-    serializer.registerDSFID(GET_ALL_SERVRES_RESPONSE, GetAllServersResponse.class);
-    serializer.registerDSFID(PERSISTENT_MEMBERSHIP_VIEW_REQUEST, MembershipViewRequest.class);
-    serializer.registerDSFID(PERSISTENT_MEMBERSHIP_VIEW_REPLY, MembershipViewReplyMessage.class);
-    serializer.registerDSFID(PERSISTENT_STATE_QUERY_REQUEST, PersistentStateQueryMessage.class);
-    serializer.registerDSFID(PERSISTENT_STATE_QUERY_REPLY, PersistentStateQueryReplyMessage.class);
-    serializer.registerDSFID(PREPARE_NEW_PERSISTENT_MEMBER_REQUEST,
+    serializer.register(FUNCTION_STREAMING_REPLY_MESSAGE, FunctionStreamingReplyMessage.class);
+    serializer.register(GET_ALL_SERVERS_REQUEST, GetAllServersRequest.class);
+    serializer.register(GET_ALL_SERVRES_RESPONSE, GetAllServersResponse.class);
+    serializer.register(PERSISTENT_MEMBERSHIP_VIEW_REQUEST, MembershipViewRequest.class);
+    serializer.register(PERSISTENT_MEMBERSHIP_VIEW_REPLY, MembershipViewReplyMessage.class);
+    serializer.register(PERSISTENT_STATE_QUERY_REQUEST, PersistentStateQueryMessage.class);
+    serializer.register(PERSISTENT_STATE_QUERY_REPLY, PersistentStateQueryReplyMessage.class);
+    serializer.register(PREPARE_NEW_PERSISTENT_MEMBER_REQUEST,
         PrepareNewPersistentMemberMessage.class);
-    serializer.registerDSFID(MISSING_PERSISTENT_IDS_REQUEST, MissingPersistentIDsRequest.class);
-    serializer.registerDSFID(MISSING_PERSISTENT_IDS_RESPONSE, MissingPersistentIDsResponse.class);
-    serializer.registerDSFID(REVOKE_PERSISTENT_ID_REQUEST, RevokePersistentIDRequest.class);
-    serializer.registerDSFID(REVOKE_PERSISTENT_ID_RESPONSE, RevokePersistentIDResponse.class);
-    serializer.registerDSFID(REMOVE_PERSISTENT_MEMBER_REQUEST, RemovePersistentMemberMessage.class);
-    serializer.registerDSFID(FUNCTION_STREAMING_ORDERED_REPLY_MESSAGE,
+    serializer.register(MISSING_PERSISTENT_IDS_REQUEST, MissingPersistentIDsRequest.class);
+    serializer.register(MISSING_PERSISTENT_IDS_RESPONSE, MissingPersistentIDsResponse.class);
+    serializer.register(REVOKE_PERSISTENT_ID_REQUEST, RevokePersistentIDRequest.class);
+    serializer.register(REVOKE_PERSISTENT_ID_RESPONSE, RevokePersistentIDResponse.class);
+    serializer.register(REMOVE_PERSISTENT_MEMBER_REQUEST, RemovePersistentMemberMessage.class);
+    serializer.register(FUNCTION_STREAMING_ORDERED_REPLY_MESSAGE,
         FunctionStreamingOrderedReplyMessage.class);
-    serializer.registerDSFID(REQUEST_SYNC_MESSAGE, InitialImageOperation.RequestSyncMessage.class);
-    serializer.registerDSFID(PERSISTENT_MEMBERSHIP_FLUSH_REQUEST, MembershipFlushRequest.class);
-    serializer.registerDSFID(SHUTDOWN_ALL_REQUEST, ShutdownAllRequest.class);
-    serializer.registerDSFID(SHUTDOWN_ALL_RESPONSE, ShutdownAllResponse.class);
-    serializer.registerDSFID(CLIENT_MEMBERSHIP_MESSAGE, ClientMembershipMessage.class);
-    serializer.registerDSFID(END_BUCKET_CREATION_MESSAGE, EndBucketCreationMessage.class);
-    serializer.registerDSFID(PREPARE_BACKUP_REQUEST, PrepareBackupRequest.class);
-    serializer.registerDSFID(BACKUP_RESPONSE, BackupResponse.class); // in older versions this was
+    serializer.register(REQUEST_SYNC_MESSAGE, InitialImageOperation.RequestSyncMessage.class);
+    serializer.register(PERSISTENT_MEMBERSHIP_FLUSH_REQUEST, MembershipFlushRequest.class);
+    serializer.register(SHUTDOWN_ALL_REQUEST, ShutdownAllRequest.class);
+    serializer.register(SHUTDOWN_ALL_RESPONSE, ShutdownAllResponse.class);
+    serializer.register(CLIENT_MEMBERSHIP_MESSAGE, ClientMembershipMessage.class);
+    serializer.register(END_BUCKET_CREATION_MESSAGE, EndBucketCreationMessage.class);
+    serializer.register(PREPARE_BACKUP_REQUEST, PrepareBackupRequest.class);
+    serializer.register(BACKUP_RESPONSE, BackupResponse.class); // in older versions this was
     // FinishBackupResponse which is
     // compatible
-    serializer.registerDSFID(FINISH_BACKUP_REQUEST, FinishBackupRequest.class);
-    serializer.registerDSFID(FINISH_BACKUP_RESPONSE, BackupResponse.class); // for backwards
-                                                                            // compatibility map
+    serializer.register(FINISH_BACKUP_REQUEST, FinishBackupRequest.class);
+    serializer.register(FINISH_BACKUP_RESPONSE, BackupResponse.class); // for backwards
+                                                                       // compatibility map
     // FINISH_BACKUP_RESPONSE to
     // BackupResponse
-    serializer.registerDSFID(COMPACT_REQUEST, CompactRequest.class);
-    serializer.registerDSFID(COMPACT_RESPONSE, CompactResponse.class);
-    serializer.registerDSFID(FLOW_CONTROL_PERMIT_MESSAGE, FlowControlPermitMessage.class);
-    serializer.registerDSFID(REQUEST_FILTERINFO_MESSAGE,
+    serializer.register(COMPACT_REQUEST, CompactRequest.class);
+    serializer.register(COMPACT_RESPONSE, CompactResponse.class);
+    serializer.register(FLOW_CONTROL_PERMIT_MESSAGE, FlowControlPermitMessage.class);
+    serializer.register(REQUEST_FILTERINFO_MESSAGE,
         InitialImageOperation.RequestFilterInfoMessage.class);
-    serializer.registerDSFID(PARALLEL_QUEUE_REMOVAL_MESSAGE, ParallelQueueRemovalMessage.class);
-    serializer.registerDSFID(BATCH_DESTROY_MESSAGE, BatchDestroyOperation.DestroyMessage.class);
-    serializer.registerDSFID(FIND_REMOTE_TX_MESSAGE, FindRemoteTXMessage.class);
-    serializer.registerDSFID(FIND_REMOTE_TX_REPLY, FindRemoteTXMessageReply.class);
-    serializer.registerDSFID(FLUSH_TO_DISK_REQUEST, FlushToDiskRequest.class);
-    serializer.registerDSFID(FLUSH_TO_DISK_RESPONSE, FlushToDiskResponse.class);
-    serializer.registerDSFID(ENUM_ID, EnumId.class);
-    serializer.registerDSFID(ENUM_INFO, EnumInfo.class);
-    serializer.registerDSFID(CHECK_TYPE_REGISTRY_STATE, CheckTypeRegistryState.class);
-    serializer.registerDSFID(PREPARE_REVOKE_PERSISTENT_ID_REQUEST,
+    serializer.register(PARALLEL_QUEUE_REMOVAL_MESSAGE, ParallelQueueRemovalMessage.class);
+    serializer.register(BATCH_DESTROY_MESSAGE, BatchDestroyOperation.DestroyMessage.class);
+    serializer.register(FIND_REMOTE_TX_MESSAGE, FindRemoteTXMessage.class);
+    serializer.register(FIND_REMOTE_TX_REPLY, FindRemoteTXMessageReply.class);
+    serializer.register(FLUSH_TO_DISK_REQUEST, FlushToDiskRequest.class);
+    serializer.register(FLUSH_TO_DISK_RESPONSE, FlushToDiskResponse.class);
+    serializer.register(ENUM_ID, EnumId.class);
+    serializer.register(ENUM_INFO, EnumInfo.class);
+    serializer.register(CHECK_TYPE_REGISTRY_STATE, CheckTypeRegistryState.class);
+    serializer.register(PREPARE_REVOKE_PERSISTENT_ID_REQUEST,
         PrepareRevokePersistentIDRequest.class);
-    serializer.registerDSFID(PERSISTENT_RVV, DiskRegionVersionVector.class);
-    serializer.registerDSFID(PERSISTENT_VERSION_TAG, DiskVersionTag.class);
-    serializer.registerDSFID(DISK_STORE_ID, DiskStoreID.class);
-    serializer.registerDSFID(CLIENT_PING_MESSAGE_IMPL, ClientPingMessageImpl.class);
-    serializer.registerDSFID(SNAPSHOT_PACKET, SnapshotPacket.class);
-    serializer.registerDSFID(SNAPSHOT_RECORD, SnapshotRecord.class);
-    serializer.registerDSFID(FLOW_CONTROL_ACK, FlowControlAckMessage.class);
-    serializer.registerDSFID(FLOW_CONTROL_ABORT, FlowControlAbortMessage.class);
-    serializer.registerDSFID(MGMT_COMPACT_REQUEST,
+    serializer.register(PERSISTENT_RVV, DiskRegionVersionVector.class);
+    serializer.register(PERSISTENT_VERSION_TAG, DiskVersionTag.class);
+    serializer.register(DISK_STORE_ID, DiskStoreID.class);
+    serializer.register(CLIENT_PING_MESSAGE_IMPL, ClientPingMessageImpl.class);
+    serializer.register(SNAPSHOT_PACKET, SnapshotPacket.class);
+    serializer.register(SNAPSHOT_RECORD, SnapshotRecord.class);
+    serializer.register(FLOW_CONTROL_ACK, FlowControlAckMessage.class);
+    serializer.register(FLOW_CONTROL_ABORT, FlowControlAbortMessage.class);
+    serializer.register(MGMT_COMPACT_REQUEST,
         org.apache.geode.management.internal.messages.CompactRequest.class);
-    serializer.registerDSFID(MGMT_COMPACT_RESPONSE,
+    serializer.register(MGMT_COMPACT_RESPONSE,
         org.apache.geode.management.internal.messages.CompactResponse.class);
-    serializer.registerDSFID(MGMT_FEDERATION_COMPONENT,
+    serializer.register(MGMT_FEDERATION_COMPONENT,
         org.apache.geode.management.internal.FederationComponent.class);
-    serializer.registerDSFID(LOCATOR_STATUS_REQUEST, LocatorStatusRequest.class);
-    serializer.registerDSFID(LOCATOR_STATUS_RESPONSE, LocatorStatusResponse.class);
-    serializer.registerDSFID(R_FETCH_VERSION_MESSAGE, RemoteFetchVersionMessage.class);
-    serializer.registerDSFID(R_FETCH_VERSION_REPLY,
+    serializer.register(LOCATOR_STATUS_REQUEST, LocatorStatusRequest.class);
+    serializer.register(LOCATOR_STATUS_RESPONSE, LocatorStatusResponse.class);
+    serializer.register(R_FETCH_VERSION_MESSAGE, RemoteFetchVersionMessage.class);
+    serializer.register(R_FETCH_VERSION_REPLY,
         RemoteFetchVersionMessage.FetchVersionReplyMessage.class);
-    serializer.registerDSFID(RELEASE_CLEAR_LOCK_MESSAGE, ReleaseClearLockMessage.class);
-    serializer.registerDSFID(PR_TOMBSTONE_MESSAGE, PRTombstoneMessage.class);
-    serializer.registerDSFID(REQUEST_RVV_MESSAGE, InitialImageOperation.RequestRVVMessage.class);
-    serializer.registerDSFID(RVV_REPLY_MESSAGE, InitialImageOperation.RVVReplyMessage.class);
-    serializer.registerDSFID(SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE,
+    serializer.register(RELEASE_CLEAR_LOCK_MESSAGE, ReleaseClearLockMessage.class);
+    serializer.register(PR_TOMBSTONE_MESSAGE, PRTombstoneMessage.class);
+    serializer.register(REQUEST_RVV_MESSAGE, InitialImageOperation.RequestRVVMessage.class);
+    serializer.register(RVV_REPLY_MESSAGE, InitialImageOperation.RVVReplyMessage.class);
+    serializer.register(SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE,
         SnappyCompressedCachedDeserializable.class);
-    serializer.registerDSFID(UPDATE_ENTRY_VERSION_MESSAGE, UpdateEntryVersionMessage.class);
-    serializer.registerDSFID(PR_UPDATE_ENTRY_VERSION_MESSAGE, PRUpdateEntryVersionMessage.class);
-    serializer.registerDSFID(PR_FETCH_BULK_ENTRIES_MESSAGE, FetchBulkEntriesMessage.class);
-    serializer.registerDSFID(PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE,
+    serializer.register(UPDATE_ENTRY_VERSION_MESSAGE, UpdateEntryVersionMessage.class);
+    serializer.register(PR_UPDATE_ENTRY_VERSION_MESSAGE, PRUpdateEntryVersionMessage.class);
+    serializer.register(PR_FETCH_BULK_ENTRIES_MESSAGE, FetchBulkEntriesMessage.class);
+    serializer.register(PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE,
         FetchBulkEntriesReplyMessage.class);
-    serializer.registerDSFID(PR_QUERY_TRACE_INFO, PRQueryTraceInfo.class);
-    serializer.registerDSFID(INDEX_CREATION_DATA, IndexCreationData.class);
-    serializer.registerDSFID(DIST_TX_OP, DistTxEntryEvent.class);
-    serializer.registerDSFID(DIST_TX_PRE_COMMIT_RESPONSE, DistTxPrecommitResponse.class);
-    serializer.registerDSFID(DIST_TX_THIN_ENTRY_STATE, TXEntryState.DistTxThinEntryState.class);
-    serializer.registerDSFID(SERVER_PING_MESSAGE, ServerPingMessage.class);
-    serializer.registerDSFID(PR_DESTROY_ON_DATA_STORE_MESSAGE,
+    serializer.register(PR_QUERY_TRACE_INFO, PRQueryTraceInfo.class);
+    serializer.register(INDEX_CREATION_DATA, IndexCreationData.class);
+    serializer.register(DIST_TX_OP, DistTxEntryEvent.class);
+    serializer.register(DIST_TX_PRE_COMMIT_RESPONSE, DistTxPrecommitResponse.class);
+    serializer.register(DIST_TX_THIN_ENTRY_STATE, TXEntryState.DistTxThinEntryState.class);
+    serializer.register(SERVER_PING_MESSAGE, ServerPingMessage.class);
+    serializer.register(PR_DESTROY_ON_DATA_STORE_MESSAGE,
         DestroyRegionOnDataStoreMessage.class);
-    serializer.registerDSFID(SHUTDOWN_ALL_GATEWAYHUBS_REQUEST, ShutdownAllGatewayHubsRequest.class);
-    serializer.registerDSFID(BUCKET_COUNT_LOAD_PROBE, BucketCountLoadProbe.class);
-    serializer.registerDSFID(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE,
+    serializer.register(SHUTDOWN_ALL_GATEWAYHUBS_REQUEST, ShutdownAllGatewayHubsRequest.class);
+    serializer.register(BUCKET_COUNT_LOAD_PROBE, BucketCountLoadProbe.class);
+    serializer.register(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE,
         GatewaySenderQueueEntrySynchronizationOperation.GatewaySenderQueueEntrySynchronizationMessage.class);
-    serializer.registerDSFID(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY,
+    serializer.register(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY,
         GatewaySenderQueueEntrySynchronizationOperation.GatewaySenderQueueEntrySynchronizationEntry.class);
-    serializer.registerDSFID(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
-    serializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
-    serializer.registerDSFID(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
+    serializer.register(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
+    serializer.register(HOST_AND_PORT, HostAndPort.class);
+    serializer.register(DISTRIBUTED_PING_MESSAGE, DistributedPingMessage.class);
   }
 
   /**

@@ -336,7 +336,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
 
   @Override
-  public void registerDSFID(int dsfid, Class<?> dsfidClass) {
+  public void register(int dsfid, Class<? extends DataSerializableFixedID> dsfidClass) {
     try {
       Constructor<?> cons = dsfidClass.getConstructor((Class<Object>[]) null);
       cons.setAccessible(true);
@@ -345,8 +345,17 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
             "default constructor not accessible " + "for DSFID=" + dsfid + ": " + dsfidClass);
       }
       if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
-        dsfidMap[dsfid + Byte.MAX_VALUE + 1] = cons;
+        int index = dsfid + Byte.MAX_VALUE + 1;
+        if (dsfidMap[index] != null) {
+          throw new IllegalArgumentException("A DataSerializableFixedID already exists for "
+              + dsfid + " : " + dsfidMap[index].getName());
+        }
+        dsfidMap[index] = cons;
       } else {
+        if (dsfidMap2.containsKey(dsfid)) {
+          throw new IllegalArgumentException("A DataSerializableFixedID already exists for "
+              + dsfid + " : " + dsfidMap2.get(dsfid).getName());
+        }
         dsfidMap2.put(dsfid, cons);
       }
     } catch (NoSuchMethodException nsme) {
