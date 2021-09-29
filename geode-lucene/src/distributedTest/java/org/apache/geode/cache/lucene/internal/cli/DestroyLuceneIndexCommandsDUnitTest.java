@@ -336,8 +336,8 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
     server1.invoke(() -> notifyIndexDestroyComplete());
     server2.invoke(() -> notifyIndexDestroyComplete());
 
-    server1RegionCreationInvocation.await(30, TimeUnit.SECONDS);
-    server2RegionCreationInvocation.await(30, TimeUnit.SECONDS);
+    server1RegionCreationInvocation.await(45, TimeUnit.SECONDS);
+    server2RegionCreationInvocation.await(45, TimeUnit.SECONDS);
 
     // Verify defined and created indexes are empty in both members
     server1.invoke(() -> verifyDefinedAndCreatedIndexSizes(0, 0));

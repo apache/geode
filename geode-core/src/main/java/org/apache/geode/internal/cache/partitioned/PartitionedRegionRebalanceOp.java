@@ -164,16 +164,17 @@ public class PartitionedRegionRebalanceOp {
       if (!checkAndSetColocatedRegions()) {
         return Collections.emptySet();
       }
-
       // Early out if this was an automatically triggered rebalance and we now
       // have full redundancy.
       if (!isRebalanceNecessary()) {
         return Collections.emptySet();
       }
 
+      logger.info("toberal in rebalance before getting lock");
       if (!simulate) {
         lock = leaderRegion.getRecoveryLock();
         lock.lock();
+        logger.info("toberal in rebalance obtained lock");
       }
 
       // Check this again after getting the lock, because someone might
@@ -256,6 +257,7 @@ public class PartitionedRegionRebalanceOp {
       if (lock != null) {
         try {
           lock.unlock();
+          logger.info("toberal in rebalance released lock");
         } catch (CancelException e) {
           // lock service has been destroyed
         } catch (Exception e) {

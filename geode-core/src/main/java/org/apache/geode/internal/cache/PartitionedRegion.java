@@ -7004,6 +7004,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public RecoveryLock getRecoveryLock() {
+    new Exception("toberal getRecoveryLock").printStackTrace();
     return new RecoveryLock();
   }
 

@@ -143,6 +143,13 @@ public class PRHARedundancyProvider {
 
   private static final ThreadLocal<Boolean> forceLocalPrimaries = new ThreadLocal<>();
 
+  private static final int MAX_NUMBER_INTERVALS = 30;
+
+  private static final int SMALL_INTERVALS = 5;
+  private static final int MEDIUM_INTERVALS = 10;
+  private static final int LARGE_INTERVALS = 15;
+
+
   @MakeNotStatic
   private static final Long DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS =
       Long.getLong(DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME);
@@ -1712,8 +1719,11 @@ public class PRHARedundancyProvider {
   }
 
   void scheduleCreateMissingBuckets() {
-    if (partitionedRegion.getColocatedWith() != null
-        && ColocationHelper.isColocationComplete(partitionedRegion)) {
+    if (partitionedRegion.getColocatedWith() != null) {
+      waitForColocationCompleted(partitionedRegion);
+      if (!ColocationHelper.isColocationComplete(partitionedRegion)) {
+        return;
+      }
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
           partitionedRegion.getGemFireCache().getInternalResourceManager();
@@ -1882,6 +1892,41 @@ public class PRHARedundancyProvider {
       getPersistentBucketRecoverer().await();
     }
   }
+
+
+  /**
+   * Wait for Colocation to complete. Wait all nodes to Register this PartitionedRegion.
+   */
+  private void waitForColocationCompleted(PartitionedRegion partitionedRegion) {
+    int count = 0;
+    int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+
+    while (!ColocationHelper.isColocationComplete(partitionedRegion)
+        && (count <= MAX_NUMBER_INTERVALS)) {
+
+      // Didn't time out. Sleep a bit and then continue
+      boolean interrupted = Thread.interrupted();
+      try {
+        Thread.sleep(sleepInterval);
+      } catch (InterruptedException ignore) {
+        interrupted = true;
+      } finally {
+        if (interrupted) {
+          Thread.currentThread().interrupt();
+        }
+      }
+      count++;
+      if (count == SMALL_INTERVALS) {
+        sleepInterval = 2 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (count == MEDIUM_INTERVALS) {
+        sleepInterval = 5 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (count == LARGE_INTERVALS) {
+        sleepInterval = 10 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      }
+    }
+
+  }
+
 
   public boolean isPersistentRecoveryComplete() {
     if (!checkMembersColocation(partitionedRegion, partitionedRegion.getMyId())) {

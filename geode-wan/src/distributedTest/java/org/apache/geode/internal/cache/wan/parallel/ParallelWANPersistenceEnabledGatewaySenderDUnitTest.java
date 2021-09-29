@@ -1777,10 +1777,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     LogWriterUtils.getLogWriter().info("Start all the senders.");
 
-    vm4.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    vm6.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
-    vm7.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    startSenderwithCleanQueuesInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
     LogWriterUtils.getLogWriter().info("Waiting for senders running.");
     // wait for senders running
@@ -1875,7 +1872,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     vm7.invoke(createPartitionedRegionRunnable());
 
-    vm7.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    vm7.invoke(() -> WANTestBase.startSender("ln"));
 
     vm7.invoke(waitForSenderRunnable());
 

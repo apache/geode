@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.management.internal.i18n.CliStrings.QUERY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -21,6 +22,7 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -54,7 +56,7 @@ public class WANClusterConfigurationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = clusterStartupRule.startLocatorVM(3);
+    locator = clusterStartupRule.startLocatorVM(50);
   }
 
   @Test
@@ -529,4 +531,105 @@ public class WANClusterConfigurationDUnitTest {
       assertTrue(socketReadTimeout.equals(Integer.toString(gs.getSocketReadTimeout())));
     });
   }
+
+  // toberal
+  @Test
+  public void whenAlteringOnePartitionedPersistentReplicatedRegionWithParallelSenderWithAHighNumberOfServersCommandDoesNotHang()
+      throws Exception {
+    // toberal.
+    // With 24 servers I get errors due to lack of resources (lost heartbeats). Not able to run
+    // With 16 servers. It hangs (eventually finishes)
+    // with 3 sleeps of 10 it finished after 6 minutes and a half showing the "having elapsedisco"
+    // log.
+    // with 3 sleeps of 30 it finished after 15 minutes and a half, 9 and a half second time,
+    // showing the "having elapsed" log. Time taken by the alter command: 272 seconds
+    // Without sleeps it finished in 6 minutes. Max stuck of 153 seconds. Time taken for the
+    // command: 153 seconds
+    // With 20 servers. It hangs (eventually finishes).
+    // stuck for 660 seconds
+    // time taken by command: 694 seconds
+    // With 8 servers it does not hang. (I do not see 15 secs have elapsed waiting for a primary for
+    // bucket messages) or thread stuck messages
+    // If I do not create first the gateway sender and what I do is:
+    // - create region
+    // - allocate buckets
+    // - create gateway sender
+    // - alter region with gateway sender
+    // it does not hang.
+    addIgnoredException("could not get remote locator");
+    addIgnoredException("cannot have the same parallel gateway sender id");
+
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+
+    int serversNo = 7;
+    MemberVM serversArray[] = new MemberVM[serversNo];
+
+    // setup servers in Site #1
+    int initialIndex = 1;
+    Properties properties = new Properties();
+    for (int index = 0; index < serversArray.length; index++) {
+      serversArray[index] =
+          clusterStartupRule.startServerVM(initialIndex + index, properties, locator.getPort());
+    }
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locator);
+
+    // Create disk-store
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+    csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore");
+    csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // Create disk-store1
+    // csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+    // csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore1");
+    // csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+    // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // Create region
+    csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+    csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_PERSISTENT");
+    csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
+    // With this delay, test cases pass even tiwh 16 and 20 servers
+    // csb.addOption(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY, "1000");
+    // The region must have a disk store (the same or another) to see the hang. If it is different,
+    // the hanging lasts longer
+    csb.addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // Allocate buckets
+    String queryString = "\"select * from /test1\"";
+    csb = new CommandStringBuilder(CliStrings.QUERY);
+    csb.addOption(QUERY, queryString).getCommandString();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    System.out.println("toberal before create gateway sender again");
+
+    // Create gateway sender
+    csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore");
+    // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore1");
+    csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE, "true");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // Thread.sleep(30000);
+    System.out.println("toberal before altering region to add gateway sender");
+
+    long currentMillis = System.currentTimeMillis();
+    // Add gateway sender to region
+    csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+    csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    long timeTaken = (System.currentTimeMillis() - currentMillis) / 1000;
+    System.out.println("toberal time taken by alter region: "
+        + (System.currentTimeMillis() - currentMillis) / 1000 + " seconds");
+    assertThat(timeTaken).isLessThan(15);
+  }
+
 }
