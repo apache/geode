@@ -1454,6 +1454,11 @@ public class PRHARedundancyProvider {
     long delay;
     boolean movePrimaries;
 
+    // toberal. This check fixes the issue. Is it correct=
+    // Can we assume that the leader region will rebalance this region when necessary?
+    if (partitionedRegion.isShadowPR()) {
+      return;
+    }
     if (isStartup) {
       delay = partitionedRegion.getPartitionAttributes().getStartupRecoveryDelay();
       movePrimaries = !Boolean
