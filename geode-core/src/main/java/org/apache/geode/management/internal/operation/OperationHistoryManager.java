@@ -73,7 +73,7 @@ public class OperationHistoryManager {
     final long expirationTime = now() - keepCompletedMillis;
     Set<String> expiredKeys = operationStateStore.list()
         .stream()
-        .map(this::validateLocator)
+        .map(this::validateLocatorAndUpdateOperationState)
         .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationState::getId)
         .collect(Collectors.toSet());
@@ -95,18 +95,13 @@ public class OperationHistoryManager {
     return operationEnd.getTime() <= expirationTime;
   }
 
-  private OperationState<?, ?> validateLocator(OperationState<?, ?> operationState) {
-    if (operationState.getOperationEnd() != null) {
-      return operationState;
-    }
-    if (isLocatorOffline(operationState)) {
-      operationState.setOperationEnd(new Date(), null,
+  private OperationState<?, ?> validateLocatorAndUpdateOperationState(
+      OperationState<?, ?> operationState) {
+    if (operationState.getOperationEnd() == null && isLocatorOffline(operationState)) {
+      recordEnd(operationState.getId(), operationState.getResult(),
           new RuntimeException("Locator that initiated the Rest API operation is offline: "
               + operationState.getLocator()));
-      operationStateStore.recordEnd(operationState.getId(), operationState.getResult(),
-          operationState.getThrowable());
     }
-
     return operationState;
   }
 
