@@ -28,6 +28,9 @@ facets {
     includeInCheckLifecycle = false
   }
 }
+commonTest {
+  useJUnitPlatform()
+}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

@@ -30,6 +30,10 @@ facets {
   }
 }
 
+commonTest {
+  useJUnitPlatform()
+}
+
 sourceSets {
   integrationTest {
     resources {
