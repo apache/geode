@@ -15,3 +15,5 @@ org/apache/geode/redis/internal/data/RedisSortedSet$MemberMap
 org/apache/geode/redis/internal/data/RedisStringCommandsFunctionExecutor$BitOp
 org/apache/geode/redis/internal/pubsub/PubSubImpl$PublishFunction
 org/apache/geode/redis/internal/services/StripedExecutorService$State
+org/apache/geode/redis/internal/RedisCommandType
+org/apache/geode/redis/internal/RedisCommandType$Flag

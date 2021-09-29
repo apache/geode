@@ -12,51 +12,42 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor.set;
 
+package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
-
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SPopExecutor extends AbstractExecutor {
-
+public class CommandExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    boolean isCountPassed = false;
-    int popCount = 1;
 
-    if (commandElems.size() == 3) {
-      isCountPassed = true;
-      try {
-        popCount = narrowLongToInt(bytesToLong(commandElems.get(2)));
-      } catch (NumberFormatException nex) {
-        return RedisResponse.error(ERROR_NOT_INTEGER);
+    List<Object> response = new ArrayList<>();
+
+    for (RedisCommandType type : RedisCommandType.values()) {
+      if (type.isInternal() || type.isUnknown() || type == RedisCommandType.QUIT) {
+        continue;
       }
+
+      List<Object> oneCommand = new ArrayList<>();
+      oneCommand.add(type.name().toLowerCase());
+      oneCommand.add(type.arity());
+      oneCommand.add(type.flags().stream()
+          .map(f -> f.name().toLowerCase()).collect(Collectors.toList()));
+      oneCommand.add(type.firstKey());
+      oneCommand.add(type.lastKey());
+      oneCommand.add(type.step());
+
+      response.add(oneCommand);
     }
 
-    RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = context.getSetCommands();
-    Collection<byte[]> popped = redisSetCommands.spop(key, popCount);
-
-    if (popped.isEmpty() && !isCountPassed) {
-      return RedisResponse.nil();
-    }
-
-    if (!isCountPassed) {
-      return RedisResponse.bulkString(popped.iterator().next());
-    }
-
-    return RedisResponse.array(popped);
+    return RedisResponse.array(response);
   }
 }

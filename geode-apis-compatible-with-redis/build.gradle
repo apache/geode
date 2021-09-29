@@ -70,6 +70,7 @@ dependencies {
   integrationTestImplementation('org.buildobjects:jproc:2.6.2')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestRuntimeOnly(project(':geode-log4j'))
+  integrationTestRuntimeOnly('org.testcontainers:testcontainers')
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
   acceptanceTestImplementation(sourceSets.distributedTest.output)
