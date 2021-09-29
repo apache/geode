@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.executor.server;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bVERSION;
 
 import java.util.List;
 import java.util.Random;
@@ -30,35 +32,39 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class LolWutExecutor extends AbstractExecutor {
 
-  public static final int MAX_MAZE_DIMENSION = 1024; // limit width and height
+  public static final int MAX_MAZE_WIDTH = 1024; // limit width to keep memory usage low
+  public static final int MAX_MAZE_HEIGHT = 1024 * 1024; // if user wants a bigger maze they can
+                                                         // recompile
   public static final int DEFAULT_WIDTH = 40;
   public static final int DEFAULT_HEIGHT = 10;
-  private static int width = DEFAULT_WIDTH;
-  private static int height = DEFAULT_HEIGHT;
+  private static int width;
+  private static int height;
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
+    width = DEFAULT_WIDTH;
+    height = DEFAULT_HEIGHT;
     int inputWidth = -1;
     int inputHeight = -1;
 
     List<byte[]> commands = command.getProcessedCommand();
     if (commands.size() > 1) {
       for (int i = 1; i < commands.size(); i++) {
-        if (Coder.bytesToString(commands.get(i)).equalsIgnoreCase("version")) {
+        if (equalsIgnoreCaseBytes(commands.get(i), bVERSION)) {
           i += 1; // skip next arg, we only have one version for now
         } else {
           try {
             if (inputWidth < 0) {
               inputWidth = Coder.narrowLongToInt(Coder.bytesToLong(commands.get(i)));
-              if (inputWidth > MAX_MAZE_DIMENSION) {
-                inputWidth = MAX_MAZE_DIMENSION;
+              if (inputWidth > MAX_MAZE_WIDTH) {
+                inputWidth = MAX_MAZE_WIDTH;
               }
             } else if (inputHeight < 0) {
               inputHeight = Coder.narrowLongToInt(Coder.bytesToLong(commands.get(i)));
-              if (inputHeight > MAX_MAZE_DIMENSION) {
-                inputHeight = MAX_MAZE_DIMENSION;
+              if (inputHeight > MAX_MAZE_HEIGHT) {
+                inputHeight = MAX_MAZE_HEIGHT;
               }
             } else {
               break; // all required args filled
