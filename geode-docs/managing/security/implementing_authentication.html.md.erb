@@ -44,46 +44,53 @@ a server will need to set its credential, composed of the two properties
 `security-username` and `security-password`.
 Choose one of these two ways to accomplish this:
 
-- Set `security-username` and `security-password` in the server's
-`gfsecurity.properties` file that will be read upon server start up,
-as in the example
+- add settings to the server properties file
+- Implement the `AuthInitialize` interface for the server
+
+### <a id="authsetserverprops" class="no-quick-link"></a>Add settings to the server properties file
+
+Set `security-username` and `security-password` in the server's
+`gfsecurity.properties` file, which is read upon server start up.
+For example:
+
+``` pre
+security-username=admin
+security-password=xyz1234
+```
+The user name and password are stored in the clear, so the
+`gfsecurity.properties` file must be protected by restricting access with
+file system permissions.
+
+### <a id="authimplementserverinterface" class="no-quick-link"></a>Implement the AuthInitialize interface for the server
+
+To implement the `AuthInitialize` interface for the server:
+    
+1. Set the property `security-peer-auth-init`,
+so that an object of the class that implements the `AuthInitialize`
+interface will be instantiated.
+Set the property to one of these two values:
+
+    - Set property `security-peer-auth-init` to the fully-qualified
+    class name that implements the `AuthInitialize` interface
+    as in the example
 
     ``` pre
-    security-username=admin
-    security-password=xyz1234
+    security-peer-auth-init=com.example.security.ServerAuthenticate
     ```
-    The user name and password are stored in the clear, so the
-    `gfsecurity.properties` file must be protected by restricting access with
-    file system permissions.
+    - Set property `security-peer-auth-init` to the fully-qualified
+    method name of a method that instantiates an object of the class
+    that implements the `AuthInitialize` interface
+    as in the example
 
-- Implement `AuthInitialize` interface for the server.
-    
-    - Set the property `security-peer-auth-init`,
-    so that an object of the class that implements the `AuthInitialize`
-    interface will be instantiated.
-    Set the property to one of these two values:
+    ``` pre
+    security-peer-auth-init=com.example.security.ServerAuthenticate.create
+    ```
 
-        - Set property `security-peer-auth-init` to the fully-qualified
-        class name that implements the `AuthInitialize` interface
-        as in the example
-
-        ``` pre
-        security-peer-auth-init=com.example.security.ServerAuthenticate
-        ```
-        - Set property `security-peer-auth-init` to the fully-qualified
-        method name of a method that instantiates an object of the class
-        that implements the `AuthInitialize` interface
-        as in the example
-
-        ``` pre
-        security-peer-auth-init=com.example.security.ServerAuthenticate.create
-        ```
-
-    - Implement the `getCredentials` method within the `AuthInitialize`
-    interface to acquire values for
-    the `security-username` and `security-password` properties
-    in whatever way it wishes.
-    It might look up values in a database or another external resource.
+2. Implement the `getCredentials` method within the `AuthInitialize`
+interface to acquire values for
+the `security-username` and `security-password` properties
+in whatever way it wishes.
+It might look up values in a database or another external resource.
 
 Gateway senders and receivers communicate as a component of their
 server member.
@@ -93,40 +100,40 @@ sender or receiver.
 ## How a Client Cache Sets Its Credential
 
 In order to connect with a locator or a server that does authentication,
-a client will need to set its credential, composed of the two properties
+a client must set its credential, composed of the two properties
 `security-username` and `security-password`.
-Follow these steps to accomplish this:
 
-- Implement `AuthInitialize` interface for the client.
+To set the client credential:
 
-    - Set the property `security-client-auth-init`,
-    so that an object of the class that implements the
-    `AuthInitialize` interface will be instantiated.
-    Set the property to one of these two values:
+1. Implement the `AuthInitialize` interface for the client.
 
-        - Set property `security-client-auth-init` to the fully-qualified
-        class name that implements the `AuthInitialize` interface:
+  - Set the property `security-client-auth-init`,
+  so that an object of the class that implements the
+  `AuthInitialize` interface will be instantiated.
+  Set the property to one of these two values:
 
-        ``` pre
-        security-client-auth-init=com.example.security.ClientAuthInitialize
-        ```
-        - Set property `security-client-auth-init` to the fully-qualified
-        name of a static method that instantiates an object of the class
-        that implements the `AuthInitialize` interface:
+      - Set property `security-client-auth-init` to the fully-qualified
+      class name that implements the `AuthInitialize` interface:
 
-        ``` pre
-        security-client-auth-init=com.example.security.ClientAuthInitialize.create
-        ```
+      ``` pre
+      security-client-auth-init=com.example.security.ClientAuthInitialize
+      ```
+      - Set property `security-client-auth-init` to the fully-qualified
+      name of a static method that instantiates an object of the class
+      that implements the `AuthInitialize` interface:
 
-    - Implement the `getCredentials` method of the `AuthInitialize` interface
-    for the client.
-    The implementation of `getCredentials` acquires values for
-    the `security-username` and `security-password` properties in whatever way
-    it wishes.
-    It might look up values in a database or another external resource,
-    or it might prompt for values.
+      ``` pre
+      security-client-auth-init=com.example.security.ClientAuthInitialize.create
+      ```
 
-- Set the `security-username` and `security-password` properties for the client
+  - Implement the `getCredentials` method of the `AuthInitialize` interface
+  for the client.
+  The implementation of `getCredentials` acquires values for
+  the `security-username` and `security-password` properties in whatever way
+  the developer wishes. For example, it might look up values in a database or another external resource,
+  or it might prompt for values.
+
+2. Set the `security-username` and `security-password` properties for the client
   in a way that can be accessed by the `getCredentials` implementation in the
   `AuthInitialize`. This can be done via the APIs, properties file or other external
   sources:
@@ -140,7 +147,6 @@ Follow these steps to accomplish this:
 
     Take care that credentials set in this manner are not accessible
     to observers of the code.
- 
 
 
 ## How Other Components Set Their Credentials
