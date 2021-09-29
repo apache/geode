@@ -24,15 +24,14 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
 
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SlowlogParameterRequirements {
 
-  public static BiConsumer<Command, ExecutionHandlerContext> checkParameters() {
-    return (command, context) -> {
+  public static Consumer<Command> checkParameters() {
+    return command -> {
       int numberOfArguments = command.getProcessedCommand().size();
 
       if (numberOfArguments < 2) {

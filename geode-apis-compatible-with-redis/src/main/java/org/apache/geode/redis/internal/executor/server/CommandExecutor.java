@@ -27,8 +27,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class CommandExecutor extends AbstractExecutor {
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
-      throws Exception {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<Object> response = new ArrayList<>();
 
@@ -40,7 +39,8 @@ public class CommandExecutor extends AbstractExecutor {
       List<Object> oneCommand = new ArrayList<>();
       oneCommand.add(type.name().toLowerCase());
       oneCommand.add(type.arity());
-      oneCommand.add(type.flags().stream().map(Enum::name).collect(Collectors.toList()));
+      oneCommand.add(type.flags().stream()
+          .map(f -> f.name().toLowerCase()).collect(Collectors.toList()));
       oneCommand.add(type.firstKey());
       oneCommand.add(type.lastKey());
       oneCommand.add(type.step());

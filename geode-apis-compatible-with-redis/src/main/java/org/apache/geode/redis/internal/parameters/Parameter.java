@@ -16,9 +16,10 @@
 package org.apache.geode.redis.internal.parameters;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.netty.Command;
@@ -27,21 +28,21 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class Parameter {
 
   private int arity;
-  private List<RedisCommandType.Flag> flags = new ArrayList<>();
+  private EnumSet<RedisCommandType.Flag> flags = EnumSet.noneOf(RedisCommandType.Flag.class);
   private int firstKey = 1;
   private int lastKey = 1;
   private int step = 1;
-  private List<BiConsumer<Command, ExecutionHandlerContext>> predicates = new ArrayList<>();
+  private List<Consumer<Command>> predicates = new ArrayList<>();
 
   public void checkParameters(Command command, ExecutionHandlerContext context) {
-    predicates.forEach(p -> p.accept(command, context));
+    predicates.forEach(p -> p.accept(command));
   }
 
   public int getArity() {
     return arity;
   }
 
-  public List<RedisCommandType.Flag> getFlags() {
+  public Set<RedisCommandType.Flag> getFlags() {
     return flags;
   }
 
@@ -58,13 +59,13 @@ public class Parameter {
   }
 
   public Parameter flags(RedisCommandType.Flag... flags) {
-    this.flags = Arrays.asList(flags);
+    this.flags = EnumSet.of(flags[0], flags);
     return this;
   }
 
   public Parameter exact(int exact) {
     arity = exact;
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() != exact) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
@@ -74,7 +75,7 @@ public class Parameter {
 
   public Parameter min(int minumum) {
     arity = -minumum;
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() < minumum) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
@@ -83,7 +84,7 @@ public class Parameter {
   }
 
   public Parameter max(int maximum) {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() > maximum) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
@@ -92,7 +93,7 @@ public class Parameter {
   }
 
   public Parameter max(int maximum, String customError) {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() > maximum) {
         throw new RedisParametersMismatchException(customError);
       }
@@ -101,7 +102,7 @@ public class Parameter {
   }
 
   public Parameter even() {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() % 2 != 0) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
@@ -110,7 +111,7 @@ public class Parameter {
   }
 
   public Parameter even(String customeError) {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() % 2 != 0) {
         throw new RedisParametersMismatchException(customeError);
       }
@@ -119,7 +120,7 @@ public class Parameter {
   }
 
   public Parameter odd() {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() % 2 == 0) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
@@ -128,7 +129,7 @@ public class Parameter {
   }
 
   public Parameter odd(String customError) {
-    predicates.add((c, e) -> {
+    predicates.add(c -> {
       if (c.getProcessedCommand().size() % 2 == 0) {
         throw new RedisParametersMismatchException(customError);
       }
@@ -136,7 +137,7 @@ public class Parameter {
     return this;
   }
 
-  public Parameter custom(BiConsumer<Command, ExecutionHandlerContext> customCheck) {
+  public Parameter custom(Consumer<Command> customCheck) {
     predicates.add(customCheck);
     return this;
   }

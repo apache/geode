@@ -17,15 +17,14 @@ package org.apache.geode.redis.internal.parameters;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_CLUSTER_SUBCOMMAND;
 
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ClusterParameterRequirements {
 
-  public static BiConsumer<Command, ExecutionHandlerContext> checkParameters() {
-    return (command, context) -> {
+  public static Consumer<Command> checkParameters() {
+    return command -> {
       int numberOfArguments = command.getProcessedCommand().size();
 
       if (numberOfArguments < 2) {

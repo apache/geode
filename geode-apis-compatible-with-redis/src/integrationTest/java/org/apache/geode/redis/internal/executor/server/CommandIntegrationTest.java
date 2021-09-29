@@ -27,7 +27,6 @@ import java.util.Map;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -56,9 +55,6 @@ public class CommandIntegrationTest {
         RedisClient.create(String.format("redis://%s:%d", BIND_ADDRESS, radishServer.getPort()))
             .connect().sync();
   }
-
-  @After
-  public void teardown() {}
 
   @Test
   public void commandReturnsResultsMatchingNativeRedis() {
@@ -97,13 +93,11 @@ public class CommandIntegrationTest {
     for (Object rawEntry : rawCommands) {
       List<Object> entry = (List<Object>) rawEntry;
       String key = (String) entry.get(0);
-      List<String> flags = new ArrayList<>();
-      flags.addAll((List<String>) entry.get(2));
 
       CommandStructure cmd = new CommandStructure(
           key,
           (long) entry.get(1),
-          flags,
+          (List<String>) entry.get(2),
           (long) entry.get(3),
           (long) entry.get(4),
           (long) entry.get(5));
