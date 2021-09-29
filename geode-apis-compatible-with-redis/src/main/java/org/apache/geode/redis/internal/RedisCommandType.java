@@ -152,7 +152,6 @@ import org.apache.geode.redis.internal.executor.string.StrlenExecutor;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.ClusterParameterRequirements;
-import org.apache.geode.redis.internal.parameters.ExactParameterRequirements;
 import org.apache.geode.redis.internal.parameters.Parameter;
 import org.apache.geode.redis.internal.parameters.SlowlogParameterRequirements;
 

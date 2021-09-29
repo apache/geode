@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -93,8 +94,19 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
-    region.put(newKey, this, primaryMoveReadLockAcquired);
+  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+      boolean ifTargetNotExists) {
+
+    if (ifTargetNotExists) {
+      try {
+        region.create(newKey, this, primaryMoveReadLockAcquired);
+      } catch (EntryExistsException e) {
+        throw new RedisKeyExistsException(ERROR_KEY_EXISTS);
+      }
+    } else {
+      region.put(newKey, this, primaryMoveReadLockAcquired);
+    }
+
     try {
       region.destroy(oldKey, primaryMoveReadLockAcquired);
     } catch (EntryNotFoundException ignore) {

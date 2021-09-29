@@ -20,6 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -268,11 +269,10 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
               });
     } catch (RuntimeException e) {
       assertThat(e).hasMessageContaining(ERROR_NO_SUCH_KEY);
+      return;
     }
 
-    assertThat(renameException.get())
-        .as("Did not hit exception after " + iterations + " iterations")
-        .isNotNull();
+    fail("Did not hit exception after " + iterations + " iterations");
   }
 
   @Test
