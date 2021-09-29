@@ -96,10 +96,15 @@ public class OperationHistoryManager {
   }
 
   private OperationState<?, ?> validateLocator(OperationState<?, ?> operationState) {
+    if (operationState.getOperationEnd() != null) {
+      return operationState;
+    }
     if (isLocatorOffline(operationState)) {
       operationState.setOperationEnd(new Date(), null,
           new RuntimeException("Locator that initiated the Rest API operation is offline: "
               + operationState.getLocator()));
+      operationStateStore.recordEnd(operationState.getId(), operationState.getResult(),
+          operationState.getThrowable());
     }
 
     return operationState;

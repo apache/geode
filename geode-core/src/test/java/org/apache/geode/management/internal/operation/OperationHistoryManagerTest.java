@@ -117,6 +117,8 @@ public class OperationHistoryManagerTest {
     assertThat(operationState.getOperationEnd()).isNotNull();
     assertThat(operationState.getThrowable().getMessage())
         .contains("Locator that initiated the Rest API operation is offline:");
+    verify(operationStateStore, times(1)).recordEnd(operationState.getId(),
+        operationState.getResult(), operationState.getThrowable());
   }
 
   @Test

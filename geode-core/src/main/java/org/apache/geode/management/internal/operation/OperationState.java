@@ -127,4 +127,17 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   public Throwable getThrowable() {
     return this.throwable;
   }
+
+  @Override
+  public String toString() {
+    return "OperationState{" +
+        "opId=" + opId +
+        ", operation=" + operation +
+        ", operationStart=" + operationStart +
+        ", operationEnd=" + operationEnd +
+        ", result=" + result +
+        ", throwable=" + (throwable != null ? throwable.getMessage() : "null") +
+        ", locator=" + locator +
+        '}';
+  }
 }
