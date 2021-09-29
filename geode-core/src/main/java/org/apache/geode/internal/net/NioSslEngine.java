@@ -89,16 +89,13 @@ public class NioSslEngine implements NioFilter {
    * state. It may throw other IOExceptions caused by I/O operations
    */
   public boolean handshake(SocketChannel socketChannel, int timeout,
-      ByteBuffer peerNetData) throws IOException {
+      final ByteBuffer peerNetData) throws IOException {
 
     if (peerNetData.capacity() < engine.getSession().getPacketBufferSize()) {
       throw new IllegalArgumentException(String.format("Provided buffer is too small to perform "
           + "SSL handshake.  Buffer capacity is %s but need %s",
           peerNetData.capacity(), engine.getSession().getPacketBufferSize()));
     }
-
-    final ByteBuffer handshakeBuffer = peerNetData;
-    handshakeBuffer.clear();
 
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
 
@@ -136,9 +133,12 @@ public class NioSslEngine implements NioFilter {
         case NEED_UNWRAP:
           try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
             final ByteBuffer peerAppData = inputSharing.getBuffer();
+            final ByteBuffer handshakeBuffer = peerNetData;
+
+            handshakeBuffer.clear();
 
             // Receive handshaking data from peer
-            int dataRead = socketChannel.read(handshakeBuffer);
+            final int dataRead = socketChannel.read(handshakeBuffer);
 
             // Process incoming handshaking data
             handshakeBuffer.flip();
