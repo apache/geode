@@ -42,7 +42,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.13.1")
     deps.put("micrometer.version", "1.6.3")
-    deps.put("shiro.version", "1.7.1")
+    deps.put("shiro.version", "1.8.0")
     deps.put("slf4j-api.version", "1.7.30")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
