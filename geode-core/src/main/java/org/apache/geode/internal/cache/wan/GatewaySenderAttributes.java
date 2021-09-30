@@ -17,6 +17,9 @@ package org.apache.geode.internal.cache.wan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -27,9 +30,9 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 public class GatewaySenderAttributes {
 
-  public static final boolean DEFAULT_IS_BUCKETSORTED = true;
-  public static final boolean DEFAULT_IS_META_QUEUE = false;
+  private static final boolean DEFAULT_IS_BUCKET_SORTED = true;
 
+  private static final boolean DEFAULT_IS_META_QUEUE = false;
 
   private int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
 
@@ -47,17 +50,18 @@ public class GatewaySenderAttributes {
 
   private int alertThreshold = GatewaySender.DEFAULT_ALERT_THRESHOLD;
 
+  @Deprecated
   private boolean manualStart = GatewaySender.DEFAULT_MANUAL_START;
 
   private String diskStoreName;
 
-  private List<GatewayEventFilter> eventFilters = new ArrayList<GatewayEventFilter>();
+  private final List<GatewayEventFilter> eventFilters = new ArrayList<>();
 
-  private ArrayList<GatewayTransportFilter> transFilters = new ArrayList<GatewayTransportFilter>();
+  private final ArrayList<GatewayTransportFilter> transFilters = new ArrayList<>();
 
-  private List<AsyncEventListener> listeners = new ArrayList<AsyncEventListener>();
+  private final List<AsyncEventListener> listeners = new ArrayList<>();
 
-  private GatewayEventSubstitutionFilter eventSubstitutionFilter;
+  private GatewayEventSubstitutionFilter<?, ?> eventSubstitutionFilter;
 
   private String id;
 
@@ -82,7 +86,7 @@ public class GatewaySenderAttributes {
 
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
-  private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
+  private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKET_SORTED;
 
   private boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
 
@@ -103,12 +107,12 @@ public class GatewaySenderAttributes {
     maximumQueueMemory = maxQueueMemory;
   }
 
-  public void setBatchSize(int batchsize) {
-    batchSize = batchsize;
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
   }
 
-  public void setBatchTimeInterval(int batchtimeinterval) {
-    batchTimeInterval = batchtimeinterval;
+  public void setBatchTimeInterval(int batchTimeInterval) {
+    this.batchTimeInterval = batchTimeInterval;
   }
 
   public void setBatchConflationEnabled(boolean batchConfEnabled) {
@@ -123,16 +127,18 @@ public class GatewaySenderAttributes {
     alertThreshold = alertThresh;
   }
 
-  public void setManualStart(boolean manualstart) {
-    manualStart = manualstart;
+  @Deprecated
+  public void setManualStart(boolean manualStart) {
+    this.manualStart = manualStart;
   }
 
-  public void setDiskStoreName(String diskstorename) {
-    diskStoreName = diskstorename;
+  public void setDiskStoreName(String diskStoreName) {
+    this.diskStoreName = diskStoreName;
   }
 
-  public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventsubstitutionfilter) {
-    eventSubstitutionFilter = eventsubstitutionfilter;
+  public void setEventSubstitutionFilter(
+      @Nullable GatewayEventSubstitutionFilter<?, ?> eventSubstitutionFilter) {
+    this.eventSubstitutionFilter = eventSubstitutionFilter;
   }
 
   public void setId(String idString) {
@@ -143,7 +149,7 @@ public class GatewaySenderAttributes {
     remoteDs = rDs;
   }
 
-  public void setLocatorDiscoveryCallback(LocatorDiscoveryCallback locatorDiscCall) {
+  public void setLocatorDiscoveryCallback(@Nullable LocatorDiscoveryCallback locatorDiscCall) {
     locatorDiscoveryCallback = locatorDiscCall;
   }
 
@@ -151,7 +157,7 @@ public class GatewaySenderAttributes {
     isDiskSynchronous = diskSynchronous;
   }
 
-  public void setOrderPolicy(OrderPolicy orderpolicy) {
+  public void setOrderPolicy(@Nullable OrderPolicy orderpolicy) {
     policy = orderpolicy;
   }
 
@@ -187,108 +193,109 @@ public class GatewaySenderAttributes {
     isMetaQueue = metaQueue;
   }
 
-  public void setForwardExpirationDestroy(boolean forwardexpirationdestroy) {
-    forwardExpirationDestroy = forwardexpirationdestroy;
+  public void setForwardExpirationDestroy(boolean forwardExpirationDestroy) {
+    this.forwardExpirationDestroy = forwardExpirationDestroy;
   }
 
-  public void setEnforceThreadsConnectSameReceiver(boolean enforcethreadsconnectsamereceiver) {
-    enforceThreadsConnectSameReceiver = enforcethreadsconnectsamereceiver;
+  public void setEnforceThreadsConnectSameReceiver(boolean enforceThreadsConnectSameReceiver) {
+    this.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
   }
 
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   public boolean isDiskSynchronous() {
-    return this.isDiskSynchronous;
+    return isDiskSynchronous;
   }
 
   public int getSocketReadTimeout() {
-    return this.socketReadTimeout;
+    return socketReadTimeout;
   }
 
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public int getMaximumQueueMemory() {
-    return this.maximumQueueMemory;
+    return maximumQueueMemory;
   }
 
   public int getBatchSize() {
-    return this.batchSize;
+    return batchSize;
   }
 
   public int getBatchTimeInterval() {
-    return this.batchTimeInterval;
+    return batchTimeInterval;
   }
 
   public boolean isBatchConflationEnabled() {
-    return this.isBatchConflationEnabled;
+    return isBatchConflationEnabled;
   }
 
   public boolean isPersistenceEnabled() {
-    return this.isPersistenceEnabled;
+    return isPersistenceEnabled;
   }
 
   public int getAlertThreshold() {
-    return this.alertThreshold;
+    return alertThreshold;
   }
 
-  public List<GatewayEventFilter> getGatewayEventFilters() {
-    return this.eventFilters;
+  public @NotNull List<GatewayEventFilter> getGatewayEventFilters() {
+    return eventFilters;
   }
 
-  public List<GatewayTransportFilter> getGatewayTransportFilters() {
-    return this.transFilters;
+  public @NotNull List<GatewayTransportFilter> getGatewayTransportFilters() {
+    return transFilters;
   }
 
-  public List<AsyncEventListener> getAsyncEventListeners() {
-    return this.listeners;
+  public @NotNull List<AsyncEventListener> getAsyncEventListeners() {
+    return listeners;
   }
 
-  public LocatorDiscoveryCallback getGatewayLocatoDiscoveryCallback() {
-    return this.locatorDiscoveryCallback;
+  public @Nullable LocatorDiscoveryCallback getGatewayLocatorDiscoveryCallback() {
+    return locatorDiscoveryCallback;
   }
 
+  @Deprecated
   public boolean isManualStart() {
-    return this.manualStart;
+    return manualStart;
   }
 
   public boolean isParallel() {
-    return this.isParallel;
+    return isParallel;
   }
 
   public boolean mustGroupTransactionEvents() {
-    return this.groupTransactionEvents;
+    return groupTransactionEvents;
   }
 
   public int getRetriesToGetTransactionEventsFromQueue() {
-    return this.retriesToGetTransactionEventsFromQueue;
+    return retriesToGetTransactionEventsFromQueue;
   }
 
   public boolean isForInternalUse() {
-    return this.isForInternalUse;
+    return isForInternalUse;
   }
 
   public void addGatewayEventFilter(GatewayEventFilter filter) {
-    this.eventFilters.add(filter);
+    eventFilters.add(filter);
   }
 
   public void addGatewayTransportFilter(GatewayTransportFilter filter) {
-    this.transFilters.add(filter);
+    transFilters.add(filter);
   }
 
   public void addAsyncEventListener(AsyncEventListener listener) {
-    this.listeners.add(listener);
+    listeners.add(listener);
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public int getRemoteDSId() {
-    return this.remoteDs;
+    return remoteDs;
   }
 
   public int getDispatcherThreads() {
@@ -299,28 +306,29 @@ public class GatewaySenderAttributes {
     return parallelism;
   }
 
+  @Nullable
   public OrderPolicy getOrderPolicy() {
     return policy;
   }
 
   public boolean isBucketSorted() {
-    return this.isBucketSorted;
+    return isBucketSorted;
   }
 
-  public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
-    return this.eventSubstitutionFilter;
+  public @Nullable GatewayEventSubstitutionFilter<?, ?> getGatewayEventSubstitutionFilter() {
+    return eventSubstitutionFilter;
   }
 
   public boolean isMetaQueue() {
-    return this.isMetaQueue;
+    return isMetaQueue;
   }
 
   public boolean isForwardExpirationDestroy() {
-    return this.forwardExpirationDestroy;
+    return forwardExpirationDestroy;
   }
 
   public boolean getEnforceThreadsConnectSameReceiver() {
-    return this.enforceThreadsConnectSameReceiver;
+    return enforceThreadsConnectSameReceiver;
   }
 
 }
