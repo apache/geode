@@ -21,27 +21,30 @@ apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
-
   implementation('org.apache.logging.log4j:log4j-api')
-
   //Commons validator is used to validate inet addresses
   implementation('commons-validator:commons-validator')
+
+
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('com.tngtech.archunit:archunit')
   testImplementation('com.tngtech.archunit:archunit-junit4')
 
-  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-  integrationTestImplementation('org.mockito:mockito-core')
-  integrationTestImplementation(project(':geode-junit'))
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation(project(':geode-membership'))
+  upgradeTestImplementation('junit:junit')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('org.awaitility:awaitility')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
