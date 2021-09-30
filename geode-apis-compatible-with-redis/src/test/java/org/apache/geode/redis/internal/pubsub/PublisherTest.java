@@ -44,7 +44,7 @@ public class PublisherTest {
   private final Publisher publisher = new Publisher(regionProvider, subscriptions, executorService);
 
   private ExecutorService createExecutorService() {
-    // This service will do synchronous executioo
+    // This service will do synchronous execution
     // in the calling thread when execute is called.
     ExecutorService executorService = new ExecutorService() {
       @Override
@@ -53,9 +53,7 @@ public class PublisherTest {
       }
 
       @Override
-      public void shutdown() {
-
-      }
+      public void shutdown() {}
 
       @Override
       public List<Runnable> shutdownNow() {

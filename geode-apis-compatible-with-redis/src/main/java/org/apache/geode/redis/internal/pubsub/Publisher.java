@@ -198,7 +198,7 @@ public class Publisher {
 
     @Override
     public void fromData(DataInput in, DeserializationContext context)
-        throws IOException, ClassNotFoundException {
+        throws IOException {
       channel = DataSerializer.readByteArray(in);
       message = DataSerializer.readByteArray(in);
     }
@@ -223,7 +223,7 @@ public class Publisher {
    * delivered to subscribers in that order.
    * Since the delivery to subscribers can be slower than the rate
    * at which publish requests arrive, this publisher supports
-   * batching so allow multiple requests to be sent with a single
+   * batching to allow multiple requests to be sent with a single
    * function call.
    */
   private class ClientPublisher {
