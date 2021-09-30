@@ -17,6 +17,9 @@ package org.apache.geode.internal.cache.wan;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -27,9 +30,9 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 public class GatewaySenderAttributes {
 
-  public static final boolean DEFAULT_IS_BUCKETSORTED = true;
-  public static final boolean DEFAULT_IS_META_QUEUE = false;
+  private static final boolean DEFAULT_IS_BUCKET_SORTED = true;
 
+  private static final boolean DEFAULT_IS_META_QUEUE = false;
 
   private int socketBufferSize = GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE;
 
@@ -47,18 +50,18 @@ public class GatewaySenderAttributes {
 
   private int alertThreshold = GatewaySender.DEFAULT_ALERT_THRESHOLD;
 
+  @Deprecated
   private boolean manualStart = GatewaySender.DEFAULT_MANUAL_START;
 
   private String diskStoreName;
 
   private final List<GatewayEventFilter> eventFilters = new ArrayList<>();
 
-  private final ArrayList<GatewayTransportFilter> transFilters =
-      new ArrayList<>();
+  private final ArrayList<GatewayTransportFilter> transFilters = new ArrayList<>();
 
   private final List<AsyncEventListener> listeners = new ArrayList<>();
 
-  private GatewayEventSubstitutionFilter eventSubstitutionFilter;
+  private GatewayEventSubstitutionFilter<?, ?> eventSubstitutionFilter;
 
   private String id;
 
@@ -83,7 +86,7 @@ public class GatewaySenderAttributes {
 
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
-  private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKETSORTED;
+  private boolean isBucketSorted = GatewaySenderAttributes.DEFAULT_IS_BUCKET_SORTED;
 
   private boolean isMetaQueue = GatewaySenderAttributes.DEFAULT_IS_META_QUEUE;
 
@@ -104,12 +107,12 @@ public class GatewaySenderAttributes {
     maximumQueueMemory = maxQueueMemory;
   }
 
-  public void setBatchSize(int batchsize) {
-    batchSize = batchsize;
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
   }
 
-  public void setBatchTimeInterval(int batchtimeinterval) {
-    batchTimeInterval = batchtimeinterval;
+  public void setBatchTimeInterval(int batchTimeInterval) {
+    this.batchTimeInterval = batchTimeInterval;
   }
 
   public void setBatchConflationEnabled(boolean batchConfEnabled) {
@@ -124,16 +127,18 @@ public class GatewaySenderAttributes {
     alertThreshold = alertThresh;
   }
 
-  public void setManualStart(boolean manualstart) {
-    manualStart = manualstart;
+  @Deprecated
+  public void setManualStart(boolean manualStart) {
+    this.manualStart = manualStart;
   }
 
-  public void setDiskStoreName(String diskstorename) {
-    diskStoreName = diskstorename;
+  public void setDiskStoreName(String diskStoreName) {
+    this.diskStoreName = diskStoreName;
   }
 
-  public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventsubstitutionfilter) {
-    eventSubstitutionFilter = eventsubstitutionfilter;
+  public void setEventSubstitutionFilter(
+      @Nullable GatewayEventSubstitutionFilter<?, ?> eventSubstitutionFilter) {
+    this.eventSubstitutionFilter = eventSubstitutionFilter;
   }
 
   public void setId(String idString) {
@@ -144,7 +149,7 @@ public class GatewaySenderAttributes {
     remoteDs = rDs;
   }
 
-  public void setLocatorDiscoveryCallback(LocatorDiscoveryCallback locatorDiscCall) {
+  public void setLocatorDiscoveryCallback(@Nullable LocatorDiscoveryCallback locatorDiscCall) {
     locatorDiscoveryCallback = locatorDiscCall;
   }
 
@@ -152,7 +157,7 @@ public class GatewaySenderAttributes {
     isDiskSynchronous = diskSynchronous;
   }
 
-  public void setOrderPolicy(OrderPolicy orderpolicy) {
+  public void setOrderPolicy(@Nullable OrderPolicy orderpolicy) {
     policy = orderpolicy;
   }
 
@@ -188,12 +193,12 @@ public class GatewaySenderAttributes {
     isMetaQueue = metaQueue;
   }
 
-  public void setForwardExpirationDestroy(boolean forwardexpirationdestroy) {
-    forwardExpirationDestroy = forwardexpirationdestroy;
+  public void setForwardExpirationDestroy(boolean forwardExpirationDestroy) {
+    this.forwardExpirationDestroy = forwardExpirationDestroy;
   }
 
-  public void setEnforceThreadsConnectSameReceiver(boolean enforcethreadsconnectsamereceiver) {
-    enforceThreadsConnectSameReceiver = enforcethreadsconnectsamereceiver;
+  public void setEnforceThreadsConnectSameReceiver(boolean enforceThreadsConnectSameReceiver) {
+    this.enforceThreadsConnectSameReceiver = enforceThreadsConnectSameReceiver;
   }
 
   public int getSocketBufferSize() {
@@ -236,22 +241,23 @@ public class GatewaySenderAttributes {
     return alertThreshold;
   }
 
-  public List<GatewayEventFilter> getGatewayEventFilters() {
+  public @NotNull List<GatewayEventFilter> getGatewayEventFilters() {
     return eventFilters;
   }
 
-  public List<GatewayTransportFilter> getGatewayTransportFilters() {
+  public @NotNull List<GatewayTransportFilter> getGatewayTransportFilters() {
     return transFilters;
   }
 
-  public List<AsyncEventListener> getAsyncEventListeners() {
+  public @NotNull List<AsyncEventListener> getAsyncEventListeners() {
     return listeners;
   }
 
-  public LocatorDiscoveryCallback getGatewayLocatoDiscoveryCallback() {
+  public @Nullable LocatorDiscoveryCallback getGatewayLocatorDiscoveryCallback() {
     return locatorDiscoveryCallback;
   }
 
+  @Deprecated
   public boolean isManualStart() {
     return manualStart;
   }
@@ -300,6 +306,7 @@ public class GatewaySenderAttributes {
     return parallelism;
   }
 
+  @Nullable
   public OrderPolicy getOrderPolicy() {
     return policy;
   }
@@ -308,7 +315,7 @@ public class GatewaySenderAttributes {
     return isBucketSorted;
   }
 
-  public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
+  public @Nullable GatewayEventSubstitutionFilter<?, ?> getGatewayEventSubstitutionFilter() {
     return eventSubstitutionFilter;
   }
 

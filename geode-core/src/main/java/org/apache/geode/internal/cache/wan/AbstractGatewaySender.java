@@ -266,7 +266,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     transFilters = Collections.unmodifiableList(attrs.getGatewayTransportFilters());
     listeners = attrs.getAsyncEventListeners();
     substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
-    locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
+    locatorDiscoveryCallback = attrs.getGatewayLocatorDiscoveryCallback();
     isDiskSynchronous = attrs.isDiskSynchronous();
     policy = attrs.getOrderPolicy();
     dispatcherThreads = attrs.getDispatcherThreads();
