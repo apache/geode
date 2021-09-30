@@ -41,6 +41,10 @@ public class RedisResponse {
     this.coderCallback = coderCallback;
   }
 
+  public boolean hasAfterWriteCallback() {
+    return afterWriteCallback != null;
+  }
+
   public void setAfterWriteCallback(Runnable callback) {
     afterWriteCallback = callback;
   }

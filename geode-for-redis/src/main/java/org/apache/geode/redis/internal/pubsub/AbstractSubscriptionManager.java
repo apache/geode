@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.pubsub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +72,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
     if (!addToClient(client, channelOrPattern)) {
       return null;
     }
-    final Subscription subscription = new SubscriptionImpl();
+    final Subscription subscription = new SubscriptionImpl(client);
     final SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager newManager = null;
     ClientSubscriptionManager existingManager = clientManagers.get(subscriptionId);
@@ -81,11 +83,12 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
           // at all if existingManager found, and so it will only be
           // created once if we try multiple times.
           // Note that newManager is initialized to contain subscription.
-          newManager = createClientManager(client, channelOrPattern, subscription);
+          newManager = createClientManager(client, subscription);
         }
         existingManager = clientManagers.putIfAbsent(subscriptionId, newManager);
         if (existingManager == null) {
           // newManager was added to map so all done
+          subscriptionAdded(subscriptionId);
           return subscription;
         }
       }
@@ -109,6 +112,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
     }
     if (!manager.remove(client)) {
       clientManagers.remove(subscriptionId, manager);
+      subscriptionRemoved(subscriptionId);
     }
   }
 
@@ -116,16 +120,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
   private static final ClientSubscriptionManager EMPTY_CLIENT_MANAGER =
       new ClientSubscriptionManager() {
         @Override
-        public void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch,
-            Subscriptions.ForEachConsumer action) {}
-
-        @Override
         public int getSubscriptionCount() {
-          return 0;
-        }
-
-        @Override
-        public int getSubscriptionCount(byte[] channel) {
           return 0;
         }
 
@@ -138,17 +133,34 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
         public boolean remove(Client client) {
           return true;
         }
+
+        @Override
+        public Collection<Subscription> getSubscriptions() {
+          return Collections.emptyList();
+        }
       };
 
   private ClientSubscriptionManager emptyClientManager() {
     return EMPTY_CLIENT_MANAGER;
   }
 
-  protected abstract ClientSubscriptionManager createClientManager(Client client,
-      byte[] channelOrPattern,
-      Subscription subscription);
+  private ClientSubscriptionManager createClientManager(Client client,
+      Subscription subscription) {
+    return new ClientSubscriptionManagerImpl(client, subscription);
+  }
 
   protected abstract boolean addToClient(Client client, byte[] channelOrPattern);
+
+  /**
+   * This method will be called when a subscription is added to this manager
+   * and it was not in already in the manager.
+   */
+  protected void subscriptionAdded(SubscriptionId id) {}
+
+  /**
+   * This method will be called when a subscription is removed from this manager
+   */
+  protected void subscriptionRemoved(SubscriptionId id) {}
 
   /**
    * Wraps a id (channel or pattern) so it can be used as a key on a hash map

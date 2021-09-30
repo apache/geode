@@ -14,43 +14,26 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
 
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
 
 public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
   protected AbstractSubscriptionManager createManager() {
     return new PatternSubscriptionManager();
-  }
-
-  @Test
-  public void managerWithMultiplePatternsAndClients_foreachDoesExpectedIterations() {
-    byte[] channel1 = stringToBytes("channel1");
-    byte[] pattern1 = stringToBytes("*1");
-    byte[] pattern2 = stringToBytes("*2");
-    byte[] pattern3 = stringToBytes("*3");
-
-    AtomicInteger count = new AtomicInteger();
-    Client client1 = createClient();
-    Client client2 = createClient();
-    Client client3 = createClient();
-    AbstractSubscriptionManager manager = createManager();
-    manager.add(pattern1, client1);
-    manager.add(pattern1, client2);
-    manager.add(pattern1, client3);
-    manager.add(pattern2, client2);
-    manager.add(pattern3, client3);
-
-    manager.foreachSubscription(channel1, (name, toMatch, client, sub) -> count.getAndIncrement());
-
-    assertThat(count.get()).isEqualTo(3);
   }
 
   @Test
@@ -73,4 +56,79 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     assertThat(manager.getIds(stringToBytes("cha*"))).containsExactlyInAnyOrder(pattern2);
   }
 
+  @Test
+  public void emptyManagerReturnsEmptyPatternSubscriptions() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] channel = stringToBytes("channel");
+
+    List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
+    List<PatternSubscriptions> cachedSubscriptions = manager.getPatternSubscriptions(channel);
+
+    assertThat(subscriptions).isEmpty();
+    assertThat(cachedSubscriptions).isSameAs(subscriptions);
+  }
+
+  @Test
+  public void managerWithOneSubscriptionReturnsIt() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] pattern = stringToBytes("ch*");
+    byte[] channel = stringToBytes("channel");
+    byte[] otherChannel = stringToBytes("otherChannel");
+    Client client = mock(Client.class);
+    when(client.addPatternSubscription(eq(pattern))).thenReturn(true);
+    Subscription addedSubscription = manager.add(pattern, client);
+    PatternSubscriptions expected = new PatternSubscriptions(pattern,
+        singletonList(addedSubscription));
+
+    List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
+    List<PatternSubscriptions> cachedSubscriptions = manager.getPatternSubscriptions(channel);
+
+    assertThat(cachedSubscriptions).isSameAs(subscriptions);
+    assertThat(subscriptions).containsExactly(expected);
+    assertThat(manager.getPatternSubscriptions(otherChannel)).isEmpty();
+  }
+
+  @Test
+  public void clientsSubscribedToSamePattern() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] pattern = stringToBytes("ch*");
+    byte[] channel = stringToBytes("channel");
+    Client client = mock(Client.class);
+    when(client.addPatternSubscription(eq(pattern))).thenReturn(true);
+    Client client2 = mock(Client.class);
+    when(client2.addPatternSubscription(eq(pattern))).thenReturn(true);
+    Subscription addedSubscription = manager.add(pattern, client);
+    Subscription addedSubscription2 = manager.add(pattern, client2);
+    PatternSubscriptions expected = new PatternSubscriptions(pattern,
+        asList(addedSubscription, addedSubscription2));
+
+    List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
+    List<PatternSubscriptions> cachedSubscriptions = manager.getPatternSubscriptions(channel);
+
+    assertThat(cachedSubscriptions).isSameAs(subscriptions);
+    assertThat(subscriptions).containsExactly(expected);
+  }
+
+  @Test
+  public void clientSubscribedToTwoPatterns() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] pattern = stringToBytes("ch*");
+    byte[] pattern2 = stringToBytes("*l");
+    byte[] channel = stringToBytes("channel");
+    Client client = mock(Client.class);
+    when(client.addPatternSubscription(eq(pattern))).thenReturn(true);
+    when(client.addPatternSubscription(eq(pattern2))).thenReturn(true);
+    Subscription addedSubscription = manager.add(pattern, client);
+    Subscription addedSubscription2 = manager.add(pattern2, client);
+    PatternSubscriptions expected = new PatternSubscriptions(pattern,
+        singletonList(addedSubscription));
+    PatternSubscriptions expected2 = new PatternSubscriptions(pattern2,
+        singletonList(addedSubscription2));
+
+    List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
+    List<PatternSubscriptions> cachedSubscriptions = manager.getPatternSubscriptions(channel);
+
+    assertThat(cachedSubscriptions).isSameAs(subscriptions);
+    assertThat(subscriptions).containsExactlyInAnyOrder(expected, expected2);
+  }
 }

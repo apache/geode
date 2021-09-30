@@ -15,8 +15,9 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Collection;
+
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 /**
  * An instance of this interface keeps track of all the clients
@@ -25,32 +26,10 @@ import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
  * In a given manager all of its subscriptions will have the same name.
  */
 interface ClientSubscriptionManager {
-
-  /**
-   * Call the given action for each subscription this manager
-   * has that matches the given channel.
-   * Note that some managers support a pattern
-   * that the channel needs to match.
-   * For managers without a pattern all subscriptions match.
-   *
-   * @param channelToMatch if non-null and the manager supports matching
-   *        then only invoke action for subscriptions that match this.
-   */
-  void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch, ForEachConsumer action);
-
   /**
    * return how many subscriptions this manager has.
    */
   int getSubscriptionCount();
-
-  /**
-   * returns how many subscriptions this manager has
-   * that match the given channel.
-   * Note that some managers support a pattern
-   * that the channel needs to match.
-   * For managers without a pattern all subscriptions match.
-   */
-  int getSubscriptionCount(byte[] channel);
 
   /**
    * Adds the given subscription for the given client to this manager.
@@ -68,4 +47,12 @@ interface ClientSubscriptionManager {
    * @return true if removed or already removed; false if caller should remove this manager
    */
   boolean remove(Client client);
+
+  /**
+   * The returned collection MUST be a live view of the subscriptions
+   * in the manager. This means that if a subscription is added or
+   * removed to the manager in the future then the returned Collection
+   * will know about that change.
+   */
+  Collection<Subscription> getSubscriptions();
 }

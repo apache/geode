@@ -17,6 +17,10 @@
 package org.apache.geode.redis.internal.pubsub;
 
 
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFutureListener;
+
 import org.apache.geode.redis.internal.netty.Client;
 
 
@@ -25,12 +29,14 @@ import org.apache.geode.redis.internal.netty.Client;
  * It supports telling a subscription it is ready to publish messages
  * and the ability to publish a message to a subscribed client.
  */
-public interface Subscription {
-  /**
-   * Will publish a message to the designated client and channel
-   */
-  void publishMessage(boolean isPatternSubscription, byte[] subscriptionName, Client client,
-      byte[] channel, byte[] message);
-
+public interface Subscription extends ChannelFutureListener {
   void readyToPublish();
+
+  void waitUntilReadyToPublish();
+
+  Client getClient();
+
+  void writeBufferToChannel(ByteBuf retainedDuplicate);
+
+  ByteBuf getChannelWriteBuffer();
 }

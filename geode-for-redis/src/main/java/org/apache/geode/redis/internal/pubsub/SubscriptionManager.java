@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.List;
 
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 /**
  * Keeps track of subscriptions. Each Subscription instance
@@ -31,11 +30,6 @@ interface SubscriptionManager {
    * returns the number of subscriptions for the given channel.
    */
   int getSubscriptionCount(byte[] channel);
-
-  /**
-   * For each subscription on the given channel invoke the given action.
-   */
-  void foreachSubscription(byte[] channel, ForEachConsumer action);
 
   /**
    * returns the ids (channel or pattern) for all the subscriptions added

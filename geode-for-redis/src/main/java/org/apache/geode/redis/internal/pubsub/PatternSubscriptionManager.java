@@ -15,33 +15,46 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
+import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
 
 class PatternSubscriptionManager
     extends AbstractSubscriptionManager {
 
-  @Override
-  protected ClientSubscriptionManager createClientManager(
-      Client client, byte[] patternBytes, Subscription subscription) {
-    return new PatternClientSubscriptionManager(client, patternBytes, subscription);
-  }
+  /**
+   * The key is always a channel name. This cache
+   * is used to optimize publish by caching the
+   * PatternSubscriptions for a publish on a given channel.
+   * When this manager detects that a new pattern is added to it
+   * or that a pattern no longer has any subscriptions, then it
+   * will clear this cache and the next publish will need to
+   * recompute an entry for its channel.
+   */
+  private final Map<SubscriptionId, List<PatternSubscriptions>> patternSubscriptionCache =
+      new ConcurrentHashMap<>();
 
   @Override
   public int getSubscriptionCount(byte[] channel) {
     int result = 0;
-    for (ClientSubscriptionManager manager : clientManagers.values()) {
-      result += manager.getSubscriptionCount(channel);
+    for (PatternSubscriptions patternSubscriptions : getPatternSubscriptions(channel)) {
+      result += patternSubscriptions.getSubscriptions().size();
     }
     return result;
   }
 
-  @Override
-  public void foreachSubscription(byte[] channel, ForEachConsumer action) {
-    clientManagers.forEach((id, manager) -> manager.forEachSubscription(id.getSubscriptionIdBytes(),
-        channel, action));
+  private boolean matches(SubscriptionId id, byte[] channel) {
+    return GlobPattern.matches(id.getSubscriptionIdBytes(), channel);
   }
 
   @Override
@@ -54,4 +67,47 @@ class PatternSubscriptionManager
     client.getPatternSubscriptions().forEach(
         channel -> remove(channel, client));
   }
+
+  public List<PatternSubscriptions> getPatternSubscriptions(byte[] channel) {
+    SubscriptionId channelId = new SubscriptionId(channel);
+    return computeIfAbsent(patternSubscriptionCache, channelId, this::createPatternSubscriptions);
+  }
+
+  private List<PatternSubscriptions> createPatternSubscriptions(SubscriptionId channelId) {
+    List<PatternSubscriptions> result = null;
+    for (Map.Entry<SubscriptionId, ClientSubscriptionManager> entry : clientManagers.entrySet()) {
+      if (matches(entry.getKey(), channelId.getSubscriptionIdBytes())) {
+        if (result == null) {
+          result = new ArrayList<>();
+        }
+        result.add(new PatternSubscriptions(entry.getKey().getSubscriptionIdBytes(),
+            entry.getValue().getSubscriptions()));
+      }
+    }
+    // since we are going to cache result make its size perfect
+    if (result == null) {
+      result = emptyList();
+    } else if (result.size() == 1) {
+      result = singletonList(result.get(0));
+    } else {
+      // noinspection ToArrayCallWithZeroLengthArrayArgument
+      result = asList(result.toArray(new PatternSubscriptions[result.size()]));
+    }
+    return result;
+  }
+
+  private void clearPatternSubscriptionCache() {
+    patternSubscriptionCache.clear();
+  }
+
+  @Override
+  protected void subscriptionAdded(SubscriptionId id) {
+    clearPatternSubscriptionCache();
+  }
+
+  @Override
+  protected void subscriptionRemoved(SubscriptionId id) {
+    clearPatternSubscriptionCache();
+  }
+
 }

@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.pubsub;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
@@ -27,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -69,26 +67,6 @@ public class SubscriptionsJUnitTest {
     assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("subscription3"))).isEqualTo(3);
     assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("sub1"))).isEqualTo(2);
     assertThat(subscriptions.getAllSubscriptionCount(stringToBytes("none"))).isEqualTo(0);
-  }
-
-  @Test
-  public void foreachHitsEachSubscription() {
-    Client client1 = createClient();
-    Client client2 = createClient();
-    Client client3 = createClient();
-
-    addChannelSubscription(client1, "subscription1");
-    addChannelSubscription(client3, "subscription1");
-    addChannelSubscription(client2, "subscription2");
-    addPatternSubscription(client1, "sub*");
-    addPatternSubscription(client3, "sub*");
-    addPatternSubscription(client2, "subscription?");
-
-    List<String> hits = new ArrayList<>();
-    subscriptions.forEachSubscription(stringToBytes("subscription1"),
-        (name, channelToMatch, client, subscription) -> hits.add(bytesToString(name)));
-    assertThat(hits).containsExactlyInAnyOrder("subscription1", "subscription1", "sub*", "sub*",
-        "subscription?");
   }
 
   @Test

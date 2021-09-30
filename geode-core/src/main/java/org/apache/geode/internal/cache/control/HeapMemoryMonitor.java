@@ -37,6 +37,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
@@ -682,7 +683,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     });
   }
 
-  protected Set<DistributedMember> getHeapCriticalMembersFrom(
+  public Set<DistributedMember> getHeapCriticalMembersFrom(
       Set<? extends DistributedMember> members) {
     Set<DistributedMember> criticalMembers = getCriticalMembers();
     criticalMembers.retainAll(members);
@@ -750,6 +751,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     return mostRecentEvent;
   }
 
+  @VisibleForTesting
   protected HeapMemoryMonitor setMostRecentEvent(
       MemoryEvent mostRecentEvent) {
     this.mostRecentEvent = mostRecentEvent;

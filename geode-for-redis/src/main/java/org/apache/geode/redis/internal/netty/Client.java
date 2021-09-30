@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.pubsub.PubSub;
@@ -126,12 +127,41 @@ public class Client {
     return new ArrayList<>(patternSubscriptions);
   }
 
+  public ByteBuf getChannelWriteBuffer() {
+    return byteBufAllocator.ioBuffer();
+  }
+
+  public ChannelFuture writeBufferToChannel(ByteBuf buffer) {
+    if (!logger.isDebugEnabled()) {
+      return channel.writeAndFlush(buffer);
+    } else {
+      // snapshot buffer before netty reuses it
+      final byte[] bufferBytes = getBufferBytes(buffer);
+      return channel.writeAndFlush(buffer)
+          .addListener(
+              (ChannelFutureListener) f -> logResponse(bufferBytes, channel.remoteAddress(),
+                  f.cause()));
+    }
+  }
+
+  @VisibleForTesting
+  byte[] getBufferBytes(ByteBuf buffer) {
+    int size = buffer.readableBytes();
+    byte[] result = new byte[size];
+    buffer.getBytes(0, result);
+    return result;
+  }
+
   public ChannelFuture writeToChannel(RedisResponse response) {
-    return channel.writeAndFlush(response.encode(byteBufAllocator), channel.newPromise())
-        .addListener((ChannelFutureListener) f -> {
-          response.afterWrite();
-          logResponse(response, channel.remoteAddress(), f.cause());
-        });
+    if (!logger.isDebugEnabled() && !response.hasAfterWriteCallback()) {
+      return channel.writeAndFlush(response.encode(byteBufAllocator));
+    } else {
+      return channel.writeAndFlush(response.encode(byteBufAllocator))
+          .addListener((ChannelFutureListener) f -> {
+            response.afterWrite();
+            logResponse(response, channel.remoteAddress(), f.cause());
+          });
+    }
   }
 
   private void logResponse(RedisResponse response, Object extraMessage, Throwable cause) {
@@ -143,6 +173,18 @@ public class Client {
       } else {
         logger.debug("Redis command FAILED to return: {} - {}",
             Command.getHexEncodedString(buf.array(), buf.readableBytes()), extraMessage, cause);
+      }
+    }
+  }
+
+  private void logResponse(byte[] bytes, Object extraMessage, Throwable cause) {
+    if (logger.isDebugEnabled()) {
+      if (cause == null) {
+        logger.debug("Redis command returned: {} - {}",
+            Command.getHexEncodedString(bytes, bytes.length), extraMessage);
+      } else {
+        logger.debug("Redis command FAILED to return: {} - {}",
+            Command.getHexEncodedString(bytes, bytes.length), extraMessage, cause);
       }
     }
   }

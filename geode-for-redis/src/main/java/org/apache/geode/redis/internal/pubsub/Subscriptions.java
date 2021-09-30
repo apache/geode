@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.netty.Client;
@@ -46,8 +47,8 @@ public class Subscriptions {
   private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
       singletonList(createUnsubscribeItem(false, null, 0));
 
-  private final SubscriptionManager channelSubscriptions = new ChannelSubscriptionManager();
-  private final SubscriptionManager patternSubscriptions = new PatternSubscriptionManager();
+  private final ChannelSubscriptionManager channelSubscriptions = new ChannelSubscriptionManager();
+  private final PatternSubscriptionManager patternSubscriptions = new PatternSubscriptionManager();
 
   public int getChannelSubscriptionCount(byte[] channel) {
     return channelSubscriptions.getSubscriptionCount(channel);
@@ -62,14 +63,74 @@ public class Subscriptions {
     return getChannelSubscriptionCount(channel) + getPatternSubscriptionCount(channel);
   }
 
-  public interface ForEachConsumer {
-    void accept(byte[] subscriptionName, byte[] channelToMatch, Client client,
-        Subscription subscription);
+  public Collection<Subscription> getChannelSubscriptions(byte[] channel) {
+    return channelSubscriptions.getChannelSubscriptions(channel);
   }
 
-  public void forEachSubscription(byte[] channel, ForEachConsumer action) {
-    channelSubscriptions.foreachSubscription(channel, action);
-    patternSubscriptions.foreachSubscription(channel, action);
+  public static class PatternSubscriptions {
+    private final byte[] pattern;
+    private final Collection<Subscription> subscriptions;
+
+    public PatternSubscriptions(byte[] pattern, Collection<Subscription> subscriptions) {
+      this.pattern = pattern;
+      this.subscriptions = subscriptions;
+    }
+
+    public byte[] getPattern() {
+      return pattern;
+    }
+
+    public Collection<Subscription> getSubscriptions() {
+      return subscriptions;
+    }
+
+    public int size() {
+      return subscriptions.size();
+    }
+
+    public Subscription getFirst() {
+      return subscriptions.iterator().next();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      PatternSubscriptions that = (PatternSubscriptions) o;
+      if (!Arrays.equals(pattern, that.pattern)) {
+        return false;
+      }
+      if (subscriptions.size() != that.subscriptions.size()) {
+        return false;
+      }
+      if (!subscriptions.containsAll(that.subscriptions)) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = Objects.hash(subscriptions);
+      result = 31 * result + Arrays.hashCode(pattern);
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "PatternSubscriptions{" +
+          "pattern=" + Arrays.toString(pattern) +
+          ", subscriptions=" + subscriptions +
+          '}';
+    }
+  }
+
+  public List<PatternSubscriptions> getPatternSubscriptions(byte[] channel) {
+    return patternSubscriptions.getPatternSubscriptions(channel);
   }
 
   /**
