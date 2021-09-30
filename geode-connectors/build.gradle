@@ -49,37 +49,10 @@ dependencies {
   implementation(project(':geode-gfsh'))
   implementation('org.apache.httpcomponents:httpcore')
   implementation('com.fasterxml.jackson.core:jackson-databind')
-
-  testImplementation(project(':geode-membership'))
-  testImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestImplementation(project(':geode-dunit')){
-    exclude module: 'geode-core'
-  }
-  acceptanceTestImplementation(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  acceptanceTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-
   implementation('com.zaxxer:HikariCP')
   implementation('org.apache.commons:commons-lang3')
   implementation('javax.xml.bind:jaxb-api')
   implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.apache.logging.log4j:log4j-jcl') {
-    ext.optional = true
-  }
   implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
@@ -91,19 +64,47 @@ dependencies {
     ext.optional = true
   }
   implementation('com.healthmarketscience.rmiio:rmiio')
+  implementation('commons-io:commons-io')
 
+
+  testImplementation(project(':geode-membership'))
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
+
+  integrationTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('pl.pragmatists:JUnitParams')
 
+
+  distributedTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestImplementation(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
   distributedTestImplementation('junit:junit')
   distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
+
+  acceptanceTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  acceptanceTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
@@ -111,12 +112,12 @@ dependencies {
   acceptanceTestImplementation('org.assertj:assertj-core')
   acceptanceTestImplementation('org.awaitility:awaitility')
   acceptanceTestImplementation('org.mockito:mockito-core')
-  acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 
   acceptanceTestRuntimeOnly('mysql:mysql-connector-java')
   acceptanceTestRuntimeOnly('org.apache.derby:derby')
   acceptanceTestRuntimeOnly('org.postgresql:postgresql')
+
 
   jdbcTestingJars('mysql:mysql-connector-java:8.0.26')
 }
