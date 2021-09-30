@@ -24,18 +24,16 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.netty.Coder;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class LolWutIntegrationTest implements RedisIntegrationTest {
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final int REDIS_CLIENT_TIMEOUT = RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
   private static final String GEODE_VERSION_STRING = KnownVersion.getCurrentVersion().toString();
   private static final int DEFAULT_MAZE_HEIGHT = 10 + 2; // Top & bottom walls, version string
   private static final int MAX_MAZE_HEIGHT = (1024 * 1024) + 2;
@@ -63,24 +61,16 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldReturnGeodeVersion() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }));
+    String actualResult =
+        Coder.bytesToString((byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut")));
 
     assertThat(actualResult).contains(GEODE_VERSION_STRING);
   }
 
   @Test
   public void shouldReturnDefaultMazeSize_givenNoArgs() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }));
+    String actualResult =
+        Coder.bytesToString((byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut")));
 
     String[] lines = actualResult.split("\\n");
     assertThat(lines.length).isEqualTo(DEFAULT_MAZE_HEIGHT);
@@ -89,12 +79,9 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldReturnSpecifiedMazeWidth_givenNumericArg() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }, SafeEncoder.encode("20")));
+    String actualResult = Coder.bytesToString(
+        (byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
+            SafeEncoder.encode("20")));
 
     String[] lines = actualResult.split("\\n");
     assertThat(lines[0].length()).isEqualTo((20 - 1) * 2);
@@ -102,13 +89,10 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldReturnSpecifiedMazeHeight_givenNumericArgs() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }, SafeEncoder.encode("10"),
-        SafeEncoder.encode("20")));
+    String actualResult = Coder.bytesToString(
+        (byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
+            SafeEncoder.encode("10"),
+            SafeEncoder.encode("20")));
 
     String[] lines = actualResult.split("\\n");
     assertThat(lines.length).isEqualTo(20 + 2);
@@ -116,12 +100,9 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldLimitMazeWidth() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }, SafeEncoder.encode("2048")));
+    String actualResult = Coder.bytesToString(
+        (byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
+            SafeEncoder.encode("2048")));
 
     String[] lines = actualResult.split("\\n");
     assertThat(lines[0].length()).isEqualTo((1024 - 1) * 2);
@@ -129,13 +110,10 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldLimitMazeHeight() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    }, SafeEncoder.encode("10"),
-        SafeEncoder.encode(Integer.toString(MAX_MAZE_HEIGHT * 2))));
+    String actualResult = Coder.bytesToString(
+        (byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
+            SafeEncoder.encode("10"),
+            SafeEncoder.encode(Integer.toString(MAX_MAZE_HEIGHT * 2))));
 
     String[] lines = actualResult.split("\\n");
     assertThat(lines.length).isEqualTo(MAX_MAZE_HEIGHT);
@@ -143,26 +121,17 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shouldNotError_givenVersionArg() {
-    String actualResult = Coder.bytesToString((byte[]) jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    },
-        SafeEncoder.encode("version"),
-        SafeEncoder.encode("ignored")));
+    String actualResult = Coder.bytesToString(
+        (byte[]) jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
+            SafeEncoder.encode("version"),
+            SafeEncoder.encode("ignored")));
 
     assertThat(actualResult).contains(GEODE_VERSION_STRING);
   }
 
   @Test
   public void shouldError_givenNonNumericArg() {
-    assertThatThrownBy(() -> jedis.sendCommand(new ProtocolCommand() {
-      @Override
-      public byte[] getRaw() {
-        return SafeEncoder.encode("lolwut");
-      }
-    },
+    assertThatThrownBy(() -> jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
         SafeEncoder.encode("notEvenCloseToANumber")))
             .hasMessage("ERR value is not an integer or out of range");
   }
