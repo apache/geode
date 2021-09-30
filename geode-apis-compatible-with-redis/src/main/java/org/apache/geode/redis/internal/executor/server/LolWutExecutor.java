@@ -86,7 +86,7 @@ public class LolWutExecutor extends AbstractExecutor {
   }
 
   // Adapted from code here: https://tromp.github.io/maze.html
-  private static String makeArbitrarySizeMaze() {
+  private String makeArbitrarySizeMaze() {
     StringBuilder mazeString = new StringBuilder();
     int[] leftLinks = new int[width];
     int[] rightLinks = new int[width];
@@ -105,7 +105,7 @@ public class LolWutExecutor extends AbstractExecutor {
     return mazeString.toString();
   }
 
-  private static void mazeTopAndEntrance(StringBuilder mazeString, int[] leftLinks,
+  private void mazeTopAndEntrance(StringBuilder mazeString, int[] leftLinks,
       int[] rightLinks) {
     int tempIndex;
     for (tempIndex = width; --tempIndex > 0; leftLinks[tempIndex] =
@@ -115,7 +115,7 @@ public class LolWutExecutor extends AbstractExecutor {
     mazeString.append("\n "); // Open wall for entrance at top left
   }
 
-  private static void mazeRows(StringBuilder mazeString,
+  private void mazeRows(StringBuilder mazeString,
       int[] leftLinks,
       int[] rightLinks, Random rand) {
     int currentCell;
@@ -152,7 +152,7 @@ public class LolWutExecutor extends AbstractExecutor {
     }
   }
 
-  private static void mazeBottomRowAndExit(StringBuilder mazeString, int[] leftLinks,
+  private void mazeBottomRowAndExit(StringBuilder mazeString, int[] leftLinks,
       int[] rightLinks, Random rand) {
     int currentCell;
     int tempIndex;
