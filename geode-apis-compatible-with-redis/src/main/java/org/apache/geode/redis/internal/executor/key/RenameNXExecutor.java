@@ -19,28 +19,27 @@ package org.apache.geode.redis.internal.executor.key;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 
-public class RenameExecutor extends AbstractRenameExecutor {
+public class RenameNXExecutor extends AbstractRenameExecutor {
 
   @Override
-  protected boolean executeRenameCommand(RedisKey key, RedisKey newKey,
+  protected boolean executeRenameCommand(RedisKey key,
+      RedisKey newKey,
       RedisKeyCommands redisKeyCommands) {
-    return redisKeyCommands.rename(key, newKey, false);
+    return redisKeyCommands.rename(key, newKey, true);
   }
 
   @Override
   protected RedisResponse getTargetSameAsSourceResponse() {
-    return getSuccessResponse();
+    return getKeyExistsResponse();
   }
 
   @Override
   protected RedisResponse getSuccessResponse() {
-    return RedisResponse.ok();
+    return RedisResponse.integer(1L);
   }
 
   @Override
   protected RedisResponse getKeyExistsResponse() {
-    throw new AssertionError(
-        "RENAME allows existing target key so this method should never be called");
+    return RedisResponse.integer(0L);
   }
-
 }

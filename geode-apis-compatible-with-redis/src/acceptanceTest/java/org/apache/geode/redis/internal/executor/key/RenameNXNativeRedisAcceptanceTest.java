@@ -11,36 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.junit.ClassRule;
 
-public class RenameExecutor extends AbstractRenameExecutor {
+import org.apache.geode.redis.NativeRedisClusterTestRule;
+
+public class RenameNXNativeRedisAcceptanceTest extends AbstractRenameNXIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
 
   @Override
-  protected boolean executeRenameCommand(RedisKey key, RedisKey newKey,
-      RedisKeyCommands redisKeyCommands) {
-    return redisKeyCommands.rename(key, newKey, false);
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
   }
 
   @Override
-  protected RedisResponse getTargetSameAsSourceResponse() {
-    return getSuccessResponse();
-  }
-
-  @Override
-  protected RedisResponse getSuccessResponse() {
-    return RedisResponse.ok();
-  }
-
-  @Override
-  protected RedisResponse getKeyExistsResponse() {
-    throw new AssertionError(
-        "RENAME allows existing target key so this method should never be called");
+  public void flushAll() {
+    redis.flushAll();
   }
 
 }

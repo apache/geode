@@ -19,15 +19,15 @@ import org.apache.geode.redis.internal.RedisException;
 /**
  * An exception thrown when the key being restored already exists.
  */
-public class RedisRestoreKeyExistsException extends RedisException {
+public class RedisKeyExistsException extends RedisException {
 
   private static final long serialVersionUID = -7022501593522613782L;
 
-  public RedisRestoreKeyExistsException() {
+  public RedisKeyExistsException() {
     super();
   }
 
-  public RedisRestoreKeyExistsException(String message) {
+  public RedisKeyExistsException(String message) {
     super(message);
   }
 

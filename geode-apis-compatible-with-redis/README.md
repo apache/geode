@@ -194,7 +194,8 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - PUBSUB  
 - PUNSUBSCRIBE  
 - QUIT  
-- RENAME  
+- RENAME
+- RENAMENX
 - SADD  
 - SET  
 - SETEX

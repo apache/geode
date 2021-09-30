@@ -86,7 +86,8 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
+  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+      boolean ifNotExists) {
     return false;
   }
 
