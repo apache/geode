@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
@@ -261,7 +262,9 @@ public class PoolManagerImpl {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute((ExecutablePool) pool, dataSerializers, eventId);
+          if (!pool.getMultiuserAuthentication()) {
+            RegisterDataSerializersOp.execute((ExecutablePool) pool, dataSerializers, eventId);
+          }
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -278,7 +281,9 @@ public class PoolManagerImpl {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute((ExecutablePool) pool, holders, eventId);
+          if (!pool.getMultiuserAuthentication()) {
+            RegisterDataSerializersOp.execute((ExecutablePool) pool, holders, eventId);
+          }
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
