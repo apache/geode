@@ -79,8 +79,13 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
     ObjectInputFilter_checkInput = ObjectInputFilter_checkInput();
 
     ObjectInputFilter_Config_createFilter = ObjectInputFilter_Config_createFilter();
-    ObjectInputFilter_Config_getObjectInputFilter = ObjectInputFilter_Config_getObjectInputFilter();
-    ObjectInputFilter_Config_setObjectInputFilter = ObjectInputFilter_Config_setObjectInputFilter();
+    if (apiPackage == ApiPackage.SUN_MISC) {
+      ObjectInputFilter_Config_getObjectInputFilter = ObjectInputFilter_Config_getObjectInputFilter();
+      ObjectInputFilter_Config_setObjectInputFilter = ObjectInputFilter_Config_setObjectInputFilter();
+    } else {
+      ObjectInputFilter_Config_getObjectInputFilter = null;
+      ObjectInputFilter_Config_setObjectInputFilter = null;
+    }
     ObjectInputFilter_Config_getSerialFilter = ObjectInputFilter_Config_getSerialFilter();
     ObjectInputFilter_Config_setSerialFilter = ObjectInputFilter_Config_setSerialFilter();
 
@@ -90,6 +95,7 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object getObjectInputFilter(ObjectInputStream inputStream)
       throws InvocationTargetException, IllegalAccessException {
+    // TODO: JIANXIA: what if this is invoked by Java 9? Just return null?
     return ObjectInputFilter_Config_getObjectInputFilter.invoke(ObjectInputFilter_Config,
         inputStream);
   }
@@ -97,6 +103,7 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public void setObjectInputFilter(ObjectInputStream inputStream, Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
+    // TODO: JIANXIA: what if this is invoked by Java 9? Do nothing?
     ObjectInputFilter_Config_setObjectInputFilter.invoke(ObjectInputFilter_Config, inputStream,
         objectInputFilter);
   }
@@ -122,7 +129,7 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException {
-    Object objectInputFilter = ObjectInputFilter_Config_createFilter.invoke(null, pattern);
+    Object objectInputFilter = ObjectInputFilter_Config_createFilter.invoke(ObjectInputFilter_Config, pattern);
 
     /*
      * Members first connect to each other with sockets that are restricted to the Geode sanctioned
@@ -146,12 +153,14 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
       Object objectInputFilter_filterInfo = args[0];
       Class<?> serialClass =
           (Class<?>) ObjectInputFilter_FilterInfo_serialClass.invoke(objectInputFilter_filterInfo);
+      System.out.println("JC debug: serialClass=" + serialClass);
       if (serialClass == null) { // no class to check, so nothing to accept-list
         return ObjectInputFilter_checkInput.invoke(objectInputFilter, objectInputFilter_filterInfo);
       }
 
       // check sanctionedClasses to determine if the name of the class is ALLOWED
       String serialClassName = serialClass.getName();
+      System.out.println("JC debug: serialClassName" + serialClassName);
       if (serialClass.isArray()) {
         serialClassName = serialClass.getComponentType().getName();
       }
@@ -166,6 +175,7 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
         logger.fatal("Serialization filter is rejecting class {}", serialClassName,
             new InvalidClassException(serialClassName));
       }
+      System.out.println("JC debug: objectInputFilter_Status" + objectInputFilter_Status);
       return objectInputFilter_Status;
     };
 

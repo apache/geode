@@ -15,6 +15,9 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -42,7 +45,11 @@ public class DelegatingObjectInputFilter implements ObjectInputFilter {
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
 
       // set the global serial filter
-      api.setObjectInputFilter(objectInputStream, objectInputFilter);
+      if (isJavaVersionAtLeast(JAVA_9)) {
+        api.setSerialFilter(objectInputFilter);
+      } else if (isJavaVersionAtLeast(JAVA_1_8)) {
+        api.setObjectInputFilter(objectInputStream, objectInputFilter);
+      }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new UnsupportedOperationException(
           "Geode was unable to configure a serialization filter on input stream '"
