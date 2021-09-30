@@ -264,7 +264,7 @@ public class BucketRegionQueueJUnitTest {
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
 
-    return new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, false);
+    return new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null);
   }
 
   private EnumListenerEvent getEnumListenerEvent(Operation operation) {

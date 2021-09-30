@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -94,7 +95,7 @@ public class ParallelGatewaySenderHelper {
     eei.setEventId(new EventID(new byte[16], threadId, sequenceId, bucketId));
     GatewaySenderEventImpl gsei =
         new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId,
-            false);
+            EXCLUDE);
     gsei.setShadowKey(shadowKey);
     return gsei;
   }
