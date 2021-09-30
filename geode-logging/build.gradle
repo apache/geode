@@ -36,6 +36,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
+  testImplementation('com.tngtech.archunit:archunit')
   testImplementation('com.tngtech.archunit:archunit-junit4')
 }
 
