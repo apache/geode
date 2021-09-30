@@ -48,7 +48,7 @@ import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-public class CachePerfStatsTest implements Serializable {
+public class CachePerfStatsDUnitTest implements Serializable {
 
   private static final int NON_EXISTENT_KEY = 1234;
 
@@ -83,7 +83,7 @@ public class CachePerfStatsTest implements Serializable {
   }
 
   @Test
-  public void testGetsRatesPartitioned() {
+  public void getStatsAreIncrementedCorrectlyForPartitionedRegion() {
     port1 = server1.invoke(this::createServerRegion);
     createClientRegion(port1);
 
@@ -99,7 +99,7 @@ public class CachePerfStatsTest implements Serializable {
   }
 
   @Test
-  public void testGetsRatesReplicated() {
+  public void getStatsAreIncrementedCorrectlyForReplicatedRegion() {
     port1 = server1.invoke(this::createReplicatedServerRegion);
     createClientReplicatedRegion(port1);
 
@@ -115,7 +115,7 @@ public class CachePerfStatsTest implements Serializable {
   }
 
   @Test
-  public void testGetsRatesTransactionAndReplicated() {
+  public void transactionGetStatsAreIncrementedCorrectlyForReplicatedRegion() {
     port1 = server1.invoke(this::createReplicatedServerRegion);
     createClientReplicatedRegion(port1);
 
@@ -139,7 +139,7 @@ public class CachePerfStatsTest implements Serializable {
   }
 
   @Test
-  public void testGetsRatesTransactionAndPartitioned() {
+  public void transactionGetStatsAreIncrementedCorrectlyForPartitionRegion() {
     port1 = server1.invoke(this::createServerRegion);
     createClientRegion(port1);
 
@@ -163,7 +163,7 @@ public class CachePerfStatsTest implements Serializable {
   }
 
   @Test
-  public void testGetsRatesTransactionAndPartitionedMissLocallyAndGetRemotely() {
+  public void transactionGetStatsAreIncrementedCorrectlyForPartitionRegionWhenRemoteGetIsPerformed() {
     port1 = server1.invoke(this::createServerRegion);
     server2.invoke(this::createServerRegion);
     createClientRegion(port1);
