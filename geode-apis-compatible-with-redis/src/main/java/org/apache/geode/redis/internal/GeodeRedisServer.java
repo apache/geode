@@ -74,12 +74,12 @@ public class GeodeRedisServer {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
 
+    pubSub = new PubSubImpl(new Subscriptions());
     redisStats = createStats(cache);
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
-    pubSub = new PubSubImpl(new Subscriptions(), regionProvider);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
@@ -139,7 +139,6 @@ public class GeodeRedisServer {
   public synchronized void shutdown() {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
-      pubSub.close();
       passiveExpirationManager.stop();
       nettyRedisServer.stop();
       redisStats.close();

@@ -33,7 +33,6 @@ public class SubscribeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    checkForLowMemory(command.getCommandType(), context);
 
     Collection<SubscribeResult> results = new ArrayList<>(command.getCommandArguments().size());
     for (byte[] channelName : command.getCommandArguments()) {

@@ -41,7 +41,3 @@ toData,27
 org/apache/geode/redis/internal/executor/string/SetOptions,2
 fromData,27
 toData,27
-
-org/apache/geode/redis/internal/pubsub/Publisher$PublishRequest,2
-fromData,17
-toData,17

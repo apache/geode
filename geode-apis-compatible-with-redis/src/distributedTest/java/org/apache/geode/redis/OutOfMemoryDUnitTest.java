@@ -36,7 +36,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisException;
 
-import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -104,51 +103,7 @@ public class OutOfMemoryDUnitTest {
     fillMemory(jedis, false);
 
     assertThatThrownBy(
-        () -> jedis.set("{key}oneMoreKey", "value"))
-            .hasMessageContaining("OOM");
-
-    memoryPressureThread.interrupt();
-    memoryPressureThread.join();
-  }
-
-  @Test
-  public void shouldReturnOOMError_forSubscribe_whenThresholdReached()
-      throws InterruptedException {
-    IgnoredException.addIgnoredException(expectedEx);
-    IgnoredException.addIgnoredException("LowMemoryException");
-    MockSubscriber mockSubscriber = new MockSubscriber();
-    int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    JedisCluster subJedis =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
-
-    memoryPressureThread = new Thread(makeMemoryPressureRunnable());
-    memoryPressureThread.start();
-
-    fillMemory(jedis, false);
-
-    assertThatThrownBy(
-        () -> subJedis.subscribe(mockSubscriber, "channel"))
-            .hasMessageContaining("OOM");
-
-    subJedis.close();
-
-    memoryPressureThread.interrupt();
-    memoryPressureThread.join();
-  }
-
-  @Test
-  public void shouldReturnOOMError_forPublish_whenThresholdReached()
-      throws InterruptedException {
-    IgnoredException.addIgnoredException(expectedEx);
-    IgnoredException.addIgnoredException("LowMemoryException");
-
-    memoryPressureThread = new Thread(makeMemoryPressureRunnable());
-    memoryPressureThread.start();
-
-    fillMemory(jedis, false);
-
-    assertThatThrownBy(
-        () -> jedis.publish("channel", "message"))
+        () -> jedis.set("{key}oneMoreKey", makeLongStringValue(2 * LARGE_VALUE_SIZE)))
             .hasMessageContaining("OOM");
 
     memoryPressureThread.interrupt();
@@ -181,7 +136,9 @@ public class OutOfMemoryDUnitTest {
 
     fillMemory(jedis, true);
 
-    await().untilAsserted(() -> assertThat(jedis.ttl(FILLER_KEY + 1)).isEqualTo(-2));
+    await().untilAsserted(() -> {
+      assertThat(jedis.ttl(FILLER_KEY + 1)).isEqualTo(-2);
+    });
 
     memoryPressureThread.interrupt();
     memoryPressureThread.join();
@@ -238,7 +195,7 @@ public class OutOfMemoryDUnitTest {
   private static Runnable makeMemoryPressureRunnable() {
     return new Runnable() {
       boolean running = true;
-      final String pressureValue = makeLongStringValue(PRESSURE_VALUE_SIZE);
+      String pressureValue = makeLongStringValue(PRESSURE_VALUE_SIZE);
 
       @Override
       public void run() {
