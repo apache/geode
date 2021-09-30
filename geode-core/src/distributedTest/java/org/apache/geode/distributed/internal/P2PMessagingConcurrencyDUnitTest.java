@@ -55,6 +55,18 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 // @RunWith(ConcurrentTestRunner.class)
 public class P2PMessagingConcurrencyDUnitTest {
 
+  // for how long will the test generate traffic?
+  public static final int TESTING_DURATION_SECONDS = 5;
+
+  // number of concurrent (sending) tasks to run
+  private static final int TASK_COUNT = 10;
+
+  // (exclusive) upper bound of random message size, in bytes
+  private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
+
+  // random seed
+  private static final int RANDOM_SEED = 1234;
+
   @Rule
   public final DistributedRule distributedRule = new DistributedRule(2);
 
@@ -81,10 +93,7 @@ public class P2PMessagingConcurrencyDUnitTest {
 
     sender.invoke(() -> {
       final ClusterDistributionManager cdm = getCDM(locators);
-      final int seed = 1234;
-      final Random random = new Random(seed);
-
-      final int TASK_COUNT = 10;
+      final Random random = new Random(RANDOM_SEED);
 
       final ExecutorService executor = Executors.newFixedThreadPool(TASK_COUNT);
 
@@ -112,7 +121,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         executor.submit(doSending);
       }
 
-      TimeUnit.SECONDS.sleep(5);
+      TimeUnit.SECONDS.sleep(TESTING_DURATION_SECONDS);
 
       stop.set(true);
 
@@ -144,7 +153,7 @@ public class P2PMessagingConcurrencyDUnitTest {
      * maintenance tip: to see what kind of connection you're getting you can
      * uncomment logging over in DirectChannel.sendToMany()
      */
-    props.put("conserve-sockets", "true"); // careful: if you set to true it doesn't take hold!
+    props.put("conserve-sockets", "true"); // careful: if you set a boolean it doesn't take hold!
 
     final CacheFactory cacheFactory = new CacheFactory(props);
     final Cache cache = cacheFactory.create();
@@ -183,7 +192,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         throws IOException {
       super.toData(out, context);
 
-      final int length = random.nextInt(32 * 1024 + 1); // 32 KiB + 1
+      final int length = random.nextInt(LARGEST_MESSAGE_BOUND);
 
       out.writeInt(length);
 
