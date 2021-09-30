@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -101,8 +103,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected int remoteDSId;
 
-  protected String locName;
-
   protected int socketBufferSize;
 
   protected int socketReadTimeout;
@@ -121,6 +121,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected volatile int alertThreshold;
 
+  @Deprecated
   protected boolean manualStart;
 
   protected boolean isParallel;
@@ -143,7 +144,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean forwardExpirationDestroy;
 
-  protected GatewayEventSubstitutionFilter substitutionFilter;
+  protected GatewayEventSubstitutionFilter<?, ?> substitutionFilter;
 
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
 
@@ -169,14 +170,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected AbstractGatewaySenderEventProcessor eventProcessor;
 
-  private org.apache.geode.internal.cache.GatewayEventFilter filter =
+  private final org.apache.geode.internal.cache.GatewayEventFilter filter =
       DefaultGatewayEventFilter.getInstance();
 
   private ServerLocation serverLocation;
 
   private String expectedReceiverUniqueId = "";
 
-  protected Object queuedEventsSync = new Object();
+  protected final Object queuedEventsSync = new Object();
 
   protected volatile boolean enqueuedAllTempQueueEvents = false;
 
@@ -190,23 +191,22 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   @MutableForTesting
   public static int MAXIMUM_SHUTDOWN_WAIT_TIME =
-      Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0).intValue();
+      Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0);
 
   public static final int QUEUE_SIZE_THRESHOLD =
-      Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
+      Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000);
 
   @MutableForTesting
-  public static int TOKEN_TIMEOUT =
-      Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000).intValue();
+  public static int TOKEN_TIMEOUT = Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000);
 
   /**
-   * The name of the DistributedLockService used when accessing the GatewaySender's meta data
+   * The name of the DistributedLockService used when accessing the GatewaySender's metadata
    * region.
    */
   public static final String LOCK_SERVICE_NAME = "gatewayEventIdIndexMetaData_lockService";
 
   /**
-   * The name of the GatewaySender's meta data region.
+   * The name of the GatewaySender's metadata region.
    */
   protected static final String META_DATA_REGION_NAME = "gatewayEventIdIndexMetaData";
 
@@ -255,7 +255,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     isConflation = attrs.isBatchConflationEnabled();
     isPersistence = attrs.isPersistenceEnabled();
     alertThreshold = attrs.getAlertThreshold();
-    manualStart = attrs.isManualStart();
+    copyDeprecatedAttributes(attrs);
     isParallel = attrs.isParallel();
     groupTransactionEvents = attrs.mustGroupTransactionEvents();
     retriesToGetTransactionEventsFromQueue = attrs.getRetriesToGetTransactionEventsFromQueue();
@@ -291,6 +291,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
     isBucketSorted = attrs.isBucketSorted();
     forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
+  }
+
+  @SuppressWarnings("deprecation")
+  private void copyDeprecatedAttributes(final GatewaySenderAttributes attrs) {
+    manualStart = attrs.isManualStart();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -351,7 +356,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
+  public GatewayEventSubstitutionFilter<?, ?> getGatewayEventSubstitutionFilter() {
     return substitutionFilter;
   }
 
@@ -378,15 +383,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return listeners;
   }
 
-  public boolean hasListeners() {
-    return !listeners.isEmpty();
-  }
-
   @Override
   public boolean isForwardExpirationDestroy() {
     return forwardExpirationDestroy;
   }
 
+  @Deprecated
   @Override
   public boolean isManualStart() {
     return manualStart;
@@ -397,7 +399,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return queueMemory;
   }
 
-  public int getMaximumMemeoryPerDispatcherQueue() {
+  public int getMaximumMemoryPerDispatcherQueue() {
     return maxMemoryPerDispatcherQueue;
   }
 
@@ -519,10 +521,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       return false;
     }
     AbstractGatewaySender sender = (AbstractGatewaySender) obj;
-    if (sender.getId().equals(getId())) {
-      return true;
-    }
-    return false;
+    return sender.getId().equals(getId());
   }
 
   @Override
@@ -592,7 +591,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public abstract void stop();
 
   /**
-   * Destroys the GatewaySender. Before destroying the sender, caller needs to to ensure that the
+   * Destroys the GatewaySender. Before destroying the sender, caller needs to ensure that the
    * sender is stopped so that all the resources (threads, connection pool etc.) will be released
    * properly. Stopping the sender is not handled in the destroy. Destroy is carried out in
    * following steps: 1. Take the lifeCycleLock. 2. If the sender is attached to any application
@@ -614,9 +613,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       // first, check if this sender is attached to any region. If so, throw
       // GatewaySenderException
       Set<InternalRegion> regions = cache.getApplicationRegions();
-      Iterator regionItr = regions.iterator();
-      while (regionItr.hasNext()) {
-        LocalRegion region = (LocalRegion) regionItr.next();
+      for (final InternalRegion internalRegion : regions) {
+        LocalRegion region = (LocalRegion) internalRegion;
 
         if (region.getAttributes().getGatewaySenderIds().contains(id)) {
           throw new GatewaySenderException(
@@ -701,7 +699,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   public void setAlertThreshold(int alertThreshold) {
     this.alertThreshold = alertThreshold;
-  };
+  }
 
   /**
    * Set BatchSize for this GatewaySender.
@@ -733,7 +731,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     if (eventProcessor != null) {
       eventProcessor.setBatchTimeInterval(batchTimeInterval);
     }
-  };
+  }
 
   /**
    * Set GroupTransactionEvents for this GatewaySender.
@@ -746,7 +744,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   public void setGroupTransactionEvents(boolean groupTransactionEvents) {
     this.groupTransactionEvents = groupTransactionEvents;
-  };
+  }
 
   /**
    * Set GatewayEventFilters for this GatewaySender.
@@ -765,15 +763,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {
-    boolean enqueue = true;
-    for (GatewayEventFilter filter : getGatewayEventFilters()) {
-      enqueue = filter.beforeEnqueue(gatewayEvent);
-      if (!enqueue) {
-        return enqueue;
+  public boolean beforeEnqueue(final GatewayQueueEvent<?, ?> gatewayEvent) {
+    for (final GatewayEventFilter filter : getGatewayEventFilters()) {
+      if (!filter.beforeEnqueue(gatewayEvent)) {
+        return false;
       }
     }
-    return enqueue;
+    return true;
   }
 
   protected void stopProcessing() {
@@ -789,15 +785,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void stompProxyDead() {
-    Runnable stomper = new Runnable() {
-      @Override
-      public void run() {
-        PoolImpl bpi = proxy;
-        if (bpi != null) {
-          try {
-            bpi.destroy();
-          } catch (Exception e) {/* ignore */
-          }
+    Runnable stomper = () -> {
+      PoolImpl bpi = proxy;
+      if (bpi != null) {
+        try {
+          bpi.destroy();
+        } catch (Exception e) {/* ignore */
         }
       }
     };
@@ -854,23 +847,21 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return true;
   }
 
-  private class Stopper extends CancelCriterion {
-    final CancelCriterion stper;
+  private static class Stopper extends CancelCriterion {
+    final CancelCriterion stopper;
 
     Stopper(CancelCriterion stopper) {
-      stper = stopper;
+      this.stopper = stopper;
     }
 
     @Override
     public String cancelInProgress() {
-      // checkFailure(); // done by stopper
-      return stper.cancelInProgress();
+      return stopper.cancelInProgress();
     }
 
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
-      RuntimeException result = stper.generateCancelledException(e);
-      return result;
+      return stopper.generateCancelledException(e);
     }
   }
 
@@ -889,7 +880,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public Set<RegionQueue> getQueues() {
     if (eventProcessor != null) {
       if (!(eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
-        Set<RegionQueue> queues = new HashSet<RegionQueue>();
+        Set<RegionQueue> queues = new HashSet<>();
         queues.add(eventProcessor.getQueue());
         return queues;
       }
@@ -911,7 +902,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       if (ex != null) {
         throw new GatewaySenderException(
             String.format("Could not start a gateway sender %s because of exception %s",
-                new Object[] {getId(), ex.getMessage()}),
+                getId(), ex.getMessage()),
             ex.getCause());
       }
     }
@@ -1020,18 +1011,15 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    *
    * @return boolean True if the event is allowed.
    */
-  private boolean checkForDistribution(EntryEventImpl event, GatewaySenderStats stats) {
+  private boolean checkForDistribution(EntryEventImpl event) {
     if (event.getRegion().getDataPolicy().equals(DataPolicy.NORMAL)) {
       return false;
     }
     // Check for eviction and expiration events.
     if (event.getOperation().isLocal() || event.getOperation().isExpiration()) {
       // Check if its AEQ and is configured to forward expiration destroy events.
-      if (event.getOperation().isExpiration() && isAsyncEventQueue()
-          && isForwardExpirationDestroy()) {
-        return true;
-      }
-      return false;
+      return event.getOperation().isExpiration() && isAsyncEventQueue()
+          && isForwardExpirationDestroy();
     }
     return true;
   }
@@ -1055,13 +1043,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       final GatewaySenderStats stats = getStatistics();
       stats.incEventsReceived();
 
-      if (!checkForDistribution(event, stats)) {
+      if (!checkForDistribution(event)) {
         stats.incEventsNotQueued();
         return;
       }
 
       // this filter is defined by Asif which exist in old wan too. new wan has
-      // other GatewaEventFilter. Do we need to get rid of this filter. Cheetah is
+      // other GatewayEventFilter. Do we need to get rid of this filter? Cheetah is
       // not considering this filter
       if (!filter.enqueueEvent(event)) {
         stats.incEventsFiltered();
@@ -1081,49 +1069,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       if (callbackArg instanceof GatewaySenderEventCallbackArgument) {
-        GatewaySenderEventCallbackArgument seca = (GatewaySenderEventCallbackArgument) callbackArg;
-        if (isDebugEnabled) {
-          logger.debug(
-              "{}: Event originated in {}. My DS id is {}. The remote DS id is {}. The recipients are: {}",
-              this, seca.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
-              seca.getRecipientDSIds());
-        }
-        if (seca.getOriginatingDSId() == DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-          if (isDebugEnabled) {
-            logger.debug(
-                "{}: Event originated in {}. My DS id is {}. The remote DS id is {}. The recipients are: {}",
-                this, seca.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
-                seca.getRecipientDSIds());
-          }
-
-          seca.setOriginatingDSId(getMyDSId());
-          seca.initializeReceipientDSIds(allRemoteDSIds);
-
-        } else {
-          // if the dispatcher is GatewaySenderEventCallbackDispatcher (which is the case of WBCL),
-          // skip the below check of remoteDSId.
-          // Fix for #46517
-          AbstractGatewaySenderEventProcessor ep = getEventProcessor();
-          // if manual-start is true, ep is null
-          if (ep == null || !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
-            if (seca.getOriginatingDSId() == getRemoteDSId()) {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "{}: Event originated in {}. My DS id is {}. It is being dropped as remote is originator.",
-                    this, seca.getOriginatingDSId(), getMyDSId());
-              }
-              return;
-            } else if (seca.getRecipientDSIds().contains(getRemoteDSId())) {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "{}: Event originated in {}. My DS id is {}. The remote DS id is {}.. It is being dropped as remote ds is already a recipient. Recipients are: {}",
-                    this, seca.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
-                    seca.getRecipientDSIds());
-              }
-              return;
-            }
-          }
-          seca.getRecipientDSIds().addAll(allRemoteDSIds);
+        if (handleGatewaySenderCallbackArgument(allRemoteDSIds, isDebugEnabled,
+            (GatewaySenderEventCallbackArgument) callbackArg)) {
+          return;
         }
       } else {
         GatewaySenderEventCallbackArgument geCallbackArg =
@@ -1179,12 +1127,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           if (ev == null) {
             getStopper().checkCancelInProgress(null);
             getCache().getDistributedSystem().getCancelCriterion().checkCancelInProgress(null);
-            // event processor will be null if there was an authorization
-            // problem
-            // connecting to the other site (bug #40681)
-            if (ev == null) {
-              throw new GatewayCancelledException("Event processor thread is gone");
-            }
+            // event processor will be null if there was an authorization problem connecting to the
+            // other site
+            throw new GatewayCancelledException("Event processor thread is gone");
           }
 
           // Get substitution value to enqueue if necessary
@@ -1197,12 +1142,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         } catch (RegionDestroyedException e) {
           logger.warn(String.format(
               "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-              new Object[] {this, getId(), operation, clonedEvent}),
+              this, getId(), operation, clonedEvent),
               e);
         } catch (Exception e) {
           logger.fatal(String.format(
               "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-              new Object[] {this, getId(), operation, clonedEvent}),
+              this, getId(), operation, clonedEvent),
               e);
         }
       } finally {
@@ -1213,6 +1158,54 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.release(); // fix for bug 48035
       }
     }
+  }
+
+  private boolean handleGatewaySenderCallbackArgument(final @NotNull List<Integer> allRemoteDSIds,
+      final boolean isDebugEnabled,
+      final @NotNull GatewaySenderEventCallbackArgument argument) {
+    if (isDebugEnabled) {
+      logger.debug(
+          "{}: Event originated in {}. My DS id is {}. The remote DS id is {}. The recipients are: {}",
+          this, argument.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
+          argument.getRecipientDSIds());
+    }
+    if (argument.getOriginatingDSId() == DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+      if (isDebugEnabled) {
+        logger.debug(
+            "{}: Event originated in {}. My DS id is {}. The remote DS id is {}. The recipients are: {}",
+            this, argument.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
+            argument.getRecipientDSIds());
+      }
+
+      argument.setOriginatingDSId(getMyDSId());
+      argument.initializeReceipientDSIds(allRemoteDSIds);
+
+    } else {
+      // if the dispatcher is GatewaySenderEventCallbackDispatcher (which is the case of WBCL),
+      // skip the below check of remoteDSId.
+      AbstractGatewaySenderEventProcessor ep = getEventProcessor();
+      // if manual-start is true, ep is null
+      if (ep == null || !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+        if (argument.getOriginatingDSId() == getRemoteDSId()) {
+          if (isDebugEnabled) {
+            logger.debug(
+                "{}: Event originated in {}. My DS id is {}. It is being dropped as remote is originator.",
+                this, argument.getOriginatingDSId(), getMyDSId());
+          }
+          return true;
+        } else if (argument.getRecipientDSIds().contains(getRemoteDSId())) {
+          if (isDebugEnabled) {
+            logger.debug(
+                "{}: Event originated in {}. My DS id is {}. The remote DS id is {}.. It is being dropped as remote ds is already a recipient. Recipients are: {}",
+                this, argument.getOriginatingDSId(), getMyDSId(), getRemoteDSId(),
+                argument.getRecipientDSIds());
+          }
+          return true;
+        }
+      }
+      argument.getRecipientDSIds().addAll(allRemoteDSIds);
+    }
+    return false;
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {
@@ -1233,7 +1226,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   /**
    * During sender is getting started, if there are any cache operation on queue then that event
-   * will be stored in temp queue. Once sender is started, these event from tmp queue will be added
+   * will be stored in temp queue. Once sender is started, these events from tmp queue will be added
    * to sender queue.
    *
    * Apart from sender's start() method, this method also gets called from
@@ -1277,7 +1270,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       } catch (IOException e) {
         logger.fatal(String.format(
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-            new Object[] {this, getId(), nextEvent.getOperation(), nextEvent}),
+            this, getId(), nextEvent.getOperation(), nextEvent),
             e);
       }
     }
@@ -1288,7 +1281,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * tmpQueueEvents.
    *
    */
-  public boolean removeFromTempQueueEvents(Object tailKey) {
+  public void removeFromTempQueueEvents(Object tailKey) {
     synchronized (queuedEventsSync) {
       Iterator<TmpQueueEvent> itr = tmpQueuedEvents.iterator();
       while (itr.hasNext()) {
@@ -1301,20 +1294,19 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           }
           event.release();
           itr.remove();
-          return true;
+          return;
         }
       }
-      return false;
     }
   }
 
   /**
    * During sender is getting stopped, if there are any cache operation on queue then that event
-   * will be stored in temp queue. Once sender is started, these event from tmp queue will be
+   * will be stored in temp queue. Once sender is started, these events from tmp queue will be
    * cleared.
    */
   public void clearTempEventsAfterSenderStopped() {
-    TmpQueueEvent nextEvent = null;
+    TmpQueueEvent nextEvent;
     while ((nextEvent = tmpQueuedEvents.poll()) != null) {
       nextEvent.release();
     }
@@ -1336,7 +1328,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     Object substituteValue = null;
     if (substitutionFilter != null) {
       try {
-        substituteValue = substitutionFilter.getSubstituteValue(clonedEvent);
+        substituteValue = substitutionFilter.getSubstituteValue(uncheckedCast(clonedEvent));
         // If null is returned from the filter, null is set in the value
         if (substituteValue == null) {
           substituteValue = GatewaySenderEventImpl.TOKEN_NULL;
@@ -1345,7 +1337,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         // Log any exceptions that occur in the filter and use the original value.
         logger.warn(String.format(
             "%s: An Exception occurred while queueing %s to perform operation %s for %s",
-            new Object[] {this, getId(), operation, clonedEvent}),
+            this, getId(), operation, clonedEvent),
             e);
       }
     }
@@ -1371,7 +1363,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         Region<String, Integer> region = getEventIdIndexMetaDataRegion();
 
         // Get or create the index
-        int index = 0;
+        final int index;
         String messagePrefix = null;
         if (region.containsKey(getId())) {
           index = region.get(getId());
@@ -1424,14 +1416,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       InternalRegionFactory<String, Integer> factory =
           cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
 
-      // Create a stats holder for the meta data stats
-      final HasCachePerfStats statsHolder = new HasCachePerfStats() {
-        @Override
-        public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(),
-              "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
-        }
-      };
+      // Create a stats holder for the metadata stats
+      final HasCachePerfStats statsHolder = () -> new CachePerfStats(cache.getDistributedSystem(),
+          "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
       factory.setIsUsedForMetaRegion(true);
       factory.setCachePerfStatsHolder(statsHolder);
       try {
@@ -1504,7 +1491,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
-    boolean result = false;
+    final boolean result;
     if (isParallel()) {
       try {
         WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
@@ -1545,7 +1532,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
      * Timeout events received from secondary after 5 minutes
      */
     private static final int EVENT_TIMEOUT =
-        Integer.getInteger("Gateway.EVENT_TIMEOUT", 5 * 60 * 1000).intValue();
+        Integer.getInteger("Gateway.EVENT_TIMEOUT", 5 * 60 * 1000);
     public final long timeout;
     public final GatewaySenderEventImpl event;
 
@@ -1562,7 +1549,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * of the off-heap work, the GatewaySenderEventImpl no longer has a EntryEventImpl. So this class
    * allows us to defer creation of the GatewaySenderEventImpl until we are ready to actually
    * enqueue it. The caller is responsible for giving us an EntryEventImpl that we own and that we
-   * will release. This is done by making a copy/clone of the original event. This fixes bug 52029.
+   * will release. This is done by making a copy/clone of the original event.
    */
   public static class TmpQueueEvent implements Releasable {
     private final EnumListenerEvent operation;
@@ -1593,17 +1580,17 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
-    GatewayQueueEvent event = null;
-    for (RegionQueue queue : getQueues()) {
-      Region region = queue.getRegion();
+  protected GatewayQueueEvent<?, ?> getSynchronizationEvent(Object key, long timestamp) {
+    GatewayQueueEvent<?, ?> event = null;
+    for (final RegionQueue queue : getQueues()) {
+      final Region<?, GatewaySenderEventImpl> region = uncheckedCast(queue.getRegion());
       if (region == null) {
         continue;
       }
-      for (Iterator i = region.values().iterator(); i.hasNext();) {
-        GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) i.next();
-        if (gsei.getKey().equals(key) && gsei.getVersionTimeStamp() == timestamp) {
-          event = gsei;
+      for (final GatewaySenderEventImpl gatewaySenderEvent : region.values()) {
+        if (gatewaySenderEvent.getKey().equals(key)
+            && gatewaySenderEvent.getVersionTimeStamp() == timestamp) {
+          event = gatewaySenderEvent;
           logger.info("{}: Providing synchronization event for key={}; timestamp={}: {}",
               this, key, timestamp, event);
           getStatistics().incSynchronizationEventsProvided();
@@ -1614,7 +1601,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return event;
   }
 
-  protected void putSynchronizationEvent(GatewayQueueEvent event) {
+  protected void putSynchronizationEvent(GatewayQueueEvent<?, ?> event) {
     if (eventProcessor != null) {
       lifeCycleLock.readLock().lock();
       try {
@@ -1625,7 +1612,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       } catch (Throwable t) {
         logger.warn(String.format(
             "%s: Caught the following exception attempting to enqueue synchronization event=%s:",
-            new Object[] {this, event}),
+            this, event),
             t);
       } finally {
         lifeCycleLock.readLock().unlock();

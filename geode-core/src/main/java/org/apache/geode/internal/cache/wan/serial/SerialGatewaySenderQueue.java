@@ -229,7 +229,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     } else {
       this.isDiskSynchronous = false;
     }
-    this.maximumQueueMemory = abstractSender.getMaximumMemeoryPerDispatcherQueue();
+    this.maximumQueueMemory = abstractSender.getMaximumMemoryPerDispatcherQueue();
     this.stats = abstractSender.getStatistics();
     initializeRegion(abstractSender, listener);
     // Increment queue size. Fix for bug 51988.
