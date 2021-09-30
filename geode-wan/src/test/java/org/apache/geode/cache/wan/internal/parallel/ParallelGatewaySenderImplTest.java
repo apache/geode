@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.wan.internal.parallel;
 
+import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,18 +43,17 @@ import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(WanTest.class)
 public class ParallelGatewaySenderImplTest {
-  private InternalCache cache;
-  private StatisticsClock statisticsClock;
-  private GatewaySenderAttributes attrs;
-  private ParallelGatewaySenderImpl gatewaysender;
+  private ParallelGatewaySenderImpl gatewaySender;
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
-    statisticsClock = mock(StatisticsClock.class);
-    attrs = new GatewaySenderAttributes();
-    attrs.setParallel(true);
-    attrs.setId("sender");
+    InternalCache cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+    GatewaySenderAttributes attrs = mock(GatewaySenderAttributes.class);
+    when(attrs.isParallel()).thenReturn(true);
+    when(attrs.getId()).thenReturn("sender");
+    when(attrs.getDispatcherThreads()).thenReturn(1);
+    when(attrs.getRemoteDSId()).thenReturn(DEFAULT_DISTRIBUTED_SYSTEM_ID);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
     when(cache.getDistributedSystem()).thenReturn(system);
@@ -67,27 +68,27 @@ public class ParallelGatewaySenderImplTest {
     when(cache.getGatewaySenderLockService()).thenReturn(distributedLockService);
 
     LocalRegion region = mock(LocalRegion.class);
-    when(cache.getRegion(any())).thenReturn(region);
+    when(cache.getRegion(any())).thenReturn(uncheckedCast(region));
     when(region.containsKey(any())).thenReturn(true);
     when(region.get(any())).thenReturn(1);
 
     TypeRegistry pdxRegistryMock = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(pdxRegistryMock);
 
-    gatewaysender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
+    gatewaySender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
   }
 
   @Test
   public void testStart() {
-    gatewaysender.start();
-    RegionQueue queue = gatewaysender.getQueue();
+    gatewaySender.start();
+    RegionQueue queue = gatewaySender.getQueue();
     assertFalse(((ConcurrentParallelGatewaySenderQueue) queue).getCleanQueues());
   }
 
   @Test
   public void testStartWithCleanQueue() {
-    gatewaysender.startWithCleanQueue();
-    RegionQueue queue = gatewaysender.getQueue();
+    gatewaySender.startWithCleanQueue();
+    RegionQueue queue = gatewaySender.getQueue();
     assertTrue(((ConcurrentParallelGatewaySenderQueue) queue).getCleanQueues());
   }
 }

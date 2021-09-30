@@ -28,7 +28,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributesImpl;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -53,13 +53,14 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private final GatewaySenderAttributes gatewaySenderAttributes;
+  private final GatewaySenderAttributesImpl gatewaySenderAttributes;
 
   public AsyncEventQueueFactoryImpl(InternalCache cache) {
-    this(cache, new GatewaySenderAttributes(), DEFAULT_BATCH_TIME_INTERVAL);
+    this(cache, new GatewaySenderAttributesImpl(), DEFAULT_BATCH_TIME_INTERVAL);
   }
 
-  AsyncEventQueueFactoryImpl(InternalCache cache, GatewaySenderAttributes gatewaySenderAttributes,
+  AsyncEventQueueFactoryImpl(InternalCache cache,
+      GatewaySenderAttributesImpl gatewaySenderAttributes,
       int batchTimeInterval) {
     this.cache = cache;
     this.gatewaySenderAttributes = gatewaySenderAttributes;
