@@ -16,13 +16,33 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.services.StripedExecutorService;
+import org.apache.geode.redis.internal.services.StripedRunnable;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions
@@ -30,17 +50,58 @@ import org.apache.geode.redis.internal.netty.Client;
  * expecting to receive published messages.
  */
 public class PubSubImpl implements PubSub {
-  private final Subscriptions subscriptions;
-  private final Publisher publisher;
+  private static final int MAX_PUBLISH_THREAD_COUNT =
+      Integer.getInteger("redis.max-publish-thread-count", 10);
 
-  public PubSubImpl(Subscriptions subscriptions, RegionProvider regionProvider) {
-    this(subscriptions, new Publisher(regionProvider, subscriptions));
+  private static final Logger logger = LogService.getLogger();
+
+  private final Subscriptions subscriptions;
+  private final ExecutorService executor;
+
+  /**
+   * Inner class to wrap the publish action and pass it to the {@link StripedExecutorService}.
+   */
+  private static class PublishingRunnable implements StripedRunnable {
+
+    private final Runnable runnable;
+    private final Client client;
+
+    public PublishingRunnable(Runnable runnable, Client client) {
+      this.runnable = runnable;
+      this.client = client;
+    }
+
+    @Override
+    public Object getStripe() {
+      return client;
+    }
+
+    @Override
+    public void run() {
+      runnable.run();
+    }
+  }
+
+  public PubSubImpl(Subscriptions subscriptions) {
+    this.subscriptions = subscriptions;
+    executor = createExecutorService();
+    registerPublishFunction();
   }
 
   @VisibleForTesting
-  PubSubImpl(Subscriptions subscriptions, Publisher publisher) {
+  PubSubImpl(Subscriptions subscriptions, ExecutorService executorService) {
     this.subscriptions = subscriptions;
-    this.publisher = publisher;
+    executor = executorService;
+    // since this is used for unit testing, do not call registerPublishFunction
+  }
+
+  private static ExecutorService createExecutorService() {
+    ThreadFactory threadFactory = new LoggingThreadFactory("GeodeRedisServer-Publish-", true);
+    BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
+    ExecutorService innerPublishExecutor = new ThreadPoolExecutor(1, MAX_PUBLISH_THREAD_COUNT,
+        60, TimeUnit.SECONDS, workQueue, threadFactory);
+
+    return new StripedExecutorService(innerPublishExecutor);
   }
 
   @VisibleForTesting
@@ -49,9 +110,44 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(byte[] channel, byte[] message, Client client) {
-    publisher.publish(client, channel, message);
+  public long publish(RegionProvider regionProvider, byte[] channel, byte[] message,
+      Client client) {
+    executor.submit(
+        new PublishingRunnable(() -> internalPublish(regionProvider, channel, message), client));
+
     return subscriptions.getAllSubscriptionCount(channel);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void internalPublish(RegionProvider regionProvider, byte[] channel, byte[] message) {
+    Set<DistributedMember> remoteMembers = regionProvider.getRemoteRegionMembers();
+    try {
+      ResultCollector<?, ?> resultCollector = null;
+      try {
+        if (!remoteMembers.isEmpty()) {
+          // send function to remotes
+          resultCollector = FunctionService
+              .onMembers(remoteMembers)
+              .setArguments(new byte[][] {channel, message})
+              .execute(PublishFunction.ID);
+        }
+      } finally {
+        // execute it locally
+        publishMessageToLocalSubscribers(channel, message);
+        if (resultCollector != null) {
+          // block until remote execute completes
+          resultCollector.getResult();
+        }
+      }
+    } catch (Exception e) {
+      // the onMembers contract is for execute to throw an exception
+      // if one of the members goes down.
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Exception executing publish function on channel {}. If a server departed during the publish then an exception is expected.",
+            bytesToString(channel), e);
+      }
+    }
   }
 
   @Override
@@ -62,6 +158,10 @@ public class PubSubImpl implements PubSub {
   @Override
   public SubscribeResult psubscribe(byte[] pattern, Client client) {
     return subscriptions.psubscribe(pattern, client);
+  }
+
+  private void registerPublishFunction() {
+    FunctionService.registerFunction(new PublishFunction(this));
   }
 
   @Override
@@ -101,12 +201,57 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public void clientDisconnect(Client client) {
-    publisher.disconnect(client);
     subscriptions.remove(client);
   }
 
-  @Override
-  public void close() {
-    publisher.close();
+  @VisibleForTesting
+  void publishMessageToLocalSubscribers(byte[] channel, byte[] message) {
+    subscriptions.forEachSubscription(channel,
+        (subscriptionName, channelToMatch, client, subscription) -> subscription.publishMessage(
+            channelToMatch != null, subscriptionName,
+            client, channel, message));
+  }
+
+  private static class PublishFunction implements InternalFunction<byte[][]> {
+    public static final String ID = "redisPubSubFunctionID";
+    /**
+     * this class is never serialized (since it implemented getId)
+     * but make tools happy by setting its serialVersionUID.
+     */
+    private static final long serialVersionUID = -1L;
+
+    private final PubSubImpl pubSub;
+
+    public PublishFunction(PubSubImpl pubSub) {
+      this.pubSub = pubSub;
+    }
+
+    @Override
+    public String getId() {
+      return ID;
+    }
+
+    @Override
+    public void execute(FunctionContext<byte[][]> context) {
+      byte[][] publishMessage = context.getArguments();
+      pubSub.publishMessageToLocalSubscribers(publishMessage[0], publishMessage[1]);
+      context.getResultSender().lastResult(true);
+    }
+
+    /**
+     * Since the publish process uses an onMembers function call, we don't want to re-publish
+     * to members if one fails.
+     * TODO: Revisit this in the event that we instead use an onMember call against individual
+     * members.
+     */
+    @Override
+    public boolean isHA() {
+      return false;
+    }
+
+    @Override
+    public boolean hasResult() {
+      return true; // this is needed to preserve ordering
+    }
   }
 }

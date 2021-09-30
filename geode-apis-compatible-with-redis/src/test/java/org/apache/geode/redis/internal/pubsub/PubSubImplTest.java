@@ -23,13 +23,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.junit.Test;
 
 public class PubSubImplTest {
   private final Subscriptions subscriptions = mock(Subscriptions.class);
-  private final Publisher publisher = mock(Publisher.class);
-  private final PubSubImpl pubsub = new PubSubImpl(subscriptions, publisher);
+  private final ExecutorService executor = mock(ExecutorService.class);
+  private final PubSubImpl pubsub = new PubSubImpl(subscriptions, executor);
 
   @Test
   public void findNumberOfSubscribersPerChannel_handlesEmptyList() {

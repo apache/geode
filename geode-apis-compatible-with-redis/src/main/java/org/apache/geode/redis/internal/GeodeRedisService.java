@@ -36,7 +36,6 @@ import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.executor.string.SetOptions;
-import org.apache.geode.redis.internal.pubsub.Publisher;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
@@ -60,9 +59,6 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_KEY,
         RedisKey.class);
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.PUBLISH_REQUEST,
-        Publisher.PublishRequest.class);
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DataSerializableFixedID.REDIS_SET_ID,
         RedisSet.class);

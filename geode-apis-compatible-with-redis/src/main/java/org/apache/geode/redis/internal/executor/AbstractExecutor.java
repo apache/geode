@@ -15,13 +15,9 @@
 package org.apache.geode.redis.internal.executor;
 
 import java.util.Collection;
-import java.util.Set;
 
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -43,16 +39,5 @@ public abstract class AbstractExecutor implements Executor {
 
   protected Region<RedisKey, RedisData> getDataRegion(ExecutionHandlerContext context) {
     return context.getRegionProvider().getLocalDataRegion();
-  }
-
-  protected void checkForLowMemory(RedisCommandType commandType, ExecutionHandlerContext context) {
-    Set<DistributedMember> criticalMembers = context.getRegionProvider().getCriticalMembers();
-    if (!criticalMembers.isEmpty()) {
-      throw new LowMemoryException(
-          String.format(
-              "%s cannot be executed because the members %s are running low on memory",
-              commandType.toString(), criticalMembers),
-          criticalMembers);
-    }
   }
 }
