@@ -516,12 +516,4 @@ public interface GatewaySender {
    */
   void setGatewayEventFilters(List<GatewayEventFilter> filters);
 
-  /**
-   * Set the number of retries to get transaction events
-   * for this GatewaySender when GroupTransactionEvents
-   * is set.
-   *
-   */
-  void setRetriesToGetTransactionEventsFromQueue(int retries);
-
 }
