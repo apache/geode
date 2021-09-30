@@ -18,20 +18,44 @@
 
 function cleanup {
   rm Gemfile Gemfile.lock
-  rm -r geode-book geode-docs
 }
 
 trap cleanup EXIT
 
-set -x -e
-
-mkdir -p geode-book
-mkdir -p geode-docs
-
+# Gemfile & Gemfile.lock are copied to avoid including the whole
+# geode-book folder to the image context
 cp ../../../geode-book/Gemfile* .
-cp -r ../../../geode-book geode-book
-cp -r ../../../geode-docs geode-docs
 
 docker build -t geodedocs/temp:1.0 .
 
-docker run -it -p 9292:9292 geodedocs/temp:1.0 /bin/bash -c "cd geode-book && bundle exec bookbinder bind local && cd final_app && bundle exec rackup --host=0.0.0.0"
+# "geode-book/final_app" and "geode-book/output" are created inside the container,
+# so it is necessary to use the current user to avoid these folders owned by
+# root user.
+GEODE_BOOK="$(pwd)/../../../geode-book"
+GEODE_DOCS="$(pwd)/../../../geode-docs"
+MY_UID=$(id -u)
+MY_GID=$(id -g)
+docker run -it -p 9292:9292 --user $MY_UID:$MY_GID \
+    --workdir="/home/$USER" \
+    --volume="/etc/group:/etc/group:ro" \
+    --volume="/etc/passwd:/etc/passwd:ro" \
+    --volume="/etc/shadow:/etc/shadow:ro" \
+    --volume="${GEODE_BOOK}:/geode-book:rw" \
+    --volume="${GEODE_DOCS}:/geode-docs:rw" \
+    geodedocs/temp:1.0 /bin/bash -c "cd /geode-book && bundle exec bookbinder bind local && cd final_app && bundle exec rackup --host=0.0.0.0"
+
+# Bookbinder creates the following links
+# <your geode repo>/geode-book/output/master_middleman/source/docs/guide/115 -> /geode-book/output/preprocessing/sections/docs/guide/115
+# <your geode repo>/geode-book/output/preprocessing/sections/docs/guide/115 -> /geode-docs
+#
+# Following lines fix these wrong symbolic links:
+#
+ug_version=`ls ${GEODE_BOOK}/final_app/public/docs/guide/`
+master_middleman_folder="${GEODE_BOOK}/output/master_middleman/source/docs/guide/${ug_version}"
+preprocessing_folder="${GEODE_BOOK}/output/preprocessing/sections/docs/guide/${ug_version}"
+rm ${master_middleman_folder}
+rm ${preprocessing_folder}
+
+ln -s ${GEODE_DOCS} ${preprocessing_folder}
+ln -s ${preprocessing_folder} ${master_middleman_folder}
+
