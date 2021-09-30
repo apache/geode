@@ -33,9 +33,9 @@ docker build -t geodedocs/temp:1.0 .
 # root user.
 GEODE_BOOK="$(pwd)/../../../geode-book"
 GEODE_DOCS="$(pwd)/../../../geode-docs"
-export UID=$(id -u)
-export GID=$(id -g)
-docker run -it -p 9292:9292 --user $UID:$GID \
+MY_UID=$(id -u)
+MY_GID=$(id -g)
+docker run -it -p 9292:9292 --user $MY_UID:$MY_GID \
     --workdir="/home/$USER" \
     --volume="/etc/group:/etc/group:ro" \
     --volume="/etc/passwd:/etc/passwd:ro" \
