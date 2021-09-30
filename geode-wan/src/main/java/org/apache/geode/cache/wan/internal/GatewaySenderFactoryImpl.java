@@ -32,7 +32,7 @@ import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributesImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -55,7 +55,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private final GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+  private final GatewaySenderAttributesImpl attrs = new GatewaySenderAttributesImpl();
 
   private final InternalCache cache;
 
