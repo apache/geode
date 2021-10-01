@@ -196,4 +196,27 @@ public class AlterRegionCommandWithRemoteLocator {
 
   }
 
+
+  @Test
+  public void alterInitializedRegionWithGWSender() {
+    gfsh.executeAndAssertThat("create disk-store --name=data --max-oplog-size=10 --dir=.")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=13")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "query --query=\"select key,value from /Positions.entries\"")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create gateway-sender --id=parallelPositions --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=data --parallel=true")
+        .statusIsSuccess();
+
+    GeodeAwaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      gfsh.execute("alter region --name=Positions --gateway-sender-id=parallelPositions");
+      return true;
+    });
+  }
 }
