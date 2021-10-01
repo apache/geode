@@ -15,11 +15,13 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -30,19 +32,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.ssl.CertStores;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -56,7 +61,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class P2PMessagingConcurrencyDUnitTest {
 
   // for how long will the test generate traffic?
-  public static final int TESTING_DURATION_SECONDS = 5;
+  public static final int TESTING_DURATION_SECONDS = 2;
 
   // number of concurrent (sending) tasks to run
   private static final int TASK_COUNT = 10;
@@ -68,31 +73,38 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static final int RANDOM_SEED = 1234;
 
   @Rule
-  public final DistributedRule distributedRule = new DistributedRule(2);
+  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
-  private VM sender;
-  private VM receiver;
+  private MemberVM sender;
+  private MemberVM receiver;
 
   @Before
-  public void before() {
-    sender = VM.getVM(0);
-    receiver = VM.getVM(1);
+  public void before() throws GeneralSecurityException, IOException {
+    final int locatorPort = getRandomAvailableTCPPort();
+    final Properties configuration = gemFireConfiguration();
+
+    clusterStartupRule.startLocatorVM(0, locatorPort, configuration);
+    System.out.println("BGB: locator started");
+
+    sender = clusterStartupRule.startServerVM(1, configuration, locatorPort);
+    System.out.println("BGB: sender started");
+    receiver = clusterStartupRule.startServerVM(2, configuration, locatorPort);
+    System.out.println("BGB: receiver started");
   }
 
   @Test
   public void foo(/* final ParallelExecutor executor */) {
-
-    final String locators = distributedRule.getLocators();
-
     final InternalDistributedMember receiverMember =
         receiver.invoke(() -> {
-          final ClusterDistributionManager cdm = getCDM(locators);
+          System.out.println("BGB: before starting receiver");
+          final ClusterDistributionManager cdm = getCDM();
           final InternalDistributedMember localMember = cdm.getDistribution().getLocalMember();
+          System.out.println("BGB: after starting receiver");
           return localMember;
         });
-
     sender.invoke(() -> {
-      final ClusterDistributionManager cdm = getCDM(locators);
+      System.out.println("BGB: before starting senders");
+      final ClusterDistributionManager cdm = getCDM();
       final Random random = new Random(RANDOM_SEED);
 
       final ExecutorService executor = Executors.newFixedThreadPool(TASK_COUNT);
@@ -103,8 +115,10 @@ public class P2PMessagingConcurrencyDUnitTest {
 
       final Runnable doSending = () -> {
         try {
+          System.out.println("BGB: sender waiting to start");
           latch.countDown();
           latch.await();
+          System.out.println("BGB: sender started");
         } catch (final InterruptedException e) {
           throw new RuntimeException("doSending failed", e);
         }
@@ -121,6 +135,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         executor.submit(doSending);
       }
 
+      System.out.println("BGB: after starting senders");
       TimeUnit.SECONDS.sleep(TESTING_DURATION_SECONDS);
 
       stop.set(true);
@@ -142,24 +157,9 @@ public class P2PMessagingConcurrencyDUnitTest {
     }
   }
 
-  private static ClusterDistributionManager getCDM(final String locators) {
-    final Properties props = new Properties();
-
-    props.put("locators", locators);
-
-    /*
-     * This is something we intend to test!
-     * Send all messages, from all threads, on a single socket per recipient.
-     * maintenance tip: to see what kind of connection you're getting you can
-     * uncomment logging over in DirectChannel.sendToMany()
-     */
-    props.put("conserve-sockets", "true"); // careful: if you set a boolean it doesn't take hold!
-
-    final CacheFactory cacheFactory = new CacheFactory(props);
-    final Cache cache = cacheFactory.create();
-
-    // now peel back the covers and get at ClusterDistributionManager
-    return (ClusterDistributionManager) ((InternalCache) cache).getDistributionManager();
+  private static ClusterDistributionManager getCDM() {
+    return (ClusterDistributionManager) ((InternalCache) CacheFactory.getAnyInstance())
+        .getDistributionManager();
   }
 
   private static class TestMessage extends DistributionMessage {
@@ -185,6 +185,7 @@ public class P2PMessagingConcurrencyDUnitTest {
     @Override
     protected void process(final ClusterDistributionManager dm) {
       // TODO: put some validation support in here maybe
+      // could add accumulate (in blackboard) sum of bytes
     }
 
     @Override
@@ -212,6 +213,8 @@ public class P2PMessagingConcurrencyDUnitTest {
       final byte[] payload = new byte[length];
 
       in.readFully(payload);
+      // TODO: remove this diagnostic print and use blackboard for actual verification
+      System.out.println("BGB: received: " + length);
     }
 
     @Override
@@ -219,4 +222,50 @@ public class P2PMessagingConcurrencyDUnitTest {
       return NO_FIXED_ID; // for testing only!
     }
   }
+
+  @NotNull
+  private static Properties gemFireConfiguration()
+      throws GeneralSecurityException, IOException {
+
+    final Properties props = securityProperties();
+
+    /*
+     * This is something we intend to test!
+     * Send all messages, from all threads, on a single socket per recipient.
+     * maintenance tip: to see what kind of connection you're getting you can
+     * uncomment logging over in DirectChannel.sendToMany()
+     */
+    props.put("conserve-sockets", "false"); // careful: if you set a boolean it doesn't take hold!
+
+    return props;
+  }
+
+  @NotNull
+  private static Properties securityProperties() throws GeneralSecurityException, IOException {
+    final CertificateMaterial ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+
+    final CertificateMaterial serverCertificate = new CertificateBuilder()
+        .commonName("member")
+        .issuedBy(ca)
+        .generate();
+
+    final CertStores memberStore = new CertStores("member");
+    memberStore.withCertificate("member", serverCertificate);
+    memberStore.trust("ca", ca);
+    // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
+    final Properties props = memberStore.propertiesWith("all", false, false);
+    // props.setProperty("ssl-protocols", "TLSv1.2");
+    // props.setProperty("ssl-ciphers", rsaCipher());
+    return props;
+  }
+
+  // private static String rsaCipher() throws NoSuchAlgorithmException, KeyManagementException {
+  // SSLContext ssl = SSLContext.getInstance("TLSv1.2");
+  // ssl.init(null, null, new java.security.SecureRandom());
+  // String[] cipherSuites = ssl.getServerSocketFactory().getSupportedCipherSuites();
+  // return Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
+  // }
 }

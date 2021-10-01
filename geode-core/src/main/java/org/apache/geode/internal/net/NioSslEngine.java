@@ -99,10 +99,10 @@ public class NioSslEngine implements NioFilter {
 
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
-          timeout);
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.info("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
+        timeout);
+    // }
 
     long timeoutNanos = -1;
     if (timeout > 0) {
