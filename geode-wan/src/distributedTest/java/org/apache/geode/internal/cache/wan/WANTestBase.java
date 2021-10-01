@@ -1988,68 +1988,6 @@ public class WANTestBase extends DistributedTestCase {
     return persistentDirectory.getName();
   }
 
-
-  public static void createSenderWithListener(String dsName, int remoteDsName, boolean isParallel,
-      Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
-      GatewayEventFilter filter, boolean attachTwoListeners, boolean isManualStart) {
-    File persistentDirectory =
-        new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
-    persistentDirectory.mkdir();
-    DiskStoreFactory dsf = cache.createDiskStoreFactory();
-    File[] dirs1 = new File[] {persistentDirectory};
-
-    if (isParallel) {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setParallel(true);
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      // set dispatcher threads
-      gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-      ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName).getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      gateway.create(dsName, remoteDsName);
-
-    } else {
-      GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-      gateway.setMaximumQueueMemory(maxMemory);
-      gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
-      // set dispatcher threads
-      gateway.setDispatcherThreads(numDispatcherThreadsForTheRun);
-      ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      if (filter != null) {
-        gateway.addGatewayEventFilter(filter);
-      }
-      gateway.setBatchConflationEnabled(isConflation);
-      if (isPersistent) {
-        gateway.setPersistenceEnabled(true);
-        gateway.setDiskStoreName(dsf.setDiskDirs(dirs1).create(dsName).getName());
-      } else {
-        DiskStore store = dsf.setDiskDirs(dirs1).create(dsName);
-        gateway.setDiskStoreName(store.getName());
-      }
-
-      eventListener1 = new MyGatewaySenderEventListener();
-      ((InternalGatewaySenderFactory) gateway).addAsyncEventListener(eventListener1);
-      if (attachTwoListeners) {
-        eventListener2 = new MyGatewaySenderEventListener2();
-        ((InternalGatewaySenderFactory) gateway).addAsyncEventListener(eventListener2);
-      }
-      ((InternalGatewaySenderFactory) gateway).create(dsName);
-    }
-  }
-
   public static void createReceiverInVMs(int maximumTimeBetweenPings, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> createReceiverWithMaximumTimeBetweenPings(maximumTimeBetweenPings));
