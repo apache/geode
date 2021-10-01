@@ -117,7 +117,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
       }
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
-    await().untilAsserted(() -> membershipFailed.get());
+    await().until(() -> membershipFailed.get());
     await()
         .until(() -> cache.getReconnectedCache() != null);
 

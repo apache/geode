@@ -15,6 +15,9 @@
 
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.NOT_RECONNECTING;
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.RECONNECTING;
+
 import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1777,7 +1780,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
       logger.info("Reconnecting system failed to connect");
-      listener.forcedDisconnectHappened(reason);
+      lifecycleListener.forcedDisconnect(reason, RECONNECTING);
       uncleanShutdown(reason,
           new MemberDisconnectedException("reconnecting system failed to connect"));
     }
@@ -1787,9 +1790,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         listener.saveConfig();
       } finally {
         new LoggingThread("DisconnectThread", false, () -> {
-          lifecycleListener.forcedDisconnect();
-          // forcedDisconnectHappened should be called after saveConfig() and closing locators
-          listener.forcedDisconnectHappened(reason);
+          lifecycleListener.forcedDisconnect(reason, NOT_RECONNECTING);
           uncleanShutdown(reason, shutdownCause);
         }).start();
       }

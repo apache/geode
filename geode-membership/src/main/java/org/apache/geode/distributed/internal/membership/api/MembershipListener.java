@@ -71,8 +71,4 @@ public interface MembershipListener<ID extends MemberIdentifier> {
    */
   void saveConfig();
 
-  /**
-   * Forced disconnect happened due to specified reason
-   */
-  default void forcedDisconnectHappened(String reason) {};
 }

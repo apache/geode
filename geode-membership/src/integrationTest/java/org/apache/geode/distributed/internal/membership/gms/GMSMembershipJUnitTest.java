@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.NOT_RECONNECTING;
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.RECONNECTING;
 import static org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil.createMemberID;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.HIGH_PRIORITY_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -219,11 +221,11 @@ public class GMSMembershipJUnitTest {
     when(manager.getGMSManager()).thenReturn(managerImpl);
 
     manager.forceDisconnect(reason);
-    InOrder inOrder = inOrder(managerImpl, directChannelCallback, listener);
+    InOrder inOrder = inOrder(managerImpl, directChannelCallback);
     inOrder.verify(managerImpl, times(1)).uncleanShutdownDS(eq(reason),
         isA(MemberDisconnectedException.class));
-    inOrder.verify(directChannelCallback, timeout(3000).times(1)).forcedDisconnect();
-    inOrder.verify(listener, timeout(3000).times(1)).forcedDisconnectHappened(eq(reason));
+    inOrder.verify(directChannelCallback, timeout(3000).times(1)).forcedDisconnect(eq(reason),
+        eq(NOT_RECONNECTING));
   }
 
   @Test
@@ -244,11 +246,12 @@ public class GMSMembershipJUnitTest {
     when(managerImpl.isReconnectingDS()).thenReturn(true);
 
     manager.forceDisconnect(reason);
-    InOrder inOrder = inOrder(services, managerImpl, listener);
+    InOrder inOrder = inOrder(services, managerImpl, directChannelCallback);
     inOrder.verify(services, times(1)).setShutdownCause(isA(MemberDisconnectedException.class));
     inOrder.verify(managerImpl, times(1)).uncleanShutdownReconnectingDS(eq(reason),
         isA(MemberDisconnectedException.class));
-    inOrder.verify(listener, times(1)).forcedDisconnectHappened(eq(reason));
+    inOrder.verify(directChannelCallback, times(1)).forcedDisconnect(eq(reason),
+        eq(RECONNECTING));
   }
 
   private GMSMembershipView createView(MemberIdentifier creator, int viewId,

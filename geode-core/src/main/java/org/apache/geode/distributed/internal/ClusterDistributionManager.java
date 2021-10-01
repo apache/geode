@@ -2336,11 +2336,6 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void forcedDisconnectHappened(String reason) {
-      dm.setRootCause(new ForcedDisconnectException(reason));
-    }
-
-    @Override
     public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and

@@ -925,13 +925,20 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void forcedDisconnect() {
-      // stop server locators immediately since they may not have correct
-      // information. This has caused client failures in bridge/wan
-      // network-down testing
-      InternalLocator loc = (InternalLocator) Locator.getLocator();
-      if (loc != null) {
-        loc.stop(true, !distribution.disableAutoReconnect, true);
+    public void forcedDisconnect(String reason, RECONNECTING isReconnect) {
+      if (isReconnect == RECONNECTING.NOT_RECONNECTING) {
+        // stop server locators immediately since they may not have correct
+        // information. This has caused client failures in bridge/wan
+        // network-down testing
+        InternalLocator loc = (InternalLocator) Locator.getLocator();
+        if (loc != null) {
+          loc.stop(true, !distribution.disableAutoReconnect, true);
+        }
+      }
+      // dm.setRootCause() should be called after saveConfig() and closing locators
+      // otherwise, the distribution will be impacted
+      if (reason != null) {
+        distribution.clusterDistributionManager.setRootCause(new ForcedDisconnectException(reason));
       }
     }
   }

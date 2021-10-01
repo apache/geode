@@ -37,13 +37,4 @@ public class ClusterDistributionManagerTest {
     // the root cause should be a ForcedDisconnectException
     verify(manager, times(1)).setRootCause(isA(ForcedDisconnectException.class));
   }
-
-  @Test
-  public void setRootCauseShouldReturnForcedDisconnectException() {
-    ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
-    ClusterDistributionManager.DMListener listener =
-        new ClusterDistributionManager.DMListener(manager);
-    listener.forcedDisconnectHappened("For Testing");
-    verify(manager, times(1)).setRootCause(isA(ForcedDisconnectException.class));
-  }
 }

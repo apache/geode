@@ -43,7 +43,7 @@ public class LifecycleListenerNoOp<ID extends MemberIdentifier> implements Lifec
   }
 
   @Override
-  public void forcedDisconnect() {
+  public void forcedDisconnect(String reason, RECONNECTING isReconnect) {
 
   }
 }
