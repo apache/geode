@@ -405,19 +405,6 @@ public class WANConfigurationJUnitTest {
   }
 
   @Test
-  public void test_GatewaySenderWithGatewaySenderEventListener2() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    AsyncEventListener listener = new MyGatewaySenderEventListener();
-    ((InternalGatewaySenderFactory) fact).addAsyncEventListener(listener);
-    try {
-      ((InternalGatewaySenderFactory) fact).create("ln");
-    } catch (Exception e) {
-      fail("Received Exception :" + e);
-    }
-  }
-
-  @Test
   public void test_ValidateGatewayReceiverAttributes_2() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();

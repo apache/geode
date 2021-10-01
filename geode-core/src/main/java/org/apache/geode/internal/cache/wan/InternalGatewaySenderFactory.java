@@ -27,8 +27,6 @@ public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
 
   GatewaySenderFactory setBucketSorted(boolean bucketSorted);
 
-  GatewaySender create(String senderIdFromAsyncEventQueueId);
-
   void configureGatewaySender(GatewaySender senderCreation);
 
   GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback myLocatorCallback);

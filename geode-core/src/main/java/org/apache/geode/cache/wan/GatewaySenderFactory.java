@@ -188,7 +188,8 @@ public interface GatewaySenderFactory {
    *
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    */
-  GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
+  GatewaySenderFactory setGatewayEventSubstitutionFilter(
+      GatewayEventSubstitutionFilter<?, ?> filter);
 
   /**
    * If true, receiver member id is checked by all dispatcher threads when the connection is

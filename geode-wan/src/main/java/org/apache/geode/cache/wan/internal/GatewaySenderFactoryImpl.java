@@ -17,6 +17,7 @@ package org.apache.geode.cache.wan.internal;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
@@ -31,7 +32,6 @@ import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
@@ -216,7 +216,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySender create(String id, int remoteDSId) {
+  public @NotNull GatewaySender create(final @NotNull String id, final int remoteDSId) {
     int myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
         .getDistributedSystemId();
     if (remoteDSId == myDSId) {
@@ -232,7 +232,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
     attrs.setId(id);
     attrs.setRemoteDs(remoteDSId);
-    GatewaySender sender = null;
+    GatewaySender sender;
 
     if (attrs.getDispatcherThreads() <= 0) {
       throw new GatewaySenderException(
@@ -272,97 +272,67 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     }
 
     if (attrs.isParallel()) {
-      if ((attrs.getOrderPolicy() != null)
-          && attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
-        throw new GatewaySenderException(
-            String.format("Parallel Gateway Sender %s can not be created with OrderPolicy %s",
-                id, attrs.getOrderPolicy()));
-      }
-      if (cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(cache, attrs);
-        cache.addGatewaySender(sender);
-      }
+      sender = createParallelGatewaySender(id);
     } else {
-      if (attrs.getAsyncEventListeners().size() > 0) {
-        throw new GatewaySenderException(
-            String.format(
-                "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
-                id));
-      }
-      if (attrs.mustGroupTransactionEvents() && attrs.getDispatcherThreads() > 1) {
-        throw new GatewaySenderException(
-            String.format(
-                "SerialGatewaySender %s cannot be created with group transaction events set to true when dispatcher threads is greater than 1",
-                id));
-      }
-      if (attrs.getOrderPolicy() == null && attrs.getDispatcherThreads() > 1) {
-        attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
-      }
-      if (cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(cache, attrs);
-        cache.addGatewaySender(sender);
-      }
+      sender = createSerialGatewaySender(id);
     }
     return sender;
   }
 
-  @Override
-  public GatewaySender create(String id) {
-    attrs.setId(id);
-    GatewaySender sender = null;
-
-    if (attrs.getDispatcherThreads() <= 0) {
-      throw new AsyncEventQueueConfigurationException(
-          String.format("AsyncEventQueue %s can not be created with dispatcher threads less than 1",
+  private @NotNull GatewaySender createSerialGatewaySender(final @NotNull String id) {
+    if (attrs.getAsyncEventListeners().size() > 0) {
+      throw new GatewaySenderException(
+          String.format(
+              "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
               id));
     }
+    if (attrs.mustGroupTransactionEvents() && attrs.getDispatcherThreads() > 1) {
+      throw new GatewaySenderException(
+          String.format(
+              "SerialGatewaySender %s cannot be created with group transaction events set to true when dispatcher threads is greater than 1",
+              id));
+    }
+    if (attrs.getOrderPolicy() == null && attrs.getDispatcherThreads() > 1) {
+      attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
+    }
 
-    if (attrs.isParallel()) {
-      if ((attrs.getOrderPolicy() != null)
-          && attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
-        throw new AsyncEventQueueConfigurationException(
-            String.format(
-                "AsyncEventQueue %s can not be created with OrderPolicy %s when it is set parallel",
-                id, attrs.getOrderPolicy()));
+    GatewaySender sender = null;
+    if (cache instanceof GemFireCacheImpl) {
+      sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
+      cache.addGatewaySender(sender);
+      if (!attrs.isManualStart()) {
+        sender.start();
       }
-
-      if (cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(cache, attrs);
-        cache.addGatewaySender(sender);
-      }
+    } else if (cache instanceof CacheCreation) {
+      sender = new SerialGatewaySenderCreation(cache, attrs);
+      cache.addGatewaySender(sender);
     } else {
-      if (attrs.getOrderPolicy() == null && attrs.getDispatcherThreads() > 1) {
-        attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
+      throw new IllegalStateException();
+    }
+    return sender;
+  }
+
+  private @NotNull GatewaySender createParallelGatewaySender(final @NotNull String id) {
+    if ((attrs.getOrderPolicy() != null)
+        && attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
+      throw new GatewaySenderException(
+          String.format("Parallel Gateway Sender %s can not be created with OrderPolicy %s",
+              id, attrs.getOrderPolicy()));
+    }
+
+    final GatewaySender sender;
+    if (cache instanceof GemFireCacheImpl) {
+      sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
+      cache.addGatewaySender(sender);
+
+      if (!attrs.isManualStart()) {
+        sender.start();
       }
-      if (cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
-        cache.addGatewaySender(sender);
-        if (!attrs.isManualStart()) {
-          sender.start();
-        }
-      } else if (cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(cache, attrs);
-        cache.addGatewaySender(sender);
-      }
+    } else if (cache instanceof CacheCreation) {
+      sender = new ParallelGatewaySenderCreation(cache, attrs);
+      cache.addGatewaySender(sender);
+    } else {
+      throw new IllegalStateException();
     }
     return sender;
   }
@@ -381,7 +351,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public GatewaySenderFactory setGatewayEventSubstitutionFilter(
-      GatewayEventSubstitutionFilter filter) {
+      GatewayEventSubstitutionFilter<?, ?> filter) {
     attrs.setEventSubstitutionFilter(filter);
     return this;
   }
