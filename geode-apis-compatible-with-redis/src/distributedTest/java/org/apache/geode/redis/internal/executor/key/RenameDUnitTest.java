@@ -42,8 +42,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
 
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
@@ -121,7 +121,7 @@ public class RenameDUnitTest {
   }
 
   @Test
-  public void testRenameWithKeysOnDifferentServers_shouldReturnMovedError() {
+  public void testRenameWithKeysOnDifferentServers_shouldReturnCrossSlotError() {
     int port1 = clusterStartUp.getRedisPort(1);
     Jedis jedis = new Jedis(BIND_ADDRESS, port1, REDIS_CLIENT_TIMEOUT);
 
@@ -131,7 +131,7 @@ public class RenameDUnitTest {
     jedis.set(srcKey, "Fancy that");
 
     assertThatThrownBy(() -> jedis.rename(srcKey, dstKey))
-        .isInstanceOf(JedisMovedDataException.class);
+        .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
   }
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {
