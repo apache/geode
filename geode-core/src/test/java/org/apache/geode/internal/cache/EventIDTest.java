@@ -76,7 +76,7 @@ public class EventIDTest {
     }
     long lastThreadID = executorService.submit(this::getThreadID).get();
     long expected = start + numberOfThreads + 1;
-    if (start + numberOfThreads > ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
+    if (expected >= ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
       // wrap around ThreadIdentifier.MAX_THREAD_PER_CLIENT (1,000,000) and 1,000,000
       // is never used.
       assertThat(lastThreadID).isEqualTo(expected - ThreadIdentifier.MAX_THREAD_PER_CLIENT + 1);
