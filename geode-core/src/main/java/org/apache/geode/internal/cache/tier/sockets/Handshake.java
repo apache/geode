@@ -44,6 +44,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthInitialize;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.Authenticator;
@@ -492,7 +493,7 @@ public abstract class Handshake {
         auth.init(securityProperties, logWriter, securityLogWriter);
         return auth.authenticate(credentials, member);
       }
-    } catch (AuthenticationFailedException ex) {
+    } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(ex.getMessage(), ex);

@@ -17,11 +17,13 @@ package org.apache.geode.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.apache.shiro.ShiroException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
@@ -32,7 +34,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
+import org.apache.geode.security.AuthenticationExpiredException;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -45,6 +50,8 @@ public class IntegratedSecurityServiceTest {
   private org.apache.shiro.mgt.SecurityManager shiroManager;
 
   private IntegratedSecurityService securityService;
+  private ShiroException shiroException;
+  private Properties properties;
 
   @Before
   public void before() throws Exception {
@@ -57,6 +64,9 @@ public class IntegratedSecurityServiceTest {
     when(shiroManager.createSubject(any(SubjectContext.class))).thenReturn(mockSubject);
     when(mockSubject.getPrincipal()).thenReturn("principal");
     when(mockSubject.getSession()).thenReturn(mock(Session.class));
+
+    shiroException = mock(ShiroException.class);
+    properties = new Properties();
 
     this.securityService = new IntegratedSecurityService(provider, null);
   }
@@ -161,5 +171,52 @@ public class IntegratedSecurityServiceTest {
   public void getPostProcessor_returnsNull() throws Exception {
     PostProcessor postProcessor = this.securityService.getPostProcessor();
     assertThat(postProcessor).isNull();
+  }
+
+  @Test
+  public void login_when_credential_isNull() throws Exception {
+    assertThatThrownBy(() -> securityService.login(null))
+        .isInstanceOf(AuthenticationRequiredException.class)
+        .hasNoCause()
+        .hasMessageContaining("credentials are null");
+  }
+
+  @Test
+  public void login_when_ShiroException_hasNoCause() throws Exception {
+    doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
+    assertThatThrownBy(() -> securityService.login(properties))
+        .isInstanceOf(AuthenticationFailedException.class)
+        .hasCauseInstanceOf(ShiroException.class)
+        .hasMessageContaining("Authentication error. Please check your credentials");
+  }
+
+  @Test
+  public void login_when_ShiroException_causdBy_AuthenticationFailed() throws Exception {
+    doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
+    when(shiroException.getCause()).thenReturn(new AuthenticationFailedException("failed"));
+    assertThatThrownBy(() -> securityService.login(properties))
+        .isInstanceOf(AuthenticationFailedException.class)
+        .hasNoCause()
+        .hasMessageContaining("failed");
+  }
+
+  @Test
+  public void login_when_ShiroException_causdBy_AuthenticationExpired() throws Exception {
+    doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
+    when(shiroException.getCause()).thenReturn(new AuthenticationExpiredException("expired"));
+    assertThatThrownBy(() -> securityService.login(properties))
+        .isInstanceOf(AuthenticationExpiredException.class)
+        .hasNoCause()
+        .hasMessageContaining("expired");
+  }
+
+  @Test
+  public void login_when_ShiroException_causdBy_OtherExceptions() throws Exception {
+    doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
+    when(shiroException.getCause()).thenReturn(new RuntimeException("other reasons"));
+    assertThatThrownBy(() -> securityService.login(properties))
+        .isInstanceOf(AuthenticationFailedException.class)
+        .hasCauseInstanceOf(RuntimeException.class)
+        .hasMessageContaining("Authentication error. Please check your credentials.");
   }
 }

@@ -88,7 +88,7 @@ public class IntegratedSecurityPeerAuthDUnitTest {
       ServerStarterRule server = new ServerStarterRule();
       server.withProperties(props).withConnectionToLocator(locatorPort).withAutoStart();
       assertThatThrownBy(() -> server.before()).isInstanceOf(GemFireSecurityException.class)
-          .hasMessageContaining("Authentication error");
+          .hasMessageContaining("server-3 is not authenticated");
     });
   }
 

@@ -65,7 +65,7 @@ public class ClusterConfigurationSecurityDUnitTest {
     properties.put("security-password", "invalidPassword");
     assertThatThrownBy(() -> serverStarter.startServer(properties, locator.getPort()))
         .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("Security check failed. Authentication error.");
+        .hasMessageContaining("Security check failed. invalid username/password");
   }
 
   @Test

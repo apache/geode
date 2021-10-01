@@ -42,6 +42,7 @@ import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -159,8 +160,17 @@ public class IntegratedSecurityService implements SecurityService {
       currentUser.login(token);
     } catch (ShiroException e) {
       logger.info("error logging in: " + token.getPrincipal());
+      Throwable cause = e.getCause();
+      if (cause == null) {
+        throw new AuthenticationFailedException(
+            "Authentication error. Please check your credentials.", e);
+      }
+      if (cause instanceof AuthenticationFailedException
+          || cause instanceof AuthenticationExpiredException) {
+        throw (GemFireSecurityException) cause;
+      }
       throw new AuthenticationFailedException(
-          "Authentication error. Please check your credentials.", e);
+          "Authentication error. Please check your credentials.", cause);
     }
 
     Session currentSession = currentUser.getSession();
