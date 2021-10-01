@@ -211,8 +211,14 @@ public class AlterRegionCommandWithRemoteLocator {
   }
 
 
+  /**
+   * Test execution of alter region command, when adding gw sender to already initialized region is
+   * not taking too much time.
+   * Verify that execution of command will not be halted, due to PRShadowRegion not available
+   * immediately in all servers.
+   */
   @Test
-  public void alterInitializedRegionWithGWSender() {
+  public void alterInitializedRegionWithGwSenderOnManyServersDoesNotTakeTooLong() {
     gfsh.executeAndAssertThat("create disk-store --name=data --max-oplog-size=10 --dir=.")
         .statusIsSuccess();
 
