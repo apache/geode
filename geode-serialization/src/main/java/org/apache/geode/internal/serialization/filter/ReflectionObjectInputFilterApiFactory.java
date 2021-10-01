@@ -29,7 +29,7 @@ public class ReflectionObjectInputFilterApiFactory implements ObjectInputFilterA
   public ObjectInputFilterApi createObjectInputFilterApi() {
     try {
       if (isJavaVersionAtLeast(JAVA_9)) {
-        return new ReflectionObjectInputFilterApi(JAVA_IO);
+        return new Java9ReflectionObjectInputFilterApi(JAVA_IO);
       }
       if (isJavaVersionAtLeast(JAVA_1_8)) {
         return new ReflectionObjectInputFilterApi(SUN_MISC);
