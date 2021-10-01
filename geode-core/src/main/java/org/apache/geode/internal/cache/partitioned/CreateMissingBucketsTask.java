@@ -18,7 +18,6 @@ import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
-import org.apache.geode.internal.cache.PartitionedRegionHelper;
 
 /**
  * A task for creating buckets in a child colocated region that are present in the leader region.
@@ -31,33 +30,6 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
 
   @Override
   public void run2() {
-    PartitionedRegion partitionedRegion = redundancyProvider.getPartitionedRegion();
-    int count = 0;
-    int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-
-    while (!ColocationHelper.isColocationComplete(partitionedRegion) && (count <= 20)) {
-
-      // Didn't time out. Sleep a bit and then continue
-      boolean interrupted = Thread.interrupted();
-      try {
-        Thread.sleep(sleepInterval);
-      } catch (InterruptedException ignore) {
-        interrupted = true;
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-      count++;
-      if (count == 5) {
-        sleepInterval = 2 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (count == 10) {
-        sleepInterval = 5 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (count == 15) {
-        sleepInterval = 10 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      }
-    }
-
     PartitionedRegion leaderRegion =
         ColocationHelper.getLeaderRegion(redundancyProvider.getPartitionedRegion());
     RecoveryLock lock = leaderRegion.getRecoveryLock();

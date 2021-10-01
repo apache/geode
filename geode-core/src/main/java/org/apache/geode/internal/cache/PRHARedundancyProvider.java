@@ -1712,11 +1712,8 @@ public class PRHARedundancyProvider {
   }
 
   void scheduleCreateMissingBuckets() {
-    if (partitionedRegion.getColocatedWith() != null) {
-      if (!ColocationHelper.isColocationComplete(partitionedRegion)
-          && partitionedRegion.getDataPolicy().withPersistence()) {
-        return;
-      }
+    if (partitionedRegion.getColocatedWith() != null
+        && ColocationHelper.isColocationComplete(partitionedRegion)) {
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
           partitionedRegion.getGemFireCache().getInternalResourceManager();
