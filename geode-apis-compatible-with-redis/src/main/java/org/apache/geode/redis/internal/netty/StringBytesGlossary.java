@@ -192,6 +192,10 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bLIMIT = stringToBytes("LIMIT");
 
+  // LolWutExecutor
+  @MakeImmutable
+  public static final byte[] bVERSION = stringToBytes("VERSION");
+
   // ********** Constants for Double Infinity comparisons **********
   public static final String P_INF = "+inf";
   public static final String INF = "inf";

@@ -85,6 +85,7 @@ import org.apache.geode.redis.internal.executor.server.CommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
+import org.apache.geode.redis.internal.executor.server.LolWutExecutor;
 import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.SlowlogExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
@@ -283,6 +284,8 @@ public enum RedisCommandType {
       .flags(ADMIN, RANDOM, LOADING, STALE)),
   INFO(new InfoExecutor(), SUPPORTED, new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)
       .flags(RANDOM, LOADING, STALE)),
+  LOLWUT(new LolWutExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(READONLY, FAST)),
+
 
   /********** Publish Subscribe **********/
   SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new Parameter().min(2).firstKey(0).flags(
