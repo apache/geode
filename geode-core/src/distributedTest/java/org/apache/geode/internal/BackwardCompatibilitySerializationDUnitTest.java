@@ -34,7 +34,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -68,21 +67,19 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     super();
   }
 
+  static {
+    InternalDataSerializer.getDSFIDSerializer()
+        .register(TestMessage.TEST_MESSAGE_DSFID, TestMessage.class);
+  }
+
   @Override
   public final void postSetUp() {
     baos = new ByteArrayOutputStream();
-    // register TestMessage using an existing dsfid
-    InternalDataSerializer.getDSFIDSerializer()
-        .register(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     resetFlags();
-    // reset the class mapped to the dsfid
-    InternalDataSerializer.getDSFIDSerializer().register(
-        DataSerializableFixedID.PUTALL_VERSIONS_LIST,
-        EntryVersionsList.class);
     baos = null;
     bais = null;
   }
@@ -251,6 +248,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     private static final KnownVersion[] dsfidVersions =
         new KnownVersion[] {KnownVersion.GEODE_1_1_0, KnownVersion.GEODE_1_5_0};
 
+    static final int TEST_MESSAGE_DSFID = 12345;
+
     public TestMessage() {}
 
     @Override
@@ -296,7 +295,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     @Override
     public int getDSFID() {
-      return DataSerializableFixedID.PUTALL_VERSIONS_LIST;
+      return TEST_MESSAGE_DSFID;
     }
 
   }
