@@ -12,16 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.redis.internal.executor.key;
 
-package org.apache.geode.redis.internal.parameters;
+import org.junit.ClassRule;
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-public class UnspecifiedParameterRequirements implements ParameterRequirements {
+public class RenameNXNativeRedisAcceptanceTest extends AbstractRenameNXIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
+
   @Override
-  public void checkParameters(Command command,
-      ExecutionHandlerContext executionHandlerContext) {
-    return;
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
   }
+
+  @Override
+  public void flushAll() {
+    redis.flushAll();
+  }
+
 }

@@ -56,7 +56,7 @@ public class RedisConstants {
       "Unknown subcommand or wrong number of arguments for '%s'";
   public static final String ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR =
       "INCR option supports a single increment-element pair";
-  public static final String ERROR_RESTORE_KEY_EXISTS =
+  public static final String ERROR_KEY_EXISTS =
       "Target key name already exists.";
   public static final String ERROR_INVALID_TTL = "Invalid TTL value, must be >= 0";
   public static final String ERROR_RESTORE_INVALID_PAYLOAD =

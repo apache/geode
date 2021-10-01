@@ -8,10 +8,12 @@ org/apache/geode/redis/internal/data/RedisDataTypeMismatchException
 org/apache/geode/redis/internal/executor/sortedset/ZAggregator
 org/apache/geode/redis/internal/RedisException
 org/apache/geode/redis/internal/data/RedisHash$Hash
-org/apache/geode/redis/internal/data/RedisRestoreKeyExistsException
+org/apache/geode/redis/internal/data/RedisKeyExistsException
 org/apache/geode/redis/internal/data/RedisSet$MemberSet
 org/apache/geode/redis/internal/data/RedisSetCommandsFunctionExecutor$SetOp
 org/apache/geode/redis/internal/data/RedisSortedSet$MemberMap
 org/apache/geode/redis/internal/data/RedisStringCommandsFunctionExecutor$BitOp
 org/apache/geode/redis/internal/pubsub/PubSubImpl$PublishFunction
 org/apache/geode/redis/internal/services/StripedExecutorService$State
+org/apache/geode/redis/internal/RedisCommandType
+org/apache/geode/redis/internal/RedisCommandType$Flag

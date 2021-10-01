@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_KEY_EXISTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -93,8 +94,19 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey) {
-    region.put(newKey, this, primaryMoveReadLockAcquired);
+  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+      boolean ifTargetNotExists) {
+
+    if (ifTargetNotExists) {
+      try {
+        region.create(newKey, this, primaryMoveReadLockAcquired);
+      } catch (EntryExistsException e) {
+        throw new RedisKeyExistsException(ERROR_KEY_EXISTS);
+      }
+    } else {
+      region.put(newKey, this, primaryMoveReadLockAcquired);
+    }
+
     try {
       region.destroy(oldKey, primaryMoveReadLockAcquired);
     } catch (EntryNotFoundException ignore) {
@@ -227,7 +239,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public RedisData restore(byte[] data, boolean replaceExisting) throws Exception {
     if (!replaceExisting) {
-      throw new RedisRestoreKeyExistsException(ERROR_RESTORE_KEY_EXISTS);
+      throw new RedisKeyExistsException(ERROR_KEY_EXISTS);
     }
 
     return restore(data);

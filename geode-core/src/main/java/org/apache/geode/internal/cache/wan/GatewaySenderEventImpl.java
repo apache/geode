@@ -15,6 +15,9 @@
 
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -178,7 +181,8 @@ public class GatewaySenderEventImpl
 
   private short version;
 
-  private boolean isLastEventInTransaction = true;
+  private boolean isLastEventInTransaction = false;
+
   private TransactionId transactionId = null;
 
 
@@ -214,59 +218,54 @@ public class GatewaySenderEventImpl
 
   private volatile int serializedValueSize = DEFAULT_SERIALIZED_VALUE_SIZE;
 
-  // /**
-  // * Is this thread in the process of deserializing this event?
-  // */
-  // public static final ThreadLocal isDeserializingValue = new ThreadLocal() {
-  // @Override
-  // protected Object initialValue() {
-  // return Boolean.FALSE;
-  // }
-  // };
+
 
   /**
-   * Constructor. No-arg constructor for data serialization.
+   * No-arg constructor for data serialization.
    *
    * @see DataSerializer
    */
   public GatewaySenderEventImpl() {}
 
   /**
-   * Constructor. Creates an initialized <code>GatewayEventImpl</code>
-   *
    * @param operation The operation for this event (e.g. AFTER_CREATE)
    * @param event The <code>CacheEvent</code> on which this <code>GatewayEventImpl</code> is based
    * @param substituteValue The value to be enqueued instead of the value in the event.
-   * @param isLastEventInTransaction true if the event is the last in the transaction
+   * @param transactionMetadataDisposition indicating the inclusion of transaction metadata.
    *
    */
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> event,
-      Object substituteValue, boolean isLastEventInTransaction) throws IOException {
-    this(operation, event, substituteValue, true, isLastEventInTransaction);
+      Object substituteValue, final TransactionMetadataDisposition transactionMetadataDisposition)
+      throws IOException {
+    this(operation, event, substituteValue, true, transactionMetadataDisposition);
+  }
+
+  @Retained
+  public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> event,
+      Object substituteValue) throws IOException {
+    this(operation, event, substituteValue, true, EXCLUDE);
   }
 
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> event,
       Object substituteValue, boolean initialize, int bucketId,
-      boolean isLastEventInTransaction) throws IOException {
-    this(operation, event, substituteValue, initialize, isLastEventInTransaction);
+      final TransactionMetadataDisposition transactionMetadataDisposition) throws IOException {
+    this(operation, event, substituteValue, initialize, transactionMetadataDisposition);
     this.bucketId = bucketId;
   }
 
   /**
-   * Constructor.
-   *
    * @param operation The operation for this event (e.g. AFTER_CREATE)
    * @param ce The <code>CacheEvent</code> on which this <code>GatewayEventImpl</code> is based
    * @param substituteValue The value to be enqueued instead of the value in the event.
    * @param initialize Whether to initialize this instance
-   *
+   * @param transactionMetadataDisposition indicating the inclusion of transaction metadata.
    */
   @Retained
   public GatewaySenderEventImpl(EnumListenerEvent operation, CacheEvent<?, ?> ce,
-      Object substituteValue,
-      boolean initialize, boolean isLastEventInTransaction) throws IOException {
+      Object substituteValue, boolean initialize,
+      final TransactionMetadataDisposition transactionMetadataDisposition) throws IOException {
     // Set the operation and event
     final EntryEventImpl event = (EntryEventImpl) ce;
     this.operation = operation;
@@ -322,9 +321,11 @@ public class GatewaySenderEventImpl
     }
     isConcurrencyConflict = event.isConcurrencyConflict();
 
-    transactionId = event.getTransactionId();
-    this.isLastEventInTransaction = isLastEventInTransaction;
-
+    if (transactionMetadataDisposition != EXCLUDE) {
+      transactionId = event.getTransactionId();
+      isLastEventInTransaction =
+          transactionMetadataDisposition == INCLUDE_LAST_EVENT && null != transactionId;
+    }
   }
 
   /**
@@ -1353,5 +1354,21 @@ public class GatewaySenderEventImpl
 
   public void setAcked(boolean acked) {
     isAcked = acked;
+  }
+
+  public enum TransactionMetadataDisposition {
+    /**
+     * Transaction metadata should be excluded from the event.
+     */
+    EXCLUDE,
+    /**
+     * Transaction metadata should be included in the event.
+     */
+    INCLUDE,
+    /**
+     * Transaction metadata should be included in the event and this is the last event in the
+     * transaction.
+     */
+    INCLUDE_LAST_EVENT,
   }
 }

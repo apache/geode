@@ -13,22 +13,20 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.parameters;
+package org.apache.geode.redis.internal.executor.key;
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.junit.ClassRule;
 
-public class ExactParameterRequirements implements ParameterRequirements {
-  private int number;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-  public ExactParameterRequirements(int number) {
-    this.number = number;
-  }
+public class RenameNXIntegrationTest extends AbstractRenameNXIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public void checkParameters(Command command, ExecutionHandlerContext executionHandlerContext) {
-    if (command.getProcessedCommand().size() != number) {
-      throw new RedisParametersMismatchException(command.wrongNumberOfArgumentsErrorMessage());
-    }
+  public int getPort() {
+    return server.getPort();
   }
+
 }

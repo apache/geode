@@ -23,7 +23,7 @@ public interface RedisKeyCommands {
 
   boolean exists(RedisKey key);
 
-  boolean rename(RedisKey oldKey, RedisKey newKey);
+  boolean rename(RedisKey oldKey, RedisKey newKey, boolean ifTargetNotExists);
 
   long pttl(RedisKey key);
 

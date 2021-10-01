@@ -16,11 +16,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-  <!-- This module was also published with a richer model, Gradle metadata,  -->
-  <!-- which should be used instead. Do not delete the following line which  -->
-  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
-  <!-- that they should prefer consuming it instead. -->
-  <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-all-bom</artifactId>
@@ -358,6 +353,11 @@
         <version>4.1.0</version>
       </dependency>
       <dependency>
+        <groupId>org.buildobjects</groupId>
+        <artifactId>jproc</artifactId>
+        <version>2.6.2</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.cargo</groupId>
         <artifactId>cargo-core-uberjar</artifactId>
         <version>1.9.7</version>
@@ -391,6 +391,11 @@
         <groupId>org.jboss.modules</groupId>
         <artifactId>jboss-modules</artifactId>
         <version>1.11.0.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jctools</groupId>
+        <artifactId>jctools-core</artifactId>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
@@ -461,6 +466,11 @@
         <groupId>xerces</groupId>
         <artifactId>xercesImpl</artifactId>
         <version>2.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>1.4.01</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>

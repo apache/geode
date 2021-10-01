@@ -16,40 +16,31 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
-
-import java.util.List;
-
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class RenameExecutor extends AbstractExecutor {
+public class RenameExecutor extends AbstractRenameExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandKeys();
-    RedisKey key = command.getKey();
-    RedisKey newKey = commandElems.get(2);
-    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
+  protected boolean executeRenameCommand(RedisKey key, RedisKey newKey,
+      RedisKeyCommands redisKeyCommands) {
+    return redisKeyCommands.rename(key, newKey, false);
+  }
 
-    if (key.equals(newKey)) {
-      return RedisResponse.ok();
-    }
+  @Override
+  protected RedisResponse getTargetSameAsSourceResponse() {
+    return getSuccessResponse();
+  }
 
-    if (key.getBucketId() != newKey.getBucketId()) {
-      // Will produce MOVED exceptions here for whichever key is at fault
-      context.getRegionProvider().getRedisData(newKey);
-      context.getRegionProvider().getRedisData(key);
-    }
-
-    if (!redisKeyCommands.rename(key, newKey)) {
-      return RedisResponse.error(ERROR_NO_SUCH_KEY);
-    }
-
+  @Override
+  protected RedisResponse getSuccessResponse() {
     return RedisResponse.ok();
   }
+
+  @Override
+  protected RedisResponse getKeyExistsResponse() {
+    throw new AssertionError(
+        "RENAME allows existing target key so this method should never be called");
+  }
+
 }

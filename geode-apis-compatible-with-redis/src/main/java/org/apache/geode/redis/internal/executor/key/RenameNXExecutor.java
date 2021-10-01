@@ -11,24 +11,35 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.redis.internal.data;
 
-import org.apache.geode.redis.internal.RedisException;
+package org.apache.geode.redis.internal.executor.key;
 
-/**
- * An exception thrown when the key being restored already exists.
- */
-public class RedisRestoreKeyExistsException extends RedisException {
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.RedisResponse;
 
-  private static final long serialVersionUID = -7022501593522613782L;
+public class RenameNXExecutor extends AbstractRenameExecutor {
 
-  public RedisRestoreKeyExistsException() {
-    super();
+  @Override
+  protected boolean executeRenameCommand(RedisKey key,
+      RedisKey newKey,
+      RedisKeyCommands redisKeyCommands) {
+    return redisKeyCommands.rename(key, newKey, true);
   }
 
-  public RedisRestoreKeyExistsException(String message) {
-    super(message);
+  @Override
+  protected RedisResponse getTargetSameAsSourceResponse() {
+    return getKeyExistsResponse();
   }
 
+  @Override
+  protected RedisResponse getSuccessResponse() {
+    return RedisResponse.integer(1L);
+  }
+
+  @Override
+  protected RedisResponse getKeyExistsResponse() {
+    return RedisResponse.integer(0L);
+  }
 }

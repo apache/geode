@@ -16,8 +16,8 @@
 package org.apache.geode.security;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 
 /**
@@ -28,24 +28,32 @@ import org.apache.geode.distributed.DistributedMember;
  * make sure reset is called after each test to clean things up.
  */
 public class UpdatableUserAuthInitialize implements AuthInitialize {
+  private static final String TEST_UPDATABLE_USER = "test.updatable.user";
+  private static final String TEST_UPDATABLE_WAIT_TIME = "test.updatable.waitTime";
   // use static field for ease of testing since there is only one instance of this in each VM
-  private static final AtomicReference<String> user = new AtomicReference<>();
+  private String user = "";
   // this is used to simulate a slow client in milliseconds
-  private static final AtomicReference<Long> waitTime = new AtomicReference<>(0L);
+  private Long waitTime = 0L;
+
+  @Override
+  public void init(LogWriter systemLogger, LogWriter securityLogger)
+      throws AuthenticationFailedException {
+    user = System.getProperty(TEST_UPDATABLE_USER, "");
+    waitTime = Long.getLong(TEST_UPDATABLE_WAIT_TIME, 0L);
+  }
 
   @Override
   public Properties getCredentials(Properties securityProps, DistributedMember server,
       boolean isPeer) throws AuthenticationFailedException {
     Properties credentials = new Properties();
-    credentials.put("security-username", user.get());
-    credentials.put("security-password", user.get());
+    credentials.put("security-username", user);
+    credentials.put("security-password", user);
 
-    Long timeToWait = waitTime.get();
-    if (timeToWait < 0) {
+    if (waitTime < 0) {
       throw new AuthenticationFailedException("Something wrong happened.");
-    } else if (timeToWait > 0) {
+    } else if (waitTime > 0) {
       try {
-        Thread.sleep(timeToWait);
+        Thread.sleep(waitTime);
       } catch (InterruptedException e) {
         throw new RuntimeException(e.getMessage(), e);
       }
@@ -53,20 +61,16 @@ public class UpdatableUserAuthInitialize implements AuthInitialize {
     return credentials;
   }
 
-  public static String getUser() {
-    return user.get();
-  }
-
   public static void setUser(String newValue) {
-    user.set(newValue);
+    System.setProperty(TEST_UPDATABLE_USER, newValue);
   }
 
   public static void setWaitTime(long newValue) {
-    waitTime.set(newValue);
+    System.setProperty(TEST_UPDATABLE_WAIT_TIME, newValue + "");
   }
 
   public static void reset() {
-    user.set(null);
-    waitTime.set(0L);
+    System.clearProperty(TEST_UPDATABLE_USER);
+    System.clearProperty(TEST_UPDATABLE_WAIT_TIME);
   }
 }

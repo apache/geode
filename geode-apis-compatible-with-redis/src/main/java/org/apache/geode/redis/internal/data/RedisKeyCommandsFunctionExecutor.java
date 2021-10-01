@@ -135,12 +135,12 @@ public class RedisKeyCommandsFunctionExecutor extends RedisDataCommandsFunctionE
   }
 
   @Override
-  public boolean rename(RedisKey oldKey, RedisKey newKey) {
+  public boolean rename(RedisKey oldKey, RedisKey newKey, boolean ifTargetNotExists) {
     List<RedisKey> lockOrdering = Arrays.asList(oldKey, newKey);
 
     return stripedExecute(oldKey, lockOrdering,
         () -> getRedisData(oldKey).rename(getRegionProvider().getLocalDataRegion(), oldKey,
-            newKey));
+            newKey, ifTargetNotExists));
   }
 
 }

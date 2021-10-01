@@ -12,24 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.redis.internal.data;
 
-package org.apache.geode.redis.internal.parameters;
+import org.apache.geode.redis.internal.RedisException;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+/**
+ * An exception thrown when the key being restored already exists.
+ */
+public class RedisKeyExistsException extends RedisException {
 
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+  private static final long serialVersionUID = -7022501593522613782L;
 
-public class SpopParameterRequirements implements ParameterRequirements {
-  @Override
-  public void checkParameters(Command command, ExecutionHandlerContext context) {
-    if (command.getProcessedCommand().size() == 3) {
-      try {
-        bytesToLong(command.getProcessedCommand().get(2));
-      } catch (NumberFormatException nex) {
-        throw new RedisParametersMismatchException(ERROR_NOT_INTEGER);
-      }
-    }
+  public RedisKeyExistsException() {
+    super();
   }
+
+  public RedisKeyExistsException(String message) {
+    super(message);
+  }
+
 }

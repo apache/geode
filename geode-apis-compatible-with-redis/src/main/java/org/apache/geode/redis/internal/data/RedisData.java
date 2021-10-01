@@ -69,7 +69,8 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
   String type();
 
-  boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey);
+  boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+      boolean ifTargetNotExists);
 
   default boolean getForceRecalculateSize() {
     return true;

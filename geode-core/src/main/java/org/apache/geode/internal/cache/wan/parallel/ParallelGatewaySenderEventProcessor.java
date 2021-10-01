@@ -117,7 +117,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
     final GatewaySenderEventImpl gatewayQueueEvent =
         new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID(),
-            isLastEventInTransaction);
+            getTransactionMetadataDisposition(isLastEventInTransaction));
 
     enqueueEvent(gatewayQueueEvent);
   }

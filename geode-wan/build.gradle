@@ -67,7 +67,7 @@ dependencies {
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.assertj:assertj-core')
   upgradeTestImplementation('junit:junit')
-  upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
+  upgradeTestImplementation('xml-apis:xml-apis')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
