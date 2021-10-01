@@ -73,6 +73,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -224,8 +225,9 @@ public class GMSMembershipJUnitTest {
     InOrder inOrder = inOrder(managerImpl, directChannelCallback);
     inOrder.verify(managerImpl, times(1)).uncleanShutdownDS(eq(reason),
         isA(MemberDisconnectedException.class));
-    inOrder.verify(directChannelCallback, timeout(3000).times(1)).forcedDisconnect(eq(reason),
-        eq(NOT_RECONNECTING));
+    inOrder
+        .verify(directChannelCallback, timeout(GeodeAwaitility.getTimeout().getSeconds()).times(1))
+        .forcedDisconnect(eq(reason), eq(NOT_RECONNECTING));
   }
 
   @Test
