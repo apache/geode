@@ -36,12 +36,14 @@ public class ReflectionObjectInputFilterApiSetFilterBlankIntegrationTest {
 
   @Before
   public void setUp() {
-    if (isJavaVersionAtLeast(JAVA_9)) {
-      apiPackage = JAVA_IO;
-    }
     if (isJavaVersionAtLeast(JAVA_1_8)) {
       apiPackage = SUN_MISC;
     }
+
+    if (isJavaVersionAtLeast(JAVA_9)) {
+      apiPackage = JAVA_IO;
+    }
+
   }
 
   @Test

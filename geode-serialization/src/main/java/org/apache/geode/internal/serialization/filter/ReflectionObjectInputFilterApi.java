@@ -35,10 +35,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   private static final Logger logger = LogService.getLogger();
 
-  private final ApiPackage apiPackage;
+  protected final ApiPackage apiPackage;
 
   // api.package.ObjectInputFilter
-  private final Class<?> ObjectInputFilter;
+  protected final Class<?> ObjectInputFilter;
   private final Method ObjectInputFilter_checkInput;
   private final Object ObjectInputFilter_Status_ALLOWED;
   private final Object ObjectInputFilter_Status_REJECTED;
@@ -80,8 +80,10 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
 
     ObjectInputFilter_Config_createFilter = ObjectInputFilter_Config_createFilter();
     if (apiPackage == ApiPackage.SUN_MISC) {
-      ObjectInputFilter_Config_getObjectInputFilter = ObjectInputFilter_Config_getObjectInputFilter();
-      ObjectInputFilter_Config_setObjectInputFilter = ObjectInputFilter_Config_setObjectInputFilter();
+      ObjectInputFilter_Config_getObjectInputFilter =
+          ObjectInputFilter_Config_getObjectInputFilter();
+      ObjectInputFilter_Config_setObjectInputFilter =
+          ObjectInputFilter_Config_setObjectInputFilter();
     } else {
       ObjectInputFilter_Config_getObjectInputFilter = null;
       ObjectInputFilter_Config_setObjectInputFilter = null;
@@ -95,7 +97,6 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object getObjectInputFilter(ObjectInputStream inputStream)
       throws InvocationTargetException, IllegalAccessException {
-    // TODO: JIANXIA: what if this is invoked by Java 9? Just return null?
     return ObjectInputFilter_Config_getObjectInputFilter.invoke(ObjectInputFilter_Config,
         inputStream);
   }
@@ -103,7 +104,6 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public void setObjectInputFilter(ObjectInputStream inputStream, Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
-    // TODO: JIANXIA: what if this is invoked by Java 9? Do nothing?
     ObjectInputFilter_Config_setObjectInputFilter.invoke(ObjectInputFilter_Config, inputStream,
         objectInputFilter);
   }
@@ -129,7 +129,8 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException {
-    Object objectInputFilter = ObjectInputFilter_Config_createFilter.invoke(ObjectInputFilter_Config, pattern);
+    Object objectInputFilter =
+        ObjectInputFilter_Config_createFilter.invoke(ObjectInputFilter_Config, pattern);
 
     /*
      * Members first connect to each other with sockets that are restricted to the Geode sanctioned
@@ -194,8 +195,8 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
     return sb.toString();
   }
 
-  @VisibleForTesting
-  Class<?> getObjectInputFilterClass() {
+  @Override
+  public Class<?> getObjectInputFilterClass() {
     return ObjectInputFilter;
   }
 

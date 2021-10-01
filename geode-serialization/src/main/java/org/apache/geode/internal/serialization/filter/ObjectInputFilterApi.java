@@ -44,4 +44,6 @@ public interface ObjectInputFilterApi {
 
   Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException;
+
+  Class<?> getObjectInputFilterClass();
 }
