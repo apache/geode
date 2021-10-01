@@ -559,10 +559,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // Add the overflow statistics to the mbean
         addOverflowStatisticsToMBean(cache, prQ);
 
-        if (!this.cleanQueues) {
-          // Wait for buckets to be recovered.
-          prQ.shadowPRWaitForBucketRecovery();
-        }
+        // Wait for buckets to be recovered.
+        prQ.shadowPRWaitForBucketRecovery();
+
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
