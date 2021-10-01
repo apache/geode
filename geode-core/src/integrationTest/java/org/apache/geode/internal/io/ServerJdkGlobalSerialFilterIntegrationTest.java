@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -64,6 +65,8 @@ public class ServerJdkGlobalSerialFilterIntegrationTest {
   }
 
   @Test
+  @Ignore
+  // jdk.serialFilter does not apply to ServerLauncher
   public void configuresJdkSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
@@ -86,6 +89,8 @@ public class ServerJdkGlobalSerialFilterIntegrationTest {
   }
 
   @Test
+  @Ignore
+  // jdk.serialFilter does not apply to ServerLauncher
   public void changesEmptyJdkSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 

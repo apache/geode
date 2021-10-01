@@ -85,7 +85,7 @@ public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements S
   @Test
   public void primitiveIsAllows() {
     locatorVM.invoke(() -> {
-      Region<Object, Object> region = locator.get().getCache().getRegion("region");
+      Region<Object, Object> region = locator.get().getCache().getRegion("region"); // ???
       region.put(1, 1);
     });
   }
@@ -98,7 +98,7 @@ public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements S
     locatorVM.invoke(() -> {
       Region<Object, Object> region = locator.get().getCache().getRegion("region");
       Throwable thrown = catchThrowable(() -> {
-        // region.put(new SerializableClass(), new SerializableClass());
+        // region.put(new SerializableClass(), new SerializableClass()); ??? why commented out
       });
       assertThat(thrown).isInstanceOf(InternalGemFireException.class);
     });

@@ -195,7 +195,7 @@ public class LocatorSerializableObjectFilterIntegrationTest {
         .isTrue();
     assertThat(isValidateSerializableObjectsConfigured())
         .as(VALIDATE_SERIALIZABLE_OBJECTS)
-        .isTrue();
+        .isTrue(); // ??? why not false
   }
 
   @Test
