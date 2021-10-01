@@ -32,7 +32,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.internal.serialization.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -57,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -81,7 +81,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
@@ -92,6 +91,7 @@ import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
@@ -137,6 +137,15 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
+
+  @BeforeClass
+  public static void setup() {
+    DUnitLauncher.launchIfNeeded(NUM_SERVERS + 1);
+    invokeInEveryVM(
+        () -> InternalDataSerializer.getDSFIDSerializer().register(
+            SerialAckedMessageWithBigReply.DSFID,
+            SerialAckedMessageWithBigReply.class));
+  }
 
   public ClusterCommunicationsDUnitTest(RunConfiguration runConfiguration) {
     useSSL = runConfiguration.useSSL;
@@ -246,28 +255,19 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   @Test
   public void receiveBigResponse() {
-    invokeInEveryVM(
-        () -> InternalDataSerializer.getDSFIDSerializer().register(SERIAL_ACKED_MESSAGE,
-            SerialAckedMessageWithBigReply.class));
-    try {
-      int locatorPort = createLocator(getVM(0));
-      for (int i = 1; i <= NUM_SERVERS; i++) {
-        createCacheAndRegion(getVM(i), locatorPort);
-      }
-      DistributedMember vm2ID =
-          getVM(2).invoke(() -> cache.getDistributedSystem().getDistributedMember());
-      getVM(1).invoke("receive a large direct-reply message", () -> {
-        SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
-        await().until(() -> {
-          messageWithBigReply.send(Collections.singleton(vm2ID));
-          return true;
-        });
-      });
-    } finally {
-      invokeInEveryVM(
-          () -> InternalDataSerializer.getDSFIDSerializer().register(SERIAL_ACKED_MESSAGE,
-              SerialAckedMessage.class));
+    int locatorPort = createLocator(getVM(0));
+    for (int i = 1; i <= NUM_SERVERS; i++) {
+      createCacheAndRegion(getVM(i), locatorPort);
     }
+    DistributedMember vm2ID =
+        getVM(2).invoke(() -> cache.getDistributedSystem().getDistributedMember());
+    getVM(1).invoke("receive a large direct-reply message", () -> {
+      SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
+      await().until(() -> {
+        messageWithBigReply.send(Collections.singleton(vm2ID));
+        return true;
+      });
+    });
   }
 
   @Test
@@ -439,7 +439,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
    */
   private static class SerialAckedMessageWithBigReply extends DistributionMessage
       implements MessageWithReply, DirectReplyMessage {
-    static final int DSFID = SERIAL_ACKED_MESSAGE;
+    static final int DSFID = 12346;
 
     private int processorId;
     private ClusterDistributionManager originDm;
