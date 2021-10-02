@@ -538,6 +538,11 @@
         <version>8.5.4</version>
       </dependency>
       <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil-extra</artifactId>
+        <version>8.5.4</version>
+      </dependency>
+      <dependency>
         <groupId>mx4j</groupId>
         <artifactId>mx4j-remote</artifactId>
         <version>3.0.2</version>
@@ -705,6 +710,11 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
+        <version>5.3.9</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jcl</artifactId>
         <version>5.3.9</version>
       </dependency>
       <dependency>

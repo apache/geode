@@ -206,6 +206,7 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'it.unimi.dsi', version: get('fastutil.version')) {
       entry('fastutil')
       entry('fastutil-core')
+      entry('fastutil-extra')
     }
 
     dependencySet(group: 'mx4j', version: '3.0.2') {
@@ -267,6 +268,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-context')
       entry('spring-core')
       entry('spring-expression')
+      entry('spring-jcl')
       entry('spring-oxm')
       entry('spring-test')
       entry('spring-tx')
