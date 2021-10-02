@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
@@ -569,17 +570,21 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   protected static void destroyRegions(final Cache cache) {
     if (cache != null && !cache.isClosed()) {
       // try to destroy the root regions first so that we clean up any persistent files.
-      for (Region<?, ?> root : cache.rootRegions()) {
-        String regionFullPath = root == null ? null : root.getFullPath();
-        // for colocated regions you can't locally destroy a partitioned region.
-        if (root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
-          continue;
+      try {
+        for (Region<?, ?> root : cache.rootRegions()) {
+          String regionFullPath = root == null ? null : root.getFullPath();
+          // for colocated regions you can't locally destroy a partitioned region.
+          if (root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
+            continue;
+          }
+          try {
+            root.localDestroyRegion("teardown");
+          } catch (Throwable t) {
+            logger.error("Failure during tearDown destroyRegions for " + regionFullPath, t);
+          }
         }
-        try {
-          root.localDestroyRegion("teardown");
-        } catch (Throwable t) {
-          logger.error("Failure during tearDown destroyRegions for " + regionFullPath, t);
-        }
+      } catch (CancelException ce) {
+        logger.info("Cache is closing, no need to destroy regions");
       }
     }
   }
