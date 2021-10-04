@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -163,7 +162,6 @@ public class ZRemDUnitTest {
   }
 
   @Test
-  @Ignore("Fails due to GEODE-9310")
   public void zRemCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed() throws Exception {
     int mapSize = 300;
     Map<String, Double> memberScoreMap = makeMemberScoreMap(mapSize);

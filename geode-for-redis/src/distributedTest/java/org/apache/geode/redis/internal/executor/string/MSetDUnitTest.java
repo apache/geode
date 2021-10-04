@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -104,7 +103,6 @@ public class MSetDUnitTest {
                     .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
   }
 
-  @Ignore("GEODE-9604")
   @Test
   public void testMSet_crashDoesNotLeaveInconsistencies() throws Exception {
     int KEY_COUNT = 1000;
