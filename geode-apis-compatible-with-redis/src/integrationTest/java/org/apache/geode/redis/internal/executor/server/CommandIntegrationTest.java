@@ -27,8 +27,8 @@ import java.util.Map;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.sync.RedisCommands;
-import junit.framework.AssertionFailedError;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -59,6 +59,11 @@ public class CommandIntegrationTest {
             .connect().sync();
   }
 
+  @After
+  public void teardown() {
+    radishServer.setEnableUnsupportedCommands(true);
+  }
+
   @Test
   public void commandReturnsResultsMatchingNativeRedis() {
     Map<String, CommandStructure> goldenResults = processRawCommands(redisClient.command());
@@ -85,7 +90,7 @@ public class CommandIntegrationTest {
       // Find an unsupported command
       RedisCommandType someUnsupported = Arrays.stream(RedisCommandType.values())
           .filter(RedisCommandType::isUnsupported).findFirst()
-          .orElseThrow(() -> new AssertionFailedError("Could not find any UNSUPPORTED commands"));
+          .orElseThrow(() -> new AssertionError("Could not find any UNSUPPORTED commands"));
 
       for (CommandStructure meta : results.values()) {
         assertThat(meta.name).isNotEqualToIgnoringCase(someUnsupported.name());
