@@ -43,7 +43,7 @@ public abstract class AbstractMSetExecutor extends AbstractExecutor {
     for (int i = 0; i < commandElems.size(); i += 2) {
       RedisKey key = new RedisKey(commandElems.get(i));
 
-      if (previousKey != null && key.getBucketId() != previousKey.getBucketId()) {
+      if (previousKey != null && key.getSlot() != previousKey.getSlot()) {
         return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
       }
       keys.add(key);

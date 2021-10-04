@@ -32,7 +32,6 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -70,11 +69,7 @@ public class MSetDUnitTest {
     clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    // Ensure that buckets are created using a connection with a fairly high timeout since
-    // clusterNodes does not get retried.
-    new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT).clusterNodes();
-
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 5000, 20);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
   @After

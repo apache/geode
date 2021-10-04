@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -31,21 +30,17 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class MSetnxDUnitTest {
-
-  private static final Logger logger = LogService.getLogger();
+public class MSetNXDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
@@ -69,11 +64,7 @@ public class MSetnxDUnitTest {
     clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
-    // Ensure that buckets are created using a connection with a fairly high timeout since
-    // clusterNodes does not get retried.
-    new Jedis(BIND_ADDRESS, redisServerPort1, REDIS_CLIENT_TIMEOUT).clusterNodes();
-
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 5000, 20);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
   }
 
   @After

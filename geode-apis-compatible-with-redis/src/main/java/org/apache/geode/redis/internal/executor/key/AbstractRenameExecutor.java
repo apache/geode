@@ -40,7 +40,7 @@ public abstract class AbstractRenameExecutor extends AbstractExecutor {
       return getTargetSameAsSourceResponse();
     }
 
-    if (key.getBucketId() != newKey.getBucketId()) {
+    if (key.getSlot() != newKey.getSlot()) {
       // Will produce MOVED exceptions here for whichever key is at fault
       context.getRegionProvider().getRedisData(newKey);
       context.getRegionProvider().getRedisData(key);

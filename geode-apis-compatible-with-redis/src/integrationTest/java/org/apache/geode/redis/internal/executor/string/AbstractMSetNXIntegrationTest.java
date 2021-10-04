@@ -19,6 +19,8 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,9 +85,8 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void testMSetNX() {
-    int KEY_COUNT = 5;
-    String[] keys = new String[KEY_COUNT];
+  public void testDoesntSetAny_whenAnyTargetKeyExists() {
+    String[] keys = new String[5];
 
     for (int i = 0; i < keys.length; i++) {
       keys[i] = HASHTAG + "key" + i;
@@ -93,13 +94,19 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
     String[] keysAndValues = makeKeysAndValues(keys, "valueOne");
 
     long response = jedis.msetnx(keysAndValues);
-
-    assertThat(response).isEqualTo(1);
+    assertThat(response).isOne();
 
     long response2 = jedis.msetnx(keysAndValues[0], randString());
-
-    assertThat(response2).isEqualTo(0);
+    assertThat(response2).isZero();
     assertThat(keysAndValues[1]).isEqualTo(jedis.get(keysAndValues[0]));
+
+    flushAll();
+    jedis.set(keysAndValues[0], "foo");
+
+    long response3 = jedis.msetnx(keysAndValues);
+    assertThat(response3).isZero();
+    List<String> values = jedis.mget(keys);
+    assertThat(values).containsExactly("foo", null, null, null, null);
   }
 
   @Test
@@ -117,8 +124,8 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
       vals[i] = val;
     }
 
-    long resultString = jedis.msetnx(keyvals);
-    assertThat(resultString).isEqualTo(1);
+    long result = jedis.msetnx(keyvals);
+    assertThat(result).isEqualTo(1);
 
     assertThat(jedis.mget(keys)).containsExactly(vals);
   }
