@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 public class WanCopyRegionFunctionServiceTest {
 
   private WanCopyRegionFunctionService service;
-  InternalCache cache = mock(InternalCache.class);
+  private final InternalCache cache = mock(InternalCache.class);
 
   @Before
   public void setUp() throws Exception {
@@ -41,8 +41,7 @@ public class WanCopyRegionFunctionServiceTest {
   }
 
   @Test
-  public void severalExecuteWithSameRegionAndSenderNotAllowed()
-      throws InterruptedException, WanCopyRegionFunctionServiceAlreadyRunningException {
+  public void severalExecuteWithSameRegionAndSenderNotAllowed() {
     CountDownLatch latch = new CountDownLatch(1);
     Callable<CliFunctionResult> firstExecution = () -> {
       latch.await();

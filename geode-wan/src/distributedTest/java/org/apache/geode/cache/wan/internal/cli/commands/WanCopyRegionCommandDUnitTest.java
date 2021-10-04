@@ -133,7 +133,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__REGION__NOT__FOUND,
             regionName);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
         .containsExactly(message, message, message);
   }
 
@@ -166,7 +168,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
         .containsExactly(message, message, message);
   }
 
@@ -219,8 +223,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
       Condition<String> exceptionError =
           new Condition<>(s -> s.startsWith("Error ("), "Error");
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-          .asList().haveExactly(3, exceptionError);
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
+          .asList()
+          .haveExactly(3, exceptionError);
     } else {
       CommandResultAssert command =
           verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
@@ -231,8 +238,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
               .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
                   senderIdInA)),
           "sender not primary");
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-          .asList().haveExactly(1, exceptionError).haveExactly(2, senderNotPrimary);
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
+          .asList()
+          .haveExactly(1, exceptionError)
+          .haveExactly(2, senderNotPrimary);
     }
   }
 
@@ -407,13 +418,23 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     CommandResultAssert result = wanCopyCommandFuture.get();
     result.statusIsError();
-    result.hasTableSection().hasColumns().hasSize(3);
-    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    result
+        .hasTableSection()
+        .hasColumns()
+        .hasSize(3);
+    result
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
         .hasSize(1);
-    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    result
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
         .hasSize(1);
-    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    result
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactly("ERROR");
+
     Condition<String> regionDestroyedError;
     if (isPartitionedRegion && !isParallelGatewaySender) {
       regionDestroyedError = new Condition<>(
@@ -425,8 +446,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           s -> (s.startsWith("Error (Region destroyed) in operation after having copied")),
           "execution error");
     }
-    result.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, regionDestroyedError);
+    result
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(1, regionDestroyedError);
   }
 
   @Test
@@ -511,8 +535,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     if (useParallel) {
       CommandResultAssert command =
           verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-          .asList().haveExactly(3, exceptionError);
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
+          .asList()
+          .haveExactly(3, exceptionError);
     } else {
       CommandResultAssert command =
           verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
@@ -521,8 +548,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
               .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
                   senderIdInA)),
           "sender not primary");
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-          .asList().haveExactly(1, exceptionError).haveExactly(2, senderNotPrimary);
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
+          .asList()
+          .haveExactly(1, exceptionError)
+          .haveExactly(2, senderNotPrimary);
     }
 
     // cancel command
@@ -611,13 +642,17 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     if (isPartitionedRegion && isParallelGatewaySender) {
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 33);
       String msg2 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 34);
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg1, msg2);
     } else {
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 100);
       String msg2 = CliStrings
           .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
-      command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      command
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg2, msg2);
     }
 
@@ -698,11 +733,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // While the command is running, send some random operations over the same keys
-    AsyncInvocation<Object> asyncOps1 =
+    AsyncInvocation<Void> asyncOps1 =
         client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
-    AsyncInvocation<Object> asyncOps2 =
+    AsyncInvocation<Void> asyncOps2 =
         client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
-    AsyncInvocation<Object> asyncOps3 =
+    AsyncInvocation<Void> asyncOps3 =
         client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
 
     // Check command status and output
@@ -754,11 +789,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
         .addOption(WAN_COPY_REGION__CANCEL)
         .getCommandString();
+
     CommandResultAssert cancelCommandResult =
         verifyStatusIsError(gfsh.executeAndAssertThat(cancelCommand));
     String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
         regionName, senderIdInA);
-    cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    cancelCommandResult
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
         .containsExactlyInAnyOrder(msg1, msg1, msg1);
   }
 
@@ -843,7 +881,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     if (isPartitionedRegion && isParallelGatewaySender) {
       verifyStatusIsOk(cancelCommandResult);
-      cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      cancelCommandResult
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__EXECUTION__CANCELED,
               WAN_COPY_REGION__MSG__EXECUTION__CANCELED,
               WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
@@ -851,7 +891,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       verifyStatusIsOkInOneServer(cancelCommandResult);
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
           regionName, senderIdInA);
-      cancelCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      cancelCommandResult
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg1, WAN_COPY_REGION__MSG__EXECUTION__CANCELED);
     }
 
@@ -860,13 +902,17 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     if (isPartitionedRegion && isParallelGatewaySender) {
       verifyStatusIsError(wanCopyCommandResult);
       String msg = WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
-      wanCopyCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      wanCopyCommandResult
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactly(msg, msg, msg);
     } else {
       verifyStatusIsErrorInOneServer(wanCopyCommandResult);
       String msg1 = CliStrings
           .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
-      wanCopyCommandResult.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+      wanCopyCommandResult
+          .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+          .hasColumn("Message")
           .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED, msg1,
               msg1);
     }
@@ -1053,8 +1099,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
         "sender not primary");
 
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, haveEntriesCopied).haveExactly(2, senderNotPrimary);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(1, haveEntriesCopied)
+        .haveExactly(2, senderNotPrimary);
   }
 
   public void verifyResultOfStoppingReceiverWhenUsingParallelSender(
@@ -1063,8 +1113,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied: "), "Entries copied");
 
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(3, haveEntriesCopied);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(3, haveEntriesCopied);
   }
 
   public void verifyResultOfStoppingParallelSender(CommandResultAssert command) {
@@ -1079,8 +1132,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied:"), "Entries copied");
 
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, startsWithError).haveExactly(2, haveEntriesCopied);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(1, startsWithError)
+        .haveExactly(2, haveEntriesCopied);
   }
 
   public void verifyResultOfStoppingPrimarySerialSender(
@@ -1100,19 +1157,32 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
         "sender not primary");
 
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, startsWithError).haveExactly(2, senderNotPrimary);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(1, startsWithError)
+        .haveExactly(2, senderNotPrimary);
   }
 
   public void verifyResultStoppingSecondarySerialSender(
       CommandResultAssert command) {
     command.statusIsSuccess();
-    command.hasTableSection().hasColumns().hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    command
+        .hasTableSection()
+        .hasColumns()
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .hasSize(3);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactlyInAnyOrder("OK", "OK", "OK");
 
     Condition<String> haveEntriesCopied =
@@ -1121,8 +1191,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
         "sender not primary");
 
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
-        .asList().haveExactly(1, haveEntriesCopied).haveExactly(2, senderNotPrimary);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .asList()
+        .haveExactly(1, haveEntriesCopied)
+        .haveExactly(2, senderNotPrimary);
   }
 
   private String getRegionName(boolean isPartitionedRegion) {
@@ -1130,14 +1204,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   public static void removeEntry(String regionName, long key) {
-    Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
-    r.remove(key);
+    Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(region);
+    region.remove(key);
   }
 
   public void sendRandomOpsFromClient(String regionName, Set<Long> keySet, int iterations) {
-    Region<Long, Integer> r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    Region<Long, Integer> region = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(region);
     int min = 0;
     int max = 1000;
     for (int i = 0; i < iterations; i++) {
@@ -1145,9 +1219,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         long longKey = key;
         int value = (int) (Math.random() * (max - min + 1) + min);
         if (value < 50) {
-          r.remove(longKey);
+          region.remove(longKey);
         } else {
-          r.put(longKey, value);
+          region.put(longKey, value);
         }
       }
     }
@@ -1155,24 +1229,42 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   public CommandResultAssert verifyStatusIsOk(CommandResultAssert command) {
     command.statusIsSuccess();
-    command.hasTableSection().hasColumns().hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    command
+        .hasTableSection()
+        .hasColumns()
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
+        .hasSize(3);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactly("OK", "OK", "OK");
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
         .hasSize(3);
     return command;
   }
 
   public CommandResultAssert verifyStatusIsError(CommandResultAssert command) {
     command.statusIsError();
-    command.hasTableSection().hasColumns().hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    command
+        .hasTableSection()
+        .hasColumns()
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .hasSize(3);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactly("ERROR", "ERROR", "ERROR");
     return command;
   }
@@ -1180,12 +1272,21 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public CommandResultAssert verifyStatusIsErrorInOneServer(
       CommandResultAssert command) {
     command.statusIsError();
-    command.hasTableSection().hasColumns().hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    command
+        .hasTableSection()
+        .hasColumns()
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .hasSize(3);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactlyInAnyOrder("OK", "OK", "ERROR");
     return command;
   }
@@ -1193,12 +1294,21 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void verifyStatusIsOkInOneServer(
       CommandResultAssert command) {
     command.statusIsError();
-    command.hasTableSection().hasColumns().hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Member")
+    command
+        .hasTableSection()
+        .hasColumns()
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Message")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
         .hasSize(3);
-    command.hasTableSection(ResultModel.MEMBER_STATUS_SECTION).hasColumn("Status")
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Message")
+        .hasSize(3);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
         .containsExactlyInAnyOrder("OK", "ERROR", "ERROR");
   }
 
