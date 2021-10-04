@@ -192,7 +192,8 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
     diskStoreFactory.setDiskDirs(new File[] {createOrGetDir()});
     diskStoreFactory.create(getDiskStoreName());
 
-    RegionFactory regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE_PERSISTENT);
+    RegionFactory<Object, Object> regionFactory =
+        cacheRule.getCache().createRegionFactory(REPLICATE_PERSISTENT);
     regionFactory.setDiskStoreName(getDiskStoreName());
     regionFactory.create(regionName);
   }
@@ -224,8 +225,9 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
 
   private void invokeFunction(Pool pool) {
     @SuppressWarnings("unchecked")
-    Execution execution = FunctionService.onServer(pool).setArguments(regionName);
-    ResultCollector resultCollector = execution.execute(new TestFunction());
+    Execution<String, Void, Void> execution =
+        FunctionService.onServer(pool).setArguments(regionName);
+    ResultCollector<Void, Void> resultCollector = execution.execute(new TestFunction());
     resultCollector.getResult();
   }
 
@@ -237,7 +239,7 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
       clientCacheRule.createClientCache(config);
     }
 
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region<Object, Object> region = clientCacheRule.getClientCache().getRegion(regionName);
     if (region != null) {
       return;
     }
@@ -246,7 +248,7 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
         .setSubscriptionEnabled(true)
         .create(uniqueName);
 
-    ClientRegionFactory crf =
+    ClientRegionFactory<Object, Object> crf =
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
     crf.setPoolName(pool.getName());
     crf.create(regionName);
@@ -274,16 +276,15 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
     });
   }
 
-  public static class TestFunction implements Function, DataSerializable {
+  public static class TestFunction implements Function<String>, DataSerializable {
     private final Random random = new Random();
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<String> context) {
       CqService cqService = ((InternalCache) context.getCache()).getCqService();
       waitUntilCqRegistered(cqService);
 
-      String regionName = context.getArguments().toString();
+      String regionName = context.getArguments();
       Region<Object, Object> region = context.getCache().getRegion(regionName);
       int key = random.nextInt();
       region.put(key, key);

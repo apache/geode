@@ -30,11 +30,16 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.test.junit.Repeat;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.RepeatRule;
 
 public class EventIDTest {
   @Rule
   public ExecutorServiceRule executorService = new ExecutorServiceRule();
+
+  @Rule
+  public RepeatRule repeat = new RepeatRule();
 
   @Test
   public void emptyEventIdCanBeSerializedWithCurrentVersion()
@@ -61,11 +66,12 @@ public class EventIDTest {
   }
 
   @Test
+  @Repeat(10)
   public void threadIDIsWrappedAround() throws Exception {
     EventID.ThreadAndSequenceIDWrapper wrapper = new EventID.ThreadAndSequenceIDWrapper();
     long start = wrapper.threadID;
 
-    int numberOfThreads = 1000;
+    int numberOfThreads = 100000;
 
     List<Future<Long>> futures = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
