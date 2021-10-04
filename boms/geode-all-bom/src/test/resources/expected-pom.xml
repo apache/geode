@@ -754,7 +754,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-apis-compatible-with-redis</artifactId>
+        <artifactId>geode-for-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

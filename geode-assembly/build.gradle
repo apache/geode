@@ -40,7 +40,7 @@ def dependentProjectNames = [
   ':geode-memcached',
   ':geode-old-client-support',
   ':geode-rebalancer',
-  ':geode-apis-compatible-with-redis',
+  ':geode-for-redis',
   ':geode-serialization',
   ':geode-tcp-server',
   ':geode-wan'
