@@ -133,7 +133,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }
       Throwable cause = theThrowable.getCause();
-      if (cause != null && cause instanceof AuthenticationExpiredException) {
+      if (cause instanceof AuthenticationExpiredException) {
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }
     }

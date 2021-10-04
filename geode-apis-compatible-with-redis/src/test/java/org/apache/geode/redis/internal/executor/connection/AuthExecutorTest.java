@@ -44,7 +44,7 @@ public class AuthExecutorTest {
   private SecurityService securityService;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     executor = spy(AuthExecutor.class);
     command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
@@ -53,14 +53,14 @@ public class AuthExecutorTest {
   }
 
   @Test
-  public void notIntegratedService() throws Exception {
+  public void notIntegratedService() {
     when(securityService.isIntegratedSecurity()).thenReturn(false);
     RedisResponse redisResponse = executor.executeCommand(command, context);
     assertThat(redisResponse.toString()).contains(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
-  public void handleAuthExpirationException() throws Exception {
+  public void handleAuthExpirationException() {
     when(securityService.isIntegratedSecurity()).thenReturn(true);
     doReturn(new Properties()).when(executor).getSecurityProperties(command, context);
     when(securityService.login(any())).thenThrow(new AuthenticationExpiredException("expired"));

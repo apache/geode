@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -195,6 +196,7 @@ public class AuthenticateUserOp {
       }
     }
 
+    @VisibleForTesting
     Object parentAttempt(Connection connection) throws Exception {
       return super.attempt(connection);
     }

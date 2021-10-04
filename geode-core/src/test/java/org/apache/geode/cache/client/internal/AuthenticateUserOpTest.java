@@ -101,7 +101,7 @@ public class AuthenticateUserOpTest {
   }
 
   @Test
-  public void callPrentAttempt_IfRequireCredentials() throws Exception {
+  public void callParentAttempt_IfRequireCredentials() throws Exception {
     when(server.getRequiresCredentials()).thenReturn(true);
     doReturn(null).when(impl).parentAttempt(connection);
     impl.attempt(connection);
@@ -140,6 +140,17 @@ public class AuthenticateUserOpTest {
         .isInstanceOf(AuthenticationFailedException.class)
         .hasNoCause()
         .hasMessageContaining("failed");
+    verify(impl, times(2)).parentAttempt(connection);
+  }
+
+  @Test
+  public void whenParentAttemptThrowAuthenticationExpiredException_ThenSucceed()
+      throws Exception {
+    when(server.getRequiresCredentials()).thenReturn(true);
+    doThrow(new AuthenticationExpiredException("expired"))
+        .doReturn(null)
+        .when(impl).parentAttempt(connection);
+    impl.attempt(connection);
     verify(impl, times(2)).parentAttempt(connection);
   }
 }

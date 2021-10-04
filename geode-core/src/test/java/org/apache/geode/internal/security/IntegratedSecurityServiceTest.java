@@ -191,7 +191,7 @@ public class IntegratedSecurityServiceTest {
   }
 
   @Test
-  public void login_when_ShiroException_causdBy_AuthenticationFailed() throws Exception {
+  public void login_when_ShiroException_causedBy_AuthenticationFailed() throws Exception {
     doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
     when(shiroException.getCause()).thenReturn(new AuthenticationFailedException("failed"));
     assertThatThrownBy(() -> securityService.login(properties))
@@ -201,7 +201,7 @@ public class IntegratedSecurityServiceTest {
   }
 
   @Test
-  public void login_when_ShiroException_causdBy_AuthenticationExpired() throws Exception {
+  public void login_when_ShiroException_causedBy_AuthenticationExpired() throws Exception {
     doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
     when(shiroException.getCause()).thenReturn(new AuthenticationExpiredException("expired"));
     assertThatThrownBy(() -> securityService.login(properties))
@@ -211,7 +211,7 @@ public class IntegratedSecurityServiceTest {
   }
 
   @Test
-  public void login_when_ShiroException_causdBy_OtherExceptions() throws Exception {
+  public void login_when_ShiroException_causedBy_OtherExceptions() throws Exception {
     doThrow(shiroException).when(mockSubject).login(any(GeodeAuthenticationToken.class));
     when(shiroException.getCause()).thenReturn(new RuntimeException("other reasons"));
     assertThatThrownBy(() -> securityService.login(properties))
