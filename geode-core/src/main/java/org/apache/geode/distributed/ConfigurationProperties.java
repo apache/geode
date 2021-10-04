@@ -1921,10 +1921,10 @@ public interface ConfigurationProperties {
    */
   String OFF_HEAP_MEMORY_SIZE = "off-heap-memory-size";
   /**
-   * The static String definition of the <i>"compatible-with-redis-bind-address"</i> property <a
-   * name="compatible-with-redis-bind-address"/a>
+   * The static String definition of the <i>"geode-for-redis-bind-address"</i> property <a
+   * name="geode-for-redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the address on which Geode APIs compatible with Redis are
+   * <U>Description</U>: Specifies the address on which Geode for Redis is
    * listening. If set to the empty string or this property is not specified, the server listens on
    * all local addresses.
    * </p>
@@ -1935,28 +1935,28 @@ public interface ConfigurationProperties {
    * <p/>
    */
 
-  String REDIS_BIND_ADDRESS = "compatible-with-redis-bind-address";
+  String REDIS_BIND_ADDRESS = "geode-for-redis-bind-address";
   /**
-   * The static String definition of the <i>"compatible-with-redis-enabled"</i> property <a
-   * name="compatible-with-redis-enabled"/a>
+   * The static String definition of the <i>"geode-for-redis-enabled"</i> property <a
+   * name="geode-for-redis-enabled"/a>
    * </p>
-   * <U>Description</U>: When the default value of false, the Geode APIs compatible with Redis are
+   * <U>Description</U>: When the default value of false, Geode for Redis is
    * not available.
-   * Set to true to enable the Geode APIs compatible with Redis.</td>
+   * Set to true to enable the Geode for Redis.</td>
    * </p>
    * <U>Default</U>: false
-   * When the default value of false, the Geode APIs compatible with Redis are not available.
-   * Set to true to enable the Geode APIs compatible with Redis.
+   * When the default value of false, Geode for Redis is not available.
+   * Set to true to enable the Geode for Redis.
    * </p>
    *
    * <p>
    * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
-  String REDIS_ENABLED = "compatible-with-redis-enabled";
+  String REDIS_ENABLED = "geode-for-redis-enabled";
   /**
-   * The static String definition of the <i>"compatible-with-redis-username"</i> property <a
-   * name="compatible-with-redis-username"/a>
+   * The static String definition of the <i>"geode-for-redis-username"</i> property <a
+   * name="geode-for-redis-username"/a>
    * </p>
    * <U>Description</U>: Specifies the default username that the server uses when a client attempts
    * to authenticate using only a password. This requires a SecurityManager to be configured.
@@ -1967,10 +1967,10 @@ public interface ConfigurationProperties {
    * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
-  String REDIS_USERNAME = "compatible-with-redis-username";
+  String REDIS_USERNAME = "geode-for-redis-username";
   /**
-   * The static String definition of the <i>"compatible-with-redis-port"</i> property <a
-   * name="compatible-with-redis-port"/a>
+   * The static String definition of the <i>"geode-for-redis-port"</i> property <a
+   * name="geode-for-redis-port"/a>
    * </p>
    * <U>Description</U>: Specifies the port on which the server listens for connections from Geode
    * APIs compatible with Redis. A value of 0 selects a random port.</td>
@@ -1983,7 +1983,7 @@ public interface ConfigurationProperties {
    * Experimental: Geode API compatible with Redis is subject to change in future releases
    * <p/>
    */
-  String REDIS_PORT = "compatible-with-redis-port";
+  String REDIS_PORT = "geode-for-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
