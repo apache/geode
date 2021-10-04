@@ -114,7 +114,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testRename() {
-    runCommandAndAssertNoStatUpdates(STRING_KEY, (k, v) -> jedis.rename(k, v));
+    runCommandAndAssertNoStatUpdates(STRING_KEY, k -> jedis.rename(k, "{foo}" + STRING_KEY));
   }
 
   @Test
