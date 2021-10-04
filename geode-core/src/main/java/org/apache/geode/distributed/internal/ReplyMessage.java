@@ -274,10 +274,11 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
       SerializationContext context) throws IOException {
     super.toData(out, context);
 
-    final HeapDataOutputStream hdos =
-        new HeapDataOutputStream(context.getSerializationVersion());
+    HeapDataOutputStream hdos = null;
     boolean failedSerialization = false;
-    if (this.returnValueIsException || this.returnValue != null) {
+    final boolean hasReturnValue = this.returnValueIsException || this.returnValue != null;
+    if (hasReturnValue) {
+      hdos = new HeapDataOutputStream(context.getSerializationVersion());
       try {
         context.getSerializer().writeObject(this.returnValue, hdos);
       } catch (NotSerializableException e) {
@@ -309,14 +310,16 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     if (this.processorId != 0) {
       out.writeInt(processorId);
     }
-    if (this.returnValueIsException || this.returnValue != null) {
+    if (hasReturnValue) {
       if (failedSerialization) {
         context.getSerializer().writeObject(this.returnValue, out);
       } else {
         hdos.sendTo(out);
       }
     }
-    hdos.close();
+    if (hdos != null) {
+      hdos.close();
+    }
   }
 
   @Override
