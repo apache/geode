@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -329,7 +330,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       }
       try {
         return new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS,
-            event, null, true);
+            event, null, TransactionMetadataDisposition.EXCLUDE);
       } catch (IOException e) {
         logger.error("Error when creating event in wan-copy: {}", e.getMessage());
         return null;
