@@ -99,7 +99,7 @@ not connected>
 
 Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.     
 
-When using Apache Geode, to enable security, a Security Manager needs to be configured on the server(s). This Security Manager will authenticate `AUTH <password>` commands and `AUTH <username> <password>` commands. Users can set a custom `default` username using the `geode-geode-for-redis-username` parameter. This username will be used when `AUTH <password>` commands are sent without a `<username>`. 
+When using Apache Geode, to enable security, a Security Manager needs to be configured on the server(s). This Security Manager will authenticate `AUTH <password>` commands and `AUTH <username> <password>` commands. Users can set a custom `default` username using the `geode-for-redis-username` parameter. This username will be used when `AUTH <password>` commands are sent without a `<username>`. 
 
 The following gfsh command will configure a `SimpleSecurityManager`:
 
