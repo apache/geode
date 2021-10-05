@@ -62,12 +62,7 @@ public class QueryObserverHolder {
    */
   public static QueryObserver setInstance(QueryObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
-    QueryObserver oldObserver;
-    if (_instance.get() != null) {
-      oldObserver = _instance.get();
-    } else {
-      oldObserver = _globalInstance;
-    }
+    QueryObserver oldObserver = _globalInstance;
     _instance.set(observer);
     _globalInstance = observer;
     return oldObserver;
@@ -82,10 +77,10 @@ public class QueryObserverHolder {
 
   /** Return the current QueryObserver instance */
   public static QueryObserver getInstance() {
-    if (_instance.get() != null) {
-      return _instance.get();
+    if (_instance.get() == null) {
+      _instance.set(_globalInstance);
     }
-    return _globalInstance;
+    return _instance.get();
   }
 
   /**
