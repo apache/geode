@@ -1332,8 +1332,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
       List<VM> servers) {
     final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
-    await().until(
-        () -> getNumberOfCurrentExecutionsInServers(servers) == executionsExpected);
+    await().untilAsserted(
+        () -> assertThat(getNumberOfCurrentExecutionsInServers(servers))
+            .isEqualTo(executionsExpected));
   }
 
   private void addIgnoredExceptionsForClosingAfterCancelCommand() {

@@ -23,7 +23,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.management.internal.cli.functions.WanCopyRegionFunctionDelegate.EventCreator;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -93,7 +93,6 @@ public class WanCopyRegionFunctionDelegateTest {
     AbstractGatewaySenderEventProcessor eventProcessorMock =
         mock(AbstractGatewaySenderEventProcessor.class);
     RegionAttributes<?, ?> attributesMock = mock(RegionAttributes.class);
-    Set<?> idsMock = mock(Set.class);
     internalCacheMock = mock(InternalCache.class);
 
     function = new WanCopyRegionFunctionDelegate(clockMock, threadSleeperMock, eventCreatorMock);
@@ -104,10 +103,9 @@ public class WanCopyRegionFunctionDelegateTest {
     when(eventCreatorMock.createGatewaySenderEvent(any(), any(), any(), any()))
         .thenReturn(uncheckedCast(mock(GatewayQueueEvent.class)));
     when(eventProcessorMock.getDispatcher()).thenReturn(dispatcherMock);
-    when(((AbstractGatewaySender) gatewaySenderMock).getEventProcessor())
+    when(((InternalGatewaySender) gatewaySenderMock).getEventProcessor())
         .thenReturn(eventProcessorMock);
-    when(idsMock.contains(anyString())).thenReturn(true);
-    when(attributesMock.getGatewaySenderIds()).thenReturn(uncheckedCast(idsMock));
+    when(attributesMock.getGatewaySenderIds()).thenReturn(uncheckedCast(Collections.emptySet()));
     when(regionMock.getAttributes()).thenReturn(uncheckedCast(attributesMock));
     when(internalCacheMock.getRegion(any())).thenReturn(uncheckedCast(regionMock));
   }
@@ -146,19 +144,14 @@ public class WanCopyRegionFunctionDelegateTest {
   @Test
   public void doPostSendBatchActions_ThrowInterruptedIfInterruptedTimeToSleepNotZero()
       throws InterruptedException {
+    // arrange
     long maxRate = 1;
     long elapsedTime = 20L;
-
-    // arrange
+    InterruptedException thrownByThreadSleeper = new InterruptedException("thrownByThreadSleeper");
     when(clockMock.millis()).thenReturn(startTime + elapsedTime);
-    // Sleep so that the sleep can be interrupted
-    doAnswer(invocation -> {
-      Thread.sleep(1);
-      return null;
-    }).when(threadSleeperMock).sleep(anyLong());
+    doThrow(thrownByThreadSleeper).when(threadSleeperMock).sleep(anyLong());
 
     // act
-    Thread.currentThread().interrupt();
     Throwable thrown =
         catchThrowable(() -> function.doPostSendBatchActions(startTime, entries, maxRate));
 

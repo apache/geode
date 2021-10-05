@@ -49,6 +49,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
@@ -113,13 +114,12 @@ public class GatewaySenderEventImplTest {
   @Parameters(method = "getVersionsAndExpectedInvocations")
   public void testSerializingDataFromCurrentVersionToOldVersion(VersionAndExpectedInvocations vaei)
       throws IOException {
-    InternalDataSerializer internalDataSerializer = spy(InternalDataSerializer.class);
     GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
     OutputStream outputStream = mock(OutputStream.class);
     VersionedDataOutputStream versionedDataOutputStream =
         new VersionedDataOutputStream(outputStream, vaei.getVersion());
 
-    internalDataSerializer.invokeToData(gatewaySenderEvent, versionedDataOutputStream);
+    InternalDataSerializer.invokeToData(gatewaySenderEvent, versionedDataOutputStream);
     verify(gatewaySenderEvent, times(0)).toData(any(), any());
     verify(gatewaySenderEvent, times(vaei.getPre115Invocations())).toDataPre_GEODE_1_15_0_0(any(),
         any());
@@ -134,7 +134,6 @@ public class GatewaySenderEventImplTest {
   public void testDeserializingDataFromOldVersionToCurrentVersion(
       VersionAndExpectedInvocations vaei)
       throws IOException, ClassNotFoundException {
-    InternalDataSerializer internalDataSerializer = spy(InternalDataSerializer.class);
     GatewaySenderEventImpl gatewaySenderEvent = spy(GatewaySenderEventImpl.class);
     InputStream inputStream = mock(InputStream.class);
     when(inputStream.read()).thenReturn(69); // NULL_STRING
@@ -142,7 +141,7 @@ public class GatewaySenderEventImplTest {
     VersionedDataInputStream versionedDataInputStream =
         new VersionedDataInputStream(inputStream, vaei.getVersion());
 
-    internalDataSerializer.invokeFromData(gatewaySenderEvent, versionedDataInputStream);
+    InternalDataSerializer.invokeFromData(gatewaySenderEvent, versionedDataInputStream);
     verify(gatewaySenderEvent, times(0)).fromData(any(), any());
     verify(gatewaySenderEvent, times(vaei.getPre115Invocations())).fromDataPre_GEODE_1_15_0_0(any(),
         any());
@@ -353,7 +352,7 @@ public class GatewaySenderEventImplTest {
   public void testCreation_WithAfterUpdateWithGenerateCallbacks(boolean isGenerateCallbacks,
       boolean isCallbackArgumentNull)
       throws IOException {
-    LocalRegion region = mock(LocalRegion.class);
+    InternalRegion region = mock(InternalRegion.class);
     when(region.getFullPath()).thenReturn(testName.getMethodName() + "_region");
 
     Operation operation = mock(Operation.class);

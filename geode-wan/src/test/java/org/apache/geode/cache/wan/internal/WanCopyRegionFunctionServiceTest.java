@@ -22,12 +22,14 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class WanCopyRegionFunctionServiceTest {
 
@@ -44,7 +46,7 @@ public class WanCopyRegionFunctionServiceTest {
   public void severalExecuteWithSameRegionAndSenderNotAllowed() {
     CountDownLatch latch = new CountDownLatch(1);
     Callable<CliFunctionResult> firstExecution = () -> {
-      latch.await();
+      latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
       return null;
     };
 
@@ -60,7 +62,7 @@ public class WanCopyRegionFunctionServiceTest {
         });
 
     // Wait for the execute function to start
-    await().until(() -> service.getNumberOfCurrentExecutions() == 1);
+    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(1));
 
     // Execute another function instance for the same region and sender-id
     Callable<CliFunctionResult> secondExecution = () -> null;
@@ -78,7 +80,7 @@ public class WanCopyRegionFunctionServiceTest {
     String senderId = "mySender";
     CountDownLatch latch = new CountDownLatch(1);
     Callable<CliFunctionResult> firstExecution = () -> {
-      latch.await();
+      latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
       return null;
     };
     CompletableFuture
@@ -91,7 +93,7 @@ public class WanCopyRegionFunctionServiceTest {
         });
 
     // Wait for the function to start execution
-    await().until(() -> service.getNumberOfCurrentExecutions() == 1);
+    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(1));
 
     // Cancel the function execution
     boolean result = service.cancel(regionName, senderId);
@@ -114,7 +116,7 @@ public class WanCopyRegionFunctionServiceTest {
   public void cancelAllExecutionsWithRunningExecutionsReturnsCanceledExecutions() {
     CountDownLatch latch = new CountDownLatch(2);
     Callable<CliFunctionResult> firstExecution = () -> {
-      latch.await();
+      latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
       return null;
     };
 
@@ -128,7 +130,7 @@ public class WanCopyRegionFunctionServiceTest {
         });
 
     Callable<CliFunctionResult> secondExecution = () -> {
-      latch.await();
+      latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
       return null;
     };
 
@@ -142,7 +144,7 @@ public class WanCopyRegionFunctionServiceTest {
         });
 
     // Wait for the functions to start execution
-    await().until(() -> service.getNumberOfCurrentExecutions() == 2);
+    await().untilAsserted(() -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(2));
 
     // Cancel the function execution
     String executionsString = service.cancelAll();
@@ -157,7 +159,7 @@ public class WanCopyRegionFunctionServiceTest {
     CountDownLatch latch = new CountDownLatch(executions);
     for (int i = 0; i < executions; i++) {
       Callable<CliFunctionResult> firstExecution = () -> {
-        latch.await();
+        latch.await(GeodeAwaitility.getTimeout().getSeconds(), TimeUnit.SECONDS);
         return null;
       };
 
@@ -173,7 +175,8 @@ public class WanCopyRegionFunctionServiceTest {
     }
 
     // Wait for the functions to start execution
-    await().until(() -> service.getNumberOfCurrentExecutions() == executions);
+    await().untilAsserted(
+        () -> assertThat(service.getNumberOfCurrentExecutions()).isEqualTo(executions));
 
     // End executions
     for (int i = 0; i < executions; i++) {
