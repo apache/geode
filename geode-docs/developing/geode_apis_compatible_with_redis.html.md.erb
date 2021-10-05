@@ -15,15 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<% set_title(product_name, "APIs Compatible with Redis") %>
+<% set_title(product_name, "Geode for Redis") %>
 
-The <%=vars.product_name%> APIs compatible with Redis allow <%=vars.product_name%> to function as a drop-in replacement for a
+The <%=vars.product_name%> Geode for Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
 <%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
 optional password authentication.
 
-<img src="../images_svg/geode_apis_compatible_with_redis.svg" class="image" />
+<img src="../images_svg/geode_for_redis.svg" class="image" />
 
 ## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
 
@@ -35,38 +35,38 @@ Use gfsh to start at least one server with a command of the form:
 start server \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --compatible-with-redis-port=<compatibleWithRedisPort> \
-  --compatible-with-redis-bind-address=<compatibleWithRedisBindAddress> \
-  --compatible-with-redis-password=<compatibleWithRedisPassword>
+  --geode-for-redis-port=<geodeForRedisPort> \
+  --geode-for-redis-bind-address=<geodeForRedisBindAddress> \
+  --geode-for-redis-password=<geodeForRedisPassword>
 ```
 
-If any of the options `compatible-with-redis-bind-address`, `compatible-with-redis-password`, or `compatible-with-redis-port`
-are included, a <%=vars.product_name%> server with APIs compatible with Redis will be started.
+If any of the options `geode-for-redis-bind-address`, `geode-for-redis-password`, or `geode-for-redis-port`
+are included, a <%=vars.product_name%> server with Geode for Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
 Replace `<locatorPort>` with your locator port.
 
-Replace `<compatibleWithRedisPort>` with the port that the <%=vars.product_name%> server
+Replace `<geodeForRedisPort>` with the port that the <%=vars.product_name%> server
  listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
 
-Replace `<compatibleWithRedisBindAddress>` with the address of the server host.
+Replace `<geodeForRedisBindAddress>` with the address of the server host.
 
-Replace `<compatibleWithWithRedisPassword>` with the password clients use to authenticate.
+Replace `<geodeForRedisPassword>` with the password clients use to authenticate.
 
 To confirm the server is listening, run:
 
 ``` pre
-redis-cli -h <compatibleWithRedisBindAddress> -p <compatibleWithRedisPort> -a <compatibleWithRedisPassword> ping
+redis-cli -h <geodeForRedisBindAddress> -p <geodeForRedisPort> -a <geodeForRedisPassword> ping
 ```
 
-Replace `<compatibleWithRedisBindAddress>`,`<compatibleWithRedisPort>`, and `<compatibleWithRedisPassword>` with the same values as the server.
+Replace `<geodeForRedisBindAddress>`,`<geodeForRedisPort>`, and `<geodeForRedisPassword>` with the same values as the server.
 
 If the server is functioning properly, you should see a response of `PONG`.
 
 ## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
-The <%=vars.product_name%> APIs compatible with Redis currently support the following Redis commands.
+The <%=vars.product_name%> Geode for Redis currently support the following Redis commands.
 <br/>
 
  - APPEND <br/>
@@ -131,7 +131,7 @@ Commands not listed above are **not implemented**.
 These commands are supported for Redis 5.
 
 **[1]** Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
- The Geode APIs compatible with Redis are limited to 32-bit integer values for these parameters.
+ Geode for Redis is limited to 32-bit integer values for these parameters.
 
 **[2]** INFO is implemented for the sections and fields listed below:
 

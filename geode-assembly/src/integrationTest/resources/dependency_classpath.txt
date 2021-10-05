@@ -9,7 +9,7 @@ geode-lucene-0.0.0.jar
 geode-memcached-0.0.0.jar
 geode-old-client-support-0.0.0.jar
 geode-rebalancer-0.0.0.jar
-geode-apis-compatible-with-redis-0.0.0.jar
+geode-for-redis-0.0.0.jar
 geode-serialization-0.0.0.jar
 geode-tcp-server-0.0.0.jar
 geode-wan-0.0.0.jar

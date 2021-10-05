@@ -674,7 +674,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
-              "The compatible-with-redis-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              "The geode-for-redis-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
               value, LocalHostUtil.getMyAddresses()));
     }
     return value;
