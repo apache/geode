@@ -78,7 +78,7 @@ public class RedisResponse {
   public static RedisResponse bulkString(Object value) {
     return new RedisResponse((buffer) -> {
       try {
-        return Coder.getBulkStringResponse(buffer, value);
+        return Coder.getStringResponse(buffer, value, true);
       } catch (CoderException e) {
         return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
@@ -103,10 +103,10 @@ public class RedisResponse {
     });
   }
 
-  public static RedisResponse array(Collection<?> collection) {
+  public static RedisResponse array(Collection<?> collection, boolean useBulkStrings) {
     return new RedisResponse((buffer) -> {
       try {
-        return Coder.getArrayResponse(buffer, collection);
+        return Coder.getArrayResponse(buffer, collection, useBulkStrings);
       } catch (CoderException e) {
         return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
       }
@@ -114,7 +114,7 @@ public class RedisResponse {
   }
 
   public static RedisResponse array(Object... items) {
-    return array(Arrays.asList(items));
+    return array(Arrays.asList(items), true);
   }
 
   public static RedisResponse emptyArray() {

@@ -97,7 +97,7 @@ public class ClusterExecutor extends AbstractExecutor {
       slots.add(entry);
     }
 
-    return RedisResponse.array(slots);
+    return RedisResponse.array(slots, true);
   }
 
   /**

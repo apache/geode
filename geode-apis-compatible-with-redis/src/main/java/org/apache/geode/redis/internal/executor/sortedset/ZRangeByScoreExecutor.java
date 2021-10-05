@@ -40,6 +40,6 @@ public class ZRangeByScoreExecutor
   @Override
   public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
       SortedSetScoreRangeOptions options) {
-    return RedisResponse.array(commands.zrangebyscore(key, options));
+    return RedisResponse.array(commands.zrangebyscore(key, options), true);
   }
 }

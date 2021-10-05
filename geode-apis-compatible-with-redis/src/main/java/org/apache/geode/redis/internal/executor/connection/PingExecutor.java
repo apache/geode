@@ -50,7 +50,7 @@ public class PingExecutor extends AbstractExecutor {
       } else {
         result = stringToBytes("");
       }
-      redisResponse = RedisResponse.array(Arrays.asList(bPING_RESPONSE_LOWERCASE, result));
+      redisResponse = RedisResponse.array(Arrays.asList(bPING_RESPONSE_LOWERCASE, result), true);
     }
 
     return redisResponse;

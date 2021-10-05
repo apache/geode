@@ -27,6 +27,6 @@ public class ZRevRangeExecutor extends ZRangeExecutor {
   @Override
   public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
       SortedSetRankRangeOptions options) {
-    return RedisResponse.array(commands.zrevrange(key, options));
+    return RedisResponse.array(commands.zrevrange(key, options), true);
   }
 }

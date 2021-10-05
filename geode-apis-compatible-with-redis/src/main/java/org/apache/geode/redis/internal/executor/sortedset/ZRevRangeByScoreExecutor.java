@@ -22,7 +22,7 @@ public class ZRevRangeByScoreExecutor extends ZRangeByScoreExecutor {
   @Override
   public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
       SortedSetScoreRangeOptions options) {
-    return RedisResponse.array(commands.zrevrangebyscore(key, options));
+    return RedisResponse.array(commands.zrevrangebyscore(key, options), true);
   }
 
   @Override

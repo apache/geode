@@ -56,7 +56,7 @@ public class SRandMemberExecutor extends AbstractExecutor {
     Collection<byte[]> results = redisSetCommands.srandmember(key, count);
 
     if (countSpecified) {
-      return RedisResponse.array(results);
+      return RedisResponse.array(results, true);
     } else if (results.isEmpty()) {
       return RedisResponse.nil();
     } else {

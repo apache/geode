@@ -50,7 +50,7 @@ public class HGetAllExecutor extends AbstractExecutor {
     RedisHashCommands redisHashCommands = context.getHashCommands();
     Collection<byte[]> fieldsAndValues = redisHashCommands.hgetall(key);
 
-    return RedisResponse.array(fieldsAndValues);
+    return RedisResponse.array(fieldsAndValues, true);
   }
 
 }

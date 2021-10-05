@@ -51,6 +51,6 @@ public class CommandExecutor extends AbstractExecutor {
       response.add(oneCommand);
     }
 
-    return RedisResponse.array(response);
+    return RedisResponse.array(response, false);
   }
 }

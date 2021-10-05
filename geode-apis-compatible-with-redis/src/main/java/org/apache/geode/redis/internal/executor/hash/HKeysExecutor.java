@@ -53,6 +53,6 @@ public class HKeysExecutor extends AbstractExecutor {
       return RedisResponse.emptyArray();
     }
 
-    return RedisResponse.array(keys);
+    return RedisResponse.array(keys, true);
   }
 }

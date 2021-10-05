@@ -47,6 +47,6 @@ public abstract class AbstractZPopExecutor extends AbstractExecutor {
       return RedisResponse.emptyArray();
     }
 
-    return RedisResponse.array(zpop(context.getSortedSetCommands(), command.getKey(), count));
+    return RedisResponse.array(zpop(context.getSortedSetCommands(), command.getKey(), count), true);
   }
 }

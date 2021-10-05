@@ -55,6 +55,6 @@ public class HMGetExecutor extends AbstractExecutor {
 
     List<byte[]> values = redisHashCommands.hmget(key, fields);
 
-    return RedisResponse.array(values);
+    return RedisResponse.array(values, true);
   }
 }
