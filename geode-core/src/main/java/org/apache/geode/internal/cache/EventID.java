@@ -821,10 +821,25 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     long sequenceID = (HARegionQueue.INIT_OF_SEQUENCEID + 1);
 
     @MakeNotStatic
-    private static final AtomicLong atmLong = new AtomicLong(0);
+    private static final AtomicLong atmLong = new AtomicLong(System.currentTimeMillis() %
+        ThreadIdentifier.MAX_THREAD_PER_CLIENT);
 
     ThreadAndSequenceIDWrapper() {
-      threadID = atmLong.incrementAndGet();
+      long id = atmLong.incrementAndGet();
+      // wrap around before hitting 1,000,000 as higher number will interfere with bulkOp threadID
+      // generation.
+      if (id < ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
+        threadID = id;
+      } else if (id == ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
+        atmLong.set(0);
+        threadID = atmLong.incrementAndGet();
+      } else {
+        id = atmLong.incrementAndGet();
+        while (id > ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
+          id = atmLong.incrementAndGet();
+        }
+        threadID = id;
+      }
     }
 
     long getAndIncrementSequenceID() {
