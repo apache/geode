@@ -28,76 +28,109 @@ facets {
     includeInCheckLifecycle = false
   }
 }
+configurations {
+  integrationTestImplementation.extendsFrom(commonTestImplementation)
+  acceptanceTestImplementation.extendsFrom(commonTestImplementation)
+  performanceTestImplementation.extendsFrom(commonTestImplementation)
+  distributedTestImplementation.extendsFrom(commonTestImplementation)
+}
 commonTest {
   useJUnitPlatform()
 }
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
+
+
   implementation(project(':geode-serialization'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-membership'))
-  implementation('it.unimi.dsi:fastutil')
-  implementation('com.github.davidmoten:geo')
   implementation('io.netty:netty-all')
   implementation('org.apache.logging.log4j:log4j-api')
-  implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
-  implementation('it.unimi.dsi:fastutil')
+  implementation('it.unimi.dsi:fastutil-core')
+  implementation('org.apache.shiro:shiro-core')
+
 
   testImplementation(project(':geode-junit'))
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('redis.clients:jedis')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.pholser:junit-quickcheck-generators')
   testImplementation('pl.pragmatists:JUnitParams')
+  testImplementation('com.google.guava:guava')
+  testImplementation('org.awaitility:awaitility')
+
 
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
+  commonTestImplementation('junit:junit')
+  commonTestImplementation('org.assertj:assertj-core')
   commonTestImplementation('org.testcontainers:testcontainers')
   commonTestImplementation('redis.clients:jedis')
   commonTestImplementation('org.apache.logging.log4j:log4j-core')
+  commonTestImplementation('com.github.docker-java:docker-java-api')
 
+
+  integrationTestImplementation(sourceSets.commonTest.output)
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
-  integrationTestImplementation(sourceSets.commonTest.output)
-  integrationTestImplementation('redis.clients:jedis')
+  integrationTestImplementation('com.google.guava:guava')
+  integrationTestImplementation('io.netty:netty-transport')
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.springframework.shell:spring-shell')
   integrationTestImplementation('io.lettuce:lettuce-core')
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   integrationTestImplementation('org.buildobjects:jproc')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('org.awaitility:awaitility')
+
   integrationTestRuntimeOnly(project(':geode-log4j'))
   integrationTestRuntimeOnly('org.testcontainers:testcontainers')
+
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
   acceptanceTestImplementation(sourceSets.distributedTest.output)
   acceptanceTestImplementation(sourceSets.commonTest.output)
   acceptanceTestImplementation(project(':geode-dunit'))
   acceptanceTestImplementation(project(':geode-junit'))
-  acceptanceTestImplementation('redis.clients:jedis')
-  acceptanceTestImplementation('org.testcontainers:testcontainers')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
     exclude module: 'spring-boot-starter-logging'
     exclude module: 'spring-boot-starter-tomcat'
   }
-  acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
-  acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
-  // This only exists for debugging PubSubNativeRedisAcceptanceTest
-  acceptanceTestImplementation('org.buildobjects:jproc')
-  acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
-  acceptanceTestImplementation('io.lettuce:lettuce-core')
+  gradleLint.ignore {
+    // This only exists for debugging PubSubNativeRedisAcceptanceTest
+    acceptanceTestImplementation('org.buildobjects:jproc')
+    // This annotation is used in tests, but linter is trying to remove it
+    acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
+    // This annotation is used in tests, but linter is trying to remove it
+    acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
+  }
+
+
   acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
+
 
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
-  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
-  distributedTestImplementation(project(':geode-dunit'))
+
   distributedTestImplementation(sourceSets.commonTest.output)
-  distributedTestImplementation('redis.clients:jedis')
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('io.netty:netty-handler')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.springframework.boot:spring-boot-autoconfigure')
+  distributedTestImplementation('org.springframework.boot:spring-boot')
+  distributedTestImplementation('org.springframework.data:spring-data-redis')
+  distributedTestImplementation('org.springframework.session:spring-session-core')
+  distributedTestImplementation('org.springframework:spring-context')
+  distributedTestImplementation('org.springframework:spring-core')
+  distributedTestImplementation('org.springframework:spring-web')
+  distributedTestImplementation('org.springframework:spring-webmvc')
   distributedTestImplementation('io.lettuce:lettuce-core')
   distributedTestImplementation('io.github.resilience4j:resilience4j-retry')
   distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
