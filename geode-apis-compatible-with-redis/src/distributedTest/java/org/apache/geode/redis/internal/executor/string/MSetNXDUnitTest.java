@@ -22,9 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -36,16 +34,13 @@ import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class MSetDUnitTest {
-
-  private static final Logger logger = LogService.getLogger();
+public class MSetNXDUnitTest {
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
@@ -83,7 +78,7 @@ public class MSetDUnitTest {
   }
 
   @Test
-  public void testMSet_concurrentInstancesHandleBucketMovement() {
+  public void testMSetnx_concurrentInstancesHandleBucketMovement() {
     int KEY_COUNT = 5000;
     String[] keys = new String[KEY_COUNT];
 
@@ -94,19 +89,22 @@ public class MSetDUnitTest {
     String[] keysAndValues2 = makeKeysAndValues(keys, "valueTwo");
 
     new ConcurrentLoopingThreads(100,
-        i -> jedis.mset(keysAndValues1),
-        i -> jedis.mset(keysAndValues2),
+        i -> jedis.msetnx(keysAndValues1),
+        i -> jedis.msetnx(keysAndValues2),
         i -> clusterStartUp.moveBucketForKey(keys[0]))
-            .runWithAction(() -> assertThat(jedis.mget(keys)).satisfiesAnyOf(
-                values -> assertThat(values)
-                    .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
-                values -> assertThat(values)
-                    .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
+            .runWithAction(() -> {
+              assertThat(jedis.mget(keys)).satisfiesAnyOf(
+                  values -> assertThat(values)
+                      .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
+                  values -> assertThat(values)
+                      .allSatisfy(value -> assertThat(value).startsWith("valueTwo")));
+              jedis.del(keys);
+            });
   }
 
   @Ignore("GEODE-9604")
   @Test
-  public void testMSet_crashDoesNotLeaveInconsistencies() throws Exception {
+  public void testMSetnx_crashDoesNotLeaveInconsistencies() throws Exception {
     int KEY_COUNT = 1000;
     String[] keys = new String[KEY_COUNT];
 
@@ -130,13 +128,10 @@ public class MSetDUnitTest {
     });
 
     try {
-      AtomicInteger loopCounter = new AtomicInteger(0);
       new ConcurrentLoopingThreads(running,
-          i -> jedis.mset(keysAndValues1),
-          i -> jedis.mset(keysAndValues2))
+          i -> jedis.msetnx(keysAndValues1),
+          i -> jedis.msetnx(keysAndValues2))
               .runWithAction(() -> {
-                logger.info("--->>> Validation STARTING: Loop count = {}  {}",
-                    loopCounter.incrementAndGet(), running.get());
                 int count = 0;
                 List<String> values = jedis.mget(keys);
                 for (String v : values) {
@@ -146,7 +141,7 @@ public class MSetDUnitTest {
                   count += v.startsWith("valueOne") ? 1 : -1;
                 }
                 assertThat(Math.abs(count)).isEqualTo(KEY_COUNT);
-                logger.info("--->>> Validation DONE");
+                jedis.del(keys);
               });
     } finally {
       running.set(false);

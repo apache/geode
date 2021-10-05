@@ -182,7 +182,9 @@ The Geode APIs compatible with Redis implement a subset of the full Redis comman
 - INCRBYFLOAT  
 - INFO <sup>2</sup>  
 - KEYS  
-- MGET  
+- MGET
+- MSET
+- MSETNX
 - PERSIST  
 - PEXPIRE  
 - PEXPIREAT  

@@ -18,43 +18,27 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MSetNXExecutor extends AbstractExecutor {
+public class MSetNXExecutor extends AbstractMSetExecutor {
 
-  private static final int SET = 1;
+  private static final int ALL_KEYS_SET = 1;
 
-  private static final int NOT_SET = 0;
+  private static final int NO_KEY_SET = 0;
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
-    List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = context.getStringCommands();
-    RedisKeyCommands keyCommands = context.getKeyCommands();
-
-    // TODO: make this atomic
-    for (int i = 1; i < commandElems.size(); i += 2) {
-      byte[] keyArray = commandElems.get(i);
-      RedisKey key = new RedisKey(keyArray);
-      if (keyCommands.exists(key)) {
-        return RedisResponse.integer(NOT_SET);
-      }
-    }
-
-    // none exist so now set them all
-    for (int i = 1; i < commandElems.size(); i += 2) {
-      byte[] keyArray = commandElems.get(i);
-      RedisKey key = new RedisKey(keyArray);
-      byte[] valueArray = commandElems.get(i + 1);
-      stringCommands.set(key, valueArray, null);
-    }
-
-    return RedisResponse.integer(SET);
+  protected void executeMSet(RedisStringCommands stringCommands, List<RedisKey> keys,
+      List<byte[]> values) {
+    stringCommands.mset(keys, values, true);
   }
 
+  @Override
+  protected RedisResponse getKeyExistsErrorResponse() {
+    return RedisResponse.integer(NO_KEY_SET);
+  }
+
+  @Override
+  protected RedisResponse getSuccessResponse() {
+    return RedisResponse.integer(ALL_KEYS_SET);
+  }
 }

@@ -58,5 +58,5 @@ public interface RedisStringCommands {
 
   byte[] mget(RedisKey key);
 
-  Void mset(List<RedisKey> keys, List<byte[]> values);
+  Void mset(List<RedisKey> keys, List<byte[]> values, boolean ifAllKeysAbsent);
 }

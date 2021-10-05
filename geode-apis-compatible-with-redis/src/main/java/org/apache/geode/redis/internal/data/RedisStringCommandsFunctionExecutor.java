@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
+import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
   }
 
   @Override
-  public Void mset(List<RedisKey> keys, List<byte[]> values) {
+  public Void mset(List<RedisKey> keys, List<byte[]> values, boolean ifAllKeysAbsent) {
     List<RedisKey> keysToLock = new ArrayList<>(keys.size());
     for (RedisKey key : keys) {
       getRegionProvider().ensureKeyIsLocal(key);
@@ -153,12 +154,17 @@ public class RedisStringCommandsFunctionExecutor extends RedisDataCommandsFuncti
 
     // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
     // in the same bucket we can use any key for this.
-    return stripedExecuteInTransaction(keysToLock.get(0), keysToLock, () -> mset0(keys, values));
+    return stripedExecuteInTransaction(keysToLock.get(0), keysToLock,
+        () -> mset0(keys, values, ifAllKeysAbsent));
   }
 
-  private Void mset0(List<RedisKey> keys, List<byte[]> values) {
+  private Void mset0(List<RedisKey> keys, List<byte[]> values, boolean ifAllKeysAbsent) {
+    SetOptions options = ifAllKeysAbsent ? new SetOptions(NX, 0L, false) : null;
     for (int i = 0; i < keys.size(); i++) {
-      set(getRegionProvider(), keys.get(i), values.get(i), null);
+      if (!set(getRegionProvider(), keys.get(i), values.get(i), options)) {
+        // rolls back transaction
+        throw new RedisKeyExistsException("at least one key already exists");
+      }
     }
     return null;
   }

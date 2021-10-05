@@ -205,7 +205,9 @@ public enum RedisCommandType {
   INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED,
       new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
   MGET(new MGetExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
-  MSET(new MSetExecutor(), UNSUPPORTED,
+  MSET(new MSetExecutor(), SUPPORTED,
+      new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
+  MSETNX(new MSetNXExecutor(), SUPPORTED,
       new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
   PSETEX(new PSetEXExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
   SET(new SetExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM)),
@@ -340,8 +342,6 @@ public enum RedisCommandType {
       new Parameter().min(4).firstKey(2).lastKey(-1).flags(WRITE, DENYOOM)),
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new Parameter().min(3).flags(READONLY)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  MSETNX(new MSetNXExecutor(), UNSUPPORTED,
-      new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
 
   /**************** Sets *****************/
