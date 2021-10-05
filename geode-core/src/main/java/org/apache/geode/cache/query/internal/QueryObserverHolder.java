@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
@@ -46,28 +47,45 @@ public class QueryObserverHolder {
   @Immutable
   private static final QueryObserver NO_OBSERVER = new QueryObserverAdapter();
   /**
+   * The threadlocal current observer which will be notified of all query events.
+   */
+  private static final ThreadLocal<QueryObserver> _instance = new ThreadLocal<>();
+
+  /**
    * The current observer which will be notified of all query events.
    */
   @MakeNotStatic
-  private static ThreadLocal<QueryObserver> _instance = ThreadLocal.withInitial(() -> NO_OBSERVER);
+  private static volatile QueryObserver _globalInstance = NO_OBSERVER;
 
   /**
    * Set the given observer to be notified of query events. Returns the current observer.
    */
   public static QueryObserver setInstance(QueryObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
-    QueryObserver oldObserver = _instance.get();
+    QueryObserver oldObserver;
+    if (_instance.get() != null) {
+      oldObserver = _instance.get();
+    } else {
+      oldObserver = _globalInstance;
+    }
     _instance.set(observer);
+    _globalInstance = observer;
     return oldObserver;
   }
 
   public static boolean hasObserver() {
-    return _instance.get() != NO_OBSERVER;
+    if (_instance.get() != null) {
+      return _instance.get() != NO_OBSERVER;
+    }
+    return _globalInstance != NO_OBSERVER;
   }
 
   /** Return the current QueryObserver instance */
   public static QueryObserver getInstance() {
-    return _instance.get();
+    if (_instance.get() != null) {
+      return _instance.get();
+    }
+    return _globalInstance;
   }
 
   /**
@@ -75,5 +93,6 @@ public class QueryObserverHolder {
    */
   public static void reset() {
     _instance.set(NO_OBSERVER);
+    _globalInstance = NO_OBSERVER;
   }
 }
