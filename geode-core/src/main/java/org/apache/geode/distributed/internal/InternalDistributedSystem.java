@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -2086,7 +2085,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
   }
 
-  @TestOnly
+  @VisibleForTesting
   public static void addTestSystem(InternalDistributedSystem internalDistributedSystem) {
     DistributedSystem.addSystem(internalDistributedSystem);
   }

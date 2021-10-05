@@ -23,10 +23,10 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
@@ -64,7 +64,7 @@ public class PoolManagerImpl {
     return result;
   }
 
-  @TestOnly
+  @VisibleForTesting
   public static void setImpl(PoolManagerImpl poolManager) {
     impl = poolManager;
   }

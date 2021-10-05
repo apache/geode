@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedMember;
@@ -182,7 +182,7 @@ public class EndpointManagerImpl implements EndpointManager {
     this.listener.removeListener(listener);
   }
 
-  @TestOnly
+  @VisibleForTesting
   public Set<EndpointListener> getListeners() {
     return this.listener.endpointListeners;
   }
