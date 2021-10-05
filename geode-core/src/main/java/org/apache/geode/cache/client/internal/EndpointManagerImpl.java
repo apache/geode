@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
@@ -179,6 +180,11 @@ public class EndpointManagerImpl implements EndpointManager {
   @Override
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);
+  }
+
+  @TestOnly
+  public Set<EndpointListener> getListeners() {
+    return this.listener.endpointListeners;
   }
 
   private synchronized ConnectionStats getStats(ServerLocationAndMemberId location) {

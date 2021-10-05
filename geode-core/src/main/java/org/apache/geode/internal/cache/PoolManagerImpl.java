@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
@@ -53,7 +54,7 @@ public class PoolManagerImpl {
   private static final Logger logger = LogService.getLogger();
 
   @MakeNotStatic
-  private static final PoolManagerImpl impl = new PoolManagerImpl(true);
+  private static PoolManagerImpl impl = new PoolManagerImpl(true);
 
   public static PoolManagerImpl getPMI() {
     PoolManagerImpl result = CacheCreation.getCurrentPoolManager();
@@ -61,6 +62,11 @@ public class PoolManagerImpl {
       result = impl;
     }
     return result;
+  }
+
+  @TestOnly
+  public static void setImpl(PoolManagerImpl poolManager) {
+    impl = poolManager;
   }
 
   private volatile Map<String, Pool> pools = Collections.emptyMap();
