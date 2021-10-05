@@ -84,19 +84,15 @@ public class CommandIntegrationTest {
   @Test
   public void commandDoesNotReturnUnsupported_whenUnsupportedCommandsAreDisabled() {
     radishServer.setEnableUnsupportedCommands(false);
-    try {
-      Map<String, CommandStructure> results = processRawCommands(radishClient.command());
+    Map<String, CommandStructure> results = processRawCommands(radishClient.command());
 
-      // Find an unsupported command
-      RedisCommandType someUnsupported = Arrays.stream(RedisCommandType.values())
-          .filter(RedisCommandType::isUnsupported).findFirst()
-          .orElseThrow(() -> new AssertionError("Could not find any UNSUPPORTED commands"));
+    // Find an unsupported command
+    RedisCommandType someUnsupported = Arrays.stream(RedisCommandType.values())
+        .filter(RedisCommandType::isUnsupported).findFirst()
+        .orElseThrow(() -> new AssertionError("Could not find any UNSUPPORTED commands"));
 
-      for (CommandStructure meta : results.values()) {
-        assertThat(meta.name).isNotEqualToIgnoringCase(someUnsupported.name());
-      }
-    } finally {
-      radishServer.setEnableUnsupportedCommands(true);
+    for (CommandStructure meta : results.values()) {
+      assertThat(meta.name).isNotEqualToIgnoringCase(someUnsupported.name());
     }
   }
 
