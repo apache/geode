@@ -32,7 +32,10 @@ public class CommandExecutor extends AbstractExecutor {
     List<Object> response = new ArrayList<>();
 
     for (RedisCommandType type : RedisCommandType.values()) {
-      if (type.isInternal() || type.isUnknown() || type == RedisCommandType.QUIT) {
+      if (type.isInternal()
+          || type.isUnknown()
+          || (type.isUnsupported() && !context.allowUnsupportedCommands())
+          || type == RedisCommandType.QUIT) {
         continue;
       }
 

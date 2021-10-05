@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,12 +28,14 @@ import java.util.Map;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.NativeRedisTestRule;
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.internal.RedisCommandType;
 
 public class CommandIntegrationTest {
 
@@ -56,6 +59,11 @@ public class CommandIntegrationTest {
             .connect().sync();
   }
 
+  @After
+  public void teardown() {
+    radishServer.setEnableUnsupportedCommands(true);
+  }
+
   @Test
   public void commandReturnsResultsMatchingNativeRedis() {
     Map<String, CommandStructure> goldenResults = processRawCommands(redisClient.command());
@@ -71,6 +79,21 @@ public class CommandIntegrationTest {
           .doesNotThrowAnyException();
     }
     softly.assertAll();
+  }
+
+  @Test
+  public void commandDoesNotReturnUnsupported_whenUnsupportedCommandsAreDisabled() {
+    radishServer.setEnableUnsupportedCommands(false);
+    Map<String, CommandStructure> results = processRawCommands(radishClient.command());
+
+    // Find an unsupported command
+    RedisCommandType someUnsupported = Arrays.stream(RedisCommandType.values())
+        .filter(RedisCommandType::isUnsupported).findFirst()
+        .orElseThrow(() -> new AssertionError("Could not find any UNSUPPORTED commands"));
+
+    for (CommandStructure meta : results.values()) {
+      assertThat(meta.name).isNotEqualToIgnoringCase(someUnsupported.name());
+    }
   }
 
   private void compareCommands(CommandStructure actual, CommandStructure expected) {
