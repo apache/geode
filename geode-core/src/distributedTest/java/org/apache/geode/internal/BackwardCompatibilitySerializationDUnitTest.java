@@ -29,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -67,7 +68,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     super();
   }
 
-  static {
+  @BeforeClass
+  public static void classSetup() {
     InternalDataSerializer.getDSFIDSerializer()
         .register(TestMessage.TEST_MESSAGE_DSFID, TestMessage.class);
   }
@@ -248,7 +250,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     private static final KnownVersion[] dsfidVersions =
         new KnownVersion[] {KnownVersion.GEODE_1_1_0, KnownVersion.GEODE_1_5_0};
 
-    static final int TEST_MESSAGE_DSFID = 12345;
+    private static final int TEST_MESSAGE_DSFID = 12345;
 
     public TestMessage() {}
 

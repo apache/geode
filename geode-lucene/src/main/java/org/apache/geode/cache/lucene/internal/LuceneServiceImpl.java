@@ -80,7 +80,7 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdLoader;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
 import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
@@ -94,7 +94,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 8.5
  */
-public class LuceneServiceImpl implements InternalLuceneService, DataSerializableFixedIdLoader {
+public class LuceneServiceImpl implements InternalLuceneService, DataSerializableFixedIdRegistrant {
   public static LuceneIndexImplFactory luceneIndexFactory = new LuceneIndexImplFactory();
   private static final Logger logger = LogService.getLogger();
 
@@ -609,39 +609,39 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   @Override
-  public void register(DataSerializableFixedIdRegistrar serializer) {
-    serializer.register(CREATE_REGION_MESSAGE_LUCENE,
+  public void register(DataSerializableFixedIdRegistrar registrar) {
+    registrar.register(CREATE_REGION_MESSAGE_LUCENE,
         CreateRegionProcessorForLucene.CreateRegionMessage.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
+    registrar.register(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_FILE, File.class);
+    registrar.register(DataSerializableFixedID.LUCENE_FILE, File.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
+    registrar.register(DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
         LuceneFunctionContext.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
+    registrar.register(DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
         StringQueryProvider.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
         TopEntriesCollectorManager.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
+    registrar.register(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
 
-    serializer.register(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
+    registrar.register(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
         WaitUntilFlushedFunctionContext.class);
 
-    serializer.register(DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
+    registrar.register(DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
         DestroyLuceneIndexMessage.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+    registrar.register(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
 
-    serializer.register(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
+    registrar.register(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
         LuceneResultStructImpl.class);
   }
 

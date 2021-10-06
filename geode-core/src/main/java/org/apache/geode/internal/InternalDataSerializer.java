@@ -112,7 +112,7 @@ import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdLoader;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -338,14 +338,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
 
-    ServiceLoader<DataSerializableFixedIdLoader> loaders = ServiceLoader.load(
-        DataSerializableFixedIdLoader.class);
-    for (DataSerializableFixedIdLoader loader : loaders) {
+    ServiceLoader<DataSerializableFixedIdRegistrant> loaders = ServiceLoader.load(
+        DataSerializableFixedIdRegistrant.class);
+    for (DataSerializableFixedIdRegistrant loader : loaders) {
       try {
         loader.register(dsfidSerializer);
       } catch (Exception ex) {
-        logger.warn("Data serializable fixed ID loader '" + loader.getClass().getName() +
-            "' failed", ex);
+        logger.warn("Data serializable fixed ID loader '{}' failed",
+            loader.getClass().getName(), ex);
       }
     }
   }

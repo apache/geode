@@ -74,7 +74,7 @@ import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMes
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdLoader;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
 import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -85,7 +85,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * exceptional situations to see if Membership is shutting down.
  */
 @SuppressWarnings("ConstantConditions")
-public class Services<ID extends MemberIdentifier> implements DataSerializableFixedIdLoader {
+public class Services<ID extends MemberIdentifier> implements DataSerializableFixedIdRegistrant {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -161,8 +161,8 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   @Override
-  public void register(DataSerializableFixedIdRegistrar serializer) {
-    registerSerializables(serializer);
+  public void register(DataSerializableFixedIdRegistrar registrar) {
+    registerSerializables(registrar);
   }
 
   @VisibleForTesting

@@ -15,12 +15,13 @@
 
 package org.apache.geode.internal.serialization;
 
+@FunctionalInterface
 public interface DataSerializableFixedIdRegistrar {
 
   /**
    * Register the constructor for a fixed ID class. Use this to register your
    * DataSerializableFixedID classes so that deserialization knows how to instantiate them.
    */
-  void register(int dsfid, Class<? extends DataSerializableFixedID> dsfidClass);
+  void register(int fixedId, Class<? extends DataSerializableFixedID> fixedIdClass);
 
 }

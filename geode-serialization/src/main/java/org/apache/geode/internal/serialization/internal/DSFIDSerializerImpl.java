@@ -336,30 +336,30 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
 
   @Override
-  public void register(int dsfid, Class<? extends DataSerializableFixedID> dsfidClass) {
+  public void register(int fixedId, Class<? extends DataSerializableFixedID> fixedIdClass) {
     try {
-      Constructor<?> cons = dsfidClass.getConstructor((Class<Object>[]) null);
+      Constructor<?> cons = fixedIdClass.getConstructor((Class<Object>[]) null);
       cons.setAccessible(true);
       if (!cons.isAccessible()) {
         throw new IllegalArgumentException(
-            "default constructor not accessible " + "for DSFID=" + dsfid + ": " + dsfidClass);
+            "default constructor not accessible " + "for DSFID=" + fixedId + ": " + fixedIdClass);
       }
-      if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
-        int index = dsfid + Byte.MAX_VALUE + 1;
+      if (fixedId >= Byte.MIN_VALUE && fixedId <= Byte.MAX_VALUE) {
+        int index = fixedId + Byte.MAX_VALUE + 1;
         if (dsfidMap[index] != null) {
           throw new IllegalArgumentException("A DataSerializableFixedID already exists for "
-              + dsfid + " : " + dsfidMap[index].getName());
+              + fixedId + " : " + dsfidMap[index].getName());
         }
         dsfidMap[index] = cons;
       } else {
-        if (dsfidMap2.containsKey(dsfid)) {
+        if (dsfidMap2.containsKey(fixedId)) {
           throw new IllegalArgumentException("A DataSerializableFixedID already exists for "
-              + dsfid + " : " + dsfidMap2.get(dsfid).getName());
+              + fixedId + " : " + dsfidMap2.get(fixedId).getName());
         }
-        dsfidMap2.put(dsfid, cons);
+        dsfidMap2.put(fixedId, cons);
       }
     } catch (NoSuchMethodException nsme) {
-      throw new IllegalArgumentException("Unable to find a default constructor for " + dsfidClass,
+      throw new IllegalArgumentException("Unable to find a default constructor for " + fixedIdClass,
           nsme);
     }
   }

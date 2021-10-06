@@ -30,10 +30,10 @@ import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdLoader;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
 import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 
-public class WANFactoryImpl implements WANFactory, DataSerializableFixedIdLoader {
+public class WANFactoryImpl implements WANFactory, DataSerializableFixedIdRegistrant {
 
   @Override
   public void initialize() {}
@@ -59,20 +59,20 @@ public class WANFactoryImpl implements WANFactory, DataSerializableFixedIdLoader
   }
 
   @Override
-  public void register(DataSerializableFixedIdRegistrar serializer) {
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
+  public void register(DataSerializableFixedIdRegistrar registrar) {
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
         RemoteLocatorJoinRequest.class);
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
         RemoteLocatorJoinResponse.class);
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
         RemoteLocatorRequest.class);
-    serializer.register(DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
+    registrar.register(DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
         LocatorJoinMessage.class);
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
         RemoteLocatorPingRequest.class);
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
         RemoteLocatorPingResponse.class);
-    serializer.register(DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
+    registrar.register(DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
         RemoteLocatorResponse.class);
   }
 }
