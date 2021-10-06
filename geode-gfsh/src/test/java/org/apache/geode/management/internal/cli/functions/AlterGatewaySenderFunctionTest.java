@@ -28,9 +28,9 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -44,13 +44,13 @@ public class AlterGatewaySenderFunctionTest {
   private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
   private GatewaySenderFunctionArgs args;
-  private GatewaySender sender;
+  private AbstractGatewaySender sender;
   private ArgumentCaptor<GatewaySenderAttributes> updateCapture1;
 
   @Before
   @SuppressWarnings("unchecked")
   public void before() {
-    sender = mock(GatewaySender.class);
+    sender = mock(AbstractGatewaySender.class);
     function = spy(AlterGatewaySenderFunction.class);
     context = mock(FunctionContext.class);
     cache = mock(InternalCache.class);
