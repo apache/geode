@@ -15,5 +15,5 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-public class GemfireDataCommandsDUnitTest extends GemfireDataCommandsDUnitTestBase {
+public class GeodeDataCommandsDistributedTest extends GeodeDataCommandsDistributedTestBase {
 }

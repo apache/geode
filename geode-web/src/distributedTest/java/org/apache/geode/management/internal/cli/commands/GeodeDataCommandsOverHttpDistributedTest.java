@@ -14,9 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class GemfireDataCommandsOverHttpDUnitTest extends GemfireDataCommandsDUnitTestBase {
+public class GeodeDataCommandsOverHttpDistributedTest
+    extends GeodeDataCommandsDistributedTestBase {
   @Override
   public void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
