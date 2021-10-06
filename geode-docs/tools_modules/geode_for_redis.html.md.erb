@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<% set_title(product_name, "Geode for Redis") %>
+<% set_title(product_name, "for Redis") %>
 
-The <%=vars.product_name%> Geode for Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
+<%=vars.product_name%> for Redis allows <%=vars.product_name%> to function as a drop-in replacement for a
 highly-available Redis data store, letting Redis applications take advantage of
 <%=vars.product_name%>’s scaling capabilities without changing their client code. Redis clients connect to a <%=vars.product_name%>
 server in the same way they connect to a Redis server, using a hostname and a port number, with
@@ -25,7 +25,7 @@ optional password authentication.
 
 <img src="../images_svg/geode_for_redis.svg" class="image" />
 
-## <a id="using-the-api" class="no-quick-link"></a>Using the <%=vars.product_name%> API compatible with Redis
+## <a id="using-the-api" class="no-quick-link"></a>Using <%=vars.product_name%> for Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
@@ -41,7 +41,7 @@ start server \
 ```
 
 If any of the options `geode-for-redis-bind-address`, `geode-for-redis-password`, or `geode-for-redis-port`
-are included, a <%=vars.product_name%> server with Geode for Redis will be started.
+are included, a <%=vars.product_name%> server with <%=vars.product_name%> for Redis will be started.
 
 Replace `<serverName>` with the name of your server.
 
@@ -66,7 +66,7 @@ If the server is functioning properly, you should see a response of `PONG`.
 
 ## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
-The <%=vars.product_name%> Geode for Redis currently support the following Redis commands.
+<%=vars.product_name%> for Redis supports the following Redis commands.
 <br/>
 
  - APPEND <br/>
@@ -131,7 +131,7 @@ Commands not listed above are **not implemented**.
 These commands are supported for Redis 5.
 
 **[1]** Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
- Geode for Redis is limited to 32-bit integer values for these parameters.
+ <%=vars.product_name%> for Redis is limited to 32-bit integer values for these parameters.
 
 **[2]** INFO is implemented for the sections and fields listed below:
 
