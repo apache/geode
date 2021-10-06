@@ -357,6 +357,25 @@ public class PRHARedundancyProviderTest {
     verify(providerStartupTask).completeExceptionally(exception);
   }
 
+  @Test
+  public void reportsScheduleCreateMissingBuckets() {
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+    when(partitionedRegion.getColocatedWith()).thenReturn("leaderRegion");
+    when(partitionedRegion.getGemFireCache()).thenReturn(cache);
+    when(cache.getInternalResourceManager()).thenReturn(resourceManager);
+
+    ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+    when(resourceManager.getExecutor()).thenReturn(executorService);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
+
+    prHaRedundancyProvider.scheduleCreateMissingBuckets();
+
+    verify(executorService).execute(any());
+  }
+
   private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
       boolean simulate, RebalanceDirector director, boolean replaceOfflineData,
       boolean isRebalance) {

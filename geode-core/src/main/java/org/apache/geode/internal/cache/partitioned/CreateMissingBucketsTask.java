@@ -25,11 +25,15 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
  *
  */
 public class CreateMissingBucketsTask extends RecoveryRunnable {
-  private static final int MAX_NUMBER_INTERVALS = 31;
+  private static final int MAX_NUMBER_INTERVALS = 60;
 
-  private static final int SMALL_INTERVALS = 5;
-  private static final int MEDIUM_INTERVALS = 10;
-  private static final int LARGE_INTERVALS = 15;
+  private static final int SMALL_200MS_INTERVALS = 5;
+  private static final int SMALL_500MS_INTERVALS = 10;
+
+  private static final int MEDIUM_1SEC_INTERVALS = 15;
+  private static final int MEDIUM_2SEC_INTERVALS = 30;
+
+  private static final int LARGE_5SEC_INTERVALS = 45;
 
   public CreateMissingBucketsTask(PRHARedundancyProvider prhaRedundancyProvider) {
     super(prhaRedundancyProvider);
@@ -92,14 +96,20 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
           Thread.currentThread().interrupt();
         }
       }
+
       retryCount++;
-      if (retryCount == SMALL_INTERVALS) {
+      if (retryCount == SMALL_200MS_INTERVALS) {
         sleepInterval = 2 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (retryCount == MEDIUM_INTERVALS) {
+      } else if (retryCount == SMALL_500MS_INTERVALS) {
         sleepInterval = 5 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
-      } else if (retryCount == LARGE_INTERVALS) {
+      } else if (retryCount == MEDIUM_1SEC_INTERVALS) {
         sleepInterval = 10 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (retryCount == MEDIUM_2SEC_INTERVALS) {
+        sleepInterval = 20 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
+      } else if (retryCount == LARGE_5SEC_INTERVALS) {
+        sleepInterval = 50 * PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
       }
+
     }
     return ColocationHelper.isColocationComplete(partitionedRegion);
 
