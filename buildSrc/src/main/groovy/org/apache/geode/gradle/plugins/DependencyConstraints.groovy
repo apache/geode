@@ -259,6 +259,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.springframework.security', version: '5.5.2') {
       entry('spring-security-config')
+      entry('spring-security-crypto')
       entry('spring-security-core')
       entry('spring-security-ldap')
       entry('spring-security-test')

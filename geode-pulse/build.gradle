@@ -82,12 +82,12 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('org.springframework.security:spring-security-crypto')
 
-  compileOnly('org.mortbay.jetty:servlet-api')
 
   runtimeOnly('org.springframework:spring-expression')
-
   runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
+
 
   providedCompile('commons-logging:commons-logging')
 
