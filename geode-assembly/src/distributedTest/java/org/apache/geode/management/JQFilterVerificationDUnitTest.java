@@ -47,6 +47,7 @@ import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
@@ -55,11 +56,14 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * the JQFilter we added is valid
  */
 public class JQFilterVerificationDUnitTest {
+  // The com.arakelian.jq library does not support windows server 2016:amd64, which we use in CI.
+  @ClassRule(order = 0)
+  public static IgnoreOnWindowsRule ignoreOnWindows = new IgnoreOnWindowsRule();
 
-  @ClassRule
+  @ClassRule(order = 1)
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @ClassRule
+  @ClassRule(order = 2)
   public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   private static GeodeDevRestClient client;
