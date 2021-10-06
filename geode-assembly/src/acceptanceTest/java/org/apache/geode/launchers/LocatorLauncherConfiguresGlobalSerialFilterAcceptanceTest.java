@@ -32,7 +32,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class LocatorLauncherConfiguresGlobalGlobalSerialFilterAcceptanceTest {
+public class LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
