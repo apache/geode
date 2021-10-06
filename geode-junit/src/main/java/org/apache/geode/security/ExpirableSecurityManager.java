@@ -46,7 +46,7 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
     Object user = super.authenticate(credentials);
     if (expired_users.contains((String) user)) {
-      throw new AuthenticationFailedException("User already expired.");
+      throw new AuthenticationExpiredException("User already expired.");
     }
     return user;
   }

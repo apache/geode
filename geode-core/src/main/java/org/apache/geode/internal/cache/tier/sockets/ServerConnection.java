@@ -76,6 +76,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -1179,7 +1180,8 @@ public class ServerConnection implements Runnable {
 
       // create secure part which will be send in response
       return encryptId(uniqueId);
-    } catch (AuthenticationFailedException | AuthenticationRequiredException exception) {
+    } catch (AuthenticationFailedException | AuthenticationRequiredException
+        | AuthenticationExpiredException exception) {
       throw exception;
     } catch (Exception exception) {
       throw new AuthenticationFailedException("REPLY_REFUSED", exception);

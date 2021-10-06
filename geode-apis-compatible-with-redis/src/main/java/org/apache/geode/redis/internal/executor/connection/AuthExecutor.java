@@ -29,6 +29,7 @@ import org.apache.geode.redis.internal.executor.Executor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
 
@@ -36,8 +37,6 @@ public class AuthExecutor implements Executor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
     SecurityService securityService = context.getSecurityService();
 
     // We're deviating from Redis here in that any AUTH requests, without security explicitly
@@ -46,23 +45,28 @@ public class AuthExecutor implements Executor {
       return RedisResponse.error(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
     }
 
-    Properties props = new Properties();
-    if (commandElems.size() == 2) {
-      props.setProperty(SecurityManager.USER_NAME, context.getRedisUsername());
-      props.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(1)));
-    } else {
-      props.setProperty(SecurityManager.USER_NAME, bytesToString(commandElems.get(1)));
-      props.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(2)));
-    }
-
+    Properties props = getSecurityProperties(command, context);
     try {
       Subject subject = securityService.login(props);
       context.setSubject(subject);
-    } catch (AuthenticationFailedException ex) {
+    } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
       return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);
     }
 
     return RedisResponse.ok();
+  }
+
+  Properties getSecurityProperties(Command command, ExecutionHandlerContext context) {
+    Properties properties = new Properties();
+    List<byte[]> commandElems = command.getProcessedCommand();
+    if (commandElems.size() == 2) {
+      properties.setProperty(SecurityManager.USER_NAME, context.getRedisUsername());
+      properties.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(1)));
+    } else {
+      properties.setProperty(SecurityManager.USER_NAME, bytesToString(commandElems.get(1)));
+      properties.setProperty(SecurityManager.PASSWORD, bytesToString(commandElems.get(2)));
+    }
+    return properties;
   }
 
 }
