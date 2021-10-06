@@ -67,6 +67,10 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("junit.version", "4.13.2")
     deps.put("junit-jupiter.version", "5.7.2")
     deps.put("cglib.version", "3.3.0")
+
+    // This old version is for geode-assembly:acceptanceTest for gradle-in-gradle tests. As noted there, do not let
+    // this version be the same as the geode build itself.
+    deps.put("gradle-tooling-api.version", "5.1.1")
     return deps
   }
 
