@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -44,7 +45,8 @@ public class RegisterDataSerializersOp {
     // no instances allowed
   }
 
-  private static class RegisterDataSerializersOpImpl extends AbstractOp {
+  @VisibleForTesting
+  public static class RegisterDataSerializersOpImpl extends AbstractOp {
 
     /**
      * @throws org.apache.geode.SerializationException if serialization fails

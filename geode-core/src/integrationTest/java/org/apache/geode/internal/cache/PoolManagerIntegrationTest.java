@@ -36,6 +36,8 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
@@ -47,13 +49,14 @@ import org.apache.geode.cache.client.internal.DataSerializerRecoveryListener;
 import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.EndpointManagerImpl;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.RegisterDataSerializersOp;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 
 /*
@@ -63,6 +66,14 @@ public class PoolManagerIntegrationTest {
 
   private PoolImpl pool;
   private PoolManagerImpl poolManager;
+
+  @ClassRule
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();;
+
+  @BeforeClass
+  public static void classSetup() {
+    clusterStartupRule.startLocatorVM(0, 10334);
+  }
 
   @Before
   public void setUp() {
@@ -78,9 +89,7 @@ public class PoolManagerIntegrationTest {
 
   }
 
-  // in Mulituser Auth mode
-  @Test
-  public void test_ThatDataSerializerSynchronizationMessagesAreNotSent() {
+  private InternalDistributedSystem setupFakeSystem(boolean mulitUserAuthentication) {
     PoolManagerImpl poolManagerImpl = poolManager;
     InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
     InternalDistributedSystem.addTestSystem(mockSystem);
@@ -92,17 +101,38 @@ public class PoolManagerIntegrationTest {
     when(poolFactory.create(any())).thenReturn(pool);
 
     assertThat(poolManagerImpl.createFactory().create("test")).isEqualTo(pool);
-    doReturn(true).when(pool).getMultiuserAuthentication();
+    doReturn(mulitUserAuthentication).when(pool).getMultiuserAuthentication();
     doReturn(null).when(pool).execute(any());
     PoolManagerImpl.setImpl(poolManagerImpl);
     Map<String, Pool> map = new HashMap<>();
     map.put("test_pool", pool);
     when(poolManagerImpl.getMap()).thenReturn(map);
+    return mockSystem;
+  }
+
+  private DataSerializer setupFakeEventAndDataSerializer(InternalDistributedSystem mockSystem) {
     DataSerializer dataSerializer = mock(DataSerializer.class);
     EventID eventID = new EventID(mockSystem);
     doReturn(eventID).when(dataSerializer).getEventId();
+    return dataSerializer;
+  }
+
+  @Test
+  public void test_ThatDataSerializerSynchronizationMessagesAreNotSent() {
+    InternalDistributedSystem mockSystem = setupFakeSystem(true);
+    DataSerializer dataSerializer = setupFakeEventAndDataSerializer(mockSystem);
     PoolManagerImpl.allPoolsRegisterDataSerializers(dataSerializer);
-    verify(pool, times(0)).execute(any());
+    verify(pool, times(0))
+        .execute(any(RegisterDataSerializersOp.RegisterDataSerializersOpImpl.class));
+  }
+
+  @Test
+  public void test_ThatDataSerializerSynchronizationMessagesAreSent() {
+    InternalDistributedSystem mockSystem = setupFakeSystem(false);
+    DataSerializer dataSerializer = setupFakeEventAndDataSerializer(mockSystem);
+    PoolManagerImpl.allPoolsRegisterDataSerializers(dataSerializer);
+    verify(pool, times(1))
+        .execute(any(RegisterDataSerializersOp.RegisterDataSerializersOpImpl.class));
   }
 
   public static class TestSocketFactory implements SocketFactory, Declarable2 {
@@ -133,8 +163,8 @@ public class PoolManagerIntegrationTest {
     InternalDistributedSystem mockSystem = spy(builderForTesting.build());
     doReturn(distributionConfig).when(mockSystem).getConfig();
     InternalDistributedMember mockMember =
-     new InternalDistributedMember(InetAddress.getByName("localhost"), 10334, false,
-     false);
+        new InternalDistributedMember(InetAddress.getByName("localhost"), 50505, false,
+            false);
     doReturn(mockMember).when(mockSystem).getDistributedMember();
 
     InternalDistributedSystem.addTestSystem(mockSystem);
@@ -143,7 +173,7 @@ public class PoolManagerIntegrationTest {
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
     poolFactory.setSocketFactory(new TestSocketFactory());
-    poolFactory.addLocator("localhost", 10334);
+    poolFactory.addLocator("localhost", clusterStartupRule.getMember(0).getPort());
     return (PoolImpl) poolFactory.create("test_pool");
   }
 
