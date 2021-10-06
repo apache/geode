@@ -75,7 +75,6 @@ public class GeodeParamsRunner extends JUnitParamsRunner {
    */
   @Override
   public void filter(Filter filter) throws NoTestsRemainException {
-    System.out.printf("DHE: filter(%s)%n", filter.describe());
     super.filter(vintageCompatibleFilter(filter, testNameToFrameworkMethod));
   }
 
@@ -154,9 +153,7 @@ public class GeodeParamsRunner extends JUnitParamsRunner {
 
     @Override
     public boolean shouldRun(Description description) {
-      boolean shouldRun = !description.getDisplayName().equals(displayNameToExclude);
-      System.out.printf("DHE: %s shouldRun(%s): %s%n", describe(), description, shouldRun);
-      return shouldRun;
+      return !description.getDisplayName().equals(displayNameToExclude);
     }
 
     @Override
