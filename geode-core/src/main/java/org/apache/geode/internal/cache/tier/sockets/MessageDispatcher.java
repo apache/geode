@@ -388,6 +388,8 @@ public class MessageDispatcher extends LoggingThread {
           waitForResumption();
         }
 
+        logger.info("available ids = {}, clientMessage = {}", _messageQueue.size(), clientMessage);
+
         // if message is not delivered due to authentication expiation, this clientMessage
         // would not be null.
         if (clientMessage == null) {
