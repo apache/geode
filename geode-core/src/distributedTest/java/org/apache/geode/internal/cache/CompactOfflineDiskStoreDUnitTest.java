@@ -51,6 +51,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -119,6 +120,8 @@ public class CompactOfflineDiskStoreDUnitTest implements Serializable {
     serverPort = port[2];
 
     locators = "localhost[" + locatorPort + "]";
+
+    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     locator.invoke(() -> startLocator(locatorName, locatorDir, locatorPort, locatorJmxPort));
 

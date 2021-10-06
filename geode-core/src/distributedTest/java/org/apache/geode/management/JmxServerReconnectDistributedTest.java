@@ -71,6 +71,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem.Reconnect
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedReference;
@@ -148,6 +149,8 @@ public class JmxServerReconnectDistributedTest implements Serializable {
     locator1JmxPort = port[2];
     locator2JmxPort = port[3];
     locators = "localhost[" + locator1Port + "],localhost[" + locator2Port + "]";
+
+    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     locator1VM.invoke(() -> {
       locatorLauncher.set(

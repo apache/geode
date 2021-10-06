@@ -73,7 +73,8 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*"); /// this is not blank as the method name suggests ???
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*"); /// this is not blank as the method name
+                                                          /// suggests ???
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)

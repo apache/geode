@@ -40,8 +40,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.VM;
@@ -50,7 +48,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @SuppressWarnings("serial")
-public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements Serializable {
+public class LocatorLauncherGlobalSerialFilterDistributedTest implements Serializable {
 
   private VM locatorVM;
   private File locatorDir;
@@ -119,8 +117,9 @@ public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements S
         .set(LOCATORS, String.format("localhost[%s]", locatorPort))
         .set(JMX_MANAGER, "false")
         .set(HTTP_SERVICE_PORT, "0")
-         .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
-         .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest;org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest$$Lambda*;org.apache.geode.test.dunit.**")
+        .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
+        .set(SERIALIZABLE_OBJECT_FILTER,
+            "org.apache.geode.internal.io.LocatorLauncherGlobalSerialFilterDistributedTest;org.apache.geode.internal.io.LocatorLauncherGlobalSerialFilterDistributedTest$$Lambda*;org.apache.geode.test.dunit.**")
         .build();
 
     locatorLauncher.start();
