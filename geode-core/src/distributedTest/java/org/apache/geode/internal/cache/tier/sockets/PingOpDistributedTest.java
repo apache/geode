@@ -133,11 +133,12 @@ public class PingOpDistributedTest implements Serializable {
     client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
     Long firstHeartbeat = server1.invoke(this::getSingleHeartBeat);
 
-    client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
-    Long secondHeartbeat = server1.invoke(this::getSingleHeartBeat);
+    GeodeAwaitility.await().untilAsserted(() -> {
+      client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
+      Long subsequentHeartbeat = server1.invoke(this::getSingleHeartBeat);
 
-    assertThat(secondHeartbeat).isGreaterThan(firstHeartbeat);
-
+      assertThat(subsequentHeartbeat).isGreaterThan(firstHeartbeat);
+    });
   }
 
   @Test
