@@ -51,6 +51,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -104,7 +105,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
     locatorDir = temporaryFolder.newFolder(locatorName);
     server1Dir = temporaryFolder.newFolder(server1Name);
     server2Dir = temporaryFolder.newFolder(server2Name);
-
+    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
     int locatorPort = locatorVM.invoke(() -> createLocator());
 
     server1VM.invoke(() -> createServer(server1Name, server1Dir, locatorPort));

@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -83,7 +82,7 @@ public class ServerGlobalSerialFilterIntegrationTest {
 
     assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
         .as(JDK_SERIAL_FILTER_PROPERTY)
-            .isEmpty();
+        .isEmpty();
   }
 
   @Test
@@ -107,7 +106,7 @@ public class ServerGlobalSerialFilterIntegrationTest {
 
     assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
         .as(JDK_SERIAL_FILTER_PROPERTY)
-            .isEmpty();
+        .isEmpty();
   }
 
   @Test
@@ -186,7 +185,9 @@ public class ServerGlobalSerialFilterIntegrationTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     String existingSerialFilter = "!*";
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter); // TODO: add a new test class that set system property
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter); // TODO: add a new test
+                                                                          // class that set system
+                                                                          // property
 
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
