@@ -21,6 +21,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,22 +87,25 @@ public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements S
   @Test
   public void primitiveIsAllows() {
     locatorVM.invoke(() -> {
-      Region<Object, Object> region = locator.get().getCache().getRegion("region"); // ???
-      region.put(1, 1);
+      Integer integerObject = 1;
+      try (ObjectInput inputStream = new ObjectInputStream(byteArrayInputStream(integerObject))) {
+        assertThat(inputStream.readObject()).isEqualTo(integerObject);
+      }
     });
   }
 
   @Test
   public void nonAllowedDoesNotThrow() {
     addIgnoredException(InvalidClassException.class);
-    addIgnoredException(IOException.class);
 
     locatorVM.invoke(() -> {
-      Region<Object, Object> region = locator.get().getCache().getRegion("region");
       Throwable thrown = catchThrowable(() -> {
-        // region.put(new SerializableClass(), new SerializableClass()); ??? why commented out
+        Serializable object = new SerializableClass("hello");
+        try (ObjectInput inputStream = new ObjectInputStream(byteArrayInputStream(object))) {
+          assertThat(inputStream.readObject()).isEqualTo(object);
+        }
       });
-      assertThat(thrown).isInstanceOf(InternalGemFireException.class);
+      assertThat(thrown).isInstanceOf(InvalidClassException.class);
     });
   }
 
@@ -114,8 +119,8 @@ public class LocatorLauncherGlobalGlobalSerialFilterDistributedTest implements S
         .set(LOCATORS, String.format("localhost[%s]", locatorPort))
         .set(JMX_MANAGER, "false")
         .set(HTTP_SERVICE_PORT, "0")
-        // .set(VALIDATE_SERIALIZABLE_OBJECTS, "false")
-        // .set(SERIALIZABLE_OBJECT_FILTER, "*")
+         .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
+         .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest;org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest$$Lambda*;org.apache.geode.test.dunit.**")
         .build();
 
     locatorLauncher.start();

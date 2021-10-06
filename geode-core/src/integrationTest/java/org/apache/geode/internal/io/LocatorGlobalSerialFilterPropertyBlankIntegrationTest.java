@@ -19,12 +19,12 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
+import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
@@ -38,16 +38,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
-import org.apache.geode.internal.serialization.filter.ReflectionObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorGlobalGlobalSerialFilterPropertyExistsIntegrationTest {
+public class LocatorGlobalSerialFilterPropertyBlankIntegrationTest {
 
   private static final String NAME = "locator";
   private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
-  private static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =
-      new ReflectionObjectInputFilterApiFactory().createObjectInputFilterApi();
 
   private File workingDirectory;
   private int locatorPort;
@@ -73,7 +69,7 @@ public class LocatorGlobalGlobalSerialFilterPropertyExistsIntegrationTest {
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*");
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
@@ -87,24 +83,21 @@ public class LocatorGlobalGlobalSerialFilterPropertyExistsIntegrationTest {
         .get()
         .start();
 
-    assertThat(OBJECT_INPUT_FILTER_API.getSerialFilter())
-        .as("ObjectInputFilter$Config.getSerialFilter()")
-        .isNotNull(); // TODO:KIRK: add forking tests for system property
+    assertThatSerialFilterIsNotNull();
   }
 
   @Test
-  public void doesNotSetSerialFilterWhenSerialFilterIsNull_onJava9orGreater()
+  public void doesNotSetSerialFilterWhenJdkSerialFilterPropertyIsSetToBlank_onJava9orGreater()
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*");
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
         .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
-        .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
@@ -112,8 +105,6 @@ public class LocatorGlobalGlobalSerialFilterPropertyExistsIntegrationTest {
         .get()
         .start();
 
-    assertThat(OBJECT_INPUT_FILTER_API.getSerialFilter())
-        .as("ObjectInputFilter$Config.getSerialFilter()")
-        .isNull();
+    assertThatSerialFilterIsNull();
   }
 }

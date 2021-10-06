@@ -727,6 +727,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       SerializableObjectConfig serializableObjectConfig =
           new DistributedSerializableObjectConfig(getDistributedSystemProperties());
 
+      // LocatorLauncher should configure BOTH jdk.serialFilter AND enable `validate-serializable-objects`
+      // when start is invoked and the JVM is Java 8.
+
       String filterPattern = new SanctionedSerializablesFilterPattern()
           .append(serializableObjectConfig.getFilterPatternIfEnabled())
           .pattern();
@@ -739,7 +742,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
       new Java8GlobalSerialFilterConfigurationFactory()
           .create(globalSerialFilter)
-          .configure();
+          .configure(); // java 9 does nothing ???
 
       try {
         this.process =

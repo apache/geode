@@ -47,6 +47,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
+// TODO: separate java 8 test to its own class
 public class LocatorSerializableObjectFilterIntegrationTest {
 
   private static final String NAME = "locator";
@@ -176,7 +177,7 @@ public class LocatorSerializableObjectFilterIntegrationTest {
 
   @Test
   public void configuresValidateSerializableObjects_onJava8() {
-    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
