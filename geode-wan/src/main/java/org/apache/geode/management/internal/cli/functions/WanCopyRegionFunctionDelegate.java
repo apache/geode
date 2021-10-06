@@ -365,7 +365,6 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
 
     private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
         Region.Entry<?, ?> entry) {
-
       EntryEventImpl event;
       try {
         event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,

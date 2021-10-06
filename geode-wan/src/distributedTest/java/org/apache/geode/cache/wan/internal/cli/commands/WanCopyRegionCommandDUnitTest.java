@@ -414,6 +414,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Wait for the wan-copy command to start
     waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
+
+    // Destroy region in a server in A
     server1InA.invoke(() -> cache.getRegion(regionName).destroyRegion());
 
     CommandResultAssert result = wanCopyCommandFuture.get();
@@ -689,7 +691,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
    *
    * When the command finishes and the puts finish it
    * must be verified that the entries in the region in site "A"
-   * are the same as the ones in region in site "B"..
+   * are the same as the ones in region in site "B".
    */
   @Test
   @Parameters({"true, true", "true, false", "false, false"})
@@ -708,7 +710,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         senderIdInA, senderIdInB);
 
     int wanCopyRegionBatchSize = 20;
-    int entries = 1000;
+    int entries = 10000;
     Set<Long> keySet = LongStream.range(0L, entries).boxed().collect(Collectors.toSet());
     String regionName = getRegionName(isPartitionedRegion);
     // Put entries
@@ -724,24 +726,46 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         senderIdInA, senderIdInB);
     createReceivers(serverInB, serverInC);
 
+    // Let maxRate be a 5th of the number of entries in order to have the
+    // command running for about 5 seconds so that there is time
+    // for the random operations to be done at the same time
+    // as the command is running.
+    // The rate is divided by the number of servers in case the sender is parallel
+    int maxRate = (entries / 5) / (isParallelGatewaySender ? serversInA.size() : 1);
+
     // Execute wan-copy region command
-    gfsh.connectAndVerify(senderLocatorPort, GfshCommandRule.PortType.locator);
-    String command = new CommandStringBuilder(WAN_COPY_REGION)
-        .addOption(WAN_COPY_REGION__REGION, regionName)
-        .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
-        .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
-        .getCommandString();
+    Callable<CommandResultAssert> wanCopyCommandCallable = () -> {
+      String command = new CommandStringBuilder(WAN_COPY_REGION)
+          .addOption(WAN_COPY_REGION__REGION, regionName)
+          .addOption(WAN_COPY_REGION__SENDERID, senderIdInA)
+          .addOption(WAN_COPY_REGION__BATCHSIZE, String.valueOf(wanCopyRegionBatchSize))
+          .addOption(WAN_COPY_REGION__MAXRATE, String.valueOf(maxRate))
+          .getCommandString();
+      try {
+        gfsh.connectAndVerify(senderLocatorPort, GfshCommandRule.PortType.locator);
+      } catch (Exception e) {
+        errorCollector.addError(e);
+      }
+      return gfsh.executeAndAssertThat(command);
+    };
+
+    Future<CommandResultAssert> wanCopyCommandFuture =
+        executorServiceRule.submit(wanCopyCommandCallable);
+
+    // Wait for the wan-copy command to start
+    waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
 
     // While the command is running, send some random operations over the same keys
     AsyncInvocation<Void> asyncOps1 =
-        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 3));
     AsyncInvocation<Void> asyncOps2 =
-        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 3));
     AsyncInvocation<Void> asyncOps3 =
-        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 10));
+        client.invokeAsync(() -> sendRandomOpsFromClient(regionName, keySet, 3));
 
     // Check command status and output
-    verifyStatusIsOk(gfsh.executeAndAssertThat(command));
+    CommandResultAssert command = wanCopyCommandFuture.get();
+    verifyStatusIsOk(command);
 
     // Wait for random operations to finish
     asyncOps1.await();
