@@ -35,7 +35,7 @@ import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
 import org.apache.geode.internal.serialization.filter.ReflectionObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorGlobalGlobalSerialFilterExistsIntegrationTest {
+public class LocatorGlobalSerialFilterExistsIntegrationTest {
 
   private static final String NAME = "locator";
   private static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =

@@ -43,7 +43,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class ServerJmxGlobalSerialFilterIntegrationTest {
+public class ServerJmxSerialFilterIntegrationTest {
 
   private static final String NAME = "server";
   private static final String JMX_SERIAL_FILTER_PROPERTY =

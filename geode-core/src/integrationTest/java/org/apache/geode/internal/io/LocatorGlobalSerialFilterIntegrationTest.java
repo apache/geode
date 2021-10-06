@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -34,16 +35,14 @@ import java.lang.reflect.InvocationTargetException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorGlobalGlobalSerialFilterPropertyBlankIntegrationTest {
+public class LocatorGlobalSerialFilterIntegrationTest {
 
   private static final String NAME = "locator";
-  private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
 
   private File workingDirectory;
   private int locatorPort;
@@ -51,8 +50,6 @@ public class LocatorGlobalGlobalSerialFilterPropertyBlankIntegrationTest {
 
   @Rule
   public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -65,11 +62,9 @@ public class LocatorGlobalGlobalSerialFilterPropertyBlankIntegrationTest {
   }
 
   @Test
-  public void setsSerialFilterWhenJdkSerialFilterPropertyIsSetToBlank_onJava8()
+  public void setsSerialFilter_onJava8()
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
-
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
@@ -87,17 +82,16 @@ public class LocatorGlobalGlobalSerialFilterPropertyBlankIntegrationTest {
   }
 
   @Test
-  public void doesNotSetSerialFilterWhenJdkSerialFilterPropertyIsSetToBlank_onJava9orGreater()
+  public void doesNotSetSerialFilter_onJava9orGreater()
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
         .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())

@@ -355,6 +355,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       String filterPattern = new SanctionedSerializablesFilterPattern()
           .append(distributionConfig.getSerializableObjectFilter())
           .pattern();
+      System.out.println("JC debug: filterPattern=" + filterPattern);
       serializationFilter = new DelegatingObjectInputFilterFactory()
           .create(filterPattern, loadSanctionedClassNames(services));
     } else {

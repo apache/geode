@@ -23,60 +23,54 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.filter.OpenMBeanFilterPattern;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesFilterPattern;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorJmxGlobalSerialFilterIntegrationTest {
+public class ServerGlobalSerialFilterIntegrationTest {
 
-  private static final String NAME = "locator";
-  private static final String JMX_SERIAL_FILTER_PROPERTY =
-      "jmx.remote.rmi.server.serial.filter.pattern";
+  private static final String NAME = "server";
+  private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
 
   private File workingDirectory;
-  private int locatorPort;
   private int jmxPort;
-  private String openMBeanFilterPattern;
+  private String sanctionedSerializablesFilterPattern;
 
   @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
+  public CloseableReference<ServerLauncher> server = new CloseableReference<>();
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() throws IOException {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    int[] ports = getRandomAvailableTCPPorts(2);
-    locatorPort = ports[0];
-    jmxPort = ports[1];
-    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
+    jmxPort = getRandomAvailableTCPPort();
+    sanctionedSerializablesFilterPattern = new SanctionedSerializablesFilterPattern().pattern();
   }
 
   @Test
-  public void configuresJmxSerialFilter_onJava9orGreater() {
+  public void doesNotConfiguresJdkSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -87,22 +81,20 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
-        .isEqualTo(openMBeanFilterPattern);
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+            .isEmpty();
   }
 
   @Test
-  public void changesEmptyJmxSerialFilter_onJava9orGreater() {
+  public void doesNotChangesEmptyJdkSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    System.setProperty(JMX_SERIAL_FILTER_PROPERTY, "");
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -113,23 +105,21 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
-        .isEqualTo(openMBeanFilterPattern);
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+            .isEmpty();
   }
 
   @Test
-  public void doesNotChangeNonEmptyJmxSerialFilter_onJava9orGreater() {
+  public void doesNotChangeNonEmptySerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
-    String existingJmxSerialFilter = "!*";
-    System.setProperty(JMX_SERIAL_FILTER_PROPERTY, existingJmxSerialFilter);
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter);
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -140,20 +130,18 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
-        .isEqualTo(existingJmxSerialFilter);
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo(existingSerialFilter);
   }
 
   @Test
-  public void doesNotConfigureJmxSerialFilter_onJava8() {
+  public void doesNotConfigureJdkSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -164,22 +152,20 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
         .isNull();
   }
 
   @Test
-  public void doesNotChangeEmptyJmxSerialFilter_onJava8() {
+  public void doesNotChangeEmptyJdkSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    System.setProperty(JMX_SERIAL_FILTER_PROPERTY, "");
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -190,23 +176,21 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
         .isEqualTo("");
   }
 
   @Test
-  public void doesNotChangeNonEmptyJmxSerialFilter_onJava8() {
+  public void doesNotChangeNonEmptyJdkSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    String existingJmxSerialFilter = "!*";
-    System.setProperty(JMX_SERIAL_FILTER_PROPERTY, existingJmxSerialFilter);
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter); // TODO: add a new test class that set system property
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -217,20 +201,8 @@ public class LocatorJmxGlobalSerialFilterIntegrationTest {
         .get()
         .start();
 
-    assertThat(isJmxManagerStarted())
-        .isTrue();
-    assertThat(System.getProperty(JMX_SERIAL_FILTER_PROPERTY))
-        .as(JMX_SERIAL_FILTER_PROPERTY)
-        .isEqualTo(existingJmxSerialFilter);
-  }
-
-  private SystemManagementService getSystemManagementService() {
-    InternalLocator locator = (InternalLocator) this.locator.get().getLocator();
-    InternalCache cache = locator.getCache();
-    return (SystemManagementService) ManagementService.getManagementService(cache);
-  }
-
-  private boolean isJmxManagerStarted() {
-    return getSystemManagementService().isManager();
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo(existingSerialFilter);
   }
 }

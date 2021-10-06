@@ -108,22 +108,22 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
         .add("sun.security.provider.certpath.SunCertPathBuilderException")
 
         // geode-modules
-        .add("org.apache.geode.modules.util.SessionCustomExpiry")
+        .add("org.apache.geode.modules.util.SessionCustomExpiry");
         // geode-dunit
-        .add("org.apache.geode.management.JmxLocatorReconnectDistributedTest*")
-        .add("org.apache.geode.management.JmxServerReconnectDistributedTest*")
-        .add("org.apache.geode.management.internal.rest.ManagementRequestLoggingDistributedTest*")
-        .add("org.apache.geode.internal.metrics.MeterSubregistryReconnectDistributedTest*")
-        .add("org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest*")
-        .add("org.apache.geode.internal.cache.CompactOfflineDiskStoreDUnitTest*")
-        .add("org.apache.geode.internal.cache.ParallelDiskStoreRecoveryDUnitTest*")
-        .add("org.apache.geode.internal.cache.PartitionedRegionSingleHopDUnitTest*")
-        .add("org.apache.geode.internal.cache.BucketServerLocation66")
-        .add("org.apache.geode.internal.cache.ValidateOfflineDiskStoreDUnitTest*")
-        .add("org.apache.geode.logging.internal.LoggingWithReconnectDistributedTest*")
-        .add("org.apache.geode.distributed.HostedLocatorsDUnitTest*")
-        .add("org.apache.geode.management.internal.cli.commands.ShutdownCommandDUnitTest*")
-        .add("org.apache.geode.management.internal.cli.commands.ShutdownCommandOverHttpDUnitTest*")
-        .add("org.apache.geode.test.dunit.**");
+//        .add("org.apache.geode.management.JmxLocatorReconnectDistributedTest*")
+//        .add("org.apache.geode.management.JmxServerReconnectDistributedTest*")
+//        .add("org.apache.geode.management.internal.rest.ManagementRequestLoggingDistributedTest*")
+//        .add("org.apache.geode.internal.metrics.MeterSubregistryReconnectDistributedTest*")
+//        .add("org.apache.geode.internal.io.LocatorLauncherGlobalGlobalSerialFilterDistributedTest*")
+//        .add("org.apache.geode.internal.cache.CompactOfflineDiskStoreDUnitTest*")
+//        .add("org.apache.geode.internal.cache.ParallelDiskStoreRecoveryDUnitTest*")
+//        .add("org.apache.geode.internal.cache.PartitionedRegionSingleHopDUnitTest*")
+//        .add("org.apache.geode.internal.cache.BucketServerLocation66")
+//        .add("org.apache.geode.internal.cache.ValidateOfflineDiskStoreDUnitTest*")
+//        .add("org.apache.geode.logging.internal.LoggingWithReconnectDistributedTest*")
+//        .add("org.apache.geode.distributed.HostedLocatorsDUnitTest*")
+//        .add("org.apache.geode.management.internal.cli.commands.ShutdownCommandDUnitTest*")
+//        .add("org.apache.geode.management.internal.cli.commands.ShutdownCommandOverHttpDUnitTest*")
+//        .add("org.apache.geode.test.dunit.**");
   }
 }
