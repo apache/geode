@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.key;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 
 import java.util.List;
 
@@ -41,9 +42,7 @@ public abstract class AbstractRenameExecutor extends AbstractExecutor {
     }
 
     if (key.getSlot() != newKey.getSlot()) {
-      // Will produce MOVED exceptions here for whichever key is at fault
-      context.getRegionProvider().getRedisData(newKey);
-      context.getRegionProvider().getRedisData(key);
+      return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
     }
 
     try {
