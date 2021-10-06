@@ -39,7 +39,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class ServerGlobalSerialFilterIntegrationTest {
+public class ServerSetSystemPropertyGlobalSerialFilterIntegrationTest {
 
   private static final String NAME = "server";
   private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
@@ -61,8 +61,10 @@ public class ServerGlobalSerialFilterIntegrationTest {
   }
 
   @Test
-  public void doesNotConfiguresJdkSerialFilter_onJava9orGreater() {
+  public void doesNotChangesEmptyJdkSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
@@ -79,12 +81,15 @@ public class ServerGlobalSerialFilterIntegrationTest {
 
     assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
         .as(JDK_SERIAL_FILTER_PROPERTY)
-        .isNull();
+        .isEmpty();
   }
 
   @Test
-  public void doesNotConfigureJdkSerialFilter_onJava8() {
-    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+  public void doesNotChangeNonEmptySerialFilter_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter);
 
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
@@ -101,7 +106,55 @@ public class ServerGlobalSerialFilterIntegrationTest {
 
     assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
         .as(JDK_SERIAL_FILTER_PROPERTY)
-        .isNull();
+        .isEqualTo(existingSerialFilter);
   }
 
+  @Test
+  public void doesNotChangeEmptyJdkSerialFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
+
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setDisableDefaultServer(true)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo("");
+  }
+
+  @Test
+  public void doesNotChangeNonEmptyJdkSerialFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter);
+
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setDisableDefaultServer(true)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo(existingSerialFilter);
+  }
 }
