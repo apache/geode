@@ -1,4 +1,5 @@
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -11,13 +12,14 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.collectSecurityManagers;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExecuteCQ;
+import static org.apache.geode.cache.query.dunit.SecurityTestUtils.getSecurityManager;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.apache.geode.security.AuthExpirationDUnitTest.createAndExecuteCQ;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.collectSecurityManagers;
-import static org.apache.geode.security.ClientAuthenticationTestUtils.getSecurityManager;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
@@ -37,8 +39,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.security.AuthExpirationDUnitTest.EventsCqListner;
 import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -80,6 +82,7 @@ public class AuthExpirationMultiServerDUnitTest {
   @After
   public void after() {
     UpdatableUserAuthInitialize.reset();
+    closeSecurityManager();
   }
 
   @Test
@@ -312,6 +315,12 @@ public class AuthExpirationMultiServerDUnitTest {
   private void expireUserOnAllVms(String user) {
     MemberVM.invokeInEveryMember(() -> {
       getSecurityManager().addExpiredUser(user);
+    }, locator, server1, server2);
+  }
+
+  private void closeSecurityManager() {
+    MemberVM.invokeInEveryMember(() -> {
+      getSecurityManager().close();
     }, locator, server1, server2);
   }
 }

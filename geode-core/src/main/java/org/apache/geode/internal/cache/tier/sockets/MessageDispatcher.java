@@ -422,7 +422,7 @@ public class MessageDispatcher extends LoggingThread {
           wait_for_re_auth_start_time = -1;
         } catch (NotAuthorizedException notAuthorized) {
           // behave as if the message is dispatched, remove from the queue
-          logger.info("skip delivering message: " + clientMessage, notAuthorized);
+          logger.warn("skip delivering message: " + clientMessage, notAuthorized);
           _messageQueue.remove();
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
@@ -440,9 +440,12 @@ public class MessageDispatcher extends LoggingThread {
           } else {
             long elapsedTime = System.currentTimeMillis() - wait_for_re_auth_start_time;
             if (elapsedTime > reAuthenticateWaitTime) {
-              logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
-                  + "ms. Unregister this client proxy.");
-              pauseOrUnregisterProxy(expired);
+              synchronized (_stopDispatchingLock) {
+                logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
+                    + "ms. Unregister this client proxy.");
+                pauseOrUnregisterProxy(expired);
+              }
+              exceptionOccurred = true;
             } else {
               Thread.sleep(200);
             }
@@ -531,54 +534,59 @@ public class MessageDispatcher extends LoggingThread {
 
     // Processing gets here if isStopped=true. What is this code below doing?
     if (!exceptionOccurred) {
-      List<ClientMessage> list = new ArrayList<>();
-      try {
-        // Clear the interrupt status if any,
-        Thread.interrupted();
-        int size = _messageQueue.size();
-        list.addAll(uncheckedCast(_messageQueue.peek(size)));
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
-              this, list, list.size());
-        }
-        if (list.size() > 0) {
-          long start = getStatistics().startTime();
-          Iterator<ClientMessage> itr = list.iterator();
-          while (itr.hasNext()) {
-            dispatchMessage(itr.next());
-            getStatistics().endMessage(start);
-            itr.remove();
-          }
-          _messageQueue.remove();
-        }
-      } catch (CancelException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier stopped due to cancellation");
-        }
-      } catch (Exception e) {
-        String extraMsg = null;
-
-        if ("Broken pipe".equals(e.getMessage())) {
-          extraMsg = "Problem caused by broken pipe on socket.";
-        } else if (e instanceof RegionDestroyedException) {
-          extraMsg = "Problem caused by message queue being closed.";
-        }
-        if (extraMsg == null) {
-          extraMsg = "Problem caused by: " + e.getMessage();
-        }
-        logger.info(String.format(
-            "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
-            (!isStopped()) ? toString() + ": " : "", list.size()));
-        logger.info(extraMsg);
-      }
-
-      if (!list.isEmpty() && logger.isTraceEnabled()) {
-        logger.trace("Messages remaining in the list are: {}", list);
-      }
+      dispatchResidualMessages();
     }
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Dispatcher thread is ending", this);
+    }
+  }
+
+  @VisibleForTesting
+  void dispatchResidualMessages() {
+    List<ClientMessage> list = new ArrayList<>();
+    try {
+      // Clear the interrupt status if any,
+      Thread.interrupted();
+      int size = _messageQueue.size();
+      list.addAll(uncheckedCast(_messageQueue.peek(size)));
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
+            this, list, list.size());
+      }
+      if (list.size() > 0) {
+        long start = getStatistics().startTime();
+        Iterator<ClientMessage> itr = list.iterator();
+        while (itr.hasNext()) {
+          dispatchMessage(itr.next());
+          getStatistics().endMessage(start);
+          itr.remove();
+        }
+        _messageQueue.remove();
+      }
+    } catch (CancelException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("CacheClientNotifier stopped due to cancellation");
+      }
+    } catch (Exception e) {
+      String extraMsg = null;
+
+      if ("Broken pipe".equals(e.getMessage())) {
+        extraMsg = "Problem caused by broken pipe on socket.";
+      } else if (e instanceof RegionDestroyedException) {
+        extraMsg = "Problem caused by message queue being closed.";
+      }
+      if (extraMsg == null) {
+        extraMsg = "Problem caused by: " + e.getMessage();
+      }
+      logger.info(String.format(
+          "%s Possibility of not being able to send some or all of the messages to clients. Total messages currently present in the list %s.",
+          (!isStopped()) ? toString() + ": " : "", list.size()));
+      logger.info(extraMsg);
+    }
+
+    if (!list.isEmpty() && logger.isTraceEnabled()) {
+      logger.trace("Messages remaining in the list are: {}", list);
     }
   }
 

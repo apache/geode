@@ -148,6 +148,7 @@ public class MessageDispatcherTest {
 
     // since we keep throwing the AuthenticationExpiredException, we will eventually call this
     verify(dispatcher).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
+    verify(dispatcher, never()).dispatchResidualMessages();
   }
 
   @Test
@@ -163,5 +164,6 @@ public class MessageDispatcherTest {
     verify(dispatcher, never()).sendMessageDirectly(any());
     // we will eventually pauseOrUnregisterProxy
     verify(dispatcher).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
+    verify(dispatcher, never()).dispatchResidualMessages();
   }
 }
