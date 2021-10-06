@@ -1,22 +1,3 @@
-From 15b752b4d129d4f303d033f0e6e63871355388cc Mon Sep 17 00:00:00 2001
-From: Hale Bales <hbales@vmware.com>
-Date: Wed, 22 Jul 2020 16:55:20 -0400
-Subject: [PATCH] configure redis tests
-
-change redis tests for compatibility with geode redis
----
- tests/support/server.tcl   |   7 +-
- tests/support/test.tcl     |   4 +-
- tests/test_helper.tcl      |  11 +-
- tests/unit/auth.tcl        |  13 +-
- tests/unit/expire.tcl      | 104 +++++++-------
- tests/unit/pubsub.tcl      | 336 +++++++++++++++++++++++----------------------
- tests/unit/quit.tcl        |   5 +-
- tests/unit/type/hash.tcl   |  52 +++----
- tests/unit/type/set.tcl    |   8 +-
- tests/unit/type/string.tcl |  42 +++---
- 10 files changed, 294 insertions(+), 288 deletions(-)
-
 diff --git a/tests/support/server.tcl b/tests/support/server.tcl
 index 5578f1fd6..55c0a5253 100644
 --- a/tests/support/server.tcl
@@ -93,7 +74,7 @@ index 8978631e0..33c10eb15 100644
      } elseif {$opt eq {--port}} {
          set ::port $arg
 diff --git a/tests/unit/auth.tcl b/tests/unit/auth.tcl
-index 633cda95c..03857205d 100644
+index f5da728e8..c8b40385f 100644
 --- a/tests/unit/auth.tcl
 +++ b/tests/unit/auth.tcl
 @@ -1,9 +1,10 @@
@@ -113,8 +94,43 @@ index 633cda95c..03857205d 100644
  
  start_server {tags {"auth"} overrides {requirepass foobar}} {
      test {AUTH fails when a wrong password is given} {
+@@ -25,19 +26,19 @@ start_server {tags {"auth"} overrides {requirepass foobar}} {
+         r incr foo
+     } {101}
+ 
+-    test {For unauthenticated clients multibulk and bulk length are limited} {
+-        set rr [redis [srv "host"] [srv "port"] 0]
+-        $rr write "*100\r\n"
+-        $rr flush
+-        catch {[$rr read]} e
+-        assert_match {*unauthenticated multibulk length*} $e
+-        $rr close
+-
+-        set rr [redis [srv "host"] [srv "port"] 0]
+-        $rr write "*1\r\n\$100000000\r\n"
+-        $rr flush
+-        catch {[$rr read]} e
+-        assert_match {*unauthenticated bulk length*} $e
+-        $rr close
+-    }
++#    test {For unauthenticated clients multibulk and bulk length are limited} {
++#        set rr [redis [srv "host"] [srv "port"] 0]
++#        $rr write "*100\r\n"
++#        $rr flush
++#        catch {[$rr read]} e
++#        assert_match {*unauthenticated multibulk length*} $e
++#        $rr close
++#
++#        set rr [redis [srv "host"] [srv "port"] 0]
++#        $rr write "*1\r\n\$100000000\r\n"
++#        $rr flush
++#        catch {[$rr read]} e
++#        assert_match {*unauthenticated bulk length*} $e
++#        $rr close
++#    }
+ }
 diff --git a/tests/unit/expire.tcl b/tests/unit/expire.tcl
-index de24eabed..aeeb1da7f 100644
+index de24eabed..6b37389de 100644
 --- a/tests/unit/expire.tcl
 +++ b/tests/unit/expire.tcl
 @@ -7,7 +7,7 @@ start_server {tags {"expire"}} {
@@ -162,7 +178,10 @@ index de24eabed..aeeb1da7f 100644
  
      test {PERSIST returns 0 against non existing or non volatile keys} {
          r set x foo
-@@ -149,44 +149,44 @@ start_server {tags {"expire"}} {
+@@ -146,47 +146,47 @@ start_server {tags {"expire"}} {
+         list [r ttl x] [r pttl x]
+     } {-2 -2}
+ 
 -    test {Redis should actively expire keys incrementally} {
 -        r flushdb
 -        r psetex key1 500 a
@@ -176,20 +195,7 @@ index de24eabed..aeeb1da7f 100644
 -        set size2 [r dbsize]
 -        list $size1 $size2
 -    } {3 0}
-+#    test {Redis should actively expire keys incrementally} {
-+#        r flushdb
-+#        r psetex key1 500 a
-+#        r psetex key2 500 a
-+#        r psetex key3 500 a
-+#        set size1 [r dbsize]
-+#        # Redis expires random keys ten times every second so we are
-+#        # fairly sure that all the three keys should be evicted after
-+#        # one second.
-+#        after 1000
-+#        set size2 [r dbsize]
-+#        list $size1 $size2
-+#    } {3 0}
- 
+-
 -    test {Redis should lazy expire keys} {
 -        r flushdb
 -        r debug set-active-expire 0
@@ -217,6 +223,20 @@ index de24eabed..aeeb1da7f 100644
 -        r debug set-active-expire 1
 -        r exists foo
 -    } {0}
++#    test {Redis should actively expire keys incrementally} {
++#        r flushdb
++#        r psetex key1 500 a
++#        r psetex key2 500 a
++#        r psetex key3 500 a
++#        set size1 [r dbsize]
++#        # Redis expires random keys ten times every second so we are
++#        # fairly sure that all the three keys should be evicted after
++#        # one second.
++#        after 1000
++#        set size2 [r dbsize]
++#        list $size1 $size2
++#    } {3 0}
++
 + #   test {Redis should lazy expire keys} {
 + #       r flushdb
 + #       r debug set-active-expire 0
@@ -672,7 +692,7 @@ index 4cf440abf..990513d50 100644
          r write [format_command set foo [string repeat "x" 1024]]
          r flush
 diff --git a/tests/unit/type/hash.tcl b/tests/unit/type/hash.tcl
-index d2c679d32..f354f5953 100644
+index d2c679d32..6d17de48b 100644
 --- a/tests/unit/type/hash.tcl
 +++ b/tests/unit/type/hash.tcl
 @@ -252,10 +252,10 @@ start_server {tags {"hash"}} {
@@ -819,6 +839,3 @@ index 7122fd987..12c323fc2 100644
          assert_error "WRONGTYPE*" {r setrange mykey 0 bar}
      }
  
--- 
-2.15.1
-
