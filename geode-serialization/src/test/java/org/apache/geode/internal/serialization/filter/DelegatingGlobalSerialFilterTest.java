@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-public class DelegatingGlobalGlobalSerialFilterTest {
+public class DelegatingGlobalSerialFilterTest {
 
   private ObjectInputFilterApi api;
 

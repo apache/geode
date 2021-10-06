@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 
 import org.junit.Test;
 
-public class GlobalGlobalSerialFilterConfigurationTest {
+public class GlobalSerialFilterConfigurationTest {
 
   @Test
   public void requiresGlobalSerialFilter() {
