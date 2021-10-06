@@ -103,7 +103,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1')
         api(group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2')
         api(group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.2')
-        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.15.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '4.0.3')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-codec', name: 'commons-codec', version: '1.15')
@@ -196,6 +195,11 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'com.pholser', version: '1.0') {
       entry('junit-quickcheck-core')
       entry('junit-quickcheck-generators')
+    }
+
+    dependencySet(group: 'com.tngtech.archunit', version: '0.15.0') {
+      entry('archunit-junit4')
+      entry('archunit')
     }
 
     dependencySet(group: 'io.springfox', version: '2.9.2') {

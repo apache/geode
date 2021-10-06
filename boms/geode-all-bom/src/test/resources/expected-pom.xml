@@ -118,11 +118,6 @@
         <version>2.3.2</version>
       </dependency>
       <dependency>
-        <groupId>com.tngtech.archunit</groupId>
-        <artifactId>archunit-junit4</artifactId>
-        <version>0.15.0</version>
-      </dependency>
-      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>4.0.3</version>
@@ -516,6 +511,16 @@
         <groupId>com.pholser</groupId>
         <artifactId>junit-quickcheck-generators</artifactId>
         <version>1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit4</artifactId>
+        <version>0.15.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit</artifactId>
+        <version>0.15.0</version>
       </dependency>
       <dependency>
         <groupId>io.springfox</groupId>

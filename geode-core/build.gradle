@@ -181,7 +181,9 @@ dependencies {
 
   //  The antlr configuration is used by the antlr plugin, which compiles grammar
   // files used by the query engine
-  antlr 'antlr:antlr'
+  gradleLint.ignore {
+    antlr 'antlr:antlr'
+  }
 
   // External
   //------------------------------------------------------------
@@ -210,8 +212,10 @@ dependencies {
   api('io.micrometer:micrometer-core')
 
   // swagger annotations are on public methods used outside of geode-core
-  api('io.swagger:swagger-annotations') {
-    ext.optional = true
+  gradleLint.ignore {
+    api('io.swagger:swagger-annotations') {
+      ext.optional = true
+    }
   }
 
   //tools.jar seems to be used by gfsh is some cases to control processes using
@@ -222,7 +226,9 @@ dependencies {
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 
   // find bugs leaks in from spring, needed to remove warnings.
-  compileOnly('com.google.code.findbugs:jsr305')
+  gradleLint.ignore {
+    compileOnly('com.google.code.findbugs:jsr305')
+  }
 
   compileOnly('org.jetbrains:annotations')
 
@@ -331,7 +337,10 @@ dependencies {
   jcaImplementation(sourceSets.main.output)
 
 
-  testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+  //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  gradleLint.ignore {
+    testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+  }
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -362,6 +371,7 @@ dependencies {
   testRuntimeOnly('commons-validator:commons-validator')
   testRuntimeOnly('com.pholser:junit-quickcheck-generators')
 
+
   // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
   integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
   integrationTestImplementation(project(':geode-gfsh'))
@@ -370,11 +380,12 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j'))
   integrationTestImplementation(project(':geode-concurrency-test'))
   integrationTestImplementation('org.apache.bcel:bcel')
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  gradleLint.ignore {
+    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  }
   integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-  integrationTestImplementation('com.github.stefanbirkner:system-rules')
   integrationTestImplementation('com.tngtech.archunit:archunit')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
   integrationTestImplementation('com.google.guava:guava')
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.assertj:assertj-core')
