@@ -44,11 +44,11 @@ public class PubSubExecutor implements Executor {
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
       }
       List<byte[]> channelsResponse = doChannels(args, context);
-      return RedisResponse.array(channelsResponse);
+      return RedisResponse.array(channelsResponse, true);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMSUB)) {
       List<Object> numSubresponse = context.getPubSub()
           .findNumberOfSubscribersPerChannel(args.subList(1, args.size()));
-      return RedisResponse.array(numSubresponse);
+      return RedisResponse.array(numSubresponse, true);
     } else if (equalsIgnoreCaseBytes(subCommand, bNUMPAT)) {
       if (args.size() > 1) {
         return RedisResponse

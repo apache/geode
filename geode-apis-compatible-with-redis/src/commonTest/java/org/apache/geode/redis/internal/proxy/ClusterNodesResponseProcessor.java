@@ -54,7 +54,7 @@ public class ClusterNodesResponseProcessor implements RedisResponseProcessor {
 
     ByteBuf response;
     try {
-      response = Coder.getBulkStringResponse(channel.alloc().buffer(), input);
+      response = Coder.getStringResponse(channel.alloc().buffer(), input, true);
     } catch (CoderException e) {
       throw new RuntimeException(e);
     }

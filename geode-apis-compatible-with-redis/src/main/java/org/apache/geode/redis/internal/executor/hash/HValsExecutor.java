@@ -61,7 +61,7 @@ public class HValsExecutor extends AbstractExecutor {
       return RedisResponse.emptyArray();
     }
 
-    return RedisResponse.array(values);
+    return RedisResponse.array(values, true);
   }
 
 }

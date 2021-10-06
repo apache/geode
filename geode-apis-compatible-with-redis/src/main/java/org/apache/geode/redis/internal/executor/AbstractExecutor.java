@@ -31,7 +31,7 @@ public abstract class AbstractExecutor implements Executor {
 
   protected RedisResponse respondBulkStrings(Object message) {
     if (message instanceof Collection) {
-      return RedisResponse.array((Collection<?>) message);
+      return RedisResponse.array((Collection<?>) message, true);
     } else {
       return RedisResponse.bulkString(message);
     }

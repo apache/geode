@@ -30,6 +30,6 @@ public class SMembersExecutor extends AbstractExecutor {
     RedisSetCommands redisSetCommands = context.getSetCommands();
     Set<byte[]> members = redisSetCommands.smembers(key);
 
-    return RedisResponse.array(members);
+    return RedisResponse.array(members, true);
   }
 }

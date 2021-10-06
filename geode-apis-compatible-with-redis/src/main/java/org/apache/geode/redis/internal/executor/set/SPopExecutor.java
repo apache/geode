@@ -57,6 +57,6 @@ public class SPopExecutor extends AbstractExecutor {
       return RedisResponse.bulkString(popped.iterator().next());
     }
 
-    return RedisResponse.array(popped);
+    return RedisResponse.array(popped, true);
   }
 }

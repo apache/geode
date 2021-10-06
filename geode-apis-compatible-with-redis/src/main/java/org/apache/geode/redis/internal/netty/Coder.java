@@ -78,7 +78,7 @@ public class Coder {
     decimalFormatter.setMaximumFractionDigits(10);
   }
 
-  public static ByteBuf getBulkStringResponse(ByteBuf buffer, Object v)
+  public static ByteBuf getStringResponse(ByteBuf buffer, Object v, boolean useBulkStrings)
       throws CoderException {
     byte[] toWrite;
 
@@ -86,17 +86,17 @@ public class Coder {
       buffer.writeBytes(bNIL);
     } else if (v instanceof byte[]) {
       toWrite = (byte[]) v;
-      writeStringResponse(buffer, toWrite);
+      writeStringResponse(buffer, toWrite, useBulkStrings);
     } else if (v instanceof RedisKey) {
       toWrite = ((RedisKey) v).toBytes();
-      writeStringResponse(buffer, toWrite);
+      writeStringResponse(buffer, toWrite, useBulkStrings);
     } else if (v instanceof Double) {
       toWrite = doubleToBytes((Double) v);
-      writeStringResponse(buffer, toWrite);
+      writeStringResponse(buffer, toWrite, useBulkStrings);
     } else if (v instanceof String) {
       String value = (String) v;
       toWrite = stringToBytes(value);
-      writeStringResponse(buffer, toWrite);
+      writeStringResponse(buffer, toWrite, useBulkStrings);
     } else if (v instanceof Integer) {
       getIntegerResponse(buffer, (int) v);
     } else if (v instanceof Long) {
@@ -108,10 +108,14 @@ public class Coder {
     return buffer;
   }
 
-  private static void writeStringResponse(ByteBuf buffer, byte[] toWrite) {
-    buffer.writeByte(BULK_STRING_ID);
-    appendAsciiDigitsToByteBuf(toWrite.length, buffer);
-    buffer.writeBytes(bCRLF);
+  private static void writeStringResponse(ByteBuf buffer, byte[] toWrite, boolean useBulkStrings) {
+    if (useBulkStrings) {
+      buffer.writeByte(BULK_STRING_ID);
+      appendAsciiDigitsToByteBuf(toWrite.length, buffer);
+      buffer.writeBytes(bCRLF);
+    } else {
+      buffer.writeByte(SIMPLE_STRING_ID);
+    }
     buffer.writeBytes(toWrite);
     buffer.writeBytes(bCRLF);
   }
@@ -119,30 +123,31 @@ public class Coder {
   public static ByteBuf getFlattenedArrayResponse(ByteBuf buffer, Collection<Collection<?>> items)
       throws CoderException {
     for (Object next : items) {
-      writeCollectionOrString(buffer, next);
+      writeCollectionOrString(buffer, next, true);
     }
 
     return buffer;
   }
 
-  public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items)
-      throws CoderException {
+  public static ByteBuf getArrayResponse(ByteBuf buffer, Collection<?> items,
+      boolean useBulkStrings) throws CoderException {
     buffer.writeByte(ARRAY_ID);
     appendAsciiDigitsToByteBuf(items.size(), buffer);
     buffer.writeBytes(bCRLF);
     for (Object next : items) {
-      writeCollectionOrString(buffer, next);
+      writeCollectionOrString(buffer, next, useBulkStrings);
     }
 
     return buffer;
   }
 
-  private static void writeCollectionOrString(ByteBuf buffer, Object next) throws CoderException {
+  private static void writeCollectionOrString(ByteBuf buffer, Object next, boolean useBulkStrings)
+      throws CoderException {
     if (next instanceof Collection) {
       Collection<?> nextItems = (Collection<?>) next;
-      getArrayResponse(buffer, nextItems);
+      getArrayResponse(buffer, nextItems, useBulkStrings);
     } else {
-      getBulkStringResponse(buffer, next);
+      getStringResponse(buffer, next, useBulkStrings);
     }
   }
 
@@ -151,7 +156,7 @@ public class Coder {
     buffer.writeByte(digitToAscii(2));
     buffer.writeBytes(bCRLF);
     byte[] cursorBytes = intToBytes(cursor);
-    writeStringResponse(buffer, cursorBytes);
+    writeStringResponse(buffer, cursorBytes, true);
     buffer.writeByte(ARRAY_ID);
     appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
     buffer.writeBytes(bCRLF);
@@ -159,11 +164,11 @@ public class Coder {
     for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
         String next = (String) nextObject;
-        writeStringResponse(buffer, stringToBytes(next));
+        writeStringResponse(buffer, stringToBytes(next), true);
       } else if (nextObject instanceof RedisKey) {
-        writeStringResponse(buffer, ((RedisKey) nextObject).toBytes());
+        writeStringResponse(buffer, ((RedisKey) nextObject).toBytes(), true);
       } else {
-        writeStringResponse(buffer, (byte[]) nextObject);
+        writeStringResponse(buffer, (byte[]) nextObject, true);
       }
     }
     return buffer;
@@ -248,7 +253,7 @@ public class Coder {
   }
 
   public static ByteBuf getBigDecimalResponse(ByteBuf buffer, BigDecimal b) {
-    writeStringResponse(buffer, bigDecimalToBytes(b));
+    writeStringResponse(buffer, bigDecimalToBytes(b), true);
     return buffer;
   }
 
