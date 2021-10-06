@@ -358,11 +358,6 @@
         <version>2.6.2</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.7</version>
-      </dependency>
-      <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
         <version>9.4.43.v20210629</version>
@@ -616,6 +611,26 @@
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-test-framework</artifactId>
         <version>6.6.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-core-uberjar</artifactId>
+        <version>1.9.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-core-api-container</artifactId>
+        <version>1.9.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-core-api-generic</artifactId>
+        <version>1.9.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-core-api-util</artifactId>
+        <version>1.9.7</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>

@@ -152,7 +152,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.assertj', name: 'assertj-core', version: '3.20.2')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.1.0')
         api(group: 'org.buildobjects', name: 'jproc', version: '2.6.2')
-        api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.7')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
         api(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
@@ -234,6 +233,13 @@ class DependencyConstraints implements Plugin<Project> {
       entry('lucene-core')
       entry('lucene-queryparser')
       entry('lucene-test-framework')
+    }
+
+    dependencySet(group: 'org.codehaus.cargo', version: '1.9.7') {
+      entry('cargo-core-uberjar')
+      entry('cargo-core-api-container')
+      entry('cargo-core-api-generic')
+      entry('cargo-core-api-util')
     }
 
     dependencySet(group: 'org.hamcrest', version: '2.2') {
