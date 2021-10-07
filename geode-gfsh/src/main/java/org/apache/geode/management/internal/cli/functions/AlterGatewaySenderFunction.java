@@ -25,6 +25,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
@@ -69,6 +70,10 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
       throw new EntityNotFoundException(message);
     }
 
+    if (!(gateway instanceof AbstractGatewaySender)) {
+      throw new UnsupportedOperationException("alter gateway sender");
+    }
+
     boolean pause = false;
     if (gateway.isRunning() && !gateway.isPaused()) {
       gateway.pause();
@@ -77,22 +82,23 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
 
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
     if (alertThreshold != null) {
-      gateway.setAlertThreshold(alertThreshold.intValue());
+      ((AbstractGatewaySender) gateway).setAlertThreshold(alertThreshold.intValue());
     }
 
     Integer batchSize = gatewaySenderCreateArgs.getBatchSize();
     if (batchSize != null) {
-      gateway.setBatchSize(batchSize.intValue());
+      ((AbstractGatewaySender) gateway).setBatchSize(batchSize.intValue());
     }
 
     Integer batchTimeInterval = gatewaySenderCreateArgs.getBatchTimeInterval();
     if (batchTimeInterval != null) {
-      gateway.setBatchTimeInterval(batchTimeInterval.intValue());
+      ((AbstractGatewaySender) gateway).setBatchTimeInterval(batchTimeInterval.intValue());
     }
 
     Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();
     if (groupTransactionEvents != null) {
-      gateway.setGroupTransactionEvents(groupTransactionEvents.booleanValue());
+      ((AbstractGatewaySender) gateway)
+          .setGroupTransactionEvents(groupTransactionEvents.booleanValue());
     }
 
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
@@ -104,7 +110,7 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
               GatewayEventFilter.class));
         }
       }
-      gateway.setGatewayEventFilters(filters);
+      ((AbstractGatewaySender) gateway).setGatewayEventFilters(filters);
     }
 
     if (pause) {
