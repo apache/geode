@@ -1,0 +1,1564 @@
+---
+title:  Log Messages and Solutions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This section provides explanations of <%=vars.product_name%> Log  messages with potential resolutions.
+
+Depending on how your system is configured, log files can be found in a number of locations.
+See [Log File Locations](../security/security-audit.html#topic_5B6DF783A14241399DC25C6EE8D0048A) and
+[Naming, Searching, and Creating Log Files](../logging/logging_whats_next.html) for more information.
+
+## <a id="aboveheapevictionthreshold"></a>above heap eviction threshold
+
+**Log Message:**
+
+```
+[info 2021/03/23 16:00:13.721 EDT xxx-server01 <Notification Handler> tid=0x5d] Member:
+xxx(xxx-server01:29847)<v9>:11096 above heap eviction threshold
+```
+
+**Log Level:**  info
+
+**Category:** Heap GC
+
+**Meaning:**
+
+This message requires action to remain healthy.  The live objects are driving heap consumption above
+your threshold for collecting heap. This is not a good state, as you will either be prematurely
+destroying data or overflowing it to disk, which can overwhelm the disk.
+
+**Potential Resolutions:**
+
+NOTE:  <%=vars.product_name%> eviction is not truly compatible with G1GC given how G1GC behaves and how eviction assumes that garbage will be collected.
+
+You should consider increasing the total heap.   This will increase tenured space, and potentially eliminate these messages.   You can also increase your eviction-threshold percentage, but this can risk growing heap to the point where you encounter heap fragmentation issues.   
+
+
+## <a id="belowheapevictionthreshold"></a>below heap eviction threshold
+
+**Log Message:**
+
+```
+[info 2021/03/23 16:00:43.438 EDT xxx-server01 <Notification Handler> tid=0x5d] Member:
+xxx(xxx-server01:29847)<v9>:11096 below heap eviction threshold
+```
+
+**Log Level:** info
+
+**Category:** Heap GC
+
+**Meaning:**
+
+  You are now below the eviction threshold, after having been above the threshold.  
+
+**Potential Resolutions:**
+
+  Follow the guidance provided in the ["above heap eviction threshold"](#aboveheapevictionthreshold) message.
+
+
+## <a id="aboveheapcriticalthreshold"></a>above heap critical threshold
+
+**Log Message:**
+
+```
+[error 2020/06/23 03:43:48.796 EDT <Notification Handler1> tid=0xa4] Member:
+xxx(xxx-server-2:119506)<v2>:10102 above heap critical threshold. Event generated via
+polling. Used bytes: 26508001280. Memory thresholds: MemoryThresholds@[2041517395
+maxMemoryBytes:26843545600, criticalThreshold:95.0,
+criticalThresholdBytes:25501368320, criticalThresholdClearBytes:24964497408,
+evictionThreshold:85.0, evictionThresholdBytes:22817013760,
+evictionThresholdClearBytes:22280142848]
+```
+
+**Log Level:**  error
+
+**Category:** Heap GC
+
+**Meaning:**
+
+This message requires **URGENT** action.   You are in danger of <%=vars.product_name%> distributed system issues where a member, or members, may be kicked out with potential major business impact.  The live objects are driving heap consumption above your critical threshold, so either garbage collection is proving ineffective or your usage has increased unexpectedly, taking you to much higher levels of heap consumption.  Take action **immediately** if you ever see this, even if you were not negatively impacted at the time.  
+
+**Potential Resolutions:**
+
+If you do not already have <%=vars.product_name%> eviction in place, acting as a level of protection
+to keep heap consumption lower, consider incorporating some flavor of eviction.  G1GC and other
+newer collectors are not really compatible with HEAP_LRU eviction, so you would need to incorporate
+entry count or memory-based eviction.
+
+Generally, being above the critical threshold means that you likely need to increase your total
+heap.  If you have the critical-threshold set relatively low given your heap size, you could
+consider increasing this value.  Having a critical-threshold of 90%, for example, with a 30g heap is
+too low.  This is essentially wasting 3g of heap acting purely as overhead protection.
+
+The recommendation is to set the critical-threshold to see the percentage high enough such that you
+have a maximum of 1g of overhead.  This means that setting the critical-threshold to 98 would be
+completely fine for a 100g heap.  If you are seeing tenured heap growth with no entry count growth
+over time, this is likely indicative of a leak. You will need to take heap dumps and analyze them to
+determine why the heap is growing.  It could be only temporary, if queries are running and driving
+heap consumption, but this should resolve itself, since <%=vars.product_name%> will terminate
+queries and eliminate that garbage.
+
+If you are using G1GC, it is possible that you are not setting your InitiatingHeapOccupancyPercent
+low enough.  The default of 45 is too high, so consider trying 30% to see if the tenured heap
+behavior becomes more stable.
+
+
+## <a id="queryexecutioncanceledafterexceedingmaxexecutiontime"></a>Query execution canceled after exceeding max execution time
+
+**Log Message:**
+
+```
+[info 2021/02/05 03:56:08.087 EST xxx<QueryMonitor Thread> tid=0x3d9] Query execution
+canceled after exceeding max execution time 600000ms. Query String = SELECT * FROM
+/xxx);isCancelled = true; Total Executions = 3045391; Total Execution Time = 0
+```
+
+**Log Level:** info
+
+**Category:** Operations
+
+**Meaning:**
+
+  The query is taking longer than the configured execution time (600,000ms, in this example).  Perhaps it was a rogue query.  Perhaps you are short of the system resources needed to accommodate the current level of activity, including this query.   
+
+**Potential Resolutions:**
+
+If this persists over time, then the query is likely taking too long independent of the current system
+state, so you may need to increase the configured time by setting the <%=vars.product_name%> system
+property, “gemfire.MAX_QUERY_EXECUTION_TIME”, to something higher in order to allow the query to
+complete.  If this property is not set, the query will never timeout unless you are using the
+resource manager, in which case it will timeout in 5 hours.  This property does provide some
+protection against a really problematic query or set of queries, but requires you to understand what
+is driving the query times to know how high to set it.
+
+Perhaps the query did not incorporate the use of a configured index, or indexes, for some reason. In
+order to obtain this deeper understanding, you can incorporate verbose logging for your queries by
+setting the <%=vars.product_name%> system property, “gemfire.Query.VERBOSE”.
+
+## <a id="Queryexecutioncanceledduetomemorythresholdcrossedinsystem"></a>Query execution canceled due to memory threshold crossed in system
+
+**Log Message:**
+
+```
+[warning 2018/03/02 09:33:44.516 EST xxx <ServerConnection on port 40401 Thread 24>
+tid=0x1a9] Server connection from [identity(xxx(14:loner):x:x,connection=2;
+port=33218]: Unexpected Exception
+org.apache.geode.cache.query.QueryExecutionLowMemoryException: Query execution
+canceled due to memory threshold crossed in system, memory used: 23,540,738,136
+bytes.
+```
+
+**Log Level:** warning
+
+**Category:** Operations
+
+**Meaning:**
+
+Very self explanatory here.  A query was canceled because some member or members have crossed the
+critical-threshold configured in the system.  To protect the member(s) from running out of memory,
+the query is terminated. The message indicates the number of <n> bytes used at the time, which is
+certainly more than the number of bytes equating to the critical-threshold percentage, in bytes.
+You should also see the “above heap critical threshold” message in some logs as well if seeing this
+message, to understand the problem members.
+
+**Potential Resolutions:**
+
+The root cause for the heap issues needs to be investigated.  Perhaps it is simply the need for more
+total heap.  Perhaps GC activity is not collecting garbage effectively, which happens especially
+with some G1GC configurations.  Perhaps it is a rogue query driving much more new object activity
+than expected, or running too long such that the tenured heap becomes much more full than normal
+behavior.
+
+You could increase the critical-threshold to some higher percentage, but that may just
+delay the inevitable.  You could configure your regions to use the eviction-threshold, which will
+protect the system in many cases of hitting such high levels of heap surpassing the
+critical-threshold configured.
+
+## <a id="therearenstuckthreadsinthisnode"></a>There are &lt;n&gt; stuck threads in this node
+## <a id="threadnisstuck"></a>Thread &lt;n&gt; is stuck
+## <a id="threadnisstuck"></a>Thread &lt;n&gt; that was executed at &lt;time&gt; has been stuck for &lt;nn&gt; seconds
+
+**Log Message:**
+
+```
+[warning 2021/04/06 00:16:51.743 EDT rtp <ThreadsMonitor> tid=0x11] There are <13>
+stuck threads in this node
+[warning 2021/04/06 00:17:51.737 EDT rtp <ThreadsMonitor> tid=0x11] Thread <51392> is
+stuck
+[warning 2021/04/06 00:17:51.738 EDT rtp <ThreadsMonitor> tid=0x11] Thread <51392>
+that was executed at <06 Apr 2021 00:16:12 EDT> has been stuck for <99.119 seconds>
+and number of thread monitor iteration <2>
+Thread Name <poolTimer-gemfire-pool-35493>
+  Thread state <WAITING>
+  Waiting on <java.util.concurrent.locks.ReentrantLock$NonfairSync@cae7911>
+  Owned By <Function Execution Thread-2410> and ID <50995>
+  Executor Group <ScheduledThreadPoolExecutorWithKeepAlive>
+  Monitored metric <ResourceManagerStats.numThreadsStuck>
+  Thread Stack:   UNIQUE TO EACH CASE
+```
+
+**Log Level:**  warning
+
+**Category:** Operations
+
+**Meaning:**
+
+These messages requires **URGENT** action, to determine whether any issues exist.  It is very possible that there are no real issues, but it is also possible this is the beginning of a major issue that could snowball to impact the entire cluster.   These messages require deeper investigation. 
+
+**Potential Resolutions:**
+
+First, if you only see this issue rarely, or only for a single iteration, it is almost certainly not
+an issue. The word “stuck” here may be misleading.  The messages are saying that it appears that
+this thread has been doing the same thing for a while, so it may be stuck.  Some tasks, such as
+taking backups, doing exports, or running a rebalance, may appear to be “stuck” when in reality they
+are simply doing the same thing over and over as it progresses, like moving a bucket.  While it may
+appear that we are still moving buckets, it’s probably a different bucket each time.
+
+A key indicator that a thread is truly stuck is the number of iterations, as indicated in the “has
+been stuck” message above.  If you know that the operation is not one that should take so long, and
+you see an iteration of <10> or higher, you should certainly open a ticket and we can dig deeper.
+Such tickets will always require thread dumps, multiples, across all cache servers.  If you see that
+<13> stuck threads in this node message, the issue is likely snowballing and starting to impact this
+node, and the cluster could be next.
+
+Gather artifacts, and take action.  Perhaps a bounce of members, one at a time, for members showing
+stuck threads, would be prudent.  Identifying which member to bounce can be difficult.  That said,
+it is often possible, by analyzing the “15 seconds have elapsed” messages in your logs.  This is
+described more in the [Seconds have elapsed](#secondshaveelapsed) message in this document.
+
+
+## <a id="disconnectingolsdistributedsystem""></a>Disconnecting old DistributedSystem to prepare for a reconnect attempt
+
+## <a id="attemptingtoreconnecttothedistributedsystem"></a>Attempting to reconnect to the DistributedSystem.  This is attempt #n
+
+**Log Message:**
+
+```
+[info 2021/09/21 22:45:37.863 EDT <ReconnectThread> tid=0x7f0d] Disconnecting old
+DistributedSystem to prepare for a reconnect attempt
+```
+
+**Log Level:**  info
+
+**Category:** Membership
+
+**Meaning:**
+
+   These messages are related, and may require action if you are not aware of why the member has been disconnected.   This is often due to some instability in the distributed system caused by either network issues or GC related pauses.   
+
+**Potential Resolutions:**
+
+ Examine the logs of the member that is being forced out of the system.  Perhaps the member became unresponsive. Look for other logging with keywords such as “elapsed”, “wakeup”, or “heartbeat”, all relatively unique words which can be searched for to proactively find potential issues.    If any of these are discovered, GC tuning is likely needed.
+
+
+## <a id="unabletoformatcpipconnection"></a>Unable to form a TCP/IP connection in a reasonable amount of time
+
+**Log Message:**
+
+```
+[info 2021/09/03 10:31:16.311 CDT <Timer-3> tid=0x79] Performing availability check
+for suspect member aaa.bbb.ccc.ddd(member:5301)<v256>:41000 reason=Unable to form a
+TCP/IP connection in a reasonable amount of time
+```
+
+**Log Level:**  info, warning, fatal  : Depending on the particular situation
+
+**Category:** Membership
+
+**Meaning:**
+
+This message usually coincides with the availability check logging associated with suspect
+members. It should be investigated further by searching for other messages that may give more
+indication. 
+
+This specific message, if not accompanied by other “wakeup” or “heartbeat” messages,
+generally indicates that a member may have crashed unexpectedly, without warning. If, however, no
+member has crashed, the suspect member was able to respond during suspect processing and may no
+longer be at risk. Still, this definitely requires action to determine if you remain vulnerable to
+repeated occurrences.
+
+**Potential Resolutions:**
+
+   This message alone doesn’t generally reveal how to proceed to eliminate issues.  That said, a deep analysis of the logs for other significant related messages may be helpful, and following the potential resolutions for those could help to reduce or eliminate these messages.
+
+
+## <a id="receivedsuspectmessage"></a>Received Suspect Message
+
+**Log Message:**
+
+```
+debug 2021/02/08 05:53:04.634 IST <member-43596> tid=0x2a] Suspecting member  XXX(server1:40875)<v13>:41004
+[info 2021/02/08 05:53:04.634 IST <member-43596> tid=0x2a] No longer suspecting
+192.168.240.7(ch07node5:40875)<v13>:41004
+[info 2021/03/29 06:46:56.304 EDT <Geode Failure Detection thread 162> tid=0x474f0c]
+received suspect message from myself for XXX(YYY-server1:15972)<v16>:40000: SOME
+REASON GENERALLY PROVIDED HERE
+```
+
+**Log Level:**  info
+
+**Category:** Membership
+
+**Meaning:**
+
+This message requires action.  You are in danger of having a member kicked out of the distributed system, as it was already being “suspected” of being a problem for some unknown reasons that require investigation.   Continuing to see these indicates that you are definitely not seeing optimal behavior or performance, and the system is thrashing with many messages thinking some member or members are unhealthy.
+
+**Potential Resolutions:**
+
+The “no longer suspecting” message is really an indication that the member is now considered
+healthy.  However, it also means that the member was considered unhealthy and some member initiated
+“suspect” processing to determine if we should kick out the member to preserve the integrity and
+stability of the cluster.  You will generally see suspect messages, shown above, for all members, as
+we send these out across the cluster to gather opinions.  Ultimately, if the coordinator finds the
+member to be unresponsive within member-timeout seconds, the coordinator will kick out the member.
+
+To take action, check the “Reason” seen in some of the logs, and take action accordingly.  If this
+is rare, it is likely not an issue.  If frequent, however, you definitely want to research and tune
+the system to eliminate these messages.  If you are seeing the “no longer suspecting” message, that
+means that you should also see the “Suspecting member” message shown above.  However, depending on
+your version of <%=vars.product_name%>, It may require debug level logging to see that message.
+
+
+## <a id="secondshaveelapsed"></a>&lt;n&gt; Seconds Have Elapsed
+
+**Log Message:**
+
+```
+[warn 2021/04/11 02:03:53.220 EDT <ServerConnection on port 10230 Thread 120>
+tid=0xac97] 20 seconds have elapsed while waiting for replies:
+<PRFunctionStreamingResultCollector 29058 waiting for 1 replies from [XXX]> on
+YYY<v18>:10104 whose current membership list is: [LIST OF ALL MEMBERS]
+[warn 2021/03/16 02:35:18.588 EDT <Timer-0> tid=0x2e] 15 seconds have elapsed waiting
+for a response from XXX:14412)<v6>:40001 for thread ServerConnection on port 20102
+Thread 592638
+[warn 2021/04/15 03:30:59.107 EDT <main> tid=0x1] 15 seconds have elapsed while
+waiting for replies: <DLockRequestProcessor 115 waiting for 1 replies from
+[XXX(8582)-server2:68148)<v2>:41000]> on YYY<v2>:41001 whose current membership list
+is: [LIST OF ALL MEMBERS]
+```
+
+**Log Level:**  warning
+
+**Category:** Membership
+
+**Meaning:**
+
+ This message requires action.   It is not necessarily urgent, but it is an indication that the messaging is taking much longer than expected between peers in your environment.    The number of seconds displayed likely maps to the ack-wait-threshold in your environment, which defaults to 15 seconds.    Some customers increase this setting, but it is recommended that you understand your environment first and only increase it if deemed necessary after attempting to correct any underlying causes of delays in communications.   
+
+**Potential Resolutions:**
+
+This could be driven by GC related delays, JVM Pauses, burst of activity causing high peer to peer
+activity, threading issues, overwhelming CPU, etc.  You could check for high replyWaitsInProgress
+across all nodes using JMX or stats analysis.  If this is rare, it is not a likely cause for
+concern.  If you are seeing this while experiencing high latency, it is likely an area to focus on.
+To analyze such issues, we will need all logs, stats, and gc logs across all members to identify
+which member or members is driving the slowdown.
+
+NOTE: If many members have these messages, while another member does not appear to be waiting for
+replies from anybody, it is very likely that member is the source of the issue.  After analysis to
+gather some information, you could try bouncing that member to see if this restores the other
+members to a healthier state.
+
+
+## <a id="memberisnotrespondingtohearbeatrequests"></a>Member isn’t responding to heartbeat requests
+
+**Log Message:**
+
+```
+[info 2021/03/29 06:46:56.304 EDT <Geode Failure Detection thread 162> tid=0x474f0c]
+received suspect message from myself for XXX(YYY-server1:15972)<v16>:40000: Member
+isn't responding to heartbeat requests
+[info 2021/02/21 00:38:33.436 GMT <unicast receiver,XXX-19638> tid=0x31] received
+suspect message from YYY(cacheServer33010:16994)<v73>:33100 for
+ZZZ(gcacheServer33010:27406)<v74>:33100: Member isn't responding to heartbeat
+requests
+[info 2021/02/21 00:38:33.440 GMT <Geode Failure Detection thread 10> tid=0x32f]
+Performing availability check for suspect member
+XXX(cacheServer33010:27406)<v74>:33100 reason=Member isn't responding to heartbeat
+requests
+```
+
+**Log Level:**  info
+
+**Category:** Membership
+
+**Meaning:**
+
+   This message requires **immediate** action.  You are in danger of having a member kicked out of the distributed system due to being unresponsive.   If the member continues to be unresponsive, the distributed system will kick out the member, to restore stability for the remaining members.
+
+**Potential Resolutions:**
+
+This is often related to a suboptimal heap and/or GC configuration.  You could be experiencing JVM
+Pauses that require tuning.  If you frequently see these messages without having the member kicked
+out, you have opportunities to tune and eliminate these messages.  Alternatively, you could also
+increase the member-timeout property, however this is only suggested when you have full
+understanding of what is driving the member to be unresponsive to the heartbeat requests from the
+member monitoring it.
+
+This message often corresponds with “suspect” messages, and members getting kicked out of the
+cluster.  Logs, stats, and GC logs will be required in order to understand what is going
+on in this situation.
+
+
+## <a id="enablednetworkpartitiondetectionissettofalse"></a>Enabled-network-partition-detection is set to false
+
+**Log Message:**
+
+```
+[warning 2021/09/11 08:01:41.089 EDT locatorIS2 <Pooled Message Processor 1>
+tid=0x48] Creating persistent region _ConfigurationRegion, but
+enable-network-partition-detection is set to false. Running with network partition
+detection disabled can lead to an unrecoverable system in the event of a network
+split.
+```
+
+**Log Level:** warning
+
+**Category:** Membership
+
+**Meaning:**
+
+  This is a warning that you have chosen a configuration that makes you more susceptible to data consistency issues if you experience a network partition, or “split brain”.   If you do choose this configuration and experience network issues that create a “split brain” scenario, where your distributed system splits into two separate distributed systems (DS), then it is possible that your data will diverge.   Specifically, you could do puts into a region in DS A that do not make it into DS B, while also doing puts into DS B that do not make it into DS A. <%=vars.product_name%> will be unable to resolve this situation for you as you try to recover the system back into a single, healthy DS.
+
+**Potential Resolutions:**
+
+  The best option is to choose to keep enable-network-partition-detection set to true. Beyond that, any split brain driven data divergence will require your manual intervention to avoid possible data loss.
+
+
+## <a id="statisticssamplingthreaddetectedawakeupdelay"></a>Statistics sampling thread detected a wakeup delay
+
+**Log Message:**
+
+```
+[warning 2021/02/09 21:37:44.728 EST member-49001 <StatSampler> tid=0x36] Statistics
+sampling thread detected a wakeup delay of 40203 ms, indicating a possible resource
+issue. Check the GC, memory, and CPU statistics.
+```
+
+**Log Level:** warning
+
+**Category:** Membership
+
+**Meaning:**
+
+  **URGENT** action is needed. You are experiencing JVM Pauses, where the JVM is preventing <%=vars.product_name%> from running at all for the given amount of time.  This is only logged when the delay is at least 3 seconds more than your configured statistic-sample-rate.   You are vulnerable to having members kicked out of the distributed system.  
+
+**Potential Resolutions:**
+
+  This is almost always caused by GC related behavior.   To diagnose such issues, make sure to enable GC logging in your environment.   If you have GC logs, search for “Full GC”, “concurrent mode failure”, “exhausted”, and other similar issues that drive long pauses.    If you do open a ticket for assistance, please have <%=vars.product_name%> logs, stats, and GC logs ready to provide them prior to opening the ticket.     
+
+If this is urgent and you need immediate resolution without having time to fine tune GC, one possible temporary patch is to increase the member-timeout in the gemfire.properties file.  This would make <%=vars.product_name%> more tolerant of processes being somewhat unresponsive for longer durations.
+
+
+## <a id="redundancyhasdroppedbelownconfigurecopies"></a>Redundancy has dropped below &lt;n&gt; configured copies
+
+**Log Message:**
+
+```
+[warning 2021/03/23 09:26:51.641 EDT XXX-server01 <PartitionedRegion Message
+Processor20> tid=0x1d66] Redundancy has dropped below 2 configured copies to 1 actual
+copies for /RegionXYZ
+[info 2021/03/23 09:26:51.798 EDT XXX-server01 <PartitionedRegion Message
+Processor20> tid=0x1d66] Configured redundancy of 2 copies has been restored to
+/RegionXYZ
+```
+
+**Log Level:**  warning
+
+**Category:** Membership
+
+**Meaning:**
+
+   This message requires **immediate** action to determine if you are now vulnerable to data loss.  This message indicates that you have lost access to 1 of the 2 configured copies of your data for that RegionXYZ on member XXX-server01.   It is not necessarily urgent if you have redundancy configured and capacity for the remaining members to handle the increased load.   The corresponding “has been restored” message, an info level message also shown above, indicates that you now are back to your healthy environment with redundancy in place for that RegionXYZ from the perspective of this member.
+
+**Potential Resolutions:**
+
+Investigate the cause of the loss in redundancy if it’s not already known.  It could simply have been a planned maintenance that drove the cluster below configured redundancy levels.   The settings that generally apply here are the number of copies configured, and then, the recovery-delay and startup-recovery-delay settings, which control whether and when we restore redundancy with the loss of a member of the distributed system and when it is added back in.   Our documentation discusses these settings in detail.
+
+
+## <a id="rejectedconnection"></a>Rejected connection
+
+**Log Message:**
+
+```
+[warning 2021/05/10 12:28:31.063 BST gfcache.ivapp1237223.croydon.ms.com.7291
+<Handshaker /0:0:0:0:0:0:0:0:7291 Thread 10> tid=0xa29] Rejected connection from XXX
+because current connection count of 1,600 is greater than or equal to the configured
+max of 1,600
+[warn 2021/03/28 02:22:01.667 CDT <Handshaker 0.0.0.0/0.0.0.0:40404 Thread 23>
+tid=0x85cf] Rejected connection from Server connection from [client host address=YYY;
+client port=43198] because incoming request was rejected by pool possibly due to
+thread exhaustion
+```
+
+**Log Level:**  warning
+
+**Category:** Communications
+
+**Meaning:**
+
+This message requires **URGENT** action.  These messages indicate that you have exhausted resources, likely either due to using an insufficient max-connections setting for the cache server configuration or insufficient resources for the level of connection load on the system.   Both of these messages are from the same area of code, trying to handle a new client connection request.
+
+**Potential Resolutions:**
+
+If you have increased load recently, or are using an old, legacy default value of 800 for max-connections, you may want to consider increasing this setting, regardless.  Many customers use 2000, or even 5000 for those that do not want <%=vars.product_name%> to be throttling their performance/activity trying to conserve resources. 
+
+That said, if this number of connections is unexpected, you are potentially experiencing issues with
+connection timeouts, driving retry activity and a thrashing of resources that can cause the number
+of outstanding client connections and threads to be exhausted. You can observe this by examining <%=vars.product_name%> statistics using a tool like VSD, or, if
+using JMX, you can monitor usage with the CacheServeMXBean getClientConnectionCount() method.  If
+you ever see unexpected spikes in this value, but are not seeing other symptoms, such as timeouts,
+perhaps you simply need to increase the max-connections appropriately.
+
+However, if seeing these messages coincides with symptoms like client side timeouts, it could be due
+to an insufficient read-timeout in the client side pool configuration, or an insufficient accept
+queue on the server side. Another setting that warrants investigation is the
+BridgeServer.HANDSHAKE_POOL_SIZE.  If you have not altered this setting in your system properties,
+you are likely using the default value of 4, which has been seen to be insufficient for many
+environments.  Recommend increasing this <%=vars.product_name%> system property to at least 20.
+
+
+## <a id="pccservicemetricscomponentfailingtoconnect"></a>PCC service metrics component failing to connect to locator/server
+
+**Log Message:**
+
+```
+{"timestamp":"1620032802.654847383","source":"service-metrics","message":"service-metrics.executing-metrics-cmd","log_level":2,"data":{"error":"exit
+status 1","event":"failed","output":"IOException error! MBeanServerConnection failed
+to create.\njava.io.IOException: Failed to retrieve RMIServer stub:
+javax.naming.ServiceUnavailableException [Root exception is
+java.rmi.ConnectException: Connection refused to host:
+461737ba-07ca-4897-9e41-a70ae7f26274.server.services.service-instance-94fbf6cc-4073-4a45-8965-7ea855bcd0ca.bosh;
+nested exception is: \n\tjava.net.ConnectException: Connection refused (Connection
+refused)]\nException in thread \"main\" java.lang.NullPointerException\n\tat
+io.pivotal.cloudcache.metrics.cli.MetricsExtractor.lambda$static$0(MetricsExtractor.java:10)\n\tat
+io.pivotal.cloudcache.metrics.cli.JMXPropertiesEmitter.lambda$getMemberMetrics$0(JMXPropertiesEmitter.java:55)\n\tat
+java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:193)\n\tat
+java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:948)\n\tat
+java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)\n\tat
+java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:472)\n\tat
+java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:708)\n\tat
+java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)\n\tat
+java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:566)\n\tat
+io.pivotal.cloudcache.metrics.cli.JMXPropertiesEmitter.getMemberMetrics(JMXPropertiesEmitter.java:56)\n\tat
+io.pivotal.cloudcache.metrics.cli.JMXPropertiesEmitter.main(JMXPropertiesEmitter.java:30)\n"}}
+{"timestamp":"1620032842.481263161","source":"service-metrics","message":"service-metrics.executing-metrics-cmd","log_level":1,"data":{"event":"starting"}}
+```
+
+**Category:** Communications
+
+**Meaning:**
+
+ Every VM in PCC for locators or servers has its own service-metrics component. The job of this component is to periodically check the health of the <%=vars.product_name%> server/locator processes running. The way it does that job is by making an RMI call to the JMX manager. When it cannot connect to the locator/server process, it starts logging these errors in its own log.
+
+
+## <a id="sslhandshakeexception"></a>SSLHandshakeException:  &lt;version&gt; is disabled
+
+**Log Message:**
+
+```
+[warn 2021/04/26 15:44:52.418 EDT kbc000100.rw.example.com <P2P message reader@388969b8> tid=0x3a] SSL handshake exception
+javax.net.ssl.SSLHandshakeException: <<ssl_version>> is disabled
+        at sun.security.ssl.InputRecord.handleUnknownRecord(InputRecord.java:637)
+        at sun.security.ssl.InputRecord.read(InputRecord.java:527)
+        at sun.security.ssl.EngineInputRecord.read(EngineInputRecord.java:382)
+        at sun.security.ssl.SSLEngineImpl.readRecord(SSLEngineImpl.java:951)
+        at sun.security.ssl.SSLEngineImpl.readNetRecord(SSLEngineImpl.java:896)
+        at sun.security.ssl.SSLEngineImpl.unwrap(SSLEngineImpl.java:766)
+        at javax.net.ssl.SSLEngine.unwrap(SSLEngine.java:624)
+        at org.apache.geode.internal.net.NioSslEngine.handshake(NioSslEngine.java:148)
+        at org.apache.geode.internal.net.SocketCreator.handshakeSSLSocketChannel(SocketCreator.java:840)
+        at org.apache.geode.internal.tcp.Connection.createIoFilter(Connection.java:1747)
+        at org.apache.geode.internal.tcp.Connection.readMessages(Connection.java:1548)
+        at org.apache.geode.internal.tcp.Connection.run(Connection.java:1472)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+```
+
+**Category:** Communications
+
+**Meaning:**
+
+ This means the specified SSL/TLS protocol is not compatible with, or configured correctly, on one or more members. The simplest workaround is to use “any'' as the protocol, however, some customers have strict security requirements that mandate specific versions and ciphers, which will require that all members are configured with compatible (matching) protocols and ciphers and that those protocols/ciphers are supported by the underlying JRE.
+
+
+## <a id="unabletocreatenewnativethread"></a>Unable To Create New Native Thread
+
+**Log Message:**
+
+```
+java.lang.OutOfMemoryError: unable to create new native thread
+```
+
+**Log Level:** warning
+
+**Category:** Heap / JVM /  GC
+
+**Meaning:**
+
+ The JVM needs various resources to create a new ‘native’ thread, which may not map one-to-one with application threads. These resources are external to the JVM heap and include “native” memory for the stack and, potentially, user processes.
+
+**Potential Resolution:**
+
+Depending on the resource limit encountered, you may need to increase the maximum number of user processes as configured with ulimit and/or “/etc/security/limits.conf”, or you may not have sufficient system memory. In the latter case, you will need to make more system memory available and/or decrease the amount of stack memory used per thread. If you have excess, unused heap under even heavy load, you may be able to reduce the heap size and leave more memory for “native” usage. 
+
+Alternatively, you might be able to decrease the stack size of each thread, by setting the JVM parameter “-xss” to something smaller (the defaults are 320 KB for 32-bit JVMs and 1024 KB for 64-bit JVMs), but this must be done with care as it can cause threads to not have enough stack to properly operate. The last and safest option is to add free memory to the system by either adding memory or reducing other consumers of system memory (e.g. other applications).
+
+
+## <a id="toomanyopenfiles"></a>Too Many Open Files
+                                                                                                                                                    
+**Log Message:**
+
+```
+java.net.SocketException: Too many open files (Socket creation failed/Accept failed)
+```
+
+**Log Level:** warning
+
+**Category:** Communications
+
+**Meaning:**
+
+ The number of sockets available to your applications is governed by operating system limits. Sockets use file descriptors and the operating system’s view of your application’s socket use is expressed in terms of file descriptors.
+
+**Potential Resolution:**
+
+There are two limits on the maximum descriptors available to a single application, a soft limit, which can be increased using the ulimit command as a user, and a “hard” limit which will require editing “/etc/security/limits.conf” and relogging in. (There is also an OS level limit that will require a system administrator to tune kernel parameters, however, this limit is typically large and is rarely hit.)   It is also possible that the FD’s being consumed are being driven by a major increase of connections/threads due to some burst of activity or connections timing out.  This can lead to retry activity driving the number of open files to increase.   If you increase the soft and hard limits, and continue to observe these messages, you may need to analyze whether you have connections timing out, sufficient TCP accept queue, etc.   This can require an increase of the p2p.backlog and net.core.somaxconn settings.
+
+
+## <a id="commitconflictexception"></a>CommitConflictException
+
+**Log Message:**
+
+```
+org.apache.geode.cache.CommitConflictException: Concurrent transaction commit
+detected The key xxx in region /xxx was being modified by another transaction locally
+```
+
+**Log Level:** warning
+
+**Category:** Operations
+
+**Meaning:**
+
+ You design transactions such that any get operations are within the transaction. This causes those entries to be part of the transactional state, which is desired such that intersecting transactions can be detected and signal commit conflicts.  You have to catch the commit conflicts in your code like this:
+
+```
+ try {
+  txmgr.begin();
+   // add your codes here
+  txmgr.commit();
+   } 
+ catch (CommitConflictException conflict) {
+  // entry value changed causing a conflict, so try again
+  } finally {
+  //add your codes here
+  }    
+ }    
+```
+
+## <a id="initializationofregioncompleted"></a>Initialization of Region &lt;\_B\_\_RegionName_BucketNumber&gt; Completed
+
+**Log Message:**
+
+```
+[info 2021/03/28 00:41:20.047 EDT <Recovery thread for bucket _B__RegionName_32>
+tid=0x164] Region _B__RegionName_32 requesting initial image from
+IP(gemfire-server-1:88590)<v19>:10100
+
+[info 2021/03/28 00:41:20.048 EDT <Recovery thread for bucket _B__RegionName_32>
+tid=0x164] _B__RegionName_32 is done getting image from
+IP(gemfire-server-1:88590)<v19>:10100. isDeltaGII is true
+
+[info 2021/03/28 00:41:20.048 EDT <Recovery thread for bucket
+ _B__firm_0_RegionName_32> tid=0x164] Region _B__RegionName_32 initialized persistent
+ id: /IP:/pathTo-server-1/cldist created at timestamp 1616906479201 version 0
+ diskStoreId DiskStoreid name null with data from
+ IP(gemfire-server-1:88590)<v19>:10100.
+
+[info 2021/03/28 00:41:20.048 EDT <Recovery thread for bucket _B__RegionName_32>
+tid=0x164] Could not initiate event tracker from GII provider
+IP(gemfire-server-1:88590)<v19>:10100
+
+[info 2021/03/28 00:41:20.048 EDT <Recovery thread for bucket _B__RegionName_32>
+tid=0x164] Initialization of region _B__RegionName_32 completed
+```
+
+**Log Level:** info
+
+**Category:** Membership
+
+**Meaning:**
+
+ This set of messages are related to the initialization of Partitioned regions.   They indicate where the <%=vars.product_name%> system is retrieving each bucket from to perform this initialization.  In the above example, bucket 32 for region “RegionName” is being retrieved from member gemfire-server-1 as <%=vars.product_name%> believes this to be the most recent data for that bucket.   This is the “requesting initial image” message above.   The “Initialization of region <> completed message can be useful to determine where each specific bucket, for each specific region, is located across the membership.
+
+**Potential Resolution:**
+
+There is no “resolution” here, but customers have asked how to determine where each bucket exists across the cluster.    Using the above message can be very useful to filter the logs to see exactly where each bucket exists in the cluster, for each region.   One could use a command such as one like this:  `egrep -R --include=\*.log 'Initialization of region _B__RegionName_’ ~/PathToLogFiles//gflogs/*`.
+The above command could tell you exactly where each bucket exists for region RegionName.   If you use only `Initialization of region _B__` instead, this would then output the buckets across all partitioned regions.    This output could then be used to know where each specific bucket exists across the cluster, to serve whatever purpose you deem helpful in monitoring your cluster.   There does exist some great documentation and project for how to identify where buckets are located in this article:  [https://community.pivotal.io/s/article/GemFire-Monitoring-PR-Entry-and-Bucket-Details](https://community.pivotal.io/s/article/GemFire-Monitoring-PR-Entry-and-Bucket-Details).
+
+
+## <a id="unknownpdxtypeerror"></a>Unknown pdx Type error
+
+**Log Message:**
+
+```
+Caused by: java.lang.IllegalStateException: Unknown pdx type=X
+at com.gemstone.gemfire.internal.InternalDataSerializer.readPdxSerializable(InternalDataSerializer.java:2977)
+at com.gemstone.gemfire.internal.InternalDataSerializer.basicReadObject(InternalDataSerializer.java:2794)
+at com.gemstone.gemfire.DataSerializer.readObject(DataSerializer.java:3212)
+at com.gemstone.gemfire.internal.util.BlobHelper.deserializeBlob(BlobHelper.java:81)
+at com.gemstone.gemfire.internal.cache.EntryEventImpl.deserialize(EntryEventImpl.java:1407)
+at com.gemstone.gemfire.internal.cache.PreferBytesCachedDeserializable.getDeserializedValue(PreferBytesCachedDeserializable.java:65)
+at com.gemstone.gemfire.cache.query.internal.index.DummyQRegion.getValues(DummyQRegion.java:153)
+at com.gemstone.gemfire.cache.query.internal.index.DummyQRegion.values(DummyQRegion.java:109)
+at com.gemstone.gemfire.cache.query.internal.index.DummyQRegion.iterator(DummyQRegion.java:198)
+at com.gemstone.gemfire.cache.query.internal.index.CompactRangeIndex$IMQEvaluator.doNestedIterations(CompactRangeIndex.java:1763)
+at com.gemstone.gemfire.cache.query.internal.index.CompactRangeIndex$IMQEvaluator.evaluate(CompactRangeIndex.java:1622)
+... 27 more
+```
+
+**Log Level:** Error
+
+**Category:** Operations
+
+**Meaning:**
+
+ A Portable Data eXchange (PDX) related exception that may occur when restarting a distributed system without also restarting any clients.
+When using PDX serialization without persistence, the above exception may be seen on a client after bouncing all of the servers of the distributed system without restarting the client. Generally, this message indicates that the PDX metadata on some client is out-of-sync with the servers.
+
+**Potential Resolution:**
+
+ To avoid this issue without persisting PDX types on server members, you must restart your client application when restarting the servers. Alternately, to avoid this issue without restarting your client application, you must enable PDX persistence on servers. By doing this, you are guaranteed that any already defined PDX types will remain available between server restarts. This doesn't require storing the data from your regions, you can store only PDX metadata, regions data, or both.
+Below mentioned is an example of how to configure PDX persistence on the server side:
+
+```
+<disk-store name="pdxDiskStore">
+<disk-dirs>
+<disk-dir>pdxDiskStore</disk-dir>
+</disk-dirs>
+</disk-store>
+
+<pdx read-serialized="true" persistent="true" disk-store-name="pdxDiskStore"/>
+```
+
+## <a id="errorcalculatingexpiration"></a>Error calculating expiration
+
+**Log Message:**
+
+```
+2021-06-02 12:35:26,071 FATAL o.a.g.i.c.LocalRegion [Recovery thread for bucket _B__gdc__eventsLow_50] Error calculating expiration An IOException was thrown while deserializing
+org.apache.geode.SerializationException: An IOException was thrown while deserializing
+        at org.apache.geode.internal.cache.EntryEventImpl.deserialize(EntryEventImpl.java:2041) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.EntryEventImpl.deserialize(EntryEventImpl.java:2032) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.VMCachedDeserializable.getDeserializedValue(VMCachedDeserializable.java:113) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.getDeserialized(LocalRegion.java:1280) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.ExpiryRegionEntry.getValue(ExpiryRegionEntry.java:101) ~[geode-core-9.10.5.jar:?]
+        at com.ihg.enterprise.gdc.model.CustomExpiryHandler.getExpiry(CustomExpiryHandler.java:19) ~[gdc-gemfire-side-2.26-jar-with-dependencies.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.createExpiryTask(LocalRegion.java:7774) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.addExpiryTask(LocalRegion.java:7901) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.addExpiryTask(LocalRegion.java:7753) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.lambda$rescheduleEntryExpiryTasks$3(LocalRegion.java:7741) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.ExpiryTask.doWithNowSet(ExpiryTask.java:480) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.rescheduleEntryExpiryTasks(LocalRegion.java:7739) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.initialize(LocalRegion.java:2394) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.DistributedRegion.initialize(DistributedRegion.java:1099) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.BucketRegion.initialize(BucketRegion.java:259) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.LocalRegion.createSubregion(LocalRegion.java:983) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.PartitionedRegionDataStore.createBucketRegion(PartitionedRegionDataStore.java:784) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.PartitionedRegionDataStore.grabFreeBucket(PartitionedRegionDataStore.java:459) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.PartitionedRegionDataStore.grabBucket(PartitionedRegionDataStore.java:2875) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.ProxyBucketRegion.recoverFromDisk(ProxyBucketRegion.java:463) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.ProxyBucketRegion.recoverFromDiskRecursively(ProxyBucketRegion.java:406) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.PRHARedundancyProvider$2.run2(PRHARedundancyProvider.java:1640) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.partitioned.RecoveryRunnable.run(RecoveryRunnable.java:60) [geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.PRHARedundancyProvider$2.run(PRHARedundancyProvider.java:1630) [geode-core-9.10.5.jar:?]
+        at java.lang.Thread.run(Thread.java:748) [?:1.8.0_212]
+Caused by: java.io.IOException: Unknown header byte 83
+        at org.apache.geode.internal.serialization.DscodeHelper.toDSCODE(DscodeHelper.java:40) ~[geode-serialization-9.10.5.jar:?]
+        at org.apache.geode.internal.InternalDataSerializer.basicReadObject(InternalDataSerializer.java:2494) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.DataSerializer.readObject(DataSerializer.java:2864) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.util.BlobHelper.deserializeBlob(BlobHelper.java:99) ~[geode-core-9.10.5.jar:?]
+        at org.apache.geode.internal.cache.EntryEventImpl.deserialize(EntryEventImpl.java:2039) ~[geode-core-9.10.5.jar:?]
+        ... 24 more
+```
+
+**Log Level:** Warning
+
+**Category:** Storage
+
+
+**Potential Resolution:**
+
+This is due to inconsistencies in the data stored on region/disk vs. the PdxType and may throw during deserialization. Cleaning the data or syncing it according to PdxType is a possible solution. 
+
+
+## <a id="pdxtypelimitationsforgfshqueries"></a>PdxType limitations for GFSH queries
+
+**Log Message:**
+
+```
+[info 2021/06/15 13:01:24.238 EDT 170834GFCluster.sd-1d7e-bd1c.cacheServer40404 <Function Execution Processor3> tid=0x7b] Exception occurred:
+org.apache.geode.pdx.JSONFormatterException: Could not create JSON document from PdxInstance
+        at org.apache.geode.pdx.JSONFormatter.toJSON(JSONFormatter.java:173)
+        at org.apache.geode.management.internal.cli.domain.DataCommandResult$SelectResultRow.valueToJson(DataCommandResult.java:726)
+        at org.apache.geode.management.internal.cli.domain.DataCommandResult$SelectResultRow.resolveStructToColumns(DataCommandResult.java:712)
+        at org.apache.geode.management.internal.cli.domain.DataCommandResult$SelectResultRow.resolveObjectToColumns(DataCommandResult.java:689)
+        at org.apache.geode.management.internal.cli.domain.DataCommandResult$SelectResultRow.createColumnValues(DataCommandResult.java:679)
+        at org.apache.geode.management.internal.cli.domain.DataCommandResult$SelectResultRow.<init>(DataCommandResult.java:662)
+        at org.apache.geode.management.internal.cli.functions.DataCommandFunction.createSelectResultRow(DataCommandFunction.java:266)
+        at org.apache.geode.management.internal.cli.functions.DataCommandFunction.select_SelectResults(DataCommandFunction.java:252)
+        at org.apache.geode.management.internal.cli.functions.DataCommandFunction.select(DataCommandFunction.java:220)
+        at org.apache.geode.management.internal.cli.functions.DataCommandFunction.select(DataCommandFunction.java:173)
+        at org.apache.geode.management.internal.cli.functions.DataCommandFunction.execute(DataCommandFunction.java:122)
+        at org.apache.geode.internal.cache.MemberFunctionStreamingMessage.process(MemberFunctionStreamingMessage.java:193)
+        at org.apache.geode.distributed.internal.DistributionMessage.scheduleAction(DistributionMessage.java:367)
+        at org.apache.geode.distributed.internal.DistributionMessage$1.run(DistributionMessage.java:430)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java)
+        at org.apache.geode.distributed.internal.ClusterDistributionManager.runUntilShutdown(ClusterDistributionManager.java:952)
+        at org.apache.geode.distributed.internal.ClusterDistributionManager.doFunctionExecutionThread(ClusterDistributionManager.java:806)
+        at org.apache.geode.internal.logging.LoggingThreadFactory.lambda$newThread$0(LoggingThreadFactory.java:121)
+        at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.IllegalStateException: PdxInstance returns unknwon pdxfield value for type Wed Apr 07 00:00:00 EDT 2021
+        at org.apache.geode.pdx.internal.json.PdxToJSON.writeValue(PdxToJSON.java:144)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSONString(PdxToJSON.java:175)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.writeValue(PdxToJSON.java:138)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSONString(PdxToJSON.java:175)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.writeValue(PdxToJSON.java:138)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSONString(PdxToJSON.java:175)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.writeValue(PdxToJSON.java:138)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSONString(PdxToJSON.java:175)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.writeValue(PdxToJSON.java:138)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSONString(PdxToJSON.java:175)
+        at org.apache.geode.pdx.internal.json.PdxToJSON.getJSON(PdxToJSON.java:57)
+        at org.apache.geode.pdx.JSONFormatter.toJSON(JSONFormatter.java:171)
+        ... 19 more
+```
+
+**Log Level:**
+INFO
+
+**Category:** Operations
+
+
+**Potential Resolution:**
+
+Other than primitive types like object types (String, Character, Date etc.) will not be deserialized on GFSH queries.
+
+
+
+## <a id="apachegeodeclientallconnectionsinuseexception"></a>Apache.Geode.Client.AllConnectionsInUseException
+
+**Log Message:**
+
+**In StdOut/StdError on Client Side:**
+
+```
+Apache.Geode.Client.AllConnectionsInUseException
+Region::getAll: All connections are in use
+Apache.Geode.Client.Region`2[[System.__Canon, mscorlib],[System.__Canon, mscorlib]].GetAll(System.Collections.Generic.ICollection`1<System.__Canon>, System.Collections.Generic.IDictionary`2<System.__Canon,System.__Canon>, System.Collections.Generic.IDictionary`2<System.__Canon,System.Exception>, Boolean)
+   Apache.Geode.Client.Region`2[[System.__Canon, mscorlib],[System.__Canon, mscorlib]].GetAll(System.Collections.Generic.ICollection`1<System.__Canon>, System.Collections.Generic.IDictionary`2<System.__Canon,System.__Canon>, System.Collections.Generic.IDictionary`2<System.__Canon,System.Exception>)
+```
+
+**Category:** Operations
+
+**Meaning:**
+
+ This is evidence of the connection pool getting overwhelmed on the client side and not a problem on the <%=vars.product_name%> server side. 
+Resolution: Increase the max-connections property to higher value as appropriate on pool settings on native client.
+
+
+
+
+## <a id="orgapachegeodepdxpdxinitializationexception"></a>org.apache.geode.pdx.PdxInitializationException
+
+**Log Message:  / Stack-trace / StdError:**
+
+```
+The Cache Server process terminated unexpectedly with exit status 1. Please refer to the log file in /appdata/gemfire/edl/data/server for full details.
+Exception in thread "main" org.apache.geode.pdx.PdxInitializationException: Could not create pdx registry
+    at org.apache.geode.pdx.internal.PeerTypeRegistration.initialize(PeerTypeRegistration.java:204)
+    at org.apache.geode.pdx.internal.TypeRegistry.creatingDiskStore(TypeRegistry.java:267)
+    at org.apache.geode.internal.cache.DiskStoreFactoryImpl.create(DiskStoreFactoryImpl.java:160)
+    at org.apache.geode.internal.cache.xmlcache.CacheCreation.createDiskStore(CacheCreation.java:792)
+    at org.apache.geode.internal.cache.xmlcache.CacheCreation.initializePdxDiskStore(CacheCreation.java:783)
+    at org.apache.geode.internal.cache.xmlcache.CacheCreation.create(CacheCreation.java:507)
+    at org.apache.geode.internal.cache.xmlcache.CacheXmlParser.create(CacheXmlParser.java:338)
+    at org.apache.geode.internal.cache.GemFireCacheImpl.loadCacheXml(GemFireCacheImpl.java:4294)
+```
+
+**Category:** Operations
+
+**Meaning:**
+
+ This explains that the PdxRegion is not getting initialized due to the corrupted cluster configs.
+
+**Potential Resolution:**
+
+Stop locator(s), then clear the cluster configs/pdx disk stores and, finally, start the locator(s). KB exists: [https://community.pivotal.io/s/article/Fails-to-Start-a-Cache-Member-with-orgapachegeodepdxPdxInitializationException-Could-not-create-pdx-registry?language=en_US](https://community.pivotal.io/s/article/Fails-to-Start-a-Cache-Member-with-orgapachegeodepdxPdxInitializationException-Could-not-create-pdx-registry?language=en_US).
+
+
+## <a id="formatofthestringcachexmlfilecontent"></a>Format of the string &lt;&lt;cache xml file’s content&gt;&gt; used for parameterization is unresolvable
+
+Note: the spelling “perameterization” is wrong in the codebase [https://github.com/apache/geode/blob/a5bd36f9fa787d3a71c6e6efafed5a7b0fe52d2b/geode-core/src/main/java/org/apache/geode/internal/cache/xmlcache/CacheXmlPropertyResolver.java#L125](https://github.com/apache/geode/blob/a5bd36f9fa787d3a71c6e6efafed5a7b0fe52d2b/geode-core/src/main/java/org/apache/geode/internal/cache/xmlcache/CacheXmlPropertyResolver.java#L125). Working to report & fix this. 
+
+**Log Message:**
+
+```
+[error 2021/09/08 11:42:16.830 EDT <main> tid=0x1] Format of the string <?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0">
+<gateway-sender id="GW_SENDER_${REMOTE_DS_ID_1}" remote-distributed-system-id="${REMOTE_DS_ID_1}" manual-start="${GW_START_ID_1}" parallel="false" enable-persistence="true" disk-store-name="gw1" disk-synchronous="true" dispatcher-threads="5" socket-read-timeout="300000"/>
+<gateway-sender id="GW_SENDER_${REMOTE_DS_ID_2}" remote-distributed-system-id="${REMOTE_DS_ID_2}" manual-start="${GW_START_ID_2}" parallel="false" enable-persistence="true" disk-store-name="gw2" disk-synchronous="true" dispatcher-threads="5" socket-read-timeout="300000"/>
+  <gateway-receiver hostname-for-senders="${HOSTNAME_FOR_SENDERS}" bind-address="${HOSTNAME}" start-port="1531" end-port="1532"/>
+-
+-
+-
+</cache>
+ used for parameterization is unresolvable
+
+
+[error 2021/09/08 11:42:17.260 EDT <main> tid=0x1] Cache initialization for GemFireCache[id = -29791992; isClosing = false; isShutDownAll = false; created = Wed Sep 08 11:39:37 EDT 2021; server = false; copyOnRead = false; lockLease = 120; lockTimeout = 60] failed because: java.lang.NullPointerException
+```
+
+**Category:** Configuration
+
+**Meaning:**
+
+This error occurs when the parameterized values are provided for the properties/attributes. For example, `manual-start="${GW_START_ID_1}"`. This property expects boolean, but seems to be getting some non-boolean value.
+
+**Potential Resolution:**
+
+Fix the errors for incorrect values or their types when provided dynamically. 
+
+
+## <a id="regionexistexception"></a>RegionExistException
+
+**Log Message:**
+
+```
+[error 2021/09/29 11:25:48.885 CDT <main> tid=0x1] Cache initialization for
+GemFireCache[id = 755944228; isClosing = false; isShutDownAll = false; created = Wed
+Sep 29 11:25:46 CDT 2021; server = false; copyOnRead = false; lockLease = 120;
+lockTimeout = 60] failed because: org.apache.geode.cache.CacheXmlException: While
+parsing XML, caused by org.xml.sax.SAX
+Exception: A CacheException was thrown while parsing XML.
+org.apache.geode.cache.RegionExistsException: /RegionX
+```
+
+**Log Level:**  Error
+
+**Category:** Configuration
+
+**Meaning:**
+
+This message indicates that the locator already has region (RegionX) in the cluster configuration and while starting up, a duplicate region is being created via API or cache.xml.
+
+**Potential Resolutions:**
+
+Remove duplicate region definition from the configurations.
+
+- If “enable-cluster-configuration=true” in locator properties, then do the following:
+  - Export the cluster configuration (`export cluster-configuration --xml-file=value`)
+  - Remove the duplicate Region definition
+  - Re-import the cluster configuration  (`import cluster-configuration --action=STAGE`) and restart.
+
+- If “enable-cluster-configuration=false” in locator properties, then remove the duplicate region definition from cache.xml.
+
+
+## <a id="missingdiskstoreexception"></a>Missing Diskstore Exception
+
+**Log Message:**
+
+```
+Region /RegionX has potentially stale data.
+It is waiting for another member to recover the latest data.
+My persistent id:
+
+
+  DiskStore ID: 6893751ee74d4fbd-b4780d844e6d5ce7
+  Name: server1
+  Location: /192.0.2.0:/home/grawat/server1/.
+
+
+Members with potentially new data:
+[
+  DiskStore ID: 160d415538c44ab0-9f7d97bae0a2f8de
+  Name: server2
+  Location: /192.0.2.0:/home/grawat/server2/.
+]
+Use the "gfsh show missing-disk-stores" command to see all disk stores
+that are being waited on by other members.
+```
+
+**Log Level:**  Info
+
+**Category:** Storage
+
+**Meaning:**
+
+   When you start a member with a persistent region, the data is retrieved from disk stores to recreate the member’s persistent region. If the member does not hold all of the most recent data for the region, then other members have the data, and region creation blocks, waiting for those other members. A partitioned region with colocated entries also blocks on start up, waiting for the entries of the colocated region to be available. So, this message shows that the disk store for server2 has the most recent data for the region, and server1 is waiting for server2.
+
+**Potential Resolutions:**
+
+* Start all members with persisted data first and at the same time.
+* Respond to the waiting members by starting the server on which the waiting member is waiting on.
+
+
+## <a id="couldnotcreateaninstanceofaclass"></a>Could not create an instance of a class
+
+**Log Message:**
+
+```
+Could not create an instance of a class com.xxx.yyy.zzz
+```
+
+**Log Level:**  Error
+
+**Category:** Configuration
+
+**Meaning:**
+
+ This message indicates that either the class is not available in the classpath or the jar, which contains this class, is not deployed on Cache servers.
+
+**Potential Resolutions:**
+   
+* Make the class available to classpath.
+* Deploy the class on cache servers.
+
+
+## <a id="partitionedregioncleanupfailedinitialization"></a>PartitionedRegion#cleanupFailedInitialization: Failed to clean the PartitionRegion allPartitionedRegions
+
+**Log Message:**
+
+```
+[warning 2021/05/15 08:51:46.460 EDT 170834GFCluster.lmwcpbacap01p.cacheServer50506
+<main> tid=0x1] PartitionedRegion#cleanupFailedInitialization: Failed to clean the
+PartionRegion allPartitionedRegions
+org.apache.geode.distributed.DistributedSystemDisconnectedException: Distribution
+manager on 10.102.8.41(cacheServer50506:278621)<v1>:50001 started at Sat May 15
+08:44:31 EDT 2021: Failed to acknowledge a new membership view and then failed tcp/ip
+connection attempt, caused by org.apache.geode.ForcedDisconnectException: Failed to
+acknowledge a new membership view and then failed tcp/ip connection attempt
+```
+
+**Log Level:**  Error
+
+**Category:** Membership
+
+**Meaning:**
+
+ This message indicates that the buckets for partitioned regions have not recovered fully but a destroy region is issued for the regions whose buckets are still recovering.
+
+
+
+**Potential Resolutions:**
+
+Make sure that regions are recovered before issuing any destroy command.
+
+
+## <a id="couldnotfindanyservertocreateprimaryclientqueueon"></a>Could not find any server to create primary client queue on.
+
+**Log Message:**
+
+```
+[error 2016/09/13 10:45:29.351 PDT client tid=0x34] Could not find any server to
+create primary client queue on. Number of excluded servers is 0 and the exception is
+null.
+```
+
+**Log Level:**  Error
+
+**Category:** Communications
+
+**Meaning:**
+
+ When a client with subscription-enabled="true" is started, messages like below will be logged in the <%=vars.product_name%> client log. If subscription-redundancy is not set, there will be one of these; if it is set to 1, there will be two, etc. The Cache Client Updater Thread is the thread waiting for events from the server. If no other server is available to which the Cache Client Updater Thread is connected, then above error message will be logged:
+
+**Potential Resolutions:**
+
+Make sure that the server, to which the Cache Client Updater Thread is connected, is up and running.
+
+
+## <a id="clusterconfigurationservicenotavailable"></a>Cluster configuration service not available
+
+**Log Message:**
+
+```
+Exception in thread "main" org.apache.geode.GemFireConfigException: cluster configuration service not available
+  at org.apache.geode.internal.cache.GemFireCacheImpl.requestSharedConfiguration(GemFireCacheImpl.java:1265)
+```
+
+**Log Level:** Error
+
+**Category:** Configuration
+
+**Meaning:**
+
+ This message indicates that the cache server is configured with, "use-cluster-configuration = true", but is unable to get the cluster configuration from the locator.
+
+
+
+**Potential Resolutions:**
+
+Ensure that the locator has "enable-cluster-configuration=true" and the cache servers are able to get the cluster configurations from locators.
+
+## <a id="thesecondarymapalreadycontainedanevent"></a>The secondary map already contained an event from hub null so ignoring new event
+
+**Log Message:**
+
+```
+[warn 2021/09/10 15:49:31.692 CEST <P2P message reader for
+00.01.02.03(some-node:17718)<v2>:41001 unshared ordered uid=1086 dom #1 port=39166>
+tid=0x247bb] AsyncEventQueue_SubstitutionEventQ: The secondary map already contained
+an event from hub null so ignoring new event GatewaySenderEventImpl[id=EventID[id=25
+bytes...
+```
+
+**Log Level:** Warn
+
+**Category:** Operations
+
+**Meaning:**
+
+ This message indicates that the secondary gateway sender, hosted by a server, received an event that was already processed by the primary gateway sender of other server B; so the event itself shouldn't be added to the internal map of unprocessed events.
+
+
+**Potential Resolutions:**
+
+This message, if seen occasionally, is harmless in most situations.
+
+
+## <a id="createispresentinmorethanoneoplog"></a>Create is present in more than one Oplog. This should not be possible. The Oplog Key ID for this entry is
+
+**Log Message:**
+
+```
+java.lang.AssertionError: Oplog::readNewEntry: Create is present in more than one Oplog. This should not be possible
+```
+
+**Log Level:** Error
+
+**Category:** Storage
+
+**Meaning:**
+
+  This error indicates that the oplog is corrupted which makes it harder to write/delete any new entry in the oplogs (Diskstores) because of which cache servers will have trouble starting. 
+
+
+
+**Potential Resolutions:**
+
+ Clean up the disk stores.
+
+
+## <a id="detectedconflictingpdxtypesdurintimport"></a>Detected conflicting PDX types during import
+
+**Log Message:**
+
+```
+Could not process command due to error. Detected conflicting PDX types during import
+```
+
+**Log Level:**  Error
+
+**Category:** Operations
+
+**Meaning:**
+
+  When data is imported into a cluster with pdx serialization with existing data using gfsh import/export command and if the receiving cluster already has some data with different pdx metadata, the import will fail with the error.
+
+**Potential Resolutions:**
+
+Import data in the empty cluster or programmatically read the .gfd file and then perform the put operation.
+
+## <a id="atenuredheapgarbagecollectionhasoccurred"></a>A tenured heap garbage collection has occurred
+
+**Log Message:**
+
+```
+[info 2021/10/13 17:14:56.177 EDT memberXXX <Notification Handler1> tid=0x69] A
+tenured heap garbage collection has occurred.  New tenured heap consumption:
+492250720
+```
+
+**Log Level:** Info
+
+**Category:** Heap/GC/JVM/OS
+
+**Meaning:**
+
+ This message occurs when a tenured space garbage collection has occurred.  The goal is to provide the customer with a very accurate read for how much heap is actually consumed.   External monitors do not know when a collection has occurred.   The value specified is how much live data exists in tenured heap.   
+
+If you see this value constantly increasing over time, without a similar rate of increase of <%=vars.product_name%> entries, then this warrants some investigation into potential leaks.    Short term increases due to queries, for example, are not worthy of concern, other than providing an indication that finer tuning may be warranted.   The short term data resulting from a query would hopefully be fulfilled using the young generation heap, most of the time.
+
+**Potential Resolutions:**
+
+No resolution necessary.  This is informative only.  If you see this message frequently, however, it is a sign that you may need more heap, or finer tuning.  You may be imbalanced unknowingly, etc.    If seeing this message more frequently than every 1 hour, consistently, it is a sign that you may need tuning.   Note:  G1GC “mixed” collections may not drive this message, unless you are using more current versions of the JDK.   
+
+
+## <a id="allocatinglargernetworkreadbuffer"></a>Allocating larger network read buffer
+
+**Log Message:**
+
+```
+[info 2021/10/13 17:14:56.177 EDT locator <P2P message reader for
+192.168.1.5(server1:8438)<v1>:41001 shared unordered sender uid=1 local port=42181
+remote port=57345> tid=0x4c] Allocating larger network read buffer, new size is
+134074 old size was 32768.
+```
+
+**Log Level:** Info
+
+**Category:** Communications
+
+**Meaning:**
+
+ This may require configuration change, to give more optimal behavior.    If you have different socket-buffer-sizes across the various members of your distributed system, including locators, this message may be a sign that messages are potentially being lost.   This can lead to distributed deadlocks.    This message essentially means that the system is needing to grow and shrink to handle the messaging between the members.
+
+
+
+**Potential Resolutions:**
+
+Set all members, including locators, to the same socket-buffer-size.   If you have seen this message, and appear to be impacted in the system, it may warrant some deeper analysis of the health of the system.   Check for stuck threads, potentially gather thread dumps, to assess whether you are impacted. 
+
+
+## <a id="socketsendbuffersizeisminstead"></a>Socket send buffer size is &lt;m&gt; instead of the requested &lt;n&gt;
+
+**Log Message:**
+
+```
+[info 2021/11/19 13:51:47.569 PST server1 <P2P message reader@75099de0> tid=0x30]
+Socket send buffer size is 6710884 instead of the requested 16777215.
+```
+
+**Log Level:** Info
+
+**Category:** Communications
+
+**Meaning:**
+
+ This may require configuration change, to give more optimal behavior.   This message tells you that your <%=vars.product_name%> configuration is specifying a larger socket-buffer-size that the lower OS is going to permit.   Hence, you see this message, and perhaps less than optimal behavior.   
+
+**Potential Resolutions:**
+
+Make sure to set all members OS configurations to be the same, similar enough to avoid having this less than optimal potential chunking of messages when sending messages between members of the <%=vars.product_name%> distributed system.
+
+
+## <a id="quorumhasbeenlost"></a>quorum has been lost
+
+**Log Message:**
+
+```
+[warn 2021/12/03 23:02:41.026 EST <Geode Membership View Creator> tid=0x347] total
+weight lost in this view change is 65 of 111.  Quorum has been lost!
+```
+
+**Log Level:**  warn
+
+**Category:** Membership
+
+**Meaning:** This message requires **URGENT** attention.  It is closely associated with other messages,
+but indicates that the membership is very unhealthy, and you have potentially lost your entire
+cluster, or are having some “split brain” behavior, etc.
+
+The above example message shows that a total weight of 65 has been lost, out of 111.  This is
+greater than 50% of the weight, in one view change, hence driving the loss of quorum.  When this
+much weight has been lost, it is generally something affecting the network connectivity, versus a GC
+event.  Please read our extensive documentation on member weight, network partitions, etc.
+
+**Potential Resolutions:**
+
+It depends mostly on how many members have been removed, and it is possible that the entire cluster
+has gone down as a result of this loss of quorum.  If you have
+`enable-network-partition-detection=true`, as we recommend, it is possible to lose the entire cluster
+if you see the above message.  If most of the membership weight has crashed, for example, the losing
+side doesn’t know that, but the losing side (i.e. the side with less weight) will shut itself down,
+even though it includes the only still running members. Restart members to restore your cluster to
+full health, and determine the root cause for why so many members crashed simultaneously.
+
+
+## <a id="possiblelossofquorum"></a>possible loss of quorum due to the loss of &lt;n&gt; cache processes
+
+**Log Message:**
+
+```
+[fatal 2021/12/03 23:02:41.027 EST <Geode Membership View Creator> tid=0x347]
+Possible loss of quorum due to the loss of 6 cache processes: [<list of the ip’s and
+processes>]
+```
+
+**Log Level:** fatal
+
+**Category:** Membership
+
+**Meaning:**  This is very closely tied to the “quorum has been lost” message.   They will often go hand in hand, and potentially even out of order, where you will see the “possible loss” after the “has been lost” message.   
+
+**Potential Resolutions:**
+
+Follow the guidance provided in the, “quorum has been lost,” message. We definitely recommend having enable-network-partition-detection=true set to protect you from split brain driving the data in your split (now 2) distributed systems from diverging and becoming unrecoverable without manual intervention.
+
+
+## <a id="Membershipservicefailureexitingduetopossiblenetworkpartitionevent"></a>Membership service failure: Exiting due to possible network partition event due to loss of <n> cache processes
+
+**Log Message:**
+
+```
+[fatal 2021/12/03 23:02:42.028 EST <Geode Membership View Creator> tid=0x347]
+Membership service failure: Exiting due to possible network partition event due to
+loss of 6 cache processes: [<list of the 6 cache processes lost, in this example>]
+```
+
+Note: This message generally comes with a full stack trace showing the forceDisconnect.
+
+**Log Level:**  fatal
+
+**Category:** Membership
+
+**Meaning:**   This message requires **URGENT** attention.   It is closely associated with other loss of quorum messages, but indicates that the membership is very unhealthy, and you have potentially lost your entire cluster, or are having some “split brain” behavior, etc.   
+
+**Potential Resolutions:**
+
+Follow the guidance provided in the, “quorum has been lost,” message.    We definitely recommend having enable-network-partition-detection=true set to protect you from split brain driving the data in your split (now 2) distributed systems diverging and becoming unrecoverable without manual intervention.    Do some research to determine whether some network event drove the <%=vars.product_name%> cluster into this state due to an inability to communicate across the distributed system.
+
+## <a id="memberhadaweightofn"></a>&lt;member&gt; had a weight of &lt;n&gt;
+**Log Message:**
+
+```
+[info 2021/12/09 23:19:55.100 EST memberXXX <Geode Membership View Creator> tid=0x57]
+memberXXX)<v36>:50001 had a weight of 10
+```
+
+**Log Level:** info
+
+**Category:** Membership
+
+**Meaning:**  This message indicates that a member has either crashed, or has been kicked out of the distributed system.   By default, locators have a weight of 3, LEAD cache server has a weight of 15, and other cache servers have a weight of 10.  In the example message, given the weight of 10, you would know that the member that has been kicked out is a non-lead cache server.  Depending on your topology, and the number of members in your distributed system, the loss of one such cache server may not impact you much at all.  
+
+**Potential Resolutions:**
+
+You certainly want to understand the cause of the member leaving the distributed system.   If you have auto reconnect enabled, as you would by default, the member may rejoin automatically, unless it is a crash.    If the member was kicked out due to being unresponsive, it may have auto-reconnected, restoring you to a fully running cluster.  That said, you likely need to run a rebalance to evenly distribute data, or primary buckets if using partitioned regions. You may require GC tuning, etc. If you do not understand the cause of the membership change, you should reach out for assistance.   
+
+
+
+## <a id="anadditionalfunctionexecutionprocessorthreadisbeinglaunched"></a>An additional Function Execution Processor thread is being launched
+
+**Log Message:**
+
+```
+[warn 2021/12/01 21:29:56.689 EST memberXXX2 <Function Execution Processor1>
+tid=0x27] An additional Function Execution Processor thread is being launched because
+all <n> thread pool threads are in use for greater than <t> ms
+```
+
+**Log Level:** warn
+
+**Category:** Operations
+
+**Meaning:**  This requires some action to achieve optimal behavior.   If you see this message, it means that your normal behavior requires more than the configured number of function execution threads, set using DistributionManager.MAX_FE_THREADS.   The default has increased recently, but if you see this message, regardless of the current setting <n> shown in the example message, it indicates that your function executions will potentially take longer, due to <%=vars.product_name%> behavior.    
+
+**Potential Resolutions:**
+
+If you see this message, then you should increase your DistributionManager.MAX_FE_THREADS configured setting, ,until you have eliminated such messages.   You may want to consider the same for your DistributionManager.MAX_THREADS and DistributionManager.MAX_PR_THREADS settings, if not recently updated based on your current operations and load in the system. 
+
+## <a id="sendingnewview"></a>Sending new view
+## <a id="receivednewview"></a>Received new view
+## <a id="admittingmember"></a>Admitting member
+
+**Log Message:**
+
+```
+[info 2021/11/20 00:05:31.381 EST gbe-louweblps175(8551)-locator1 <Geode Membership
+View Creator> tid=0xd34] sending new view View[<coordinator member
+info>:48414:locator)<ec><v314>:41000|342] members: [<current member list>] shutdown:
+[<member that shut down>:42306)<v315>:41003]
+[info 2021/09/29 01:41:30.472 EDT <memberXXX> tid=0x1d] received new view:
+View[<coordinator member>)<ec><v0>:50000|5] members: [list of members, indicating
+shutdown, crashed members] old view is: <previous view information, including list of
+members and state>
+
+[info 2021/12/01 21:36:21.966 EST DCS-DCS-CLUSTER-10.104.39.130-dmnode-002 <View
+Message Processor1> tid=0x3c] Admitting member <<memberXXX:26842)<v6>:10131>. Now
+there are 6 non-admin member(s).
+```
+
+**Log Level:** info
+
+**Category:** Membership
+
+**Meaning:**  These messages can be very helpful to understand who the coordinator of the Distributed System is, the lead cache server member, and the change in state of the membership, whether members are leaving or joining the distributed system.  This will include the cause of leaving, whether a “graceful” shutdown, or a “crash”.    You will only ever see the “Sending new view” message in the current coordinator of the system at that time.   All members receive this view, and admit the member to the membership list. You only have a full membership when you see the expected number of non-admin members, six in the above, “Now there are 6 non-admin member(s),” example.
+
+**Potential Resolutions:**
+
+These are informational only, but if you do see unexpected membership changes, which drive these “new view” messages, you can search the logs for these messages to see whether it was considered graceful, a crash, etc., and look for other logging messages which likely provide additional insight.
+
+## <a id="memberatmemberipunexpectedlyleftthedistributedcache"></a>Member at &lt;memberIP&gt; unexpectedly left the distributed cache
+
+**Log Message:**
+
+```
+[info 2022/01/11 04:35:34.242 EST <View Message Processor1> tid=0x89] Member at
+<memberXXX>:3853)<v11>:10104 unexpectedly left the distributed cache: departed
+membership view
+```
+
+**Log Level:** info
+
+**Category:** Membership
+
+**Meaning:**  This message is an indication that a member has experienced a non-graceful removal from the distributed system.  This will then correspond with “new view” messages being sent to all members of the DS, showing the member in the list of “crashed” members.
+
+**Potential Resolutions:**
+
+This specific message doesn’t tell you much other than the change in ownership.  Search for other messages across the cluster which may indicate the reason, such as being unresponsive.   Perhaps it’s due to not responding to “heartbeat” messages.   WIth auto reconnect, it is possible that the membership has been restored to a full membership, but it’s also important to check on the balance of data and load.   A rebalance may be prudent to restore the balance in the system.  This includes redistributing primary buckets for partitioned regions, which is generally a good idea after any changes in ownership, when time permits.
+
+
+## <a id="cache serverfailedacceptingclientconnection"></a>Cache server: failed accepting client connection
+## <a id="remotehostclosedconnectionduringhandshake"></a>Remote host closed connection during handshake
+## <a id="sslpeershutdownincorrectly"></a>SSL peer shut down incorrectly
+
+**Log Message:**
+
+```
+[warn 2021/12/01 21:26:11.216 memberXXX <Handshaker /10.104.39.130:10102 Thread 8831> tid=0x2d19e] Cache server: failed accepting client connection javax.net.ssl.SSLHandshakeException: Remote host closed connection during handshake
+javax.net.ssl.SSLHandshakeException: Remote host closed connection during handshake
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:994)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at org.apache.geode.internal.net.SocketCreator.handshakeIfSocketIsSSL(SocketCreator.java:1094)
+	at org.apache.geode.internal.cache.tier.sockets.AcceptorImpl.getCommunicationModeForNonSelector(AcceptorImpl.java:1559)
+	at org.apache.geode.internal.cache.tier.sockets.AcceptorImpl.handleNewClientConnection(AcceptorImpl.java:1431)
+	at org.apache.geode.internal.cache.tier.sockets.AcceptorImpl.lambda$handOffNewClientConnection$4(AcceptorImpl.java:1342)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.io.EOFException: SSL peer shut down incorrectly
+	at sun.security.ssl.InputRecord.read(InputRecord.java:505)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:975)
+```
+
+**Log Level:** warn
+
+**Category:** Membership
+
+**Meaning:**  While this looks to be very SSL/TLS specific, this message is often driven by the many of the same client connectivity issues as in the non-SSL/TLS case.  This is a client-server connection that is failing because the connection terminated.  Besides the general client-server connectivity issues, however, this could also be caused when the client can’t validate the server’s Certificate, and so hangs up.  This message does not indicate any reasons for why that connectivity was lost, but does indicate client-server connectivity issues and the cause needs to be investigated and understood.  
+
+**Potential Resolutions:**
+
+Review client logs to see if there’s anything informative there, such as SSL/TLS validation issues, and then investigate logs and stats for possible connectivity or performance issues on the server.
+
+
+
+## <a id="functioncannotbeexecutedbecausethemembersarerunninglowonmemory"></a>Function: &lt;functionName&gt; cannot be executed because the members [list of members] are running low on memory
+
+**Log Message:**
+
+```
+[error 2022/01/11 03:49:41.307 EST <ServerConnection on port 10230 Thread 5>
+tid=0x28d] <function info> Function: <functionName> cannot be executed because the
+members [<list of members>)<v3>:10104] are running low on memory
+```
+
+**Log Level:** error
+
+**Category:** Operations, Storage
+
+**Meaning:**  This is very similar to the “canceled” query message, but applies to function executions. Essentially, before execution the system recognizes the heap has surpassed the critical-threshold in some subset of members, and therefore the system chooses not to begin the function execution.  You should also see the “above heap critical threshold” message in some logs if seeing this message.
+
+**Potential Resolutions:**
+
+Please follow the same guidelines as the “Query execution canceled due to memory threshold” message.
+
+
+## <a id="regionbuckethaspersistentdatathatisnolongeronline"></a>Region &lt;regionName&gt; bucket &lt;n&gt; has persistent data that is no longer online stored at these locations
+
+**Log Message:**
+
+```
+[error 2022/01/11 03:51:41.809 EST <ServerConnection on port 10230 Thread 2>
+tid=0x21f] <filtered>:Region <regionName> bucket 51 has persistent data that is no
+longer online stored at these locations: [<list of members hosting the bucket
+including timestamp information>l]
+```
+
+**Log Level:** error
+
+**Category:** Membership
+
+**Meaning:**  This message tells us that we have lost access to some persistent copy of the given bucket (“51” in the above example).   So we know we have a partitioned persistent region where some of the hosting members are not available.
+
+**Potential Resolutions:**
+
+Determine the cause of the loss of the given member or members hosting that bucket, provided in the
+message. We do not recommend executing any gfsh “revoke” command without expert interaction and
+assistance. It is possible you could cause a loss of data.
+
+
+## <a id="regionhaspotentiallystaledata"></a>Region <regionName> has potentially stale data.  Buckets [list] are waiting for another offline member
+
+**Log Message:**
+
+```
+[info 2021/12/03 06:52:17.226 EST <PersistentBucketRecoverer for region <r>>
+tid=0x147] Region <r> (and any colocated sub-regions) has potentially stale data.
+Buckets [27, 85, 92] are waiting for another offline member to recover the latest
+data.My persistent id is:
+  DiskStore ID: <disk store id>
+  Name: <member name>
+  Location: <member location>
+Offline members with potentially new data:[
+  DiskStore ID: <disk store id of member with potentially newer data>
+  Location: <member location>
+  Buckets: [27, 85, 92]
+] Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.
+```
+
+**Log Level:** info
+
+**Category:** Membership
+
+**Meaning:**  This message normally shows when a member is starting, during bucket recovery of partitioned regions, and indicates that it is waiting for other members, where the data is considered to be more current, to start. Once those members start, the latest copy of the data will be accessible and the member will perform a GII (get initial image) to recover the buckets allowing the member to proceed with initialization.
+
+**Potential Resolutions:**
+
+If this message appears, perhaps you have members not yet started, and you need to start those
+members.  We recommend starting all cache server processes simultaneously, especially after a clean
+shutdown, so that the subsequent startup has access to all buckets, and no member is stuck waiting
+for other members to start.  
+
+If you did not have a clean shutdown, or some member has been down for
+a long time, do NOT start up that member as the first member of a cluster.  Otherwise, you will get
+into a ConflictingDatePersistenceException state that will then require revoking disk stores.
+
+This is a completely avoidable scenario.  It is better to start all of the members that have been up
+and part of the healthy cluster first, and then add back that member later, to be able to get that
+member up to date, with the latest copies of the buckets loaded from other members.  If you see this
+message, you may want to check current status with the gfsh “show metrics” command to determine
+whether your number of buckets without redundancy is changing for the specified region over time.
+If not, you should definitely take a thread dump across all members to determine whether you are
+having some form of distributed deadlock issue during startup.  It is possible that you are simply
+having major contention/congestion due to some insufficient configuration, such as
+DistributionManager.MAX_PR_THREAD or DistributionManager.MAX_THREADS.  This can be evaluated by
+analyzing the statistics of the system using a tool like VSD.
