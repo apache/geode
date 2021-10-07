@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.Set;
@@ -47,7 +47,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @SuppressWarnings("serial")
-public class RegionMembershipMBeanDUnitTestBase {
+public class RegionMembershipMBeanDistributedTestBase {
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_VM1 = "GemfireDataCommandsTestRegion_Vm1";
   private static final String DATA_REGION_NAME_VM2 = "GemfireDataCommandsTestRegion_Vm2";
@@ -107,39 +107,36 @@ public class RegionMembershipMBeanDUnitTestBase {
 
   private static void setupDataRegionAndSubregions() {
     InternalCache cache = ClusterStartupRule.getCache();
-    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<Object, Object> regionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
 
-    Region dataRegion = regionFactory.create(DATA_REGION_NAME);
-    assertThat(dataRegion).isNotNull();
+    Region<Object, Object> dataRegion = regionFactory.create(DATA_REGION_NAME);
 
-    Region dataSubRegion = regionFactory.createSubregion(dataRegion, DATA_REGION_NAME_CHILD_1);
-    assertThat(dataSubRegion).isNotNull();
+    Region<Object, Object> dataSubRegion =
+        regionFactory.createSubregion(dataRegion, DATA_REGION_NAME_CHILD_1);
 
-    dataSubRegion = regionFactory.createSubregion(dataSubRegion, DATA_REGION_NAME_CHILD_1_2);
-    assertThat(dataSubRegion).isNotNull();
-    assertThat(dataRegion).isNotNull();
+    regionFactory.createSubregion(dataSubRegion, DATA_REGION_NAME_CHILD_1_2);
   }
 
   private static void setupReplicatedRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<Object, Object> regionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
 
-    Region dataRegion = regionFactory.create(regionName);
-    assertThat(dataRegion).isNotNull();
+    Region<Object, Object> dataRegion = regionFactory.create(regionName);
     assertThat(dataRegion.getFullPath()).contains(regionName);
   }
 
   private static void setupPartitionedRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    PartitionAttributes partitionAttrs =
-        new PartitionAttributesFactory().setRedundantCopies(2).create();
+    PartitionAttributes<Object, Object> partitionAttrs =
+        new PartitionAttributesFactory<>().setRedundantCopies(2).create();
     RegionFactory<Object, Object> partitionRegionFactory =
         cache.createRegionFactory(RegionShortcut.PARTITION);
 
     partitionRegionFactory.setPartitionAttributes(partitionAttrs);
-    Region dataParRegion = partitionRegionFactory.create(regionName);
+    Region<Object, Object> dataParRegion = partitionRegionFactory.create(regionName);
 
-    assertThat(dataParRegion).isNotNull();
     assertThat(dataParRegion.getFullPath()).contains(regionName);
   }
 
@@ -156,10 +153,11 @@ public class RegionMembershipMBeanDUnitTestBase {
 
   @Test
   public void testMultipleReplicatedRegionsAndSubregions() {
-    server1.invoke(() -> setupDataRegionAndSubregions());
+    server1.invoke(RegionMembershipMBeanDistributedTestBase::setupDataRegionAndSubregions);
     server1.invoke(() -> setupReplicatedRegion(DATA_REGION_NAME_VM1));
 
-    server2.invoke(() -> setupDataRegionAndSubregions());
+    server2.invoke(
+        RegionMembershipMBeanDistributedTestBase::setupDataRegionAndSubregions);
     server2.invoke(() -> setupReplicatedRegion(DATA_REGION_NAME_VM2));
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
@@ -194,8 +192,8 @@ public class RegionMembershipMBeanDUnitTestBase {
 
   @Test
   public void testAddRmNewMemberWithReplicatedRegionsAndSubregions() {
-    server1.invoke(() -> setupDataRegionAndSubregions());
-    server2.invoke(() -> setupDataRegionAndSubregions());
+    server1.invoke(RegionMembershipMBeanDistributedTestBase::setupDataRegionAndSubregions);
+    server2.invoke(RegionMembershipMBeanDistributedTestBase::setupDataRegionAndSubregions);
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
@@ -220,7 +218,7 @@ public class RegionMembershipMBeanDUnitTestBase {
     assertThat(initialMemberSizeChild2FromFunction).isEqualTo(initialMemberSizeChild2FromMBean);
 
     MemberVM server3 = cluster.startServerVM(3, locator.getPort());
-    server3.invoke(() -> setupDataRegionAndSubregions());
+    server3.invoke(RegionMembershipMBeanDistributedTestBase::setupDataRegionAndSubregions);
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 3);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 3);

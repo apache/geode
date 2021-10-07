@@ -14,5 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-public class RegionMembershipMBeanDUnitTest extends RegionMembershipMBeanDUnitTestBase {
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+
+public class RegionMembershipMBeanOverHttpDistributedTest
+    extends RegionMembershipMBeanDistributedTestBase {
+  @Override
+  public void connectToLocator() throws Exception {
+    gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+  }
+
 }
