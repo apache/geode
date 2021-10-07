@@ -89,7 +89,7 @@ public class NioSslEngine implements NioFilter {
    * state. It may throw other IOExceptions caused by I/O operations
    */
   public boolean handshake(SocketChannel socketChannel, int timeout,
-      final ByteBuffer peerNetData) throws IOException {
+      ByteBuffer peerNetData) throws IOException {
 
     if (peerNetData.capacity() < engine.getSession().getPacketBufferSize()) {
       throw new IllegalArgumentException(String.format("Provided buffer is too small to perform "
@@ -97,12 +97,15 @@ public class NioSslEngine implements NioFilter {
           peerNetData.capacity(), engine.getSession().getPacketBufferSize()));
     }
 
+    final ByteBuffer handshakeBuffer = peerNetData;
+    handshakeBuffer.clear();
+
     ByteBuffer myAppData = ByteBuffer.wrap(new byte[0]);
 
-    // if (logger.isDebugEnabled()) {
-    logger.info("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
-        timeout);
-    // }
+    if (logger.isDebugEnabled()) {
+      logger.debug("Starting TLS handshake with {}.  Timeout is {}ms", socketChannel.socket(),
+          timeout);
+    }
 
     long timeoutNanos = -1;
     if (timeout > 0) {
@@ -133,12 +136,9 @@ public class NioSslEngine implements NioFilter {
         case NEED_UNWRAP:
           try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
             final ByteBuffer peerAppData = inputSharing.getBuffer();
-            final ByteBuffer handshakeBuffer = peerNetData;
-
-            handshakeBuffer.clear();
 
             // Receive handshaking data from peer
-            final int dataRead = socketChannel.read(handshakeBuffer);
+            int dataRead = socketChannel.read(handshakeBuffer);
 
             // Process incoming handshaking data
             handshakeBuffer.flip();

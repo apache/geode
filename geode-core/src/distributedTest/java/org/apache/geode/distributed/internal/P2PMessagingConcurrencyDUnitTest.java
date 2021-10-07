@@ -15,7 +15,6 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -49,6 +48,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * Tests one-way P2P messaging between two peers. A shared,
@@ -80,30 +80,26 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @Before
   public void before() throws GeneralSecurityException, IOException {
-    final int locatorPort = getRandomAvailableTCPPort();
     final Properties configuration = gemFireConfiguration();
 
-    clusterStartupRule.startLocatorVM(0, locatorPort, configuration);
-    System.out.println("BGB: locator started");
+    final MemberVM locator =
+        clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
+            x -> x.withProperties(configuration).withConnectionToLocator()
+                .withoutClusterConfigurationService().withoutManagementRestService());
 
-    sender = clusterStartupRule.startServerVM(1, configuration, locatorPort);
-    System.out.println("BGB: sender started");
-    receiver = clusterStartupRule.startServerVM(2, configuration, locatorPort);
-    System.out.println("BGB: receiver started");
+    sender = clusterStartupRule.startServerVM(1, configuration, locator.getPort());
+    receiver = clusterStartupRule.startServerVM(2, configuration, locator.getPort());
   }
 
   @Test
   public void foo(/* final ParallelExecutor executor */) {
     final InternalDistributedMember receiverMember =
         receiver.invoke(() -> {
-          System.out.println("BGB: before starting receiver");
           final ClusterDistributionManager cdm = getCDM();
           final InternalDistributedMember localMember = cdm.getDistribution().getLocalMember();
-          System.out.println("BGB: after starting receiver");
           return localMember;
         });
     sender.invoke(() -> {
-      System.out.println("BGB: before starting senders");
       final ClusterDistributionManager cdm = getCDM();
       final Random random = new Random(RANDOM_SEED);
 
@@ -115,10 +111,8 @@ public class P2PMessagingConcurrencyDUnitTest {
 
       final Runnable doSending = () -> {
         try {
-          System.out.println("BGB: sender waiting to start");
           latch.countDown();
           latch.await();
-          System.out.println("BGB: sender started");
         } catch (final InterruptedException e) {
           throw new RuntimeException("doSending failed", e);
         }
@@ -135,7 +129,6 @@ public class P2PMessagingConcurrencyDUnitTest {
         executor.submit(doSending);
       }
 
-      System.out.println("BGB: after starting senders");
       TimeUnit.SECONDS.sleep(TESTING_DURATION_SECONDS);
 
       stop.set(true);
@@ -235,7 +228,7 @@ public class P2PMessagingConcurrencyDUnitTest {
      * maintenance tip: to see what kind of connection you're getting you can
      * uncomment logging over in DirectChannel.sendToMany()
      */
-    props.put("conserve-sockets", "false"); // careful: if you set a boolean it doesn't take hold!
+    props.put("conserve-sockets", "true"); // careful: if you set a boolean it doesn't take hold!
 
     return props;
   }
@@ -257,15 +250,6 @@ public class P2PMessagingConcurrencyDUnitTest {
     memberStore.trust("ca", ca);
     // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
     final Properties props = memberStore.propertiesWith("all", false, false);
-    // props.setProperty("ssl-protocols", "TLSv1.2");
-    // props.setProperty("ssl-ciphers", rsaCipher());
     return props;
   }
-
-  // private static String rsaCipher() throws NoSuchAlgorithmException, KeyManagementException {
-  // SSLContext ssl = SSLContext.getInstance("TLSv1.2");
-  // ssl.init(null, null, new java.security.SecureRandom());
-  // String[] cipherSuites = ssl.getServerSocketFactory().getSupportedCipherSuites();
-  // return Arrays.stream(cipherSuites).filter(c -> c.contains("RSA")).findFirst().get();
-  // }
 }
