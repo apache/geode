@@ -19,6 +19,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_REGION_NAME;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -161,5 +162,33 @@ public class GeodeRedisServerStartupDUnitTest {
 
     assertThat(cluster.getRedisPort(server))
         .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
+  }
+
+  @Test
+  public void startupUsesDefaultRegionName_whenSystemPropertyNotSet() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_ENABLED, "true"));
+
+    assertThat(cluster.getRedisRegionName(server))
+        .isEqualTo(GeodeRedisServer.DEFAULT_REDIS_REGION_NAME);
+  }
+
+  @Test
+  public void startupUsesSpecifiedRegionName_whenSystemPropertyIsSet() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_ENABLED, "true")
+        .withSystemProperty(REDIS_REGION_NAME, "regionName"));
+
+    assertThat(cluster.getRedisRegionName(server)).isEqualTo("regionName");
+  }
+
+  @Test
+  public void startupUsesDefaultRegionName_whenSystemPropertySetToEmptyString() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_ENABLED, "true")
+        .withSystemProperty(REDIS_REGION_NAME, ""));
+
+    assertThat(cluster.getRedisRegionName(server))
+        .isEqualTo(GeodeRedisServer.DEFAULT_REDIS_REGION_NAME);
   }
 }

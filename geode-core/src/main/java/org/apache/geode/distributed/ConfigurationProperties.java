@@ -1985,6 +1985,20 @@ public interface ConfigurationProperties {
    */
   String REDIS_PORT = "geode-for-redis-port";
   /**
+   * The static String definition of the <i>"geode-for-redis-region-name"</i> property <a
+   * name="geode-for-redis-region-name"/a>
+   * </p>
+   * <U>Description</U>: Specifies the name of the region for Geode for Redis data</td>
+   * </p>
+   * <U>Default</U>: REDIS_DATA
+   * </p>
+   *
+   * <p>
+   * Experimental: Geode API compatible with Redis is subject to change in future releases
+   * <p/>
+   */
+  String REDIS_REGION_NAME = "geode-for-redis-region-name";
+  /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
    * <U>Description</U>: Include this option to lock GemFire heap and off-heap memory pages into

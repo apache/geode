@@ -54,6 +54,7 @@ public class GeodeRedisServer {
    * The default Redis port as specified by their protocol, {@code DEFAULT_REDIS_SERVER_PORT}
    */
   public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
+  public static final String DEFAULT_REDIS_REGION_NAME = "REDIS_DATA";
   public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
   private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
@@ -147,6 +148,10 @@ public class GeodeRedisServer {
 
   public int getPort() {
     return nettyRedisServer.getPort();
+  }
+
+  public String getRegionName() {
+    return nettyRedisServer.getRegionName();
   }
 
   /**

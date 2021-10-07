@@ -109,6 +109,17 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
+  public String getRedisRegionName(int vmNumber) {
+    return getRedisRegionName(getMember(vmNumber));
+  }
+
+  public String getRedisRegionName(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getRegionName();
+    });
+  }
+
   public void setEnableUnsupported(MemberVM vm, boolean enableUnsupported) {
     vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);

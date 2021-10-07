@@ -53,6 +53,7 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -64,6 +65,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RedisSecurityService;
@@ -90,6 +92,7 @@ public class NettyRedisServer {
   private final DistributedMember member;
   private final RedisSecurityService securityService;
   private final int writeTimeoutSeconds;
+  private final String regionName;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
@@ -106,6 +109,17 @@ public class NettyRedisServer {
 
     this.writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
+    String regionName = System.getProperty(ConfigurationProperties.REDIS_REGION_NAME);
+    if (regionName == null || regionName.isEmpty()) {
+      this.regionName = GeodeRedisServer.DEFAULT_REDIS_REGION_NAME;
+    } else {
+      this.regionName = regionName;
+    }
+
+    if (port < RANDOM_PORT_INDICATOR) {
+      throw new IllegalArgumentException(
+          "The geode-for-redis-port cannot be less than " + RANDOM_PORT_INDICATOR);
+    }
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
@@ -153,6 +167,10 @@ public class NettyRedisServer {
 
   public int getPort() {
     return serverPort;
+  }
+
+  public String getRegionName() {
+    return regionName;
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
