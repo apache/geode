@@ -15,5 +15,5 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-public class ListIndexCommandDUnitTest extends ListIndexCommandDUnitTestBase {
+public class ListIndexCommandDistributedTest extends ListIndexCommandDistributedTestBase {
 }
