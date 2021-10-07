@@ -501,8 +501,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.mset(k, v));
   }
 
-  // todo updates stats when it shouldn't. not implemented in the function executor
-  @Ignore
+  @Ignore("tracked by GEODE-9668")
   @Test
   public void testMsetnx() {
     runCommandAndAssertNoStatUpdates(MAP_KEY_1, (k, v) -> jedis.msetnx(k, v));

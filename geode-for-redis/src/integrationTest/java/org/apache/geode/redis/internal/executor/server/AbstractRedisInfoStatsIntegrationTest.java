@@ -142,7 +142,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
     assertThat(Long.valueOf(getInfo(jedis).get(USED_MEMORY))).isGreaterThan(0);
   }
 
-  @Ignore // currently we return 1.0
+  @Ignore("tracked by GEODE-9669") // currently we return 1.0
   @Test
   public void memFragmentation_shouldBeGreaterThanOne() {
     for (int i = 0; i < 10000; i++) {
