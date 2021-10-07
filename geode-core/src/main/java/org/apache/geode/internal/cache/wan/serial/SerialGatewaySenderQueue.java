@@ -18,6 +18,7 @@ import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -314,7 +315,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
     boolean wasEmpty = lastDispatchedKey == lastDestroyedKey;
     Long key = peekedIds.remove();
-    if (!extraPeekedIds.remove(key)) {
+    boolean isExtraPeekedId = extraPeekedIds.contains(key);
+    if (!isExtraPeekedId) {
       updateHeadKey(key);
       lastDispatchedKey = key;
     } else {
@@ -338,12 +340,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
 
-    // Update head key and lastDispatchedKey with those extraPeekedIds removed
-    // that are consecutive to lastDispatchedKey so that they are not returned
-    // later by peekAhead given that they were already sent.
+    // For those extraPeekedIds removed that are consecutive to lastDispatchedKey:
+    // - Update lastDispatchedKey with them so that they are removed
+    // by the batch removal thread.
+    // - Update the head key with them.
+    // - Remove them from extraPeekedIds.
     long tmpKey = lastDispatchedKey;
     while (extraPeekedIdsRemovedButPreviousIdNotRemoved.contains(tmpKey = inc(tmpKey))) {
       extraPeekedIdsRemovedButPreviousIdNotRemoved.remove(tmpKey);
+      extraPeekedIds.remove(tmpKey);
       updateHeadKey(tmpKey);
       lastDispatchedKey = tmpKey;
     }
@@ -1303,6 +1308,16 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         logger.warn("QueueRemovalThread ignored cancellation");
       }
     }
+  }
+
+  @VisibleForTesting
+  long getLastPeekedId() {
+    return lastPeekedId.get();
+  }
+
+  @VisibleForTesting
+  Set<Long> getExtraPeekedIds() {
+    return Collections.unmodifiableSet(extraPeekedIds);
   }
 
   public static class SerialGatewaySenderQueueMetaRegion extends DistributedRegion {

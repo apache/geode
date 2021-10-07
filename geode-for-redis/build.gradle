@@ -1,0 +1,123 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/warnings.gradle"
+apply from: "${project.projectDir}/../gradle/jmh.gradle"
+
+apply plugin: 'nebula.facet'
+facets {
+  commonTest {
+    testTaskName = 'commonTest'
+    includeInCheckLifecycle = false
+  }
+}
+commonTest {
+  useJUnitPlatform()
+}
+
+dependencies {
+  api(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-gfsh'))
+  implementation(project(':geode-membership'))
+  implementation('it.unimi.dsi:fastutil')
+  implementation('com.github.davidmoten:geo')
+  implementation('io.netty:netty-all')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('commons-codec:commons-codec')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('it.unimi.dsi:fastutil')
+
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('redis.clients:jedis')
+  testImplementation('com.pholser:junit-quickcheck-core')
+  testImplementation('com.pholser:junit-quickcheck-generators')
+  testImplementation('pl.pragmatists:JUnitParams')
+
+  commonTestImplementation(project(':geode-junit'))
+  commonTestImplementation(project(':geode-dunit'))
+  commonTestImplementation('org.testcontainers:testcontainers')
+  commonTestImplementation('redis.clients:jedis')
+  commonTestImplementation('org.apache.logging.log4j:log4j-core')
+
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(sourceSets.commonTest.output)
+  integrationTestImplementation('redis.clients:jedis')
+  integrationTestImplementation('io.lettuce:lettuce-core')
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  // This only exists for debugging PubSubNativeRedisAcceptanceTest
+  integrationTestImplementation('org.buildobjects:jproc')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestRuntimeOnly(project(':geode-log4j'))
+  integrationTestRuntimeOnly('org.testcontainers:testcontainers')
+
+  acceptanceTestImplementation(sourceSets.integrationTest.output)
+  acceptanceTestImplementation(sourceSets.distributedTest.output)
+  acceptanceTestImplementation(sourceSets.commonTest.output)
+  acceptanceTestImplementation(project(':geode-dunit'))
+  acceptanceTestImplementation(project(':geode-junit'))
+  acceptanceTestImplementation('redis.clients:jedis')
+  acceptanceTestImplementation('org.testcontainers:testcontainers')
+  acceptanceTestRuntimeOnly(project(':geode-log4j'))
+  acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude module: 'spring-boot-starter-logging'
+    exclude module: 'spring-boot-starter-tomcat'
+  }
+  acceptanceTestImplementation('org.springframework.session:spring-session-data-redis')
+  acceptanceTestImplementation('org.apache.logging.log4j:log4j-core')
+  // This only exists for debugging PubSubNativeRedisAcceptanceTest
+  acceptanceTestImplementation('org.buildobjects:jproc')
+  acceptanceTestImplementation('io.github.resilience4j:resilience4j-retry')
+  acceptanceTestImplementation('io.lettuce:lettuce-core')
+  acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
+
+  distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  distributedTestCompileOnly('javax.servlet:javax.servlet-api')
+  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(sourceSets.commonTest.output)
+  distributedTestImplementation('redis.clients:jedis')
+  distributedTestImplementation('io.lettuce:lettuce-core')
+  distributedTestImplementation('io.github.resilience4j:resilience4j-retry')
+  distributedTestImplementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude module: 'spring-boot-starter-logging'
+    exclude module: 'spring-boot-starter-tomcat'
+  }
+  distributedTestImplementation('org.springframework.session:spring-session-data-redis')
+  distributedTestImplementation('org.testcontainers:testcontainers')
+}
+
+acceptanceTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  dependsOn(':geode-assembly:installDist')
+}
+
+tasks.register("redisAPITest") {
+  dependsOn ':geode-assembly:installDist'
+  doLast {
+    exec {
+      executable "../ci/scripts/execute_redis_tests.sh"
+    }
+  }
+}

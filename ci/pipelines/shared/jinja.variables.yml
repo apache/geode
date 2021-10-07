@@ -112,11 +112,11 @@ tests:
   RAM: '16'
   name: unit
 - ARTIFACT_SLUG: acceptancetestfiles
-  CALL_STACK_TIMEOUT: '9900'
+  CALL_STACK_TIMEOUT: '13500'
   CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 3h
+  EXECUTE_TEST_TIMEOUT: 4h
   GRADLE_TASK: acceptanceTest
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
@@ -166,7 +166,7 @@ tests:
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
-  GRADLE_TASK: ':geode-apis-compatible-with-redis:redisAPITest'
+  GRADLE_TASK: ':geode-for-redis:redisAPITest'
   MAX_IN_FLIGHT: 1
   ONLY_JDK: 11
   PARALLEL_DUNIT: 'false'

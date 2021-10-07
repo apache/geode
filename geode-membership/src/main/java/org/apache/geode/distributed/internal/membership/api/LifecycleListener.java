@@ -23,6 +23,10 @@ package org.apache.geode.distributed.internal.membership.api;
  */
 public interface LifecycleListener<ID extends MemberIdentifier> {
 
+  enum RECONNECTING {
+    RECONNECTING, NOT_RECONNECTING
+  };
+
   /**
    * Invoked when the Membership is starting. All membership services will have been
    * initialized and had their "start" methods invoked but we will not yet have joined the cluster.
@@ -54,5 +58,5 @@ public interface LifecycleListener<ID extends MemberIdentifier> {
   /**
    * Invoked if Membership has been forced out of the cluster.
    */
-  void forcedDisconnect();
+  void forcedDisconnect(String reason, RECONNECTING isReconnect);
 }

@@ -65,7 +65,12 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
+    deps.put("junit-jupiter.version", "5.7.2")
     deps.put("cglib.version", "3.3.0")
+
+    // This old version is for geode-assembly:acceptanceTest for gradle-in-gradle tests. As noted there, do not let
+    // this version be the same as the geode build itself.
+    deps.put("gradle-tooling-api.version", "5.1.1")
     return deps
   }
 
@@ -146,6 +151,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.apache.shiro', name: 'shiro-core', version: get('shiro.version'))
         api(group: 'org.assertj', name: 'assertj-core', version: '3.20.2')
         api(group: 'org.awaitility', name: 'awaitility', version: '4.1.0')
+        api(group: 'org.buildobjects', name: 'jproc', version: '2.6.2')
         api(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.9.7')
         api(group: 'org.eclipse.jetty', name: 'jetty-server', version: get('jetty.version'))
         api(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: get('jetty.version'))
@@ -153,6 +159,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
+        api(group: 'org.jctools', name: 'jctools-core', version: '3.3.0')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '3.12.4')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
@@ -167,6 +174,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '3.6.3')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
+        api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
       }
     }
 
@@ -219,6 +227,16 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.hamcrest', version: '2.2') {
       entry('hamcrest')
+    }
+
+    dependencySet(group: 'org.junit.jupiter', version: get('junit-jupiter.version')) {
+      entry('junit-jupiter-api')
+      entry('junit-jupiter-params')
+      entry('junit-jupiter-engine')
+    }
+
+    dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
+      entry('junit-vintage-engine')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

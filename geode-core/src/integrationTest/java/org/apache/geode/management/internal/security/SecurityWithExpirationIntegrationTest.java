@@ -26,7 +26,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.AuthenticationExpiredException;
-import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ExpirableSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -47,7 +46,7 @@ public class SecurityWithExpirationIntegrationTest {
   public void testAuthenticationWhenUserExpired() {
     getSecurityManager().addExpiredUser("data");
     assertThatThrownBy(() -> this.securityService.login(loginCredentials("data", "data")))
-        .isInstanceOf(AuthenticationFailedException.class);
+        .isInstanceOf(AuthenticationExpiredException.class);
   }
 
   @Test

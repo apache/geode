@@ -16,7 +16,6 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
@@ -118,7 +117,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
       }
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
-    assertTrue(membershipFailed.get());
+    await().until(() -> membershipFailed.get());
     await()
         .until(() -> cache.getReconnectedCache() != null);
 

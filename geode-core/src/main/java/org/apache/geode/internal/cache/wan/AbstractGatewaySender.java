@@ -685,12 +685,28 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         "GatewaySender {} has been rebalanced", this);
   }
 
-  @Override
+  /**
+   * Set AlertThreshold for this GatewaySender.
+   *
+   * Care must be taken to set this consistently across all gateway senders in the cluster and only
+   * when safe to do so.
+   *
+   * @since Geode 1.15
+   *
+   */
   public void setAlertThreshold(int alertThreshold) {
     this.alertThreshold = alertThreshold;
   };
 
-  @Override
+  /**
+   * Set BatchSize for this GatewaySender.
+   *
+   * Care must be taken to set this consistently across all gateway senders in the cluster and only
+   * when safe to do so.
+   *
+   * @since Geode 1.15
+   *
+   */
   public void setBatchSize(int batchSize) {
     this.batchSize = batchSize;
     if (eventProcessor != null) {
@@ -698,7 +714,15 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  @Override
+  /**
+   * Set BatchTimeInterval for this GatewaySender.
+   *
+   * Care must be taken to set this consistently across all gateway senders in the cluster and only
+   * when safe to do so.
+   *
+   * @since Geode 1.15
+   *
+   */
   public void setBatchTimeInterval(int batchTimeInterval) {
     this.batchTimeInterval = batchTimeInterval;
     if (eventProcessor != null) {
@@ -706,23 +730,34 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   };
 
-  @Override
+  /**
+   * Set GroupTransactionEvents for this GatewaySender.
+   *
+   * Care must be taken to set this consistently across all gateway senders in the cluster and only
+   * when safe to do so.
+   *
+   * @since Geode 1.15
+   *
+   */
   public void setGroupTransactionEvents(boolean groupTransactionEvents) {
     this.groupTransactionEvents = groupTransactionEvents;
   };
 
-  @Override
+  /**
+   * Set GatewayEventFilters for this GatewaySender.
+   *
+   * Care must be taken to set this consistently across all gateway senders in the cluster and only
+   * when safe to do so.
+   *
+   * @since Geode 1.15
+   *
+   */
   public void setGatewayEventFilters(List<GatewayEventFilter> filters) {
     if (filters.isEmpty()) {
       eventFilters = Collections.emptyList();
     } else {
       eventFilters = Collections.unmodifiableList(filters);
     }
-  }
-
-  @Override
-  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
-    retriesToGetTransactionEventsFromQueue = retries;
   }
 
   public boolean beforeEnqueue(GatewayQueueEvent gatewayEvent) {

@@ -40,7 +40,7 @@ def dependentProjectNames = [
   ':geode-memcached',
   ':geode-old-client-support',
   ':geode-rebalancer',
-  ':geode-apis-compatible-with-redis',
+  ':geode-for-redis',
   ':geode-serialization',
   ':geode-tcp-server',
   ':geode-wan'
@@ -261,7 +261,7 @@ dependencies {
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
-  acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
+  acceptanceTestImplementation('org.gradle:gradle-tooling-api:' + DependencyConstraints.get('gradle-tooling-api.version'))
 
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 

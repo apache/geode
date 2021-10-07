@@ -396,7 +396,7 @@ dependencies {
   }
   performanceTestImplementation(project(':geode-log4j'))
 
-  jmhImplementation('org.jctools:jctools-core:3.3.0')
+  jmhImplementation('org.jctools:jctools-core')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

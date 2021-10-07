@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -114,9 +116,12 @@ public class OperationHistoryManagerTest {
 
     history.expireHistory();
 
-    assertThat(operationState.getOperationEnd()).isNotNull();
-    assertThat(operationState.getThrowable().getMessage())
-        .contains("Locator that initiated the Rest API operation is offline:");
+    verify(operationStateStore, times(1)).recordEnd(eq(operationState.getId()),
+        eq(operationState.getResult()), argThat(ex -> ex instanceof RuntimeException &&
+            ex.getMessage()
+                .equals("Locator that initiated the Rest API operation is offline: locator")));
+
+
   }
 
   @Test

@@ -44,6 +44,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class})
 public class IntegratedSecurityPeerAuthDUnitTest {
 
+  private static final String SERVER_3_IS_NOT_AUTHENTICATED = "server-3 is not authenticated";
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
@@ -73,7 +74,7 @@ public class IntegratedSecurityPeerAuthDUnitTest {
     cluster.getVM(2).invoke(() -> {
       ServerStarterRule server = new ServerStarterRule();
       server.withProperties(props).withConnectionToLocator(locatorPort).withAutoStart();
-      assertThatThrownBy(() -> server.before()).isInstanceOf(GemFireSecurityException.class)
+      assertThatThrownBy(server::before).isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("server-2 not authorized for CLUSTER:MANAGE");
     });
   }
@@ -87,8 +88,8 @@ public class IntegratedSecurityPeerAuthDUnitTest {
     cluster.getVM(3).invoke(() -> {
       ServerStarterRule server = new ServerStarterRule();
       server.withProperties(props).withConnectionToLocator(locatorPort).withAutoStart();
-      assertThatThrownBy(() -> server.before()).isInstanceOf(GemFireSecurityException.class)
-          .hasMessageContaining("Authentication error");
+      assertThatThrownBy(server::before).isInstanceOf(GemFireSecurityException.class)
+          .hasMessageContaining(SERVER_3_IS_NOT_AUTHENTICATED);
     });
   }
 
@@ -108,7 +109,7 @@ public class IntegratedSecurityPeerAuthDUnitTest {
       // server1 and server2 are authenticated, server3 is not
       String name = credentials.getProperty("name");
       if ("server-3".equals(name)) {
-        throw new AuthenticationFailedException("server-3 is not authenticated");
+        throw new AuthenticationFailedException(SERVER_3_IS_NOT_AUTHENTICATED);
       }
       return name;
     }

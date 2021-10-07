@@ -15,6 +15,9 @@
 
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.NOT_RECONNECTING;
+import static org.apache.geode.distributed.internal.membership.api.LifecycleListener.RECONNECTING.RECONNECTING;
+
 import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1564,7 +1567,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @VisibleForTesting
   public void forceDisconnect(String reason) {
-    this.gmsManager.forceDisconnect(reason);
+    getGMSManager().forceDisconnect(reason);
   }
 
   /**
@@ -1775,6 +1778,23 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       handleOrDeferSuspect(s);
     }
 
+    void uncleanShutdownReconnectingDS(String reason, Exception shutdownCause) {
+      logger.info("Reconnecting system failed to connect");
+      lifecycleListener.forcedDisconnect(reason, RECONNECTING);
+      uncleanShutdown(reason,
+          new MemberDisconnectedException("reconnecting system failed to connect"));
+    }
+
+    void uncleanShutdownDS(String reason, Exception shutdownCause) {
+      try {
+        listener.saveConfig();
+      } finally {
+        new LoggingThread("DisconnectThread", false, () -> {
+          lifecycleListener.forcedDisconnect(reason, NOT_RECONNECTING);
+          uncleanShutdown(reason, shutdownCause);
+        }).start();
+      }
+    }
 
     @Override
     public void forceDisconnect(final String reason) {
@@ -1797,19 +1817,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       }
 
       if (this.isReconnectingDS()) {
-        logger.info("Reconnecting system failed to connect");
-        uncleanShutdown(reason,
-            new MemberDisconnectedException("reconnecting system failed to connect"));
-        return;
-      }
-
-      try {
-        listener.saveConfig();
-      } finally {
-        new LoggingThread("DisconnectThread", false, () -> {
-          lifecycleListener.forcedDisconnect();
-          uncleanShutdown(reason, shutdownCause);
-        }).start();
+        uncleanShutdownReconnectingDS(reason, shutdownCause);
+      } else {
+        uncleanShutdownDS(reason, shutdownCause);
       }
     }
 

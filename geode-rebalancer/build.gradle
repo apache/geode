@@ -38,6 +38,7 @@ dependencies {
   }
 
   testImplementation('junit:junit')
+  testImplementation('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
 

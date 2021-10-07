@@ -14,18 +14,32 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
-import org.assertj.core.api.Assertions;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.test.junit.Repeat;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.RepeatRule;
 
 public class EventIDTest {
+  @Rule
+  public ExecutorServiceRule executorService = new ExecutorServiceRule();
+
+  @Rule
+  public RepeatRule repeat = new RepeatRule();
 
   @Test
   public void emptyEventIdCanBeSerializedWithCurrentVersion()
@@ -48,7 +62,37 @@ public class EventIDTest {
     EventID result = DataSerializer.readObject(
         new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), version));
 
-    Assertions.assertThat(result.getMembershipID()).isEqualTo(eventID.getMembershipID());
+    assertThat(result.getMembershipID()).isEqualTo(eventID.getMembershipID());
   }
 
+  @Test
+  @Repeat(10)
+  public void threadIDIsWrappedAround() throws Exception {
+    EventID.ThreadAndSequenceIDWrapper wrapper = new EventID.ThreadAndSequenceIDWrapper();
+    long start = wrapper.threadID;
+
+    int numberOfThreads = 100000;
+
+    List<Future<Long>> futures = new ArrayList<>();
+    for (int i = 0; i < numberOfThreads; i++) {
+      futures.add(executorService.submit(this::getThreadID));
+    }
+    for (Future<Long> future : futures) {
+      future.get();
+    }
+    long lastThreadID = executorService.submit(this::getThreadID).get();
+    long expected = start + numberOfThreads + 1;
+    if (expected >= ThreadIdentifier.MAX_THREAD_PER_CLIENT) {
+      // wrap around ThreadIdentifier.MAX_THREAD_PER_CLIENT (1,000,000) and 1,000,000
+      // is never used.
+      assertThat(lastThreadID).isEqualTo(expected - ThreadIdentifier.MAX_THREAD_PER_CLIENT + 1);
+    } else {
+      assertThat(lastThreadID).isEqualTo(expected);
+    }
+  }
+
+  private long getThreadID() {
+    EventID.ThreadAndSequenceIDWrapper wrapper = new EventID.ThreadAndSequenceIDWrapper();
+    return wrapper.threadID;
+  }
 }

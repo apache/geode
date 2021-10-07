@@ -130,7 +130,7 @@ spotless {
     // As the method name suggests, bump this number if any of the below "custom" rules change.
     // Spotless will not run on unchanged files unless this number changes.
     bumpThisNumberIfACustomStepChanges(project.ext.'spotless-file-hash')
-
+    toggleOffOn()
     greclipse()
 
     custom 'Use single-quote in project directives.', {
@@ -143,9 +143,17 @@ spotless {
       })
     }
 
-    custom 'Do not pad spaces before parenthesis in gradle dependency declaration.', {
-      it.replaceAll(/\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/, '\n$1(')
+    replaceRegex('Do not pad spaces before parenthesis in gradle dependency declaration.',
+      /\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/,
+      '\n$1(')
+
+    custom 'Drop version portion of dependency', {
+      def match
+      if ((match = it =~ /(\s*\S*(?:api|[cC]ompileOnly|[rR]untimeOnly|[iI]mplementation|[tT]est))\('([\w.-]+):([\w.-]+):([\w.-]+)'\)/)) {
+        throw new AssertionError("Error in: ${target} ${match.group(0)}.\nDo not declare raw dependency versions in project Gradle files. 'spotlessApply' cannot resolve this issue.\n")
+      }
     }
+
     indentWithSpaces(2)
     endWithNewline()
   }

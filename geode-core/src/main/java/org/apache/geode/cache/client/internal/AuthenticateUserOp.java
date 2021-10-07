@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -34,6 +35,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -176,12 +178,29 @@ public class AuthenticateUserOp {
 
     @Override
     public Object attempt(Connection connection) throws Exception {
-      if (connection.getServer().getRequiresCredentials()) {
-        return super.attempt(connection);
-      } else {
+      if (!connection.getServer().getRequiresCredentials()) {
         return null;
       }
+
+      try {
+        return parentAttempt(connection);
+      }
+      // if login failed for auth expired reason, try again once more
+      catch (AuthenticationExpiredException first) {
+        getMessage().clear();
+        try {
+          return parentAttempt(connection);
+        } catch (AuthenticationExpiredException second) {
+          throw new AuthenticationFailedException(second.getMessage(), second);
+        }
+      }
     }
+
+    @VisibleForTesting
+    Object parentAttempt(Connection connection) throws Exception {
+      return super.attempt(connection);
+    }
+
 
     @Override
     protected Object processResponse(Message msg, Connection connection) throws Exception {
@@ -215,6 +234,8 @@ public class AuthenticateUserOp {
           } else {
             throw new AuthenticationFailedException(s, afe);
           }
+        } else if (result instanceof AuthenticationExpiredException) {
+          throw (AuthenticationExpiredException) result;
         } else if (result instanceof AuthenticationRequiredException) {
           throw new AuthenticationRequiredException(s, (AuthenticationRequiredException) result);
         } else if (result instanceof NotAuthorizedException) {

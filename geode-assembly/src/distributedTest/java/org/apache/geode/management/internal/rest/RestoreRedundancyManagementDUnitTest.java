@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.cache.PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RestoreRedundancyRequest;
@@ -152,6 +155,37 @@ public class RestoreRedundancyManagementDUnitTest {
         assertPrimariesBalanced(regionName, numberOfActiveServers, true);
       }
     });
+  }
+
+  @Test
+  public void testOperationStatusWhenLocatorLeftTheMembership() {
+
+    List<String> regionNames = getAllRegionNames();
+    createAndPopulateRegions(regionNames);
+
+    int numberOfServers = servers.size();
+    regionNames.forEach(region -> locator1
+        .waitUntilRegionIsReadyOnExactlyThisManyServers(SEPARATOR + region, numberOfServers));
+
+    RestoreRedundancyRequest restoreRedundancyRequest = new RestoreRedundancyRequest();
+
+    restoreRedundancyRequest.setIncludeRegions(regionNames);
+
+    ClusterManagementOperationResult<RestoreRedundancyRequest, RestoreRedundancyResults> startResult =
+        client1.start(restoreRedundancyRequest);
+
+    // This should cause status of restoreRedundancyRequest to be ERROR
+    locator1.stop();
+
+    // The ClientClusterManagementService is implemented such that if there is an
+    // error in the status of operation command (in this case earlier RestoreRedundancyRequest)
+    // the get() method throws an exception even though the get has successfully retrieved the
+    // operation status.
+    assertThatExceptionOfType(ClusterManagementException.class)
+        .isThrownBy(() -> client2.get(restoreRedundancyRequest, startResult.getOperationId()))
+        .withMessageContaining("Locator that initiated the Rest API operation is offline: ")
+        .extracting(ClusterManagementException::getStatusCode)
+        .isEqualTo(ClusterManagementResult.StatusCode.ERROR);
   }
 
   // Helper methods

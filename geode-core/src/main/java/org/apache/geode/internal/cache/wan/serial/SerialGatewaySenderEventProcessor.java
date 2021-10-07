@@ -418,7 +418,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
           if (!(isUpdateVersionStamp || isCME_And_NotOriginRemote)) {
             senderEvent =
                 new GatewaySenderEventImpl(operation, event, substituteValue, false,
-                    isLastEventInTransaction);
+                    getTransactionMetadataDisposition(isLastEventInTransaction));
             handleSecondaryEvent(senderEvent);
           }
         }
@@ -432,9 +432,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         waitForFailoverCompletion();
       }
       // If it is, create and enqueue an initialized GatewayEventImpl
-      senderEvent =
-          new GatewaySenderEventImpl(operation, event, substituteValue, isLastEventInTransaction); // OFFHEAP
-                                                                                                   // ok
+      // OFFHEAP ok
+      senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue,
+          getTransactionMetadataDisposition(isLastEventInTransaction));
 
       boolean queuedEvent = false;
       try {

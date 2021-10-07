@@ -66,7 +66,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
       ClusterStartupRule.memberStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class)
-          .hasMessageContaining("Security check failed. Authentication error");
+          .hasMessageContaining("Security check failed. invalid username/password");
     });
   }
 

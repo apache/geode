@@ -154,4 +154,50 @@ public class OperationStateTest {
     assertThat(operationStateCopy.getOperationEnd()).isNull();
   }
 
+  @Test
+  public void testToString() {
+    ClusterManagementOperation operation = mock(ClusterManagementOperation.class);
+    Date start = new Date();
+    Date end = new Date();
+    OperationState<?, OperationResult> operationState =
+        new OperationState<>("opId", operation, start);
+    operationState.setOperationEnd(end, null, null);
+
+    StringBuilder expected = new StringBuilder();
+    expected.append("OperationState{" +
+        "opId=" + operationState.getId() +
+        ", operation=" + operationState.getOperation() +
+        ", operationStart=" + operationState.getOperationStart() +
+        ", operationEnd=" + operationState.getOperationEnd() +
+        ", result=null" +
+        ", throwable=null" +
+        ", locator=" + operationState.getLocator() +
+        '}');
+
+    assertThat(operationState.toString()).isEqualTo(expected.toString());
+  }
+
+  @Test
+  public void testToStringWithThrowable() {
+    ClusterManagementOperation operation = mock(ClusterManagementOperation.class);
+    Date start = new Date();
+    Date end = new Date();
+    OperationState<?, OperationResult> operationState =
+        new OperationState<>("opId", operation, start);
+    operationState.setOperationEnd(end, null, new RuntimeException("Test"));
+
+    StringBuilder expected = new StringBuilder();
+    expected.append("OperationState{" +
+        "opId=" + operationState.getId() +
+        ", operation=" + operationState.getOperation() +
+        ", operationStart=" + operationState.getOperationStart() +
+        ", operationEnd=" + operationState.getOperationEnd() +
+        ", result=null" +
+        ", throwable=" + operationState.getThrowable().getMessage() +
+        ", locator=" + operationState.getLocator() +
+        '}');
+
+    assertThat(operationState.toString()).isEqualTo(expected.toString());
+  }
+
 }

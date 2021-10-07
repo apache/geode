@@ -127,11 +127,13 @@ public class OldClientSupportProvider implements OldClientSupportService {
       return theThrowable;
     }
 
-    String className = theThrowable.getClass().getName();
-
     // backward compatibility for authentication expiration
     if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)) {
-      if (className.equals(AuthenticationExpiredException.class.getName())) {
+      if (theThrowable instanceof AuthenticationExpiredException) {
+        return new AuthenticationRequiredException(USER_NOT_FOUND);
+      }
+      Throwable cause = theThrowable.getCause();
+      if (cause instanceof AuthenticationExpiredException) {
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }
     }
@@ -140,8 +142,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
       return theThrowable;
     }
 
-
-
+    String className = theThrowable.getClass().getName();
     // this class has been renamed, so it cannot be automatically translated
     // during java deserialization
     if (className.equals("org.apache.geode.cache.execute.EmptyRegionFunctionException")) {
