@@ -50,14 +50,14 @@ public class ConnectionFactoryImplTest {
   }
 
   @Test
-  public void authenticateIfRequired_noOp_whenUsedByGateway() throws Exception {
+  public void authenticateIfRequired_noOp_whenUsedByGateway() {
     when(pool.isUsedByGateway()).thenReturn(true);
     factory.authenticateIfRequired(connection);
     verify(connection, never()).getServer();
   }
 
   @Test
-  public void authenticateIfRequired_noOp_whenMultiUser() throws Exception {
+  public void authenticateIfRequired_noOp_whenMultiUser() {
     when(pool.isUsedByGateway()).thenReturn(false);
     when(pool.getMultiuserAuthentication()).thenReturn(true);
     factory.authenticateIfRequired(connection);
@@ -65,7 +65,7 @@ public class ConnectionFactoryImplTest {
   }
 
   @Test
-  public void authenticateIfRequired_noOp_whenServerNotRequireCredential() throws Exception {
+  public void authenticateIfRequired_noOp_whenServerNotRequireCredential() {
     when(pool.isUsedByGateway()).thenReturn(false);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
     when(connection.getServer()).thenReturn(server);
@@ -76,7 +76,7 @@ public class ConnectionFactoryImplTest {
   }
 
   @Test
-  public void authenticateIfRequired_noOp_whenServerHasUserId() throws Exception {
+  public void authenticateIfRequired_noOp_whenServerHasUserId() {
     when(pool.isUsedByGateway()).thenReturn(false);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
     when(connection.getServer()).thenReturn(server);
@@ -88,7 +88,7 @@ public class ConnectionFactoryImplTest {
   }
 
   @Test
-  public void authenticateIfRequired() throws Exception {
+  public void authenticateIfRequired() {
     when(pool.isUsedByGateway()).thenReturn(false);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
     when(connection.getServer()).thenReturn(server);

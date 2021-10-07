@@ -61,14 +61,14 @@ public class OpExecutorImplUnitTest {
   }
 
   @Test
-  public void authenticateIfRequired_noOp_WhenNotRequireCredential() throws Exception {
+  public void authenticateIfRequired_noOp_WhenNotRequireCredential() {
     when(server.getRequiresCredentials()).thenReturn(false);
     executor.authenticateIfRequired(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
   @Test
-  public void authenticateIfRequired_noOp_WhenOpNeedsNoUserId() throws Exception {
+  public void authenticateIfRequired_noOp_WhenOpNeedsNoUserId() {
     when(server.getRequiresCredentials()).thenReturn(true);
     when(op.needsUserId()).thenReturn(false);
     executor.authenticateIfRequired(connection, op);
@@ -76,7 +76,7 @@ public class OpExecutorImplUnitTest {
   }
 
   @Test
-  public void authenticateIfRequired_noOp_singleUser_hasId() throws Exception {
+  public void authenticateIfRequired_noOp_singleUser_hasId() {
     when(server.getRequiresCredentials()).thenReturn(true);
     when(op.needsUserId()).thenReturn(true);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
@@ -87,7 +87,7 @@ public class OpExecutorImplUnitTest {
   }
 
   @Test
-  public void authenticateIfRequired_setId_singleUser_hasNoId() throws Exception {
+  public void authenticateIfRequired_setId_singleUser_hasNoId() {
     when(server.getRequiresCredentials()).thenReturn(true);
     when(op.needsUserId()).thenReturn(true);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
