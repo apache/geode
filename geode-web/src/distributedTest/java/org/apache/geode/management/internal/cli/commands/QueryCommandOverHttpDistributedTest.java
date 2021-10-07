@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class QueryCommandOverHttpDUnitTest extends QueryCommandDUnitTestBase {
+public class QueryCommandOverHttpDistributedTest extends QueryCommandDistributedTestBase {
 
   @Override
   protected Properties locatorProperties(Properties configProperties) {

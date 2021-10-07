@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static java.lang.System.nanoTime;
-import static java.util.Objects.requireNonNull;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -56,12 +55,14 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public abstract class QueryCommandDUnitTestBase {
+@SuppressWarnings({"ConstantConditions"})
+public abstract class QueryCommandDistributedTestBase {
 
   private static final String SERIALIZATION_FILTER = Value.class.getName();
 
@@ -172,10 +173,15 @@ public abstract class QueryCommandDUnitTestBase {
         "from " + PARTITIONED_REGION_NAME_PATH + " " +
         "where ID <= " + randomInteger + "\" --interactive=false";
 
-    CommandResult commandResult = gfsh.executeCommand(query);
+    TabularResultModel resultModel =
+        gfsh.executeAndAssertThat(query).statusIsSuccess().hasTableSection()
+            .hasRowSize(randomInteger + 1).getActual();
+    assertThat(resultModel.getValuesInColumn("ID").size()).isGreaterThan(0);
+    assertThat(resultModel.getValuesInColumn("status").size()).isGreaterThan(0);
+    assertThat(resultModel.getValuesInColumn("createTime").size()).isGreaterThan(0);
+    assertThat(resultModel.getValuesInColumn("pk").size()).isGreaterThan(0);
+    assertThat(resultModel.getValuesInColumn("floatMinValue").size()).isGreaterThan(0);
 
-    validateSelectResult(commandResult, true, randomInteger + 1,
-        "ID", "status", "createTime", "pk", "floatMinValue");
   }
 
   @Test
@@ -250,9 +256,11 @@ public abstract class QueryCommandDUnitTestBase {
     String query = "query --query=\"" +
         "select Value from " + REGION_EVICTION_NAME_PATH + "\" --interactive=false";
 
-    CommandResult commandResult = gfsh.executeCommand(query);
 
-    validateSelectResult(commandResult, true, 10, "Value");
+    TabularResultModel resultModel = gfsh.executeAndAssertThat(query).statusIsSuccess()
+        .hasTableSection().hasRowSize(10).getActual();
+    assertThat(resultModel.getValuesInColumn("Value").size()).isGreaterThan(0);
+
   }
 
   @Test
@@ -266,11 +274,9 @@ public abstract class QueryCommandDUnitTestBase {
     String query = "query --query=\"" +
         "select Value from " + REGION_EVICTION_NAME_PATH + "\" --interactive=false";
 
-    CommandResult commandResult = gfsh.executeCommand(query);
+    gfsh.executeAndAssertThat(query).statusIsError()
+        .containsOutput("An IOException was thrown while deserializing");
 
-    validateSelectResult(commandResult, false, -1, "Value");
-
-    assertThat(commandResult.asString()).contains("An IOException was thrown while deserializing");
   }
 
   @Test
@@ -394,11 +400,11 @@ public abstract class QueryCommandDUnitTestBase {
   }
 
   private static <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
-    return requireNonNull(getCache()).createRegionFactory(shortcut);
+    return getCache().createRegionFactory(shortcut);
   }
 
   private static <K, V> Region<K, V> getRegion(String regionPath) {
-    return requireNonNull(getCache()).getRegion(regionPath);
+    return getCache().getRegion(regionPath);
   }
 
   /**
