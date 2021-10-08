@@ -136,8 +136,12 @@ public class PingOpDistributedTest implements Serializable {
     GeodeAwaitility.await().untilAsserted(() -> {
       client.invoke(() -> executePing(poolName, server1Port, distributedMember1));
       Long subsequentHeartbeat = server1.invoke(this::getSingleHeartBeat);
-
-      assertThat(subsequentHeartbeat).isGreaterThan(firstHeartbeat);
+      if (subsequentHeartbeat < firstHeartbeat) {
+        throw new Error("Heartbeat decreased from initial " + firstHeartbeat
+            + " to " + subsequentHeartbeat);
+      }
+      assertThat(subsequentHeartbeat)
+          .isGreaterThan(firstHeartbeat);
     });
   }
 
