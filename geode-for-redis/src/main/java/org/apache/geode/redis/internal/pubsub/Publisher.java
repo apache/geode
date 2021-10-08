@@ -15,9 +15,11 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+import static org.apache.geode.redis.internal.netty.Coder.getInternalErrorResponse;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
 
@@ -56,12 +58,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.netty.CoderException;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
 
 /**
  * This class deals with doing a redis pubsub publish operation.
  * Since publish requests from the same client must have order
- * preserved, and since publish requests myst be done in a thread
+ * preserved, and since publish requests must be done in a thread
  * other than the one the request arrived from, this class has an
  * instance of ClientPublisher for any Client that does a publish.
  * The ClientPublisher maintains an ordered queue of requests
@@ -126,7 +129,6 @@ public class Publisher {
 
 
   private static ExecutorService createExecutorService() {
-    // return newFixedThreadPool(2, "GeodeRedisServer-Publish-", true);
     return newCachedThreadPool("GeodeRedisServer-Publish-", true);
   }
 
@@ -174,6 +176,17 @@ public class Publisher {
     });
   }
 
+  private static void writeArrayResponse(ByteBuf buffer, Object... items) {
+    buffer.markWriterIndex();
+    try {
+      Coder.getArrayResponse(buffer, asList(items), true);
+    } catch (CoderException e) {
+      buffer.resetWriterIndex();
+      getInternalErrorResponse(buffer, e.getMessage());
+    }
+  }
+
+
   private void publishRequestToLocalChannelSubscribers(PublishRequest request) {
     Collection<Subscription> channelSubscriptions =
         subscriptions.getChannelSubscriptions(request.getChannel());
@@ -182,17 +195,15 @@ public class Publisher {
     }
     ByteBuf writeBuf = channelSubscriptions.iterator().next().getChannelWriteBuffer();
     for (byte[] message : request.getMessages()) {
-      Coder.writeArrayResponse(writeBuf, bMESSAGE, request.getChannel(), message);
+      writeArrayResponse(writeBuf, bMESSAGE, request.getChannel(), message);
     }
     if (channelSubscriptions.size() == 1) {
       Subscription singleSubscription = channelSubscriptions.iterator().next();
-      singleSubscription.waitUntilReadyToPublish();
       singleSubscription.writeBufferToChannel(writeBuf);
     } else {
       // This pattern of using retainedDuplicate and ReferenceCountUtil.release
       // came from io.netty.channel.group.DefaultChannelGroup
       for (Subscription subscription : channelSubscriptions) {
-        subscription.waitUntilReadyToPublish();
         subscription.writeBufferToChannel(writeBuf.retainedDuplicate());
       }
       ReferenceCountUtil.release(writeBuf);
@@ -211,18 +222,16 @@ public class Publisher {
       PatternSubscriptions patternSubscriptions) {
     ByteBuf writeBuf = patternSubscriptions.getFirst().getChannelWriteBuffer();
     for (byte[] message : request.getMessages()) {
-      Coder.writeArrayResponse(writeBuf, bPMESSAGE, patternSubscriptions.getPattern(),
+      writeArrayResponse(writeBuf, bPMESSAGE, patternSubscriptions.getPattern(),
           request.getChannel(), message);
     }
     if (patternSubscriptions.size() == 1) {
       Subscription singleSubscription = patternSubscriptions.getFirst();
-      singleSubscription.waitUntilReadyToPublish();
       singleSubscription.writeBufferToChannel(writeBuf);
     } else {
       // This pattern of using retainedDuplicate and ReferenceCountUtil.release
       // came from io.netty.channel.group.DefaultChannelGroup
       for (Subscription subscription : patternSubscriptions.getSubscriptions()) {
-        subscription.waitUntilReadyToPublish();
         subscription.writeBufferToChannel(writeBuf.retainedDuplicate());
       }
       ReferenceCountUtil.release(writeBuf);

@@ -32,8 +32,6 @@ import org.apache.geode.redis.internal.netty.Client;
 public interface Subscription extends ChannelFutureListener {
   void readyToPublish();
 
-  void waitUntilReadyToPublish();
-
   Client getClient();
 
   void writeBufferToChannel(ByteBuf retainedDuplicate);

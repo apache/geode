@@ -46,8 +46,7 @@ public class SubscriptionImpl implements Subscription {
     readyForPublish = null;
   }
 
-  @Override
-  public void waitUntilReadyToPublish() {
+  private void waitUntilReadyToPublish() {
     CountDownLatch latch = readyForPublish;
     if (latch != null) {
       try {
@@ -67,6 +66,7 @@ public class SubscriptionImpl implements Subscription {
 
   @Override
   public void writeBufferToChannel(ByteBuf writeBuf) {
+    waitUntilReadyToPublish();
     if (running) {
       client.writeBufferToChannel(writeBuf).addListener(this);
     }

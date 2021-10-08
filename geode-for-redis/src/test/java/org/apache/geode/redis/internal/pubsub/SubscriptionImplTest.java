@@ -15,8 +15,12 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
@@ -24,6 +28,7 @@ import org.apache.geode.redis.internal.netty.Client;
 public class SubscriptionImplTest {
 
   private final Client client = createClient();
+  private final ByteBuf buffer = mock(ByteBuf.class);
   private final SubscriptionImpl subscription = new SubscriptionImpl(client);
 
   private Client createClient() {
@@ -36,8 +41,8 @@ public class SubscriptionImplTest {
   }
 
   @Test
-  public void interruptingWaitShutsSubscriptionDown() throws InterruptedException {
-    Thread t = new Thread(subscription::waitUntilReadyToPublish);
+  public void interruptingWriteShutsSubscriptionDown() throws InterruptedException {
+    Thread t = new Thread(() -> subscription.writeBufferToChannel(buffer));
     t.start();
     try {
       t.interrupt();
@@ -48,8 +53,9 @@ public class SubscriptionImplTest {
   }
 
   @Test
-  public void readyToPublishAfterWaitUnblocksWait() throws InterruptedException {
-    Thread t = new Thread(subscription::waitUntilReadyToPublish);
+  public void readyToPublishAfterWriteUnblocksWrite() throws InterruptedException {
+    when(client.writeBufferToChannel(any())).thenReturn(mock(ChannelFuture.class));
+    Thread t = new Thread(() -> subscription.writeBufferToChannel(buffer));
     t.start();
     try {
       subscription.readyToPublish();
@@ -60,9 +66,10 @@ public class SubscriptionImplTest {
   }
 
   @Test
-  public void readyToPublishBeforeWaitUnblocksWait() {
+  public void readyToPublishBeforeWriteAllowsWrite() {
+    when(client.writeBufferToChannel(any())).thenReturn(mock(ChannelFuture.class));
     subscription.readyToPublish();
-    subscription.waitUntilReadyToPublish();
+    subscription.writeBufferToChannel(buffer);
     assertThat(subscription.isShutdown()).isFalse();
   }
 }

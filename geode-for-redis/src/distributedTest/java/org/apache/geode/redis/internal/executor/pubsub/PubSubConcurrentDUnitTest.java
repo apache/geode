@@ -192,9 +192,6 @@ public class PubSubConcurrentDUnitTest {
       long start = Long.parseLong(message.substring(message.lastIndexOf('-') + 1));
       totalLatency += end - start;
       messageCount++;
-      // if (messageCount % 1000 == 0) {
-      // System.out.println(getLatencyReport());
-      // }
       int publisherIdStart = message.indexOf('-') + 1;
       int publisherIdEnd = message.indexOf('-', publisherIdStart);
       int publisherId = Integer.parseInt(message.substring(publisherIdStart, publisherIdEnd));

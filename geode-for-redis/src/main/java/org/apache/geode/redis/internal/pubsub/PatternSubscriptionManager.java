@@ -90,8 +90,7 @@ class PatternSubscriptionManager
     } else if (result.size() == 1) {
       result = singletonList(result.get(0));
     } else {
-      // noinspection ToArrayCallWithZeroLengthArrayArgument
-      result = asList(result.toArray(new PatternSubscriptions[result.size()]));
+      result = asList(result.toArray(new PatternSubscriptions[0]));
     }
     return result;
   }

@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
+import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
@@ -141,21 +142,6 @@ public class Coder {
     return buffer;
   }
 
-  public static void writeArrayResponse(ByteBuf buffer, Object... items) {
-    buffer.markWriterIndex();
-    try {
-      buffer.writeByte(ARRAY_ID);
-      appendAsciiDigitsToByteBuf(items.length, buffer);
-      buffer.writeBytes(bCRLF);
-      for (Object next : items) {
-        writeCollectionOrString(buffer, next, true);
-      }
-    } catch (CoderException e) {
-      buffer.resetWriterIndex();
-      getErrorResponse(buffer, "Internal server error: " + e.getMessage());
-    }
-  }
-
   private static void writeCollectionOrString(ByteBuf buffer, Object next, boolean useBulkStrings)
       throws CoderException {
     if (next instanceof Collection) {
@@ -218,6 +204,10 @@ public class Coder {
     buffer.writeBytes(errorAr);
     buffer.writeBytes(bCRLF);
     return buffer;
+  }
+
+  public static ByteBuf getInternalErrorResponse(ByteBuf buffer, String error) {
+    return getErrorResponse(buffer, INTERNAL_SERVER_ERROR + error);
   }
 
   public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
