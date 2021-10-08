@@ -1464,10 +1464,18 @@ public class PartitionedRegion extends LocalRegion
       if (logger.isDebugEnabled()) {
         logger.debug("registerPartitionedRegion: unable to obtain lock for {}", this);
       }
-      cleanupFailedInitialization();
-      throw new PartitionedRegionException(
-          "Can not create PartitionedRegion (failed to acquire RegionLock).",
-          lsde);
+      PartitionedRegionException pre = null;
+      try {
+        cleanupFailedInitialization();
+      } catch (RuntimeException rte) {
+        rte.initCause(lsde);
+        pre = new PartitionedRegionException("Can not create PartitionedRegion.", rte);
+      }
+      if (pre == null) {
+        pre = new PartitionedRegionException(
+            "Can not create PartitionedRegion (failed to acquire RegionLock).", lsde);
+      }
+      throw pre;
     } catch (IllegalStateException ill) {
       cleanupFailedInitialization();
       throw ill;
@@ -5557,12 +5565,16 @@ public class PartitionedRegion extends LocalRegion
     int serials[] = getRegionAdvisor().getBucketSerials();
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false,
         getMyId(), generateEventID()/* generate EventID */);
+    RuntimeException savedFirstRuntimeException = null;
     try {
       sendDestroyRegionMessage(event, serials);
     } catch (Exception ex) {
       logger.warn(
           "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
           ex);
+      if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
+        savedFirstRuntimeException = (RuntimeException) ex;
+      }
     }
     if (null != this.dataStore) {
       try {
@@ -5571,6 +5583,9 @@ public class PartitionedRegion extends LocalRegion
         logger.warn(
             "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
             ex);
+        if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
+          savedFirstRuntimeException = (RuntimeException) ex;
+        }
       }
     }
 
@@ -5592,6 +5607,9 @@ public class PartitionedRegion extends LocalRegion
         logger.warn(
             "PartitionedRegion#cleanupFailedInitialization: Failed to clean the PartionRegion allPartitionedRegions",
             ex);
+        if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
+          savedFirstRuntimeException = (RuntimeException) ex;
+        }
       }
     }
     this.distAdvisor.close();
@@ -5601,6 +5619,11 @@ public class PartitionedRegion extends LocalRegion
     }
     if (logger.isDebugEnabled()) {
       logger.debug("cleanupFailedInitialization: end of {}", getName());
+    }
+    if (savedFirstRuntimeException != null) {
+      logger.info("cleanupFailedInitialization originally failed with ",
+          savedFirstRuntimeException);
+      throw savedFirstRuntimeException;
     }
   }
 
