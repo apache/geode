@@ -176,7 +176,7 @@ toData,48
 
 org/apache/geode/distributed/internal/ReplyMessage,2
 fromData,129
-toData,277
+toData,278
 
 org/apache/geode/distributed/internal/SerialAckedMessage,2
 fromData,28
@@ -1753,17 +1753,9 @@ org/apache/geode/internal/cache/tier/sockets/ObjectPartList,2
 fromData,148
 toData,201
 
-org/apache/geode/internal/cache/tier/sockets/ObjectPartList651,2
-fromData,165
-toData,223
-
 org/apache/geode/internal/cache/tier/sockets/RemoveClientFromDenylistMessage,2
 fromData,15
 toData,15
-
-org/apache/geode/internal/cache/tier/sockets/SerializedObjectPartList,2
-fromData,157
-toData,222
 
 org/apache/geode/internal/cache/tier/sockets/ServerInterestRegistrationMessage,2
 fromData,55
