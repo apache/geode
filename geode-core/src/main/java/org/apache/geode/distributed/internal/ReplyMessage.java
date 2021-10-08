@@ -317,9 +317,6 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
         hdos.sendTo(out);
       }
     }
-    if (hdos != null) {
-      hdos.close();
-    }
   }
 
   @Override
