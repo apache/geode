@@ -71,6 +71,10 @@ public class P2PMessagingConcurrencyDUnitTest {
   // random seed
   private static final int RANDOM_SEED = 1234;
 
+  /*
+   At the time this comment was written, ClusterStartupRule was ignoring the vmCount.
+   Nevertheless since we need only 3, we're specifying it.
+   */
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
@@ -118,6 +122,14 @@ public class P2PMessagingConcurrencyDUnitTest {
       final Random random = new Random(RANDOM_SEED);
       final AtomicInteger nextSenderId = new AtomicInteger();
 
+      /*
+       When this comment was written the nThreads parameter to the thread pool
+       constructor was SENDER_COUNT. When SENDER_COUNT is much larger than the
+       number of CPUs that is counterproductive. In an ideal world we'd want
+       only as many threads as CPUs here. OTOH the P2P messaging system at the
+       time this comment was written, used blocking I/O, so we were not, as it
+       turns out, living in that ideal world.
+       */
       final ExecutorService executor = Executors.newFixedThreadPool(SENDER_COUNT);
 
       final CountDownLatch startLatch = new CountDownLatch(SENDER_COUNT);
@@ -185,6 +197,14 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   private static class TestMessage extends DistributionMessage {
 
+    /*
+      When this comment was written, messageId wasn't used for anything.
+      The field was added during a misguided attempt to add SHA-256
+      digest verification on sender and receiver. Then I figured out
+      that there's no way to parallelize that (for the sender) so
+      I settled for merely validating the number of bytes transferred.
+      Left the field here in case it comes in handy later.
+     */
     private volatile int messageId;
     private volatile Random random;
 
