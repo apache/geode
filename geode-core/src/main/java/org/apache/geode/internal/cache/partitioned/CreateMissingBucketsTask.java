@@ -78,7 +78,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
   /**
    * Wait for Colocation to complete. Wait all nodes to Register this PartitionedRegion.
    */
-  private boolean waitForColocationCompleted(PartitionedRegion partitionedRegion) {
+  protected boolean waitForColocationCompleted(PartitionedRegion partitionedRegion) {
     int retryCount = 0;
     int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
 
