@@ -20,6 +20,9 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INTERVAL_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.INITIAL_DELAY_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.INTERVAL_MINUTES;
+import static org.apache.geode.redis.internal.data.RedisProperties.getTimeoutProperty;
 
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,20 +45,9 @@ public class PassiveExpirationManager {
   private final int interval;
 
   public PassiveExpirationManager(RegionProvider regionProvider) {
-    int tempTimeout;
-    tempTimeout = Integer.getInteger(RedisConstants.INITIAL_DELAY_MINUTES,
-        DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
-    if (tempTimeout < 0) {
-      tempTimeout = DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
-    }
-    this.initialDelay = tempTimeout;
-
-    tempTimeout = Integer.getInteger(RedisConstants.INTERVAL_MINUTES,
-        DEFAULT_REDIS_INTERVAL_MINUTES);
-    if (tempTimeout <= 0) {
-      tempTimeout = DEFAULT_REDIS_INTERVAL_MINUTES;
-    }
-    this.interval = tempTimeout;
+    this.initialDelay =
+        getTimeoutProperty(INITIAL_DELAY_MINUTES, DEFAULT_REDIS_INITIAL_DELAY_MINUTES, 0);
+    this.interval = getTimeoutProperty(INTERVAL_MINUTES, DEFAULT_REDIS_INTERVAL_MINUTES, 1);
 
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
     expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), initialDelay,

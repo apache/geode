@@ -18,9 +18,11 @@ package org.apache.geode.redis.internal.netty;
 
 
 
+import static org.apache.geode.redis.internal.RedisConstants.CONNECT_TIMEOUT_MILLIS;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.WRITE_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.data.RedisProperties.getTimeoutProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -65,7 +67,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RedisSecurityService;
@@ -105,22 +106,10 @@ public class NettyRedisServer {
     this.redisStats = redisStats;
     this.member = member;
     this.securityService = securityService;
-
-    int tempTimeout;
-    // get connect timeout from system property
-    tempTimeout = Integer.getInteger(RedisConstants.CONNECT_TIMEOUT_MILLIS,
-        DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
-    if (tempTimeout <= 0) {
-      tempTimeout = DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
-    }
-    this.connectTimeoutMillis = tempTimeout;
-
-    // get write timeout from system property
-    tempTimeout = Integer.getInteger(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
-    if (tempTimeout <= 0) {
-      tempTimeout = DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
-    }
-    this.writeTimeoutSeconds = tempTimeout;
+    this.connectTimeoutMillis =
+        getTimeoutProperty(CONNECT_TIMEOUT_MILLIS, DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS, 1);
+    this.writeTimeoutSeconds =
+        getTimeoutProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
@@ -145,7 +134,7 @@ public class NettyRedisServer {
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.SO_RCVBUF, getBufferSize())
             .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS)
+            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     return createBoundChannel(serverBootstrap, port);
