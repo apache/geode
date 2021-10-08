@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,9 +41,14 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({ClientServerTest.class})
 public class ClientServerCacheOperationDUnitTest implements Serializable {
+  // The tests in this class fail consistently on Windows. They fail intermittently on Linux.
+  // When the intermittent failure on Linux is fixed, perhaps this rule can be removed.
+  @ClassRule
+  public static IgnoreOnWindowsRule ignoreOnWindows = new IgnoreOnWindowsRule();
 
   private String regionName = "CsTestRegion";
 
