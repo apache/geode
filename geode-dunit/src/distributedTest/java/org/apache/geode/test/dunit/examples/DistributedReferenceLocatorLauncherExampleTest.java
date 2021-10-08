@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
+import org.apache.geode.test.dunit.Invoke;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +62,7 @@ public class DistributedReferenceLocatorLauncherExampleTest implements Serializa
         .append(hostName).append('[').append(randomPorts[3]).append(']').append(',')
         .append(hostName).append('[').append(randomPorts[4]).append(']');
 
+    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
     int index = 0;
     for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       int whichPort = index++;
