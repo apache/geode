@@ -1985,51 +1985,6 @@ public interface ConfigurationProperties {
    */
   String REDIS_PORT = "geode-for-redis-port";
   /**
-   * The static String definition of the <i>"geode-for-redis-connect-timeout-millis"</i> property <a
-   * name="geode-for-redis-connect-timeout-millis"/a>
-   * </p>
-   * <U>Description</U>: Specifies the timeout for Geode for Redis connections</td>
-   * </p>
-   * <U>Default</U>: 1000
-   * </p>
-   * <U>Minimum value</U>: 1
-   */
-  String REDIS_CONNECT_TIMEOUT_MILLIS = "geode-for-redis-connect-timeout-millis";
-  /**
-   * The static String definition of the <i>"geode-for-redis-write-timeout-seconds"</i> property <a
-   * name="geode-for-redis-write-timeout-seconds"/a>
-   * </p>
-   * <U>Description</U>: Specifies the timeout for Geode for Redis writes</td>
-   * </p>
-   * <U>Default</U>: 10
-   * </p>
-   * <U>Minimum value</U>: 1
-   */
-  String REDIS_WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
-  /**
-   * The static String definition of the <i>"geode-for-redis-initial-delay-minutes"</i> property <a
-   * name="geode-for-redis-initial-delay-minutes"/a>
-   * </p>
-   * <U>Description</U>: Specifies the initial delay before Geode for Redis passive expiration
-   * starts</td>
-   * </p>
-   * <U>Default</U>: 3
-   * </p>
-   * <U>Minimum value</U>: 1
-   */
-  String REDIS_INITIAL_DELAY_MINUTES = "geode-for-redis-initial-delay-minutes";
-  /**
-   * The static String definition of the <i>"geode-for-redis-interval-minutes"</i> property <a
-   * name="geode-for-redis-interval-minutes"/a>
-   * </p>
-   * <U>Description</U>: Specifies the interval for Geode for Redis passive expiration</td>
-   * </p>
-   * <U>Default</U>: 3
-   * </p>
-   * <U>Minimum value</U>: 1
-   */
-  String REDIS_INTERVAL_MINUTES = "geode-for-redis-interval-minutes";
-  /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
    * <U>Description</U>: Include this option to lock GemFire heap and off-heap memory pages into

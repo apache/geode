@@ -76,4 +76,16 @@ public class RedisConstants {
   public static final String ERROR_UNAUTHENTICATED_BULK =
       "Protocol error: unauthenticated bulk length";
   public static final String INTERNAL_SERVER_ERROR = "Internal server error: ";
+
+  /** System Properties **/
+  public static final String CONNECT_TIMEOUT_MILLIS = "geode-for-redis-connect-timeout-millis";
+  public static final String WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
+  public static final String INITIAL_DELAY_MINUTES = "geode-for-redis-initial-delay-minutes";
+  public static final String INTERVAL_MINUTES = "geode-for-redis-interval-minutes";
+
+  /** Default Values for System Properties **/
+  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS = 1000;
+  public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
+  public static final int DEFAULT_REDIS_INITIAL_DELAY_MINUTES = 3;
+  public static final int DEFAULT_REDIS_INTERVAL_MINUTES = 3;
 }

@@ -17,16 +17,15 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INITIAL_DELAY_MINUTES;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INTERVAL_MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INTERVAL_MINUTES;
 
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -42,31 +41,18 @@ public class PassiveExpirationManager {
   private final int initialDelay;
   private final int interval;
 
-  @VisibleForTesting
-  public static final int DEFAULT_REDIS_INITIAL_DELAY_MINUTES = 3;
-  @VisibleForTesting
-  public static final int DEFAULT_REDIS_INTERVAL_MINUTES = 3;
-
   public PassiveExpirationManager(RegionProvider regionProvider) {
     int tempTimeout;
-    try {
-      tempTimeout = Integer.parseInt(System.getProperty(REDIS_INITIAL_DELAY_MINUTES));
-
-      if (tempTimeout < 0) {
-        tempTimeout = DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
-      }
-    } catch (NumberFormatException e) {
+    tempTimeout = Integer.getInteger(RedisConstants.INITIAL_DELAY_MINUTES,
+        DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
+    if (tempTimeout < 0) {
       tempTimeout = DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
     }
     this.initialDelay = tempTimeout;
 
-    try {
-      tempTimeout = Integer.parseInt(System.getProperty(REDIS_INTERVAL_MINUTES));
-
-      if (tempTimeout <= 0) {
-        tempTimeout = DEFAULT_REDIS_INTERVAL_MINUTES;
-      }
-    } catch (NumberFormatException e) {
+    tempTimeout = Integer.getInteger(RedisConstants.INTERVAL_MINUTES,
+        DEFAULT_REDIS_INTERVAL_MINUTES);
+    if (tempTimeout <= 0) {
       tempTimeout = DEFAULT_REDIS_INTERVAL_MINUTES;
     }
     this.interval = tempTimeout;

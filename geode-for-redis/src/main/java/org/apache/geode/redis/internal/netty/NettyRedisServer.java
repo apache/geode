@@ -17,8 +17,10 @@
 package org.apache.geode.redis.internal.netty;
 
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_CONNECT_TIMEOUT_MILLIS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_WRITE_TIMEOUT_SECONDS;
+
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisConstants.WRITE_TIMEOUT_SECONDS;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -63,6 +65,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RedisSecurityService;
@@ -73,11 +76,6 @@ public class NettyRedisServer {
   private static final int RANDOM_PORT_INDICATOR = 0;
 
   private static final Logger logger = LogService.getLogger();
-  /**
-   * Connection timeout in milliseconds
-   */
-  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS = 1000;
-  public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
 
   private final Supplier<DistributionConfig> configSupplier;
   private final RegionProvider regionProvider;
@@ -110,25 +108,16 @@ public class NettyRedisServer {
 
     int tempTimeout;
     // get connect timeout from system property
-    try {
-      tempTimeout = Integer.parseInt(System.getProperty(REDIS_CONNECT_TIMEOUT_MILLIS));
-
-      if (tempTimeout <= 0) {
-        tempTimeout = DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
-      }
-    } catch (NumberFormatException e) {
+    tempTimeout = Integer.getInteger(RedisConstants.CONNECT_TIMEOUT_MILLIS,
+        DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
+    if (tempTimeout <= 0) {
       tempTimeout = DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
     }
     this.connectTimeoutMillis = tempTimeout;
 
     // get write timeout from system property
-    try {
-      tempTimeout = Integer.parseInt(System.getProperty(REDIS_WRITE_TIMEOUT_SECONDS));
-
-      if (tempTimeout <= 0) {
-        tempTimeout = DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
-      }
-    } catch (NumberFormatException e) {
+    tempTimeout = Integer.getInteger(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
+    if (tempTimeout <= 0) {
       tempTimeout = DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
     }
     this.writeTimeoutSeconds = tempTimeout;

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INTERVAL_MINUTES;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +32,8 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
+import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrationTest {
 

@@ -17,16 +17,12 @@
 package org.apache.geode.redis;
 
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_CONNECT_TIMEOUT_MILLIS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INITIAL_DELAY_MINUTES;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INTERVAL_MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_WRITE_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.PassiveExpirationManager.DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
-import static org.apache.geode.redis.internal.PassiveExpirationManager.DEFAULT_REDIS_INTERVAL_MINUTES;
-import static org.apache.geode.redis.internal.netty.NettyRedisServer.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
-import static org.apache.geode.redis.internal.netty.NettyRedisServer.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INTERVAL_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,6 +40,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -178,7 +175,7 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost"));
 
-    assertThat(cluster.getRedisConnectTimeoutMillis(server))
+    assertThat(getRedisConnectTimeoutMillis(server))
         .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
   }
 
@@ -188,9 +185,9 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(REDIS_CONNECT_TIMEOUT_MILLIS, "nonInteger"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "nonInteger"));
 
-    assertThat(cluster.getRedisConnectTimeoutMillis(server))
+    assertThat(getRedisConnectTimeoutMillis(server))
         .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
   }
 
@@ -200,9 +197,9 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(REDIS_CONNECT_TIMEOUT_MILLIS, "-42"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "-42"));
 
-    assertThat(cluster.getRedisConnectTimeoutMillis(server))
+    assertThat(getRedisConnectTimeoutMillis(server))
         .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
   }
 
@@ -212,9 +209,9 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(REDIS_CONNECT_TIMEOUT_MILLIS, "0"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "0"));
 
-    assertThat(cluster.getRedisConnectTimeoutMillis(server))
+    assertThat(getRedisConnectTimeoutMillis(server))
         .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
   }
 
@@ -222,9 +219,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseSpecifiedConnectTimeoutMillis_whenSystemPropertySet() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_CONNECT_TIMEOUT_MILLIS, "4242"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "4242"));
 
-    assertThat(cluster.getRedisConnectTimeoutMillis(server)).isEqualTo(4242);
+    assertThat(getRedisConnectTimeoutMillis(server)).isEqualTo(4242);
   }
 
   @Test
@@ -232,7 +229,7 @@ public class GeodeRedisServerStartupDUnitTest {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true"));
 
-    assertThat(cluster.getRedisWriteTimeoutSeconds(server))
+    assertThat(getRedisWriteTimeoutSeconds(server))
         .isEqualTo(DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
   }
 
@@ -240,9 +237,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenWriteTimeoutSetToNonIntegerValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_WRITE_TIMEOUT_SECONDS, "nonInteger"));
+        .withSystemProperty(RedisConstants.WRITE_TIMEOUT_SECONDS, "nonInteger"));
 
-    assertThat(cluster.getRedisWriteTimeoutSeconds(server))
+    assertThat(getRedisWriteTimeoutSeconds(server))
         .isEqualTo(DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
   }
 
@@ -250,9 +247,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenWriteTimeoutSetToNegativeValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_WRITE_TIMEOUT_SECONDS, "-42"));
+        .withSystemProperty(RedisConstants.WRITE_TIMEOUT_SECONDS, "-42"));
 
-    assertThat(cluster.getRedisWriteTimeoutSeconds(server))
+    assertThat(getRedisWriteTimeoutSeconds(server))
         .isEqualTo(DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
   }
 
@@ -260,9 +257,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenWriteTimeoutSetToZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_WRITE_TIMEOUT_SECONDS, "0"));
+        .withSystemProperty(RedisConstants.WRITE_TIMEOUT_SECONDS, "0"));
 
-    assertThat(cluster.getRedisWriteTimeoutSeconds(server))
+    assertThat(getRedisWriteTimeoutSeconds(server))
         .isEqualTo(DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS);
   }
 
@@ -270,9 +267,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseSpecifiedWriteTimeout_whenSetToValidInteger() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_WRITE_TIMEOUT_SECONDS, "42"));
+        .withSystemProperty(RedisConstants.WRITE_TIMEOUT_SECONDS, "42"));
 
-    assertThat(cluster.getRedisWriteTimeoutSeconds(server)).isEqualTo(42);
+    assertThat(getRedisWriteTimeoutSeconds(server)).isEqualTo(42);
   }
 
   @Test
@@ -280,7 +277,7 @@ public class GeodeRedisServerStartupDUnitTest {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true"));
 
-    assertThat(cluster.getRedisInitialDelayMinutes(server))
+    assertThat(getRedisInitialDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
   }
 
@@ -288,9 +285,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenInitialDelaySetToNonIntegerValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INITIAL_DELAY_MINUTES, "nonInteger"));
+        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "nonInteger"));
 
-    assertThat(cluster.getRedisInitialDelayMinutes(server))
+    assertThat(getRedisInitialDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
   }
 
@@ -298,9 +295,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenInitialDelaySetToNegativeValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INITIAL_DELAY_MINUTES, "-42"));
+        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "-42"));
 
-    assertThat(cluster.getRedisInitialDelayMinutes(server))
+    assertThat(getRedisInitialDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
   }
 
@@ -308,9 +305,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseSpecifiedInitialDelay_whenSetToValidInteger() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INITIAL_DELAY_MINUTES, "42"));
+        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "42"));
 
-    assertThat(cluster.getRedisInitialDelayMinutes(server)).isEqualTo(42);
+    assertThat(getRedisInitialDelayMinutes(server)).isEqualTo(42);
   }
 
   @Test
@@ -318,7 +315,7 @@ public class GeodeRedisServerStartupDUnitTest {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true"));
 
-    assertThat(cluster.getRedisDelayMinutes(server))
+    assertThat(getRedisDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
   }
 
@@ -326,9 +323,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenDelaySetToNonIntegerValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INTERVAL_MINUTES, "nonInteger"));
+        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "nonInteger"));
 
-    assertThat(cluster.getRedisDelayMinutes(server))
+    assertThat(getRedisDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
   }
 
@@ -336,9 +333,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenDelaySetToNegativeValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INTERVAL_MINUTES, "-42"));
+        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "-42"));
 
-    assertThat(cluster.getRedisDelayMinutes(server))
+    assertThat(getRedisDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
   }
 
@@ -346,9 +343,9 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseDefaultValue_whenWhenDelaySetToZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INTERVAL_MINUTES, "0"));
+        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "0"));
 
-    assertThat(cluster.getRedisDelayMinutes(server))
+    assertThat(getRedisDelayMinutes(server))
         .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
   }
 
@@ -356,8 +353,37 @@ public class GeodeRedisServerStartupDUnitTest {
   public void shouldUseSpecifiedDelay_whenSetToValidInteger() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(REDIS_INTERVAL_MINUTES, "42"));
+        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "42"));
 
-    assertThat(cluster.getRedisDelayMinutes(server)).isEqualTo(42);
+    assertThat(getRedisDelayMinutes(server)).isEqualTo(42);
+  }
+
+  /** Helper Methods **/
+  public int getRedisConnectTimeoutMillis(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getConnectTimeoutMillis();
+    });
+  }
+
+  public int getRedisWriteTimeoutSeconds(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getWriteTimeoutSeconds();
+    });
+  }
+
+  public int getRedisInitialDelayMinutes(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getInitialDelayMinutes();
+    });
+  }
+
+  public int getRedisDelayMinutes(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getDelayMinutes();
+    });
   }
 }
