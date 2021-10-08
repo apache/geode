@@ -41,9 +41,15 @@ import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 public class DeploymentSemanticVersionJarDUnitTest {
-  @ClassRule
+  // Classloaders hold onto the deployed jars. On Windows, this prevents Geode and tests from
+  // deleting the files, causing this test to fail.
+  @ClassRule(order = 0)
+  public static IgnoreOnWindowsRule ignoreOnWindows = new IgnoreOnWindowsRule();
+
+  @ClassRule(order = 1)
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
 
   @Rule
