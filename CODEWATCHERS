@@ -86,3 +86,8 @@ geode-core/**/org/apache/geode/internal/cache/properties.md       @alb3rtobr
 # Build and tooling
 #-----------------------------------------------------------------
 dev-tools/release/**                                              @demery-pivotal
+
+#-----------------------------------------------------------------
+# Redis API
+#-----------------------------------------------------------------
+geode-for-redis/**                                                @ezoerner
