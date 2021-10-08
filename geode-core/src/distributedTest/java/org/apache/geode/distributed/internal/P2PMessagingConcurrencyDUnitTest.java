@@ -28,7 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.jetbrains.annotations.NotNull;
@@ -53,18 +53,17 @@ import org.apache.geode.test.version.VersionManager;
 /**
  * Tests one-way P2P messaging between two peers. A shared,
  * ordered connection is used and many concurrent tasks
- * compete on the sending side. Tests with and without SSL/TLS
- * enabled. TLS enabled exercises ByteBufferSharing and friends.
+ * compete on the sending side. Tests with TLS enabled
+ * to exercise ByteBufferSharing and friends.
  */
 @Category({MembershipTest.class})
-// @RunWith(ConcurrentTestRunner.class)
 public class P2PMessagingConcurrencyDUnitTest {
 
-  // for how long will the test generate traffic?
-  public static final int TESTING_DURATION_SECONDS = 2;
+  // how many messages will each sender generate?
+  private static final int MESSAGES_PER_SENDER = 1_000;
 
   // number of concurrent (sending) tasks to run
-  private static final int TASK_COUNT = 10;
+  private static final int SENDER_COUNT = 10;
 
   // (exclusive) upper bound of random message size, in bytes
   private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
@@ -77,6 +76,12 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   private MemberVM sender;
   private MemberVM receiver;
+
+  /*
+   * bytes sent on sender JVM, bytes received on receiver JVM
+   * (not used in test JVM)
+   */
+  private static LongAdder bytesTransferredAdder;
 
   @Before
   public void before() throws GeneralSecurityException, IOException {
@@ -92,51 +97,74 @@ public class P2PMessagingConcurrencyDUnitTest {
   }
 
   @Test
-  public void foo(/* final ParallelExecutor executor */) {
+  public void testP2PMessagingWithTLS() {
+
     final InternalDistributedMember receiverMember =
         receiver.invoke(() -> {
+
+          bytesTransferredAdder = new LongAdder();
+
           final ClusterDistributionManager cdm = getCDM();
           final InternalDistributedMember localMember = cdm.getDistribution().getLocalMember();
           return localMember;
+
         });
+
     sender.invoke(() -> {
+
+      bytesTransferredAdder = new LongAdder();
+
       final ClusterDistributionManager cdm = getCDM();
       final Random random = new Random(RANDOM_SEED);
+      final AtomicInteger nextSenderId = new AtomicInteger();
 
-      final ExecutorService executor = Executors.newFixedThreadPool(TASK_COUNT);
+      final ExecutorService executor = Executors.newFixedThreadPool(SENDER_COUNT);
 
-      final CountDownLatch latch = new CountDownLatch(TASK_COUNT);
-      final AtomicBoolean stop = new AtomicBoolean(false);
+      final CountDownLatch startLatch = new CountDownLatch(SENDER_COUNT);
+      final CountDownLatch stopLatch = new CountDownLatch(SENDER_COUNT);
       final LongAdder failedRecipientCount = new LongAdder();
 
       final Runnable doSending = () -> {
+        final int senderId = nextSenderId.getAndIncrement();
         try {
-          latch.countDown();
-          latch.await();
+          startLatch.countDown();
+          startLatch.await();
         } catch (final InterruptedException e) {
           throw new RuntimeException("doSending failed", e);
         }
-        while (!stop.get()) {
-          final TestMessage msg = new TestMessage(receiverMember, random);
+        final int firstMessageId = senderId * SENDER_COUNT;
+        for (int messageId = firstMessageId; messageId < firstMessageId
+            + MESSAGES_PER_SENDER; messageId++) {
+          final TestMessage msg = new TestMessage(receiverMember, random, messageId);
+
+          /*
+           * HERE is the Geode API entrypoint we intend to test (putOutgoing()).
+           */
           final Set<InternalDistributedMember> failedRecipients = cdm.putOutgoing(msg);
+
           if (failedRecipients != null) {
             failedRecipientCount.add(failedRecipients.size());
           }
         }
+        stopLatch.countDown();
       };
 
-      for (int i = 0; i < TASK_COUNT; ++i) {
+      for (int i = 0; i < SENDER_COUNT; ++i) {
         executor.submit(doSending);
       }
 
-      TimeUnit.SECONDS.sleep(TESTING_DURATION_SECONDS);
-
-      stop.set(true);
+      stopLatch.await();
 
       stop(executor);
 
-      assertThat(failedRecipientCount.sum()).as("message delivery failed").isZero();
+      assertThat(failedRecipientCount.sum()).as("message delivery failed N times").isZero();
+
     });
+
+    final long bytesSent = sender.invoke(() -> bytesTransferredAdder.sum());
+    final long bytesReceived = receiver.invoke(() -> bytesTransferredAdder.sum());
+
+    assertThat(bytesReceived).as("bytes received != bytes sent").isEqualTo(bytesSent);
   }
 
   private static void stop(final ExecutorService executor) {
@@ -157,17 +185,20 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   private static class TestMessage extends DistributionMessage {
 
+    private volatile int messageId;
     private volatile Random random;
 
     TestMessage(final InternalDistributedMember receiver,
-        final Random random) {
+        final Random random, final int messageId) {
       setRecipient(receiver);
       this.random = random;
+      this.messageId = messageId;
     }
 
     // necessary for deserialization
     public TestMessage() {
       random = null;
+      messageId = 0;
     }
 
     @Override
@@ -176,15 +207,14 @@ public class P2PMessagingConcurrencyDUnitTest {
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {
-      // TODO: put some validation support in here maybe
-      // could add accumulate (in blackboard) sum of bytes
-    }
+    protected void process(final ClusterDistributionManager dm) {}
 
     @Override
     public void toData(final DataOutput out, final SerializationContext context)
         throws IOException {
       super.toData(out, context);
+
+      out.writeInt(messageId);
 
       final int length = random.nextInt(LARGEST_MESSAGE_BOUND);
 
@@ -194,6 +224,12 @@ public class P2PMessagingConcurrencyDUnitTest {
       random.nextBytes(payload);
 
       out.write(payload);
+
+      /*
+       * the LongAdder should ensure that we don't introduce any (much)
+       * synchronization with other concurrent tasks here
+       */
+      bytesTransferredAdder.add(length);
     }
 
     @Override
@@ -201,13 +237,15 @@ public class P2PMessagingConcurrencyDUnitTest {
         throws IOException, ClassNotFoundException {
       super.fromData(in, context);
 
+      final int messageId = in.readInt();
+
       final int length = in.readInt();
 
       final byte[] payload = new byte[length];
 
       in.readFully(payload);
-      // TODO: remove this diagnostic print and use blackboard for actual verification
-      System.out.println("BGB: received: " + length);
+
+      bytesTransferredAdder.add(length);
     }
 
     @Override
@@ -252,4 +290,5 @@ public class P2PMessagingConcurrencyDUnitTest {
     final Properties props = memberStore.propertiesWith("all", false, false);
     return props;
   }
+
 }
