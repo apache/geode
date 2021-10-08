@@ -41,6 +41,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -69,10 +70,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   @Test
   public void doesNotConfigureValidateSerializableObjects_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -92,10 +94,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   @Test
   public void doesNotConfigureSerializableObjectFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -115,10 +118,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   @Test
   public void doesNotConfigureValidateSerializableObjects_onJava8() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
