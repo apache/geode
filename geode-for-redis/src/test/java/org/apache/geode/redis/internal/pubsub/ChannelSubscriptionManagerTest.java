@@ -72,7 +72,7 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
     Collection<Subscription> subscriptions = manager.getChannelSubscriptions(channel);
 
-    assertThat(subscriptions).containsExactly(addedSubscription, addedSubscription2);
+    assertThat(subscriptions).containsExactlyInAnyOrder(addedSubscription, addedSubscription2);
     assertThat(manager.getChannelSubscriptions(otherChannel)).isEmpty();
   }
 
