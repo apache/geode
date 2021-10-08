@@ -17,6 +17,9 @@
 package org.apache.geode.redis.internal.netty;
 
 
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_CONNECT_TIMEOUT_MILLIS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_WRITE_TIMEOUT_SECONDS;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
@@ -73,7 +76,8 @@ public class NettyRedisServer {
   /**
    * Connection timeout in milliseconds
    */
-  private static final int CONNECT_TIMEOUT_MILLIS = 1000;
+  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS = 1000;
+  public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
 
   private final Supplier<DistributionConfig> configSupplier;
   private final RegionProvider regionProvider;
@@ -88,6 +92,8 @@ public class NettyRedisServer {
   private final int serverPort;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
+  private final int connectTimeoutMillis;
+  private final int writeTimeoutSeconds;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
@@ -102,10 +108,30 @@ public class NettyRedisServer {
     this.member = member;
     this.securityService = securityService;
 
-    if (port < RANDOM_PORT_INDICATOR) {
-      throw new IllegalArgumentException(
-          "The geode-for-redis-port cannot be less than " + RANDOM_PORT_INDICATOR);
+    int tempTimeout;
+    // get connect timeout from system property
+    try {
+      tempTimeout = Integer.parseInt(System.getProperty(REDIS_CONNECT_TIMEOUT_MILLIS));
+
+      if (tempTimeout <= 0) {
+        tempTimeout = DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
+      }
+    } catch (NumberFormatException e) {
+      tempTimeout = DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
     }
+    this.connectTimeoutMillis = tempTimeout;
+
+    // get write timeout from system property
+    try {
+      tempTimeout = Integer.parseInt(System.getProperty(REDIS_WRITE_TIMEOUT_SECONDS));
+
+      if (tempTimeout <= 0) {
+        tempTimeout = DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
+      }
+    } catch (NumberFormatException e) {
+      tempTimeout = DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
+    }
+    this.writeTimeoutSeconds = tempTimeout;
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
@@ -130,7 +156,7 @@ public class NettyRedisServer {
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.SO_RCVBUF, getBufferSize())
             .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, CONNECT_TIMEOUT_MILLIS)
+            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS)
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     return createBoundChannel(serverBootstrap, port);
@@ -156,6 +182,14 @@ public class NettyRedisServer {
     return serverPort;
   }
 
+  public int getConnectTimeoutMillis() {
+    return connectTimeoutMillis;
+  }
+
+  public int getWriteTimeoutSeconds() {
+    return writeTimeoutSeconds;
+  }
+
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
     String redisUsername = configSupplier.get().getRedisUsername();
 
@@ -170,7 +204,7 @@ public class NettyRedisServer {
         addSSLIfEnabled(socketChannel, pipeline);
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(),
             new ByteToCommandDecoder(redisStats, securityService, socketChannel.id()));
-        pipeline.addLast(new WriteTimeoutHandler(10));
+        pipeline.addLast(new WriteTimeoutHandler(writeTimeoutSeconds));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
                 allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsername,

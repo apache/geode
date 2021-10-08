@@ -109,6 +109,50 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
+  public int getRedisConnectTimeoutMillis(int vmNumber) {
+    return getRedisConnectTimeoutMillis(getMember(vmNumber));
+  }
+
+  public int getRedisConnectTimeoutMillis(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getConnectTimeoutMillis();
+    });
+  }
+
+  public int getRedisWriteTimeoutSeconds(int vmNumber) {
+    return getRedisConnectTimeoutMillis(getMember(vmNumber));
+  }
+
+  public int getRedisWriteTimeoutSeconds(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getWriteTimeoutSeconds();
+    });
+  }
+
+  public int getRedisInitialDelayMinutes(int vmNumber) {
+    return getRedisInitialDelayMinutes(getMember(vmNumber));
+  }
+
+  public int getRedisInitialDelayMinutes(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getInitialDelayMinutes();
+    });
+  }
+
+  public int getRedisDelayMinutes(int vmNumber) {
+    return getRedisDelayMinutes(getMember(vmNumber));
+  }
+
+  public int getRedisDelayMinutes(MemberVM vm) {
+    return vm.invoke(() -> {
+      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
+      return service.getRedisServer().getDelayMinutes();
+    });
+  }
+
   public void setEnableUnsupported(MemberVM vm, boolean enableUnsupported) {
     vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);

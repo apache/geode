@@ -17,6 +17,8 @@
 package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INITIAL_DELAY_MINUTES;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_INTERVAL_MINUTES;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.Map;
@@ -37,14 +39,49 @@ public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
   private final ScheduledExecutorService expirationExecutor;
+  private final int initialDelay;
+  private final int interval;
 
   @VisibleForTesting
-  public static final int INTERVAL = 3;
+  public static final int DEFAULT_REDIS_INITIAL_DELAY_MINUTES = 3;
+  @VisibleForTesting
+  public static final int DEFAULT_REDIS_INTERVAL_MINUTES = 3;
 
   public PassiveExpirationManager(RegionProvider regionProvider) {
+    int tempTimeout;
+    try {
+      tempTimeout = Integer.parseInt(System.getProperty(REDIS_INITIAL_DELAY_MINUTES));
+
+      if (tempTimeout < 0) {
+        tempTimeout = DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
+      }
+    } catch (NumberFormatException e) {
+      tempTimeout = DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
+    }
+    this.initialDelay = tempTimeout;
+
+    try {
+      tempTimeout = Integer.parseInt(System.getProperty(REDIS_INTERVAL_MINUTES));
+
+      if (tempTimeout <= 0) {
+        tempTimeout = DEFAULT_REDIS_INTERVAL_MINUTES;
+      }
+    } catch (NumberFormatException e) {
+      tempTimeout = DEFAULT_REDIS_INTERVAL_MINUTES;
+    }
+    this.interval = tempTimeout;
+
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), INTERVAL,
-        INTERVAL, MINUTES);
+    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), initialDelay,
+        interval, MINUTES);
+  }
+
+  public int getInitialDelay() {
+    return this.initialDelay;
+  }
+
+  public int getInterval() {
+    return this.interval;
   }
 
   public void stop() {
