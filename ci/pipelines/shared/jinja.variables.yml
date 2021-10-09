@@ -38,7 +38,7 @@ benchmarks:
   - title: 'radish'
     # The current radish baseline version is taken from the commit:
     #   GEODE-9169: remove netty context switch (#6725)
-    baseline_branch: 'ed38145379d3da05ecc79a39fa145030bbd4fb1e'
+    baseline_branch: '311ba9853ee32742690374b9e57b1ffa2c750843'
     baseline_version: ''
     flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
     options: '--tests=org.apache.geode.benchmark.redis.tests.*'
