@@ -16,16 +16,13 @@
 
 package org.apache.geode.redis.internal.pubsub;
 
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
 
 import java.util.concurrent.CountDownLatch;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
 
 /**
@@ -33,38 +30,51 @@ import org.apache.geode.redis.internal.netty.Client;
  * since those are kept in the data structures that store Subscriptions.
  */
 public class SubscriptionImpl implements Subscription {
+  private final Client client;
   // Before we are ready to publish we need to make sure that the response to the
   // SUBSCRIBE command has been sent back to the client.
-  private final CountDownLatch readyForPublish = new CountDownLatch(1);
+  private CountDownLatch readyForPublish = new CountDownLatch(1);
   private volatile boolean running = true;
+
+  public SubscriptionImpl(Client client) {
+    this.client = client;
+  }
 
   @Override
   public void readyToPublish() {
     readyForPublish.countDown();
+    readyForPublish = null;
+  }
+
+  private void waitUntilReadyToPublish() {
+    CountDownLatch latch = readyForPublish;
+    if (latch != null) {
+      try {
+        latch.await();
+      } catch (InterruptedException e) {
+        // we must be shutting down or registration failed
+        Thread.currentThread().interrupt();
+        shutdown();
+      }
+    }
   }
 
   @Override
-  public void publishMessage(boolean isPatternSubscription, byte[] subscriptionName, Client client,
-      byte[] channel,
-      byte[] message) {
-    try {
-      readyForPublish.await();
-    } catch (InterruptedException e) {
-      // we must be shutting down or registration failed
-      Thread.currentThread().interrupt();
-      shutdown();
-    }
+  public Client getClient() {
+    return client;
+  }
 
+  @Override
+  public void writeBufferToChannel(ByteBuf writeBuf) {
+    waitUntilReadyToPublish();
     if (running) {
-      ChannelFuture writeResult =
-          client.writeToChannel(
-              constructResponse(isPatternSubscription, subscriptionName, channel, message));
-      writeResult.addListener((ChannelFutureListener) f -> {
-        if (f.cause() != null) {
-          shutdown();
-        }
-      });
+      client.writeBufferToChannel(writeBuf).addListener(this);
     }
+  }
+
+  @Override
+  public ByteBuf getChannelWriteBuffer() {
+    return client.getChannelWriteBuffer();
   }
 
   /**
@@ -81,12 +91,12 @@ public class SubscriptionImpl implements Subscription {
     return !running;
   }
 
-  private RedisResponse constructResponse(boolean isPatternSubscription, byte[] subscriptionName,
-      byte[] channel, byte[] message) {
-    if (isPatternSubscription) {
-      return RedisResponse.array(bPMESSAGE, subscriptionName, channel, message);
-    } else {
-      return RedisResponse.array(bMESSAGE, channel, message);
+  //////////////////////// ChannelFutureListener methods ////////////////////////////////
+
+  @Override
+  public void operationComplete(ChannelFuture future) {
+    if (future.cause() != null) {
+      shutdown();
     }
   }
 }

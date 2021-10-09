@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal.executor;
 
+
+
 /**
  * A class for POSIX glob pattern with brace expansions.
  * This code is derived from native redis utl.c stringmatchlen.
@@ -28,10 +30,14 @@ public class GlobPattern {
   }
 
   public boolean matches(byte[] bytes) {
-    return matches(0, bytes, 0);
+    return matches(pattern, 0, bytes, 0);
   }
 
-  private boolean matches(int patternIdx, byte[] string, int stringIdx) {
+  public static boolean matches(byte[] pattern, byte[] bytes) {
+    return matches(pattern, 0, bytes, 0);
+  }
+
+  private static boolean matches(byte[] pattern, int patternIdx, byte[] string, int stringIdx) {
     while (patternIdx < pattern.length && stringIdx < string.length) {
       switch (pattern[patternIdx]) {
         case '*': {
@@ -42,7 +48,7 @@ public class GlobPattern {
             return true; /* match */
           }
           while (stringIdx < string.length) {
-            if (matches(patternIdx + 1, string, stringIdx)) {
+            if (matches(pattern, patternIdx + 1, string, stringIdx)) {
               return true; /* match */
             }
             stringIdx++;

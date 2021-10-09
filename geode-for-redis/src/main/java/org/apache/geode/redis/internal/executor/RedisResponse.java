@@ -41,6 +41,10 @@ public class RedisResponse {
     this.coderCallback = coderCallback;
   }
 
+  public boolean hasAfterWriteCallback() {
+    return afterWriteCallback != null;
+  }
+
   public void setAfterWriteCallback(Runnable callback) {
     afterWriteCallback = callback;
   }
@@ -80,7 +84,7 @@ public class RedisResponse {
       try {
         return Coder.getStringResponse(buffer, value, true);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
+        return Coder.getInternalErrorResponse(buffer, e.getMessage());
       }
     });
   }
@@ -98,7 +102,7 @@ public class RedisResponse {
       try {
         return Coder.getFlattenedArrayResponse(buffer, nestedCollection);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
+        return Coder.getInternalErrorResponse(buffer, e.getMessage());
       }
     });
   }
@@ -108,7 +112,7 @@ public class RedisResponse {
       try {
         return Coder.getArrayResponse(buffer, collection, useBulkStrings);
       } catch (CoderException e) {
-        return Coder.getErrorResponse(buffer, "Internal server error: " + e.getMessage());
+        return Coder.getInternalErrorResponse(buffer, e.getMessage());
       }
     });
   }

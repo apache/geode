@@ -15,26 +15,16 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Collection;
+
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
 class ChannelSubscriptionManager
     extends AbstractSubscriptionManager {
 
   @Override
-  protected ClientSubscriptionManager createClientManager(
-      Client client, byte[] channel, Subscription subscription) {
-    return new ChannelClientSubscriptionManager(client, subscription);
-  }
-
-  @Override
   public int getSubscriptionCount(byte[] channel) {
     return getClientManager(channel).getSubscriptionCount();
-  }
-
-  @Override
-  public void foreachSubscription(byte[] channel, ForEachConsumer action) {
-    getClientManager(channel).forEachSubscription(channel, null, action);
   }
 
   @Override
@@ -46,5 +36,9 @@ class ChannelSubscriptionManager
   public void remove(Client client) {
     client.getChannelSubscriptions().forEach(
         channel -> remove(channel, client));
+  }
+
+  public Collection<Subscription> getChannelSubscriptions(byte[] channel) {
+    return getClientManager(channel).getSubscriptions();
   }
 }

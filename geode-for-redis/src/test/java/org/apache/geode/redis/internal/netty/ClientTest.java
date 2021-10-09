@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import org.junit.Test;
@@ -180,5 +182,18 @@ public class ClientTest {
     client.clearSubscriptions();
 
     verifyClientIsEmpty();
+  }
+
+  @Test
+  public void getBufferBytesReturnsAllTheBytesWritten() {
+    UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
+    ByteBuf buf = allocator.buffer();
+    buf.writeByte(1);
+    buf.writeByte(2);
+    buf.writeByte(3);
+
+    byte[] bytes = client.getBufferBytes(buf);
+
+    assertThat(bytes).containsExactly(1, 2, 3);
   }
 }

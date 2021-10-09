@@ -15,14 +15,14 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.redis.internal.netty.Client;
-import org.apache.geode.redis.internal.pubsub.Subscriptions.ForEachConsumer;
 
-class ChannelClientSubscriptionManager
+class ClientSubscriptionManagerImpl
     implements ClientSubscriptionManager {
   private final Map<Client, Subscription> subscriptionMap = new ConcurrentHashMap<>();
   /**
@@ -33,26 +33,13 @@ class ChannelClientSubscriptionManager
    */
   private final AtomicInteger size = new AtomicInteger(1);
 
-  public ChannelClientSubscriptionManager(Client client, Subscription subscription) {
+  public ClientSubscriptionManagerImpl(Client client, Subscription subscription) {
     subscriptionMap.put(client, subscription);
   }
 
   @Override
   public int getSubscriptionCount() {
     return size.get();
-  }
-
-  @Override
-  public int getSubscriptionCount(byte[] channel) {
-    return size.get();
-  }
-
-  @Override
-  public void forEachSubscription(byte[] subscriptionName, byte[] channelToMatch,
-      ForEachConsumer action) {
-    subscriptionMap
-        .forEach((client, subscription) -> action.accept(subscriptionName, channelToMatch, client,
-            subscription));
   }
 
   @Override
@@ -82,5 +69,10 @@ class ChannelClientSubscriptionManager
       result = size.decrementAndGet() > 0;
     }
     return result;
+  }
+
+  @Override
+  public Collection<Subscription> getSubscriptions() {
+    return subscriptionMap.values();
   }
 }

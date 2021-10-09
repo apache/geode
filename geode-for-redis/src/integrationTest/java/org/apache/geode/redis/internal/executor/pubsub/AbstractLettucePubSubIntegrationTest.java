@@ -338,9 +338,13 @@ public abstract class AbstractLettucePubSubIntegrationTest implements RedisInteg
   @Test
   public void concurrentPublishersToMultipleSubscribers_doNotLosePublishMessages()
       throws Exception {
-    int subscriberCount = 50;
-    int publisherCount = 10;
-    int publishIterations = 10000;
+    // Be careful about increasing these constants since this test runs in the
+    // same jvm as the geode redis server it can easily run out of memory on
+    // some platforms.
+    // For a flavor of this test that does more concurrency see PubSubConcurrentDUnitTest.java.
+    int subscriberCount = 5;
+    int publisherCount = 5;
+    int publishIterations = 1000;
 
     for (int i = 0; i < subscriberCount; i++) {
       StatefulRedisPubSubConnection<String, String> subscriber = client.connectPubSub();

@@ -19,7 +19,6 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
 
 /**
@@ -42,7 +41,7 @@ public interface PubSub {
    * @return the number of subscribers to this channel that are connected to the server on which
    *         the command is executed.
    */
-  long publish(RegionProvider regionProvider, byte[] channel, byte[] message, Client client);
+  long publish(byte[] channel, byte[] message, Client client);
 
   /**
    * Subscribe to a channel
@@ -111,4 +110,6 @@ public interface PubSub {
    * Should be called when the given client disconnects from the server.
    */
   void clientDisconnect(Client client);
+
+  void close();
 }

@@ -19,8 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import org.junit.Test;
@@ -62,34 +60,6 @@ public abstract class SubscriptionManagerTestBase {
     AbstractSubscriptionManager manager = createManager();
     manager.remove(channel, createClient());
     assertThat(manager.getSubscriptionCount()).isZero();
-  }
-
-  @Test
-  public void defaultManager_foreach_doesNothing() {
-    byte[] channel = stringToBytes("channel");
-    AtomicInteger count = new AtomicInteger();
-    AbstractSubscriptionManager manager = createManager();
-    manager.foreachSubscription(channel, (name, toMatch, client, sub) -> count.getAndIncrement());
-    assertThat(count.get()).isZero();
-  }
-
-  @Test
-  public void managerWithMultipleSubsAndClients_foreachDoesExpectedIterations() {
-    byte[] channel1 = stringToBytes("channel1");
-    byte[] channel2 = stringToBytes("channel2");
-    byte[] channel3 = stringToBytes("channel3");
-    AtomicInteger count = new AtomicInteger();
-    Client client1 = createClient();
-    Client client2 = createClient();
-    Client client3 = createClient();
-    AbstractSubscriptionManager manager = createManager();
-    manager.add(channel1, client1);
-    manager.add(channel1, client2);
-    manager.add(channel1, client3);
-    manager.add(channel2, client2);
-    manager.add(channel3, client3);
-    manager.foreachSubscription(channel1, (name, toMatch, client, sub) -> count.getAndIncrement());
-    assertThat(count.get()).isEqualTo(3);
   }
 
   @Test
