@@ -48,7 +48,7 @@ case $ARTIFACT_SLUG in
     ;;
   *)
     JAVA_BUILD_PATH=/usr/lib/jvm/bellsoft-java${JAVA_BUILD_VERSION}-amd64
-    del="&&"
+    del=";"
     ;;
 esac
 
