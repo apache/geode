@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-public class ConflationDUnitTestHelper {
+public class ConflationDistributedTestHelper {
 
   /**
    * set the boolean for starting the dispatcher thread a bit later.
@@ -26,12 +26,12 @@ public class ConflationDUnitTestHelper {
 
 
   /**
-   * Set the boolean to make the dispatcher thread pause <code>milis</code> miliseconds.
+   * Set the boolean to make the dispatcher thread pause <code>millis</code> milliseconds.
    *
    */
-  public static void setIsSlowStart(String milis) {
+  public static void setIsSlowStart(String millis) {
     CacheClientProxy.isSlowStartForTesting = true;
-    System.setProperty("slowStartTimeForTesting", milis);
+    System.setProperty("slowStartTimeForTesting", millis);
   }
 
   /**

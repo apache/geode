@@ -71,7 +71,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * scenario, each has a unique bridgewriter.
  */
 @Category({ClientSubscriptionTest.class})
-public class ConflationDUnitTest extends JUnit4DistributedTestCase {
+public class ConflationDistributedTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;
   VM vm2 = null;
@@ -90,7 +90,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT = vm0.invoke(ConflationDUnitTest::createServerCache);
+    PORT = vm0.invoke(ConflationDistributedTest::createServerCache);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -108,27 +108,27 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testNotMoreMessagesSent() throws Exception {
-    vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
+    vm0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart());
     Host host = Host.getHost(0);
     createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), PORT);
-    vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
+    vm2.invoke(() -> ConflationDistributedTest.createClientCache2CommonWriterTest3(
         NetworkUtils.getServerHostName(host), PORT));
-    vm2.invoke(ConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
-    vm2.invoke(ConflationDUnitTest::setAllCountersZero);
-    vm2.invoke(ConflationDUnitTest::assertAllCountersZero);
-    vm2.invoke(ConflationDUnitTest::registerInterest);
+    vm2.invoke(ConflationDistributedTest::setClientServerObserverForBeforeInterestRecovery);
+    vm2.invoke(ConflationDistributedTest::setAllCountersZero);
+    vm2.invoke(ConflationDistributedTest::assertAllCountersZero);
+    vm2.invoke(ConflationDistributedTest::registerInterest);
     create();
     put200();
     createMarker();
-    vm2.invoke(ConflationDUnitTest::waitForMarker);
-    vm2.invoke(ConflationDUnitTest::assertValue);
-    vm2.invoke(ConflationDUnitTest::destroyMarker);
+    vm2.invoke(ConflationDistributedTest::waitForMarker);
+    vm2.invoke(ConflationDistributedTest::assertValue);
+    vm2.invoke(ConflationDistributedTest::destroyMarker);
     destroy();
     createMarker();
-    vm2.invoke(ConflationDUnitTest::waitForMarker);
-    vm2.invoke(ConflationDUnitTest::assertCounterSizesLessThan200);
-    vm0.invoke(ConflationDUnitTest::getStatsOnServer);
-    vm0.invoke(ConflationDUnitTest::assertConflationStatus);
+    vm2.invoke(ConflationDistributedTest::waitForMarker);
+    vm2.invoke(ConflationDistributedTest::assertCounterSizesLessThan200);
+    vm0.invoke(ConflationDistributedTest::getStatsOnServer);
+    vm0.invoke(ConflationDistributedTest::assertConflationStatus);
   }
 
   /**
@@ -161,7 +161,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    */
 
   public static void createClientCache1CommonWriter(String host, Integer port) throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -179,7 +179,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache1CommonWriterTest3(String host, Integer port)
       throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -194,7 +194,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   public static void createClientCache2CommonWriter(String host, Integer port) throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -204,14 +204,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         String val = (String) event.getNewValue();
-        synchronized (ConflationDUnitTest.class) {
+        synchronized (ConflationDistributedTest.class) {
           if (val.equals(MARKER)) {
             count++;
           } else {
             counterCreate++;
           }
           if (2 == count) {
-            ConflationDUnitTest.class.notify();
+            ConflationDistributedTest.class.notify();
           }
         }
       }
@@ -241,7 +241,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache2CommonWriterTest3(String host, Integer port)
       throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -251,14 +251,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         String val = (String) event.getNewValue();
-        synchronized (ConflationDUnitTest.class) {
+        synchronized (ConflationDistributedTest.class) {
           if (val.equals(MARKER)) {
             count++;
           } else {
             counterCreate++;
           }
           if (2 == count) {
-            ConflationDUnitTest.class.notify();
+            ConflationDistributedTest.class.notify();
           }
         }
       }
@@ -293,7 +293,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    */
 
   public static void createClientCache1UniqueWriter(String host, Integer port) throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -310,7 +310,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -320,14 +320,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       public void afterCreate(EntryEvent event) {
         String val = (String) event.getNewValue();
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
-        synchronized (ConflationDUnitTest.class) {
+        synchronized (ConflationDistributedTest.class) {
           if (val.equals(MARKER)) {
             count++;
           } else {
             counterCreate++;
           }
           if (2 == count) {
-            ConflationDUnitTest.class.notify();
+            ConflationDistributedTest.class.notify();
           }
         }
       }
@@ -498,13 +498,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     cache.getRegion(SEPARATOR + REGION_NAME1);
     cache.getRegion(SEPARATOR + REGION_NAME2);
     long giveUpTime = System.currentTimeMillis() + 30000;
-    synchronized (ConflationDUnitTest.class) {
+    synchronized (ConflationDistributedTest.class) {
       while (count != 2) {
         if (System.currentTimeMillis() > giveUpTime) {
           assertTrue("Count (" + count + ") failed to reach 2", count == 2);
         }
         try {
-          ConflationDUnitTest.class.wait(1000);
+          ConflationDistributedTest.class.wait(1000);
         } catch (InterruptedException e) {
           fail("interrupted");
         }
@@ -548,7 +548,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   public static Integer createServerCache() throws Exception {
-    ConflationDUnitTest test = new ConflationDUnitTest();
+    ConflationDistributedTest test = new ConflationDistributedTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -785,8 +785,8 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCache();
-    vm2.invoke(ConflationDUnitTest::closeCache);
+    vm2.invoke(ConflationDistributedTest::closeCache);
     // close server
-    vm0.invoke(ConflationDUnitTest::closeCache);
+    vm0.invoke(ConflationDistributedTest::closeCache);
   }
 }

@@ -65,7 +65,7 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDistributedTestHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -77,7 +77,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * @since GemFire 5.7
  */
 @Category({ClientSubscriptionTest.class})
-public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
+public class CQListGIIDistributedTest extends JUnit4DistributedTestCase {
 
   private static final int CREATE = 0;
   private static final int UPDATE = 1;
@@ -97,7 +97,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   private int PORT1;
   private int PORT2;
 
-  private static final String regionName = "CQListGIIDUnitTest";
+  private static final String regionName = "CQListGIIDistributedTest";
 
   private static final Map map = new HashMap();
 
@@ -154,21 +154,22 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM2 = host.getVM(3);
 
     PORT1 = serverVM0.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+        () -> CQListGIIDistributedTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
     PORT2 = serverVM1
-        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
+        .invoke(() -> CQListGIIDistributedTest
+            .createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
     closeCache();
-    clientVM1.invoke(CQListGIIDUnitTest::closeCache);
-    clientVM2.invoke(CQListGIIDUnitTest::closeCache);
+    clientVM1.invoke(CQListGIIDistributedTest::closeCache);
+    clientVM2.invoke(CQListGIIDistributedTest::closeCache);
     // then close the servers
-    serverVM0.invoke(CQListGIIDUnitTest::closeCache);
-    serverVM1.invoke(CQListGIIDUnitTest::closeCache);
+    serverVM0.invoke(CQListGIIDistributedTest::closeCache);
+    serverVM1.invoke(CQListGIIDistributedTest::closeCache);
     disconnectAllFromDS();
   }
 
@@ -190,7 +191,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
-    new CQListGIIDUnitTest().createCache(new Properties());
+    new CQListGIIDistributedTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -316,7 +317,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    new CQListGIIDUnitTest().createCache(props);
+    new CQListGIIDistributedTest().createCache(props);
 
     PoolFactory pf = PoolManager.createFactory();
     int endPointCount = 1;
@@ -543,33 +544,37 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testSpecificClientCQIsGIIedPart1() throws Exception {
     Integer size = 10;
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("30000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+    clientVM1.invoke(() -> CQListGIIDistributedTest.createClientCache(PORT1,
         PORT2, "1"));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+    clientVM2.invoke(() -> CQListGIIDistributedTest.createClientCache(PORT1,
         PORT2, "0"));
 
-    clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
     clientVM1
-        .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+        .invoke(() -> CQListGIIDistributedTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+    clientVM1
+        .invoke(() -> CQListGIIDistributedTest.executeCQ("testSpecificClientCQIsGIIed_0",
+            Boolean.FALSE));
     clientVM2
-        .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
+        .invoke(() -> CQListGIIDistributedTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+    clientVM2
+        .invoke(() -> CQListGIIDistributedTest.executeCQ("testSpecificClientCQIsGIIed_0",
+            Boolean.FALSE));
 
-    serverVM1.invoke(CQListGIIDUnitTest::stopServer);
+    serverVM1.invoke(CQListGIIDistributedTest::stopServer);
 
-    serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
+    serverVM0.invoke(() -> CQListGIIDistributedTest.putEntries(regions[0], size));
 
-    serverVM1.invoke(CQListGIIDUnitTest::startServer);
+    serverVM1.invoke(CQListGIIDistributedTest::startServer);
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
-    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 1));
-    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM0.invoke(() -> CQListGIIDistributedTest.VerifyCUMCQList(size, 2));
+    serverVM1.invoke(() -> CQListGIIDistributedTest.VerifyCUMCQList(size, 1));
+    serverVM0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
   }
 
   /**
@@ -582,35 +587,37 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     VM serverVM2 = clientVM2;
 
     int port3 = serverVM2.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+        () -> CQListGIIDistributedTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("45000"));
+    serverVM0.invoke(() -> ConflationDistributedTestHelper.setIsSlowStart("45000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
     createClientCache(PORT1, PORT2, port3, "1");
     try {
-      clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+      clientVM1.invoke(() -> CQListGIIDistributedTest.createClientCache(PORT1,
           port3, PORT2, "1"));
       try {
         createCQ("testSpecificClientCQIsGIIed_0", cqs[0]);
         executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE);
         clientVM1
-            .invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+            .invoke(
+                () -> CQListGIIDistributedTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
         clientVM1.invoke(
-            () -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
+            () -> CQListGIIDistributedTest.executeCQ("testSpecificClientCQIsGIIed_0",
+                Boolean.FALSE));
 
-        serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
+        serverVM0.invoke(() -> CQListGIIDistributedTest.putEntries(regions[0], size));
 
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 1));
+        serverVM1.invoke(() -> CQListGIIDistributedTest.VerifyCUMCQList(size, 1));
 
-        serverVM2.invoke(CQListGIIDUnitTest::stopServer);
+        serverVM2.invoke(CQListGIIDistributedTest::stopServer);
         Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-        serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
+        serverVM0.invoke(() -> CQListGIIDistributedTest.VerifyCUMCQList(size, 2));
+        serverVM1.invoke(() -> CQListGIIDistributedTest.VerifyCUMCQList(size, 2));
       } finally {
-        clientVM1.invoke(CQListGIIDUnitTest::destroyClientPool);
+        clientVM1.invoke(CQListGIIDistributedTest::destroyClientPool);
       }
 
     } finally {

@@ -62,12 +62,12 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * This test verifies the per-client queue conflation override functionality Taken from the existing
- * ConflationDUnitTest.java and modified.
+ * ConflationDistributedTest.java and modified.
  *
  * @since GemFire 5.7
  */
 @Category({ClientSubscriptionTest.class})
-public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
+public class ClientConflationDistributedTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null; // server
   VM vm1 = null; // client
@@ -87,8 +87,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     setIsSlowStart();
-    vm0.invoke(ClientConflationDUnitTest::setIsSlowStart);
-    PORT = vm0.invoke(ClientConflationDUnitTest::createServerCache);
+    vm0.invoke(ClientConflationDistributedTest::setIsSlowStart);
+    PORT = vm0.invoke(ClientConflationDistributedTest::createServerCache);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -138,19 +138,19 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
 
   private void performSteps(String conflation) throws Exception {
     createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), PORT);
-    vm1.invoke(() -> ClientConflationDUnitTest.createClientCache(
+    vm1.invoke(() -> ClientConflationDistributedTest.createClientCache(
         NetworkUtils.getServerHostName(vm1.getHost()), PORT, conflation));
-    vm1.invoke(ClientConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
-    vm1.invoke(ClientConflationDUnitTest::setAllCountersZero);
-    vm1.invoke(ClientConflationDUnitTest::assertAllCountersZero);
-    vm1.invoke(ClientConflationDUnitTest::registerInterest);
+    vm1.invoke(ClientConflationDistributedTest::setClientServerObserverForBeforeInterestRecovery);
+    vm1.invoke(ClientConflationDistributedTest::setAllCountersZero);
+    vm1.invoke(ClientConflationDistributedTest::assertAllCountersZero);
+    vm1.invoke(ClientConflationDistributedTest::registerInterest);
     putEntries();
-    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    vm0.invoke(ConflationDistributedTestHelper::unsetIsSlowStart);
     Thread.sleep(20000);
-    vm0.invoke(ClientConflationDUnitTest::assertAllQueuesEmpty);
+    vm0.invoke(ClientConflationDistributedTest::assertAllQueuesEmpty);
 
-    vm1.invoke(() -> ClientConflationDUnitTest.assertCounterSizes(conflation));
-    vm1.invoke(ClientConflationDUnitTest::assertValue);
+    vm1.invoke(() -> ClientConflationDistributedTest.assertCounterSizes(conflation));
+    vm1.invoke(ClientConflationDistributedTest::assertValue);
   }
 
   /**
@@ -181,7 +181,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void createClientCache(String host, Integer port, String conflation)
       throws Exception {
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
+    ClientConflationDistributedTest test = new ClientConflationDistributedTest();
     cacheClient = test.createCache(createProperties1(conflation));
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -189,7 +189,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterCreate(EntryEvent event) {
-        synchronized (ClientConflationDUnitTest.class) {
+        synchronized (ClientConflationDistributedTest.class) {
           counterCreate1++;
         }
       }
@@ -208,7 +208,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterCreate(EntryEvent event) {
-        synchronized (ClientConflationDUnitTest.class) {
+        synchronized (ClientConflationDistributedTest.class) {
           counterCreate2++;
         }
       }
@@ -225,7 +225,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCacheFeeder(String host, Integer port) throws Exception {
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
+    ClientConflationDistributedTest test = new ClientConflationDistributedTest();
     cacheFeeder = test
         .createCache(createProperties1(DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT));
     AttributesFactory factory = new AttributesFactory();
@@ -404,7 +404,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public static Integer createServerCache() throws Exception {
     Properties props = new Properties();
     props.setProperty(DELTA_PROPAGATION, "false");
-    ClientConflationDUnitTest test = new ClientConflationDUnitTest();
+    ClientConflationDistributedTest test = new ClientConflationDistributedTest();
     cacheServer = test.createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -522,8 +522,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCacheFeeder();
-    vm1.invoke(ClientConflationDUnitTest::closeCacheClient);
+    vm1.invoke(ClientConflationDistributedTest::closeCacheClient);
     // close server
-    vm0.invoke(ClientConflationDUnitTest::closeCacheServer);
+    vm0.invoke(ClientConflationDistributedTest::closeCacheServer);
   }
 }
