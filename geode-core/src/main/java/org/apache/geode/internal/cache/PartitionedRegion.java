@@ -139,6 +139,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
@@ -1467,9 +1468,10 @@ public class PartitionedRegion extends LocalRegion
       PartitionedRegionException pre = null;
       try {
         cleanupFailedInitialization();
-      } catch (RuntimeException rte) {
+      } catch (DistributedSystemDisconnectedException rte) {
         rte.initCause(lsde);
-        pre = new PartitionedRegionException("Can not create PartitionedRegion.", rte);
+        pre = new PartitionedRegionException(
+            "Can not create PartitionedRegion (failed to acquire RegionLock).", rte);
       }
       if (pre == null) {
         pre = new PartitionedRegionException(
@@ -1477,7 +1479,12 @@ public class PartitionedRegion extends LocalRegion
       }
       throw pre;
     } catch (IllegalStateException ill) {
-      cleanupFailedInitialization();
+      try {
+        cleanupFailedInitialization();
+      } catch (DistributedSystemDisconnectedException rte) {
+        logger.info("IllegalStateException " + ill
+            + " will override DistributedSystemDisconnectedException " + rte);
+      }
       throw ill;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -5565,16 +5572,14 @@ public class PartitionedRegion extends LocalRegion
     int serials[] = getRegionAdvisor().getBucketSerials();
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false,
         getMyId(), generateEventID()/* generate EventID */);
-    RuntimeException savedFirstRuntimeException = null;
+    Exception savedFirstRuntimeException = null;
     try {
       sendDestroyRegionMessage(event, serials);
     } catch (Exception ex) {
       logger.warn(
           "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
           ex);
-      if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
-        savedFirstRuntimeException = (RuntimeException) ex;
-      }
+      savedFirstRuntimeException = ex;
     }
     if (null != this.dataStore) {
       try {
@@ -5583,8 +5588,8 @@ public class PartitionedRegion extends LocalRegion
         logger.warn(
             "PartitionedRegion#cleanupFailedInitialization(): Failed to clean the PartionRegion data store",
             ex);
-        if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
-          savedFirstRuntimeException = (RuntimeException) ex;
+        if (savedFirstRuntimeException == null) {
+          savedFirstRuntimeException = ex;
         }
       }
     }
@@ -5607,8 +5612,8 @@ public class PartitionedRegion extends LocalRegion
         logger.warn(
             "PartitionedRegion#cleanupFailedInitialization: Failed to clean the PartionRegion allPartitionedRegions",
             ex);
-        if (savedFirstRuntimeException == null && ex instanceof RuntimeException) {
-          savedFirstRuntimeException = (RuntimeException) ex;
+        if (savedFirstRuntimeException == null) {
+          savedFirstRuntimeException = ex;
         }
       }
     }
@@ -5620,10 +5625,11 @@ public class PartitionedRegion extends LocalRegion
     if (logger.isDebugEnabled()) {
       logger.debug("cleanupFailedInitialization: end of {}", getName());
     }
-    if (savedFirstRuntimeException != null) {
-      logger.info("cleanupFailedInitialization originally failed with ",
+    if (savedFirstRuntimeException != null
+        && savedFirstRuntimeException instanceof DistributedSystemDisconnectedException) {
+      logger.warn("cleanupFailedInitialization originally failed with ",
           savedFirstRuntimeException);
-      throw savedFirstRuntimeException;
+      throw (DistributedSystemDisconnectedException) savedFirstRuntimeException;
     }
   }
 
