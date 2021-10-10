@@ -14,5 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-public class GcCommandDUnitTest extends GcCommandDUnitTestBase {
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+
+public class GcCommandOverHttpDistributedTest extends GcCommandDistributedTestBase {
+  @Override
+  public void before() throws Exception {
+    gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+  }
 }

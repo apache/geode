@@ -33,7 +33,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-public class GcCommandDUnitTestBase {
+public class GcCommandDistributedTestBase {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
   private static final String SERVER2_NAME = "Server2";
@@ -50,7 +50,7 @@ public class GcCommandDUnitTestBase {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
-  public static void setup() throws Exception {
+  public static void setup() {
     Properties managerProps = new Properties();
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
@@ -107,7 +107,7 @@ public class GcCommandDUnitTestBase {
   }
 
   @Test
-  public void testGCForInvalidMember() throws Exception {
+  public void testGCForInvalidMember() {
     String gcCommand = "gc --member=NotAValidMember";
 
     gfsh.executeAndAssertThat(gcCommand).statusIsError()
