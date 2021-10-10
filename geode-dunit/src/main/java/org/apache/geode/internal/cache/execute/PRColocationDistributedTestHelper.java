@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache.execute;
 
-public class PRColocationDUnitTestHelper {
+public class PRColocationDistributedTestHelper {
 
   public static int defaultStringSize = 0;
 

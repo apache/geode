@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
+import org.apache.geode.internal.cache.execute.PRColocationDistributedTestHelper;
 
+@SuppressWarnings("serial")
 public class Customer implements DataSerializable {
   String name;
 
@@ -33,7 +34,7 @@ public class Customer implements DataSerializable {
 
   public Customer(String name, String address) {
     this.name = name;
-    this.address = address + PRColocationDUnitTestHelper.getDefaultAddOnString();
+    this.address = address + PRColocationDistributedTestHelper.getDefaultAddOnString();
   }
 
   @Override
