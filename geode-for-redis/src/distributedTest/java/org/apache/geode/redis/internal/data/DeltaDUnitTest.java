@@ -165,7 +165,7 @@ public class DeltaDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       PartitionedRegion region =
-          (PartitionedRegion) cache.getRegion(RegionProvider.REDIS_DATA_REGION);
+          (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
       for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
         List<BucketDump> buckets = region.getAllBucketEntries(j);
         assertThat(buckets.size()).isEqualTo(2);

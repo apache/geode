@@ -17,9 +17,10 @@
 package org.apache.geode.redis.internal.netty;
 
 
-
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -53,7 +54,6 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -65,7 +65,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RedisSecurityService;
@@ -75,6 +74,7 @@ public class NettyRedisServer {
 
   private static final int RANDOM_PORT_INDICATOR = 0;
   public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
+  public static final String DEFAULT_REDIS_REGION_NAME = "GEODE_FOR_REDIS";
 
   private static final Logger logger = LogService.getLogger();
 
@@ -107,14 +107,10 @@ public class NettyRedisServer {
     this.member = member;
     this.securityService = securityService;
 
+    this.regionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME, false);
     this.writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
-    String regionName = System.getProperty(ConfigurationProperties.REDIS_REGION_NAME);
-    if (regionName == null || regionName.isEmpty()) {
-      this.regionName = GeodeRedisServer.DEFAULT_REDIS_REGION_NAME;
-    } else {
-      this.regionName = regionName;
-    }
 
     if (port < RANDOM_PORT_INDICATOR) {
       throw new IllegalArgumentException(
@@ -167,10 +163,6 @@ public class NettyRedisServer {
 
   public int getPort() {
     return serverPort;
-  }
-
-  public String getRegionName() {
-    return regionName;
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {

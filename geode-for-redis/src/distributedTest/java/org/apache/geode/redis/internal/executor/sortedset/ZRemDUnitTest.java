@@ -230,7 +230,7 @@ public class ZRemDUnitTest {
   }
 
   private static Region<RedisKey, RedisData> getDataRegion() {
-    return ClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
+    return ClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
   }
 
   private static boolean isPrimaryForBucket(int bucketId) {

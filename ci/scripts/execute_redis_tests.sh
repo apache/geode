@@ -44,7 +44,7 @@ export JAVA_HOME=${JAVA_TEST_PATH}
 
 # This will cause all buckets to be created
 ../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \
-  -e "query --query='select count(*) from /REDIS_DATA'"
+  -e "query --query='select count(*) from /GEODE_FOR_REDIS'"
 
 failCount=0
 
@@ -66,7 +66,7 @@ failCount=0
 
 # This will cause all buckets to be created
 ../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \
-  -e "query --query='select count(*) from /REDIS_DATA'"
+  -e "query --query='select count(*) from /GEODE_FOR_REDIS'"
 
 ./runtest --host 127.0.0.1 --port 6379 \
 --single unit/type/set \

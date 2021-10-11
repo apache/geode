@@ -12,15 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-
 public class RedisPropertiesTest {
+  private final String propName = "gemfire.prop-name";
+  private final String defaultValue = "default";
+
   @Test
   public void getIntegerSystemProperty_shouldReturnSpecifiedDefault_whenNeitherPrefixIsSet() {
     assertThat(getIntegerSystemProperty("prop.name", 5, 0)).isEqualTo(5);
@@ -82,5 +86,32 @@ public class RedisPropertiesTest {
   public void getIntegerSystemProperty_shouldUseSetValue_whenSetToMinimumValue() {
     System.setProperty("geode.prop.name7", "42");
     assertThat(getIntegerSystemProperty("prop.name7", 5, 42)).isEqualTo(42);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnSpecifiedDefaultWhenNotSet() {
+    System.clearProperty(propName);
+    assertThat(getStringSystemProperty(propName, defaultValue, false)).isEqualTo(defaultValue);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnSpecifiedDefault_whenSetToEmptyString_whenFalse() {
+    System.setProperty(propName, "");
+    assertThat(getStringSystemProperty(propName, defaultValue, false)).isEqualTo(defaultValue);
+    System.clearProperty(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnEmptyString_whenSetToEmptyString_whenTrue() {
+    System.setProperty(propName, "");
+    assertThat(getStringSystemProperty(propName, defaultValue, true)).isEqualTo("");
+    System.clearProperty(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnString_whenSet() {
+    System.setProperty(propName, "not default");
+    assertThat(getStringSystemProperty(propName, defaultValue, false)).isEqualTo("not default");
+    System.clearProperty(propName);
   }
 }

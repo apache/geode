@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.executor.connection;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,6 +65,11 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     return "dataWrite";
   }
 
+  @Override
+  protected void setupCacheWithSecurityAndRegionName(String regionName) throws Exception {
+    setupCacheWithRegionName(getUsername(), regionName, true);
+  }
+
   public void setupCacheWithSecurity() throws Exception {
     setupCache(getUsername(), true);
   }
@@ -97,6 +103,14 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     } finally {
       System.clearProperty("io.netty.eventLoopThreads");
     }
+  }
+
+  private void setupCacheWithRegionName(String username, String regionName,
+      boolean withSecurityManager) throws Exception {
+    System.setProperty("io.netty.eventLoopThreads", "1");
+    System.setProperty(REDIS_REGION_NAME_PROPERTY, regionName);
+    setupCache(username, withSecurityManager);
+    System.clearProperty(REDIS_REGION_NAME_PROPERTY);
   }
 
   @Test

@@ -48,6 +48,8 @@ public abstract class AbstractAuthIntegrationTest {
 
   Jedis jedis;
 
+  protected abstract void setupCacheWithSecurityAndRegionName(String regionName) throws Exception;
+
   protected abstract void setupCacheWithSecurity() throws Exception;
 
   protected abstract void setupCacheWithoutSecurity() throws Exception;
@@ -145,6 +147,14 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenNoSecurity_accessWithoutAuth_passes() throws Exception {
     setupCacheWithoutSecurity();
 
+    assertThat(jedis.ping()).isEqualTo("PONG");
+  }
+
+  @Test
+  public void givenSecurityAndNonDefaultRegionName_authPasses() throws Exception {
+    setupCacheWithSecurityAndRegionName("nonDefault");
+
+    assertThat(jedis.auth(getPassword())).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
   }
 

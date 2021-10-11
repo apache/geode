@@ -112,7 +112,7 @@ public class RedisPartitionResolverDUnitTest {
   private Map<String, Integer> getKeyToBucketMap(MemberVM vm) {
     return vm.invoke((SerializableCallableIF<Map<String, Integer>>) () -> {
       Region<RedisKey, RedisData> region =
-          RedisClusterStartupRule.getCache().getRegion(RegionProvider.REDIS_DATA_REGION);
+          RedisClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
 
       LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
       Map<String, Integer> keyMap = new HashMap<>();

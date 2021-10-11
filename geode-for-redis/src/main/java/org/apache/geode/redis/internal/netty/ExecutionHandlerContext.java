@@ -16,6 +16,9 @@
 package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
+import static org.apache.geode.redis.internal.RegionProvider.DEFAULT_REDIS_DATA_REGION;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -97,11 +100,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private Subject subject;
 
   static {
-    String resourcePermission = System.getProperty("redis.resource-permission",
-        "DATA:WRITE:" + RegionProvider.REDIS_DATA_REGION);
+    String regionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_DATA_REGION, false);
+    String resourcePermission = System.getProperty("redis.resource-permission", "DATA:WRITE:"
+        + regionName);
     String[] parts = resourcePermission.split(":");
     if (parts.length != 3) {
-      parts = new String[] {"DATA", "WRITE", RegionProvider.REDIS_DATA_REGION};
+      parts = new String[] {"DATA", "WRITE", regionName};
     }
 
     RESOURCE_PERMISSION = new ResourcePermission(parts[0], parts[1], parts[2]);

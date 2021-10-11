@@ -19,6 +19,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.redis.internal.netty.NettyRedisServer.DEFAULT_REDIS_REGION_NAME;
 
 import java.util.Properties;
 import java.util.Set;
@@ -109,17 +110,6 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     });
   }
 
-  public String getRedisRegionName(int vmNumber) {
-    return getRedisRegionName(getMember(vmNumber));
-  }
-
-  public String getRedisRegionName(MemberVM vm) {
-    return vm.invoke(() -> {
-      GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      return service.getRedisServer().getRegionName();
-    });
-  }
-
   public void setEnableUnsupported(MemberVM vm, boolean enableUnsupported) {
     vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
@@ -188,7 +178,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return getMember(1).invoke("moveBucketForKey: " + key + " -> " + targetServerName,
         () -> {
           Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-              .getRegion(RegionProvider.REDIS_DATA_REGION);
+              .getRegion(DEFAULT_REDIS_REGION_NAME);
 
           RedisKey redisKey = new RedisKey(key.getBytes());
           DistributedMember primaryMember =
@@ -233,7 +223,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   public String getKeyOnServer(String keyPrefix, int vmId) {
     return getMember(1).invoke("getKeyOnServer", () -> {
       Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-          .getRegion(RegionProvider.REDIS_DATA_REGION);
+          .getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
 
       String server = "server-" + vmId;
       String key;
