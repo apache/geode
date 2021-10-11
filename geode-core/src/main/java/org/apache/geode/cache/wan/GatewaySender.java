@@ -430,14 +430,6 @@ public interface GatewaySender {
   boolean mustGroupTransactionEvents();
 
   /**
-   * Returns retriesToGetTransactionEventsFromQueue int property for this GatewaySender.
-   *
-   * @return retriesToGetTransactionEventsFromQueue int property for this GatewaySender
-   *
-   */
-  int getRetriesToGetTransactionEventsFromQueue();
-
-  /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default
    * number of dispatcher threads is 5.
    *

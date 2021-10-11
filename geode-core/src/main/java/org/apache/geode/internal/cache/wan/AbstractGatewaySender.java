@@ -568,7 +568,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return groupTransactionEvents;
   }
 
-  @Override
+  /**
+   * Returns retriesToGetTransactionEventsFromQueue int property for this GatewaySender.
+   *
+   * @return retriesToGetTransactionEventsFromQueue int property for this GatewaySender
+   *
+   */
   public int getRetriesToGetTransactionEventsFromQueue() {
     return retriesToGetTransactionEventsFromQueue;
   }
