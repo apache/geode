@@ -90,7 +90,6 @@ dependencies {
   integrationTestImplementation('org.awaitility:awaitility')
 
   integrationTestRuntimeOnly(project(':geode-log4j'))
-  integrationTestRuntimeOnly('org.testcontainers:testcontainers')
 
 
   acceptanceTestImplementation(sourceSets.integrationTest.output)
@@ -138,7 +137,6 @@ dependencies {
     exclude module: 'spring-boot-starter-tomcat'
   }
   distributedTestImplementation('org.springframework.session:spring-session-data-redis')
-  distributedTestImplementation('org.testcontainers:testcontainers')
 }
 
 acceptanceTest {

@@ -22,7 +22,7 @@ allprojects {
 //  gradleLint.rules += 'unused-exclude-by-dep' ; // breaks some web bean tests
 //  gradleLint.rules += 'unused-exclude-by-conf' ; // breaks some web bean tests
 //  gradleLint.rules += 'duplicate-dependency-class' ; // broken due to Error from [com.netflix.nebula.lint.rule.GradleLintRule$1] processing source file [null]
-//  gradleLint.rules += 'undeclared-dependency'
+  gradleLint.rules += 'undeclared-dependency'
 //  gradleLint.rules += 'overridden-dependency-version'
 //  gradleLint.rules += 'archaic-wrapper'
 //  gradleLint.rules += 'deprecated-dependency-configuration'
