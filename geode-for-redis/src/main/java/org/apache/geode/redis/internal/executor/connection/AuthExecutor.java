@@ -22,9 +22,6 @@ import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.shiro.subject.Subject;
-
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
@@ -37,18 +34,15 @@ public class AuthExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    SecurityService securityService = context.getSecurityService();
-
     // We're deviating from Redis here in that any AUTH requests, without security explicitly
     // set up, will fail.
-    if (!securityService.isIntegratedSecurity()) {
+    if (!context.isSecurityEnabled()) {
       return RedisResponse.error(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
     }
 
     Properties props = getSecurityProperties(command, context);
     try {
-      Subject subject = securityService.login(props);
-      context.setSubject(subject);
+      context.login(props);
     } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
       return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);
     }

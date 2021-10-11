@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -41,29 +40,26 @@ public class AuthExecutorTest {
   private AuthExecutor executor;
   private Command command;
   private ExecutionHandlerContext context;
-  private SecurityService securityService;
 
   @Before
   public void before() {
     executor = spy(AuthExecutor.class);
     command = mock(Command.class);
     context = mock(ExecutionHandlerContext.class);
-    securityService = mock(SecurityService.class);
-    when(context.getSecurityService()).thenReturn(securityService);
   }
 
   @Test
   public void notIntegratedService() {
-    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    when(context.isSecurityEnabled()).thenReturn(false);
     RedisResponse redisResponse = executor.executeCommand(command, context);
     assertThat(redisResponse.toString()).contains(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
   public void handleAuthExpirationException() {
-    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    when(context.isSecurityEnabled()).thenReturn(true);
     doReturn(new Properties()).when(executor).getSecurityProperties(command, context);
-    when(securityService.login(any())).thenThrow(new AuthenticationExpiredException("expired"));
+    when(context.login(any())).thenThrow(new AuthenticationExpiredException("expired"));
     RedisResponse redisResponse = executor.executeCommand(command, context);
     assertThat(redisResponse.toString()).contains(ERROR_INVALID_USERNAME_OR_PASSWORD);
   }

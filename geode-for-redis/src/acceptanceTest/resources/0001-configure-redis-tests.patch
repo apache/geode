@@ -74,7 +74,7 @@ index 8978631e0..33c10eb15 100644
      } elseif {$opt eq {--port}} {
          set ::port $arg
 diff --git a/tests/unit/auth.tcl b/tests/unit/auth.tcl
-index f5da728e8..6ae96f295 100644
+index f5da728e8..13985dce2 100644
 --- a/tests/unit/auth.tcl
 +++ b/tests/unit/auth.tcl
 @@ -1,15 +1,16 @@
@@ -110,41 +110,6 @@ index f5da728e8..6ae96f295 100644
      } {OK}
  
      test {Once AUTH succeeded we can actually send commands to the server} {
-@@ -25,19 +26,19 @@ start_server {tags {"auth"} overrides {requirepass foobar}} {
-         r incr foo
-     } {101}
- 
--    test {For unauthenticated clients multibulk and bulk length are limited} {
--        set rr [redis [srv "host"] [srv "port"] 0]
--        $rr write "*100\r\n"
--        $rr flush
--        catch {[$rr read]} e
--        assert_match {*unauthenticated multibulk length*} $e
--        $rr close
--
--        set rr [redis [srv "host"] [srv "port"] 0]
--        $rr write "*1\r\n\$100000000\r\n"
--        $rr flush
--        catch {[$rr read]} e
--        assert_match {*unauthenticated bulk length*} $e
--        $rr close
--    }
-+#    test {For unauthenticated clients multibulk and bulk length are limited} {
-+#        set rr [redis [srv "host"] [srv "port"] 0]
-+#        $rr write "*100\r\n"
-+#        $rr flush
-+#        catch {[$rr read]} e
-+#        assert_match {*unauthenticated multibulk length*} $e
-+#        $rr close
-+#
-+#        set rr [redis [srv "host"] [srv "port"] 0]
-+#        $rr write "*1\r\n\$100000000\r\n"
-+#        $rr flush
-+#        catch {[$rr read]} e
-+#        assert_match {*unauthenticated bulk length*} $e
-+#        $rr close
-+#    }
- }
 diff --git a/tests/unit/dump.tcl b/tests/unit/dump.tcl
 index 4c4e5d075..18bb694f2 100644
 --- a/tests/unit/dump.tcl

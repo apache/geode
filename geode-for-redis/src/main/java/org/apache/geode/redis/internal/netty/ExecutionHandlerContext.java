@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZE
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Properties;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -28,6 +29,7 @@ import java.util.function.Supplier;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
@@ -36,7 +38,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -55,6 +56,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
+import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
@@ -84,10 +86,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
-  private final SecurityService securityService;
+  private final SecurityServiceWrapper securityService;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
+  private final ChannelId channelId;
 
   private final int serverPort;
 
@@ -116,7 +119,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       String username,
       int serverPort,
       DistributedMember member,
-      SecurityService securityService) {
+      SecurityServiceWrapper securityService) {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
@@ -129,6 +132,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.securityService = securityService;
     this.scanCursor = new BigInteger("0");
     this.sscanCursor = new BigInteger("0");
+    this.channelId = channel.id();
     redisStats.addClient();
 
     channel.closeFuture().addListener(future -> logout());
@@ -298,6 +302,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (subject != null) {
       subject.logout();
       subject = null;
+      securityService.logout(channelId);
     }
   }
 
@@ -323,7 +328,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @return True if no authentication required or authentication is complete, false otherwise
    */
   public boolean isAuthenticated() {
-    return (!securityService.isIntegratedSecurity()) || subject != null;
+    return (!securityService.isEnabled()) || subject != null;
   }
 
   public boolean isAuthorized() {
@@ -387,8 +392,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return member.getUniqueId();
   }
 
-  public SecurityService getSecurityService() {
-    return securityService;
+  public boolean isSecurityEnabled() {
+    return securityService.isEnabled();
+  }
+
+  public Subject login(Properties properties) {
+    subject = securityService.login(channelId, properties);
+    return subject;
   }
 
   public void checkForLowMemory(RedisCommandType commandType) {

@@ -57,12 +57,12 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager;
 import org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
+import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class NettyRedisServer {
@@ -87,12 +87,12 @@ public class NettyRedisServer {
   private final Channel serverChannel;
   private final int serverPort;
   private final DistributedMember member;
-  private final SecurityService securityService;
+  private final SecurityServiceWrapper securityService;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
-      DistributedMember member, SecurityService securityService) {
+      DistributedMember member, SecurityServiceWrapper securityService) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -169,7 +169,7 @@ public class NettyRedisServer {
         ChannelPipeline pipeline = socketChannel.pipeline();
         addSSLIfEnabled(socketChannel, pipeline);
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(),
-            new ByteToCommandDecoder(redisStats));
+            new ByteToCommandDecoder(redisStats, securityService, socketChannel.id()));
         pipeline.addLast(new WriteTimeoutHandler(10));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
