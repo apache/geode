@@ -20,12 +20,12 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetBitExecutor extends AbstractExecutor {
+public class GetBitExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_INT = "The offset provided must be numeric";
 
@@ -43,7 +43,7 @@ public class GetBitExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_NOT_INT);
     }
 
-    int result = context.getStringCommands().getbit(key, offset);
+    int result = context.stringLockedExecute(key, true, string -> string.getbit(offset));
 
     return RedisResponse.integer(result);
   }

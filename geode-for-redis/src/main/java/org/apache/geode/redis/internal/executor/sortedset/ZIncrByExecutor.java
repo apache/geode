@@ -20,17 +20,21 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_F
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZIncrByExecutor extends AbstractExecutor {
+public class ZIncrByExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
+    Region<RedisKey, RedisData> region = context.getRegion();
+    RedisKey key = command.getKey();
 
     double increment;
     try {
@@ -40,7 +44,9 @@ public class ZIncrByExecutor extends AbstractExecutor {
     }
     byte[] member = commandElements.get(3);
 
-    byte[] retVal = redisSortedSetCommands.zincrby(command.getKey(), increment, member);
+    byte[] retVal = context.zsetLockedExecute(key, false,
+        zset -> zset.zincrby(region, key, increment, member));
+
     return RedisResponse.bulkString(retVal);
   }
 }

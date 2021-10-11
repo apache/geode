@@ -18,12 +18,12 @@ package org.apache.geode.redis.internal.executor.key;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class DelExecutor extends AbstractExecutor {
+public class DelExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -33,9 +33,16 @@ public class DelExecutor extends AbstractExecutor {
     long numRemoved = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter((key) -> context.getKeyCommands().del(key))
+        .filter(key -> del(context, key))
         .count();
 
     return RedisResponse.integer(numRemoved);
+  }
+
+  public static boolean del(ExecutionHandlerContext context, RedisKey key) {
+    return context.dataLockedExecute(key, data -> {
+      // data unused here but created to trigger MOVED if necessary
+      return context.getRegion().remove(key) != null;
+    });
   }
 }

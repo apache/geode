@@ -17,20 +17,20 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZScoreExecutor extends AbstractExecutor {
+public class ZScoreExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
     List<byte[]> commandElements = command.getProcessedCommand();
+    RedisKey key = command.getKey();
+    byte[] member = commandElements.get(2);
 
-    byte[] score =
-        redisSortedSetCommands.zscore(command.getKey(), commandElements.get(2));
+    byte[] score = context.zsetLockedExecute(key, true, zset -> zset.zscore(member));
 
     return RedisResponse.bulkString(score);
   }

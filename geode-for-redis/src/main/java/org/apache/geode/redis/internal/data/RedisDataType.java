@@ -16,23 +16,34 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_DATA;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
+
 public enum RedisDataType {
 
-  REDIS_DATA("data"),
-  REDIS_STRING("string"),
-  REDIS_HASH("hash"),
-  REDIS_SET("set"),
-  REDIS_SORTED_SET("sortedset"),
-  REDIS_PUBSUB("pubsub");
+  REDIS_DATA("data", NULL_REDIS_DATA),
+  REDIS_STRING("string", NULL_REDIS_STRING),
+  REDIS_HASH("hash", NULL_REDIS_HASH),
+  REDIS_SET("set", NULL_REDIS_SET),
+  REDIS_SORTED_SET("sortedset", NULL_REDIS_SORTED_SET);
 
   private final String toStringValue;
+  private final RedisData nullType;
 
-  RedisDataType(String toString) {
+  RedisDataType(String toString, RedisData nullType) {
     toStringValue = toString;
+    this.nullType = nullType;
   }
 
   @Override
   public String toString() {
     return toStringValue;
+  }
+
+  public RedisData getNullType() {
+    return nullType;
   }
 }

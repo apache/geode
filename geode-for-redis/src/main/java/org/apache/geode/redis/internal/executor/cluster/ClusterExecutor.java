@@ -40,13 +40,13 @@ import org.apache.geode.redis.internal.SlotAdvisor;
 import org.apache.geode.redis.internal.data.KeyHashUtil;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
-public class ClusterExecutor extends AbstractExecutor {
+public class ClusterExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)

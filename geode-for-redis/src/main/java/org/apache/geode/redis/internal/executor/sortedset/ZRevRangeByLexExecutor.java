@@ -14,8 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.List;
+
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZRevRangeByLexExecutor extends ZRangeByLexExecutor {
   @Override
@@ -24,8 +27,10 @@ public class ZRevRangeByLexExecutor extends ZRangeByLexExecutor {
   }
 
   @Override
-  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+  public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetLexRangeOptions options) {
-    return RedisResponse.array(commands.zrevrangebylex(key, options), true);
+    List<byte[]> result = context.zsetLockedExecute(key, true,
+        zset -> zset.zrevrangebylex(options));
+    return RedisResponse.array(result, true);
   }
 }

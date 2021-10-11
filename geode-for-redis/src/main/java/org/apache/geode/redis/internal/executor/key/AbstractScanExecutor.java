@@ -32,17 +32,16 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public abstract class AbstractScanExecutor extends AbstractExecutor {
+public abstract class AbstractScanExecutor implements CommandExecutor {
   private static final Logger logger = LogService.getLogger();
   protected final int DEFAULT_COUNT = 10;
 
@@ -64,8 +63,7 @@ public abstract class AbstractScanExecutor extends AbstractExecutor {
     // being an existence check of the key. That causes a race since the data value needs to be
     // accessed again when the actual command does its work. If the relevant bucket doesn't get
     // locked throughout the call, the bucket may move producing inconsistent results.
-    return context.getRegionProvider().execute(key, () -> {
-      RedisData value = context.getRegionProvider().getRedisData(key);
+    return context.dataLockedExecute(key, value -> {
       if (value.isNull()) {
         context.getRedisStats().incKeyspaceMisses();
         return RedisResponse.emptyScan();

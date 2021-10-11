@@ -18,21 +18,20 @@ package org.apache.geode.redis.internal.executor.hash;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class HStrLenExecutor extends AbstractExecutor {
+public class HStrLenExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
     List<byte[]> commandElems = command.getProcessedCommand();
-    byte[] field = commandElems.get(HASH_FIELD_INDEX);
+    byte[] field = commandElems.get(2);
 
-    RedisHashCommands redisHashCommands = context.getHashCommands();
-    int len = redisHashCommands.hstrlen(key, field);
+    int len = context.hashLockedExecute(key, true, hash -> hash.hstrlen(field));
 
     return RedisResponse.integer(len);
   }

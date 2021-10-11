@@ -14,27 +14,28 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZRemExecutor extends AbstractExecutor {
+public class ZRemExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
     List<byte[]> commandElements = command.getProcessedCommand();
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
-    List<byte[]> membersToRemove =
-        new ArrayList<>(commandElements.subList(2, commandElements.size()));
+    List<byte[]> membersToRemove = commandElements.subList(2, commandElements.size());
 
-    long membersRemoved = redisSortedSetCommands.zrem(key, membersToRemove);
+    long membersRemoved = context.zsetLockedExecute(key, false,
+        zset -> zset.zrem(region, key, membersToRemove));
+
     return RedisResponse.integer(membersRemoved);
   }
 }

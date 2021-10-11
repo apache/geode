@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class UnknownExecutor extends AbstractExecutor {
+public class UnknownExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,

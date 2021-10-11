@@ -15,25 +15,26 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyExistsException;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 
-public abstract class AbstractMSetExecutor extends AbstractExecutor {
+public abstract class AbstractMSetExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getCommandArguments();
-    RedisStringCommands stringCommands = context.getStringCommands();
 
     int numElements = commandElems.size() / 2;
     List<RedisKey> keys = new ArrayList<>(numElements);
@@ -53,7 +54,7 @@ public abstract class AbstractMSetExecutor extends AbstractExecutor {
     }
 
     try {
-      executeMSet(stringCommands, keys, values);
+      executeMSet(context, keys, values);
     } catch (RedisKeyExistsException e) {
       return getKeyExistsErrorResponse();
     }
@@ -61,10 +62,38 @@ public abstract class AbstractMSetExecutor extends AbstractExecutor {
     return getSuccessResponse();
   }
 
+  protected void mset(ExecutionHandlerContext context, List<RedisKey> keys, List<byte[]> values,
+      boolean ifAllKeysAbsent) {
+    List<RedisKey> keysToLock = new ArrayList<>(keys.size());
+    RegionProvider regionProvider = context.getRegionProvider();
+    for (RedisKey key : keys) {
+      regionProvider.ensureKeyIsLocal(key);
+      keysToLock.add(key);
+    }
+
+    // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
+    // in the same bucket we can use any key for this.
+    context.lockedExecuteInTransaction(keysToLock.get(0), keysToLock,
+        () -> mset0(regionProvider, keys, values, ifAllKeysAbsent));
+  }
+
+  private Void mset0(RegionProvider regionProvider, List<RedisKey> keys, List<byte[]> values,
+      boolean ifAllKeysAbsent) {
+    SetOptions options = ifAllKeysAbsent ? new SetOptions(NX, 0L, false) : null;
+    for (int i = 0; i < keys.size(); i++) {
+      if (!SetExecutor.set(regionProvider, keys.get(i), values.get(i), options)) {
+        // rolls back transaction
+        throw new RedisKeyExistsException("at least one key already exists");
+      }
+    }
+    return null;
+  }
+
+
   protected abstract RedisResponse getKeyExistsErrorResponse();
 
   protected abstract RedisResponse getSuccessResponse();
 
-  protected abstract void executeMSet(RedisStringCommands stringCommands, List<RedisKey> keys,
+  protected abstract void executeMSet(ExecutionHandlerContext context, List<RedisKey> keys,
       List<byte[]> values);
 }

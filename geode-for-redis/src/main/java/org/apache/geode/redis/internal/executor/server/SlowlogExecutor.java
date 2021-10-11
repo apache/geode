@@ -22,13 +22,13 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
 
 import java.util.Arrays;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 // TODO: only exists for Redis monitoring software, maybe make functional someday?
-public class SlowlogExecutor extends AbstractExecutor {
+public class SlowlogExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {

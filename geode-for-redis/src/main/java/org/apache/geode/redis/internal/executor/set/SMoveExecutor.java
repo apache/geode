@@ -21,33 +21,39 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SMoveExecutor extends AbstractExecutor {
+public class SMoveExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey source = command.getKey();
     RedisKey destination = new RedisKey(commandElems.get(2));
     byte[] member = commandElems.get(3);
 
-    String destinationType = context.getKeyCommands().internalType(destination);
+    // TODO: this command should lock both source and destination before changing them
+
+    String destinationType = context.dataLockedExecute(destination, RedisData::type);
     if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
       return RedisResponse.wrongType(ERROR_WRONG_TYPE);
     }
 
-    RedisSetCommands redisSetCommands = context.getSetCommands();
-
-    boolean removed =
-        redisSetCommands.srem(source, new ArrayList<>(Collections.singletonList(member))) == 1;
+    ArrayList<byte[]> membersToRemove = new ArrayList<>(Collections.singletonList(member));
+    boolean removed = 1 == context.setLockedExecute(source, false,
+        set -> set.srem(membersToRemove, region, source));
     if (removed) {
-      redisSetCommands.sadd(destination, new ArrayList<>(Collections.singletonList(member)));
+      ArrayList<byte[]> membersToAdd = new ArrayList<>(Collections.singletonList(member));
+      context.setLockedExecute(destination, false,
+          set -> set.sadd(membersToAdd, region, destination));
     }
     return RedisResponse.integer(removed);
   }

@@ -19,6 +19,9 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZE
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -31,6 +34,7 @@ import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -38,15 +42,17 @@ import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
+import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
+import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
-import org.apache.geode.redis.internal.executor.hash.RedisHashCommands;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
-import org.apache.geode.redis.internal.executor.set.RedisSetCommands;
-import org.apache.geode.redis.internal.executor.sortedset.RedisSortedSetCommands;
-import org.apache.geode.redis.internal.executor.string.RedisStringCommands;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -381,28 +387,110 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return member.getUniqueId();
   }
 
-  public RedisHashCommands getHashCommands() {
-    return regionProvider.getHashCommands();
-  }
-
-  public RedisSortedSetCommands getSortedSetCommands() {
-    return regionProvider.getSortedSetCommands();
-  }
-
-  public RedisKeyCommands getKeyCommands() {
-    return regionProvider.getKeyCommands();
-  }
-
-  public RedisStringCommands getStringCommands() {
-    return regionProvider.getStringCommands();
-  }
-
-  public RedisSetCommands getSetCommands() {
-    return regionProvider.getSetCommands();
-  }
-
   public SecurityService getSecurityService() {
     return securityService;
+  }
+
+  public void checkForLowMemory(RedisCommandType commandType) {
+    Set<DistributedMember> criticalMembers = getRegionProvider().getCriticalMembers();
+    if (!criticalMembers.isEmpty()) {
+      throw new LowMemoryException(
+          String.format(
+              "%s cannot be executed because the members %s are running low on memory",
+              commandType.toString(), criticalMembers),
+          criticalMembers);
+    }
+  }
+
+
+  public Region<RedisKey, RedisData> getRegion() {
+    return getRegionProvider().getLocalDataRegion();
+  }
+
+  public <T> T lockedExecute(RedisKey key, Callable<T> callable) {
+    return getRegionProvider().lockedExecute(key, callable);
+  }
+
+  public <T> T lockedExecute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
+    return getRegionProvider().lockedExecute(key, keysToLock, callable);
+  }
+
+  public <T> T lockedExecuteInTransaction(RedisKey key, List<RedisKey> keysToLock,
+      Callable<T> callable) {
+    return getRegionProvider().lockedExecuteInTransaction(key, keysToLock, callable);
+  }
+
+  public interface FailableFunction<T, R> {
+    R apply(T t) throws Exception;
+  }
+
+  public <R> R stringLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisString, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisString(key, updateStats)));
+  }
+
+  public <R> R stringLockedExecute(RedisKey key, boolean updateStats, boolean ignoreType,
+      FailableFunction<RedisString, R> function) {
+    if (ignoreType) {
+      return getRegionProvider().lockedExecute(key,
+          () -> function.apply(getRedisStringIgnoringType(key, updateStats)));
+    } else {
+      return stringLockedExecute(key, updateStats, function);
+    }
+  }
+
+  private RedisString getRedisString(RedisKey key, boolean updateStats) {
+    return getRegionProvider()
+        .getTypedRedisData(RedisDataType.REDIS_STRING, key, updateStats);
+  }
+
+  private RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getRedisStringIgnoringType(key, updateStats);
+  }
+
+
+  public <R> R hashLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisHash, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisHash(key, updateStats)));
+  }
+
+  private RedisHash getRedisHash(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_HASH, key, updateStats);
+  }
+
+
+  public <R> R zsetLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisSortedSet, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisSortedSet(key, updateStats)));
+  }
+
+  private RedisSortedSet getRedisSortedSet(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SORTED_SET, key, updateStats);
+  }
+
+
+  public <R> R setLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisSet, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisSet(key, updateStats)));
+  }
+
+  public RedisSet getRedisSet(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SET, key, updateStats);
+  }
+
+
+  public <R> R dataLockedExecute(RedisKey key,
+      FailableFunction<RedisData, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisData(key)));
+  }
+
+  public RedisData getRedisData(RedisKey key) {
+    return getRegionProvider().getRedisData(key);
   }
 
 }

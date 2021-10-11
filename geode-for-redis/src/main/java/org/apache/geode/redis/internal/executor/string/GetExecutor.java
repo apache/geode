@@ -15,21 +15,22 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetExecutor extends AbstractExecutor {
+public class GetExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    RedisStringCommands redisStringCommands = context.getStringCommands();
-    byte[] result = redisStringCommands.get(key);
 
-    return respondBulkStrings(result);
+    byte[] result = context.stringLockedExecute(key, true, RedisString::get);
+
+    return RedisResponse.bulkStrings(result);
   }
 
 }

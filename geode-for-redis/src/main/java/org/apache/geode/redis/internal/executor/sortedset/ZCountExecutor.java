@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZCountExecutor extends ZRangeByScoreExecutor {
 
@@ -27,8 +28,9 @@ public class ZCountExecutor extends ZRangeByScoreExecutor {
   }
 
   @Override
-  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+  public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetScoreRangeOptions options) {
-    return RedisResponse.integer(commands.zcount(key, options));
+    long count = context.zsetLockedExecute(key, true, zset -> zset.zcount(options));
+    return RedisResponse.integer(count);
   }
 }

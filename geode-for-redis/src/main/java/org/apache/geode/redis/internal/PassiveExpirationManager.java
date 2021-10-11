@@ -32,7 +32,6 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.key.RedisKeyCommands;
 
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
@@ -59,12 +58,12 @@ public class PassiveExpirationManager {
       final long now = System.currentTimeMillis();
       Region<RedisKey, RedisData> localPrimaryData =
           PartitionRegionHelper.getLocalPrimaryData(regionProvider.getLocalDataRegion());
-      RedisKeyCommands redisKeyCommands = regionProvider.getKeyCommands();
       for (Map.Entry<RedisKey, RedisData> entry : localPrimaryData.entrySet()) {
         try {
           if (entry.getValue().hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
-            if (-2 == redisKeyCommands.internalPttl(entry.getKey())) {
+
+            if (-2 == internalPttl(regionProvider, entry.getKey())) {
               expireCount++;
             }
           }
@@ -78,5 +77,10 @@ public class PassiveExpirationManager {
     } finally {
       regionProvider.getRedisStats().endPassiveExpirationCheck(start, expireCount);
     }
+  }
+
+  private long internalPttl(RegionProvider regionProvider, RedisKey key) {
+    return regionProvider.lockedExecute(key,
+        () -> regionProvider.getRedisData(key).pttl(regionProvider.getLocalDataRegion(), key));
   }
 }

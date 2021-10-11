@@ -16,23 +16,24 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public abstract class AbstractZRankExecutor extends AbstractExecutor {
+public abstract class AbstractZRankExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
     List<byte[]> commandElements = command.getProcessedCommand();
+    RedisKey key = command.getKey();
+    byte[] member = commandElements.get(2);
 
     long rank;
     if (isRev()) {
-      rank = redisSortedSetCommands.zrevrank(command.getKey(), commandElements.get(2));
+      rank = context.zsetLockedExecute(key, true, zset -> zset.zrevrank(member));
     } else {
-      rank = redisSortedSetCommands.zrank(command.getKey(), commandElements.get(2));
+      rank = context.zsetLockedExecute(key, true, zset -> zset.zrank(member));
     }
 
     if (rank == -1) {

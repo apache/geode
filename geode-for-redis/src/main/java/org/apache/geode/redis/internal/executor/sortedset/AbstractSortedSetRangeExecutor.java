@@ -18,13 +18,13 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSetRangeOptions<?>>
-    extends AbstractExecutor {
+    implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
@@ -39,7 +39,7 @@ public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSet
       return getEmptyResponse();
     }
 
-    return executeRangeCommand(context.getSortedSetCommands(), command.getKey(), options);
+    return executeRangeCommand(context, command.getKey(), options);
   }
 
   public abstract boolean isRev();
@@ -48,6 +48,6 @@ public abstract class AbstractSortedSetRangeExecutor<T extends AbstractSortedSet
 
   public abstract RedisResponse getEmptyResponse();
 
-  public abstract RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+  public abstract RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       T options);
 }

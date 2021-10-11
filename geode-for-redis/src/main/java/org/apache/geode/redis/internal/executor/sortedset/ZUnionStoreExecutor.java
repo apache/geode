@@ -16,6 +16,9 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -23,7 +26,13 @@ public class ZUnionStoreExecutor extends ZStoreExecutor {
   @Override
   public long getResult(ExecutionHandlerContext context, Command command,
       List<ZKeyWeight> keyWeights, ZAggregator aggregator) {
-    return context.getSortedSetCommands().zunionstore(command.getKey(), keyWeights, aggregator);
+    RegionProvider regionProvider = context.getRegionProvider();
+    RedisKey key = command.getKey();
+    List<RedisKey> keysToLock = getKeysToLock(regionProvider, key, keyWeights);
+
+    return context.lockedExecute(key, keysToLock,
+        () -> new RedisSortedSet(0))
+        .zunionstore(regionProvider, key, keyWeights, aggregator);
   }
 
 }

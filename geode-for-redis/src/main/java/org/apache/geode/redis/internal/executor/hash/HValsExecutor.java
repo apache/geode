@@ -17,8 +17,9 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Collection;
 
+import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -39,7 +40,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  * 	2) "World"
  * </pre>
  */
-public class HValsExecutor extends AbstractExecutor {
+public class HValsExecutor implements CommandExecutor {
 
   /**
    * <pre>
@@ -54,8 +55,7 @@ public class HValsExecutor extends AbstractExecutor {
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    RedisHashCommands redisHashCommands = context.getHashCommands();
-    Collection<byte[]> values = redisHashCommands.hvals(key);
+    Collection<byte[]> values = context.hashLockedExecute(key, true, RedisHash::hvals);
 
     if (values.isEmpty()) {
       return RedisResponse.emptyArray();

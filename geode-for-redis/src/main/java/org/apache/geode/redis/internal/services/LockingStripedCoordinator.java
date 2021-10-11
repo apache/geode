@@ -23,9 +23,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
- * Implements {@link StripedCoordinator} by using {@link ReentrantLock}s synchronization. The thread
- * that calls execute will also be the thread that does the work. But it will do it under
- * synchronization. The hashCode of the stripeId is used to associate the id with a stripe.
+ * Implements {@link StripedCoordinator} by using {@link ReentrantLock}s. The thread
+ * that calls execute will also be the thread that does the work while holding the reentrant
+ * lock. The hashCode of the stripeId is used to associate the id with a stripe.
  */
 public class LockingStripedCoordinator implements StripedCoordinator {
   private static final int DEFAULT_CONCURRENCY_LEVEL = 4093; // use a prime

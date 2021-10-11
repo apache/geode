@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class LolWutExecutor extends AbstractExecutor {
+public class LolWutExecutor implements CommandExecutor {
 
   public static final int MAX_MAZE_WIDTH = 1024; // limit width to keep memory usage low
   public static final int MAX_MAZE_HEIGHT = 1024 * 1024; // if user wants a bigger maze they can

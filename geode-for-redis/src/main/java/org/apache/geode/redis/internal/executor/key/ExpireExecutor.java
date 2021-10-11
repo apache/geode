@@ -21,13 +21,13 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ExpireExecutor extends AbstractExecutor {
+public class ExpireExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -49,7 +49,8 @@ public class ExpireExecutor extends AbstractExecutor {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    int result = context.getKeyCommands().pexpireat(key, timestamp);
+    int result = context.dataLockedExecute(key,
+        data -> data.pexpireat(context.getRegionProvider(), key, timestamp));
 
     return RedisResponse.integer(result);
   }

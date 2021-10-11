@@ -20,13 +20,15 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
 import java.util.List;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetBitExecutor extends AbstractExecutor {
+public class SetBitExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_INT = "The number provided must be numeric";
 
@@ -38,7 +40,7 @@ public class SetBitExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = context.getStringCommands();
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
 
     long offset;
@@ -60,7 +62,10 @@ public class SetBitExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
     }
 
-    int returnBit = stringCommands.setbit(key, offset, value);
+    int byteIndex = (int) (offset / 8);
+    byte bitIndex = (byte) (offset % 8);
+    int returnBit = context.stringLockedExecute(key, false,
+        string -> string.setbit(region, key, value, byteIndex, bitIndex));
 
     return RedisResponse.integer(returnBit);
   }

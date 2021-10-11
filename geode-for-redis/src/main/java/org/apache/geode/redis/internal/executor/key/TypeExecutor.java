@@ -16,22 +16,34 @@
 package org.apache.geode.redis.internal.executor.key;
 
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class TypeExecutor extends AbstractExecutor {
+public class TypeExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
 
     RedisKey key = command.getKey();
-    String result = context.getKeyCommands().type(key);
+    String result = type(context, key);
 
-    return respondBulkStrings(result);
+    return RedisResponse.bulkStrings(result);
   }
 
+  private static String type(ExecutionHandlerContext context, RedisKey key) {
+    String type = context.dataLockedExecute(key, RedisData::type);
+
+    if (type.equalsIgnoreCase("none")) {
+      context.getRegionProvider().getRedisStats().incKeyspaceMisses();
+    } else {
+      context.getRegionProvider().getRedisStats().incKeyspaceHits();
+    }
+
+    return type;
+  }
 }

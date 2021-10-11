@@ -79,6 +79,14 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, byteArray));
   }
 
+  public static RedisResponse bulkStrings(Object message) {
+    if (message instanceof Collection) {
+      return array((Collection<?>) message, true);
+    } else {
+      return bulkString(message);
+    }
+  }
+
   public static RedisResponse bulkString(Object value) {
     return new RedisResponse((buffer) -> {
       try {

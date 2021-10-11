@@ -25,7 +25,7 @@ import java.util.Properties;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -33,7 +33,7 @@ import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
 
-public class AuthExecutor implements Executor {
+public class AuthExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {

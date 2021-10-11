@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZRangeExecutor extends AbstractSortedSetRangeExecutor<SortedSetRankRangeOptions> {
 
@@ -37,8 +38,10 @@ public class ZRangeExecutor extends AbstractSortedSetRangeExecutor<SortedSetRank
   }
 
   @Override
-  public RedisResponse executeRangeCommand(RedisSortedSetCommands commands, RedisKey key,
+  public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetRankRangeOptions options) {
-    return RedisResponse.array(commands.zrange(key, options), true);
+    List<byte[]> result = context.zsetLockedExecute(key, true,
+        zset -> zset.zrange(options));
+    return RedisResponse.array(result, true);
   }
 }

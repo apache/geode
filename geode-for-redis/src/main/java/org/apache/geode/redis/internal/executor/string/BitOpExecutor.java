@@ -19,13 +19,16 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class BitOpExecutor extends AbstractExecutor {
+public class BitOpExecutor implements CommandExecutor {
 
   protected static final String ERROR_BITOP_NOT =
       "BITOP NOT must be called with a single source key";
@@ -56,8 +59,119 @@ public class BitOpExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_BITOP_NOT);
     }
 
-    int result = context.getStringCommands().bitop(operation, destKey, values);
+    int result = bitop(context, operation, destKey, values);
 
     return RedisResponse.integer(result);
   }
+
+
+  private int bitop(ExecutionHandlerContext context, String operation, RedisKey key,
+      List<RedisKey> sources) {
+    List<byte[]> sourceValues = new ArrayList<>();
+    int selfIndex = -1;
+    // Read all the source values, except for self, before locking the stripe.
+    for (RedisKey sourceKey : sources) {
+      if (sourceKey.equals(key)) {
+        // get self later after the stripe is locked
+        selfIndex = sourceValues.size();
+        sourceValues.add(null);
+      } else {
+        sourceValues.add(context.stringLockedExecute(sourceKey, true, RedisString::get));
+      }
+    }
+    int indexOfSelf = selfIndex;
+    RegionProvider regionProvider = context.getRegionProvider();
+    return context.lockedExecute(key,
+        () -> doBitOp(regionProvider, operation, key, indexOfSelf, sourceValues));
+  }
+
+  private enum BitOp {
+    AND, OR, XOR
+  }
+
+  private static int doBitOp(RegionProvider regionProvider, String operation, RedisKey key,
+      int selfIndex,
+      List<byte[]> sourceValues) {
+    if (selfIndex != -1) {
+      RedisString redisString =
+          regionProvider.getTypedRedisData(RedisDataType.REDIS_STRING, key, true);
+      if (!redisString.isNull()) {
+        sourceValues.set(selfIndex, redisString.getValue());
+      }
+    }
+    int maxLength = 0;
+    for (byte[] sourceValue : sourceValues) {
+      if (sourceValue != null && maxLength < sourceValue.length) {
+        maxLength = sourceValue.length;
+      }
+    }
+    byte[] newValue;
+    switch (operation) {
+      case "AND":
+        newValue = doBitOp(BitOp.AND, sourceValues, maxLength);
+        break;
+      case "OR":
+        newValue = doBitOp(BitOp.OR, sourceValues, maxLength);
+        break;
+      case "XOR":
+        newValue = doBitOp(BitOp.XOR, sourceValues, maxLength);
+        break;
+      default: // NOT
+        newValue = not(sourceValues.get(0), maxLength);
+        break;
+    }
+    if (newValue.length == 0) {
+      regionProvider.getDataRegion().remove(key);
+    } else {
+      SetExecutor.setRedisString(regionProvider, key, newValue);
+    }
+    return newValue.length;
+  }
+
+  private static byte[] doBitOp(BitOp bitOp, List<byte[]> sourceValues, int max) {
+    byte[] dest = new byte[max];
+    for (int i = 0; i < max; i++) {
+      byte b = 0;
+      boolean firstByte = true;
+      for (byte[] sourceValue : sourceValues) {
+        byte sourceByte = 0;
+        if (sourceValue != null && i < sourceValue.length) {
+          sourceByte = sourceValue[i];
+        }
+        if (firstByte) {
+          b = sourceByte;
+          firstByte = false;
+        } else {
+          switch (bitOp) {
+            case AND:
+              b &= sourceByte;
+              break;
+            case OR:
+              b |= sourceByte;
+              break;
+            case XOR:
+              b ^= sourceByte;
+              break;
+          }
+        }
+      }
+      dest[i] = b;
+    }
+    return dest;
+  }
+
+  private static byte[] not(byte[] sourceValue, int max) {
+    byte[] dest = new byte[max];
+    if (sourceValue == null) {
+      for (int i = 0; i < max; i++) {
+        dest[i] = ~0;
+      }
+    } else {
+      for (int i = 0; i < max; i++) {
+        dest[i] = (byte) (~sourceValue[i] & 0xFF);
+      }
+    }
+    return dest;
+  }
+
 }

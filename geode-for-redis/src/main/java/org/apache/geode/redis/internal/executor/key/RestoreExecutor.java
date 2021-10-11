@@ -25,15 +25,17 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLACE
 import java.util.List;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyExistsException;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class RestoreExecutor extends AbstractExecutor {
+public class RestoreExecutor implements CommandExecutor {
 
   private static final int TTL_INDEX = 2;
 
@@ -62,7 +64,7 @@ public class RestoreExecutor extends AbstractExecutor {
     }
 
     try {
-      context.getKeyCommands().restore(key, ttl, commandElems.get(3), options);
+      restore(context, key, ttl, commandElems.get(3), options);
     } catch (RedisKeyExistsException redisKeyExistsException) {
       return RedisResponse.busykey(ERROR_KEY_EXISTS);
     }
@@ -84,4 +86,26 @@ public class RestoreExecutor extends AbstractExecutor {
 
     return restoreOptions;
   }
+
+  private static void restore(ExecutionHandlerContext context, RedisKey key, long ttl,
+      byte[] dataBytes, RestoreOptions options) {
+    long expireAt;
+    if (ttl == 0) {
+      expireAt = AbstractRedisData.NO_EXPIRATION;
+    } else {
+      if (options.isAbsttl()) {
+        expireAt = ttl;
+      } else {
+        expireAt = System.currentTimeMillis() + ttl;
+      }
+    }
+
+    context.dataLockedExecute(key, data -> {
+      RedisData value = data.restore(dataBytes, options.isReplace());
+      ((AbstractRedisData) value).setExpirationTimestampNoDelta(expireAt);
+      context.getRegion().put(key, value);
+      return null;
+    });
+  }
+
 }

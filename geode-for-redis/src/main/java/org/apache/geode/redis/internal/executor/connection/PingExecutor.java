@@ -22,12 +22,12 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPING_RE
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class PingExecutor extends AbstractExecutor {
+public class PingExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {

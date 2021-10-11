@@ -35,7 +35,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 
 import java.util.Set;
 
-import org.apache.geode.redis.internal.executor.Executor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
@@ -81,7 +81,7 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
-import org.apache.geode.redis.internal.executor.server.CommandExecutor;
+import org.apache.geode.redis.internal.executor.server.CommandCommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
@@ -279,7 +279,7 @@ public enum RedisCommandType {
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
 
   /************* Server *****************/
-  COMMAND(new CommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
+  COMMAND(new CommandCommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
       LOADING, STALE)),
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new Parameter().min(2)
       .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)
@@ -404,26 +404,26 @@ public enum RedisCommandType {
     WRITE;
   }
 
-  private final Executor executor;
+  private final CommandExecutor commandExecutor;
   private final Parameter parameterRequirements;
   private final Parameter deferredParameterRequirements;
   private final RedisCommandSupportLevel supportLevel;
 
-  RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel) {
-    this(executor, supportLevel, new Parameter().custom(c -> {
+  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel) {
+    this(commandExecutor, supportLevel, new Parameter().custom(c -> {
     }));
   }
 
-  RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
+  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel,
       Parameter parameterRequirements) {
-    this(executor, supportLevel, parameterRequirements, new Parameter().custom(c -> {
+    this(commandExecutor, supportLevel, parameterRequirements, new Parameter().custom(c -> {
     }));
   }
 
-  RedisCommandType(Executor executor, RedisCommandSupportLevel supportLevel,
+  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel,
       Parameter parameterRequirements,
       Parameter deferredParameterRequirements) {
-    this.executor = executor;
+    this.commandExecutor = commandExecutor;
     this.supportLevel = supportLevel;
     this.parameterRequirements = parameterRequirements;
     this.deferredParameterRequirements = deferredParameterRequirements;
@@ -490,6 +490,6 @@ public enum RedisCommandType {
 
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
-    return executor.executeCommand(command, executionHandlerContext);
+    return commandExecutor.executeCommand(command, executionHandlerContext);
   }
 }

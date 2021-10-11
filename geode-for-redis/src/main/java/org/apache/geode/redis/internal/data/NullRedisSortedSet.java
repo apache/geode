@@ -40,7 +40,7 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> members,
+  public Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> members,
       double[] scores, ZAddOptions options) {
     if (options.isXX()) {
       if (options.isINCR()) {
@@ -60,12 +60,12 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  long zcount(SortedSetScoreRangeOptions rangeOptions) {
+  public long zcount(SortedSetScoreRangeOptions rangeOptions) {
     return 0;
   }
 
   @Override
-  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double increment,
+  public byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double increment,
       byte[] member) {
     RedisSortedSet sortedSet = new RedisSortedSet(singletonList(member), new double[] {increment});
 
@@ -75,69 +75,69 @@ class NullRedisSortedSet extends RedisSortedSet {
   }
 
   @Override
-  long zlexcount(SortedSetLexRangeOptions rangeOptions) {
+  public long zlexcount(SortedSetLexRangeOptions rangeOptions) {
     return 0;
   }
 
   @Override
-  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  public List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  public List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
+  public List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+  public List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+  public List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetLexRangeOptions rangeOptions) {
     return 0L;
   }
 
-  long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetRankRangeOptions rangeOptions) {
     return 0;
   }
 
   @Override
-  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetScoreRangeOptions rangeOptions) {
     return 0;
   }
 
   @Override
-  List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
+  public List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
+  public List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+  public List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return Collections.emptyList();
   }
 
   @Override
-  byte[] zscore(byte[] member) {
+  public byte[] zscore(byte[] member) {
     return null;
   }
 

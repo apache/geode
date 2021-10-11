@@ -19,13 +19,13 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class GetRangeExecutor extends AbstractExecutor {
+public class GetRangeExecutor implements CommandExecutor {
 
   private static final int startIndex = 2;
   private static final int stopIndex = 3;
@@ -46,17 +46,17 @@ public class GetRangeExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
-    RedisStringCommands stringCommands = context.getStringCommands();
     RedisKey key = command.getKey();
 
-    byte[] returnRange = stringCommands.getrange(key, start, end);
+    byte[] returnRange =
+        context.stringLockedExecute(key, true, string -> string.getrange(start, end));
 
     if (returnRange == null) {
       return RedisResponse.nil();
     } else if (returnRange.length == 0) {
       return RedisResponse.emptyString();
     } else {
-      return respondBulkStrings(returnRange);
+      return RedisResponse.bulkStrings(returnRange);
     }
   }
 }

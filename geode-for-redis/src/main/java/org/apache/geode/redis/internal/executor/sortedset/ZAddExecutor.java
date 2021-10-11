@@ -30,21 +30,25 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZAddExecutor extends AbstractExecutor {
+public class ZAddExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     ZAddExecutorState zAddExecutorState = new ZAddExecutorState();
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
     List<byte[]> commandElements = command.getProcessedCommand();
-    Iterator<byte[]> commandIterator = commandElements.iterator();
+    Region<RedisKey, RedisData> region = context.getRegion();
+    RedisKey key = command.getKey();
 
+    Iterator<byte[]> commandIterator = commandElements.iterator();
     skipCommandAndKey(commandIterator);
 
     int optionsFoundCount = findAndValidateZAddOptions(command, commandIterator, zAddExecutorState);
@@ -64,8 +68,10 @@ public class ZAddExecutor extends AbstractExecutor {
       }
       members.add(commandElements.get(i + 1));
     }
-    Object retVal = redisSortedSetCommands.zadd(command.getKey(), members, scores,
-        makeOptions(zAddExecutorState));
+    ZAddOptions options = makeOptions(zAddExecutorState);
+    Object retVal = context.zsetLockedExecute(key, false,
+        zset -> zset.zadd(region, key, members, scores, options));
+
     if (zAddExecutorState.incrFound) {
       if (retVal == null) {
         return RedisResponse.nil();

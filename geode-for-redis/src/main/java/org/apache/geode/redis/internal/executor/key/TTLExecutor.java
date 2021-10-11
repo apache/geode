@@ -17,21 +17,22 @@ package org.apache.geode.redis.internal.executor.key;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class TTLExecutor extends AbstractExecutor {
+public class TTLExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
-    long result = redisKeyCommands.pttl(key);
+    long result = pttl(context, key);
     if (result > 0 && !timeUnitMillis()) {
       // Round up because redis does
       result = MILLISECONDS.toSeconds(result + 500);
@@ -44,4 +45,17 @@ public class TTLExecutor extends AbstractExecutor {
     return false;
   }
 
+  private static long pttl(ExecutionHandlerContext context, RedisKey key) {
+    Region<RedisKey, RedisData> region = context.getRegion();
+    long result = context.dataLockedExecute(key,
+        data -> data.pttl(region, key));
+
+    if (result == -2) {
+      context.getRegionProvider().getRedisStats().incKeyspaceMisses();
+    } else {
+      context.getRegionProvider().getRedisStats().incKeyspaceHits();
+    }
+
+    return result;
+  }
 }

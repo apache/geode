@@ -22,7 +22,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 /**
  * Interface for executors of a {@link Command}.
  */
-public interface Executor {
+public interface CommandExecutor {
 
   /**
    * This method executes the command and sets the response. Any runtime errors from this execution
