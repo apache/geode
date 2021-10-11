@@ -20,14 +20,11 @@ import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule.builder;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +45,8 @@ public class DistributedExecutorServiceRuleLimitedThreadCountTest implements Ser
   private static final int PARTY_COUNT = 3;
   private static final long TIMEOUT = getTimeout().toMinutes();
   private static final TimeUnit UNIT = TimeUnit.MINUTES;
-  private static final AtomicBoolean COMPLETED = spy(new AtomicBoolean());
+  private static final AtomicBoolean CANCELED = new AtomicBoolean();
+  private static final AtomicBoolean COMPLETED = new AtomicBoolean();
   private static final AtomicReference<CyclicBarrier> BARRIER = new AtomicReference<>();
 
   private static final AtomicReference<Collection<Future<Void>>> TASKS =
@@ -61,8 +59,8 @@ public class DistributedExecutorServiceRuleLimitedThreadCountTest implements Ser
   @Before
   public void setUp() {
     Stream.of(getController(), getVM(0)).forEach(vm -> vm.invoke(() -> {
+      CANCELED.set(false);
       COMPLETED.set(false);
-      reset(COMPLETED);
       BARRIER.set(new CyclicBarrier(PARTY_COUNT, () -> COMPLETED.set(true)));
       TASKS.get().clear();
     }));
@@ -73,7 +71,13 @@ public class DistributedExecutorServiceRuleLimitedThreadCountTest implements Ser
     Stream.of(getController(), getVM(0)).forEach(vm -> vm.invoke(() -> {
       for (int i = 1; i <= PARALLEL_TASK_COUNT; i++) {
         TASKS.get().add(executorServiceRule.submit(() -> {
-          BARRIER.get().await(TIMEOUT, UNIT);
+          try {
+            BARRIER.get().await(TIMEOUT, UNIT);
+          } catch (BrokenBarrierException e) {
+            if (!CANCELED.get()) {
+              throw e;
+            }
+          }
         }));
       }
 
@@ -84,9 +88,10 @@ public class DistributedExecutorServiceRuleLimitedThreadCountTest implements Ser
         assertThat(task).isNotDone();
       }
 
-      verify(COMPLETED, never()).get();
+      assertThat(COMPLETED).isFalse();
 
       for (Future<Void> task : TASKS.get()) {
+        CANCELED.set(true);
         task.cancel(true);
       }
 
