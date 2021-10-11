@@ -238,6 +238,9 @@ dependencies {
   //jaxb is used by cluster configuration
   implementation('javax.xml.bind:jaxb-api')
 
+  //jaxb is used by cluster configuration
+  implementation('com.sun.xml.bind:jaxb-impl')
+
   //Commons lang is used in many different places in core
   implementation('org.apache.commons:commons-lang3')
 
