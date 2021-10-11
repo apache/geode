@@ -129,7 +129,8 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
   @Override
   public Object createObjectInputFilterProxy(String pattern, Collection<String> sanctionedClasses)
       throws InvocationTargetException, IllegalAccessException {
-    System.out.println("JC debug: pattern=" + pattern + " sanctionedClasses=" + sanctionedClasses);
+    // System.out.println("JC debug: pattern=" + pattern + " sanctionedClasses=" +
+    // sanctionedClasses);
     Object objectInputFilter =
         ObjectInputFilter_Config_createFilter.invoke(ObjectInputFilter_Config, pattern);
 
@@ -156,15 +157,15 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
       Object objectInputFilter_filterInfo = args[0];
       Class<?> serialClass =
           (Class<?>) ObjectInputFilter_FilterInfo_serialClass.invoke(objectInputFilter_filterInfo);
-      System.out.println("JC debug: serialClass=" + serialClass);
-      new Throwable().printStackTrace();
+      // System.out.println("JC debug: serialClass=" + serialClass);
+      // new Throwable().printStackTrace();
       if (serialClass == null) { // no class to check, so nothing to accept-list
         return ObjectInputFilter_checkInput.invoke(objectInputFilter, objectInputFilter_filterInfo);
       }
 
       // check sanctionedClasses to determine if the name of the class is ALLOWED
       String serialClassName = serialClass.getName();
-      System.out.println("JC debug: serialClassName=" + serialClassName);
+      // System.out.println("JC debug: serialClassName=" + serialClassName);
       if (serialClass.isArray()) {
         serialClassName = serialClass.getComponentType().getName();
       }
@@ -179,7 +180,7 @@ class ReflectionObjectInputFilterApi implements ObjectInputFilterApi {
         logger.fatal("Serialization filter is rejecting class {}", serialClassName,
             new InvalidClassException(serialClassName));
       }
-      System.out.println("JC debug: objectInputFilter_Status=" + objectInputFilter_Status);
+      // System.out.println("JC debug: objectInputFilter_Status=" + objectInputFilter_Status);
       return objectInputFilter_Status;
     };
 
