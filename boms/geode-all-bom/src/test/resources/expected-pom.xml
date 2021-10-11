@@ -393,11 +393,6 @@
         <version>3.3.0</version>
       </dependency>
       <dependency>
-        <groupId>org.jctools</groupId>
-        <artifactId>jctools-core</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
         <version>3.6.14.Final</version>
@@ -809,12 +804,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-for-redis</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -846,6 +835,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-for-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>

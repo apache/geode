@@ -29,18 +29,19 @@ dependencies {
     exclude module: 'geode-modules'
   }
   api(project(':geode-core'))
+
+
   implementation(project(':geode-common'))
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
+
 
   integrationTestImplementation(project(':extensions:geode-modules'))
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-logging'))
-
-  implementation('javax.servlet:javax.servlet-api')
-  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
-  implementation('org.slf4j:slf4j-api')
-
   integrationTestImplementation('com.mockrunner:mockrunner-servlet') {
     exclude group: 'jboss'
     exclude group: 'xerces'
@@ -51,16 +52,15 @@ dependencies {
   integrationTestImplementation('org.apache.tomcat:jasper:' + DependencyConstraints.get('tomcat6.version'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('org.eclipse.jetty:jetty-http:' + DependencyConstraints.get('jetty.version') + ':tests')
-  integrationTestImplementation('org.eclipse.jetty:jetty-server')
+  integrationTestImplementation('org.eclipse.jetty:jetty-server:' + DependencyConstraints.get('jetty.version'))
   integrationTestImplementation('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version') + ':tests')
   integrationTestImplementation('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version'))
-  integrationTestImplementation('org.eclipse.jetty:jetty-util')
+  integrationTestImplementation('org.eclipse.jetty:jetty-util:' + DependencyConstraints.get('jetty.version'))
   integrationTestImplementation('org.httpunit:httpunit') {
     exclude group: 'javax.servlet'
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
-  integrationTestImplementation('org.slf4j:slf4j-api')
 
   integrationTestRuntimeOnly('xerces:xercesImpl')
 }
