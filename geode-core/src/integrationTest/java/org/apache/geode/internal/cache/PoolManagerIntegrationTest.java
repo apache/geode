@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -59,16 +58,13 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 
-/*
- * A java.net.ConnectException is expected to be thrown by these tests. It is not a problem.
- */
 public class PoolManagerIntegrationTest {
 
   private PoolImpl pool;
   private PoolManagerImpl poolManager;
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();;
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @BeforeClass
   public static void classSetup() {
@@ -84,41 +80,8 @@ public class PoolManagerIntegrationTest {
     assertThat(poolManager.getMap()).isEmpty();
   }
 
-  @After
-  public void tearDown() {
-
-  }
-
-  private InternalDistributedSystem setupFakeSystem(boolean mulitUserAuthentication) {
-    PoolManagerImpl poolManagerImpl = poolManager;
-    InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
-    InternalDistributedSystem.addTestSystem(mockSystem);
-    InternalDistributedMember mockMember = mock(InternalDistributedMember.class);
-    doReturn(mockMember).when(mockSystem).getDistributedMember();
-
-    PoolFactory poolFactory = mock(PoolFactory.class);
-    when(poolManagerImpl.createFactory()).thenReturn(poolFactory);
-    when(poolFactory.create(any())).thenReturn(pool);
-
-    assertThat(poolManagerImpl.createFactory().create("test")).isEqualTo(pool);
-    doReturn(mulitUserAuthentication).when(pool).getMultiuserAuthentication();
-    doReturn(null).when(pool).execute(any());
-    PoolManagerImpl.setImpl(poolManagerImpl);
-    Map<String, Pool> map = new HashMap<>();
-    map.put("test_pool", pool);
-    when(poolManagerImpl.getMap()).thenReturn(map);
-    return mockSystem;
-  }
-
-  private DataSerializer setupFakeEventAndDataSerializer(InternalDistributedSystem mockSystem) {
-    DataSerializer dataSerializer = mock(DataSerializer.class);
-    EventID eventID = new EventID(mockSystem);
-    doReturn(eventID).when(dataSerializer).getEventId();
-    return dataSerializer;
-  }
-
   @Test
-  public void test_ThatDataSerializerSynchronizationMessagesAreNotSent() {
+  public void whenMultiUserAuthenticationIsEnabledDataSerializerSynchronizationMessagesAreNotSent() {
     InternalDistributedSystem mockSystem = setupFakeSystem(true);
     DataSerializer dataSerializer = setupFakeEventAndDataSerializer(mockSystem);
     PoolManagerImpl.allPoolsRegisterDataSerializers(dataSerializer);
@@ -127,12 +90,36 @@ public class PoolManagerIntegrationTest {
   }
 
   @Test
-  public void test_ThatDataSerializerSynchronizationMessagesAreSent() {
+  public void whenMultiUserAuthenticationIsDisabledDataSerializerSynchronizationMessagesAreSent() {
     InternalDistributedSystem mockSystem = setupFakeSystem(false);
     DataSerializer dataSerializer = setupFakeEventAndDataSerializer(mockSystem);
     PoolManagerImpl.allPoolsRegisterDataSerializers(dataSerializer);
     verify(pool, times(1))
         .execute(any(RegisterDataSerializersOp.RegisterDataSerializersOpImpl.class));
+  }
+
+  @Test
+  public void whenUsingMultiUserAuthModeDataSerializerRecoveryTaskNotStarted()
+      throws UnknownHostException {
+
+    PoolImpl poolImpl = setupPool(true);
+    EndpointManagerImpl endpointManager = (EndpointManagerImpl) poolImpl.getEndpointManager();
+    Set<EndpointManager.EndpointListener> listeners = endpointManager.getListeners();
+
+    assertThat(listeners).allSatisfy(
+        listener -> assertThat(listener).isNotInstanceOf(DataSerializerRecoveryListener.class));
+  }
+
+  @Test
+  public void whenNotUsingMultiUserAuthModeDataSerializerRecoveryTaskIsStarted()
+      throws UnknownHostException {
+
+    PoolImpl poolImpl = setupPool(false);
+    EndpointManagerImpl endpointManager = (EndpointManagerImpl) poolImpl.getEndpointManager();
+    Set<EndpointManager.EndpointListener> listeners = endpointManager.getListeners();
+
+    assertThat(listeners).anySatisfy(
+        listener -> assertThat(listener).isInstanceOf(DataSerializerRecoveryListener.class));
   }
 
   public static class TestSocketFactory implements SocketFactory, Declarable2 {
@@ -150,6 +137,34 @@ public class PoolManagerIntegrationTest {
     public void initialize(Cache cache, Properties properties) {
 
     }
+  }
+
+  private InternalDistributedSystem setupFakeSystem(boolean multiUserAuthentication) {
+    PoolManagerImpl poolManagerImpl = poolManager;
+    InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+    InternalDistributedSystem.addTestSystem(mockSystem);
+    InternalDistributedMember mockMember = mock(InternalDistributedMember.class);
+    doReturn(mockMember).when(mockSystem).getDistributedMember();
+
+    PoolFactory poolFactory = mock(PoolFactory.class);
+    when(poolManagerImpl.createFactory()).thenReturn(poolFactory);
+    when(poolFactory.create(any())).thenReturn(pool);
+
+    assertThat(poolManagerImpl.createFactory().create("test")).isEqualTo(pool);
+    doReturn(multiUserAuthentication).when(pool).getMultiuserAuthentication();
+    doReturn(null).when(pool).execute(any());
+    PoolManagerImpl.setImpl(poolManagerImpl);
+    Map<String, Pool> map = new HashMap<>();
+    map.put("test_pool", pool);
+    when(poolManagerImpl.getMap()).thenReturn(map);
+    return mockSystem;
+  }
+
+  private DataSerializer setupFakeEventAndDataSerializer(InternalDistributedSystem mockSystem) {
+    DataSerializer dataSerializer = mock(DataSerializer.class);
+    EventID eventID = new EventID(mockSystem);
+    doReturn(eventID).when(dataSerializer).getEventId();
+    return dataSerializer;
   }
 
   private PoolImpl setupPool(boolean multiUserAuthEnabled) throws UnknownHostException {
@@ -175,42 +190,6 @@ public class PoolManagerIntegrationTest {
     poolFactory.setSocketFactory(new TestSocketFactory());
     poolFactory.addLocator("localhost", clusterStartupRule.getMember(0).getPort());
     return (PoolImpl) poolFactory.create("test_pool");
-  }
-
-
-  @Test
-  public void test_ThatWhenUsingMultiUserAuthModeDataSerializerRecoveryTaskNotStarted()
-      throws UnknownHostException {
-
-    PoolImpl poolImpl = setupPool(true);
-    EndpointManagerImpl endpointManager = (EndpointManagerImpl) poolImpl.getEndpointManager();
-    Set<EndpointManager.EndpointListener> listeners = endpointManager.getListeners();
-    boolean foundDataStoreRecoveryListener = false;
-    for (EndpointManager.EndpointListener endpointListener : listeners) {
-      if (endpointListener instanceof DataSerializerRecoveryListener) {
-        foundDataStoreRecoveryListener = true;
-        break;
-      }
-    }
-    assertThat(foundDataStoreRecoveryListener).isFalse();
-  }
-
-
-  @Test
-  public void test_ThatWhenUsingMultiUserAuthModeDataSerializerRecoveryTaskIsStarted()
-      throws UnknownHostException {
-
-    PoolImpl poolImpl = setupPool(false);
-    EndpointManagerImpl endpointManager = (EndpointManagerImpl) poolImpl.getEndpointManager();
-    Set<EndpointManager.EndpointListener> listeners = endpointManager.getListeners();
-    boolean foundDataStoreRecoveryListener = false;
-    for (EndpointManager.EndpointListener endpointListener : listeners) {
-      if (endpointListener instanceof DataSerializerRecoveryListener) {
-        foundDataStoreRecoveryListener = true;
-        break;
-      }
-    }
-    assertThat(foundDataStoreRecoveryListener).isTrue();
   }
 
 }
