@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal.netty;
 
 
 
-import static org.apache.geode.redis.internal.RedisConstants.CONNECT_TIMEOUT_MILLIS;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
+import static org.apache.geode.redis.internal.RedisConstants.CONNECT_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.data.RedisProperties.getTimeoutProperty;
@@ -91,7 +91,7 @@ public class NettyRedisServer {
   private final int serverPort;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
-  private final int connectTimeoutMillis;
+  private final int connectTimeoutSeconds;
   private final int writeTimeoutSeconds;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
@@ -106,8 +106,8 @@ public class NettyRedisServer {
     this.redisStats = redisStats;
     this.member = member;
     this.securityService = securityService;
-    this.connectTimeoutMillis =
-        getTimeoutProperty(CONNECT_TIMEOUT_MILLIS, DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS, 1);
+    this.connectTimeoutSeconds =
+        getTimeoutProperty(CONNECT_TIMEOUT_SECONDS, DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS, 1);
     this.writeTimeoutSeconds =
         getTimeoutProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
 
@@ -134,7 +134,7 @@ public class NettyRedisServer {
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.SO_RCVBUF, getBufferSize())
             .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutMillis)
+            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutSeconds * 1000)
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     return createBoundChannel(serverBootstrap, port);
@@ -160,8 +160,8 @@ public class NettyRedisServer {
     return serverPort;
   }
 
-  public int getConnectTimeoutMillis() {
-    return connectTimeoutMillis;
+  public int getConnectTimeoutSeconds() {
+    return connectTimeoutSeconds;
   }
 
   public int getWriteTimeoutSeconds() {

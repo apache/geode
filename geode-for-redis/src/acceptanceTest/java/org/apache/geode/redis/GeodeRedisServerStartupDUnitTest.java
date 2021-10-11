@@ -19,9 +19,8 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INITIAL_DELAY_MINUTES;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_INTERVAL_MINUTES;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -176,7 +175,7 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_BIND_ADDRESS, "localhost"));
 
     assertThat(getRedisConnectTimeoutMillis(server))
-        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
+        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS);
   }
 
   @Test
@@ -185,10 +184,10 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "nonInteger"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_SECONDS, "nonInteger"));
 
     assertThat(getRedisConnectTimeoutMillis(server))
-        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
+        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS);
   }
 
   @Test
@@ -197,10 +196,10 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "-42"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_SECONDS, "-42"));
 
     assertThat(getRedisConnectTimeoutMillis(server))
-        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
+        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS);
   }
 
   @Test
@@ -209,17 +208,17 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_PORT, "0")
         .withProperty(REDIS_ENABLED, "true")
         .withProperty(REDIS_BIND_ADDRESS, "localhost")
-        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "0"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_SECONDS, "0"));
 
     assertThat(getRedisConnectTimeoutMillis(server))
-        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_MILLIS);
+        .isEqualTo(DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS);
   }
 
   @Test
   public void shouldUseSpecifiedConnectTimeoutMillis_whenSystemPropertySet() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_MILLIS, "4242"));
+        .withSystemProperty(RedisConstants.CONNECT_TIMEOUT_SECONDS, "4242"));
 
     assertThat(getRedisConnectTimeoutMillis(server)).isEqualTo(4242);
   }
@@ -278,34 +277,34 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_ENABLED, "true"));
 
     assertThat(getRedisInitialDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseDefaultValue_whenInitialDelaySetToNonIntegerValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "nonInteger"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "nonInteger"));
 
     assertThat(getRedisInitialDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseDefaultValue_whenInitialDelaySetToNegativeValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "-42"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "-42"));
 
     assertThat(getRedisInitialDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INITIAL_DELAY_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseSpecifiedInitialDelay_whenSetToValidInteger() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INITIAL_DELAY_MINUTES, "42"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "42"));
 
     assertThat(getRedisInitialDelayMinutes(server)).isEqualTo(42);
   }
@@ -316,44 +315,44 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_ENABLED, "true"));
 
     assertThat(getRedisDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseDefaultValue_whenDelaySetToNonIntegerValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "nonInteger"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "nonInteger"));
 
     assertThat(getRedisDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseDefaultValue_whenDelaySetToNegativeValue() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "-42"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "-42"));
 
     assertThat(getRedisDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseDefaultValue_whenWhenDelaySetToZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "0"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "0"));
 
     assertThat(getRedisDelayMinutes(server))
-        .isEqualTo(DEFAULT_REDIS_INTERVAL_MINUTES);
+        .isEqualTo(DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS);
   }
 
   @Test
   public void shouldUseSpecifiedDelay_whenSetToValidInteger() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_ENABLED, "true")
-        .withSystemProperty(RedisConstants.INTERVAL_MINUTES, "42"));
+        .withSystemProperty(RedisConstants.EXPIRATION_INTERVAL_SECONDS, "42"));
 
     assertThat(getRedisDelayMinutes(server)).isEqualTo(42);
   }

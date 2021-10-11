@@ -133,7 +133,7 @@ public class GeodeRedisServer {
   }
 
   public int getConnectTimeoutMillis() {
-    return nettyRedisServer.getConnectTimeoutMillis();
+    return nettyRedisServer.getConnectTimeoutSeconds();
   }
 
   public int getWriteTimeoutSeconds() {
