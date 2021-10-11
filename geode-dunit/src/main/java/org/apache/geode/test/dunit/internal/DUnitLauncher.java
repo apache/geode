@@ -178,6 +178,17 @@ public class DUnitLauncher {
   }
 
   /**
+   * Launch DUnit if not already launched.
+   *
+   * @param vmCount specified number of VMs
+   * @param launchLocator determines if default dunit locator should be launched
+   */
+  public static void launchIfNeeded(int vmCount, boolean launchLocator) {
+    NUM_VMS = vmCount;
+    launchIfNeeded(launchLocator);
+  }
+
+  /**
    * Test it see if the eclise dunit environment is launched.
    */
   public static boolean isLaunched() {
