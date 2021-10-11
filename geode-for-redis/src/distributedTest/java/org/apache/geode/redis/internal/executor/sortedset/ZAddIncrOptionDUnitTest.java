@@ -148,7 +148,7 @@ public class ZAddIncrOptionDUnitTest {
   }
 
   @Test
-  @Ignore("Fails due to GEODE-9310 and/or GEODE-9311")
+  @Ignore("tracked by GEODE-9671")
   public void zAddWithIncrOptionCanIncrementScoresDuringPrimaryIsCrashed() throws Exception {
     AtomicBoolean hitJedisClusterIssue2347 = new AtomicBoolean(false);
     doZAddIncrForAllMembers(increment1, increment1);

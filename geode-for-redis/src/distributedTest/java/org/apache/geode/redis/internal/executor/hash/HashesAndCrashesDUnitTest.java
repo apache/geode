@@ -47,7 +47,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("GEODE-9378")
+@Ignore("tracked by GEODE-9692")
 public class HashesAndCrashesDUnitTest {
 
   private static final Logger logger = LogService.getLogger();

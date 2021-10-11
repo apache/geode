@@ -162,8 +162,8 @@ public class ZRemDUnitTest {
     assertThat(removed).isEqualTo(map.size());
   }
 
+  @Ignore("tracked by GEODE-9691")
   @Test
-  @Ignore("Fails due to GEODE-9310")
   public void zRemCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed() throws Exception {
     int mapSize = 300;
     Map<String, Double> memberScoreMap = makeMemberScoreMap(mapSize);

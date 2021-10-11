@@ -23,13 +23,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("GEODE-9437")
 public class RedisSessionDUnitTest extends SessionDUnitTest {
 
   @Rule
