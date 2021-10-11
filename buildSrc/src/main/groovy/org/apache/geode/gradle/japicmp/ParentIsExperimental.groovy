@@ -30,7 +30,7 @@ class ParentIsExperimental extends AbstractRecordingSeenMembers {
   @Override
   public Violation maybeAddViolation(final JApiCompatibility member) {
     boolean isExperimental = true
-    if (!member.isBinaryCompatible()) {
+    if (!member.isBinaryCompatible() || !member.isSourceCompatible()) {
       if (member instanceof JApiMethod || member instanceof JApiConstructor) {
         isExperimental = isClassExperimental(member.jApiClass)
       } else if (member instanceof JApiClass) {

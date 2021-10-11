@@ -17,19 +17,29 @@
 
 package org.apache.geode.gradle.japicmp
 
+import groovy.json.JsonSlurper
 import japicmp.model.JApiCompatibility
 import me.champeau.gradle.japicmp.report.Violation
 import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
-import me.champeau.gradle.japicmp.report.Severity
 
-class AllowMajorBreakingChanges extends AbstractRecordingSeenMembers {
+class GeodeSpiRegressionRule extends AbstractRecordingSeenMembers {
+  private final Map<String, String> acceptedRegressions
+
+  public GeodeSpiRegressionRule() {
+    def jsonSlurper = new JsonSlurper()
+    acceptedRegressions = jsonSlurper.parse(getClass().getResource('/japicmp_exceptions.json').openStream()) as Map
+  }
+
   @Override
   Violation maybeAddViolation(final JApiCompatibility member) {
-    if (!member.isBinaryCompatible() || !member.isSourceCompatible()) {
-      return Violation.notBinaryCompatible(member, Severity.warning)
-    } else {
-      return null
+    if (!member.isSourceCompatible()) {
+      def exception = acceptedRegressions[Violation.describe(member)]
+      if (exception) {
+        Violation.accept(member, exception)
+      } else {
+        println("Correct, or add exception for: [${Violation.describe(member)}]")
+        Violation.error(member, "Is not source compatible")
+      }
     }
   }
 }
-

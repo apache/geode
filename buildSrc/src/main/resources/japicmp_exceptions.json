@@ -1,3 +1,5 @@
 {
-  "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management"
+  "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management",
+  "Class org.apache.geode.cache.wan.GatewaySenderFactory": "This is known-broken and a fix is being explored",
+  "Method org.apache.geode.cache.wan.GatewaySenderFactory.setRetriesToGetTransactionEventsFromQueue(int)": "This is known-broken and a fix is being explored"
 }
