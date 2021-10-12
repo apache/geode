@@ -181,8 +181,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
    *
    * <p>
    * Syntax is documented by the javadocs of {@code ObjectInputFilter.Config.createFilter}. In
-   * Java 8, {@code ObjectInputFilter} is in package {@code sun.misc}. In Java 11, it's in package
-   * {@code java.io}.
+   * Java 8, {@code ObjectInputFilter} is in package {@code sun.misc}. In Java 9 and above, it's
+   * in package {@code java.io}.
    */
   private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
       // Java
