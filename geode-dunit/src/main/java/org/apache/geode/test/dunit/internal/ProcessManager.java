@@ -280,9 +280,12 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
     cmds.add("-DAvailablePort.lowerBound=" + AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
     cmds.add("-DAvailablePort.upperBound=" + AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
-    cmds.add(String.format("-D%s=%d-%d", GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE_NAME,
-        AvailablePort.MEMBERSHIP_PORTS_LOWER_BOUND,
-        AvailablePort.MEMBERSHIP_PORTS_UPPER_BOUND));
+    String membershipPortRange = System.getProperty(GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE_NAME);
+    if (membershipPortRange != null) {
+      cmds.add(
+          String.format("-D%s=%s", GEMFIRE_PREFIX + MEMBERSHIP_PORT_RANGE_NAME,
+              membershipPortRange));
+    }
     if (vmNum >= 0) { // let the locator print a banner
       if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
         cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");

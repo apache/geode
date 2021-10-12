@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import static java.util.Arrays.stream;
 import static java.util.Comparator.naturalOrder;
-import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
@@ -38,20 +37,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import junitparams.Parameters;
-import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.membership.utils.AvailablePort;
-import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(GeodeParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
 
   private Set<ServerSocket> serverSockets;
@@ -78,63 +72,47 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUsablePorts(boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsUsablePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     stream(results).forEach(port -> assertThatPort(port)
         .isUsable());
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUniquePorts(boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsUniquePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThat(results)
         .doesNotHaveDuplicates();
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts(
-      boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThat(results)
         .isSortedAccordingTo(naturalOrder());
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsConsecutivePorts(
-      boolean useMembershipPortRange) {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+  public void getRandomAvailableTCPPortRange_returnsConsecutivePorts() {
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     assertThatSequence(results)
         .isConsecutive();
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsPortsInRange(boolean useMembershipPortRange) {
-    int lower =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
-    int upper =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+  public void getRandomAvailableTCPPortRange_returnsPortsInRange() {
 
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+    int[] results = getRandomAvailableTCPPortRange(10);
 
     stream(results).forEach(port ->
 
     assertThat(port)
-        .isGreaterThanOrEqualTo(lower)
-        .isLessThanOrEqualTo(upper));
+        .isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
+        .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND));
   }
 
   @Test
@@ -154,13 +132,11 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
-  @TestCaseName("{method}(useMembershipPortRange={0})")
-  public void getRandomAvailableTCPPortRange_returnsUniqueRanges(boolean useMembershipPortRange) {
+  public void getRandomAvailableTCPPortRange_returnsUniqueRanges() {
     Collection<Integer> previousPorts = new HashSet<>();
     for (int i = 0; i < 3; ++i) {
 
-      int[] results = getRandomAvailableTCPPortRange(5, useMembershipPortRange);
+      int[] results = getRandomAvailableTCPPortRange(5);
 
       Collection<Integer> ports = toSet(results);
 
