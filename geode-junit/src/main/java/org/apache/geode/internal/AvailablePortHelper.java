@@ -17,8 +17,6 @@ package org.apache.geode.internal;
 import static java.util.stream.Collectors.toList;
 import static org.apache.geode.internal.membership.utils.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
 import static org.apache.geode.internal.membership.utils.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.membership.utils.AvailablePort.MEMBERSHIP_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.membership.utils.AvailablePort.MEMBERSHIP_PORTS_UPPER_BOUND;
 import static org.apache.geode.internal.membership.utils.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.membership.utils.AvailablePort.SOCKET;
 import static org.apache.geode.internal.membership.utils.AvailablePort.getAddress;
@@ -38,7 +36,6 @@ import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
  * allocate ports in a round-robin fashion.
  */
 public class AvailablePortHelper {
-  private final AtomicInteger nextMembershipPort;
   private final AtomicInteger nextAvailablePort;
 
   // Singleton object is only used to track the current ports
@@ -48,8 +45,6 @@ public class AvailablePortHelper {
     Random rand = rand();
     nextAvailablePort =
         randomInRange(rand, AVAILABLE_PORTS_LOWER_BOUND, AVAILABLE_PORTS_UPPER_BOUND);
-    nextMembershipPort =
-        randomInRange(rand, MEMBERSHIP_PORTS_LOWER_BOUND, MEMBERSHIP_PORTS_UPPER_BOUND);
   }
 
   /**
@@ -78,22 +73,16 @@ public class AvailablePortHelper {
   /**
    * Returns the requested number of consecutive available tcp ports from the specified range.
    */
-  public static int[] getRandomAvailableTCPPortRange(final int count,
-      final boolean useMembershipPortRange) {
-    AtomicInteger targetRange =
-        useMembershipPortRange ? singleton.nextMembershipPort : singleton.nextAvailablePort;
-    int targetLowerBound =
-        useMembershipPortRange ? MEMBERSHIP_PORTS_LOWER_BOUND : AVAILABLE_PORTS_LOWER_BOUND;
-    int targetUpperBound =
-        useMembershipPortRange ? MEMBERSHIP_PORTS_UPPER_BOUND : AVAILABLE_PORTS_UPPER_BOUND;
+  public static int[] getRandomAvailableTCPPortRange(final int count) {
+    AtomicInteger targetRange = singleton.nextAvailablePort;
 
     int[] ports = new int[count];
     boolean needMorePorts = true;
 
     while (needMorePorts) {
       int base = targetRange.getAndAdd(count);
-      if (base + count > targetUpperBound) {
-        targetRange.set(targetLowerBound);
+      if (base + count > AVAILABLE_PORTS_UPPER_BOUND) {
+        targetRange.set(AVAILABLE_PORTS_LOWER_BOUND);
         continue;
       }
 
@@ -140,18 +129,15 @@ public class AvailablePortHelper {
     // range, JVM 1 starts halfway through, JVM 2 starts 1/4 of the way through, then further
     // ranges are 3/4, 1/8, 3/8, 5/8, 7/8, 1/16, etc.
 
-    singleton.nextMembershipPort.set(MEMBERSHIP_PORTS_LOWER_BOUND);
     singleton.nextAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
     if (jvmIndex == 0) {
       return;
     }
 
-    int membershipRange = MEMBERSHIP_PORTS_UPPER_BOUND - MEMBERSHIP_PORTS_LOWER_BOUND;
     int availableRange = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
     int numChunks = Integer.highestOneBit(jvmIndex) << 1;
     int chunkNumber = 2 * (jvmIndex - Integer.highestOneBit(jvmIndex)) + 1;
 
-    singleton.nextMembershipPort.addAndGet(chunkNumber * membershipRange / numChunks);
     singleton.nextAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
   }
 
