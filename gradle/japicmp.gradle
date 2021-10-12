@@ -22,6 +22,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.apache.geode.gradle.japicmp.AllowMajorBreakingChanges
 import org.apache.geode.gradle.japicmp.ParentIsExperimental
 import org.apache.geode.gradle.japicmp.GeodeApiRegressionRule
+import org.apache.geode.gradle.japicmp.GeodeSpiRegressionRule
 
 
 def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
@@ -73,21 +74,22 @@ tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
   packageIncludes = ['org.apache.geode.*']
   annotationExcludes = ['@org.apache.geode.annotations.Experimental']
 
- richReport {
-   title = "Geode API Compatibility Report"
-   description = "Comparing current ${version} against downloaded v${newest}."
-   reportName = "rich-report-${reportFileName}.html"
-   outputs.files {
-     reportName
-   }
+  richReport {
+    title = "Geode API Compatibility Report"
+    description = "Comparing current ${version} against downloaded v${newest}."
+    reportName = "rich-report-${reportFileName}.html"
+    outputs.files {
+      reportName
+    }
 
-   if (allowMajorBreaking) {
-     addRule(AllowMajorBreakingChanges)
-   } else {
-     addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
-     addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
-     addRule(GeodeApiRegressionRule)
-   }
-   addDefaultRules = true
- }
+    if (allowMajorBreaking) {
+      addRule(AllowMajorBreakingChanges)
+    } else {
+      addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
+      addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
+      addRule(GeodeApiRegressionRule)
+      addRule(GeodeSpiRegressionRule)
+    }
+    addDefaultRules = true
+  }
 }

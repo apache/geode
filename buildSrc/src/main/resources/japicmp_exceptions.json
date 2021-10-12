@@ -1,8 +1,3 @@
 {
-  "Class org.apache.geode.net.SSLParameterExtension": "Old implementation exposed an internal class",
-  "Method org.apache.geode.net.SSLParameterExtension.init(org.apache.geode.distributed.internal.DistributionConfig)": "Old implementation exposed an internal class",
-  "Class org.apache.geode.cache.execute.FunctionContext": "Interface not intended for client applications",
-  "Method org.apache.geode.cache.execute.FunctionContext.getPrincipal()": "Interface not intended for client applications",
-  "Class org.apache.geode.distributed.ConfigurationProperties" : "Geode API compatible with Redis is experimental and is subject to change in future releases",
-  "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management"
+  "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management",
 }
