@@ -290,7 +290,7 @@ jobs:
   - do:
     - in_parallel:
       - get: alpine-tools-image
-{%- if test.PLATFORM == "linux" and (java_test_version.name.endswith("jdk11") or test.name == "stress-new" or test.name == "distributed") %}
+{%- if test.PLATFORM == "linux" and (java_test_version.name.endswith("jdk11") or test.name == "unit" or test.name == "stress-new" or test.name == "distributed") %}
       - get: geode
 {%- elif test.PLATFORM == "linux" %}
       - get: geode
