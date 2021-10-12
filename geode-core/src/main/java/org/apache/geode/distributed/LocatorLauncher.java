@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
@@ -732,6 +733,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
         SerializableObjectConfig serializableObjectConfig =
             new DistributedSerializableObjectConfig(getDistributedSystemProperties());
+        this.distributedSystemProperties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
         serializableObjectConfig.setValidateSerializableObjects(true);
 
         String filterPattern = new SanctionedSerializablesFilterPattern()

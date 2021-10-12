@@ -16,7 +16,11 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +54,12 @@ public class LocatorLauncherTest {
 
   @Test // TODO:KIRK: test that LocatorLauncher sets filter on Java 8
   public void configuresJdkSerialFilter() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
     LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().build();
+    locatorLauncher.start();
+    assertThat(
+        locatorLauncher.getDistributedSystemProperties().getProperty(VALIDATE_SERIALIZABLE_OBJECTS))
+            .isEqualTo("true");
 
     // GeodePropertiesFilterConfigurationuration.configureJdkSerialFilter(new Properties());
     //
