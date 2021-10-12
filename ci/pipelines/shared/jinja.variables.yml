@@ -105,7 +105,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: test
   MAX_IN_FLIGHT: 1
-  ONLY_JDK: 8
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
   PLATFORM: linux
@@ -243,6 +242,7 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: test
   MAX_IN_FLIGHT: 1
+  ONLY_JDK: 11
   PARALLEL_DUNIT: 'false'
   PLATFORM: windows
   RAM: '10'
