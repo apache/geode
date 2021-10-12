@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
@@ -53,7 +54,7 @@ public class PoolManagerImpl {
   private static final Logger logger = LogService.getLogger();
 
   @MakeNotStatic
-  private static final PoolManagerImpl impl = new PoolManagerImpl(true);
+  private static PoolManagerImpl impl = new PoolManagerImpl(true);
 
   public static PoolManagerImpl getPMI() {
     PoolManagerImpl result = CacheCreation.getCurrentPoolManager();
@@ -61,6 +62,11 @@ public class PoolManagerImpl {
       result = impl;
     }
     return result;
+  }
+
+  @VisibleForTesting
+  public static void setImpl(PoolManagerImpl poolManager) {
+    impl = poolManager;
   }
 
   private volatile Map<String, Pool> pools = Collections.emptyMap();
@@ -261,7 +267,9 @@ public class PoolManagerImpl {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute((ExecutablePool) pool, dataSerializers, eventId);
+          if (!pool.getMultiuserAuthentication()) {
+            RegisterDataSerializersOp.execute((ExecutablePool) pool, dataSerializers, eventId);
+          }
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -278,7 +286,9 @@ public class PoolManagerImpl {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute((ExecutablePool) pool, holders, eventId);
+          if (!pool.getMultiuserAuthentication()) {
+            RegisterDataSerializersOp.execute((ExecutablePool) pool, holders, eventId);
+          }
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);

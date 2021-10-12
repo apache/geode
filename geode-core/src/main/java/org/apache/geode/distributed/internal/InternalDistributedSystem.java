@@ -2085,6 +2085,11 @@ public class InternalDistributedSystem extends DistributedSystem
     }
   }
 
+  @VisibleForTesting
+  public static void addTestSystem(InternalDistributedSystem internalDistributedSystem) {
+    DistributedSystem.addSystem(internalDistributedSystem);
+  }
+
   /**
    * Makes note of a <code>DisconnectListener</code> whose <code>onDisconnect</code> method will be
    * invoked when this connection to the distributed system is disconnected.

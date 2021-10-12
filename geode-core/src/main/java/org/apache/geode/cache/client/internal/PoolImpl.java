@@ -345,7 +345,11 @@ public class PoolImpl implements InternalPool {
     source.start(this);
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));
-    endpointManager.addListener(new DataSerializerRecoveryListener(backgroundProcessor, this));
+
+    if (!multiuserSecureModeEnabled) {
+      endpointManager.addListener(new DataSerializerRecoveryListener(backgroundProcessor, this));
+    }
+
     if (Boolean.getBoolean(ON_DISCONNECT_CLEAR_PDXTYPEIDS)) {
       endpointManager.addListener(new PdxRegistryRecoveryListener(this));
     }

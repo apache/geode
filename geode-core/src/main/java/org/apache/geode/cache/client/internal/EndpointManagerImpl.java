@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedMember;
@@ -179,6 +180,11 @@ public class EndpointManagerImpl implements EndpointManager {
   @Override
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);
+  }
+
+  @VisibleForTesting
+  public Set<EndpointListener> getListeners() {
+    return this.listener.endpointListeners;
   }
 
   private synchronized ConnectionStats getStats(ServerLocationAndMemberId location) {
