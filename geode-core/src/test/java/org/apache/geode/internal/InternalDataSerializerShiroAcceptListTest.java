@@ -38,6 +38,7 @@ import org.apache.shiro.ldap.UnsupportedAuthenticationMechanismException;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.session.StoppedSessionException;
 import org.apache.shiro.subject.ExecutionException;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,6 +57,11 @@ public class InternalDataSerializerShiroAcceptListTest {
     assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
         isClassAvailable("sun.misc.ObjectInputFilter") ||
             isClassAvailable("java.io.ObjectInputFilter"));
+  }
+
+  @After
+  public void clearSerializationFilter() {
+    InternalDataSerializer.clearSerializationFilter();
   }
 
   @Test

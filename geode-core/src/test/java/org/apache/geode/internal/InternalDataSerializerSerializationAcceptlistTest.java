@@ -29,7 +29,7 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,10 +62,9 @@ public class InternalDataSerializerSerializationAcceptlistTest {
     properties = new Properties();
   }
 
-  @AfterClass
-  public static void clearDataSerializerFilter() {
-    InternalDataSerializer
-        .initializeSerializationFilter(new DistributionConfigImpl(new Properties()), emptySet());
+  @After
+  public void clearSerializationFilter() {
+    InternalDataSerializer.clearSerializationFilter();
   }
 
   @Test
