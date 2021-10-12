@@ -464,18 +464,20 @@ public class PartitionedRegionTest {
 
     InternalDistributedMember imageTarget = mock(InternalDistributedMember.class);
     InternalRegionFactory factory = mock(InternalRegionFactory.class);
-    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(factory);
     DistributedRegion partitionedRegionRoot = mock(DistributedRegion.class);
-    when(factory.create(PR_ROOT_REGION_NAME)).thenReturn(partitionedRegionRoot);
     CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
+    PartitionedRegion.RegionLock regionLock = mock(PartitionedRegion.RegionLock.class);
+
+    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(factory);
+    when(factory.create(PR_ROOT_REGION_NAME)).thenReturn(partitionedRegionRoot);
     doNothing().when(cda).addMembershipListener(any());
     when(partitionedRegionRoot.getDistributionAdvisor()).thenReturn(cda);
-    PartitionedRegion.RegionLock regionLock = mock(PartitionedRegion.RegionLock.class);
     doReturn(regionLock).when(spyPartitionedRegion).getRegionLock();
     doThrow(new LockServiceDestroyedException("Lock Service is destroyed in test")).when(regionLock)
         .lock();
     doThrow(new DistributedSystemDisconnectedException("test")).when(spyPartitionedRegion)
         .cleanupFailedInitialization();
+
     assertThatThrownBy(() -> spyPartitionedRegion.initialize(null, imageTarget, null))
         .isInstanceOf(PartitionedRegionException.class)
         .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);

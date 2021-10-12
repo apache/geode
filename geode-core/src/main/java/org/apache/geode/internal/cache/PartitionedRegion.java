@@ -5627,7 +5627,7 @@ public class PartitionedRegion extends LocalRegion
     }
     if (savedFirstRuntimeException != null
         && savedFirstRuntimeException instanceof DistributedSystemDisconnectedException) {
-      logger.warn("cleanupFailedInitialization originally failed with ",
+      logger.warn("cleanupFailedInitialization originally failed with {}",
           savedFirstRuntimeException);
       throw (DistributedSystemDisconnectedException) savedFirstRuntimeException;
     }
