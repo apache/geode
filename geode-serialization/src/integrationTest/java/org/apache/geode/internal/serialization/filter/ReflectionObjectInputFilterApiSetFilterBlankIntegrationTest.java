@@ -17,6 +17,7 @@ package org.apache.geode.internal.serialization.filter;
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.JAVA_IO;
 import static org.apache.geode.internal.serialization.filter.ApiPackage.SUN_MISC;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +37,7 @@ public class ReflectionObjectInputFilterApiSetFilterBlankIntegrationTest {
 
   @Before
   public void setUp() {
-    if (isJavaVersionAtLeast(JAVA_1_8)) {
+    if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
       apiPackage = SUN_MISC;
     }
 
