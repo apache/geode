@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -37,6 +38,7 @@ import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -547,6 +549,8 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testShutdownAllWithMembersWaiting() throws Throwable {
+    addIgnoredException(AlertingIOException.class);
+
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
