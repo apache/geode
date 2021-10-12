@@ -16,7 +16,11 @@ package org.apache.geode.internal.io;
 
 import static java.util.Objects.hash;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SerializationUtils.serialize;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
@@ -27,6 +31,7 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -93,7 +98,8 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   }
 
   @Test
-  public void nonAllowedDoesNotThrow() {
+  public void nonAllowedDoesThrowJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
     addIgnoredException(InvalidClassException.class);
 
     locatorVM.invoke(() -> {
@@ -104,6 +110,21 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
         }
       });
       assertThat(thrown).isInstanceOf(InvalidClassException.class);
+    });
+  }
+
+  @Test
+  public void allowedDoesNotThrowJava9() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+    // As long as it is not sent within the JMX RMI socket, SerializableClass is allowed.
+    locatorVM.invoke(() -> {
+      Throwable thrown = catchThrowable(() -> {
+        Serializable object = new SerializableClass("hello");
+        try (ObjectInput inputStream = new ObjectInputStream(byteArrayInputStream(object))) {
+          assertThat(inputStream.readObject()).isEqualTo(object);
+        }
+      });
+      assertThat(thrown).isNull();
     });
   }
 
