@@ -29,8 +29,13 @@ public class DistributedSerializableObjectConfig implements SerializableObjectCo
   }
 
   @Override
-  public boolean isValidateSerializableObjectsEnabled() {
+  public boolean getValidateSerializableObjects() {
     return "true".equalsIgnoreCase(config.getProperty(VALIDATE_SERIALIZABLE_OBJECTS));
+  }
+
+  @Override
+  public void setValidateSerializableObjects(boolean value) {
+    config.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, Boolean.valueOf(value).toString());
   }
 
   @Override

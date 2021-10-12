@@ -14,10 +14,13 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
@@ -723,28 +726,28 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       // TODO:KIRK: write new LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest
-
-      SerializableObjectConfig serializableObjectConfig =
-          new DistributedSerializableObjectConfig(getDistributedSystemProperties());
-
       // LocatorLauncher should configure BOTH jdk.serialFilter AND enable
       // `validate-serializable-objects`
-      // when start is invoked and the JVM is Java 8.
+      // when start() is invoked and the JVM is Java 8.
+      if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
+        SerializableObjectConfig serializableObjectConfig =
+            new DistributedSerializableObjectConfig(getDistributedSystemProperties());
+        serializableObjectConfig.setValidateSerializableObjects(true);
 
-      String filterPattern = new SanctionedSerializablesFilterPattern()
-          .append(serializableObjectConfig.getFilterPatternIfEnabled())
-          .pattern();
+        String filterPattern = new SanctionedSerializablesFilterPattern()
+            .append(serializableObjectConfig.getFilterPatternIfEnabled())
+            .pattern();
 
-      Set<String> sanctionedClasses =
-          loadSanctionedClassNames(loadSanctionedSerializablesServices());
+        Set<String> sanctionedClasses =
+            loadSanctionedClassNames(loadSanctionedSerializablesServices());
 
-      GlobalSerialFilter globalSerialFilter = new DelegatingGlobalSerialFilterFactory()
-          .create(filterPattern, sanctionedClasses);
+        GlobalSerialFilter globalSerialFilter = new DelegatingGlobalSerialFilterFactory()
+            .create(filterPattern, sanctionedClasses);
 
-      new Java8GlobalSerialFilterConfigurationFactory()
-          .create(globalSerialFilter)
-          .configure(); // java 9 does nothing ???
-
+        new Java8GlobalSerialFilterConfigurationFactory()
+            .create(globalSerialFilter)
+            .configure();
+      }
       try {
         this.process =
             new FileControllableProcess(this.controlHandler, new File(getWorkingDirectory()),
@@ -760,6 +763,13 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
+          if (this.locator != null
+              && this.locator.getCache() != null
+              && this.locator.getCache().getInternalDistributedSystem() != null
+              && this.locator.getCache().getInternalDistributedSystem().getConfig() != null) {
+            this.locator.getCache().getInternalDistributedSystem().getConfig()
+                .setValidateSerializableObjects(true);
+          }
         } finally {
           ProcessLauncherContext.remove();
         }

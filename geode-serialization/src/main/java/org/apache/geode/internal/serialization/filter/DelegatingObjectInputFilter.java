@@ -42,11 +42,6 @@ public class DelegatingObjectInputFilter implements ObjectInputFilter {
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
 
       // set the global serial filter
-      // if (isJavaVersionAtLeast(JAVA_9)) {
-      // api.setSerialFilter(objectInputFilter);
-      // api.
-      // } else if (isJavaVersionAtLeast(JAVA_1_8)) {
-      // api.setSerialFilter(objectInputFilter);
       api.setObjectInputFilter(objectInputStream, objectInputFilter);
       // }
     } catch (IllegalAccessException | InvocationTargetException e) {

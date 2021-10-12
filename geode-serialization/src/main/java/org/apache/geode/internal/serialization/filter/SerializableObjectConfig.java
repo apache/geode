@@ -17,10 +17,12 @@ package org.apache.geode.internal.serialization.filter;
 public interface SerializableObjectConfig {
 
   default String getFilterPatternIfEnabled() {
-    return isValidateSerializableObjectsEnabled() ? getSerializableObjectFilter() : null;
+    return getValidateSerializableObjects() ? getSerializableObjectFilter() : null;
   }
 
-  boolean isValidateSerializableObjectsEnabled(); // validate-serializable-objects -- boolean
+  boolean getValidateSerializableObjects(); // validate-serializable-objects -- boolean
+
+  void setValidateSerializableObjects(boolean value); // set validate-serializable-objects
 
   String getSerializableObjectFilter(); // serializable-object-filter -- string
 }
