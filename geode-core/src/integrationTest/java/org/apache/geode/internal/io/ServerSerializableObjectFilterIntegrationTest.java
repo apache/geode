@@ -92,7 +92,7 @@ public class ServerSerializableObjectFilterIntegrationTest {
   }
 
   @Test
-  public void doesNotConfigureSerializableObjectFilter_onJava9orGreater() {
+  public void doesNotConfigureSerializableObjectFilter_onJava9OrGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
@@ -139,7 +139,7 @@ public class ServerSerializableObjectFilterIntegrationTest {
         .isFalse();
   }
 
-  @Test // TODO:KIRK: need test with user specified object filter
+  @Test
   public void doesNotConfigureSerializableObjectFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
@@ -160,6 +160,54 @@ public class ServerSerializableObjectFilterIntegrationTest {
     assertThat(getSerializableObjectFilter())
         .as(SERIALIZABLE_OBJECT_FILTER)
         .isEqualTo("!*");
+  }
+
+  @Test
+  public void userSpecifiedSerializableObjectFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+    String existingSerializableObjectFilter = "!foo.Bar;*";
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(SERIALIZABLE_OBJECT_FILTER, existingSerializableObjectFilter)
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo(existingSerializableObjectFilter);
+  }
+
+  @Test
+  public void userSpecifiedSerializableObjectFilter_onJava9OrGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+    String existingSerializableObjectFilter = "!foo.Bar;*";
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(SERIALIZABLE_OBJECT_FILTER, existingSerializableObjectFilter)
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo(existingSerializableObjectFilter);
   }
 
   private DistributionConfig getDistributionConfig() {
