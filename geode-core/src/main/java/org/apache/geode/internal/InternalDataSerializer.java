@@ -429,7 +429,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  private static void clearSerializationFilter() {
+  @VisibleForTesting
+  static void clearSerializationFilter() {
     serializationFilter = defaultSerializationFilter;
   }
 
