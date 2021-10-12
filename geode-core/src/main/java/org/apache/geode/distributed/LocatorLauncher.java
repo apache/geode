@@ -763,7 +763,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
-          if (this.locator != null
+          if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)
+              && this.locator != null
               && this.locator.getCache() != null
               && this.locator.getCache().getInternalDistributedSystem() != null
               && this.locator.getCache().getInternalDistributedSystem().getConfig() != null) {
