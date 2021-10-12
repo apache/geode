@@ -15,7 +15,6 @@
 package org.apache.geode.internal;
 
 import static java.util.Collections.emptySet;
-import static org.apache.geode.distributed.internal.DistributionConfig.SERIALIZABLE_OBJECT_FILTER_NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME;
 import static org.apache.geode.internal.lang.ClassUtils.isClassAvailable;
 import static org.apache.geode.internal.serialization.KnownVersion.CURRENT;
@@ -131,14 +130,6 @@ public class InternalDataSerializerShiroAcceptListTest {
       throws IOException, ClassNotFoundException {
     trySerializingObject(new UnsupportedAuthenticationMechanismException("testing"),
         propertiesWithoutFilter());
-  }
-
-  private static Properties propertiesWithFilter(String filter) {
-    Properties properties = new Properties();
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, filter);
-
-    return properties;
   }
 
   private static Properties propertiesWithoutFilter() {
