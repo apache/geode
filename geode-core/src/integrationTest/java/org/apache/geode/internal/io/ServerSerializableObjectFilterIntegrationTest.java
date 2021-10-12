@@ -142,10 +142,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   @Test
   public void doesNotConfigureSerializableObjectFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
-
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -166,9 +167,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   public void userSpecifiedSerializableObjectFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
     String existingSerializableObjectFilter = "!foo.Bar;*";
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -190,9 +193,11 @@ public class ServerSerializableObjectFilterIntegrationTest {
   public void userSpecifiedSerializableObjectFilter_onJava9OrGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
     String existingSerializableObjectFilter = "!foo.Bar;*";
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
