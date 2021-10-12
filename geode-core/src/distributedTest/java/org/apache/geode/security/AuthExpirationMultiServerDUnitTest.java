@@ -24,6 +24,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -306,6 +307,63 @@ public class AuthExpirationMultiServerDUnitTest {
     // user1 may not be unauthorized for just 1 operations, puts maybe done by different
     // connections
     assertThat(unAuthorizedOps.get("user1")).isNotEmpty();
+  }
+
+  @Test
+  public void peerStillCommunicateWhenCredentialExpired() throws Exception {
+    // expire the peer to peer users
+    expireUserOnAllVms("test");
+    // do puts using a client
+    UpdatableUserAuthInitialize.setUser("user1");
+    clientCacheRule
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+        .withPoolSubscription(true)
+        .withLocatorConnection(locator.getPort());
+    clientCacheRule.createCache();
+    Region<Object, Object> region = clientCacheRule.createProxyRegion(REPLICATE_REGION);
+    IntStream.range(0, 10).forEach(i -> region.put("key" + i, "value" + i));
+
+    // assert that data still get into all servers
+    MemberVM.invokeInEveryMember(() -> {
+      Region<Object, Object> serverRegion =
+          ClusterStartupRule.getCache().getRegion(REPLICATE_REGION);
+      assertThat(serverRegion).hasSize(10);
+    }, server1, server2);
+  }
+
+  @Test
+  public void putAll() throws Exception {
+    int locatorPort = locator.getPort();
+    // do putAll using a client
+    ClientVM client = cluster.startClientVM(3,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withLocatorConnection(locatorPort));
+    AsyncInvocation invokePut = client.invokeAsync(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      Region<Object, Object> proxyRegion =
+          ClusterStartupRule.getClientCache()
+              .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+              .create(PARTITION_REGION);
+      Map<String, String> values = new HashMap<>();
+      IntStream.range(0, 1000).forEach(i -> values.put("key" + i, "value" + i));
+      proxyRegion.putAll(values);
+    });
+
+    client.invoke(() -> {
+      await().until(() -> getProxyRegion() != null);
+      await().until(() -> !getProxyRegion().isEmpty());
+      UpdatableUserAuthInitialize.setUser("user2");
+    });
+
+    expireUserOnAllVms("user1");
+    invokePut.await();
+
+    ExpirableSecurityManager securityManager = collectSecurityManagers(server1, server2);
+    assertThat(securityManager.getAuthorizedOps()).hasSize(1);
+    assertThat(securityManager.getAuthorizedOps().get("user1"))
+        .containsExactly("DATA:WRITE:partitionRegion");
+    assertThat(securityManager.getUnAuthorizedOps()).isEmpty();
   }
 
   private static Region<Object, Object> getProxyRegion() {
