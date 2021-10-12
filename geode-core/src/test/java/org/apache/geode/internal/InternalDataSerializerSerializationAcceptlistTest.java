@@ -50,7 +50,7 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @BeforeClass
   public static void hasObjectInputFilter() {
-    assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
+    assumeTrue("ObjectInputFilter is present in this JVM",
         isClassAvailable("sun.misc.ObjectInputFilter") ||
             isClassAvailable("java.io.ObjectInputFilter"));
   }
