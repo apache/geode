@@ -42,7 +42,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Before
   public void setUp() throws ClassNotFoundException, NoSuchMethodException {
-    System.out.println("JC debug jdk: " + System.getProperty("java.version"));
+    // System.out.println("JC debug jdk: " + System.getProperty("java.version"));
     if (isJavaVersionAtLeast(JAVA_9)) {
       api = new Java9ReflectionObjectInputFilterApi(ApiPackage.JAVA_IO);
     } else if (isJavaVersionAtLeast(JAVA_1_8)) {

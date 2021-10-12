@@ -61,7 +61,7 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @Before
   public void setUp() {
-    System.out.println("JC debug jdk: " + System.getProperty("java.version"));
+    // System.out.println("JC debug jdk: " + System.getProperty("java.version"));
     outputStream = new HeapDataOutputStream(KnownVersion.CURRENT);
     testSerializable = new TestSerializable();
     properties = new Properties();
