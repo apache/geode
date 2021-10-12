@@ -19,10 +19,8 @@ package org.apache.geode.redis.internal.netty;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.CONNECT_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.WRITE_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.data.RedisProperties.getTimeoutProperty;
+import static org.apache.geode.redis.internal.data.RedisProperties.getIntegerSystemProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -75,6 +73,8 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class NettyRedisServer {
 
   private static final int RANDOM_PORT_INDICATOR = 0;
+  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS = 1;
+  public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -106,10 +106,11 @@ public class NettyRedisServer {
     this.redisStats = redisStats;
     this.member = member;
     this.securityService = securityService;
+
     this.connectTimeoutSeconds =
-        getTimeoutProperty(CONNECT_TIMEOUT_SECONDS, DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS, 1);
+        getIntegerSystemProperty(CONNECT_TIMEOUT_SECONDS, DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS, 1);
     this.writeTimeoutSeconds =
-        getTimeoutProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
+        getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
@@ -158,14 +159,6 @@ public class NettyRedisServer {
 
   public int getPort() {
     return serverPort;
-  }
-
-  public int getConnectTimeoutSeconds() {
-    return connectTimeoutSeconds;
-  }
-
-  public int getWriteTimeoutSeconds() {
-    return writeTimeoutSeconds;
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {

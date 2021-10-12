@@ -132,22 +132,6 @@ public class GeodeRedisServer {
     return nettyRedisServer.getPort();
   }
 
-  public int getConnectTimeoutMillis() {
-    return nettyRedisServer.getConnectTimeoutSeconds();
-  }
-
-  public int getWriteTimeoutSeconds() {
-    return nettyRedisServer.getWriteTimeoutSeconds();
-  }
-
-  public int getInitialDelayMinutes() {
-    return passiveExpirationManager.getInitialDelay();
-  }
-
-  public int getDelayMinutes() {
-    return passiveExpirationManager.getInterval();
-  }
-
   /**
    * Shutdown method for {@code GeodeRedisServer}. This closes the {@link Cache}, interrupts all
    * execution and forcefully closes all connections.

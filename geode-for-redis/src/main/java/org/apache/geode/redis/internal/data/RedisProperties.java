@@ -16,10 +16,10 @@
 package org.apache.geode.redis.internal.data;
 
 public class RedisProperties {
-  public static int getTimeoutProperty(String propName, int defaultTimeout, int minValue) {
-    int timeout = Integer.getInteger(propName, defaultTimeout);
+  public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue) {
+    int timeout = Integer.getInteger(propName, defaultValue);
     if (timeout < minValue) {
-      return defaultTimeout;
+      return defaultValue;
     }
     return timeout;
   }

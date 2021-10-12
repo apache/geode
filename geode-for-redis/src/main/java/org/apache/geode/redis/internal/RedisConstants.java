@@ -82,9 +82,4 @@ public class RedisConstants {
   public static final String WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
   public static final String EXPIRATION_INTERVAL_SECONDS =
       "geode-for-redis-expiration-interval-seconds";
-
-  /** Default Values for System Properties **/
-  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS = 1;
-  public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
-  public static final int DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS = 180;
 }
