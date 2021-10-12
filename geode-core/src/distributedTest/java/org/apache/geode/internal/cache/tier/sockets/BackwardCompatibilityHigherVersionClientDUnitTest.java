@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,12 +49,17 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 /**
  * Test to verify that server responds to a higher versioned client.
  */
 @Category({ClientServerTest.class})
 public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4DistributedTestCase {
+  // On Windows, when the server closes the socket, the client can't read the server's reply. The
+  // client quietly ignores the server's reply rather than throwing the required exception.
+  @ClassRule
+  public static IgnoreOnWindowsRule ignoreOnWindowsRule = new IgnoreOnWindowsRule();
 
   /** the cache */
   private static Cache cache = null;
