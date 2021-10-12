@@ -16,15 +16,18 @@ package org.apache.geode.internal.cache;
 
 import static java.util.Collections.emptySet;
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
+import static org.apache.geode.internal.cache.PartitionedRegionHelper.PR_ROOT_REGION_NAME;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -58,11 +61,14 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -441,6 +447,38 @@ public class PartitionedRegionTest {
     // ACT/ASSERT
     assertThatCode(() -> spyPartitionedRegion.generatePRId(system))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void registerPartitionedRegionShouldHandleLockServiceDestroyedException()
+      throws ClassNotFoundException {
+    AttributesFactory attributesFactory = new AttributesFactory();
+    attributesFactory.setPartitionAttributes(
+        new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1)
+            .setLocalMaxMemory(0).create());
+
+    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null, cache,
+        mock(InternalRegionArguments.class), disabledClock(), ColocationLoggerFactory.create());
+
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    InternalDistributedMember imageTarget = mock(InternalDistributedMember.class);
+    InternalRegionFactory factory = mock(InternalRegionFactory.class);
+    when(cache.createInternalRegionFactory(RegionShortcut.REPLICATE)).thenReturn(factory);
+    DistributedRegion partitionedRegionRoot = mock(DistributedRegion.class);
+    when(factory.create(PR_ROOT_REGION_NAME)).thenReturn(partitionedRegionRoot);
+    CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
+    doNothing().when(cda).addMembershipListener(any());
+    when(partitionedRegionRoot.getDistributionAdvisor()).thenReturn(cda);
+    PartitionedRegion.RegionLock regionLock = mock(PartitionedRegion.RegionLock.class);
+    doReturn(regionLock).when(spyPartitionedRegion).getRegionLock();
+    doThrow(new LockServiceDestroyedException("Lock Service is destroyed in test")).when(regionLock)
+        .lock();
+    doThrow(new DistributedSystemDisconnectedException("test")).when(spyPartitionedRegion)
+        .cleanupFailedInitialization();
+    assertThatThrownBy(() -> spyPartitionedRegion.initialize(null, imageTarget, null))
+        .isInstanceOf(PartitionedRegionException.class)
+        .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);
   }
 
   @Test
