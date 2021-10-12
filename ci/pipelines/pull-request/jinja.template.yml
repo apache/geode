@@ -23,7 +23,7 @@ groups:
   jobs:
   - {{ build_test.name }}
 {%- for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" or test.name == "stress-new" or test.name == "distributed" %}
+  {%- for java_test_version in (java_test_versions) if (java_test_version.name.endswith("jdk11") or (java_test_version.name.endswith("jdk8") and test.PLATFORM == "linux")) and ((not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version) %}
   - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
@@ -43,6 +43,14 @@ resources:
     disable_ci_skip: false
     skip_ssl_verification: false
     labels: [windows]
+- name: geode-jdk8
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+    labels: [jdk8]
 - name: geode-status
   type: pull-request
   source:
@@ -275,15 +283,18 @@ jobs:
 
 
 {% for test in tests %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("jdk8") or test.name == "unit" or test.name == "stress-new" or test.name == "distributed" %}
+  {%- for java_test_version in (java_test_versions) if (java_test_version.name.endswith("jdk11") or (java_test_version.name.endswith("jdk8") and test.PLATFORM == "linux")) and ((not test.ONLY_JDK is defined) or test.ONLY_JDK == java_test_version.version) %}
 - name: {{test.name}}-test-{{java_test_version.name}}
   public: true
   plan:
   - do:
     - in_parallel:
       - get: alpine-tools-image
-{%- if test.PLATFORM=="linux" %}
+{%- if test.PLATFORM == "linux" and (java_test_version.name.endswith("jdk11") or test.name == "stress-new" or test.name == "distributed") %}
       - get: geode
+{%- elif test.PLATFORM == "linux" %}
+      - get: geode
+        resource: geode-jdk8
 {%- else %}
       - get: geode
         resource: geode-windows

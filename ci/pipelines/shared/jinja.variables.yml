@@ -255,7 +255,7 @@ tests:
   EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: geode-assembly:japicmp
   MAX_IN_FLIGHT: 1
-  ONLY_JDK: 8
+  ONLY_JDK: 11
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
