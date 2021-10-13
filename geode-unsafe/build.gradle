@@ -26,8 +26,12 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
 
-  testImplementation('junit:junit')
-  testImplementation(project(':geode-junit'))
+  testImplementation('org.junit.jupiter:junit-jupiter-api')
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'junit-vintage-engine'
+    exclude module: 'JUnitParams'
+    exclude module: 'junit'
+  }
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.awaitility:awaitility')

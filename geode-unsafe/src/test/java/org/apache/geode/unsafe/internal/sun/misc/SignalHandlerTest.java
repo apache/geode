@@ -16,9 +16,12 @@
 package org.apache.geode.unsafe.internal.sun.misc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
 
+@Execution(CONCURRENT)
 public class SignalHandlerTest {
   @Test
   public void defaultSignalHandlers() {
