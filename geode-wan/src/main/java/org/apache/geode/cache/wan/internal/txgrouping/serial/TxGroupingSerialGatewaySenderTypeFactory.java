@@ -13,14 +13,16 @@
  * the License.
  */
 
-package org.apache.geode.cache.wan.internal.serial;
+package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
 import static java.lang.String.format;
 
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.GatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.CommonTxGroupingGatewaySenderFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
@@ -28,26 +30,26 @@ import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
-public class SerialGatewaySenderTypeFactory implements GatewaySenderTypeFactory {
+public class TxGroupingSerialGatewaySenderTypeFactory extends SerialGatewaySenderTypeFactory {
 
   @Override
   public @NotNull String getType() {
-    return "SerialGatewaySender";
+    return "TxGroupingSerialGatewaySender";
   }
 
   @Override
   public void validate(final @NotNull MutableGatewaySenderAttributes attributes)
       throws GatewaySenderException {
 
-    if (!attributes.getAsyncEventListeners().isEmpty()) {
+    super.validate(attributes);
+
+    CommonTxGroupingGatewaySenderFactory.validate(this, attributes);
+
+    if (attributes.getDispatcherThreads() > 1) {
       throw new GatewaySenderException(
           format(
-              "%s %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
+              "%s %s cannot be created with group transaction events set to true when dispatcher threads is greater than 1",
               getType(), attributes.getId()));
-    }
-
-    if (attributes.getOrderPolicy() == null && attributes.getDispatcherThreads() > 1) {
-      attributes.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
     }
 
   }
@@ -64,4 +66,5 @@ public class SerialGatewaySenderTypeFactory implements GatewaySenderTypeFactory 
       final @NotNull GatewaySenderAttributes attributes) {
     return new SerialGatewaySenderCreation(cache, attributes);
   }
+
 }

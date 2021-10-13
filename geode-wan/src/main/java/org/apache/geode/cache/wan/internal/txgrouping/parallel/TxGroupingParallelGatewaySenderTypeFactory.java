@@ -13,55 +13,46 @@
  * the License.
  */
 
-package org.apache.geode.cache.wan.internal.serial;
-
-import static java.lang.String.format;
+package org.apache.geode.cache.wan.internal.txgrouping.parallel;
 
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.GatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.CommonTxGroupingGatewaySenderFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
+import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
-public class SerialGatewaySenderTypeFactory implements GatewaySenderTypeFactory {
+public class TxGroupingParallelGatewaySenderTypeFactory extends ParallelGatewaySenderTypeFactory {
 
   @Override
   public @NotNull String getType() {
-    return "SerialGatewaySender";
+    return "TxGroupingParallelGatewaySender";
   }
 
   @Override
   public void validate(final @NotNull MutableGatewaySenderAttributes attributes)
       throws GatewaySenderException {
+    super.validate(attributes);
 
-    if (!attributes.getAsyncEventListeners().isEmpty()) {
-      throw new GatewaySenderException(
-          format(
-              "%s %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
-              getType(), attributes.getId()));
-    }
-
-    if (attributes.getOrderPolicy() == null && attributes.getDispatcherThreads() > 1) {
-      attributes.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
-    }
-
+    CommonTxGroupingGatewaySenderFactory.validate(this, attributes);
   }
 
   @Override
   public GatewaySender create(final @NotNull InternalCache cache,
       final @NotNull StatisticsClock clock,
       final @NotNull GatewaySenderAttributes attributes) {
-    return new SerialGatewaySenderImpl(cache, clock, attributes);
+    return new ParallelGatewaySenderImpl(cache, clock, attributes);
   }
 
   @Override
   public GatewaySender createCreation(final @NotNull InternalCache cache,
       final @NotNull GatewaySenderAttributes attributes) {
-    return new SerialGatewaySenderCreation(cache, attributes);
+    return new ParallelGatewaySenderCreation(cache, attributes);
   }
 }
