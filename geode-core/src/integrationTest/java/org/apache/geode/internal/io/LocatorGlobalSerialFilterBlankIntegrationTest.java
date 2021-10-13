@@ -61,7 +61,7 @@ public class LocatorGlobalSerialFilterBlankIntegrationTest {
   @Test
   public void doesNotSetSerialFilterWhenSerialFilterIsSetToBlank()
       throws InvocationTargetException, IllegalAccessException {
-    Object existingJdkSerialFilter = OBJECT_INPUT_FILTER_API.createFilter(" "); // white space ???
+    Object existingJdkSerialFilter = OBJECT_INPUT_FILTER_API.createFilter(" ");
     OBJECT_INPUT_FILTER_API.setSerialFilter(existingJdkSerialFilter);
 
     locator.set(new LocatorLauncher.Builder()

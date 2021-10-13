@@ -173,6 +173,6 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
     return serverLauncher;
   }
 
-  public static class SerializableClass implements Serializable { /// ???
+  public static class SerializableClass implements Serializable {
   }
 }

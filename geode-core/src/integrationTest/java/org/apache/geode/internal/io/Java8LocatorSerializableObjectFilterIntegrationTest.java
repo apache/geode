@@ -88,7 +88,7 @@ public class Java8LocatorSerializableObjectFilterIntegrationTest {
         .isTrue();
     assertThat(isValidateSerializableObjectsConfigured())
         .as(VALIDATE_SERIALIZABLE_OBJECTS)
-        .isTrue(); // ??? why not false
+        .isTrue();
   }
 
   @Test

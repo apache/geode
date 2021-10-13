@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.function.Consumer;
 
@@ -72,12 +71,6 @@ public class SystemPropertyConfiguration implements FilterConfiguration {
     }
 
     public void execute() {
-      if (isNotEmpty(System.getProperty(propertyName))) {
-        // TODO:KIRK: the new Condition prevents this from occurring
-        infoLogger.accept("System property " + propertyName + " is already configured.");
-        return;
-      }
-
       System.setProperty(propertyName, filterPattern);
       infoLogger.accept("System property " + propertyName + " is now configured with '"
           + filterPattern + "'.");

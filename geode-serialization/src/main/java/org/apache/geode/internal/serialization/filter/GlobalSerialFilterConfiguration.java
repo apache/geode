@@ -61,6 +61,7 @@ public class GlobalSerialFilterConfiguration implements FilterConfiguration {
     public void execute() {
       try {
         globalSerialFilter.setFilter();
+        infoLogger.accept(("Global serial filter is now configured."));
       } catch (UnsupportedOperationException e) {
         if (hasRootCauseWithMessage(e, IllegalStateException.class,
             "Serial filter can only be set once")) {

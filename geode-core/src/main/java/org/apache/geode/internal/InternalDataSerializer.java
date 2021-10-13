@@ -363,12 +363,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
         throw new GemFireConfigException(
             "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
       }
-      // TODO:KIRK: start serializer: if configured: create serial filter on every geode-created
-      // InputObjectStream
       String filterPattern = new SanctionedSerializablesFilterPattern()
           .append(distributionConfig.getSerializableObjectFilter())
           .pattern();
-      // System.out.println("JC debug: filterPattern=" + filterPattern);
       serializationFilter = new DelegatingObjectInputFilterFactory()
           .create(filterPattern, loadSanctionedClassNames(services));
     } else {

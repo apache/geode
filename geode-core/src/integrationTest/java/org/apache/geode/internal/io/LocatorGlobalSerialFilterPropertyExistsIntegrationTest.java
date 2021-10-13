@@ -73,8 +73,7 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*"); /// this is not blank as the method name
-                                                          /// suggests ???
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, " ");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
@@ -90,15 +89,13 @@ public class LocatorGlobalSerialFilterPropertyExistsIntegrationTest {
 
     assertThat(OBJECT_INPUT_FILTER_API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
-        .isNotNull(); // TODO:KIRK: add forking tests for system property
+        .isNotNull();
   }
 
   @Test
   public void doesNotSetSerialFilterWhenSerialFilterIsNull_onJava9orGreater()
       throws InvocationTargetException, IllegalAccessException {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "!*");
 
     locator.set(new LocatorLauncher.Builder()
         .setMemberName(NAME)
