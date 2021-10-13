@@ -1530,8 +1530,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     // let GII continue
     P.invoke(() -> resetGIITestHook(DuringPackingImage, true));
     async3.join(MAX_WAIT * 2);
-    final int countConst = getDeltaGIICount(P);
-    GeodeAwaitility.await().untilAsserted(() -> assertEquals(0, countConst));
+    GeodeAwaitility.await().untilAsserted(() -> assertEquals(0, getDeltaGIICount(P)));
     verifyDeltaSizeFromStats(R, 1, 1); // deltaGII, key1 in delta
 
     // tombstone key2, key5 should still exist and expired at R
