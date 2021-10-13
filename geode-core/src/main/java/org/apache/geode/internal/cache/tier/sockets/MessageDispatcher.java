@@ -388,9 +388,10 @@ public class MessageDispatcher extends LoggingThread {
           waitForResumption();
         }
 
-        // if message is not delivered due to authentication expiation, this clientMessage
-        // would not be null.
-        if (clientMessage == null) {
+        // if message is not delivered due to authentication expiation, continue to try to
+        // deliver the same message. Always retrieve a new message from the queue if we are not
+        // waiting for the re-auth to happen.
+        if (wait_for_re_auth_start_time == -1) {
           try {
             clientMessage = (ClientMessage) _messageQueue.peek();
           } catch (RegionDestroyedException skipped) {
@@ -485,7 +486,6 @@ public class MessageDispatcher extends LoggingThread {
             // Let the CacheClientNotifier discover the proxy is not alive.
             // See isAlive().
             // getProxy().close(false);
-
             pauseOrUnregisterProxy(e);
           } // _isStopped
         } // synchronized

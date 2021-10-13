@@ -27,14 +27,18 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
@@ -164,6 +168,19 @@ public class MessageDispatcherTest {
     verify(dispatcher, never()).sendMessageDirectly(any());
     // we will eventually pauseOrUnregisterProxy
     verify(dispatcher).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
+    verify(dispatcher, never()).dispatchResidualMessages();
+  }
+
+  @Test
+  public void ioExceptionHappenedForDurableClientWillContinueToPeekForNextMessage()
+      throws Exception {
+    when(proxy.isDurable()).thenReturn(true);
+    doThrow(IOException.class).when(dispatcher).dispatchMessage(any());
+    when(messageQueue.peek()).thenReturn(message)
+        .thenThrow(new RegionDestroyedException("test", "test"));
+    dispatcher.runDispatcher();
+    verify(messageQueue, times(2)).peek();
+    verify(dispatcher).pauseOrUnregisterProxy(any());
     verify(dispatcher, never()).dispatchResidualMessages();
   }
 }
