@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.wan.internal;
 
+import static java.lang.String.format;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -27,17 +29,15 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
-import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributesImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -217,41 +217,62 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   @Override
   public @NotNull GatewaySender create(final @NotNull String id, final int remoteDSId) {
-    int myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
-        .getDistributedSystemId();
+    attrs.setId(id);
+    attrs.setRemoteDs(remoteDSId);
+
+    validate(cache, attrs);
+
+    final GatewaySenderTypeFactory factory = getGatewaySenderTypeFactory(attrs);
+    factory.validate(attrs);
+
+    return createGatewaySender(factory, cache, statisticsClock, attrs);
+  }
+
+  static @NotNull GatewaySenderTypeFactory getGatewaySenderTypeFactory(
+      final @NotNull GatewaySenderAttributes attributes) {
+    if (attributes.isParallel()) {
+      return new ParallelGatewaySenderTypeFactory();
+    } else {
+      return new SerialGatewaySenderTypeFactory();
+    }
+  }
+
+  static void validate(final @NotNull InternalCache cache,
+      final @NotNull GatewaySenderAttributesImpl attributes) {
+    final int myDSId = cache.getDistributionManager().getDistributedSystemId();
+    final int remoteDSId = attributes.getRemoteDSId();
+
     if (remoteDSId == myDSId) {
       throw new GatewaySenderException(
-          String.format(
+          format(
               "GatewaySender %s cannot be created with remote DS Id equal to this DS Id. ",
-              id));
+              attributes.getId()));
     }
     if (remoteDSId < 0) {
       throw new GatewaySenderException(
-          String.format("GatewaySender %s cannot be created with remote DS Id less than 0. ",
-              id));
+          format("GatewaySender %s cannot be created with remote DS Id less than 0. ",
+              attributes.getId()));
     }
-    attrs.setId(id);
-    attrs.setRemoteDs(remoteDSId);
-    GatewaySender sender;
 
-    if (attrs.getDispatcherThreads() <= 0) {
+    if (attributes.getDispatcherThreads() <= 0) {
       throw new GatewaySenderException(
-          String.format("GatewaySender %s can not be created with dispatcher threads less than 1",
-              id));
+          format("GatewaySender %s can not be created with dispatcher threads less than 1",
+              attributes.getId()));
     }
 
+    // TODO jbarrett why only check these for a real cache.
     // Verify socket read timeout if a proper logger is available
     if (cache instanceof GemFireCacheImpl) {
       // If socket read timeout is less than the minimum, log a warning.
       // Ideally, this should throw a GatewaySenderException, but wan dunit tests
       // were failing, and we were running out of time to change them.
-      if (attrs.getSocketReadTimeout() != 0
-          && attrs.getSocketReadTimeout() < GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT) {
+      if (attributes.getSocketReadTimeout() != 0
+          && attributes.getSocketReadTimeout() < GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT) {
         logger.warn(
             "{} cannot configure socket read timeout of {} milliseconds because it is less than the minimum of {} milliseconds. The default will be used instead.",
-            new Object[] {"GatewaySender " + id, attrs.getSocketReadTimeout(),
-                GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT});
-        attrs.setSocketReadTimeout(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT);
+            "GatewaySender " + attributes.getId(), attributes.getSocketReadTimeout(),
+            GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT);
+        attributes.setSocketReadTimeout(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT);
       }
 
       // Log a warning if the old system property is set.
@@ -259,77 +280,34 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         if (System.getProperty(GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY) != null) {
           logger.warn(
               "Obsolete java system property named {} was set to control {}. This property is no longer supported. Please use the GemFire API instead.",
-              new Object[] {GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY,
-                  "GatewaySender socket read timeout"});
+              GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY,
+              "GatewaySender socket read timeout");
         }
       }
     }
-    if (attrs.mustGroupTransactionEvents() && attrs.isBatchConflationEnabled()) {
+
+    if (attributes.mustGroupTransactionEvents() && attributes.isBatchConflationEnabled()) {
       throw new GatewaySenderException(
-          String.format(
+          format(
               "GatewaySender %s cannot be created with both group transaction events set to true and batch conflation enabled",
-              id));
+              attributes.getId()));
     }
-
-    if (attrs.isParallel()) {
-      sender = createParallelGatewaySender(id);
-    } else {
-      sender = createSerialGatewaySender(id);
-    }
-    return sender;
   }
 
-  private @NotNull GatewaySender createSerialGatewaySender(final @NotNull String id) {
-    if (attrs.getAsyncEventListeners().size() > 0) {
-      throw new GatewaySenderException(
-          String.format(
-              "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
-              id));
-    }
-    if (attrs.mustGroupTransactionEvents() && attrs.getDispatcherThreads() > 1) {
-      throw new GatewaySenderException(
-          String.format(
-              "SerialGatewaySender %s cannot be created with group transaction events set to true when dispatcher threads is greater than 1",
-              id));
-    }
-    if (attrs.getOrderPolicy() == null && attrs.getDispatcherThreads() > 1) {
-      attrs.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
-    }
-
-    GatewaySender sender = null;
-    if (cache instanceof GemFireCacheImpl) {
-      sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
-      cache.addGatewaySender(sender);
-      if (!attrs.isManualStart()) {
-        sender.start();
-      }
-    } else if (cache instanceof CacheCreation) {
-      sender = new SerialGatewaySenderCreation(cache, attrs);
-      cache.addGatewaySender(sender);
-    } else {
-      throw new IllegalStateException();
-    }
-    return sender;
-  }
-
-  private @NotNull GatewaySender createParallelGatewaySender(final @NotNull String id) {
-    if ((attrs.getOrderPolicy() != null)
-        && attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
-      throw new GatewaySenderException(
-          String.format("Parallel Gateway Sender %s can not be created with OrderPolicy %s",
-              id, attrs.getOrderPolicy()));
-    }
-
+  @NotNull
+  private static GatewaySender createGatewaySender(final @NotNull GatewaySenderTypeFactory factory,
+      final @NotNull InternalCache cache,
+      final @NotNull StatisticsClock clock,
+      final @NotNull GatewaySenderAttributesImpl attributes) {
     final GatewaySender sender;
     if (cache instanceof GemFireCacheImpl) {
-      sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
+      sender = factory.create(cache, clock, attributes);
       cache.addGatewaySender(sender);
-
-      if (!attrs.isManualStart()) {
+      if (!attributes.isManualStart()) {
         sender.start();
       }
     } else if (cache instanceof CacheCreation) {
-      sender = new ParallelGatewaySenderCreation(cache, attrs);
+      sender = factory.createCreation(cache, attributes);
       cache.addGatewaySender(sender);
     } else {
       throw new IllegalStateException();
@@ -383,4 +361,5 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
   }
+
 }
