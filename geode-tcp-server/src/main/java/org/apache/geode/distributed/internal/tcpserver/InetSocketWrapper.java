@@ -23,7 +23,6 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 class InetSocketWrapper {
   String hostName;
   protected InetSocketAddress inetSocketAddress;
-  private InetSocketAddress attemptedToResolve;
 
   protected InetSocketWrapper() {}
 
@@ -77,13 +76,6 @@ class InetSocketWrapper {
    * value will not hold an InetAddress, so calling getAddress() on it will return null.
    */
   public InetSocketAddress getSocketInetAddress() {
-    if (attemptedToResolve == null) {
-      attemptedToResolve = basicGetInetSocketAddress();
-    }
-    return attemptedToResolve;
-  }
-
-  private InetSocketAddress basicGetInetSocketAddress() {
     if (inetSocketAddress.isUnresolved()) {
       // note that this leaves the InetAddress null if the hostname isn't resolvable
       return new InetSocketAddress(inetSocketAddress.getHostString(), inetSocketAddress.getPort());
