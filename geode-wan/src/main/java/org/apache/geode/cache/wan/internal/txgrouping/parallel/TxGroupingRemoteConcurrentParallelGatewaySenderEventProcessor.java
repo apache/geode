@@ -18,30 +18,25 @@ package org.apache.geode.cache.wan.internal.txgrouping.parallel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.parallel.RemoteConcurrentParallelGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.statistics.StatisticsClock;
 
-public class TxGroupingParallelGatewaySenderImpl extends ParallelGatewaySenderImpl {
+public class TxGroupingRemoteConcurrentParallelGatewaySenderEventProcessor extends
+    RemoteConcurrentParallelGatewaySenderEventProcessor {
 
-  public TxGroupingParallelGatewaySenderImpl(final @NotNull InternalCache cache,
-      final @NotNull StatisticsClock clock,
-      final @NotNull GatewaySenderAttributes attributes) {
-    super(cache, clock, attributes);
-  }
-
-  @Override
-  public boolean mustGroupTransactionEvents() {
-    return true;
-  }
-
-  @Override
-  protected RemoteConcurrentParallelGatewaySenderEventProcessor createEventProcessor(
+  public TxGroupingRemoteConcurrentParallelGatewaySenderEventProcessor(
+      final @NotNull AbstractGatewaySender sender,
       final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
-    return new TxGroupingRemoteConcurrentParallelGatewaySenderEventProcessor(this,
+    super(sender, threadsMonitoring, cleanQueues);
+  }
+
+  @Override
+  protected ParallelGatewaySenderEventProcessor createRemoteParallelGatewaySenderEventProcessor(
+      final @NotNull AbstractGatewaySender sender, final int id, final int dispatcherThreads,
+      final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
+    return new TxGroupingRemoteParallelGatewaySenderEventProcessor(sender, id, dispatcherThreads,
         threadsMonitoring, cleanQueues);
   }
 }

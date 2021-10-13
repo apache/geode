@@ -207,7 +207,7 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     @SuppressWarnings("unchecked")
     List<AsyncEvent<?, ?>> batch = new ArrayList(Arrays.asList(event1, event2));
-    queue.peekEventsFromIncompleteTransactions(batch, 0);
+    queue.postProcessBatch(batch, 0);
   }
 
   @Test
@@ -289,11 +289,6 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     public void setGroupTransactionEvents(boolean groupTransactionEvents) {
       this.groupTransactionEvents = groupTransactionEvents;
-    }
-
-    @Override
-    public boolean mustGroupTransactionEvents() {
-      return groupTransactionEvents;
     }
 
     @Override

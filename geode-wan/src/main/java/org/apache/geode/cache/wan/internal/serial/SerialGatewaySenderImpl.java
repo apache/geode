@@ -17,7 +17,9 @@ package org.apache.geode.cache.wan.internal.serial;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.AbstractRemoteGatewaySender;
@@ -117,16 +119,21 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     }
   }
 
+  @VisibleForTesting
   protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
-    AbstractGatewaySenderEventProcessor eventProcessor;
+    return createEventProcessor(getThreadMonitorObj(), cleanQueues);
+  }
+
+  protected AbstractGatewaySenderEventProcessor createEventProcessor(
+      final @Nullable ThreadsMonitoring threadsMonitoring,
+      final boolean cleanQueues) {
     if (getDispatcherThreads() > 1) {
-      eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
-          SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
+      return new RemoteConcurrentSerialGatewaySenderEventProcessor(this,
+          threadsMonitoring, cleanQueues);
     } else {
-      eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
-          getId(), getThreadMonitorObj(), cleanQueues);
+      return new RemoteSerialGatewaySenderEventProcessor(this, getId(),
+          threadsMonitoring, cleanQueues);
     }
-    return eventProcessor;
   }
 
   @Override

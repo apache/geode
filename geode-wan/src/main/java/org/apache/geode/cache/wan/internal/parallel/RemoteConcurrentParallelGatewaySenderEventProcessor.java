@@ -17,6 +17,9 @@ package org.apache.geode.cache.wan.internal.parallel;
 
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.internal.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -46,10 +49,19 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
       logger.debug("Creating GatewaySenderEventProcessor");
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors[i] = new RemoteParallelGatewaySenderEventProcessor(sender, targetRs, i,
+      processors[i] = createRemoteParallelGatewaySenderEventProcessor(sender, i,
           sender.getDispatcherThreads(), getThreadMonitorObj(), cleanQueues);
     }
   }
+
+  protected ParallelGatewaySenderEventProcessor createRemoteParallelGatewaySenderEventProcessor(
+      final @NotNull AbstractGatewaySender sender, final int id,
+      final int dispatcherThreads, final @Nullable ThreadsMonitoring threadsMonitoring,
+      final boolean cleanQueues) {
+    return new RemoteParallelGatewaySenderEventProcessor(sender, id, dispatcherThreads,
+        threadsMonitoring, cleanQueues);
+  }
+
 
   @Override
   protected void rebalance() {

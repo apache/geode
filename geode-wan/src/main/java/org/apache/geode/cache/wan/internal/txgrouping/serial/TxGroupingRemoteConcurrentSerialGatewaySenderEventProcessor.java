@@ -12,33 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.wan.internal.serial;
 
-import org.apache.logging.log4j.Logger;
+package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import org.apache.geode.cache.wan.internal.serial.RemoteConcurrentSerialGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class RemoteConcurrentSerialGatewaySenderEventProcessor
-    extends ConcurrentSerialGatewaySenderEventProcessor {
-
-  protected static final Logger logger = LogService.getLogger();
-
-  public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super(sender, tMonitoring, cleanQueues);
+public class TxGroupingRemoteConcurrentSerialGatewaySenderEventProcessor
+    extends RemoteConcurrentSerialGatewaySenderEventProcessor {
+  public TxGroupingRemoteConcurrentSerialGatewaySenderEventProcessor(
+      final @NotNull AbstractGatewaySender sender,
+      final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
+    super(sender, threadsMonitoring, cleanQueues);
   }
 
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
-          getThreadMonitorObj(), cleanQueues));
+      final ThreadsMonitoring threadsMonitoring = getThreadMonitorObj();
+      processors.add(new TxGroupingRemoteSerialGatewaySenderEventProcessor(sender, id + "." + i,
+          threadsMonitoring, cleanQueues));
       if (logger.isDebugEnabled()) {
-        logger.debug("Created the RemoteSerialGatewayEventProcessor_{}->{}", i, processors.get(i));
+        logger.debug("Created the TxGroupingRemoteSerialGatewaySenderEventProcessor_{}->{}", i,
+            processors.get(i));
       }
     }
   }
+
 }

@@ -16,10 +16,13 @@
 package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class TxGroupingSerialGatewaySenderImpl extends SerialGatewaySenderImpl {
@@ -33,6 +36,18 @@ public class TxGroupingSerialGatewaySenderImpl extends SerialGatewaySenderImpl {
   @Override
   public boolean mustGroupTransactionEvents() {
     return true;
+  }
+
+  @Override
+  protected AbstractGatewaySenderEventProcessor createEventProcessor(
+      final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
+    if (getDispatcherThreads() > 1) {
+      return new TxGroupingRemoteConcurrentSerialGatewaySenderEventProcessor(this,
+          threadsMonitoring, cleanQueues);
+    } else {
+      return new TxGroupingRemoteSerialGatewaySenderEventProcessor(this, getId(),
+          threadsMonitoring, cleanQueues);
+    }
   }
 
 }

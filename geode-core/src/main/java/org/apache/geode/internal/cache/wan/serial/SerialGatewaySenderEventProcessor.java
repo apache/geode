@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CancelException;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender.EventWrapper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
@@ -126,11 +128,17 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     final CacheListener<?, ?> listener = getAndIntializeCacheListener();
 
     // Create the region queue
-    queue = new SerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
+    queue = createRegionQueue(sender, regionName, listener, cleanQueues);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Created queue: {}", queue);
     }
+  }
+
+  protected @NotNull RegionQueue createRegionQueue(final @NotNull AbstractGatewaySender sender,
+      final @NotNull String regionName, final @NotNull CacheListener<?, ?> listener,
+      final boolean cleanQueues) {
+    return new SerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
   }
 
   @Nullable

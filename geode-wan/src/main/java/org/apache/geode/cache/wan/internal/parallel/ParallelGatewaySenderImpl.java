@@ -15,6 +15,7 @@
 package org.apache.geode.cache.wan.internal.parallel;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
@@ -82,9 +83,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        * "ParallelGatewaySenderEventProcessor" and "ParallelGatewaySenderQueue" as a utility classes
        * of Concurrent version of processor and queue.
        */
-      eventProcessor =
-          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
-              cleanQueues);
+      eventProcessor = createEventProcessor(getThreadMonitorObj(), cleanQueues);
       if (isStartEventProcessorInPausedState()) {
         this.pauseEvenIfProcessorStopped();
       }
@@ -106,6 +105,12 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  protected RemoteConcurrentParallelGatewaySenderEventProcessor createEventProcessor(
+      final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
+    return new RemoteConcurrentParallelGatewaySenderEventProcessor(this, threadsMonitoring,
+        cleanQueues);
   }
 
   @Override
