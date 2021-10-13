@@ -181,7 +181,7 @@ public class DUnitLauncher {
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
-    launchIfNeeded(vmCount, runClassloaderIsolated());
+    launchIfNeeded(vmCount, true, runClassloaderIsolated());
   }
 
   private static boolean runClassloaderIsolated() {
@@ -189,9 +189,10 @@ public class DUnitLauncher {
         && RUN_VM_CLASSLOADER_ISOLATED;
   }
 
-  public static void launchIfNeeded(int vmCount, boolean classloaderIsolated) {
+  public static void launchIfNeeded(int vmCount, boolean launchLocator,
+      boolean classloaderIsolated) {
     NUM_VMS = vmCount;
-    launchIfNeeded(true, classloaderIsolated);
+    launchIfNeeded(launchLocator, classloaderIsolated);
   }
 
   /**
@@ -202,7 +203,7 @@ public class DUnitLauncher {
    */
   public static void launchIfNeeded(int vmCount, boolean launchLocator) {
     NUM_VMS = vmCount;
-    launchIfNeeded(launchLocator);
+    launchIfNeeded(launchLocator, runClassloaderIsolated());
   }
 
   /**
