@@ -31,6 +31,8 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderTypeFactory;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.parallel.TxGroupingParallelGatewaySenderTypeFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -231,9 +233,17 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   static @NotNull GatewaySenderTypeFactory getGatewaySenderTypeFactory(
       final @NotNull GatewaySenderAttributes attributes) {
     if (attributes.isParallel()) {
-      return new ParallelGatewaySenderTypeFactory();
+      if (attributes.mustGroupTransactionEvents()) {
+        return new TxGroupingParallelGatewaySenderTypeFactory();
+      } else {
+        return new ParallelGatewaySenderTypeFactory();
+      }
     } else {
-      return new SerialGatewaySenderTypeFactory();
+      if (attributes.mustGroupTransactionEvents()) {
+        return new TxGroupingSerialGatewaySenderTypeFactory();
+      } else {
+        return new SerialGatewaySenderTypeFactory();
+      }
     }
   }
 
@@ -284,13 +294,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
               "GatewaySender socket read timeout");
         }
       }
-    }
-
-    if (attributes.mustGroupTransactionEvents() && attributes.isBatchConflationEnabled()) {
-      throw new GatewaySenderException(
-          format(
-              "GatewaySender %s cannot be created with both group transaction events set to true and batch conflation enabled",
-              attributes.getId()));
     }
   }
 

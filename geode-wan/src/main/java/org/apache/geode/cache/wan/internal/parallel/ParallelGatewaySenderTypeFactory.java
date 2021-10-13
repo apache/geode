@@ -29,14 +29,20 @@ import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class ParallelGatewaySenderTypeFactory implements GatewaySenderTypeFactory {
+
+  @Override
+  public @NotNull String getType() {
+    return "ParallelGatewaySender";
+  }
+
   @Override
   public void validate(final @NotNull MutableGatewaySenderAttributes attributes)
       throws GatewaySenderException {
     if ((attributes.getOrderPolicy() != null)
         && attributes.getOrderPolicy().equals(GatewaySender.OrderPolicy.THREAD)) {
       throw new GatewaySenderException(
-          format("Parallel Gateway Sender %s can not be created with OrderPolicy %s",
-              attributes.getId(), attributes.getOrderPolicy()));
+          format("%s %s can not be created with OrderPolicy %s",
+              getType(), attributes.getId(), attributes.getOrderPolicy()));
     }
   }
 
@@ -52,4 +58,5 @@ public class ParallelGatewaySenderTypeFactory implements GatewaySenderTypeFactor
       final @NotNull GatewaySenderAttributes attributes) {
     return new ParallelGatewaySenderCreation(cache, attributes);
   }
+
 }

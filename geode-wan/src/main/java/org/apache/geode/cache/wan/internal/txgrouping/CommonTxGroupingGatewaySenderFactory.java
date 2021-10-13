@@ -13,28 +13,24 @@
  * the License.
  */
 
-package org.apache.geode.cache.wan.internal;
+package org.apache.geode.cache.wan.internal.txgrouping;
+
+import static java.lang.String.format;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.cache.wan.internal.GatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
-import org.apache.geode.internal.statistics.StatisticsClock;
 
-public interface GatewaySenderTypeFactory {
-
-  @NotNull
-  String getType();
-
-  void validate(@NotNull MutableGatewaySenderAttributes attributes) throws GatewaySenderException;
-
-  GatewaySender create(@NotNull InternalCache cache, @NotNull StatisticsClock clock,
-      @NotNull GatewaySenderAttributes attributes);
-
-  GatewaySender createCreation(@NotNull InternalCache cache,
-      @NotNull GatewaySenderAttributes attributes);
-
+public abstract class CommonTxGroupingGatewaySenderFactory {
+  public static void validate(final @NotNull GatewaySenderTypeFactory factory,
+      final @NotNull MutableGatewaySenderAttributes attributes) {
+    if (attributes.isBatchConflationEnabled()) {
+      throw new GatewaySenderException(
+          format(
+              "%s %s cannot be created with both group transaction events set to true and batch conflation enabled",
+              factory.getType(), attributes.getId()));
+    }
+  }
 }
