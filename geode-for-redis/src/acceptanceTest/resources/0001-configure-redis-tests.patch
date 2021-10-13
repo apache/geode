@@ -1499,7 +1499,7 @@ index 7122fd987..2274c82cc 100644
      }
  
 diff --git a/tests/unit/type/zset.tcl b/tests/unit/type/zset.tcl
-index a8c817f6e..5ac8691d3 100644
+index a8c817f6e..8f079d777 100644
 --- a/tests/unit/type/zset.tcl
 +++ b/tests/unit/type/zset.tcl
 @@ -7,22 +7,22 @@ start_server {tags {"zset"}} {
@@ -1550,21 +1550,17 @@ index a8c817f6e..5ac8691d3 100644
          }
  
          test "ZADD with options syntax error with incomplete pair" {
-@@ -548,119 +548,122 @@ start_server {tags {"zset"}} {
-             assert_equal 0 [r exists zset]
+@@ -549,118 +549,120 @@ start_server {tags {"zset"}} {
          }
  
--        test "ZUNIONSTORE against non-existing key doesn't set destination - $encoding" {
+         test "ZUNIONSTORE against non-existing key doesn't set destination - $encoding" {
 -            r del zseta
 -            assert_equal 0 [r zunionstore dst_key 1 zseta]
 -            assert_equal 0 [r exists dst_key]
--        }
-+        # Geode fails with: Expected '1' to be equal to '0'
-+        # test "ZUNIONSTORE against non-existing key doesn't set destination - $encoding" {
-+        #     r del "{slot}zseta"
-+        #     assert_equal 0 [r zunionstore "{slot}dst_key" 1 "{slot}zseta"]
-+        #     assert_equal 0 [r exists "{slot}dst_key"]
-+        # }
++            r del "{slot}zseta"
++            assert_equal 0 [r zunionstore "{slot}dst_key" 1 "{slot}zseta"]
++            assert_equal 0 [r exists "{slot}dst_key"]
+         }
  
          test "ZUNIONSTORE with empty set - $encoding" {
 -            r del zseta zsetb
@@ -1748,7 +1744,7 @@ index a8c817f6e..5ac8691d3 100644
                  }
              }
          }
-@@ -689,93 +692,98 @@ start_server {tags {"zset"}} {
+@@ -689,93 +691,98 @@ start_server {tags {"zset"}} {
              assert_equal {d 3 c 2} [r zpopmax z1 2]
          }
  
@@ -1917,7 +1913,7 @@ index a8c817f6e..5ac8691d3 100644
              assert {$score >= $oldscore}
              set oldscore $score
          }
-@@ -786,19 +794,19 @@ start_server {tags {"zset"}} {
+@@ -786,19 +793,19 @@ start_server {tags {"zset"}} {
      }
  
      proc stressers {encoding} {
@@ -1950,7 +1946,7 @@ index a8c817f6e..5ac8691d3 100644
  
          test "ZSCORE - $encoding" {
              r del zscoretest
-@@ -809,9 +817,11 @@ start_server {tags {"zset"}} {
+@@ -809,9 +816,11 @@ start_server {tags {"zset"}} {
                  r zadd zscoretest $score $i
              }
  
@@ -1964,7 +1960,7 @@ index a8c817f6e..5ac8691d3 100644
              }
          }
  
-@@ -824,10 +834,12 @@ start_server {tags {"zset"}} {
+@@ -824,10 +833,12 @@ start_server {tags {"zset"}} {
                  r zadd zscoretest $score $i
              }
  
@@ -1980,7 +1976,7 @@ index a8c817f6e..5ac8691d3 100644
              }
          }
  
-@@ -867,7 +879,7 @@ start_server {tags {"zset"}} {
+@@ -867,7 +878,7 @@ start_server {tags {"zset"}} {
                      lappend auxlist [lindex $x 1]
                  }
  
@@ -1989,7 +1985,7 @@ index a8c817f6e..5ac8691d3 100644
                  set fromredis [r zrange myzset 0 -1]
                  set delta 0
                  for {set i 0} {$i < [llength $fromredis]} {incr i} {
-@@ -886,7 +898,7 @@ start_server {tags {"zset"}} {
+@@ -886,7 +897,7 @@ start_server {tags {"zset"}} {
                  r zadd zset [expr rand()] $i
              }
  
@@ -1998,7 +1994,7 @@ index a8c817f6e..5ac8691d3 100644
              for {set i 0} {$i < 100} {incr i} {
                  set min [expr rand()]
                  set max [expr rand()]
-@@ -1028,16 +1040,16 @@ start_server {tags {"zset"}} {
+@@ -1028,16 +1039,16 @@ start_server {tags {"zset"}} {
  
          test "ZREMRANGEBYLEX fuzzy test, 100 ranges in $elements element sorted set - $encoding" {
              set lexset {}
@@ -2018,7 +2014,7 @@ index a8c817f6e..5ac8691d3 100644
                  set lexsetcopy $lexset
  
                  set min [randstring 0 30 alpha]
-@@ -1048,13 +1060,13 @@ start_server {tags {"zset"}} {
+@@ -1048,13 +1059,13 @@ start_server {tags {"zset"}} {
                  if {$maxinc} {set cmax "\[$max"} else {set cmax "($max"}
  
                  # Make sure data is the same in both sides
@@ -2037,7 +2033,7 @@ index a8c817f6e..5ac8691d3 100644
  
                  # Remove the range with Tcl from the original list
                  if {$toremlen} {
-@@ -1073,7 +1085,7 @@ start_server {tags {"zset"}} {
+@@ -1073,7 +1084,7 @@ start_server {tags {"zset"}} {
                  r zrem myzset "Element-[expr int(rand()*$elements)]"
              }
  
@@ -2046,7 +2042,7 @@ index a8c817f6e..5ac8691d3 100644
              set l1 [r zrange myzset 0 -1]
              set l2 [r zrevrange myzset 0 -1]
              for {set j 0} {$j < [llength $l1]} {incr j} {
-@@ -1094,7 +1106,7 @@ start_server {tags {"zset"}} {
+@@ -1094,7 +1105,7 @@ start_server {tags {"zset"}} {
                  } else {
                      set score [expr rand()]
                      r zadd myzset $score $i
@@ -2055,7 +2051,7 @@ index a8c817f6e..5ac8691d3 100644
                  }
  
                  set card [r zcard myzset]
-@@ -1111,100 +1123,106 @@ start_server {tags {"zset"}} {
+@@ -1111,100 +1122,106 @@ start_server {tags {"zset"}} {
              assert_equal {} $err
          }
  
@@ -2249,7 +2245,7 @@ index a8c817f6e..5ac8691d3 100644
          for {set times 0} {$times < 10} {incr times} {
              r del zset
              for {set j 0} {$j < 1000} {incr j} {
-@@ -1225,6 +1243,6 @@ start_server {tags {"zset"}} {
+@@ -1225,6 +1242,6 @@ start_server {tags {"zset"}} {
                  set prev_score $score
              }
          }

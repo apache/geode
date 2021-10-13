@@ -299,6 +299,7 @@ public class RedisSortedSet extends AbstractRedisData {
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
       if (set == NULL_REDIS_SORTED_SET) {
+        regionProvider.getLocalDataRegion().remove(key);
         return 0;
       } else {
         sets.add(set);
@@ -344,7 +345,11 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
 
-    regionProvider.getLocalDataRegion().put(key, this);
+    if (removeFromRegion()) {
+      regionProvider.getDataRegion().remove(key);
+    } else {
+      regionProvider.getLocalDataRegion().put(key, this);
+    }
 
     return getSortedSetSize();
   }
@@ -512,9 +517,12 @@ public class RedisSortedSet extends AbstractRedisData {
       }
     }
 
-    scoreSet.addAll(members.values());
-
-    regionProvider.getLocalDataRegion().put(key, this);
+    if (removeFromRegion()) {
+      regionProvider.getDataRegion().remove(key);
+    } else {
+      scoreSet.addAll(members.values());
+      regionProvider.getLocalDataRegion().put(key, this);
+    }
 
     return getSortedSetSize();
   }
