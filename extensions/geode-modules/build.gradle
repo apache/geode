@@ -24,18 +24,25 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  api(project(':geode-logging'))
-  implementation(project(':geode-membership'))
-  api(project(':geode-common'))
-  implementation(project(':geode-serialization'))
-  implementation('org.slf4j:slf4j-api')
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+
 
   api(project(':geode-core'))
+  api(project(':geode-logging'))
+  api(project(':geode-common'))
 
-  compileOnly(platform(project(':boms:geode-all-bom')))
+
   compileOnly('javax.servlet:javax.servlet-api')
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:catalina:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
+  compileOnly('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+
+
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-serialization'))
+  implementation('org.slf4j:slf4j-api')
 
 
   // test
@@ -45,6 +52,9 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  testImplementation('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
+  testImplementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+
 
 
   // integrationTest
@@ -52,11 +62,20 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.mockito:mockito-core')
 
 
   // distributedTest
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version'))
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.mockito:mockito-core')
+
 }
 
 sonarqube {

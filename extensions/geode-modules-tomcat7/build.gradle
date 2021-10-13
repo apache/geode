@@ -32,6 +32,8 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version'))
   compileOnly('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat7.version'))
+  compileOnly('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
+  compileOnly('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat7.version'))
 
 
   // test
@@ -41,12 +43,16 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version'))
   testImplementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat7.version'))
+  testImplementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
+  testImplementation('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat7.version'))
 
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.httpunit:httpunit')
+  integrationTestImplementation('org.mockito:mockito-core')
   integrationTestImplementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat7.version'))
   integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version'))
 }
