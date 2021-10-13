@@ -31,8 +31,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderTypeFactory;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
-import org.apache.geode.cache.wan.internal.txgrouping.parallel.TxGroupingParallelGatewaySenderTypeFactory;
-import org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -234,16 +232,26 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       final @NotNull GatewaySenderAttributes attributes) {
     if (attributes.isParallel()) {
       if (attributes.mustGroupTransactionEvents()) {
-        return new TxGroupingParallelGatewaySenderTypeFactory();
+        return findGatewaySenderTypeFactory(
+            "org.apache.geode.cache.wan.internal.txgrouping.parallel.TxGroupingParallelGatewaySenderTypeFactory");
       } else {
         return new ParallelGatewaySenderTypeFactory();
       }
     } else {
       if (attributes.mustGroupTransactionEvents()) {
-        return new TxGroupingSerialGatewaySenderTypeFactory();
+        return findGatewaySenderTypeFactory(
+            "org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderTypeFactory");
       } else {
         return new SerialGatewaySenderTypeFactory();
       }
+    }
+  }
+
+  private static GatewaySenderTypeFactory findGatewaySenderTypeFactory(final @NotNull String name) {
+    try {
+      return (GatewaySenderTypeFactory) Class.forName(name).newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      throw new GatewaySenderException(format("Can't find GatewaySender factory for %s.", name), e);
     }
   }
 

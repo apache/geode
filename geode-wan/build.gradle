@@ -40,6 +40,9 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.mockito:mockito-core')
 
+  // TODO jbarrett remove
+  testRuntimeOnly(project(':geode-wan-txgrouping'))
+
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('junit:junit')

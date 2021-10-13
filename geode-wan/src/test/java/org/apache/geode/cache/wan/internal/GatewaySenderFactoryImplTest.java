@@ -97,11 +97,14 @@ public class GatewaySenderFactoryImplTest {
     when(attributes.getRemoteDSId()).thenReturn(42);
     when(attributes.getDispatcherThreads()).thenReturn(1);
     when(attributes.mustGroupTransactionEvents()).thenReturn(true);
-    when(attributes.isBatchConflationEnabled()).thenReturn(true);
+    when(attributes.isBatchConflationEnabled()).thenReturn(true);;
 
-    assertThatThrownBy(() -> GatewaySenderFactoryImpl.validate(cache, attributes)).isInstanceOf(
-        GatewaySenderException.class).hasMessageContaining(
-            "both group transaction events set to true and batch conflation enabled");
+    assertThatThrownBy(
+        () -> GatewaySenderFactoryImpl.getGatewaySenderTypeFactory(attributes).validate(attributes))
+            .isInstanceOf(
+                GatewaySenderException.class)
+            .hasMessageContaining(
+                "both group transaction events set to true and batch conflation enabled");
   }
 
   @Test
