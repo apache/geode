@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.data.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;

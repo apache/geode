@@ -18,9 +18,9 @@ package org.apache.geode.redis.internal.netty;
 
 
 
-import static org.apache.geode.redis.internal.RedisConstants.CONNECT_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.RedisConstants.WRITE_TIMEOUT_SECONDS;
-import static org.apache.geode.redis.internal.data.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.CONNECT_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

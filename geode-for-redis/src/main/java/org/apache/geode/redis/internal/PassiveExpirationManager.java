@@ -18,8 +18,8 @@ package org.apache.geode.redis.internal;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
-import static org.apache.geode.redis.internal.RedisConstants.EXPIRATION_INTERVAL_SECONDS;
-import static org.apache.geode.redis.internal.data.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.EXPIRATION_INTERVAL_SECONDS;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
