@@ -614,6 +614,32 @@ jobs:
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
               ./geode-develop/dev-tools/release/license_review.sh -v $FULL_VERSION
+  - name: all-passed
+    serial: true
+    public: true
+    plan:
+      - in_parallel:
+        - get: geode
+          trigger: true
+          passed:
+            - verify-license
+            - upthewaterspout
+            - run-gfsh-from-tgz
+            - verify-no-binaries
+            - build-geode-from-tag
+            - build-geode-from-src-tgz
+            - verify-expected-files-and-keys
+        - get: geode-examples
+          passed:
+            - run-geode-examples-jdk11
+            - run-geode-examples-from-src-tgz-jdk8
+        - get: geode-native
+          passed:
+            - build-geode-native-from-tag
+            - build-geode-native-from-src-tgz
+        - get: geode-benchmarks
+          passed:
+            - benchmarks-test
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML
