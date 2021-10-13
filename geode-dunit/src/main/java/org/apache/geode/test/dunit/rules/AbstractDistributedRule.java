@@ -78,7 +78,7 @@ class AbstractDistributedRule implements SerializableTestRule {
   void beforeDistributedTest(final Description description) throws Throwable {
     TestHistoryLogger.logTestHistory(description.getTestClass().getSimpleName(),
         description.getMethodName());
-    DUnitLauncher.launchIfNeeded(vmCount, classloaderIsolated);
+    DUnitLauncher.launchIfNeeded(vmCount, true, classloaderIsolated);
     System.out.println("\n\n[setup] START TEST " + description.getClassName() + "."
         + description.getMethodName());
 
