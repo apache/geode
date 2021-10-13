@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -35,14 +34,13 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
-import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.query.dunit.SecurityTestUtils.KeysCacheListener;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -209,16 +207,7 @@ public class AuthExpirationDUnitTest {
         .containsExactly("DATA:READ:region:key0");
   }
 
-  private static class MyCacheListener extends CacheListenerAdapter<Object, Object> {
-    public List<String> keys = new CopyOnWriteArrayList<>();
-
-    @Override
-    public void afterCreate(EntryEvent event) {
-      keys.add((String) event.getKey());
-    }
-  }
-
-  private static MyCacheListener myListener = new MyCacheListener();
+  private static KeysCacheListener myListener = new KeysCacheListener();
 
   @Test
   public void registeredInterest_slowReAuth_policyNone_durableClient() throws Exception {
@@ -232,7 +221,7 @@ public class AuthExpirationDUnitTest {
 
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user1");
-      myListener = new MyCacheListener();
+      myListener = new KeysCacheListener();
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region<Object, Object> region = clientCache
           .createClientRegionFactory(ClientRegionShortcut.PROXY)

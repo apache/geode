@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqException;
@@ -30,6 +32,7 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.security.ExpirableSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -79,6 +82,15 @@ public class SecurityTestUtils {
 
     public List<String> getKeys() {
       return keys;
+    }
+  }
+
+  public static class KeysCacheListener extends CacheListenerAdapter<Object, Object> {
+    public List<String> keys = new CopyOnWriteArrayList<>();
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      keys.add((String) event.getKey());
     }
   }
 
