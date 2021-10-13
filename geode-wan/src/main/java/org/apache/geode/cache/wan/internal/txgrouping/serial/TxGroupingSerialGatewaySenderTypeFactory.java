@@ -20,14 +20,12 @@ import static java.lang.String.format;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
 import org.apache.geode.cache.wan.internal.txgrouping.CommonTxGroupingGatewaySenderFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class TxGroupingSerialGatewaySenderTypeFactory extends SerialGatewaySenderTypeFactory {
@@ -58,13 +56,13 @@ public class TxGroupingSerialGatewaySenderTypeFactory extends SerialGatewaySende
   public GatewaySender create(final @NotNull InternalCache cache,
       final @NotNull StatisticsClock clock,
       final @NotNull GatewaySenderAttributes attributes) {
-    return new SerialGatewaySenderImpl(cache, clock, attributes);
+    return new TxGroupingSerialGatewaySenderImpl(cache, clock, attributes);
   }
 
   @Override
   public GatewaySender createCreation(final @NotNull InternalCache cache,
       final @NotNull GatewaySenderAttributes attributes) {
-    return new SerialGatewaySenderCreation(cache, attributes);
+    return new TxGroupingSerialGatewaySenderCreation(cache, attributes);
   }
 
 }

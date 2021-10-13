@@ -126,8 +126,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean isParallel;
 
-  protected boolean groupTransactionEvents;
-
   protected int retriesToGetTransactionEventsFromQueue;
 
   protected boolean isForInternalUse;
@@ -257,7 +255,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     alertThreshold = attrs.getAlertThreshold();
     copyDeprecatedAttributes(attrs);
     isParallel = attrs.isParallel();
-    groupTransactionEvents = attrs.mustGroupTransactionEvents();
     retriesToGetTransactionEventsFromQueue = attrs.getRetriesToGetTransactionEventsFromQueue();
     isForInternalUse = attrs.isForInternalUse();
     diskStoreName = attrs.getDiskStoreName();
@@ -564,7 +561,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   @Override
   public boolean mustGroupTransactionEvents() {
-    return groupTransactionEvents;
+    return false;
   }
 
   /**
@@ -743,7 +740,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    *
    */
   public void setGroupTransactionEvents(boolean groupTransactionEvents) {
-    this.groupTransactionEvents = groupTransactionEvents;
+    // TODO jbarrett remove this
   }
 
   /**
