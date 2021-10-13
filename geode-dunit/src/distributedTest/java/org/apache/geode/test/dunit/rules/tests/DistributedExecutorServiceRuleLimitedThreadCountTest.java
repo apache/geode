@@ -22,13 +22,9 @@ import static org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule.b
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.Future;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -41,65 +37,66 @@ import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 @SuppressWarnings("serial")
 public class DistributedExecutorServiceRuleLimitedThreadCountTest implements Serializable {
 
-  private static final int PARALLEL_TASK_COUNT = 2;
-  private static final int PARTY_COUNT = 3;
+  private static final int THREAD_COUNT = 2;
   private static final long TIMEOUT = getTimeout().toMinutes();
   private static final TimeUnit UNIT = TimeUnit.MINUTES;
-  private static final AtomicBoolean CANCELED = new AtomicBoolean();
-  private static final AtomicBoolean COMPLETED = new AtomicBoolean();
-  private static final AtomicReference<CyclicBarrier> BARRIER = new AtomicReference<>();
-
-  private static final AtomicReference<Collection<Future<Void>>> TASKS =
-      new AtomicReference<>(new ArrayList<>());
+  private static final AtomicInteger STARTED_TASKS = new AtomicInteger();
+  private static final AtomicInteger COMPLETED_TASKS = new AtomicInteger();
+  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
 
   @Rule
   public DistributedExecutorServiceRule executorServiceRule = builder()
-      .threadCount(PARALLEL_TASK_COUNT).vmCount(1).build();
+      .threadCount(THREAD_COUNT).vmCount(1).build();
 
   @Before
   public void setUp() {
     Stream.of(getController(), getVM(0)).forEach(vm -> vm.invoke(() -> {
-      CANCELED.set(false);
-      COMPLETED.set(false);
-      BARRIER.set(new CyclicBarrier(PARTY_COUNT, () -> COMPLETED.set(true)));
-      TASKS.get().clear();
+      STARTED_TASKS.set(0);
+      COMPLETED_TASKS.set(0);
+      LATCH.set(new CountDownLatch(1));
     }));
   }
 
   @Test
-  public void limitsThreadCount() {
+  public void limitsRunningTasksToThreadCount() {
+    // start THREAD_COUNT threads to use up the executor's thread pool
     Stream.of(getController(), getVM(0)).forEach(vm -> vm.invoke(() -> {
-      for (int i = 1; i <= PARALLEL_TASK_COUNT; i++) {
-        TASKS.get().add(executorServiceRule.submit(() -> {
-          try {
-            BARRIER.get().await(TIMEOUT, UNIT);
-          } catch (BrokenBarrierException e) {
-            if (!CANCELED.get()) {
-              throw e;
-            }
-          }
-        }));
+      for (int i = 1; i <= THREAD_COUNT; i++) {
+        executorServiceRule.submit(() -> {
+          // increment count of started tasks and use a LATCH to keep it running
+          STARTED_TASKS.incrementAndGet();
+          assertThat(LATCH.get().await(TIMEOUT, UNIT)).isTrue();
+          COMPLETED_TASKS.incrementAndGet();
+        });
       }
 
-      await().untilAsserted(
-          () -> assertThat(BARRIER.get().getNumberWaiting()).isEqualTo(PARALLEL_TASK_COUNT));
-
-      for (Future<Void> task : TASKS.get()) {
-        assertThat(task).isNotDone();
-      }
-
-      assertThat(COMPLETED).isFalse();
-
-      for (Future<Void> task : TASKS.get()) {
-        CANCELED.set(true);
-        task.cancel(true);
-      }
-
+      // count of started tasks should be the same as THREAD_COUNT
       await().untilAsserted(() -> {
-        for (Future<Void> task : TASKS.get()) {
-          assertThat(task).isCancelled();
-          assertThat(task).isDone();
-        }
+        assertThat(STARTED_TASKS.get()).isEqualTo(THREAD_COUNT);
+        assertThat(COMPLETED_TASKS.get()).isZero();
+      });
+
+      // try to start one more task, but it should end up queued instead of started
+      executorServiceRule.submit(() -> {
+        STARTED_TASKS.incrementAndGet();
+        assertThat(LATCH.get().await(TIMEOUT, UNIT)).isTrue();
+        COMPLETED_TASKS.incrementAndGet();
+      });
+
+      // started tasks should still be the same as THREAD_COUNT
+      assertThat(STARTED_TASKS.get()).isEqualTo(THREAD_COUNT);
+      assertThat(COMPLETED_TASKS.get()).isZero();
+
+      // number of threads running in executor should also be the same as THREAD_COUNT
+      assertThat(executorServiceRule.getThreads()).hasSize(THREAD_COUNT);
+
+      // open latch to let started tasks complete, and queued task should also start and finish
+      LATCH.get().countDown();
+
+      // all tasks should eventually complete as the executor threads finish tasks
+      await().untilAsserted(() -> {
+        assertThat(STARTED_TASKS.get()).isEqualTo(THREAD_COUNT + 1);
+        assertThat(COMPLETED_TASKS.get()).isEqualTo(THREAD_COUNT + 1);
       });
     }));
   }
