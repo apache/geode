@@ -38,7 +38,8 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 public class AnalyzeMembershipSerializablesIntegrationTest
     extends AnalyzeDataSerializablesJUnitTestBase {
 
-  private final DSFIDSerializer dsfidSerializer = new DSFIDSerializerFactory().create();
+  private final DSFIDSerializer dsfidSerializer =
+      new DSFIDSerializerFactory().create();
 
   @Override
   protected String getModuleName() {
@@ -64,7 +65,5 @@ public class AnalyzeMembershipSerializablesIntegrationTest
   }
 
   @Override
-  protected void initializeSerializationService() {
-    Services.registerSerializables(dsfidSerializer);
-  }
+  protected void initializeSerializationService() {}
 }

@@ -527,7 +527,7 @@ public class JGroupsMessengerJUnitTest {
 
     // send a big message and expect fragmentation
     MemberIdentifier recipient = broadcastMessage ? null : messenger.localAddress;
-    services.getSerializer().registerDSFID(ByteHolder.DSFID, ByteHolder.class);
+    services.getSerializer().register(ByteHolder.DSFID, ByteHolder.class);
     JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
         new ByteHolder(
             new byte[(int) (services.getConfig().getUdpFragmentSize()

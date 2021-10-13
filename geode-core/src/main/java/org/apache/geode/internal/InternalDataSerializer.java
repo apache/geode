@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -111,6 +112,7 @@ import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -335,6 +337,17 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }).create();
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
+
+    ServiceLoader<DataSerializableFixedIdRegistrant> loaders = ServiceLoader.load(
+        DataSerializableFixedIdRegistrant.class);
+    for (DataSerializableFixedIdRegistrant loader : loaders) {
+      try {
+        loader.register(dsfidSerializer);
+      } catch (Exception ex) {
+        logger.warn("Data serializable fixed ID loader '{}' failed",
+            loader.getClass().getName(), ex);
+      }
+    }
   }
 
   /**

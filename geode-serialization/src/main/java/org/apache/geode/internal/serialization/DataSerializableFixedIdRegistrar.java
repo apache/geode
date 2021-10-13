@@ -13,28 +13,15 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.data;
+package org.apache.geode.internal.serialization;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.assertj.core.api.Assertions.assertThat;
+@FunctionalInterface
+public interface DataSerializableFixedIdRegistrar {
 
-import org.junit.Test;
+  /**
+   * Register the constructor for a fixed ID class. Use this to register your
+   * DataSerializableFixedID classes so that deserialization knows how to instantiate them.
+   */
+  void register(int fixedId, Class<? extends DataSerializableFixedID> fixedIdClass);
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
-
-public class RedisKeyJUnitTest {
-
-  @Test
-  public void testSerialization() throws Exception {
-    RedisKey keyOut = new RedisKey(stringToBytes("012345"));
-
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    DataSerializer.writeObject(keyOut, out);
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-
-    RedisKey keyIn = DataSerializer.readObject(in);
-    assertThat(keyIn).isEqualTo(keyOut);
-  }
 }

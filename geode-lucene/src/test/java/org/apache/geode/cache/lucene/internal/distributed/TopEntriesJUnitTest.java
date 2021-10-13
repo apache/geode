@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
@@ -88,7 +87,6 @@ public class TopEntriesJUnitTest {
   @Test
   @SuppressWarnings("unchecked")
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     TopEntries<String> hits = new TopEntries<>(3);
 
     TopEntries<String> copy = CopyHelper.deepCopy(hits);

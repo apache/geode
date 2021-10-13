@@ -174,7 +174,6 @@ public class GMSMembershipJUnitTest {
 
     DSFIDSerializer serializer = new DSFIDSerializerImpl();
     when(services.getSerializer()).thenReturn(serializer);
-    Services.registerSerializables(serializer);
   }
 
   @After
@@ -187,7 +186,7 @@ public class GMSMembershipJUnitTest {
 
   @Test
   public void testSendMessage() throws Exception {
-    services.getSerializer().registerDSFID(HIGH_PRIORITY_ACKED_MESSAGE, TestMessage.class);
+    services.getSerializer().register(HIGH_PRIORITY_ACKED_MESSAGE, TestMessage.class);
     TestMessage m = new TestMessage();
     m.setRecipient(mockMembers[0]);
     manager.getGMSManager().start();

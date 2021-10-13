@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
@@ -28,7 +27,6 @@ public class FileJUnitTest {
 
   @Test
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     File file = new File(null, "fileName");
     file.modified = -10;
     file.length = 5;

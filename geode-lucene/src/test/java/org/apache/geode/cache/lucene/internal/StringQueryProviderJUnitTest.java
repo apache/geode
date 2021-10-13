@@ -73,7 +73,6 @@ public class StringQueryProviderJUnitTest {
 
   @Test
   public void testSerialization() {
-    LuceneServiceImpl.registerDataSerializables();
     StringQueryProvider provider = new StringQueryProvider("text:search", DEFAULT_FIELD);
     StringQueryProvider copy = CopyHelper.deepCopy(provider);
     assertEquals("text:search", copy.getQueryString());

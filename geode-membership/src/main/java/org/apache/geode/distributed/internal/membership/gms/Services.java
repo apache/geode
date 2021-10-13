@@ -74,6 +74,8 @@ import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMes
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -83,7 +85,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * exceptional situations to see if Membership is shutting down.
  */
 @SuppressWarnings("ConstantConditions")
-public class Services<ID extends MemberIdentifier> {
+public class Services<ID extends MemberIdentifier> implements DataSerializableFixedIdRegistrant {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -156,29 +158,32 @@ public class Services<ID extends MemberIdentifier> {
     this.auth = authenticator;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
-    registerSerializables(serializer);
+  }
+
+  @Override
+  public void register(DataSerializableFixedIdRegistrar registrar) {
+    registerSerializables(registrar);
   }
 
   @VisibleForTesting
-  public static void registerSerializables(DSFIDSerializer serializer) {
-    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
-    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
-    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
-    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
-    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
-    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
-    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
-    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
-    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
-    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
-    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
-    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
-    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
-    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
-    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
-    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
-
+  public static void registerSerializables(DataSerializableFixedIdRegistrar serializer) {
+    serializer.register(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.register(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.register(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.register(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.register(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.register(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.register(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.register(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.register(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.register(NETVIEW, GMSMembershipView.class);
+    serializer.register(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.register(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.register(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.register(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.register(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.register(JOIN_REQUEST, JoinRequestMessage.class);
+    serializer.register(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
   }
 
   /**

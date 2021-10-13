@@ -37,29 +37,19 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisSetTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
-
-  @BeforeClass
-  public static void beforeClass() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_SET_ID,
-        RedisSet.class);
-  }
 
   @Test
   public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {

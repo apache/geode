@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -41,12 +40,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   @Immutable
   private static final KnownVersion[] KNOWN_VERSIONS = {KnownVersion.GEODE_1_6_0};
 
-  static {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(CLI_FUNCTION_RESULT,
-        CliFunctionResult.class);
-
-  }
-
   private String memberIdOrName;
   private Serializable[] serializables = new String[0];
   private Object resultObject;
@@ -55,7 +48,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private StatusState state;
 
   public enum StatusState {
-    OK, ERROR, IGNORABLE
+    OK, ERROR, IGNORABLE;
   }
 
   @Deprecated

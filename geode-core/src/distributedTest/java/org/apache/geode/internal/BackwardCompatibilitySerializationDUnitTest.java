@@ -29,12 +29,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -68,21 +68,20 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     super();
   }
 
+  @BeforeClass
+  public static void classSetup() {
+    InternalDataSerializer.getDSFIDSerializer()
+        .register(TestMessage.TEST_MESSAGE_DSFID, TestMessage.class);
+  }
+
   @Override
   public final void postSetUp() {
     baos = new ByteArrayOutputStream();
-    // register TestMessage using an existing dsfid
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     resetFlags();
-    // reset the class mapped to the dsfid
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.PUTALL_VERSIONS_LIST,
-        EntryVersionsList.class);
     baos = null;
     bais = null;
   }
@@ -167,7 +166,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     for (int i = 0; i < 256; i++) {
       Constructor<?> cons =
-          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap()[i];
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+              .getDsfidmap()[i];
       if (!constdsfids.contains(i - Byte.MAX_VALUE - 1) && cons != null) {
         Object ds = cons.newInstance((Object[]) null);
         checkSupportForRollingUpgrade(ds);
@@ -176,8 +176,9 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     // some msgs require distributed system
     Cache c = getCache();
-    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
-        .getDsfidmap2().values()) {
+    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer
+        .getDSFIDSerializer())
+            .getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {
         DataSerializableFixedID ds = (DataSerializableFixedID) cons.newInstance((Object[]) null);
@@ -249,6 +250,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     private static final KnownVersion[] dsfidVersions =
         new KnownVersion[] {KnownVersion.GEODE_1_1_0, KnownVersion.GEODE_1_5_0};
 
+    private static final int TEST_MESSAGE_DSFID = 12345;
+
     public TestMessage() {}
 
     @Override
@@ -294,7 +297,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     @Override
     public int getDSFID() {
-      return DataSerializableFixedID.PUTALL_VERSIONS_LIST;
+      return TEST_MESSAGE_DSFID;
     }
 
   }

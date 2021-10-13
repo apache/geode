@@ -27,7 +27,7 @@ import java.io.IOException;
  * <p>
  * Use DSFIDSerializerFactory to construct a serialization service.
  */
-public interface DSFIDSerializer {
+public interface DSFIDSerializer extends DataSerializableFixedIdRegistrar {
   /**
    * Returns a plug-in object that can serialize Objects that are not handled by
    * DSFIDSerializer. The default implementation handles only DataSerializableFixedID.
@@ -45,13 +45,6 @@ public interface DSFIDSerializer {
    * See DSFIDSerializerFactory#setObjectDeserializer
    */
   ObjectDeserializer getObjectDeserializer();
-
-  /**
-   * Register the constructor for a fixed ID class. Use this to register your
-   * DataSerializableFixedID
-   * classes so that deserialization knows how to instantiate them.
-   */
-  void registerDSFID(int dsfid, Class<?> dsfidClass);
 
   /**
    * Creates a DataSerializableFixedID or StreamableFixedID instance by deserializing it from the

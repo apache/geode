@@ -13,28 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.data;
+package org.apache.geode.internal.serialization;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+/**
+ * Service loader interface used to register Data Serializable Fixed IDs. Geode
+ * {@code CacheService}s should implement this SPI instead of explicitly registering DSFIDs during
+ * service initialization.
+ */
+@FunctionalInterface
+public interface DataSerializableFixedIdRegistrant {
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
+  void register(DataSerializableFixedIdRegistrar registrar);
 
-public class RedisKeyJUnitTest {
-
-  @Test
-  public void testSerialization() throws Exception {
-    RedisKey keyOut = new RedisKey(stringToBytes("012345"));
-
-    HeapDataOutputStream out = new HeapDataOutputStream(100);
-    DataSerializer.writeObject(keyOut, out);
-    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-
-    RedisKey keyIn = DataSerializer.readObject(in);
-    assertThat(keyIn).isEqualTo(keyOut);
-  }
 }

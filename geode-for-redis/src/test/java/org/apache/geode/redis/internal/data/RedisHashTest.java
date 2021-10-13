@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -46,9 +45,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
@@ -59,13 +56,6 @@ public class RedisHashTest {
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
   private final ReflectionSingleObjectSizer elementSizer =
       new ReflectionSingleObjectSizer();
-
-  @BeforeClass
-  public static void beforeClass() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_HASH_ID,
-        RedisHash.class);
-  }
 
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {

@@ -78,6 +78,7 @@ public class MembershipIntegrationTest {
   public void before() throws IOException, MembershipConfigurationException {
     localHost = LocalHostUtil.getLocalHost();
     dsfidSerializer = new DSFIDSerializerImpl();
+    Services.registerSerializables(dsfidSerializer);
     socketCreator = new TcpSocketCreatorImpl();
   }
 

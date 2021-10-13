@@ -32,28 +32,18 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 
 public class RedisStringTest {
   private final ReflectionObjectSizer reflectionObjectSizer = ReflectionObjectSizer.getInstance();
-
-  @BeforeClass
-  public static void beforeClass() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_STRING_ID,
-        RedisString.class);
-  }
 
   @Test
   public void constructorSetsValue() {

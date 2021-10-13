@@ -13,4 +13,4 @@
 # the License.
 #
 
-org.apache.geode.redis.internal.GeodeRedisService
+org.apache.geode.cache.lucene.internal.LuceneServiceImpl

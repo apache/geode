@@ -25,16 +25,12 @@ import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
 
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
-import org.apache.geode.redis.internal.data.RedisHash;
 
 public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrationTest {
 
@@ -48,13 +44,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private static final String SORTED_SET_KEY = HASHTAG + "sortedSet";
 
   protected Jedis jedis;
-
-  @BeforeClass
-  public static void classSetup() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.REDIS_HASH_ID,
-        RedisHash.class);
-  }
 
   @Before
   public void setup() {

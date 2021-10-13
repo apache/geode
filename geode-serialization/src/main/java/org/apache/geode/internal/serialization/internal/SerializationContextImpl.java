@@ -27,7 +27,8 @@ public class SerializationContextImpl extends AbstractSerializationContext
   private final DataOutput dataOutput;
   private final DSFIDSerializer serializer;
 
-  public SerializationContextImpl(DataOutput dataOutput, DSFIDSerializer serializer) {
+  public SerializationContextImpl(DataOutput dataOutput,
+      DSFIDSerializer serializer) {
     this.dataOutput = dataOutput;
     this.serializer = serializer;
   }

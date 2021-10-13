@@ -70,7 +70,6 @@ import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheService;
@@ -81,6 +80,8 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
+import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -93,7 +94,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 8.5
  */
-public class LuceneServiceImpl implements InternalLuceneService {
+public class LuceneServiceImpl implements InternalLuceneService, DataSerializableFixedIdRegistrant {
   public static LuceneIndexImplFactory luceneIndexFactory = new LuceneIndexImplFactory();
   private static final Logger logger = LogService.getLogger();
 
@@ -133,7 +134,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     FunctionService.registerFunction(new WaitUntilFlushedFunction());
     FunctionService.registerFunction(new IndexingInProgressFunction());
     FunctionService.registerFunction(new DumpDirectoryFiles());
-    registerDataSerializables();
 
     return true;
   }
@@ -608,51 +608,40 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
   }
 
-  /** Public for test purposes */
-  public static void registerDataSerializables() {
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(CREATE_REGION_MESSAGE_LUCENE,
+  @Override
+  public void register(DataSerializableFixedIdRegistrar registrar) {
+    registrar.register(CREATE_REGION_MESSAGE_LUCENE,
         CreateRegionProcessorForLucene.CreateRegionMessage.class);
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(DataSerializableFixedID.LUCENE_FILE,
-        File.class);
+    registrar.register(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
+    registrar.register(DataSerializableFixedID.LUCENE_FILE, File.class);
+
+    registrar.register(DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
         LuceneFunctionContext.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
+    registrar.register(DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
         StringQueryProvider.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
         TopEntriesCollectorManager.class);
 
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
+    registrar.register(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
 
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
+    registrar.register(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
+    registrar.register(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
         WaitUntilFlushedFunctionContext.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
+    registrar.register(DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
         DestroyLuceneIndexMessage.class);
 
-    InternalDataSerializer.getDSFIDSerializer()
-        .registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+    registrar.register(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
 
-    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
-        DataSerializableFixedID.LUCENE_RESULT_STRUCT,
+    registrar.register(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
         LuceneResultStructImpl.class);
   }
 
