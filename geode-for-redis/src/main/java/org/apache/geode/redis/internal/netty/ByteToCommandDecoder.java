@@ -121,7 +121,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     }
 
     if (arrayLength > UNAUTHENTICATED_MAX_ARRAY_SIZE
-        && !securityService.isAuthenticated(channelId)) {
+        && securityService.isEnabled() && !securityService.isAuthenticated(channelId)) {
       throw new RedisException(ERROR_UNAUTHENTICATED_MULTIBULK);
     }
 
@@ -165,7 +165,7 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     }
 
     if (bulkStringLength > UNAUTHENTICATED_MAX_BULK_STRING_LENGTH
-        && !securityService.isAuthenticated(channelId)) {
+        && securityService.isEnabled() && !securityService.isAuthenticated(channelId)) {
       throw new RedisException(ERROR_UNAUTHENTICATED_BULK);
     }
 

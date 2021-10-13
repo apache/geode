@@ -179,6 +179,20 @@ public abstract class AbstractAuthIntegrationTest {
   }
 
   @Test
+  public void givenNoSecurity_largeMultiBulkRequestsSucceed_whenNotAuthenticated()
+      throws Exception {
+    setupCacheWithoutSecurity();
+
+    List<String> msetArgs = new ArrayList<>();
+    for (int i = 0; i < ByteToCommandDecoder.UNAUTHENTICATED_MAX_ARRAY_SIZE; i++) {
+      msetArgs.add("{hash}key-" + i);
+      msetArgs.add("value-" + i);
+    }
+
+    assertThat(jedis.mset(msetArgs.toArray(new String[] {}))).isEqualTo("OK");
+  }
+
+  @Test
   public void givenSecurity_largeBulkStringRequestsFail_whenNotAuthenticated() throws Exception {
     setupCacheWithSecurity();
 
@@ -206,6 +220,20 @@ public abstract class AbstractAuthIntegrationTest {
     }
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.set("key", largeString.toString())).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenNoSecurity_largeBulkStringRequestsSucceed_whenNotAuthenticated()
+      throws Exception {
+    setupCacheWithoutSecurity();
+    int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
+
+    StringBuilder largeString = new StringBuilder(stringSize);
+    for (int i = 0; i < stringSize; i++) {
+      largeString.append("a");
+    }
+
     assertThat(jedis.set("key", largeString.toString())).isEqualTo("OK");
   }
 
