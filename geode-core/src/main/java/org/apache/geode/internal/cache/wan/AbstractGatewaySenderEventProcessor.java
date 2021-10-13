@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.EXCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE;
+import static org.apache.geode.internal.cache.wan.GatewaySenderEventImpl.TransactionMetadataDisposition.INCLUDE_LAST_EVENT;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -886,7 +890,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           event.setCallbackArgument(geCallbackArg);
           // OFFHEAP: event for pdx type meta data so it should never be off-heap
           GatewaySenderEventImpl pdxSenderEvent =
-              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null, false);
+              new GatewaySenderEventImpl(EnumListenerEvent.AFTER_UPDATE, event, null);
 
           pdxEventsMap.put(typeEntry.getKey(), pdxSenderEvent);
           pdxSenderEventsList.add(pdxSenderEvent);
@@ -1307,6 +1311,18 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   public void removeCacheListener() {
 
+  }
+
+  protected GatewaySenderEventImpl.TransactionMetadataDisposition getTransactionMetadataDisposition(
+      final boolean isLastEventInTransaction) {
+    if (getSender().mustGroupTransactionEvents()) {
+      if (isLastEventInTransaction) {
+        return INCLUDE_LAST_EVENT;
+      }
+      return INCLUDE;
+    } else {
+      return EXCLUDE;
+    }
   }
 
   /**

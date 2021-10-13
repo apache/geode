@@ -123,7 +123,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     // change 42466). bucketID is merged with eventID.getBucketID
     gatewayQueueEvent =
         new GatewaySenderEventImpl(operation, event, substituteValue, true, eventID.getBucketID(),
-            isLastEventInTransaction);
+            getTransactionMetadataDisposition(isLastEventInTransaction));
 
     enqueueEvent(gatewayQueueEvent);
   }
