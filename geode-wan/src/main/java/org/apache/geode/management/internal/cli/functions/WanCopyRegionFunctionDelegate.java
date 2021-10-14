@@ -46,6 +46,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DefaultEntryEventFactory;
+import org.apache.geode.internal.cache.DestroyedEntry;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -70,6 +71,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
   private final Clock clock;
   private final ThreadSleeper threadSleeper;
   private final EventCreator eventCreator;
+  private long functionStartTimestamp = 0;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -87,6 +89,11 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
   public CliFunctionResult wanCopyRegion(InternalCache cache, String memberName,
       Region<?, ?> region,
       GatewaySender sender, long maxRate, int batchSize) throws InterruptedException {
+    functionStartTimestamp = ((InternalRegion) region).getCache().cacheTimeMillis();
+    // Wait for some milliseconds so that it is not possible to have entries
+    // updated that at the same time are read and copied by this command (those with
+    // newer timestamp than the functionStartTimestamp will not be copied).
+    Thread.sleep(500);
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
     Iterator<?> entriesIter = getEntries(region, sender).iterator();
@@ -165,7 +172,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     while (iter.hasNext() && batchIndex < batchSize) {
       GatewayQueueEvent<?, ?> event =
           eventCreator.createGatewaySenderEvent(cache, region, sender,
-              (Region.Entry<?, ?>) iter.next());
+              (Region.Entry<?, ?>) iter.next(), functionStartTimestamp);
       if (event != null) {
         batch.add(event);
         batchIndex++;
@@ -312,18 +319,21 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
   @FunctionalInterface
   interface EventCreator extends Serializable {
     GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
-        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry);
+        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry,
+        long newestTimestampAllowed);
   }
 
   static class EventCreatorImpl implements EventCreator {
     @VisibleForTesting
     public GatewayQueueEvent<?, ?> createGatewaySenderEvent(InternalCache cache,
-        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry) {
+        InternalRegion region, GatewaySender sender, Region.Entry<?, ?> entry,
+        long newestTimestampAllowed) {
       final EntryEventImpl event;
       if (region instanceof PartitionedRegion) {
-        event = createEventForPartitionedRegion(sender, cache, region, entry);
+        event =
+            createEventForPartitionedRegion(sender, cache, region, entry, newestTimestampAllowed);
       } else {
-        event = createEventForReplicatedRegion(cache, region, entry);
+        event = createEventForReplicatedRegion(cache, region, entry, newestTimestampAllowed);
       }
       if (event == null) {
         return null;
@@ -339,15 +349,17 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
 
     private EntryEventImpl createEventForReplicatedRegion(InternalCache cache,
         InternalRegion region,
-        Region.Entry<?, ?> entry) {
-      return createEvent(cache, region, entry);
+        Region.Entry<?, ?> entry,
+        long newestTimestampAllowed) {
+      return createEvent(cache, region, entry, newestTimestampAllowed);
     }
 
     private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender,
         InternalCache cache,
         InternalRegion region,
-        Region.Entry<?, ?> entry) {
-      EntryEventImpl event = createEvent(cache, region, entry);
+        Region.Entry<?, ?> entry,
+        long newestTimestampAllowed) {
+      EntryEventImpl event = createEvent(cache, region, entry, newestTimestampAllowed);
       if (event == null) {
         return null;
       }
@@ -364,9 +376,12 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     }
 
     private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
-        Region.Entry<?, ?> entry) {
+        Region.Entry<?, ?> entry, long newestTimestampAllowed) {
       EntryEventImpl event;
       try {
+        if (mustDiscardEntry(entry, newestTimestampAllowed)) {
+          return null;
+        }
         event = new DefaultEntryEventFactory().create(region, Operation.UPDATE,
             entry.getKey(),
             entry.getValue(), null, false,
@@ -381,6 +396,49 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       }
       event.setNewEventId(cache.getInternalDistributedSystem());
       return event;
+    }
+
+    /**
+     * Entries are discarded if the entry has been destroyed or
+     * if the timestamp of the entry points to a moment in time
+     * later than the timestamp passed.
+     * The timestamp passed must be the timestamp when the command started.
+     * This is done so that the command only copies entries created
+     * or updated before the command was launched. Entries created
+     * or updated after will be replicated by the normal WAN replication
+     * mechanism.
+     * Doing this, two things are accomplished:
+     * - The command is more efficient as it does not copy entries that
+     * will anyway be replicated by the normal WAN replication mechanism.
+     * - A race condition that could reorder events in the receiver is avoided:
+     * If there are two put operations in the same millisecond and also
+     * the command reads this entry in this same millisecond, it could be
+     * that the command reads the first value put but the replication of
+     * the second value arrives to the other site before the replication
+     * of the command. Given that the timestamp for the entry of both values
+     * is the same, the first value will overwrite the second value in the
+     * receiving site.
+     *
+     * @param entry Entry to be or not to be discarded
+     * @param newestTimestampAllowed timestamp to compare with the entry's timestamp
+     * @return true if the entry is an instance of DestroyedEntry or if the
+     *         timestamp of the entry points to a point in time later than the timestamp
+     *         passed.
+     */
+    private boolean mustDiscardEntry(Region.Entry<?, ?> entry, long newestTimestampAllowed) {
+      if (entry instanceof DestroyedEntry) {
+        return true;
+      }
+      long timestamp;
+      if (entry instanceof NonTXEntry) {
+        timestamp = ((NonTXEntry) entry).getRegionEntry().getVersionStamp().getVersionTimeStamp();
+      } else {
+        timestamp = ((EntrySnapshot) entry).getVersionTag().getVersionTimeStamp();
+      }
+      if (timestamp > newestTimestampAllowed) {
+        return true;
+      }
+      return false;
     }
   }
 }

@@ -2923,12 +2923,31 @@ public class WANTestBase extends DistributedTestCase {
   public void checkEqualRegionData(String regionName, VM vm1, VM vm2) {
     assertThat(vm1.invoke(() -> getRegionSize(regionName)))
         .isEqualTo(vm2.invoke(() -> getRegionSize(regionName)));
-    for (Object key : vm1.invoke(() -> getKeys(regionName))) {
-      assertThat(vm1.invoke(() -> getValueForEntry((long) key, regionName)))
-          .isEqualTo(vm2.invoke(() -> getValueForEntry((long) key, regionName)));
-      assertThat(vm1.invoke(() -> getTimestampForEntry((long) key, regionName)))
-          .isEqualTo(vm2.invoke(() -> getTimestampForEntry((long) key, regionName)));
+    Map regionData1 = vm1.invoke(() -> getRegionData(regionName));
+    Map regionData2 = vm2.invoke(() -> getRegionData(regionName));
+    assertThat(regionData1).isEqualTo(regionData2);
+
+    regionData1 = vm1.invoke(() -> getKeysTimestamps(regionName));
+    regionData2 = vm2.invoke(() -> getKeysTimestamps(regionName));
+    assertThat(regionData1).isEqualTo(regionData2);
+  }
+
+  private Map getRegionData(String regionName) {
+    final Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
+    Map map = new HashMap();
+    for (Object key : region.keySet()) {
+      map.put(key, region.get(key));
     }
+    return map;
+  }
+
+  private Map getKeysTimestamps(String regionName) {
+    final Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
+    Map map = new HashMap();
+    for (Object key : region.keySet()) {
+      map.put(key, getTimestampForEntry(key, regionName));
+    }
+    return map;
   }
 
   public static Object getValueForEntry(long key, String regionName) {
@@ -2936,7 +2955,7 @@ public class WANTestBase extends DistributedTestCase {
     return r.get(key);
   }
 
-  public static long getTimestampForEntry(long key, String regionName) {
+  public static long getTimestampForEntry(Object key, String regionName) {
     final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
     if (r.getEntry(key) == null) {
       return 0;
