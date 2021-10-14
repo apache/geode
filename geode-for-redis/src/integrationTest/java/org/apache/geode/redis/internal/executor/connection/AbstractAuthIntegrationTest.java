@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
@@ -214,13 +215,10 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithSecurity();
     int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
 
-    StringBuilder largeString = new StringBuilder(stringSize);
-    for (int i = 0; i < stringSize; i++) {
-      largeString.append("a");
-    }
+    String largeString = StringUtils.repeat('a', stringSize);
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
-    assertThat(jedis.set("key", largeString.toString())).isEqualTo("OK");
+    assertThat(jedis.set("key", largeString)).isEqualTo("OK");
   }
 
   @Test
@@ -229,12 +227,9 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
     int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
 
-    StringBuilder largeString = new StringBuilder(stringSize);
-    for (int i = 0; i < stringSize; i++) {
-      largeString.append("a");
-    }
+    String largeString = StringUtils.repeat('a', stringSize);
 
-    assertThat(jedis.set("key", largeString.toString())).isEqualTo("OK");
+    assertThat(jedis.set("key", largeString)).isEqualTo("OK");
   }
 
   @Test
@@ -264,8 +259,7 @@ public abstract class AbstractAuthIntegrationTest {
         .untilAsserted(() -> assertThatNoException().isThrownBy(() -> socketRef.set(
             new Socket(BIND_ADDRESS, getPort(), InetAddress.getLoopbackAddress(), localPort))));
 
-    Socket clientSocket = socketRef.get();
-    try {
+    try (Socket clientSocket = socketRef.get()) {
       clientSocket.setSoTimeout(1000);
       PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -275,8 +269,6 @@ public abstract class AbstractAuthIntegrationTest {
       String response = in.readLine();
 
       assertThat(response).contains(ERROR_NOT_AUTHENTICATED);
-    } finally {
-      clientSocket.close();
     }
   }
 
