@@ -20,8 +20,8 @@ jbossModulesExtension {
     geodeConfigurations {
         main {
             outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-            jbossJdkModulesDependencies = [ "java.se", "jdk.unsupported", "java.rmi", "jdk.scripting.nashorn","java.desktop"]
-            externalLibraryJbossJDKModules = [ "java.se", "jdk.unsupported", "java.rmi", "jdk.scripting.nashorn","java.desktop","java.logging"]
+            jbossJdkModulesDependencies = [ "java.base"]
+            externalLibraryJbossJDKModules = [ "java.base", "jdk.unsupported", "java.rmi", "jdk.scripting.nashorn","java.desktop","java.logging"]
             packagesToExport = []
         }
         distributedTest {
