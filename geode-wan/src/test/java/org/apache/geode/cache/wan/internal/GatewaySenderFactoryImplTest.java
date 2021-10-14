@@ -89,53 +89,6 @@ public class GatewaySenderFactoryImplTest {
   }
 
   @Test
-  public void validateThrowsIfMustGroupTransactionEventsAndIsBatchConflationEnabled() {
-    final InternalCache cache = mock(InternalCache.class);
-    final DistributionManager distributionManager = mock(DistributionManager.class);
-    when(cache.getDistributionManager()).thenReturn(distributionManager);
-    final GatewaySenderAttributesImpl attributes = mock(GatewaySenderAttributesImpl.class);
-    when(attributes.getRemoteDSId()).thenReturn(42);
-    when(attributes.getDispatcherThreads()).thenReturn(1);
-    when(attributes.mustGroupTransactionEvents()).thenReturn(true);
-    when(attributes.isBatchConflationEnabled()).thenReturn(true);;
-
-    assertThatThrownBy(
-        () -> GatewaySenderFactoryImpl.getGatewaySenderTypeFactory(attributes).validate(attributes))
-            .isInstanceOf(
-                GatewaySenderException.class)
-            .hasMessageContaining(
-                "both group transaction events set to true and batch conflation enabled");
-  }
-
-  @Test
-  public void validateThrowsIfMustGroupTransactionEventsAndNotIsBatchConflationEnabled() {
-    final InternalCache cache = mock(InternalCache.class);
-    final DistributionManager distributionManager = mock(DistributionManager.class);
-    when(cache.getDistributionManager()).thenReturn(distributionManager);
-    final GatewaySenderAttributesImpl attributes = mock(GatewaySenderAttributesImpl.class);
-    when(attributes.getRemoteDSId()).thenReturn(42);
-    when(attributes.getDispatcherThreads()).thenReturn(1);
-    when(attributes.mustGroupTransactionEvents()).thenReturn(true);
-    when(attributes.isBatchConflationEnabled()).thenReturn(false);
-
-    assertThatNoException().isThrownBy(() -> GatewaySenderFactoryImpl.validate(cache, attributes));
-  }
-
-  @Test
-  public void validateThrowsIfNotMustGroupTransactionEventsAndIsBatchConflationEnabled() {
-    final InternalCache cache = mock(InternalCache.class);
-    final DistributionManager distributionManager = mock(DistributionManager.class);
-    when(cache.getDistributionManager()).thenReturn(distributionManager);
-    final GatewaySenderAttributesImpl attributes = mock(GatewaySenderAttributesImpl.class);
-    when(attributes.getRemoteDSId()).thenReturn(42);
-    when(attributes.getDispatcherThreads()).thenReturn(1);
-    when(attributes.mustGroupTransactionEvents()).thenReturn(false);
-    when(attributes.isBatchConflationEnabled()).thenReturn(true);
-
-    assertThatNoException().isThrownBy(() -> GatewaySenderFactoryImpl.validate(cache, attributes));
-  }
-
-  @Test
   public void validateDoesNotThrow() {
     final InternalCache cache = mock(InternalCache.class);
     final DistributionManager distributionManager = mock(DistributionManager.class);
@@ -143,7 +96,6 @@ public class GatewaySenderFactoryImplTest {
     final GatewaySenderAttributesImpl attributes = mock(GatewaySenderAttributesImpl.class);
     when(attributes.getRemoteDSId()).thenReturn(42);
     when(attributes.getDispatcherThreads()).thenReturn(1);
-    when(attributes.mustGroupTransactionEvents()).thenReturn(false);
     when(attributes.isBatchConflationEnabled()).thenReturn(false);
 
     assertThatNoException().isThrownBy(() -> GatewaySenderFactoryImpl.validate(cache, attributes));

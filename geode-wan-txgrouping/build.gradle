@@ -32,4 +32,11 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-core'))
 
+
+  // test
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('junit:junit')
+  testImplementation('org.mockito:mockito-core')
+
 }

@@ -52,24 +52,6 @@ public class SerialGatewaySenderTypeFactoryTest {
   }
 
   @Test
-  public void validateThrowsIfMustGroupTransactionEventsAndDispatcherThreadsGreaterThan1() {
-    when(attributes.mustGroupTransactionEvents()).thenReturn(true);
-    when(attributes.getDispatcherThreads()).thenReturn(2);
-
-    assertThatThrownBy(() -> factory.validate(attributes))
-        .isInstanceOf(GatewaySenderException.class).hasMessageContaining(
-            "cannot be created with group transaction events set to true when dispatcher threads is greater than 1");
-  }
-
-  @Test
-  public void validateDoesNotThrowIfMustGroupTransactionEvents() {
-    when(attributes.mustGroupTransactionEvents()).thenReturn(true);
-    when(attributes.getDispatcherThreads()).thenReturn(1);
-
-    assertThatNoException().isThrownBy(() -> factory.validate(attributes));
-  }
-
-  @Test
   public void validateMutatesOrderPolicyIfNullAndDispatcherThreadsGreaterThan1() {
     when(attributes.getOrderPolicy()).thenReturn(null);
     when(attributes.getDispatcherThreads()).thenReturn(2);
