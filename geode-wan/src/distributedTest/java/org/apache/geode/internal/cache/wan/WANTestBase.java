@@ -107,9 +107,6 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ConnectionStats;
@@ -432,13 +429,15 @@ public class WANTestBase extends DistributedTestCase {
       }
 
       fact.setOffHeap(offHeap);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
       exp2.remove();
     }
   }
+
 
   public static void createReplicatedProxyRegion(String regionName, String senderIds,
       Boolean offHeap) {
@@ -459,7 +458,8 @@ public class WANTestBase extends DistributedTestCase {
       }
 
       fact.setOffHeap(offHeap);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
@@ -477,7 +477,8 @@ public class WANTestBase extends DistributedTestCase {
       }
     }
 
-    fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
   }
 
   public static void createPersistentReplicatedRegion(String regionName, String senderIds,
@@ -492,7 +493,8 @@ public class WANTestBase extends DistributedTestCase {
     }
 
     fact.setOffHeap(offHeap);
-    fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
   }
 
   public static void createReplicatedRegionWithAsyncEventQueue(String regionName,
@@ -510,7 +512,8 @@ public class WANTestBase extends DistributedTestCase {
       }
 
       fact.setOffHeap(offHeap);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp1.remove();
     }
@@ -532,7 +535,8 @@ public class WANTestBase extends DistributedTestCase {
 
       fact.setOffHeap(offHeap);
       fact.addAsyncEventQueueId(asyncChannelId);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
     }
@@ -540,11 +544,6 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
       DataPolicy policy, Boolean offHeap) {
-    createReplicatedRegion(regionName, senderIds, scope, policy, offHeap, false);
-  }
-
-  public static void createReplicatedRegion(String regionName, String senderIds, Scope scope,
-      DataPolicy policy, Boolean offHeap, boolean statisticsEnabled) {
     RegionFactory fact = cache.createRegionFactory();
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
@@ -557,8 +556,8 @@ public class WANTestBase extends DistributedTestCase {
     fact.setDataPolicy(policy);
     fact.setScope(scope);
     fact.setOffHeap(offHeap);
-    fact.setStatisticsEnabled(statisticsEnabled);
-    fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
   }
 
   public static void createAsyncEventQueue(String asyncChannelId, boolean isParallel,
@@ -598,13 +597,6 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut) {
-    createPartitionedRegion(regionName, senderIds, redundantCopies, totalNumBuckets, offHeap,
-        shortcut, false);
-  }
-
-  public static void createPartitionedRegion(String regionName, String senderIds,
-      Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut,
-      boolean statisticsEnabled) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
@@ -624,8 +616,8 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRecoveryDelay(0);
       fact.setPartitionAttributes(pfact.create());
       fact.setOffHeap(offHeap);
-      fact.setStatisticsEnabled(statisticsEnabled);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
@@ -653,7 +645,8 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRedundantCopies(redundantCopies);
       pfact.setRecoveryDelay(0);
       fact.setPartitionAttributes(pfact.create());
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
@@ -682,7 +675,8 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRecoveryDelay(0);
       pfact.setColocatedWith(colocatedWith);
       fact.setPartitionAttributes(pfact.create());
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
@@ -690,13 +684,15 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void addSenderThroughAttributesMutator(String regionName, String senderIds) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     AttributesMutator mutator = r.getAttributesMutator();
     mutator.addGatewaySenderId(senderIds);
   }
 
   public static void addAsyncEventQueueThroughAttributesMutator(String regionName, String queueId) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     AttributesMutator mutator = r.getAttributesMutator();
     mutator.addAsyncEventQueueId(queueId);
   }
@@ -715,7 +711,8 @@ public class WANTestBase extends DistributedTestCase {
     pfact.setTotalNumBuckets(totalNumBuckets);
     pfact.setRedundantCopies(redundantCopies);
     fact.setPartitionAttributes(pfact.create());
-    fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
   }
 
   public static void createPartitionedRegionWithSerialParallelSenderIds(String regionName,
@@ -739,7 +736,8 @@ public class WANTestBase extends DistributedTestCase {
     pfact.setColocatedWith(colocatedWith);
     fact.setPartitionAttributes(pfact.create());
     fact.setOffHeap(offHeap);
-    fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
   }
 
   public static void createPersistentPartitionedRegion(String regionName, String senderIds,
@@ -764,7 +762,8 @@ public class WANTestBase extends DistributedTestCase {
       pfact.setRedundantCopies(redundantCopies);
       fact.setPartitionAttributes(pfact.create());
       fact.setOffHeap(offHeap);
-      fact.create(regionName);
+      Region r = fact.create(regionName);
+      assertNotNull(r);
     } finally {
       exp.remove();
       exp1.remove();
@@ -792,6 +791,7 @@ public class WANTestBase extends DistributedTestCase {
       fact.setOffHeap(offHeap);
       customerRegion =
           (PartitionedRegion) fact.create(customerRegionName);
+      assertNotNull(customerRegion);
       logger.info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
       paf = new PartitionAttributesFactory();
@@ -810,6 +810,7 @@ public class WANTestBase extends DistributedTestCase {
       fact.setOffHeap(offHeap);
       orderRegion =
           (PartitionedRegion) fact.create(orderRegionName);
+      assertNotNull(orderRegion);
       logger.info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
       paf = new PartitionAttributesFactory();
@@ -828,6 +829,7 @@ public class WANTestBase extends DistributedTestCase {
       fact.setOffHeap(offHeap);
       shipmentRegion =
           (PartitionedRegion) fact.create(shipmentRegionName);
+      assertNotNull(shipmentRegion);
       logger.info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
     } finally {
       exp.remove();
@@ -849,14 +851,17 @@ public class WANTestBase extends DistributedTestCase {
     pfact.setRedundantCopies(redundantCopies);
     fact.setPartitionAttributes(pfact.create());
     fact.setOffHeap(offHeap);
-    Region<?, ?> r = fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
 
     pfact.setColocatedWith(r.getName());
     fact.setPartitionAttributes(pfact.create());
     fact.setOffHeap(offHeap);
-    fact.create(regionName + "_child1");
+    Region r1 = fact.create(regionName + "_child1");
+    assertNotNull(r1);
 
-    fact.create(regionName + "_child2");
+    Region r2 = fact.create(regionName + "_child2");
+    assertNotNull(r2);
   }
 
   public static void createColocatedPartitionedRegions2(String regionName, String senderIds,
@@ -874,15 +879,18 @@ public class WANTestBase extends DistributedTestCase {
     pfact.setRedundantCopies(redundantCopies);
     fact.setPartitionAttributes(pfact.create());
     fact.setOffHeap(offHeap);
-    Region<?, ?> r = fact.create(regionName);
+    Region r = fact.create(regionName);
+    assertNotNull(r);
 
     fact = cache.createRegionFactory(RegionShortcut.PARTITION);
     pfact.setColocatedWith(r.getName());
     fact.setPartitionAttributes(pfact.create());
     fact.setOffHeap(offHeap);
-    fact.create(regionName + "_child1");
+    Region r1 = fact.create(regionName + "_child1");
+    assertNotNull(r1);
 
-    fact.create(regionName + "_child2");
+    Region r2 = fact.create(regionName + "_child2");
+    assertNotNull(r2);
   }
 
   public static void createCacheInVMs(Integer locatorPort, VM... vms) {
@@ -1025,6 +1033,7 @@ public class WANTestBase extends DistributedTestCase {
    */
   public static Integer createCacheServer() {
     CacheServer server1 = cache.addCacheServer();
+    assertNotNull(server1);
     server1.setPort(0);
     try {
       server1.start();
@@ -1183,6 +1192,7 @@ public class WANTestBase extends DistributedTestCase {
 
     BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage
         .send((InternalDistributedMember) destination, region, bucketId, true);
+    assertNotNull(response);
     assertTrue(response.waitForResponse());
   }
 
@@ -1204,6 +1214,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkConnectionStats(String senderId) {
     AbstractGatewaySender sender =
         (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
+    assertNotNull(sender);
 
     Collection statsCollection = sender.getProxy().getEndpointManager().getAllStats().values();
     assertTrue(statsCollection.iterator().next() instanceof ConnectionStats);
@@ -1247,6 +1258,7 @@ public class WANTestBase extends DistributedTestCase {
   public static int getGatewaySenderPoolDisconnects(String senderId) {
     AbstractGatewaySender sender =
         (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
+    assertNotNull(sender);
 
     PoolStats poolStats = sender.getProxy().getStats();
 
@@ -1306,23 +1318,6 @@ public class WANTestBase extends DistributedTestCase {
     }
     assertEquals(eventsReceived, gatewayReceiverStats.getEventsReceived());
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
-  }
-
-  public static List<Long> getReceiverStats() {
-    Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
-    GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
-    assertTrue(stats instanceof GatewayReceiverStats);
-    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
-    List<Long> statsList = new ArrayList<>();
-    statsList.add(gatewayReceiverStats.getEventsReceived());
-    statsList.add(gatewayReceiverStats.getEventsRetried());
-    statsList.add(gatewayReceiverStats.getProcessBatchRequests());
-    statsList.add(gatewayReceiverStats.getDuplicateBatchesReceived());
-    statsList.add(gatewayReceiverStats.getOutoforderBatchesReceived());
-    statsList.add(gatewayReceiverStats.getEarlyAcks());
-    statsList.add(gatewayReceiverStats.getExceptionsOccurred());
-    return statsList;
   }
 
   public static void checkMinimumGatewayReceiverStats(int processBatches, int eventsReceived) {
@@ -1589,7 +1584,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   private void addCacheListenerOnRegion(String regionName) {
-    Region<?, ?> region = cache.getRegion(regionName);
+    Region region = cache.getRegion(regionName);
     AttributesMutator mutator = region.getAttributesMutator();
     listener1 = new QueueListener();
     mutator.addCacheListener(listener1);
@@ -2189,26 +2184,19 @@ public class WANTestBase extends DistributedTestCase {
     return port;
   }
 
-  public static void createClientWithLocatorAndRegion(int port0, String host, String regionName,
-      ClientRegionShortcut regionType) {
-    cache = (Cache) new ClientCacheFactory().addPoolLocator(host, port0).create();
-
-    ((ClientCache) cache).createClientRegionFactory(regionType)
-        .create(regionName);
-  }
-
-  public static void createClientWithLocatorAndRegion(int port0, String host, String regionName) {
-    createClientWithLocatorAndRegion(port0, host);
+  public static void createClientWithLocator(int port0, String host, String regionName) {
+    createClientWithLocator(port0, host);
 
     RegionFactory factory = cache.createRegionFactory(RegionShortcut.LOCAL);
     factory.setPoolName("pool");
 
     region = factory.create(regionName);
     region.registerInterest("ALL_KEYS");
+    assertNotNull(region);
     logger.info("Distributed Region " + regionName + " created Successfully :" + region.toString());
   }
 
-  public static void createClientWithLocatorAndRegion(final int port0, final String host) {
+  public static void createClientWithLocator(final int port0, final String host) {
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
@@ -2270,7 +2258,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp2 =
         IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
-      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = 1; i <= numPuts; i++) {
         txMgr.begin();
         r.put(i, i);
@@ -2289,7 +2278,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp2 =
         IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
-      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         r.put(i, value);
       }
@@ -2305,7 +2295,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp2 =
         IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
-      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         r.put(i, "Value_" + i);
       }
@@ -2321,6 +2312,7 @@ public class WANTestBase extends DistributedTestCase {
         IgnoredException ignored1 =
             IgnoredException.addIgnoredException(GatewaySenderException.class)) {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         cache.getCacheTransactionManager().begin();
         r.put(i, "Value_" + i);
@@ -2335,7 +2327,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp2 =
         IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
     try {
-      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
         r.put(key, "Value_" + i);
       }
@@ -2347,28 +2340,32 @@ public class WANTestBase extends DistributedTestCase {
 
 
   public static void doPutsAfter300(String regionName, int numPuts) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (long i = 300; i < numPuts; i++) {
       r.put(i, "Value_" + i);
     }
   }
 
   public static void doPutsFrom(String regionName, int from, int numPuts) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (long i = from; i < numPuts; i++) {
       r.put(i, "Value_" + i);
     }
   }
 
   public static void doDestroys(String regionName, int keyNum) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (long i = 0; i < keyNum; i++) {
       r.destroy(i);
     }
   }
 
   public static void doPutAll(String regionName, int numPuts, int size) {
-    Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (long i = 0; i < numPuts; i++) {
       Map putAllMap = new HashMap();
       for (long j = 0; j < size; j++) {
@@ -2381,14 +2378,16 @@ public class WANTestBase extends DistributedTestCase {
 
 
   public static void doPutsWithKeyAsString(String regionName, int numPuts) {
-    Region<String, String> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (long i = 0; i < numPuts; i++) {
       r.put("Object_" + i, "Value_" + i);
     }
   }
 
   public static void putGivenKeyValue(String regionName, Map keyValues) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (Object key : keyValues.keySet()) {
       r.put(key, keyValues.get(key));
     }
@@ -2398,6 +2397,8 @@ public class WANTestBase extends DistributedTestCase {
       int eventsPerTransaction) {
     Region orderRegion = cache.getRegion(orderRegionName);
     Region shipmentRegion = cache.getRegion(shipmentRegionName);
+    assertNotNull(orderRegion);
+    assertNotNull(shipmentRegion);
     int eventInTransaction = 0;
     CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
     for (Object key : keyValues.keySet()) {
@@ -2423,7 +2424,8 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doPutsInsideTransactions(String regionName, Map keyValues,
       int eventsPerTransaction) {
-    Region<Object, Object> r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
     int eventInTransaction = 0;
     CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
     for (Object key : keyValues.keySet()) {
@@ -2446,7 +2448,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void destroyRegion(String regionName, final int min) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     await().until(() -> r.size() > min);
     r.destroyRegion();
   }
@@ -2455,7 +2458,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp =
         IgnoredException.addIgnoredException(PRLocallyDestroyedException.class.getName());
     try {
-      Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       r.localDestroyRegion();
     } finally {
       exp.remove();
@@ -2474,6 +2478,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   protected static Map putCustomerPartitionedRegion(int numPuts, String valueSuffix) {
+    assertNotNull(cache);
+    assertNotNull(customerRegion);
     Map custKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2494,6 +2500,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map putOrderPartitionedRegion(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(orderRegion);
     Map orderKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2517,6 +2525,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map putOrderPartitionedRegionUsingCustId(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(orderRegion);
     Map orderKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2538,6 +2548,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map updateOrderPartitionedRegion(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(orderRegion);
     Map orderKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2561,6 +2573,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map updateOrderPartitionedRegionUsingCustId(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(orderRegion);
     Map orderKeyValues = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2581,6 +2595,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map putShipmentPartitionedRegion(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(shipmentRegion);
     Map shipmentKeyValue = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2605,6 +2621,10 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void putcolocatedPartitionedRegion(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(customerRegion);
+    assertNotNull(orderRegion);
+    assertNotNull(shipmentRegion);
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
       Customer customer = new Customer("Customer" + custid, "Address" + custid);
@@ -2621,6 +2641,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map putShipmentPartitionedRegionUsingCustId(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(shipmentRegion);
     Map shipmentKeyValue = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2641,6 +2663,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map updateShipmentPartitionedRegion(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(shipmentRegion);
     Map shipmentKeyValue = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2665,6 +2689,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Map updateShipmentPartitionedRegionUsingCustId(int numPuts) {
+    assertNotNull(cache);
+    assertNotNull(shipmentRegion);
     Map shipmentKeyValue = new HashMap();
     for (int i = 1; i <= numPuts; i++) {
       CustId custid = new CustId(i);
@@ -2685,14 +2711,16 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void doPutsPDXSerializable(String regionName, int numPuts) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (int i = 0; i < numPuts; i++) {
       r.put("Key_" + i, new SimpleClass(i, (byte) i));
     }
   }
 
   public static void doPutsPDXSerializable2(String regionName, int numPuts) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     for (int i = 0; i < numPuts; i++) {
       r.put("Key_" + i, new SimpleClass1(false, (short) i, "" + i, i, "" + i, "" + i, i, i));
     }
@@ -2700,7 +2728,8 @@ public class WANTestBase extends DistributedTestCase {
 
 
   public static void doTxPuts(String regionName) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     CacheTransactionManager mgr = cache.getCacheTransactionManager();
 
     mgr.begin();
@@ -2712,7 +2741,8 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doTxPutsWithRetryIfError(String regionName, final long putsPerTransaction,
       final long transactions, long offset) {
-    Region<Object, Object> r = cache.getRegion(Region.SEPARATOR + regionName);
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
 
     long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
     long j = 0;
@@ -2756,7 +2786,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp =
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
-      Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+      Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       for (long i = start; i < numPuts; i++) {
         r.put(i, i);
       }
@@ -2858,7 +2889,8 @@ public class WANTestBase extends DistributedTestCase {
       }
     });
 
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
 
     List<Callable<Object>> tasks = new ArrayList<Callable<Object>>();
     for (long i = 0; i < 5; i++) {
@@ -2884,7 +2916,8 @@ public class WANTestBase extends DistributedTestCase {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(CacheClosedException.class.getName());
     try {
-      final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+      final Region r = cache.getRegion(SEPARATOR + regionName);
+      assertNotNull(r);
       if (regionSize != r.keySet().size()) {
         await()
             .untilAsserted(() -> assertEquals(
@@ -2898,35 +2931,6 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-  public List<Object> getKeys(String regionName) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
-    return new ArrayList<>(r.keySet());
-  }
-
-  public void checkEqualRegionData(String regionName, VM vm1, VM vm2) {
-    assertThat(vm1.invoke(() -> getRegionSize(regionName)))
-        .isEqualTo(vm2.invoke(() -> getRegionSize(regionName)));
-    for (Object key : vm1.invoke(() -> getKeys(regionName))) {
-      assertThat(vm1.invoke(() -> getValueForEntry((long) key, regionName)))
-          .isEqualTo(vm2.invoke(() -> getValueForEntry((long) key, regionName)));
-      assertThat(vm1.invoke(() -> getTimestampForEntry((long) key, regionName)))
-          .isEqualTo(vm2.invoke(() -> getTimestampForEntry((long) key, regionName)));
-    }
-  }
-
-  public static Object getValueForEntry(long key, String regionName) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
-    return r.get(key);
-  }
-
-  public static long getTimestampForEntry(long key, String regionName) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
-    if (r.getEntry(key) == null) {
-      return 0;
-    }
-    return r.getEntry(key).getStatistics().getLastModifiedTime();
-  }
-
   public static void validateAsyncEventListener(String asyncQueueId, final int expectedSize) {
     AsyncEventListener theListener = null;
 
@@ -2938,6 +2942,7 @@ public class WANTestBase extends DistributedTestCase {
     }
 
     final Map eventsMap = ((MyAsyncEventListener) theListener).getEventsMap();
+    assertNotNull(eventsMap);
     await()
         .untilAsserted(() -> assertEquals(
             "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size(),
@@ -2988,12 +2993,14 @@ public class WANTestBase extends DistributedTestCase {
     }
 
     final Map eventsMap = ((MyAsyncEventListener) theListener).getEventsMap();
+    assertNotNull(eventsMap);
     logger.info("The events map size is " + eventsMap.size());
     return eventsMap.size();
   }
 
   public static void validateRegionSize_PDX(String regionName, final int regionSize) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     await().untilAsserted(() -> {
       assertEquals("Expected region entries: " + regionSize + " but actual entries: "
           + r.keySet().size() + " present region keyset " + r.keySet(), true,
@@ -3011,7 +3018,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void validateRegionSizeOnly_PDX(String regionName, final int regionSize) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     await()
         .untilAsserted(
             () -> assertEquals(
@@ -3045,7 +3053,8 @@ public class WANTestBase extends DistributedTestCase {
    *
    */
   public static void validateRegionSizeRemainsSame(String regionName, final int regionSizeLimit) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     WaitCriterion wc = new WaitCriterion() {
       final int MIN_VERIFICATION_RUNS = 20;
       int sameRegionSizeCounter = 0;
@@ -3082,17 +3091,20 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static String getRegionFullPath(String regionName) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     return r.getFullPath();
   }
 
   public static Integer getRegionSize(String regionName) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     return r.keySet().size();
   }
 
   public static void validateRegionContents(String regionName, final Map keyValues) {
-    final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
+    final Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     await().untilAsserted(() -> {
       boolean matchFlag = true;
       for (Object key : keyValues.keySet()) {
@@ -3109,7 +3121,8 @@ public class WANTestBase extends DistributedTestCase {
 
 
   public static void doHeavyPuts(String regionName, int numPuts) {
-    Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
+    Region r = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
     // GatewaySender.DEFAULT_BATCH_SIZE * OBJECT_SIZE should be more than MAXIMUM_QUEUE_MEMORY
     // to guarantee overflow
     for (long i = 0; i < numPuts; i++) {
@@ -3118,7 +3131,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void addCacheListenerAndDestroyRegion(String regionName) {
-    final Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
+    final Region region = cache.getRegion(SEPARATOR + regionName);
+    assertNotNull(region);
     CacheListenerAdapter cl = new CacheListenerAdapter() {
       @Override
       public void afterCreate(EntryEvent event) {
@@ -3605,6 +3619,7 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     PoolImpl pool = sender.getProxy();
     if (poolShouldExist) {
+      assertNotNull(pool);
       assertEquals(expectedPoolLocatorsSize, pool.getLocators().size());
     } else {
       assertNull(pool);
@@ -3612,7 +3627,8 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void removeSenderFromTheRegion(String senderId, String regionName) {
-    Region<?, ?> region = cache.getRegion(regionName);
+    Region region = cache.getRegion(regionName);
+    assertNotNull(region);
     region.getAttributesMutator().removeGatewaySenderId(senderId);
   }
 
@@ -3642,6 +3658,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void destroyAsyncEventQueue(String id) {
     AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(id);
+    assertNotNull(aeq);
     aeq.destroy();
   }
 
@@ -4157,6 +4174,7 @@ public class WANTestBase extends DistributedTestCase {
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
+        assertNotNull(bean);
         bean.start();
         assertTrue(bean.isRunning());
       }
@@ -4176,6 +4194,7 @@ public class WANTestBase extends DistributedTestCase {
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
+        assertNotNull(bean);
         bean.stop();
         assertFalse(bean.isRunning());
       }
@@ -4251,8 +4270,10 @@ public class WANTestBase extends DistributedTestCase {
         });
         ManagementService service = ManagementService.getManagementService(cache);
         final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
+        assertNotNull(dsBean);
         Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
         logger.info("Ds Map is: " + dsMap.size());
+        assertNotNull(dsMap);
         assertEquals(true, dsMap.size() > 0);
       }
     };
