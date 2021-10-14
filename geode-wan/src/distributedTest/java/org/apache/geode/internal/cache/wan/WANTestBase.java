@@ -1766,7 +1766,7 @@ public class WANTestBase extends DistributedTestCase {
       gateway.setGroupTransactionEvents(groupTransactionEvents);
       if (groupTransactionEvents && gateway instanceof InternalGatewaySenderFactory) {
         // Set a very high value to avoid flakiness in test cases
-        ((InternalGatewaySenderFactory) gateway).setRetriesToGetTransactionEventsFromQueue(100);
+        ((InternalGatewaySenderFactory) gateway).setRetriesToGetTransactionEventsFromQueue(1000);
       }
       gateway.create(dsName, remoteDsId);
     } finally {
