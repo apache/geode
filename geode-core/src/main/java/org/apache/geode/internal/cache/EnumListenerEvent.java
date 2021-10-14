@@ -106,12 +106,17 @@ public abstract class EnumListenerEvent {
   public static final EnumListenerEvent TIMESTAMP_UPDATE = new TIMESTAMP_UPDATE(); // 18
 
   @Immutable
+  public static final EnumListenerEvent AFTER_UPDATE_WITH_GENERATE_CALLBACKS =
+      new AFTER_UPDATE_WITH_GENERATE_CALLBACKS(); // 19
+
+  @Immutable
   private static final EnumListenerEvent[] instances =
       new EnumListenerEvent[] {AFTER_CREATE, AFTER_UPDATE, AFTER_INVALIDATE, AFTER_DESTROY,
           AFTER_REGION_CREATE, AFTER_REGION_INVALIDATE, AFTER_REGION_CLEAR, AFTER_REGION_DESTROY,
           AFTER_REMOTE_REGION_CREATE, AFTER_REMOTE_REGION_DEPARTURE, AFTER_REMOTE_REGION_CRASH,
           AFTER_ROLE_GAIN, AFTER_ROLE_LOSS, AFTER_REGION_LIVE, AFTER_REGISTER_INSTANTIATOR,
-          AFTER_REGISTER_DATASERIALIZER, AFTER_TOMBSTONE_EXPIRATION, TIMESTAMP_UPDATE};
+          AFTER_REGISTER_DATASERIALIZER, AFTER_TOMBSTONE_EXPIRATION, TIMESTAMP_UPDATE,
+          AFTER_UPDATE_WITH_GENERATE_CALLBACKS};
 
   static {
     for (int i = 0; i < instances.length; i++) {
@@ -412,6 +417,21 @@ public abstract class EnumListenerEvent {
     }
   }
 
+  private static class AFTER_UPDATE_WITH_GENERATE_CALLBACKS extends EnumListenerEvent {
+    protected AFTER_UPDATE_WITH_GENERATE_CALLBACKS() {
+      super("AFTER_UPDATE_WITH_GENERATE_CALLBACKS");
+    }
+
+    @Override
+    public void dispatchEvent(CacheEvent event, CacheListener listener) {}
+
+    @Override
+    public byte getEventCode() {
+      return 19;
+    }
+  }
+
+
   /**
    *
    * This method returns the EnumListenerEvent object corresponding to the cCode given.
@@ -435,6 +455,8 @@ public abstract class EnumListenerEvent {
    * <li>15 - AFTER_REGISTER_INSTANTIATOR
    * <li>16 - AFTER_REGISTER_DATASERIALIZER
    * <li>17 - AFTER_TOMBSTONE_EXPIRATION
+   * <li>18 - TIMESTAMP_UPDATE
+   * <li>19 - AFTER_UPDATE_WITH_GENERATE_CALLBACKS
    * </ul>
    *
    * @param eventCode the eventCode corresponding to the EnumListenerEvent object desired

@@ -5183,8 +5183,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes, boolean isObject,
-      Object callbackArg, ClientProxyMembershipID memberId, boolean fromClient,
-      EntryEventImpl clientEvent) throws TimeoutException, CacheWriterException {
+      Object callbackArg, ClientProxyMembershipID memberId,
+      EntryEventImpl clientEvent, boolean generateCallbacks)
+      throws TimeoutException, CacheWriterException {
 
     EventID eventID = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
@@ -5193,7 +5194,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     @Released
     final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
         null, theCallbackArg, false,
-        memberId.getDistributedMember(), true, eventID);
+        memberId.getDistributedMember(), generateCallbacks, eventID);
 
     try {
       event.setContext(memberId);

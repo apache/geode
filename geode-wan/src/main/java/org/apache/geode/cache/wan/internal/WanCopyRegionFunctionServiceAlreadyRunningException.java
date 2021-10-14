@@ -12,32 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan;
+package org.apache.geode.cache.wan.internal;
 
-import java.util.List;
+import java.io.Serializable;
 
-import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.cache.client.internal.ExecutablePool;
-import org.apache.geode.cache.wan.GatewayQueueEvent;
-
-/**
- * @since GemFire 7.0
- *
- */
-public interface GatewaySenderEventDispatcher {
-
-  boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry);
-
-  boolean isRemoteDispatcher();
-
-  boolean isConnectedToRemote();
-
-  void stop();
-
-  void shutDownAckReaderConnection();
-
-  void sendBatch(List<GatewayQueueEvent<?, ?>> events, Connection connection,
-      ExecutablePool senderPool,
-      int batchId, boolean removeFromQueueOnException)
-      throws BatchException70;
+public class WanCopyRegionFunctionServiceAlreadyRunningException extends Exception
+    implements Serializable {
+  public WanCopyRegionFunctionServiceAlreadyRunningException(String message) {
+    super(message);
+  }
 }
