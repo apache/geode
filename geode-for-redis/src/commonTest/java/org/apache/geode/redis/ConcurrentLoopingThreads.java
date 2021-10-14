@@ -165,12 +165,9 @@ public class ConcurrentLoopingThreads {
         waitForBarrier();
       }
       for (int i = 0; i < iterationCount && running.get(); i++) {
-        try {
-          runnable.accept(i);
-        } finally {
-          if (lockstep) {
-            waitForBarrier();
-          }
+        runnable.accept(i);
+        if (lockstep) {
+          waitForBarrier();
         }
       }
     }

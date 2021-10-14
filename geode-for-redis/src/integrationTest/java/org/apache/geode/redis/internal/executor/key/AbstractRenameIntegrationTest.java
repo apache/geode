@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -248,25 +247,13 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   public void shouldError_givenKeyDeletedDuringRename() {
     int iterations = 2000;
 
-    final AtomicReference<RuntimeException> renameException = new AtomicReference<>(null);
-
     jedis.set("{user1}oldKey", "foo");
 
     try {
       new ConcurrentLoopingThreads(iterations,
-          i -> {
-            try {
-              jedis.rename("{user1}oldKey", "{user1}newKey");
-            } catch (RuntimeException e) {
-              renameException.set(e);
-            }
-          },
+          i -> jedis.rename("{user1}oldKey", "{user1}newKey"),
           i -> jedis.del("{user1}oldKey"))
               .runWithAction(() -> {
-                RuntimeException e = renameException.get();
-                if (e != null) {
-                  throw e;
-                }
                 assertThat(jedis.get("{user1}newKey")).isEqualTo("foo");
                 assertThat(jedis.exists("{user1}oldKey")).isFalse();
                 flushAll();
