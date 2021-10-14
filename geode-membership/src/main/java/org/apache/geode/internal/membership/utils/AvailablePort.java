@@ -15,7 +15,6 @@
 package org.apache.geode.internal.membership.utils;
 
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MCAST_ADDRESS;
-import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -33,8 +32,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -47,34 +44,12 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class AvailablePort {
   private static final String LOWER_BOUND_PROPERTY = "AvailablePort.lowerBound";
   private static final String UPPER_BOUND_PROPERTY = "AvailablePort.upperBound";
-  private static final String MEMBERSHIP_PORT_RANGE_PROPERTY =
-      GeodeGlossary.GEMFIRE_PREFIX + "membership-port-range";
-  private static final Pattern MEMBERSHIP_PORT_RANGE_PATTERN =
-      Pattern.compile("^\\s*(\\d+)\\s*-\\s*(\\d+)\\s*$");
-
   private static final int DEFAULT_PORT_RANGE_LOWER_BOUND = 20001; // 20000/udp is securid
   private static final int DEFAULT_PORT_RANGE_UPPER_BOUND = 29999; // 30000/tcp is spoolfax
-  public static final int AVAILABLE_PORTS_LOWER_BOUND;
-  public static final int AVAILABLE_PORTS_UPPER_BOUND;
-  public static final int MEMBERSHIP_PORTS_LOWER_BOUND;
-  public static final int MEMBERSHIP_PORTS_UPPER_BOUND;
-
-
-  static {
-    AVAILABLE_PORTS_LOWER_BOUND =
-        Integer.getInteger(LOWER_BOUND_PROPERTY, DEFAULT_PORT_RANGE_LOWER_BOUND);
-    AVAILABLE_PORTS_UPPER_BOUND =
-        Integer.getInteger(UPPER_BOUND_PROPERTY, DEFAULT_PORT_RANGE_UPPER_BOUND);
-    String membershipRange = System.getProperty(MEMBERSHIP_PORT_RANGE_PROPERTY, "");
-    Matcher matcher = MEMBERSHIP_PORT_RANGE_PATTERN.matcher(membershipRange);
-    if (matcher.matches()) {
-      MEMBERSHIP_PORTS_LOWER_BOUND = Integer.parseInt(matcher.group(1));
-      MEMBERSHIP_PORTS_UPPER_BOUND = Integer.parseInt(matcher.group(2));
-    } else {
-      MEMBERSHIP_PORTS_LOWER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[0];
-      MEMBERSHIP_PORTS_UPPER_BOUND = DEFAULT_MEMBERSHIP_PORT_RANGE[1];
-    }
-  }
+  public static final int AVAILABLE_PORTS_LOWER_BOUND =
+      Integer.getInteger(LOWER_BOUND_PROPERTY, DEFAULT_PORT_RANGE_LOWER_BOUND);
+  public static final int AVAILABLE_PORTS_UPPER_BOUND =
+      Integer.getInteger(UPPER_BOUND_PROPERTY, DEFAULT_PORT_RANGE_UPPER_BOUND);
 
   /**
    * Is the port available for a Socket (TCP) connection?
@@ -324,21 +299,10 @@ public class AvailablePort {
    * @throws IllegalArgumentException <code>protocol</code> is unknown
    */
   public static int getRandomAvailablePort(int protocol, InetAddress addr) {
-    return getRandomAvailablePort(protocol, addr, false);
-  }
-
-  /**
-   * Returns a randomly selected available port in the range 5001 to 32767.
-   *
-   * @param protocol The protocol to check (either {@link #SOCKET} or {@link #MULTICAST}).
-   * @param addr the bind-address or mcast address to use
-   * @param useMembershipPortRange use true if the port will be used for membership
-   * @throws IllegalArgumentException <code>protocol</code> is unknown
-   */
-  public static int getRandomAvailablePort(int protocol, InetAddress addr,
-      boolean useMembershipPortRange) {
     while (true) {
-      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
+      int port =
+          rand.nextInt(AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND)
+              + AVAILABLE_PORTS_LOWER_BOUND;
       if (isPortAvailable(port, protocol, addr)) {
         return port;
       }
@@ -355,20 +319,6 @@ public class AvailablePort {
     } else {
       rand = new java.security.SecureRandom();
     }
-  }
-
-  private static int getRandomWildcardBindPortNumber(boolean useMembershipPortRange) {
-    int rangeBase;
-    int rangeTop;
-    if (!useMembershipPortRange) {
-      rangeBase = AVAILABLE_PORTS_LOWER_BOUND; // 20000/udp is securid
-      rangeTop = AVAILABLE_PORTS_UPPER_BOUND; // 30000/tcp is spoolfax
-    } else {
-      rangeBase = MEMBERSHIP_PORTS_LOWER_BOUND;
-      rangeTop = MEMBERSHIP_PORTS_UPPER_BOUND;
-    }
-
-    return rand.nextInt(rangeTop - rangeBase) + rangeBase;
   }
 
   public static int getRandomAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
