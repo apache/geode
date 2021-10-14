@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.netty;
 
 
 
-import static org.apache.geode.redis.internal.RedisProperties.CONNECT_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 
@@ -73,7 +72,6 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
 public class NettyRedisServer {
 
   private static final int RANDOM_PORT_INDICATOR = 0;
-  public static final int DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS = 1;
   public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
 
   private static final Logger logger = LogService.getLogger();
@@ -91,7 +89,6 @@ public class NettyRedisServer {
   private final int serverPort;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
-  private final int connectTimeoutSeconds;
   private final int writeTimeoutSeconds;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
@@ -107,8 +104,6 @@ public class NettyRedisServer {
     this.member = member;
     this.securityService = securityService;
 
-    this.connectTimeoutSeconds =
-        getIntegerSystemProperty(CONNECT_TIMEOUT_SECONDS, DEFAULT_REDIS_CONNECT_TIMEOUT_SECONDS, 1);
     this.writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
 
@@ -135,7 +130,6 @@ public class NettyRedisServer {
             .option(ChannelOption.SO_REUSEADDR, true)
             .option(ChannelOption.SO_RCVBUF, getBufferSize())
             .childOption(ChannelOption.SO_KEEPALIVE, true)
-            .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutSeconds * 1000)
             .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
     return createBoundChannel(serverBootstrap, port);
