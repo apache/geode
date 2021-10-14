@@ -18,13 +18,13 @@ package org.apache.geode.redis.internal.pubsub;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
@@ -69,8 +69,18 @@ class PatternSubscriptionManager
   }
 
   public List<PatternSubscriptions> getPatternSubscriptions(byte[] channel) {
+    if (isEmpty()) {
+      return emptyList();
+    }
     SubscriptionId channelId = new SubscriptionId(channel);
-    return computeIfAbsent(patternSubscriptionCache, channelId, this::createPatternSubscriptions);
+    List<PatternSubscriptions> result = patternSubscriptionCache.get(channelId);
+    if (result == null) {
+      result = createPatternSubscriptions(channelId);
+      if (!result.isEmpty()) {
+        patternSubscriptionCache.put(channelId, result);
+      }
+    }
+    return result;
   }
 
   private List<PatternSubscriptions> createPatternSubscriptions(SubscriptionId channelId) {
@@ -109,4 +119,8 @@ class PatternSubscriptionManager
     clearPatternSubscriptionCache();
   }
 
+  @VisibleForTesting
+  int cacheSize() {
+    return patternSubscriptionCache.size();
+  }
 }

@@ -15,10 +15,11 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,12 +33,18 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
       new ConcurrentHashMap<>();
 
   protected ClientSubscriptionManager getClientManager(byte[] channelOrPattern) {
+    if (isEmpty()) {
+      return emptyClientManager();
+    }
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     return clientManagers.getOrDefault(subscriptionId, emptyClientManager());
   }
 
   @Override
   public List<byte[]> getIds() {
+    if (isEmpty()) {
+      return emptyList();
+    }
     final ArrayList<byte[]> result = new ArrayList<>(clientManagers.size());
     for (SubscriptionId key : clientManagers.keySet()) {
       result.add(key.getSubscriptionIdBytes());
@@ -47,6 +54,9 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
 
   @Override
   public List<byte[]> getIds(byte[] pattern) {
+    if (isEmpty()) {
+      return emptyList();
+    }
     final GlobPattern globPattern = new GlobPattern(pattern);
     final ArrayList<byte[]> result = new ArrayList<>();
     for (SubscriptionId key : clientManagers.keySet()) {
@@ -56,6 +66,10 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
       }
     }
     return result;
+  }
+
+  protected boolean isEmpty() {
+    return clientManagers.isEmpty();
   }
 
   @Override
@@ -105,6 +119,9 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
 
   @Override
   public void remove(byte[] channelOrPattern, Client client) {
+    if (isEmpty()) {
+      return;
+    }
     SubscriptionId subscriptionId = new SubscriptionId(channelOrPattern);
     ClientSubscriptionManager manager = clientManagers.get(subscriptionId);
     if (manager == null) {
@@ -136,7 +153,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
 
         @Override
         public Collection<Subscription> getSubscriptions() {
-          return Collections.emptyList();
+          return emptyList();
         }
       };
 

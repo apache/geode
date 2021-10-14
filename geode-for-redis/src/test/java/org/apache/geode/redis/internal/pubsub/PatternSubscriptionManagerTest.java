@@ -69,6 +69,17 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
   }
 
   @Test
+  public void emptyManagerDoesNotCachePatternSubscriptions() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] channel = stringToBytes("channel");
+
+    List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
+
+    assertThat(subscriptions).isEmpty();
+    assertThat(manager.cacheSize()).isZero();
+  }
+
+  @Test
   public void managerWithOneSubscriptionReturnsIt() {
     PatternSubscriptionManager manager = new PatternSubscriptionManager();
     byte[] pattern = stringToBytes("ch*");
@@ -86,6 +97,20 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     assertThat(cachedSubscriptions).isSameAs(subscriptions);
     assertThat(subscriptions).containsExactly(expected);
     assertThat(manager.getPatternSubscriptions(otherChannel)).isEmpty();
+    assertThat(manager.cacheSize()).isOne();
+  }
+
+  @Test
+  public void managerWithOneSubscriptionThatDoesNotMatchChannelDoesNotCache() {
+    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    byte[] pattern = stringToBytes("ch*");
+    byte[] otherChannel = stringToBytes("otherChannel");
+    Client client = mock(Client.class);
+    when(client.addPatternSubscription(eq(pattern))).thenReturn(true);
+    manager.add(pattern, client);
+
+    assertThat(manager.getPatternSubscriptions(otherChannel)).isEmpty();
+    assertThat(manager.cacheSize()).isZero();
   }
 
   @Test
