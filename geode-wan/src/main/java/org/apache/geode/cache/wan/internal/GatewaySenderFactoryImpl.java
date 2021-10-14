@@ -15,6 +15,8 @@
 package org.apache.geode.cache.wan.internal;
 
 import static java.lang.String.format;
+import static java.util.ServiceLoader.load;
+import static java.util.stream.StreamSupport.stream;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,8 +31,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderTypeFactory;
-import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -232,27 +232,26 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       final @NotNull GatewaySenderAttributes attributes) {
     if (attributes.isParallel()) {
       if (attributes.mustGroupTransactionEvents()) {
-        return findGatewaySenderTypeFactory(
-            "org.apache.geode.cache.wan.internal.txgrouping.parallel.TxGroupingParallelGatewaySenderTypeFactory");
+        return findGatewaySenderTypeFactory("TxGroupingParallelGatewaySender");
       } else {
-        return new ParallelGatewaySenderTypeFactory();
+        return findGatewaySenderTypeFactory("ParallelGatewaySender");
       }
     } else {
       if (attributes.mustGroupTransactionEvents()) {
-        return findGatewaySenderTypeFactory(
-            "org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderTypeFactory");
+        return findGatewaySenderTypeFactory("TxGroupingSerialGatewaySender");
       } else {
-        return new SerialGatewaySenderTypeFactory();
+        return findGatewaySenderTypeFactory("SerialGatewaySender");
       }
     }
   }
 
-  private static GatewaySenderTypeFactory findGatewaySenderTypeFactory(final @NotNull String name) {
-    try {
-      return (GatewaySenderTypeFactory) Class.forName(name).newInstance();
-    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      throw new GatewaySenderException(format("Can't find GatewaySender factory for %s.", name), e);
-    }
+  private static @NotNull GatewaySenderTypeFactory findGatewaySenderTypeFactory(
+      final @NotNull String name) {
+    return stream(load(GatewaySenderTypeFactory.class).spliterator(), false)
+        .filter(factory -> factory.getType().equals(name)
+            || factory.getClass().getName().startsWith(name))
+        .findFirst()
+        .orElseThrow(() -> new GatewaySenderException("No factory found for " + name));
   }
 
   static void validate(final @NotNull InternalCache cache,
