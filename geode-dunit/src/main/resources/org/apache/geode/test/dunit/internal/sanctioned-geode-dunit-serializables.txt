@@ -165,7 +165,7 @@ org/apache/geode/test/dunit/rules/DistributedCounters,false,beforeBounceCounters
 org/apache/geode/test/dunit/rules/DistributedDiskDirRule,false,invoker:org/apache/geode/test/dunit/rules/RemoteInvoker,temporaryFolder:org/apache/geode/test/junit/rules/serializable/SerializableTemporaryFolder,testClassName:java/lang/String,testName:org/apache/geode/test/junit/rules/serializable/SerializableTestName,vmCount:int,vmEventListener:org/apache/geode/test/dunit/VMEventListener
 org/apache/geode/test/dunit/rules/DistributedDiskDirRule$InternalVMEventListener,false,this$0:org/apache/geode/test/dunit/rules/DistributedDiskDirRule
 org/apache/geode/test/dunit/rules/DistributedErrorCollector,false,beforeBounceErrors:java/util/Map
-org/apache/geode/test/dunit/rules/DistributedExecutorServiceRule,false,awaitTerminationBeforeShutdown:boolean,awaitTerminationTimeUnit:java/util/concurrent/TimeUnit,awaitTerminationTimeout:long,enableAwaitTermination:boolean,threadCount:int,useShutdown:boolean,useShutdownNow:boolean
+org/apache/geode/test/dunit/rules/DistributedExecutorServiceRule,false
 org/apache/geode/test/dunit/rules/DistributedExternalResource,false,invoker:org/apache/geode/test/dunit/rules/RemoteInvoker
 org/apache/geode/test/dunit/rules/DistributedMap,false,controller:java/util/concurrent/atomic/AtomicReference,identity:int,initialEntries:java/util/Map
 org/apache/geode/test/dunit/rules/DistributedReference,false,autoClose:java/util/concurrent/atomic/AtomicBoolean,identity:int

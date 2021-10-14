@@ -94,7 +94,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   protected final boolean awaitTerminationBeforeShutdown;
   protected final boolean useShutdown;
   protected final boolean useShutdownNow;
-  protected final int threadCount;
 
   protected transient volatile DedicatedThreadFactory threadFactory;
   protected transient volatile ExecutorService executor;
@@ -107,13 +106,12 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   protected ExecutorServiceRule(Builder builder) {
-    this(builder.enableAwaitTermination,
-        builder.awaitTerminationTimeout,
-        builder.awaitTerminationTimeUnit,
-        builder.awaitTerminationBeforeShutdown,
-        builder.useShutdown,
-        builder.useShutdownNow,
-        builder.threadCount);
+    enableAwaitTermination = builder.enableAwaitTermination;
+    awaitTerminationTimeout = builder.awaitTerminationTimeout;
+    awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
+    awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
+    useShutdown = builder.useShutdown;
+    useShutdownNow = builder.useShutdownNow;
   }
 
   /**
@@ -121,47 +119,18 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * during {@code tearDown}.
    */
   public ExecutorServiceRule() {
-    this(false, 0, TimeUnit.NANOSECONDS, false, false, true, 0);
-  }
-
-  /**
-   * Constructs a {@code ExecutorServiceRule} which invokes {@code ExecutorService.shutdownNow()}
-   * during {@code tearDown}.
-   *
-   * @param threadCount The number of threads in the pool. Creates fixed thread pool if > 0; else
-   *        creates cached thread pool.
-   */
-  public ExecutorServiceRule(int threadCount) {
-    this(false, 0, TimeUnit.NANOSECONDS, false, false, true, threadCount);
-  }
-
-  /**
-   * For invocation by {@code DistributedExecutorServiceRule} which needs to subclass another class.
-   */
-  public ExecutorServiceRule(boolean enableAwaitTermination,
-      long awaitTerminationTimeout,
-      TimeUnit awaitTerminationTimeUnit,
-      boolean awaitTerminationBeforeShutdown,
-      boolean useShutdown,
-      boolean useShutdownNow,
-      int threadCount) {
-    this.enableAwaitTermination = enableAwaitTermination;
-    this.awaitTerminationTimeout = awaitTerminationTimeout;
-    this.awaitTerminationTimeUnit = awaitTerminationTimeUnit;
-    this.awaitTerminationBeforeShutdown = awaitTerminationBeforeShutdown;
-    this.useShutdown = useShutdown;
-    this.useShutdownNow = useShutdownNow;
-    this.threadCount = threadCount;
+    enableAwaitTermination = false;
+    awaitTerminationTimeout = 0;
+    awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    awaitTerminationBeforeShutdown = false;
+    useShutdown = false;
+    useShutdownNow = true;
   }
 
   @Override
   public void before() {
     threadFactory = new DedicatedThreadFactory();
-    if (threadCount > 0) {
-      executor = Executors.newFixedThreadPool(threadCount, threadFactory);
-    } else {
-      executor = Executors.newCachedThreadPool(threadFactory);
-    }
+    executor = Executors.newCachedThreadPool(threadFactory);
   }
 
   @Override
@@ -406,7 +375,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     protected boolean awaitTerminationBeforeShutdown = true;
     protected boolean useShutdown;
     protected boolean useShutdownNow = true;
-    protected int threadCount;
 
     protected Builder() {
       // nothing
@@ -458,17 +426,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      */
     public Builder awaitTerminationAfterShutdown() {
       awaitTerminationBeforeShutdown = false;
-      return this;
-    }
-
-    /**
-     * Specifies the number of threads in the pool. Creates fixed thread pool if > 0. Default is 0
-     * which means (non-fixed) cached thread pool.
-     *
-     * @param threadCount the number of threads in the pool
-     */
-    public Builder threadCount(int threadCount) {
-      this.threadCount = threadCount;
       return this;
     }
 

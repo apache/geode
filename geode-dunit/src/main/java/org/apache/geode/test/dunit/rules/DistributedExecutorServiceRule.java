@@ -14,15 +14,12 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
-
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -30,76 +27,17 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule.ThrowingRunnable;
 
-/**
- * Every DUnit VM, including the JUnit Controller VM, has its own {@code ExecutorService}.
- */
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings("unused")
 public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
   private static final AtomicReference<ExecutorServiceRule> delegate = new AtomicReference<>();
 
-  private final boolean enableAwaitTermination;
-  private final long awaitTerminationTimeout;
-  private final TimeUnit awaitTerminationTimeUnit;
-  private final boolean awaitTerminationBeforeShutdown;
-  private final boolean useShutdown;
-  private final boolean useShutdownNow;
-  private final int threadCount;
-
-  /**
-   * Returns a {@code Builder} to configure a new {@code ExecutorServiceRule}.
-   */
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Constructs a {@code DistributedExecutorServiceRule} which performs {@code shutdownNow} and
-   * thread dump of its threads if any were left running during {@code tearDown}.
-   */
   public DistributedExecutorServiceRule() {
-    this(new Builder().threadCount(0).vmCount(DEFAULT_VM_COUNT));
+    // default vmCount
   }
 
-  /**
-   * Constructs a {@code DistributedExecutorServiceRule} which performs {@code shutdownNow} and
-   * thread dump of its threads if any were left running during {@code tearDown}.
-   *
-   * @param threadCount The number of threads in the pool. Creates fixed thread pool if > 0; else
-   *        creates cached thread pool.
-   * @param vmCount specified number of VMs
-   */
-  public DistributedExecutorServiceRule(int threadCount, int vmCount) {
-    this(new Builder().threadCount(threadCount).vmCount(vmCount));
-  }
-
-  private DistributedExecutorServiceRule(Builder builder) {
-    this(builder.enableAwaitTermination,
-        builder.awaitTerminationTimeout,
-        builder.awaitTerminationTimeUnit,
-        builder.awaitTerminationBeforeShutdown,
-        builder.useShutdown,
-        builder.useShutdownNow,
-        builder.threadCount,
-        builder.vmCount);
-  }
-
-  private DistributedExecutorServiceRule(boolean enableAwaitTermination,
-      long awaitTerminationTimeout,
-      TimeUnit awaitTerminationTimeUnit,
-      boolean awaitTerminationBeforeShutdown,
-      boolean useShutdown,
-      boolean useShutdownNow,
-      int threadCount,
-      int vmCount) {
+  public DistributedExecutorServiceRule(int vmCount) {
     super(vmCount);
-    this.enableAwaitTermination = enableAwaitTermination;
-    this.awaitTerminationTimeout = awaitTerminationTimeout;
-    this.awaitTerminationTimeUnit = awaitTerminationTimeUnit;
-    this.awaitTerminationBeforeShutdown = awaitTerminationBeforeShutdown;
-    this.useShutdown = useShutdown;
-    this.useShutdownNow = useShutdownNow;
-    this.threadCount = threadCount;
   }
 
   public ExecutorService getExecutorService() {
@@ -235,9 +173,7 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
   private void invokeBefore() throws Exception {
     try {
-      delegate.set(new ExecutorServiceRule(enableAwaitTermination, awaitTerminationTimeout,
-          awaitTerminationTimeUnit, awaitTerminationBeforeShutdown, useShutdown, useShutdownNow,
-          threadCount));
+      delegate.set(new ExecutorServiceRule());
       delegate.get().before();
     } catch (Throwable throwable) {
       if (throwable instanceof Exception) {
@@ -249,98 +185,5 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
   private void invokeAfter() {
     delegate.get().after();
-  }
-
-  public static class Builder {
-
-    private boolean enableAwaitTermination;
-    private long awaitTerminationTimeout;
-    private TimeUnit awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    private boolean awaitTerminationBeforeShutdown = true;
-    private boolean useShutdown;
-    private boolean useShutdownNow = true;
-    private int threadCount;
-    private int vmCount;
-
-    protected Builder() {
-      // nothing
-    }
-
-    /**
-     * Enables invocation of {@code awaitTermination} during {@code tearDown}. Default is disabled.
-     *
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     */
-    public Builder awaitTermination(long timeout, TimeUnit unit) {
-      enableAwaitTermination = true;
-      awaitTerminationTimeout = timeout;
-      awaitTerminationTimeUnit = unit;
-      return this;
-    }
-
-    /**
-     * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
-     */
-    public Builder useShutdown() {
-      useShutdown = true;
-      useShutdownNow = false;
-      return this;
-    }
-
-    /**
-     * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
-     */
-    public Builder useShutdownNow() {
-      useShutdown = false;
-      useShutdownNow = true;
-      return this;
-    }
-
-    /**
-     * Specifies invocation of {@code awaitTermination} before {@code shutdown} or
-     * {@code shutdownNow}.
-     */
-    public Builder awaitTerminationBeforeShutdown() {
-      awaitTerminationBeforeShutdown = true;
-      return this;
-    }
-
-    /**
-     * Specifies invocation of {@code awaitTermination} after {@code shutdown} or
-     * {@code shutdownNow}.
-     */
-    public Builder awaitTerminationAfterShutdown() {
-      awaitTerminationBeforeShutdown = false;
-      return this;
-    }
-
-    /**
-     * Specifies the number of threads in the pool. Creates fixed thread pool if > 0. Default is 0
-     * which means (non-fixed) cached thread pool.
-     *
-     * @param threadCount the number of threads in the pool
-     */
-    public Builder threadCount(int threadCount) {
-      this.threadCount = threadCount;
-      return this;
-    }
-
-    /**
-     * Specifies the number of DUnit VMs to startup.
-     *
-     * @param vmCount the number of DUnit VMs to startup
-     */
-    public Builder vmCount(int vmCount) {
-      this.vmCount = vmCount;
-      return this;
-    }
-
-    /**
-     * Builds the instance of {@code ExecutorServiceRule}.
-     */
-    public DistributedExecutorServiceRule build() {
-      return new DistributedExecutorServiceRule(this);
-    }
   }
 }
