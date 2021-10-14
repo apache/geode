@@ -26,14 +26,7 @@ jbossModulesExtension {
     distributedTest {
       outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
       assembleFromSource = true
-      jbossJdkModulesDependencies = [
-        "java.se",
-        "jdk.unsupported",
-        "java.rmi",
-        "jdk.scripting.nashorn",
-        "java.desktop",
-        "java.logging"
-      ]
+      jbossJdkModulesDependencies = ["java.base"]
       externalLibraryJbossJDKModules = [
         "java.se",
         "jdk.unsupported",
