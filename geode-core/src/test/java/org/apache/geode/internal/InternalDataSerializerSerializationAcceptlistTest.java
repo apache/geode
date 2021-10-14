@@ -29,7 +29,7 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @BeforeClass
   public static void hasObjectInputFilter() {
-    assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
+    assumeTrue("ObjectInputFilter is present in this JVM",
         isClassAvailable("sun.misc.ObjectInputFilter") ||
             isClassAvailable("java.io.ObjectInputFilter"));
   }
@@ -62,10 +62,9 @@ public class InternalDataSerializerSerializationAcceptlistTest {
     properties = new Properties();
   }
 
-  @AfterClass
-  public static void clearDataSerializerFilter() {
-    InternalDataSerializer
-        .initializeSerializationFilter(new DistributionConfigImpl(new Properties()), emptySet());
+  @After
+  public void clearSerializationFilter() {
+    InternalDataSerializer.clearSerializationFilter();
   }
 
   @Test

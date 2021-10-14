@@ -159,6 +159,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   @MakeNotStatic
   private static final Map<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<>();
+
   /**
    * This list contains classes that Geode's classes subclass, such as antlr AST classes which are
    * used by our Object Query Language. It also contains certain classes that are DataSerializable
@@ -179,6 +180,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Do not add to this list unless absolutely necessary. Instead, put your classes either in the
    * sanctionedSerializables file for your module or in its excludedClasses file. Run
    * AnalyzeSerializables to generate the content for the file.
+   *
+   * <p>
+   * Syntax is documented by the javadocs of {@code ObjectInputFilter.Config.createFilter}. In
+   * Java 8, {@code ObjectInputFilter} is in package {@code sun.misc}. In Java 9 and above, it's
+   * in package {@code java.io}.
    */
   private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
       // Java
@@ -210,9 +216,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList"
 
           // security services
-          + ";org.apache.shiro.*"
-          + ";org.apache.shiro.authz.*"
-          + ";org.apache.shiro.authc.*"
+          + ";org.apache.shiro.**"
 
           // export logs
           + ";org.apache.logging.log4j.Level"
@@ -223,12 +227,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
           + ";com.healthmarketscience.rmiio.RemoteInputStream"
           + ";javax.rmi.ssl.SslRMIClientSocketFactory"
           + ";javax.net.ssl.SSLHandshakeException"
-          + ";javax.net.ssl.SSLException;sun.security.validator.ValidatorException"
+          + ";javax.net.ssl.SSLException"
+          + ";sun.security.validator.ValidatorException"
           + ";sun.security.provider.certpath.SunCertPathBuilderException"
 
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry"
           + ";";
+
   private static final String serializationVersionTxt =
       System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "serializationVersion");
   /**
@@ -436,7 +442,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  private static void clearSerializationFilter() {
+  @VisibleForTesting
+  static void clearSerializationFilter() {
     serializationFilter = defaultSerializationFilter;
   }
 
