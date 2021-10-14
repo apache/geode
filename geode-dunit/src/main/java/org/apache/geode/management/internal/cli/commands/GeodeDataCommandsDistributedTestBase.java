@@ -20,10 +20,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -42,12 +40,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.cli.domain.DataCommandResult;
-import org.apache.geode.management.internal.cli.dto.Value1;
-import org.apache.geode.management.internal.cli.dto.Value2;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -56,28 +48,28 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 /**
  * Dunit class for testing gemfire data commands : get, put, remove
  */
-@SuppressWarnings("serial")
-public class GemfireDataCommandsDUnitTestBase {
+@SuppressWarnings({"serial", "ConstantConditions"})
+public class GeodeDataCommandsDistributedTestBase {
 
 
-  private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
-  private static final String DATA_REGION_NAME_VM1 = "GemfireDataCommandsTestRegion_Vm1";
-  private static final String DATA_REGION_NAME_VM2 = "GemfireDataCommandsTestRegion_Vm2";
-  private static final String DATA_REGION_NAME_PATH = SEPARATOR + "GemfireDataCommandsTestRegion";
+  private static final String DATA_REGION_NAME = "GeodeDataCommandsTestRegion";
+  private static final String DATA_REGION_NAME_VM1 = "GeodeDataCommandsTestRegion_Vm1";
+  private static final String DATA_REGION_NAME_VM2 = "GeodeDataCommandsTestRegion_Vm2";
+  private static final String DATA_REGION_NAME_PATH = SEPARATOR + "GeodeDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_VM1_PATH =
-      SEPARATOR + "GemfireDataCommandsTestRegion_Vm1";
+      SEPARATOR + "GeodeDataCommandsTestRegion_Vm1";
   private static final String DATA_REGION_NAME_VM2_PATH =
-      SEPARATOR + "GemfireDataCommandsTestRegion_Vm2";
+      SEPARATOR + "GeodeDataCommandsTestRegion_Vm2";
 
-  private static final String DATA_PAR_REGION_NAME = "GemfireDataCommandsTestParRegion";
-  private static final String DATA_PAR_REGION_NAME_VM1 = "GemfireDataCommandsTestParRegion_Vm1";
-  private static final String DATA_PAR_REGION_NAME_VM2 = "GemfireDataCommandsTestParRegion_Vm2";
+  private static final String DATA_PAR_REGION_NAME = "GeodeDataCommandsTestParRegion";
+  private static final String DATA_PAR_REGION_NAME_VM1 = "GeodeDataCommandsTestParRegion_Vm1";
+  private static final String DATA_PAR_REGION_NAME_VM2 = "GeodeDataCommandsTestParRegion_Vm2";
   private static final String DATA_PAR_REGION_NAME_PATH =
-      SEPARATOR + "GemfireDataCommandsTestParRegion";
+      SEPARATOR + "GeodeDataCommandsTestParRegion";
   private static final String DATA_PAR_REGION_NAME_VM1_PATH =
-      SEPARATOR + "GemfireDataCommandsTestParRegion_Vm1";
+      SEPARATOR + "GeodeDataCommandsTestParRegion_Vm1";
   private static final String DATA_PAR_REGION_NAME_VM2_PATH =
-      SEPARATOR + "GemfireDataCommandsTestParRegion_Vm2";
+      SEPARATOR + "GeodeDataCommandsTestParRegion_Vm2";
 
   private static final String DATA_REGION_NAME_CHILD_1 = "ChildRegionRegion1";
   private static final String DATA_REGION_NAME_CHILD_1_2 = "ChildRegionRegion12";
@@ -92,49 +84,32 @@ public class GemfireDataCommandsDUnitTestBase {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  protected MemberVM locator, server1, server2;
+  protected MemberVM locator;
+  protected MemberVM server1;
+  protected MemberVM server2;
 
-  public void before() throws Exception {
-    locator = cluster.startLocatorVM(0, locatorProperties());
-    server1 = cluster.startServerVM(1, locator.getPort());
-    server2 = cluster.startServerVM(2, locator.getPort());
-    connectToLocator();
-  }
-
-  // extracted for convenience overriding in GemfireDataCommandsOverHttpDUnitTest to connect via
-  // http
   public void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator);
   }
 
   private static void setupRegions(String regionName, String parRegionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    RegionFactory regionFactory =
+    RegionFactory<Object, Object> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
 
-    Region dataRegion = regionFactory.create(DATA_REGION_NAME);
-    assertNotNull(dataRegion);
+    Region<Object, Object> dataRegion = regionFactory.create(DATA_REGION_NAME);
+    dataRegion = regionFactory.createSubregion(dataRegion, DATA_REGION_NAME_CHILD_1);
+    regionFactory.createSubregion(dataRegion, DATA_REGION_NAME_CHILD_1_2);
 
-    dataRegion =
-        dataRegion.createSubregion(DATA_REGION_NAME_CHILD_1, dataRegion.getAttributes());
-    assertNotNull(dataRegion);
+    regionFactory.create(regionName);
 
-    dataRegion =
-        dataRegion.createSubregion(DATA_REGION_NAME_CHILD_1_2, dataRegion.getAttributes());
-    assertNotNull(dataRegion);
-
-    dataRegion = regionFactory.create(regionName);
-    assertNotNull(dataRegion);
-
-    PartitionAttributes partitionAttrs =
-        new PartitionAttributesFactory().setRedundantCopies(2).create();
+    PartitionAttributes<Object, Object> partitionAttrs =
+        new PartitionAttributesFactory<>().setRedundantCopies(2).create();
     RegionFactory<Object, Object> partitionRegionFactory =
         cache.createRegionFactory(RegionShortcut.PARTITION);
     partitionRegionFactory.setPartitionAttributes(partitionAttrs);
-    Region dataParRegion = partitionRegionFactory.create(DATA_PAR_REGION_NAME);
-    assertNotNull(dataParRegion);
-    dataParRegion = partitionRegionFactory.create(parRegionName);
-    assertNotNull(dataParRegion);
+    partitionRegionFactory.create(DATA_PAR_REGION_NAME);
+    partitionRegionFactory.create(parRegionName);
   }
 
 
@@ -146,17 +121,15 @@ public class GemfireDataCommandsDUnitTestBase {
 
     Properties serverProps = new Properties();
     serverProps.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
-    locator = cluster.startLocatorVM(0, props);
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     server1 = cluster.startServerVM(1, serverProps, locator.getPort());
     server2 = cluster.startServerVM(2, serverProps, locator.getPort());
 
-    gfsh.connectAndVerify(locator);
+    connectToLocator();
 
     server1.invoke(() -> setupRegions(DATA_REGION_NAME_VM1, DATA_PAR_REGION_NAME_VM1));
 
-    server2.invoke(() -> {
-      setupRegions(DATA_REGION_NAME_VM2, DATA_PAR_REGION_NAME_VM2);
-    });
+    server2.invoke(() -> setupRegions(DATA_REGION_NAME_VM2, DATA_PAR_REGION_NAME_VM2));
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
@@ -170,19 +143,14 @@ public class GemfireDataCommandsDUnitTestBase {
       InternalCache cache = ClusterStartupRule.getCache();
       final ManagementService service = ManagementService.getManagementService(cache);
 
-      assertNotNull(service.getMemberMXBean());
-      assertNotNull(service.getManagerMXBean());
       DistributedRegionMXBean bean = service.getDistributedRegionMXBean(DATA_REGION_NAME_PATH);
-      assertNotNull(bean);
 
-      String regions[] = {DATA_REGION_NAME_PATH, DATA_REGION_NAME_VM1_PATH,
+      String[] regions = {DATA_REGION_NAME_PATH, DATA_REGION_NAME_VM1_PATH,
           DATA_REGION_NAME_VM2_PATH, DATA_PAR_REGION_NAME_PATH, DATA_PAR_REGION_NAME_VM1_PATH,
           DATA_PAR_REGION_NAME_VM2_PATH};
 
       for (String region : regions) {
         bean = service.getDistributedRegionMXBean(region);
-        assertNotNull(bean);
-
         if (bean.getMemberCount() < 1) {
           fail("Even after waiting mbean reports number of member hosting region "
               + DATA_REGION_NAME_VM1_PATH + " is less than one");
@@ -206,51 +174,51 @@ public class GemfireDataCommandsDUnitTestBase {
     Double doubleValue = Double.valueOf("111111.111111");
 
     // Testing Byte Wrappers
-    testGetPutLocateEntryFromShellAndGemfire(byteKey, byteValue, Byte.class, true, true);
+    testGetPutLocateEntryFromShellAndGeode(byteKey, byteValue, Byte.class, true, true);
     // Testing Short Wrappers
-    testGetPutLocateEntryFromShellAndGemfire(shortKey, shortValue, Short.class, true, true);
+    testGetPutLocateEntryFromShellAndGeode(shortKey, shortValue, Short.class, true, true);
     // Testing Integer Wrappers
-    testGetPutLocateEntryFromShellAndGemfire(integerKey, integerValue, Integer.class, true, true);
+    testGetPutLocateEntryFromShellAndGeode(integerKey, integerValue, Integer.class, true, true);
     // Testing Float Wrappers
-    testGetPutLocateEntryFromShellAndGemfire(floatKey, floatValue, Float.class, true, true);
+    testGetPutLocateEntryFromShellAndGeode(floatKey, floatValue, Float.class, true, true);
     // Testing Double Wrappers
-    testGetPutLocateEntryFromShellAndGemfire(doubleKey, doubleValue, Double.class, true, true);
+    testGetPutLocateEntryFromShellAndGeode(doubleKey, doubleValue, Double.class, true, true);
   }
 
 
 
-  private void testGetPutLocateEntryFromShellAndGemfire(final Serializable key,
-      final Serializable value, Class klass, boolean addRegionPath, boolean expResult) {
+  private void testGetPutLocateEntryFromShellAndGeode(final Serializable key,
+      final Serializable value, Class<?> klass, boolean addRegionPath, boolean expResult) {
 
     SerializableRunnableIF putTask = () -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-      assertNotNull(region);
+      Region<Object, Object> region =
+          cache.getRegion(DATA_REGION_NAME_PATH);
       region.clear();
       region.put(key, value);
     };
 
     SerializableRunnableIF getTask = () -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-      assertNotNull(region);
-      assertEquals(true, region.containsKey(key));
-      assertEquals(value, region.get(key));
+      Region<Object, Object> region =
+          cache.getRegion(DATA_REGION_NAME_PATH);
+      assertThat(region.containsKey(key)).isTrue();
+      assertThat(value).isEqualTo(region.get(key));
     };
 
     SerializableRunnableIF removeTask = () -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-      assertNotNull(region);
-      assertEquals(true, region.containsKey(key));
+      Region<Object, Object> region =
+          cache.getRegion(DATA_REGION_NAME_PATH);
+      assertThat(region.containsKey(key)).isTrue();
       region.remove(key);
     };
 
 
     SerializableRunnableIF clearTask = () -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(DATA_REGION_NAME_PATH);
-      assertNotNull(region);
+      Region<Object, Object> region =
+          cache.getRegion(DATA_REGION_NAME_PATH);
       region.clear();
     };
 
@@ -279,8 +247,8 @@ public class GemfireDataCommandsDUnitTestBase {
 
     if (expResult) {
       // Do put from shell check gemfire get do gemfire remove
-      CommandResult cmdResult = gfsh.executeCommand(putCommand);
-      validateResult(cmdResult, true);
+      gfsh.executeAndAssertThat(putCommand).statusIsSuccess().containsOutput("true");
+
       server1.invoke(getTask);
       server1.invoke(removeTask);
 
@@ -288,53 +256,36 @@ public class GemfireDataCommandsDUnitTestBase {
 
       // Do put from gemfire check from shell do gemfire remove
       server1.invoke(putTask);
-      cmdResult = gfsh.executeCommand(getCommand);
-      validateResult(cmdResult, true);
-      cmdResult = gfsh.executeCommand(locateEntryCommand);
-      validateResult(cmdResult, true);
+      gfsh.executeAndAssertThat(getCommand).statusIsSuccess().containsOutput("true");
+      gfsh.executeAndAssertThat(locateEntryCommand).statusIsSuccess().containsOutput("true");
       server1.invoke(removeTask);
 
       server1.invoke(clearTask);
 
       // Do put from shell check from gemfire do remove from shell get from shell expect false
-      cmdResult = gfsh.executeCommand(putCommand);
-      validateResult(cmdResult, true);
+      gfsh.executeAndAssertThat(putCommand).statusIsSuccess().containsOutput("true");
       server1.invoke(getTask);
-      cmdResult = gfsh.executeCommand(removeCommand);
-      validateResult(cmdResult, true);
-      cmdResult = gfsh.executeCommand(getCommand);
-      validateResult(cmdResult, false);
-      cmdResult = gfsh.executeCommand(locateEntryCommand);
-      validateResult(cmdResult, false);
+      gfsh.executeAndAssertThat(removeCommand).statusIsSuccess().containsOutput("true");
+      gfsh.executeAndAssertThat(getCommand).statusIsSuccess().containsOutput("false");
+      gfsh.executeAndAssertThat(locateEntryCommand).statusIsSuccess().containsOutput("false");
     } else {
       // Do put from shell check gemfire get do gemfire remove
-      CommandResult cmdResult = gfsh.executeCommand(putCommand);
-      validateResult(cmdResult, false);
+      gfsh.executeAndAssertThat(putCommand).statusIsSuccess().containsOutput("false");
       server1.invoke(clearTask);
 
       // Do put from gemfire check from shell do gemfire remove
       server1.invoke(putTask);
-      cmdResult = gfsh.executeCommand(getCommand);
-      validateResult(cmdResult, false);
-      cmdResult = gfsh.executeCommand(locateEntryCommand);
-      validateResult(cmdResult, false);
+      gfsh.executeAndAssertThat(getCommand).statusIsSuccess().containsOutput("false");
+      gfsh.executeAndAssertThat(locateEntryCommand).statusIsSuccess().containsOutput("false");
       server1.invoke(removeTask);
       server1.invoke(clearTask);
 
-      // Do put from shell check from gemfire do remove from shell get from shell exepct false
-      cmdResult = gfsh.executeCommand(putCommand);
-      validateResult(cmdResult, false);
+      // Do put from shell check from gemfire do remove from shell get from shell expect false
+      gfsh.executeAndAssertThat(putCommand).statusIsSuccess().containsOutput("false");
     }
   }
 
-  private void validateResult(CommandResult cmdResult, Boolean expected) {
-    ResultModel rd = cmdResult.getResultData();
-    DataResultModel result = rd.getDataSection(DataCommandResult.DATA_INFO_SECTION);
-    assertThat(result.getContent().get("Result")).isEqualTo(expected.toString());
-
-  }
-
-  private Properties locatorProperties() {
+  private static Properties locatorProperties() {
     int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -344,22 +295,4 @@ public class GemfireDataCommandsDUnitTestBase {
 
     return props;
   }
-
-  public static class Value1WithValue2 extends Value1 {
-    private Value2 value2 = null;
-
-    public Value1WithValue2(int i) {
-      super(i);
-      value2 = new Value2(i);
-    }
-
-    public Value2 getValue2() {
-      return value2;
-    }
-
-    public void setValue2(Value2 value2) {
-      this.value2 = value2;
-    }
-  }
-
 }

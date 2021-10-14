@@ -112,7 +112,6 @@ org/apache/geode/internal/cache/wan/AsyncEventQueueTestBase,false
 org/apache/geode/management/ManagementTestBase,false,restoreSystemProperties:org/apache/geode/test/dunit/rules/DistributedRestoreSystemProperties
 org/apache/geode/management/ManagementTestBase$3,false,this$0:org/apache/geode/management/ManagementTestBase
 org/apache/geode/management/internal/cli/commands/ExportLogsDistributedTestBase$LogLine,false,level:java/lang/String,message:java/lang/String,shouldBeIgnoredDueToTimestamp:boolean
-org/apache/geode/management/internal/cli/commands/GemfireDataCommandsDUnitTestBase$Value1WithValue2,false,value2:org/apache/geode/management/internal/cli/dto/Value2
 org/apache/geode/management/internal/cli/commands/Product,false,contractSize:java/lang/String,productCodes:java/util/TreeMap,productID:java/lang/Long,status:java/lang/String
 org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,false,city:java/lang/String,street:java/lang/String
 org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Customer,false,address:org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,name:java/lang/String
