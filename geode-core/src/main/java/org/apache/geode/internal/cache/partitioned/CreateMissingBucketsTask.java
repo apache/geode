@@ -14,18 +14,24 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A task for creating buckets in a child colocated region that are present in the leader region.
  *
  */
 public class CreateMissingBucketsTask extends RecoveryRunnable {
-  private static final int MAX_NUMBER_INTERVALS = 60;
+  protected static final Logger logger = LogService.getLogger();
+
+  static final int MAX_NUMBER_INTERVALS = 60;
 
   private static final int SMALL_200MS_INTERVALS = 5;
   private static final int SMALL_500MS_INTERVALS = 10;
@@ -34,9 +40,11 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
   private static final int MEDIUM_2SEC_INTERVALS = 30;
 
   private static final int LARGE_5SEC_INTERVALS = 45;
+  private int retryCount;
 
   public CreateMissingBucketsTask(PRHARedundancyProvider prhaRedundancyProvider) {
     super(prhaRedundancyProvider);
+    retryCount = 0;
   }
 
   @Override
@@ -79,7 +87,6 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
    * Wait for Colocation to complete. Wait all nodes to Register this PartitionedRegion.
    */
   protected boolean waitForColocationCompleted(PartitionedRegion partitionedRegion) {
-    int retryCount = 0;
     int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
 
     while (!ColocationHelper.isColocationComplete(partitionedRegion)
@@ -88,6 +95,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
       // Didn't time out. Sleep a bit and then continue
       boolean interrupted = Thread.interrupted();
       try {
+        logger.info("Waiting for collocation to complete, retry number {}", retryCount);
         Thread.sleep(sleepInterval);
       } catch (InterruptedException ignore) {
         interrupted = true;
@@ -114,4 +122,10 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
     return ColocationHelper.isColocationComplete(partitionedRegion);
 
   }
+
+  @VisibleForTesting
+  public int getRetryCount() {
+    return retryCount;
+  }
+
 }

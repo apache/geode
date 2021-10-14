@@ -56,6 +56,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.partitioned.CreateMissingBucketsTask;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
@@ -358,7 +359,7 @@ public class PRHARedundancyProviderTest {
   }
 
   @Test
-  public void reportsScheduleCreateMissingBuckets() {
+  public void scheduleCreateMissingBucketsExecutesCreateMissingBucketsTask() {
     CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
     when(partitionedRegion.getColocatedWith()).thenReturn("leaderRegion");
     when(partitionedRegion.getGemFireCache()).thenReturn(cache);
@@ -373,7 +374,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider.scheduleCreateMissingBuckets();
 
-    verify(executorService).execute(any());
+    verify(executorService).execute(any(CreateMissingBucketsTask.class));
   }
 
   private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
