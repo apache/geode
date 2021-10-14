@@ -37,11 +37,9 @@ popd
 
 source concourse-metadata-resource/concourse_metadata
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${TAG_POSTFIX}"
-RESULTS_BASE_DIR=$(pwd)/results
-BENCHMARKS_DIR=benchmarks-${CLUSTER_TAG}
-RESULTS_DIR=${RESULTS_BASE_DIR}/benchmarks-${CLUSTER_TAG}
-BENCHMARKS_ARCHIVE_FILENAME=${BENCHMARKS_DIR}.tgz
-BENCHMARKS_ARCHIVE_FILE=${RESULTS_BASE_DIR}/${BENCHMARKS_ARCHIVE_FILENAME}
+BENCHMARKS_PREFIX=benchmarks-${CLUSTER_TAG}
+BENCHMARKS_ARCHIVE_FILENAME=${BENCHMARKS_PREFIX}.tgz
+BENCHMARKS_ARCHIVE_FILE=${RESULTS_DIR}/${BENCHMARKS_ARCHIVE_FILENAME}
 BENCHMARKS_ARTIFACTS_DESTINATION="${ARTIFACT_BUCKET}/benchmarks/${BUILD_PIPELINE_NAME}/${GEODE_SHA}"
 
 if [[ "${ARTIFACT_BUCKET}" =~ \. ]]; then
@@ -54,10 +52,13 @@ pushd geode-benchmarks/infrastructure/scripts/aws/
 ./destroy_cluster.sh -t ${CLUSTER_TAG} --ci
 popd
 
-pushd ${RESULTS_BASE_DIR}
-  if [[ -d ${BENCHMARKS_DIR} ]]; then
+pushd geode-benchmarks
+  ./infrastructure/scripts/aws/dump_results.sh ${RESULTS_DIR}/benchmarks-*/* | tee ${RESULTS_DIR}/results.txt
+popd
+
+pushd ${RESULTS_DIR}
     echo "***** Creating benchmarks archive"
-    tar zcf ${BENCHMARKS_ARCHIVE_FILE} ${BENCHMARKS_DIR}
+    tar zcf ${BENCHMARKS_ARCHIVE_FILE} *
     echo "***** Copying benchmarks archive to storage"
     gsutil cp ${BENCHMARKS_ARCHIVE_FILE} gs://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}
     printf "\n"
@@ -69,9 +70,4 @@ pushd ${RESULTS_BASE_DIR}
     printf "\033[92m${ARTIFACT_SCHEME}://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}\033[0m\n"
     printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
     printf "\n"
-  else
-    echo "***************************"
-    echo "No benchmark results found!"
-    echo "***************************"
-  fi
 popd
