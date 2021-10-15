@@ -1,6 +1,0 @@
-org/apache/geode/cache/wan/internal/WanCopyRegionFunctionServiceAlreadyRunningException,false
-org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction,true,1,serviceProvider:org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction$WanCopyRegionFunctionServiceProvider
-org/apache/geode/management/internal/cli/functions/WanCopyRegionFunction$WanCopyRegionFunctionServiceProviderImpl,false
-org/apache/geode/management/internal/cli/functions/WanCopyRegionFunctionDelegate,false,batchId:int,clock:java/time/Clock,eventCreator:org/apache/geode/management/internal/cli/functions/WanCopyRegionFunctionDelegate$EventCreator,threadSleeper:org/apache/geode/management/internal/cli/functions/WanCopyRegionFunctionDelegate$ThreadSleeper
-org/apache/geode/management/internal/cli/functions/WanCopyRegionFunctionDelegate$EventCreatorImpl,false
-org/apache/geode/management/internal/cli/functions/WanCopyRegionFunctionDelegate$ThreadSleeperImpl,false

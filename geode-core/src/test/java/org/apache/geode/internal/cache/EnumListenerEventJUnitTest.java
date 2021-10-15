@@ -47,8 +47,7 @@ public class EnumListenerEventJUnitTest {
     // extra non-existent code checks as a markers so that this test will
     // fail if further events are added (0th or +1 codes) without updating this test
     checkAndAssert(18, EnumListenerEvent.TIMESTAMP_UPDATE);
-    checkAndAssert(19, EnumListenerEvent.AFTER_UPDATE_WITH_GENERATE_CALLBACKS);
-    checkAndAssert(20, null);
+    checkAndAssert(19, null);
   }
 
   // check that the code and object both match

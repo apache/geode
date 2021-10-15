@@ -379,7 +379,7 @@ public class Put70 extends BaseCommand {
               serverConnection.getProxyID(), true, clientEvent, true);
         } else {
           result = region.basicBridgePut(key, value, delta, isObject, callbackArg,
-              serverConnection.getProxyID(), clientEvent, true);
+              serverConnection.getProxyID(), true, clientEvent);
         }
         if (clientMessage.isRetry() && clientEvent.isConcurrencyConflict()
             && clientEvent.getVersionTag() != null) {
