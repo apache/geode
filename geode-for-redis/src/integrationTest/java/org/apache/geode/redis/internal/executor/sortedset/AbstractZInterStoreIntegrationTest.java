@@ -190,6 +190,36 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldNotCreateDestinationKey_givenTargetSetIsEmpty() {
+    assertThat(jedis.zinterstore(NEW_SET, KEY1)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
+  public void shouldDeleteDestinationKey_givenDestinationExistsAndTargetSetIsEmpty() {
+    jedis.zadd(NEW_SET, 1.0, "member");
+
+    assertThat(jedis.zinterstore(NEW_SET, KEY1)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
+  public void shouldNotCreateDestinationKey_givenAtLeastOneTargetSetIsEmpty() {
+    jedis.zadd(KEY1, 1.0, "member");
+    assertThat(jedis.zinterstore(NEW_SET, KEY1, KEY2)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
+  public void shouldDeleteDestinationKey_givenDestinationExistsAndAtLeastOneTargetSetIsEmpty() {
+    jedis.zadd(NEW_SET, 1.0, "member");
+    jedis.zadd(KEY1, 1.0, "member");
+
+    assertThat(jedis.zinterstore(NEW_SET, KEY1, KEY2)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
   public void shouldStoreIntersection_givenWeightOfOne_andOneRedisSortedSet() {
     Map<String, Double> scores = buildMapOfMembersAndScores();
     Set<Tuple> expectedResults = convertToTuples(scores, (ignore, value) -> value);

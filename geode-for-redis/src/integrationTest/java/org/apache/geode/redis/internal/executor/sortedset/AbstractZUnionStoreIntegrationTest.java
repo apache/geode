@@ -177,6 +177,20 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldNotCreateDestinationKey_givenTargetSetIsEmpty() {
+    assertThat(jedis.zunionstore(NEW_SET, KEY1)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
+  public void shouldDeleteDestinationKey_givenDestinationExistsAndTargetSetIsEmpty() {
+    jedis.zadd(NEW_SET, 1.0, "member");
+
+    assertThat(jedis.zunionstore(NEW_SET, KEY1)).isZero();
+    assertThat(jedis.exists(NEW_SET)).isFalse();
+  }
+
+  @Test
   public void shouldUnionize_givenBoundaryScoresAndWeights() {
     Map<String, Double> scores = new LinkedHashMap<>();
     scores.put("player1", Double.NEGATIVE_INFINITY);
