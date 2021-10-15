@@ -95,10 +95,12 @@ public class GatewaySenderBatchOp {
           byte posDupByte = (byte) (event.getPossibleDuplicate() ? 0x01 : 0x00);
           getMessage().addBytesPart(new byte[] {posDupByte});
         }
-        if (action >= 0 && action <= 3) {
+        if (action >= 0 && action <= GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
           // 0 = create
           // 1 = update
           // 2 = destroy
+          // 3 = update timestamp
+          // 4 = update passing generatecallbacks
           String regionName = event.getRegionPath();
           EventID eventId = event.getEventId();
           Object key = event.getKey();
@@ -110,7 +112,7 @@ public class GatewaySenderBatchOp {
           getMessage().addObjPart(eventId);
           // Add key
           getMessage().addStringOrObjPart(key);
-          if (action < 2 /* it is 0 or 1 */) {
+          if (action < 2 || action == GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
             byte[] value = event.getSerializedValue();
             byte valueIsObject = event.getValueIsObject();;
             // Add value (which is already a serialized byte[])
