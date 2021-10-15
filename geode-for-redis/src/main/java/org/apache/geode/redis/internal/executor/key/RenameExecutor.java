@@ -16,15 +16,17 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class RenameExecutor extends AbstractRenameExecutor {
 
   @Override
   protected boolean executeRenameCommand(RedisKey key, RedisKey newKey,
-      RedisKeyCommands redisKeyCommands) {
-    return redisKeyCommands.rename(key, newKey, false);
+      ExecutionHandlerContext context) {
+    return rename(context, key, newKey, false);
   }
 
   @Override

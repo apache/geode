@@ -20,13 +20,15 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
 import java.util.List;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetRangeExecutor extends AbstractExecutor {
+public class SetRangeExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_INT = "The number provided must be numeric";
 
@@ -36,6 +38,7 @@ public class SetRangeExecutor extends AbstractExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
 
     int offset;
@@ -52,8 +55,8 @@ public class SetRangeExecutor extends AbstractExecutor {
       return RedisResponse.error(ERROR_ILLEGAL_OFFSET);
     }
 
-    RedisStringCommands stringCommands = context.getStringCommands();
-    int result = stringCommands.setrange(key, offset, value);
+    int result = context.stringLockedExecute(key, false,
+        string -> string.setrange(region, key, offset, value));
 
     return RedisResponse.integer(result);
   }

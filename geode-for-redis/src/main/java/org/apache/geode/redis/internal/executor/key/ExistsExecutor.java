@@ -17,26 +17,31 @@ package org.apache.geode.redis.internal.executor.key;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ExistsExecutor extends AbstractExecutor {
+public class ExistsExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
-    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     long existsCount = commandElems
         .subList(1, commandElems.size())
         .stream()
-        .filter(key -> redisKeyCommands.exists(key))
+        .filter(key -> exists(context, key))
         .count();
 
     return RedisResponse.integer(existsCount);
   }
+
+  private static boolean exists(ExecutionHandlerContext context, RedisKey key) {
+    return context.dataLockedExecute(key, true, RedisData::exists);
+  }
+
 }

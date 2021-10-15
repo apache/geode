@@ -84,7 +84,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
   }
 
-  RedisSortedSet(int size) {
+  public RedisSortedSet(int size) {
     this.members = new MemberMap(size);
   }
 
@@ -210,7 +210,7 @@ public class RedisSortedSet extends AbstractRedisData {
    * @param membersToAdd members to add to this set; NOTE this list may by modified by this call
    * @return the number of members actually added OR incremented value if INCR option specified
    */
-  Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
+  public Object zadd(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToAdd,
       double[] scoresToAdd, ZAddOptions options) {
     if (options.isINCR()) {
       // if INCR, only one score and member can be added
@@ -250,11 +250,11 @@ public class RedisSortedSet extends AbstractRedisData {
     return scoreSet.size() - initialSize + changesCount;
   }
 
-  long zcard() {
+  public long zcard() {
     return members.size();
   }
 
-  long zcount(SortedSetScoreRangeOptions rangeOptions) {
+  public long zcount(SortedSetScoreRangeOptions rangeOptions) {
     long minIndex = rangeOptions.getRangeIndex(scoreSet, true);
     if (minIndex >= scoreSet.size()) {
       return 0;
@@ -268,7 +268,8 @@ public class RedisSortedSet extends AbstractRedisData {
     return maxIndex - minIndex;
   }
 
-  byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double incr, byte[] member) {
+  public byte[] zincrby(Region<RedisKey, RedisData> region, RedisKey key, double incr,
+      byte[] member) {
     double score;
     OrderedSetEntry orderedSetEntry = members.get(member);
 
@@ -291,7 +292,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return Coder.doubleToBytes(score);
   }
 
-  long zinterstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+  public long zinterstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight keyWeight : keyWeights) {
@@ -354,7 +355,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return getSortedSetSize();
   }
 
-  long zlexcount(SortedSetLexRangeOptions lexOptions) {
+  public long zlexcount(SortedSetLexRangeOptions lexOptions) {
     int minIndex = lexOptions.getRangeIndex(scoreSet, true);
     if (minIndex >= scoreSet.size()) {
       return 0;
@@ -368,33 +369,33 @@ public class RedisSortedSet extends AbstractRedisData {
     return maxIndex - minIndex;
   }
 
-  List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  public List<byte[]> zpopmax(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     Iterator<AbstractOrderedSetEntry> scoresIterator =
         scoreSet.getIndexRange(scoreSet.size() - 1, count, true);
 
     return zpop(scoresIterator, region, key);
   }
 
-  List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
+  public List<byte[]> zpopmin(Region<RedisKey, RedisData> region, RedisKey key, int count) {
     Iterator<AbstractOrderedSetEntry> scoresIterator =
         scoreSet.getIndexRange(0, count, false);
 
     return zpop(scoresIterator, region, key);
   }
 
-  List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
+  public List<byte[]> zrange(SortedSetRankRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
+  public List<byte[]> zrangebylex(SortedSetLexRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+  public List<byte[]> zrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  long zrank(byte[] member) {
+  public long zrank(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry == null) {
       return -1;
@@ -402,7 +403,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return scoreSet.indexOf(orderedSetEntry);
   }
 
-  long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
+  public long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
     int membersRemoved = 0;
     RemsDeltaInfo deltaInfo = null;
     for (byte[] memberToRemove : membersToRemove) {
@@ -418,34 +419,34 @@ public class RedisSortedSet extends AbstractRedisData {
     return membersRemoved;
   }
 
-  long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebylex(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetLexRangeOptions rangeOptions) {
     return removeRange(region, key, rangeOptions);
   }
 
-  long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebyrank(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetRankRangeOptions rangeOptions) {
     return removeRange(region, key, rangeOptions);
   }
 
-  long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
+  public long zremrangebyscore(Region<RedisKey, RedisData> region, RedisKey key,
       SortedSetScoreRangeOptions rangeOptions) {
     return removeRange(region, key, rangeOptions);
   }
 
-  List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
+  public List<byte[]> zrevrange(SortedSetRankRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
+  public List<byte[]> zrevrangebylex(SortedSetLexRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
+  public List<byte[]> zrevrangebyscore(SortedSetScoreRangeOptions rangeOptions) {
     return getRange(rangeOptions);
   }
 
-  long zrevrank(byte[] member) {
+  public long zrevrank(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry == null) {
       return -1;
@@ -453,7 +454,8 @@ public class RedisSortedSet extends AbstractRedisData {
     return scoreSet.size() - scoreSet.indexOf(orderedSetEntry) - 1;
   }
 
-  ImmutablePair<Integer, List<byte[]>> zscan(GlobPattern matchPattern, int count, int cursor) {
+  public ImmutablePair<Integer, List<byte[]>> zscan(GlobPattern matchPattern, int count,
+      int cursor) {
     // No need to allocate more space than it's possible to use given the size of the sorted set. We
     // need to add 1 to zcard() to ensure that if count > members.size(), we return a cursor of 0
     long maximumCapacity = 2L * Math.min(count, zcard() + 1);
@@ -471,7 +473,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return new ImmutablePair<>(cursor, resultList);
   }
 
-  byte[] zscore(byte[] member) {
+  public byte[] zscore(byte[] member) {
     OrderedSetEntry orderedSetEntry = members.get(member);
     if (orderedSetEntry != null) {
       return Coder.doubleToBytes(orderedSetEntry.getScore());
@@ -479,7 +481,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+  public long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =

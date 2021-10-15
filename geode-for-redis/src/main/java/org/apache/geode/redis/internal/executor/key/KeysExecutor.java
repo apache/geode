@@ -24,20 +24,20 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class KeysExecutor extends AbstractExecutor {
+public class KeysExecutor implements CommandExecutor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     byte[] glob = commandElems.get(1);
-    Set<RedisKey> allKeys = getDataRegion(context).keySet();
+    Set<RedisKey> allKeys = context.getRegion().keySet();
     List<byte[]> matchingKeys = new ArrayList<>();
 
     GlobPattern pattern = new GlobPattern(glob);
@@ -49,10 +49,6 @@ public class KeysExecutor extends AbstractExecutor {
       }
     }
 
-    if (matchingKeys.isEmpty()) {
-      return RedisResponse.emptyArray();
-    }
-
-    return respondBulkStrings(matchingKeys);
+    return RedisResponse.array(matchingKeys, true);
   }
 }

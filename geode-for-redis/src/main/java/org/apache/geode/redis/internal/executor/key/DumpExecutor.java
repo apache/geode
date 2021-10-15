@@ -17,19 +17,25 @@ package org.apache.geode.redis.internal.executor.key;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class DumpExecutor extends AbstractExecutor {
+public class DumpExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
 
-    byte[] rawData = context.getKeyCommands().dump(commandElems.get(1));
+    byte[] rawData = dump(context, commandElems.get(1));
 
     return RedisResponse.bulkString(rawData);
   }
+
+  private static byte[] dump(ExecutionHandlerContext context, RedisKey key) {
+    return context.dataLockedExecute(key, true, RedisData::dump);
+  }
+
 }

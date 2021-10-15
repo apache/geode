@@ -20,12 +20,12 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class BitPosExecutor extends AbstractExecutor {
+public class BitPosExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_INT = "The numbers provided must be numeric values";
 
@@ -37,41 +37,44 @@ public class BitPosExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
 
-    int bit;
-    int start = 0;
-    Integer end = null;
-
     try {
-      byte[] bitAr = commandElems.get(2);
-      bit = narrowLongToInt(bytesToLong(bitAr));
+      int bit = getBit(commandElems);
+      if (bit != 0 && bit != 1) {
+        return RedisResponse.error(ERROR_BIT);
+      }
+      int start = getStart(commandElems);
+      Integer end = getEnd(commandElems);
+
+      int bitPosition = context.stringLockedExecute(key, true,
+          string -> string.bitpos(bit, start, end));
+
+      return RedisResponse.integer(bitPosition);
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_NOT_INT);
     }
+  }
 
-    if (bit != 0 && bit != 1) {
-      return RedisResponse.error(ERROR_BIT);
-    }
+  private int getBit(List<byte[]> commandElems) throws NumberFormatException {
+    byte[] bitAr = commandElems.get(2);
+    return narrowLongToInt(bytesToLong(bitAr));
+  }
 
+  private int getStart(List<byte[]> commandElems) throws NumberFormatException {
+    int result = 0;
     if (commandElems.size() > 3) {
-      try {
-        byte[] startAr = commandElems.get(3);
-        start = narrowLongToInt(bytesToLong(startAr));
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_INT);
-      }
+      byte[] startAr = commandElems.get(3);
+      result = narrowLongToInt(bytesToLong(startAr));
     }
+    return result;
+  }
 
+  private Integer getEnd(List<byte[]> commandElems) throws NumberFormatException {
+    Integer result = null;
     if (commandElems.size() > 4) {
-      try {
-        byte[] endAr = commandElems.get(4);
-        end = narrowLongToInt(bytesToLong(endAr));
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_INT);
-      }
+      byte[] endAr = commandElems.get(4);
+      result = narrowLongToInt(bytesToLong(endAr));
     }
-
-    int bitPosition = context.getStringCommands().bitpos(key, bit, start, end);
-    return RedisResponse.integer(bitPosition);
+    return result;
   }
 
 }

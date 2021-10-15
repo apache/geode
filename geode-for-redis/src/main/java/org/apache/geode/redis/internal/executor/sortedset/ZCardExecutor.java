@@ -14,18 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisSortedSet;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ZCardExecutor extends AbstractExecutor {
+public class ZCardExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    RedisKey key = command.getKey();
 
-    RedisSortedSetCommands redisSortedSetCommands = context.getSortedSetCommands();
-
-    long size = redisSortedSetCommands.zcard(command.getKey());
+    long size = context.sortedSetLockedExecute(key, true, RedisSortedSet::zcard);
 
     return RedisResponse.integer(size);
   }

@@ -22,13 +22,13 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPSUBSCR
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 
-public class PsubscribeExecutor extends AbstractExecutor {
+public class PsubscribeExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {

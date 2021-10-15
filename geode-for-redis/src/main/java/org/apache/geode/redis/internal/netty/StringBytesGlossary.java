@@ -76,6 +76,12 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] bCRLF = stringToBytes("\r\n");
 
+  @Immutable
+  public static final byte[] bZERO_INT = stringToBytes(":0\r\n");
+
+  @Immutable
+  public static final byte[] bONE_INT = stringToBytes(":1\r\n");
+
   @MakeImmutable
   public static final byte[] bERR = stringToBytes("ERR ");
 

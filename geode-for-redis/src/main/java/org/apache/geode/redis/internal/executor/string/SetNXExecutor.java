@@ -15,16 +15,17 @@
 package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NX;
+import static org.apache.geode.redis.internal.executor.string.SetExecutor.set;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetNXExecutor extends AbstractExecutor {
+public class SetNXExecutor implements CommandExecutor {
 
   private static final int VALUE_INDEX = 2;
 
@@ -32,11 +33,12 @@ public class SetNXExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     RedisKey key = command.getKey();
+    byte[] value = commandElems.get(VALUE_INDEX);
 
-    RedisStringCommands stringCommands = context.getStringCommands();
     SetOptions setOptions = new SetOptions(NX, 0L, false);
 
-    boolean result = stringCommands.set(key, commandElems.get(VALUE_INDEX), setOptions);
+    boolean result =
+        context.lockedExecute(key, () -> set(context.getRegionProvider(), key, value, setOptions));
 
     return RedisResponse.integer(result);
   }

@@ -19,26 +19,26 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class MGetExecutor extends AbstractExecutor {
+public class MGetExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = context.getStringCommands();
 
-    Collection<byte[]> values = new ArrayList<>();
+    Collection<byte[]> values = new ArrayList<>(commandElems.size() - 1);
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] keyArray = commandElems.get(i);
       RedisKey key = new RedisKey(keyArray);
-      values.add(stringCommands.mget(key));
+      values.add(context.stringLockedExecute(key, true, true, RedisString::get));
     }
 
-    return respondBulkStrings(values);
+    return RedisResponse.array(values, true);
   }
 
 }

@@ -17,18 +17,19 @@ package org.apache.geode.redis.internal.executor.key;
 
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class PersistExecutor extends AbstractExecutor {
+public class PersistExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    int result = context.getKeyCommands().persist(key);
+    int result =
+        context.dataLockedExecute(key, false, data -> data.persist(context.getRegion(), key));
 
     return RedisResponse.integer(result);
   }

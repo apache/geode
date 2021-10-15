@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEX;
@@ -27,14 +28,17 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bXX;
 
 import java.util.List;
 
+import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.executor.BaseSetOptions;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetExecutor extends AbstractExecutor {
+public class SetExecutor implements CommandExecutor {
 
   private static final int VALUE_INDEX = 2;
 
@@ -53,8 +57,7 @@ public class SetExecutor extends AbstractExecutor {
       return RedisResponse.error(ex.getMessage());
     }
 
-    RedisStringCommands redisStringCommands = context.getStringCommands();
-    return doSet(keyToSet, commandElementsBytes.get(VALUE_INDEX), redisStringCommands, setOptions);
+    return doSet(keyToSet, commandElementsBytes.get(VALUE_INDEX), context, setOptions);
   }
 
   private SetOptions parseOptionalParameters(List<byte[]> optionalParameters)
@@ -159,10 +162,11 @@ public class SetExecutor extends AbstractExecutor {
     executorState.foundPX = true;
   }
 
-  private RedisResponse doSet(RedisKey key, byte[] value, RedisStringCommands redisStringCommands,
+  private RedisResponse doSet(RedisKey key, byte[] value, ExecutionHandlerContext context,
       SetOptions setOptions) {
 
-    boolean setCompletedSuccessfully = redisStringCommands.set(key, value, setOptions);
+    boolean setCompletedSuccessfully =
+        context.lockedExecute(key, () -> set(context.getRegionProvider(), key, value, setOptions));
 
     if (setCompletedSuccessfully) {
       return RedisResponse.ok();
@@ -178,5 +182,47 @@ public class SetExecutor extends AbstractExecutor {
     boolean foundNX = false;
     boolean foundPX = false;
     boolean foundEX = false;
+  }
+
+  static boolean set(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    if (options != null) {
+      if (options.isNX()) {
+        return setnx(regionProvider, key, value, options);
+      }
+
+      if (options.isXX() && regionProvider.getRedisData(key).isNull()) {
+        return false;
+      }
+    }
+
+    RedisString redisString = setRedisString(regionProvider, key, value);
+    redisString.handleSetExpiration(options);
+    return true;
+  }
+
+  private static boolean setnx(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    if (regionProvider.getRedisData(key).exists()) {
+      return false;
+    }
+    RedisString redisString = new RedisString(value);
+    redisString.handleSetExpiration(options);
+    regionProvider.getDataRegion().put(key, redisString);
+    return true;
+  }
+
+  static RedisString setRedisString(RegionProvider regionProvider, RedisKey key, byte[] value) {
+    RedisString result;
+    RedisData redisData = regionProvider.getRedisData(key);
+
+    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+      result = new RedisString(value);
+    } else {
+      result = (RedisString) redisData;
+      result.set(value);
+    }
+    regionProvider.getDataRegion().put(key, result);
+    return result;
   }
 }

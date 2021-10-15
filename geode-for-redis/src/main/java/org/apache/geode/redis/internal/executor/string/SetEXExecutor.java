@@ -16,17 +16,18 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.redis.internal.executor.BaseSetOptions.Exists.NONE;
+import static org.apache.geode.redis.internal.executor.string.SetExecutor.set;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SetEXExecutor extends AbstractExecutor {
+public class SetEXExecutor implements CommandExecutor {
 
   private static final String ERROR_SECONDS_NOT_A_NUMBER =
       "The expiration argument provided was not a number";
@@ -40,7 +41,6 @@ public class SetEXExecutor extends AbstractExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
 
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisStringCommands stringCommands = context.getStringCommands();
 
     RedisKey key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
@@ -63,7 +63,7 @@ public class SetEXExecutor extends AbstractExecutor {
     }
     SetOptions setOptions = new SetOptions(NONE, expiration, false);
 
-    stringCommands.set(key, value, setOptions);
+    context.lockedExecute(key, () -> set(context.getRegionProvider(), key, value, setOptions));
 
     return RedisResponse.ok();
   }

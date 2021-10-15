@@ -38,12 +38,12 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
+  public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
     return emptyList();
   }
 
   @Override
-  Collection<byte[]> srandmember(int count) {
+  public Collection<byte[]> srandmember(int count) {
     return emptyList();
   }
 
@@ -58,13 +58,13 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
     region.create(key, new RedisSet(membersToAdd));
     return membersToAdd.size();
   }
 
   @Override
-  long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
     return 0;
   }
 

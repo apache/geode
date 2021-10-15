@@ -426,7 +426,7 @@ public class RedisString extends AbstractRedisData {
     return Objects.hash(super.hashCode(), value);
   }
 
-  byte[] getValue() {
+  public byte[] getValue() {
     return value;
   }
 
@@ -438,7 +438,7 @@ public class RedisString extends AbstractRedisData {
         '}';
   }
 
-  protected void handleSetExpiration(SetOptions options) {
+  public void handleSetExpiration(SetOptions options) {
     long setExpiration = options == null ? 0L : options.getExpiration();
     if (setExpiration != 0) {
       long now = System.currentTimeMillis();

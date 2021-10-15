@@ -31,7 +31,8 @@ public class ZScanExecutor extends AbstractScanExecutor {
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
       GlobPattern pattern, int count, int cursor) {
-    return context.getSortedSetCommands().zscan(key, pattern, count, cursor);
+    return context.sortedSetLockedExecute(key, true,
+        zset -> zset.zscan(pattern, count, cursor));
   }
 
   @Override

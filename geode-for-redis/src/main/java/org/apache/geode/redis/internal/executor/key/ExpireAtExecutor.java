@@ -21,38 +21,38 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class ExpireAtExecutor extends AbstractExecutor {
+public class ExpireAtExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    int TIMESTAMP_INDEX = 2;
-
-    RedisKey wKey = command.getKey();
-
-    byte[] timestampByteArray = commandElems.get(TIMESTAMP_INDEX);
-    long timestamp;
     try {
-      timestamp = Coder.bytesToLong(timestampByteArray);
+      List<byte[]> commandElems = command.getProcessedCommand();
+      RedisKey wKey = command.getKey();
+      long timestamp = getTimestamp(commandElems.get(2));
+
+      int result =
+          context.dataLockedExecute(wKey, false,
+              data -> data.pexpireat(context.getRegionProvider(), wKey, timestamp));
+
+      return RedisResponse.integer(result);
     } catch (NumberFormatException e) {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
+  }
 
+  private long getTimestamp(byte[] timestampByteArray) throws NumberFormatException {
+    long result = Coder.bytesToLong(timestampByteArray);
     if (!timeUnitMillis()) {
-      timestamp = SECONDS.toMillis(timestamp);
+      result = SECONDS.toMillis(result);
     }
-
-    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
-    int result = redisKeyCommands.pexpireat(wKey, timestamp);
-
-    return RedisResponse.integer(result);
+    return result;
   }
 
   protected boolean timeUnitMillis() {

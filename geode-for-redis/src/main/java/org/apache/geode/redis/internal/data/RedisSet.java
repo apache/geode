@@ -27,7 +27,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -54,7 +53,7 @@ public class RedisSet extends AbstractRedisData {
 
   private MemberSet members;
 
-  RedisSet(Collection<byte[]> members) {
+  public RedisSet(Collection<byte[]> members) {
     this.members = new MemberSet(members.size());
     for (byte[] member : members) {
       membersAdd(member);
@@ -66,7 +65,8 @@ public class RedisSet extends AbstractRedisData {
    */
   public RedisSet() {}
 
-  Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count, BigInteger cursor) {
+  public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,
+      BigInteger cursor) {
     List<Object> returnList = new ArrayList<>();
     int size = members.size();
     BigInteger beforeCursor = new BigInteger("0");
@@ -103,7 +103,7 @@ public class RedisSet extends AbstractRedisData {
     return scanResult;
   }
 
-  Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
+  public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
     int originalSize = scard();
     if (originalSize == 0) {
       return emptyList();
@@ -132,7 +132,7 @@ public class RedisSet extends AbstractRedisData {
     return popped;
   }
 
-  Collection<byte[]> srandmember(int count) {
+  public Collection<byte[]> srandmember(int count) {
     int membersSize = members.size();
     boolean duplicatesAllowed = count < 0;
     if (duplicatesAllowed) {
@@ -145,10 +145,14 @@ public class RedisSet extends AbstractRedisData {
 
     Random rand = new Random();
 
+    // TODO: this could be optimized to take advantage of MemberSet
+    // storing its data in an array. We probably don't need to copy it
+    // into another array here.
     byte[][] entries = members.toArray(new byte[membersSize][]);
 
     if (count == 1) {
       byte[] randEntry = entries[rand.nextInt(entries.length)];
+      // TODO: Now that the result is no longer serialized this could use singleton.
       // Note using ArrayList because Collections.singleton has serialization issues.
       List<byte[]> result = new ArrayList<>(1);
       result.add(randEntry);
@@ -162,7 +166,7 @@ public class RedisSet extends AbstractRedisData {
       }
       return result;
     } else {
-      Set<byte[]> result = new HashSet<>();
+      Set<byte[]> result = new MemberSet(count);
       // Note that rand.nextInt can return duplicates when "count" is high
       // so we need to use a Set to collect the results.
       while (result.size() < count) {
@@ -242,7 +246,7 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
@@ -258,7 +262,7 @@ public class RedisSet extends AbstractRedisData {
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
-  long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
@@ -268,7 +272,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   /**
-   * The returned set is a copy and will not be changed
+   * The returned set is NOT a copy and will be changed
    * by future changes to this instance.
    *
    * @return a set containing all the members in this set

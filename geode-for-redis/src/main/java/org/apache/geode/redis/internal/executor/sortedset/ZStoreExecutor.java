@@ -29,14 +29,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public abstract class ZStoreExecutor extends AbstractExecutor {
+public abstract class ZStoreExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -114,6 +115,20 @@ public abstract class ZStoreExecutor extends AbstractExecutor {
 
     return RedisResponse.integer(getResult(context, command, keyWeights, aggregator));
   }
+
+  protected List<RedisKey> getKeysToLock(RegionProvider regionProvider, RedisKey destinationKey,
+      List<ZKeyWeight> keyWeights) {
+    List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
+    for (ZKeyWeight kw : keyWeights) {
+      regionProvider.ensureKeyIsLocal(kw.getKey());
+      keysToLock.add(kw.getKey());
+    }
+    regionProvider.ensureKeyIsLocal(destinationKey);
+    keysToLock.add(destinationKey);
+
+    return keysToLock;
+  }
+
 
   public abstract long getResult(ExecutionHandlerContext context, Command command,
       List<ZKeyWeight> keyWeights, ZAggregator aggregator);

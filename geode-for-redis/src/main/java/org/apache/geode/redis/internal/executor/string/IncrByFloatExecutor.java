@@ -21,21 +21,24 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class IncrByFloatExecutor extends AbstractExecutor {
+public class IncrByFloatExecutor implements CommandExecutor {
 
   private static final int INCREMENT_INDEX = 2;
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
 
     Pair<BigDecimal, RedisResponse> validated =
@@ -44,8 +47,8 @@ public class IncrByFloatExecutor extends AbstractExecutor {
       return validated.getRight();
     }
 
-    RedisStringCommands stringCommands = context.getStringCommands();
-    BigDecimal result = stringCommands.incrbyfloat(key, validated.getLeft());
+    BigDecimal result = context.stringLockedExecute(key, false,
+        string -> string.incrbyfloat(region, key, validated.getLeft()));
 
     return RedisResponse.bigDecimal(result);
   }

@@ -21,12 +21,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SRandMemberExecutor extends AbstractExecutor {
+public class SRandMemberExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
 
@@ -37,7 +37,7 @@ public class SRandMemberExecutor extends AbstractExecutor {
     RedisKey key = command.getKey();
 
     boolean countSpecified = false;
-    int count = 1;
+    int count;
 
     if (commandElems.size() > 2) {
       try {
@@ -46,14 +46,16 @@ public class SRandMemberExecutor extends AbstractExecutor {
       } catch (NumberFormatException e) {
         return RedisResponse.error(ERROR_NOT_NUMERIC);
       }
+    } else {
+      count = 1;
     }
 
     if (count == 0) {
       return RedisResponse.emptyArray();
     }
 
-    RedisSetCommands redisSetCommands = context.getSetCommands();
-    Collection<byte[]> results = redisSetCommands.srandmember(key, count);
+    Collection<byte[]> results = context.setLockedExecute(key, true,
+        set -> set.srandmember(count));
 
     if (countSpecified) {
       return RedisResponse.array(results, true);

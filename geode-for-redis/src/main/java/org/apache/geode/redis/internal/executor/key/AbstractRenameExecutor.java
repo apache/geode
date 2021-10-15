@@ -18,16 +18,17 @@ package org.apache.geode.redis.internal.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyExistsException;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public abstract class AbstractRenameExecutor extends AbstractExecutor {
+public abstract class AbstractRenameExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -35,7 +36,6 @@ public abstract class AbstractRenameExecutor extends AbstractExecutor {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
     RedisKey key = command.getKey();
     RedisKey newKey = commandElems.get(2);
-    RedisKeyCommands redisKeyCommands = context.getKeyCommands();
 
     if (key.equals(newKey)) {
       return getTargetSameAsSourceResponse();
@@ -46,7 +46,7 @@ public abstract class AbstractRenameExecutor extends AbstractExecutor {
     }
 
     try {
-      if (!executeRenameCommand(key, newKey, redisKeyCommands)) {
+      if (!executeRenameCommand(key, newKey, context)) {
         return getNoSuchKeyResponse();
       }
     } catch (RedisKeyExistsException ignored) {
@@ -56,13 +56,22 @@ public abstract class AbstractRenameExecutor extends AbstractExecutor {
     return getSuccessResponse();
   }
 
+  protected static boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
+      boolean ifTargetNotExists) {
+    List<RedisKey> lockOrdering = Arrays.asList(oldKey, newKey);
+
+    return context.lockedExecute(oldKey, lockOrdering,
+        () -> context.getRedisData(oldKey)
+            .rename(context.getRegion(), oldKey, newKey, ifTargetNotExists));
+  }
+
   protected RedisResponse getNoSuchKeyResponse() {
     return RedisResponse.error(ERROR_NO_SUCH_KEY);
   }
 
   protected abstract boolean executeRenameCommand(RedisKey key,
       RedisKey newKey,
-      RedisKeyCommands redisKeyCommands);
+      ExecutionHandlerContext context);
 
   protected abstract RedisResponse getTargetSameAsSourceResponse();
 

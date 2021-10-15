@@ -31,7 +31,8 @@ public class HScanExecutor extends AbstractScanExecutor {
   @Override
   protected Pair<Integer, List<byte[]>> executeScan(ExecutionHandlerContext context, RedisKey key,
       GlobPattern pattern, int count, int cursor) {
-    return context.getHashCommands().hscan(key, pattern, count, cursor);
+    return context.hashLockedExecute(key, true,
+        hash -> hash.hscan(pattern, count, cursor));
   }
 
   @Override

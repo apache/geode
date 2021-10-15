@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetNXExecutor extends AbstractMSetExecutor {
 
@@ -27,9 +28,9 @@ public class MSetNXExecutor extends AbstractMSetExecutor {
   private static final int NO_KEY_SET = 0;
 
   @Override
-  protected void executeMSet(RedisStringCommands stringCommands, List<RedisKey> keys,
+  protected void executeMSet(ExecutionHandlerContext context, List<RedisKey> keys,
       List<byte[]> values) {
-    stringCommands.mset(keys, values, true);
+    mset(context, keys, values, true);
   }
 
   @Override

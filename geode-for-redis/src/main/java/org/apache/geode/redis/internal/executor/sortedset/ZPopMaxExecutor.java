@@ -18,12 +18,14 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class ZPopMaxExecutor extends AbstractZPopExecutor {
 
   @Override
-  protected List<byte[]> zpop(RedisSortedSetCommands sortedSetCommands, RedisKey key, int count) {
-    return sortedSetCommands.zpopmax(key, count);
+  protected List<byte[]> zpop(ExecutionHandlerContext context, RedisKey key, int count) {
+    return context.sortedSetLockedExecute(key, false,
+        zset -> zset.zpopmax(context.getRegion(), key, count));
   }
 
 }

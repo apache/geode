@@ -22,19 +22,21 @@ import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class SPopExecutor extends AbstractExecutor {
+public class SPopExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     boolean isCountPassed = false;
-    int popCount = 1;
+    int popCount;
 
     if (commandElems.size() == 3) {
       isCountPassed = true;
@@ -43,11 +45,14 @@ public class SPopExecutor extends AbstractExecutor {
       } catch (NumberFormatException nex) {
         return RedisResponse.error(ERROR_NOT_INTEGER);
       }
+    } else {
+      popCount = 1;
     }
 
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
-    RedisSetCommands redisSetCommands = context.getSetCommands();
-    Collection<byte[]> popped = redisSetCommands.spop(key, popCount);
+    Collection<byte[]> popped = context.setLockedExecute(key, false,
+        set -> set.spop(region, key, popCount));
 
     if (popped.isEmpty() && !isCountPassed) {
       return RedisResponse.nil();

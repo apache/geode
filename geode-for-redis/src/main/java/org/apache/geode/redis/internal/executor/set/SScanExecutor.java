@@ -105,8 +105,12 @@ public class SScanExecutor extends AbstractScanExecutor {
       }
     }
 
+    GlobPattern pattern = convertGlobToRegex(globPattern);
+    int lCount = count;
+    BigInteger lCursor = cursor;
     Pair<BigInteger, List<Object>> scanResult =
-        context.getSetCommands().sscan(key, convertGlobToRegex(globPattern), count, cursor);
+        context.setLockedExecute(key, true,
+            set -> set.sscan(pattern, lCount, lCursor));
 
     context.setSscanCursor(scanResult.getLeft());
 

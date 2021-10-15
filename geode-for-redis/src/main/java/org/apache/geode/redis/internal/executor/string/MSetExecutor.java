@@ -14,17 +14,19 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+
 import java.util.List;
 
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetExecutor extends AbstractMSetExecutor {
 
   @Override
-  protected void executeMSet(RedisStringCommands stringCommands, List<RedisKey> keys,
+  protected void executeMSet(ExecutionHandlerContext context, List<RedisKey> keys,
       List<byte[]> values) {
-    stringCommands.mset(keys, values, false);
+    mset(context, keys, values, false);
   }
 
   @Override
@@ -37,4 +39,5 @@ public class MSetExecutor extends AbstractMSetExecutor {
   protected RedisResponse getSuccessResponse() {
     return RedisResponse.ok();
   }
+
 }

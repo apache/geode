@@ -21,19 +21,19 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSUBSCRI
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.pubsub.SubscribeResult;
 import org.apache.geode.redis.internal.pubsub.Subscription;
 
-public class SubscribeExecutor extends AbstractExecutor {
+public class SubscribeExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command,
       ExecutionHandlerContext context) {
-    checkForLowMemory(command.getCommandType(), context);
+    context.checkForLowMemory(command.getCommandType());
 
     Collection<SubscribeResult> results = new ArrayList<>(command.getCommandArguments().size());
     for (byte[] channelName : command.getCommandArguments()) {

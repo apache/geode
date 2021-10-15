@@ -40,11 +40,13 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bONE_INT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGPASS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO_INT;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -175,6 +177,16 @@ public class Coder {
     return buffer;
   }
 
+  public static ByteBuf getZeroIntResponse(ByteBuf buffer) {
+    buffer.writeBytes(bZERO_INT);
+    return buffer;
+  }
+
+  public static ByteBuf getOneIntResponse(ByteBuf buffer) {
+    buffer.writeBytes(bONE_INT);
+    return buffer;
+  }
+
   public static ByteBuf getEmptyArrayResponse(ByteBuf buffer) {
     buffer.writeBytes(bEMPTY_ARRAY);
     return buffer;
@@ -269,6 +281,10 @@ public class Coder {
 
   public static ByteBuf getNilResponse(ByteBuf buffer) {
     buffer.writeBytes(bNIL);
+    return buffer;
+  }
+
+  public static ByteBuf getEmptyResponse(ByteBuf buffer) {
     return buffer;
   }
 

@@ -16,20 +16,22 @@ package org.apache.geode.redis.internal.executor.string;
 
 
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class IncrExecutor extends AbstractExecutor {
+public class IncrExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = context.getStringCommands();
 
-    byte[] value = stringCommands.incr(key);
+    byte[] value = context.stringLockedExecute(key, false, string -> string.incr(region, key));
+
     return RedisResponse.integer(value);
   }
 }

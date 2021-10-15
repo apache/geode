@@ -18,13 +18,14 @@ import java.util.List;
 
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class BitCountExecutor extends AbstractExecutor {
+public class BitCountExecutor implements CommandExecutor {
 
   private static final String ERROR_NOT_INT = "The indexes provided must be numeric values";
 
@@ -34,7 +35,6 @@ public class BitCountExecutor extends AbstractExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    RedisStringCommands stringCommands = context.getStringCommands();
     long result;
 
     if (commandElems.size() == 4) {
@@ -48,9 +48,9 @@ public class BitCountExecutor extends AbstractExecutor {
       } catch (ArithmeticException ex) {
         return RedisResponse.error(RedisConstants.ERROR_OUT_OF_RANGE);
       }
-      result = stringCommands.bitcount(key, start, end);
+      result = context.stringLockedExecute(key, true, string -> string.bitcount(start, end));
     } else {
-      result = stringCommands.bitcount(key);
+      result = context.stringLockedExecute(key, true, RedisString::bitcount);
     }
     return RedisResponse.integer(result);
   }

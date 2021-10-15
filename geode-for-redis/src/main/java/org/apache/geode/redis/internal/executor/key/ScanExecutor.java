@@ -89,7 +89,7 @@ public class ScanExecutor extends AbstractScanExecutor {
     }
 
     Pair<BigInteger, List<Object>> scanResult =
-        scan(getDataRegion(context).keySet(), convertGlobToRegex(globPattern), count, cursor);
+        scan(context.getRegion().keySet(), convertGlobToRegex(globPattern), count, cursor);
     context.setScanCursor(scanResult.getLeft());
 
     return RedisResponse.scan(scanResult.getLeft().intValue(), scanResult.getRight());
