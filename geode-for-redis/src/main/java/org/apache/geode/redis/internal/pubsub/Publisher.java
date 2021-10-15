@@ -432,8 +432,17 @@ public class Publisher {
      * returns true if batch refilled; false if batch is empty
      */
     private synchronized boolean refillBatch() {
-      active = batch.fill(requests);
-      return active;
+      if (batch.fill(requests)) {
+        active = true;
+        return true;
+      }
+      active = false;
+      // need to try once more after setting active to false to avoid race
+      if (batch.fill(requests)) {
+        active = true;
+        return true;
+      }
+      return false;
     }
 
     private void publishBatch() {
