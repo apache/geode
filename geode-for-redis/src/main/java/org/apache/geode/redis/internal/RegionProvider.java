@@ -206,11 +206,12 @@ public class RegionProvider {
     if (result == null) {
       if (updateStats) {
         redisStats.incKeyspaceMisses();
-      } else {
-        redisStats.incKeyspaceHits();
       }
       return notFoundValue;
     } else {
+      if (updateStats) {
+        redisStats.incKeyspaceHits();
+      }
       return result;
     }
   }
