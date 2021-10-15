@@ -47,9 +47,9 @@ public class TTLExecutor implements CommandExecutor {
 
   private static long pttl(ExecutionHandlerContext context, RedisKey key) {
     Region<RedisKey, RedisData> region = context.getRegion();
-    long result = context.dataLockedExecute(key,
-        data -> data.pttl(region, key));
-
+    long result = context.dataLockedExecute(key, false, data -> data.pttl(region, key));
+    // note that we can't use "updateStats==true" here because
+    // AbstractRedisData.pttl will return -2 if it finds the existing value is expired.
     if (result == -2) {
       context.getRegionProvider().getRedisStats().incKeyspaceMisses();
     } else {

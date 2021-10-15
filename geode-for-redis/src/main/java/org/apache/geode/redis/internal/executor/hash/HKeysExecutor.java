@@ -49,11 +49,6 @@ public class HKeysExecutor implements CommandExecutor {
       ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
     Collection<byte[]> keys = context.hashLockedExecute(key, true, RedisHash::hkeys);
-
-    if (keys.isEmpty()) {
-      return RedisResponse.emptyArray();
-    }
-
     return RedisResponse.array(keys, true);
   }
 }

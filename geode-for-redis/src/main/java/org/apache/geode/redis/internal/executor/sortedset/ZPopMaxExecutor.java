@@ -24,7 +24,7 @@ public class ZPopMaxExecutor extends AbstractZPopExecutor {
 
   @Override
   protected List<byte[]> zpop(ExecutionHandlerContext context, RedisKey key, int count) {
-    return context.zsetLockedExecute(key, false,
+    return context.sortedSetLockedExecute(key, false,
         zset -> zset.zpopmax(context.getRegion(), key, count));
   }
 

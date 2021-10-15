@@ -49,10 +49,6 @@ public class KeysExecutor implements CommandExecutor {
       }
     }
 
-    if (matchingKeys.isEmpty()) {
-      return RedisResponse.emptyArray();
-    }
-
-    return RedisResponse.bulkStrings(matchingKeys);
+    return RedisResponse.array(matchingKeys, true);
   }
 }

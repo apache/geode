@@ -26,7 +26,7 @@ public class ZCardExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    long size = context.zsetLockedExecute(key, true, RedisSortedSet::zcard);
+    long size = context.sortedSetLockedExecute(key, true, RedisSortedSet::zcard);
 
     return RedisResponse.integer(size);
   }

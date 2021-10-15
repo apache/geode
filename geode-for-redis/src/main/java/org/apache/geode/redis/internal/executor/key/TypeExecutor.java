@@ -32,18 +32,10 @@ public class TypeExecutor implements CommandExecutor {
     RedisKey key = command.getKey();
     String result = type(context, key);
 
-    return RedisResponse.bulkStrings(result);
+    return RedisResponse.bulkString(result);
   }
 
   private static String type(ExecutionHandlerContext context, RedisKey key) {
-    String type = context.dataLockedExecute(key, RedisData::type);
-
-    if (type.equalsIgnoreCase("none")) {
-      context.getRegionProvider().getRedisStats().incKeyspaceMisses();
-    } else {
-      context.getRegionProvider().getRedisStats().incKeyspaceHits();
-    }
-
-    return type;
+    return context.dataLockedExecute(key, true, RedisData::type);
   }
 }

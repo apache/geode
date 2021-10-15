@@ -28,7 +28,7 @@ public class ZRemRangeByRankExecutor extends ZRangeExecutor {
   @Override
   public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetRankRangeOptions options) {
-    long result = context.zsetLockedExecute(key, false,
+    long result = context.sortedSetLockedExecute(key, false,
         zset -> zset.zremrangebyrank(context.getRegion(), key, options));
     return RedisResponse.integer(result);
   }

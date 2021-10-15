@@ -28,6 +28,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.CoderException;
 
@@ -67,8 +68,14 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, numericValue));
   }
 
+  @Immutable
+  private static final RedisResponse ZERO = new RedisResponse(Coder::getZeroIntResponse);
+
+  @Immutable
+  private static final RedisResponse ONE = new RedisResponse(Coder::getOneIntResponse);
+
   public static RedisResponse integer(boolean exists) {
-    return new RedisResponse((buffer) -> Coder.getIntegerResponse(buffer, exists ? 1 : 0));
+    return exists ? ONE : ZERO;
   }
 
   public static RedisResponse string(String stringValue) {
@@ -77,14 +84,6 @@ public class RedisResponse {
 
   public static RedisResponse string(byte[] byteArray) {
     return new RedisResponse((buffer) -> Coder.getSimpleStringResponse(buffer, byteArray));
-  }
-
-  public static RedisResponse bulkStrings(Object message) {
-    if (message instanceof Collection) {
-      return array((Collection<?>) message, true);
-    } else {
-      return bulkString(message);
-    }
   }
 
   public static RedisResponse bulkString(Object value) {
@@ -97,15 +96,27 @@ public class RedisResponse {
     });
   }
 
+  @Immutable
+  private static final RedisResponse OK = new RedisResponse(Coder::getOKResponse);
+
   public static RedisResponse ok() {
-    return new RedisResponse(Coder::getOKResponse);
+    return OK;
   }
+
+  @Immutable
+  private static final RedisResponse NIL = new RedisResponse(Coder::getNilResponse);
 
   public static RedisResponse nil() {
-    return new RedisResponse(Coder::getNilResponse);
+    return NIL;
   }
 
+  @Immutable
+  private static final RedisResponse EMPTY = new RedisResponse(Coder::getEmptyResponse);
+
   public static RedisResponse flattenedArray(Collection<Collection<?>> nestedCollection) {
+    if (nestedCollection.isEmpty()) {
+      return EMPTY;
+    }
     return new RedisResponse((buffer) -> {
       try {
         return Coder.getFlattenedArrayResponse(buffer, nestedCollection);
@@ -116,6 +127,9 @@ public class RedisResponse {
   }
 
   public static RedisResponse array(Collection<?> collection, boolean useBulkStrings) {
+    if (collection == null || collection.isEmpty()) {
+      return emptyArray();
+    }
     return new RedisResponse((buffer) -> {
       try {
         return Coder.getArrayResponse(buffer, collection, useBulkStrings);
@@ -129,12 +143,19 @@ public class RedisResponse {
     return array(Arrays.asList(items), true);
   }
 
+  @Immutable
+  private static final RedisResponse EMPTY_ARRAY = new RedisResponse(Coder::getEmptyArrayResponse);
+
   public static RedisResponse emptyArray() {
-    return new RedisResponse(Coder::getEmptyArrayResponse);
+    return EMPTY_ARRAY;
   }
 
+  @Immutable
+  private static final RedisResponse EMPTY_STRING =
+      new RedisResponse(Coder::getEmptyStringResponse);
+
   public static RedisResponse emptyString() {
-    return new RedisResponse(Coder::getEmptyStringResponse);
+    return EMPTY_STRING;
   }
 
   public static RedisResponse error(String error) {
@@ -173,8 +194,12 @@ public class RedisResponse {
     return new RedisResponse((buffer) -> Coder.getScanResponse(buffer, cursor, scanResult));
   }
 
+
+  @Immutable
+  private static final RedisResponse EMPTY_SCAN = scan(0, Collections.emptyList());
+
   public static RedisResponse emptyScan() {
-    return scan(0, Collections.emptyList());
+    return EMPTY_SCAN;
   }
 
   /**

@@ -69,7 +69,7 @@ public class ZAddExecutor implements CommandExecutor {
       members.add(commandElements.get(i + 1));
     }
     ZAddOptions options = makeOptions(zAddExecutorState);
-    Object retVal = context.zsetLockedExecute(key, false,
+    Object retVal = context.sortedSetLockedExecute(key, false,
         zset -> zset.zadd(region, key, members, scores, options));
 
     if (zAddExecutorState.incrFound) {

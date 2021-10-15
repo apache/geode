@@ -29,7 +29,7 @@ public class ZLexCountExecutor extends ZRangeByLexExecutor {
   @Override
   public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetLexRangeOptions options) {
-    long result = context.zsetLockedExecute(key, true, zset -> zset.zlexcount(options));
+    long result = context.sortedSetLockedExecute(key, true, zset -> zset.zlexcount(options));
     return RedisResponse.integer(result);
   }
 }

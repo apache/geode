@@ -63,7 +63,7 @@ public abstract class AbstractScanExecutor implements CommandExecutor {
     // being an existence check of the key. That causes a race since the data value needs to be
     // accessed again when the actual command does its work. If the relevant bucket doesn't get
     // locked throughout the call, the bucket may move producing inconsistent results.
-    return context.dataLockedExecute(key, value -> {
+    return context.dataLockedExecute(key, false, value -> {
       if (value.isNull()) {
         context.getRedisStats().incKeyspaceMisses();
         return RedisResponse.emptyScan();

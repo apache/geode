@@ -31,14 +31,14 @@ public class MGetExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Collection<byte[]> values = new ArrayList<>();
+    Collection<byte[]> values = new ArrayList<>(commandElems.size() - 1);
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] keyArray = commandElems.get(i);
       RedisKey key = new RedisKey(keyArray);
       values.add(context.stringLockedExecute(key, true, true, RedisString::get));
     }
 
-    return RedisResponse.bulkStrings(values);
+    return RedisResponse.array(values, true);
   }
 
 }

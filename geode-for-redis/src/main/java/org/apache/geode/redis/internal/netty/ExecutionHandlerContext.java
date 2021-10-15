@@ -461,7 +461,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
 
-  public <R> R zsetLockedExecute(RedisKey key, boolean updateStats,
+  public <R> R sortedSetLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisSortedSet, R> function) {
     return getRegionProvider().lockedExecute(key,
         () -> function.apply(getRedisSortedSet(key, updateStats)));
@@ -483,14 +483,18 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
 
-  public <R> R dataLockedExecute(RedisKey key,
+  public <R> R dataLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisData, R> function) {
     return getRegionProvider().lockedExecute(key,
-        () -> function.apply(getRedisData(key)));
+        () -> function.apply(getRedisData(key, updateStats)));
   }
 
   public RedisData getRedisData(RedisKey key) {
-    return getRegionProvider().getRedisData(key);
+    return getRedisData(key, false);
+  }
+
+  private RedisData getRedisData(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getRedisData(key, updateStats);
   }
 
 }

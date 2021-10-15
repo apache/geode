@@ -27,7 +27,7 @@ public class ZRemRangeByLexExecutor extends ZRangeByLexExecutor {
   @Override
   public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetLexRangeOptions options) {
-    long result = context.zsetLockedExecute(key, false,
+    long result = context.sortedSetLockedExecute(key, false,
         zset -> zset.zremrangebylex(context.getRegion(), key, options));
     return RedisResponse.integer(result);
   }

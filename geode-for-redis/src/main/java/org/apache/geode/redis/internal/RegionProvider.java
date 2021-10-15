@@ -159,7 +159,7 @@ public class RegionProvider {
   }
 
   private <T> Callable<T> getTxWrappedCallable(Callable<T> callable) {
-    Callable<T> txWrappedCallable = () -> {
+    return () -> {
       T result;
       boolean success = false;
       txManager.begin();
@@ -173,17 +173,19 @@ public class RegionProvider {
           txManager.rollback();
         }
       }
-
       return result;
     };
-    return txWrappedCallable;
   }
 
   public RedisData getRedisData(RedisKey key) {
-    return getRedisData(key, REDIS_DATA.getNullType());
+    return getRedisData(key, false);
   }
 
-  public RedisData getRedisData(RedisKey key, RedisData notFoundValue) {
+  public RedisData getRedisData(RedisKey key, boolean updateStats) {
+    return getRedisData(key, REDIS_DATA.getNullType(), updateStats);
+  }
+
+  private RedisData getRedisData(RedisKey key, RedisData notFoundValue, boolean updateStats) {
     RedisData result;
     try {
       result = getLocalDataRegion().get(key);
@@ -202,6 +204,11 @@ public class RegionProvider {
       }
     }
     if (result == null) {
+      if (updateStats) {
+        redisStats.incKeyspaceMisses();
+      } else {
+        redisStats.incKeyspaceHits();
+      }
       return notFoundValue;
     } else {
       return result;
@@ -226,15 +233,7 @@ public class RegionProvider {
 
   public <T extends RedisData> T getTypedRedisData(RedisDataType type, RedisKey key,
       boolean updateStats) {
-    RedisData redisData = getRedisData(key, type.getNullType());
-    if (updateStats) {
-      if (redisData == type.getNullType()) {
-        redisStats.incKeyspaceMisses();
-      } else {
-        redisStats.incKeyspaceHits();
-      }
-    }
-
+    RedisData redisData = getRedisData(key, type.getNullType(), updateStats);
     return checkType(redisData, type);
   }
 
@@ -259,15 +258,7 @@ public class RegionProvider {
   }
 
   public RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
-    RedisData redisData = getRedisData(key, NULL_REDIS_STRING);
-    if (updateStats) {
-      if (redisData == NULL_REDIS_STRING) {
-        redisStats.incKeyspaceMisses();
-      } else {
-        redisStats.incKeyspaceHits();
-      }
-    }
-
+    RedisData redisData = getRedisData(key, NULL_REDIS_STRING, updateStats);
     return checkStringTypeIgnoringMismatch(redisData);
   }
 

@@ -57,10 +57,6 @@ public class HValsExecutor implements CommandExecutor {
 
     Collection<byte[]> values = context.hashLockedExecute(key, true, RedisHash::hvals);
 
-    if (values.isEmpty()) {
-      return RedisResponse.emptyArray();
-    }
-
     return RedisResponse.array(values, true);
   }
 

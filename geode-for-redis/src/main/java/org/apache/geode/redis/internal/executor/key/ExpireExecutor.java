@@ -49,8 +49,9 @@ public class ExpireExecutor implements CommandExecutor {
 
     long timestamp = System.currentTimeMillis() + delay;
 
-    int result = context.dataLockedExecute(key,
-        data -> data.pexpireat(context.getRegionProvider(), key, timestamp));
+    int result =
+        context.dataLockedExecute(key, false,
+            data -> data.pexpireat(context.getRegionProvider(), key, timestamp));
 
     return RedisResponse.integer(result);
   }

@@ -30,7 +30,7 @@ public class ZCountExecutor extends ZRangeByScoreExecutor {
   @Override
   public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetScoreRangeOptions options) {
-    long count = context.zsetLockedExecute(key, true, zset -> zset.zcount(options));
+    long count = context.sortedSetLockedExecute(key, true, zset -> zset.zcount(options));
     return RedisResponse.integer(count);
   }
 }

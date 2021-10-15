@@ -42,7 +42,7 @@ public class SMoveExecutor implements CommandExecutor {
 
     // TODO: this command should lock both source and destination before changing them
 
-    String destinationType = context.dataLockedExecute(destination, RedisData::type);
+    String destinationType = context.dataLockedExecute(destination, false, RedisData::type);
     if (!destinationType.equals(REDIS_SET.toString()) && !destinationType.equals("none")) {
       return RedisResponse.wrongType(ERROR_WRONG_TYPE);
     }

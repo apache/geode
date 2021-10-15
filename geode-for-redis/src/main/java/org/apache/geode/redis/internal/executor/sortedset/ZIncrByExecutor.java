@@ -44,7 +44,7 @@ public class ZIncrByExecutor implements CommandExecutor {
     }
     byte[] member = commandElements.get(3);
 
-    byte[] retVal = context.zsetLockedExecute(key, false,
+    byte[] retVal = context.sortedSetLockedExecute(key, false,
         zset -> zset.zincrby(region, key, increment, member));
 
     return RedisResponse.bulkString(retVal);

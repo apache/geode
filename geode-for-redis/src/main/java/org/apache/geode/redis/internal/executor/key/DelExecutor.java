@@ -40,8 +40,8 @@ public class DelExecutor implements CommandExecutor {
   }
 
   public static boolean del(ExecutionHandlerContext context, RedisKey key) {
-    return context.dataLockedExecute(key, data -> {
-      // data unused here but created to trigger MOVED if necessary
+    return context.dataLockedExecute(key, false, data -> {
+      // data unused in this lambda but needs to be created to possibly trigger MOVED exception
       return context.getRegion().remove(key) != null;
     });
   }

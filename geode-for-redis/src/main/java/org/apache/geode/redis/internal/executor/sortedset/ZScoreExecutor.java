@@ -30,7 +30,7 @@ public class ZScoreExecutor implements CommandExecutor {
     RedisKey key = command.getKey();
     byte[] member = commandElements.get(2);
 
-    byte[] score = context.zsetLockedExecute(key, true, zset -> zset.zscore(member));
+    byte[] score = context.sortedSetLockedExecute(key, true, zset -> zset.zscore(member));
 
     return RedisResponse.bulkString(score);
   }

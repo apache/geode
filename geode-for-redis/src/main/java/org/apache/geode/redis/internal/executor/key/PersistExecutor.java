@@ -28,7 +28,8 @@ public class PersistExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     RedisKey key = command.getKey();
 
-    int result = context.dataLockedExecute(key, data -> data.persist(context.getRegion(), key));
+    int result =
+        context.dataLockedExecute(key, false, data -> data.persist(context.getRegion(), key));
 
     return RedisResponse.integer(result);
   }

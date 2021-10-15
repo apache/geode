@@ -35,15 +35,7 @@ public class DumpExecutor implements CommandExecutor {
   }
 
   private static byte[] dump(ExecutionHandlerContext context, RedisKey key) {
-    byte[] dumpBytes = context.dataLockedExecute(key, RedisData::dump);
-
-    if (dumpBytes == null) {
-      context.getRegionProvider().getRedisStats().incKeyspaceMisses();
-    } else {
-      context.getRegionProvider().getRedisStats().incKeyspaceHits();
-    }
-
-    return dumpBytes;
+    return context.dataLockedExecute(key, true, RedisData::dump);
   }
 
 }

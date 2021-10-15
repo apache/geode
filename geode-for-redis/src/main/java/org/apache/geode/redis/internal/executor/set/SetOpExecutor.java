@@ -64,11 +64,7 @@ public abstract class SetOpExecutor implements CommandExecutor {
       }
     }
 
-    if (resultSet == null || resultSet.isEmpty()) {
-      return RedisResponse.emptyArray();
-    } else {
-      return RedisResponse.bulkStrings(resultSet);
-    }
+    return RedisResponse.array(resultSet, true);
   }
 
 

@@ -41,15 +41,7 @@ public class ExistsExecutor implements CommandExecutor {
   }
 
   private static boolean exists(ExecutionHandlerContext context, RedisKey key) {
-    boolean keyExists = context.dataLockedExecute(key, RedisData::exists);
-
-    if (keyExists) {
-      context.getRegionProvider().getRedisStats().incKeyspaceHits();
-    } else {
-      context.getRegionProvider().getRedisStats().incKeyspaceMisses();
-    }
-
-    return keyExists;
+    return context.dataLockedExecute(key, true, RedisData::exists);
   }
 
 }

@@ -16,11 +16,15 @@
 package org.apache.geode.redis.internal.executor;
 
 
+import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
  * Interface for executors of a {@link Command}.
+ * Instances of this interface should normally be stateless.
+ * That is because only a single instance is every created for each enum constant on
+ * {@link RedisCommandType}.
  */
 public interface CommandExecutor {
 

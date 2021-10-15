@@ -24,7 +24,7 @@ public class ZPopMinExecutor extends AbstractZPopExecutor {
 
   @Override
   protected List<byte[]> zpop(ExecutionHandlerContext context, RedisKey key, int count) {
-    return context.zsetLockedExecute(key, false,
+    return context.sortedSetLockedExecute(key, false,
         zset -> zset.zpopmin(context.getRegion(), key, count));
   }
 

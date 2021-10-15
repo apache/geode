@@ -25,7 +25,7 @@ public class ZRevRangeByScoreExecutor extends ZRangeByScoreExecutor {
   @Override
   public RedisResponse executeRangeCommand(ExecutionHandlerContext context, RedisKey key,
       SortedSetScoreRangeOptions options) {
-    List<byte[]> result = context.zsetLockedExecute(key, true,
+    List<byte[]> result = context.sortedSetLockedExecute(key, true,
         zset -> zset.zrevrangebyscore(options));
     return RedisResponse.array(result, true);
   }

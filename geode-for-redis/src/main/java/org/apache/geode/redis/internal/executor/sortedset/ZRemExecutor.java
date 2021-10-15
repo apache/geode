@@ -33,7 +33,7 @@ public class ZRemExecutor implements CommandExecutor {
     RedisKey key = command.getKey();
     List<byte[]> membersToRemove = commandElements.subList(2, commandElements.size());
 
-    long membersRemoved = context.zsetLockedExecute(key, false,
+    long membersRemoved = context.sortedSetLockedExecute(key, false,
         zset -> zset.zrem(region, key, membersToRemove));
 
     return RedisResponse.integer(membersRemoved);

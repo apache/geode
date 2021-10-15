@@ -56,7 +56,7 @@ public class GetRangeExecutor implements CommandExecutor {
     } else if (returnRange.length == 0) {
       return RedisResponse.emptyString();
     } else {
-      return RedisResponse.bulkStrings(returnRange);
+      return RedisResponse.bulkString(returnRange);
     }
   }
 }

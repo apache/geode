@@ -31,9 +31,9 @@ public abstract class AbstractZRankExecutor implements CommandExecutor {
 
     long rank;
     if (isRev()) {
-      rank = context.zsetLockedExecute(key, true, zset -> zset.zrevrank(member));
+      rank = context.sortedSetLockedExecute(key, true, zset -> zset.zrevrank(member));
     } else {
-      rank = context.zsetLockedExecute(key, true, zset -> zset.zrank(member));
+      rank = context.sortedSetLockedExecute(key, true, zset -> zset.zrank(member));
     }
 
     if (rank == -1) {

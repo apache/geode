@@ -40,6 +40,6 @@ public class GetSetExecutor implements CommandExecutor {
     byte[] oldValue = context.stringLockedExecute(key, true,
         string -> string.getset(region, key, newCharValue));
 
-    return RedisResponse.bulkStrings(oldValue);
+    return RedisResponse.bulkString(oldValue);
   }
 }

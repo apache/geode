@@ -30,7 +30,7 @@ public class GetExecutor implements CommandExecutor {
 
     byte[] result = context.stringLockedExecute(key, true, RedisString::get);
 
-    return RedisResponse.bulkStrings(result);
+    return RedisResponse.bulkString(result);
   }
 
 }

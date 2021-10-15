@@ -100,7 +100,7 @@ public class RestoreExecutor implements CommandExecutor {
       }
     }
 
-    context.dataLockedExecute(key, data -> {
+    context.dataLockedExecute(key, false, data -> {
       RedisData value = data.restore(dataBytes, options.isReplace());
       ((AbstractRedisData) value).setExpirationTimestampNoDelta(expireAt);
       context.getRegion().put(key, value);

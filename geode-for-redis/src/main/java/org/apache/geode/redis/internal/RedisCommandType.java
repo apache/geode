@@ -81,7 +81,7 @@ import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
-import org.apache.geode.redis.internal.executor.server.CommandCommandExecutor;
+import org.apache.geode.redis.internal.executor.server.COMMANDCommandExecutor;
 import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
@@ -279,7 +279,7 @@ public enum RedisCommandType {
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
 
   /************* Server *****************/
-  COMMAND(new CommandCommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
+  COMMAND(new COMMANDCommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
       LOADING, STALE)),
   SLOWLOG(new SlowlogExecutor(), SUPPORTED, new Parameter().min(2)
       .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)
@@ -309,14 +309,6 @@ public enum RedisCommandType {
   CLUSTER(new ClusterExecutor(), SUPPORTED, new Parameter().min(2)
       .custom(ClusterParameterRequirements.checkParameters()).firstKey(0)
       .flags(ADMIN, RANDOM, STALE)),
-
-  /***************************************
-   ********* Internal Commands ***********
-   ***************************************/
-  // do not call these directly, only to be used in other commands
-  INTERNALPTTL(new UnknownExecutor(), INTERNAL, new Parameter().exact(2)),
-  INTERNALTYPE(new UnknownExecutor(), INTERNAL, new Parameter().exact(2)),
-  INTERNALSMEMBERS(new UnknownExecutor(), INTERNAL, new Parameter().exact(3)),
 
   /***************************************
    ******** Unsupported Commands *********

@@ -37,8 +37,9 @@ public class ExpireAtExecutor implements CommandExecutor {
       RedisKey wKey = command.getKey();
       long timestamp = getTimestamp(commandElems.get(2));
 
-      int result = context.dataLockedExecute(wKey,
-          data -> data.pexpireat(context.getRegionProvider(), wKey, timestamp));
+      int result =
+          context.dataLockedExecute(wKey, false,
+              data -> data.pexpireat(context.getRegionProvider(), wKey, timestamp));
 
       return RedisResponse.integer(result);
     } catch (NumberFormatException e) {
