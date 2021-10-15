@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.geode.internal.cache.partitioned.CreateMissingBucketsTask.MAX_NUMBER_INTERVALS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -96,7 +97,7 @@ public class CreateMissingBucketsTaskTest {
   }
 
   @Test
-  public void createMissingBucketsDontCreatesBucketsAtomically() {
+  public void createMissingBucketsDoesNotCreateBucketsWhenLeaderAndChildRegionHaveSameRedundancy() {
     PartitionedRegion leaderRegion = mock(PartitionedRegion.class);
     PartitionedRegion.getPrIdToPR().put(1, leaderRegion);
 
@@ -134,7 +135,7 @@ public class CreateMissingBucketsTaskTest {
   }
 
   @Test
-  public void createMissingBucketsCreatesBucketsAtomically() {
+  public void createMissingBucketsCreatesBucketsWhenLeaderAndChildRegionHaveDifferentRedundancy() {
     PartitionedRegion leaderRegion = mock(PartitionedRegion.class);
     PartitionedRegion.getPrIdToPR().put(1, leaderRegion);
 
@@ -178,7 +179,7 @@ public class CreateMissingBucketsTaskTest {
   }
 
   @Test
-  public void testTaskRunColocationCompleted() {
+  public void testTaskRunColocationCompletedCreatesBucketsWhenLeaderAndChildRegionHaveDifferentRedundancy() {
 
     when(prhaRedundancyProvider.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(partitionRegionConfig.isColocationComplete()).thenReturn(true);
@@ -232,7 +233,7 @@ public class CreateMissingBucketsTaskTest {
   }
 
   @Test
-  public void testTaskRunColocationNotCompleted() {
+  public void testTaskRunDoesNotCreateBucketsWhenColocationNotCompleted() {
 
     when(prhaRedundancyProvider.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(partitionRegionConfig.isColocationComplete()).thenReturn(false);
@@ -246,7 +247,7 @@ public class CreateMissingBucketsTaskTest {
   }
 
   @Test
-  public void testTaskRunThrownException() {
+  public void testTaskRunCheckThatLockIsUnlockedWhenThrownException() {
 
     when(prhaRedundancyProvider.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(partitionRegionConfig.isColocationComplete()).thenReturn(true);
@@ -268,11 +269,8 @@ public class CreateMissingBucketsTaskTest {
     when(leaderRegion.getRecoveryLock()).thenReturn(lock);
     when(partitionedRegion.getTotalNumberOfBuckets()).thenThrow(new RuntimeException("Fail"));
 
-    try {
-      task.run2();
-    } catch (RuntimeException ignore) {
-      // do nothing
-    }
+    assertThatThrownBy(() -> task.run2()).isInstanceOf(RuntimeException.class);
+
     verify(lock).unlock();
 
   }
