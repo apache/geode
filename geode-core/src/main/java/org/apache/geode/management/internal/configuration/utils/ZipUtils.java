@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -43,8 +44,9 @@ public class ZipUtils {
       parentDir.toFile().mkdirs();
     }
 
-    try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(targetFile))) {
-      Files.walk(sourceDirectory).filter(path -> !Files.isDirectory(path)).forEach(path -> {
+    try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(targetFile))
+         Stream<Path> stream = Files.walk(sourceDirectory)) {
+      stream.filter(path -> !Files.isDirectory(path)).forEach(path -> {
         ZipEntry zipEntry = new ZipEntry(sourceDirectory.relativize(path).toString());
         try {
           zs.putNextEntry(zipEntry);

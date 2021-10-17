@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -183,10 +184,12 @@ public class LogExporter {
     if (!workingDir.toFile().isDirectory()) {
       return Collections.emptyList();
     }
-    return Files.list(workingDir)
+    try (Stream<Path> stream = Files.list(workingDir)) {
+      return stream
         .filter(Files::isRegularFile)
         .filter(fileSelector)
         .filter(this.logFilter::acceptsFile)
         .collect(toList());
+    }
   }
 }
