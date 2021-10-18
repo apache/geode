@@ -55,7 +55,10 @@ public class RedisSecurityService {
   }
 
   public void logout(ChannelId channelId) {
-    subjects.remove(channelId.asShortText());
+    Subject subject = subjects.remove(channelId.asShortText());
+    if (subject != null) {
+      subject.logout();
+    }
   }
 
   public void authorize(ResourcePermission resourcePermission, Subject subject) {

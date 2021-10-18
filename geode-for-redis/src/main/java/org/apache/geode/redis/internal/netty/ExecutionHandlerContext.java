@@ -300,9 +300,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   private void logout() {
     if (subject != null) {
-      subject.logout();
-      subject = null;
       securityService.logout(channelId);
+      subject = null;
     }
   }
 
