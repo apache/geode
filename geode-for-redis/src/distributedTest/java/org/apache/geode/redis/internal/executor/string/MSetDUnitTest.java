@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,13 +30,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -57,16 +58,25 @@ public class MSetDUnitTest {
   private static JedisCluster jedis;
   private static MemberVM server1;
   private static int locatorPort;
-
-  private static MemberVM locator;
+  private static int server3Port;
 
   @BeforeClass
   public static void classSetup() {
-    locator = clusterStartUp.startLocatorVM(0);
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
     locatorPort = locator.getPort();
     server1 = clusterStartUp.startRedisVM(1, locatorPort);
     clusterStartUp.startRedisVM(2, locatorPort);
-    clusterStartUp.startRedisVM(3, locatorPort);
+
+    server3Port = AvailablePortHelper.getRandomAvailableTCPPort();
+    String finalRedisPort = Integer.toString(server3Port);
+    int finalLocatorPort = locatorPort;
+    clusterStartUp.startRedisVM(3, x -> x
+        .withProperty(REDIS_PORT, finalRedisPort)
+        .withConnectionToLocator(finalLocatorPort));
+
+    clusterStartUp.enableDebugLogging(1);
+    clusterStartUp.enableDebugLogging(2);
+    clusterStartUp.enableDebugLogging(3);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
@@ -104,7 +114,6 @@ public class MSetDUnitTest {
                     .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
   }
 
-  @Ignore("tracked by GEODE-9604")
   @Test
   public void testMSet_crashDoesNotLeaveInconsistencies() throws Exception {
     int KEY_COUNT = 1000;
@@ -117,13 +126,18 @@ public class MSetDUnitTest {
     String[] keysAndValues2 = makeKeysAndValues(keys, "valueTwo");
     AtomicBoolean running = new AtomicBoolean(true);
 
+    String finalRedisPort = Integer.toString(server3Port);
+    int finalLocatorPort = locatorPort;
     Future<?> future = executor.submit(() -> {
       for (int i = 0; i < 20 && running.get(); i++) {
         clusterStartUp.moveBucketForKey(keys[0], "server-3");
         // Sleep for a bit so that MSETs can execute
         Thread.sleep(2000);
         clusterStartUp.crashVM(3);
-        clusterStartUp.startRedisVM(3, locatorPort);
+        clusterStartUp.startRedisVM(3, x -> x
+            .withProperty(REDIS_PORT, finalRedisPort)
+            .withConnectionToLocator(finalLocatorPort));
+        clusterStartUp.enableDebugLogging(3);
         rebalanceAllRegions(server1);
       }
       running.set(false);
