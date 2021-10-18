@@ -349,7 +349,7 @@ echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  P
 echo "============================================================"
 set -x
 cd ${GEODE}
-./gradlew publish -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+./gradlew publish --no-parallel -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
 set +x
 
 
