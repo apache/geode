@@ -20,6 +20,7 @@ import static org.apache.geode.cache.query.dunit.SecurityTestUtils.collectSecuri
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.getSecurityManager;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -113,6 +115,44 @@ public class AuthExpirationTransactionDUnitTest {
 
     Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
     assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3");
+  }
+
+  @Test
+  public void transactionFailsWhenAuthExpiresAndReAuthenticationFails() throws Exception {
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("transaction0");
+
+    Region<Object, Object> region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+    CacheTransactionManager txManager = clientCache.getCacheTransactionManager();
+
+    txManager.begin();
+    IntStream.range(0, 3).forEach(num -> region.put(num, "value" + num));
+
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("transaction0"),
+        locator, server0, server1, server2);
+
+    IntStream.range(3, 6)
+        .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num))
+            .isInstanceOf(ServerOperationException.class)
+            .hasCause(new AuthenticationFailedException("User already expired.")));
+    txManager.rollback();
+
+    VMProvider.invokeInEveryMember(
+        () -> checkServerState("/region", 0),
+        server0, server1, server2);
+
+    ExpirableSecurityManager consolidated = collectSecurityManagers(server0, server1, server2);
+    assertThat(consolidated.getExpiredUsers()).containsExactly("transaction0");
+
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
+    assertThat(authorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:0",
+        "DATA:WRITE:region:1", "DATA:WRITE:region:2");
+
+    Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
+    assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3",
+        "DATA:WRITE:region:4", "DATA:WRITE:region:5");
+
   }
 
   @Test
