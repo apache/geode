@@ -30,13 +30,13 @@ import org.apache.geode.security.ResourcePermission;
  * login (authenticate), logout and authorize calls. It exists as a central point to track whether
  * a given channel (connection) has previously been authenticated.
  */
-public class SecurityServiceWrapper {
+public class RedisSecurityService {
 
   private final Map<String, Subject> subjects = new ConcurrentHashMap<>();
 
   private final SecurityService securityService;
 
-  public SecurityServiceWrapper(SecurityService securityService) {
+  public RedisSecurityService(SecurityService securityService) {
     this.securityService = securityService;
   }
 

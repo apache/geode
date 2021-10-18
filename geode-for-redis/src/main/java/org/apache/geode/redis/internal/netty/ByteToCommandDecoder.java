@@ -31,7 +31,7 @@ import io.netty.channel.ChannelId;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import org.apache.geode.redis.internal.RedisException;
-import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
+import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
@@ -63,10 +63,10 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
       Integer.getInteger(UNAUTHENTICATED_MAX_BULK_STRING_LENGTH_PARAM, 16384);
 
   private final RedisStats redisStats;
-  private final SecurityServiceWrapper securityService;
+  private final RedisSecurityService securityService;
   private final ChannelId channelId;
 
-  public ByteToCommandDecoder(RedisStats redisStats, SecurityServiceWrapper securityService,
+  public ByteToCommandDecoder(RedisStats redisStats, RedisSecurityService securityService,
       ChannelId channelId) {
     this.redisStats = redisStats;
     this.securityService = securityService;

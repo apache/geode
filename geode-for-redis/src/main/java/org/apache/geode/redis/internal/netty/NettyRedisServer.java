@@ -62,7 +62,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
-import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
+import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class NettyRedisServer {
@@ -87,12 +87,12 @@ public class NettyRedisServer {
   private final Channel serverChannel;
   private final int serverPort;
   private final DistributedMember member;
-  private final SecurityServiceWrapper securityService;
+  private final RedisSecurityService securityService;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
-      DistributedMember member, SecurityServiceWrapper securityService) {
+      DistributedMember member, RedisSecurityService securityService) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;

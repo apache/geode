@@ -34,7 +34,7 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
 import org.apache.geode.redis.internal.services.LockingStripedCoordinator;
-import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
+import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -84,7 +84,7 @@ public class GeodeRedisServer {
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-    SecurityServiceWrapper securityService = new SecurityServiceWrapper(cache.getSecurityService());
+    RedisSecurityService securityService = new RedisSecurityService(cache.getSecurityService());
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,

@@ -19,8 +19,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZE
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Properties;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,7 +56,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 import org.apache.geode.redis.internal.pubsub.PubSub;
-import org.apache.geode.redis.internal.services.SecurityServiceWrapper;
+import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
@@ -86,7 +86,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
-  private final SecurityServiceWrapper securityService;
+  private final RedisSecurityService securityService;
   private BigInteger scanCursor;
   private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
@@ -119,7 +119,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       String username,
       int serverPort,
       DistributedMember member,
-      SecurityServiceWrapper securityService) {
+      RedisSecurityService securityService) {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
