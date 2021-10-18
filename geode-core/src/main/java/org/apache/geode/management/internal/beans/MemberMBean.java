@@ -434,7 +434,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
    */
   public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
     // save the binaryData into stagedFile first, and then call the new api
-    File tempDir = FileUtils.getTempDirectory();
+    File tempDir = java.nio.file.Files.createTempDirectory(null).toFile();
     List<String> filePaths = null;
     try {
       filePaths = ManagementUtils.bytesToFiles(binaryData, tempDir.getAbsolutePath());
