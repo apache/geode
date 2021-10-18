@@ -127,7 +127,7 @@ def determine_variables(command_line_variable_options: List[Dict], variables_fil
 def get_variables_from_file(absolute_var_file):
     logging.debug(f"Loading variables from file {absolute_var_file}")
     with open(absolute_var_file, 'r') as variablesFromYml:
-        return yaml.load(variablesFromYml)
+        return yaml.safe_load(variablesFromYml)
 
 
 def get_absolute_dirname(some_path):
@@ -174,7 +174,7 @@ if __name__ == '__main__':
                              "  This option has preference greater than variable files.",
                         nargs="+",
                         default=[],
-                        type=lambda s: yaml.load(s))
+                        type=lambda s: yaml.safe_load(s))
     parser.add_argument("-o",
                         "--output",
                         help="Output file",
