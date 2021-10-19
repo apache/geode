@@ -229,7 +229,7 @@ public class ZRemRangeByRankDUnitTest {
 
   private static boolean isPrimaryForKey() {
     PartitionedRegion region = (PartitionedRegion) ClusterStartupRule.getCache()
-        .getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
+        .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
     int bucketId = PartitionedRegionHelper.getHashKey(region, Operation.GET,
         new RedisKey(KEY.getBytes()), null, null);
     return region.getLocalPrimaryBucketsListTestOnly().contains(bucketId);

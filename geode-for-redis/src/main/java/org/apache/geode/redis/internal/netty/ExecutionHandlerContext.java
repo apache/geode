@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.netty;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
 import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
-import static org.apache.geode.redis.internal.RegionProvider.DEFAULT_REDIS_DATA_REGION;
+import static org.apache.geode.redis.internal.RegionProvider.DEFAULT_REDIS_REGION_NAME;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -100,16 +100,22 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private Subject subject;
 
   static {
-    String regionName =
-        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_DATA_REGION, false);
+    ResourcePermission tempPermission;
+    String regionName = getRegionName();
     String resourcePermission = System.getProperty("redis.resource-permission", "DATA:WRITE:"
         + regionName);
     String[] parts = resourcePermission.split(":");
-    if (parts.length != 3) {
-      parts = new String[] {"DATA", "WRITE", regionName};
+
+    try {
+      if (parts.length != 3) {
+        throw new IllegalArgumentException();
+      }
+      tempPermission = new ResourcePermission(parts[0], parts[1], parts[2]);
+    } catch (IllegalArgumentException e) {
+      tempPermission = new ResourcePermission("DATA", "WRITE", DEFAULT_REDIS_REGION_NAME);
     }
 
-    RESOURCE_PERMISSION = new ResourcePermission(parts[0], parts[1], parts[2]);
+    RESOURCE_PERMISSION = tempPermission;
   }
 
   /**
@@ -511,4 +517,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return getRegionProvider().getRedisData(key, updateStats);
   }
 
+  private static String getRegionName() {
+    return getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME, false);
+  }
 }

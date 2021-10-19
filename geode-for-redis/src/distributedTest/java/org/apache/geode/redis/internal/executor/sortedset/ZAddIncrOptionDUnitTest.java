@@ -202,7 +202,7 @@ public class ZAddIncrOptionDUnitTest {
   }
 
   private static Region<RedisKey, RedisData> getDataRegion() {
-    return ClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_DATA_REGION);
+    return ClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
   }
 
   private static boolean isPrimaryForBucket(int bucketId) {
