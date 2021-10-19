@@ -741,8 +741,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
         // This is for all regions except pdx Region
         if (!isPdxTypesRegion) {
           // Make sure we are distributing to only those senders whose id
-          // is available on this region and whose state is running
-          if (allGatewaySenderIds.contains(sender.getId()) && sender.isRunning()) {
+          // is available on this region
+          if (allGatewaySenderIds.contains(sender.getId())) {
             allRemoteDSIds.add(sender.getRemoteDSId());
           }
         } else { // this else is for PDX region
