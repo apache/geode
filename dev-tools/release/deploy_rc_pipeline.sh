@@ -280,8 +280,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: bellsoft/liberica-openjdk-debian
-              tag: 8
+              repository: adoptopenjdk/openjdk8
+              tag: slim
           inputs:
             - name: geode-native
           platform: linux
@@ -298,13 +298,11 @@ jobs:
               #use geode from binary dist
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
               tar xzf geode-bin.tgz
-              # needed to get cmake >= 3.12
-              echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
-              echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+              #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
+              echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
+              chmod +x /opt/java/openjdk/bin/javah
               cd geode-native
               mkdir build
               cd build
@@ -327,8 +325,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: bellsoft/liberica-openjdk-debian
-              tag: 8
+              repository: adoptopenjdk/openjdk8
+              tag: slim
           inputs:
             - name: geode-native
             - name: geode
@@ -347,13 +345,11 @@ jobs:
               cd geode
               ./gradlew build -x test -x javadoc -x rat -x pmdMain
               cd ..
-              # needed to get cmake >= 3.12
-              echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
-              echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+              #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
+              echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
+              chmod +x /opt/java/openjdk/bin/javah
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native-${VERSION}-src
