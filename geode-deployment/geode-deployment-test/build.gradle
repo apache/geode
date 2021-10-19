@@ -33,11 +33,9 @@ repositories {
 }
 
 dependencies {
-  //spotless:off
-  implementation('org.springframework:spring-core:4.3.5.RELEASE')
-  implementation('org.springframework:spring-beans:4.3.5.RELEASE')
-  implementation('org.springframework:spring-context:4.3.5.RELEASE')
-  //spotless:on
+  implementation('org.springframework:spring-core:4.3.5.RELEASE')// spotless:ignore
+  implementation('org.springframework:spring-beans:4.3.5.RELEASE')// spotless:ignore
+  implementation('org.springframework:spring-context:4.3.5.RELEASE')// spotless:ignore
 
   compileOnly(project(':geode-core'))
 }
