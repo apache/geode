@@ -14,14 +14,34 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHENTICATED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_BULK;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_MULTIBULK;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.netty.ByteToCommandDecoder;
 
 
 public abstract class AbstractAuthIntegrationTest {
@@ -126,6 +146,130 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThat(jedis.ping()).isEqualTo("PONG");
+  }
+
+  @Test
+  public void givenSecurity_largeMultiBulkRequestsFail_whenNotAuthenticated() throws Exception {
+    setupCacheWithSecurity();
+
+    try (Socket clientSocket = new Socket(BIND_ADDRESS, getPort())) {
+      clientSocket.setSoTimeout(1000);
+      PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+      out.write("*100\r\n");
+      out.flush();
+      String response = in.readLine();
+
+      assertThat(response).contains(ERROR_UNAUTHENTICATED_MULTIBULK);
+    }
+  }
+
+  @Test
+  public void givenSecurity_largeMultiBulkRequestsSucceed_whenAuthenticated() throws Exception {
+    setupCacheWithSecurity();
+
+    List<String> msetArgs = new ArrayList<>();
+    for (int i = 0; i < ByteToCommandDecoder.UNAUTHENTICATED_MAX_ARRAY_SIZE; i++) {
+      msetArgs.add("{hash}key-" + i);
+      msetArgs.add("value-" + i);
+    }
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.mset(msetArgs.toArray(new String[] {}))).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenNoSecurity_largeMultiBulkRequestsSucceed_whenNotAuthenticated()
+      throws Exception {
+    setupCacheWithoutSecurity();
+
+    List<String> msetArgs = new ArrayList<>();
+    for (int i = 0; i < ByteToCommandDecoder.UNAUTHENTICATED_MAX_ARRAY_SIZE; i++) {
+      msetArgs.add("{hash}key-" + i);
+      msetArgs.add("value-" + i);
+    }
+
+    assertThat(jedis.mset(msetArgs.toArray(new String[] {}))).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurity_largeBulkStringRequestsFail_whenNotAuthenticated() throws Exception {
+    setupCacheWithSecurity();
+
+    try (Socket clientSocket = new Socket(BIND_ADDRESS, getPort())) {
+      clientSocket.setSoTimeout(1000);
+      PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+      out.write("*1\r\n$100000000\r\n");
+      out.flush();
+      String response = in.readLine();
+
+      assertThat(response).contains(ERROR_UNAUTHENTICATED_BULK);
+    }
+  }
+
+  @Test
+  public void givenSecurity_largeBulkStringRequestsSucceed_whenAuthenticated() throws Exception {
+    setupCacheWithSecurity();
+    int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
+
+    String largeString = StringUtils.repeat('a', stringSize);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.set("key", largeString)).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenNoSecurity_largeBulkStringRequestsSucceed_whenNotAuthenticated()
+      throws Exception {
+    setupCacheWithoutSecurity();
+    int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
+
+    String largeString = StringUtils.repeat('a', stringSize);
+
+    assertThat(jedis.set("key", largeString)).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurity_closingConnectionLogsClientOut() throws Exception {
+    setupCacheWithSecurity();
+
+    int localPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
+    try (Socket clientSocket = new Socket(BIND_ADDRESS, getPort(), InetAddress.getLoopbackAddress(),
+        localPort)) {
+      clientSocket.setSoTimeout(1000);
+      PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+      out.write("*3\r\n$4\r\nAUTH\r\n" +
+          "$" + getUsername().length() + "\r\n" + getUsername() + "\r\n" +
+          "$" + getPassword().length() + "\r\n" + getPassword() + "\r\n");
+      out.flush();
+      String response = in.readLine();
+
+      assertThat(response).contains("OK");
+    }
+
+    AtomicReference<Socket> socketRef = new AtomicReference<>(null);
+
+    await().pollInterval(Duration.ofSeconds(1))
+        .untilAsserted(() -> assertThatNoException().isThrownBy(() -> socketRef.set(
+            new Socket(BIND_ADDRESS, getPort(), InetAddress.getLoopbackAddress(), localPort))));
+
+    try (Socket clientSocket = socketRef.get()) {
+      clientSocket.setSoTimeout(1000);
+      PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+      out.write("*1\r\n$4\r\nPING\r\n");
+      out.flush();
+      String response = in.readLine();
+
+      assertThat(response).contains(ERROR_NOT_AUTHENTICATED);
+    }
   }
 
 }

@@ -71,5 +71,9 @@ public class RedisConstants {
       "AUTH called without a Security Manager configured.";
   public static final String ERROR_KEY_REQUIRED =
       "at least 1 input key is needed for ZUNIONSTORE/ZINTERSTORE";
+  public static final String ERROR_UNAUTHENTICATED_MULTIBULK =
+      "Protocol error: unauthenticated multibulk length";
+  public static final String ERROR_UNAUTHENTICATED_BULK =
+      "Protocol error: unauthenticated bulk length";
   public static final String INTERNAL_SERVER_ERROR = "Internal server error: ";
 }

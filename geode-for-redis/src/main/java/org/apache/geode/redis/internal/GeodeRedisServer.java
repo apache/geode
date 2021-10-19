@@ -22,7 +22,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -35,6 +34,7 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
 import org.apache.geode.redis.internal.services.LockingStripedCoordinator;
+import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.services.StripedCoordinator;
 import org.apache.geode.redis.internal.statistics.GeodeRedisStats;
 import org.apache.geode.redis.internal.statistics.RedisStats;
@@ -84,7 +84,7 @@ public class GeodeRedisServer {
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-    SecurityService securityService = cache.getSecurityService();
+    RedisSecurityService securityService = new RedisSecurityService(cache.getSecurityService());
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
