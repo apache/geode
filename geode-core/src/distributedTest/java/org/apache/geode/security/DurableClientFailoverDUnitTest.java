@@ -21,8 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,7 +116,6 @@ public class DurableClientFailoverDUnitTest {
     putAsync.await();
 
     // make sure client still gets all the events
-    await().atMost(20, TimeUnit.SECONDS)
-        .untilAsserted(() -> assertThat(mylistener.keys).hasSize(size));
+    await().untilAsserted(() -> assertThat(mylistener.keys).hasSize(size));
   }
 }
