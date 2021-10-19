@@ -147,11 +147,16 @@ spotless {
       /\n(\s*\S*(?:[cC]ompile|[rR]untime|[iI]mplementation|[tT]est)(?:Only)?) +\(/,
       '\n$1(')
 
-    custom 'Drop version portion of dependency', {
-      def match
-      if ((match = it =~ /(\s*\S*(?:api|[cC]ompileOnly|[rR]untimeOnly|[iI]mplementation|[tT]est))\('([\w.-]+):([\w.-]+):([\w.-]+)'\)/)) {
-        throw new AssertionError("Error in: ${target} ${match.group(0)}.\nDo not declare raw dependency versions in project Gradle files. 'spotlessApply' cannot resolve this issue.\n")
+    custom 'Do not use raw dependency versions. Prefer constraints.', { String fileAsStr ->
+      fileAsStr.eachLine {thisLine , count ->
+        def match
+        if ((match = thisLine =~ /(\s*\S*(?:api|[cC]ompileOnly|[rR]untimeOnly|[iI]mplementation|[tT]est))\('([\w.-]+):([\w.-]+):([\w.-]+)'\).*$/)) {
+          if (!match.group(0).contains("spotless:ignore")) {
+            throw new AssertionError("Error in ${target} line ${count+1}:\n${match.group(0)}\nDo not declare raw dependency versions in project Gradle files. 'spotlessApply' cannot resolve this issue.\n")
+          }
+        }
       }
+      fileAsStr
     }
 
     indentWithSpaces(2)

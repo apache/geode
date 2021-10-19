@@ -30,10 +30,7 @@ jbossModulesExtension {
       externalLibraryJbossJDKModules = [
         "java.se",
         "jdk.unsupported",
-        "java.rmi",
-        "jdk.scripting.nashorn",
-        "java.desktop",
-        "java.logging"
+        "jdk.scripting.nashorn"
       ]
     }
   }
