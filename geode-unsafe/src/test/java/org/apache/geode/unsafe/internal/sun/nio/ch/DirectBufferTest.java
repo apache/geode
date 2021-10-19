@@ -17,11 +17,17 @@
 package org.apache.geode.unsafe.internal.sun.nio.ch;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.parallel.Execution;
 
+@Execution(CONCURRENT)
+@TestMethodOrder(MethodOrderer.Random.class)
 public class DirectBufferTest {
 
   @Test
