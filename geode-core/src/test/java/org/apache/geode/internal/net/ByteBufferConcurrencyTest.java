@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.net;
 
-import static java.lang.Thread.yield;
+import static java.lang.Thread.sleep;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,6 +41,12 @@ import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 @LoopRunnerConfig(count = 100)
 public class ByteBufferConcurrencyTest {
 
+  /*
+   * Milliseconds to hold onto the buffer for, when simulating application access.
+   */
+  public static final int USE_BUFFER_FOR_MILLIS = 2;
+  public static final int PARALLEL_TASK_COUNT = 10;
+
   @Test
   public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(final ParallelExecutor executor)
       throws Exception {
@@ -58,13 +64,13 @@ public class ByteBufferConcurrencyTest {
       }
     };
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBuffer);
     }
     executor.inParallel(() -> {
       vendor.destruct();
     });
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBuffer);
     }
 
@@ -73,9 +79,13 @@ public class ByteBufferConcurrencyTest {
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
-  private void useBuffer(final ByteBufferSharing sharing) throws IOException {
+  private void useBuffer(final ByteBufferSharing sharing) throws IOException, InterruptedException {
     sharing.getBuffer();
-    yield(); //
+    /*
+     * Give up the thread, in an attempt to maximize the probability that
+     * a competing task might try to access this buffer now.
+     */
+    sleep(USE_BUFFER_FOR_MILLIS);
   }
 
   @Test
@@ -106,13 +116,13 @@ public class ByteBufferConcurrencyTest {
       }
     };
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(accessBufferAndVerify);
     }
     executor.inParallel(() -> {
       vendor.destruct();
     });
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(accessBufferAndVerify);
     }
 
@@ -141,7 +151,7 @@ public class ByteBufferConcurrencyTest {
       }
     };
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBufferAndCheckAccess);
     }
     executor.execute();
@@ -167,11 +177,11 @@ public class ByteBufferConcurrencyTest {
           assertFalse(inUse.getAndSet(true));
           useBuffer(sharing);
           assertTrue(inUse.getAndSet(false));
-          sharing.close();
+          sharing.close(); // extra close() is what we're testing
         }
       }).isInstanceOf(IllegalMonitorStateException.class);
     };
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBufferAndCheckAccess);
     }
     executor.execute();
@@ -181,5 +191,4 @@ public class ByteBufferConcurrencyTest {
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
-  // Extra closes with concurrent access?
 }
