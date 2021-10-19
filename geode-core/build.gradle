@@ -225,14 +225,10 @@ dependencies {
   implementation('commons-validator:commons-validator')
 
   //jaxb is used by cluster configuration
-  implementation('javax.xml.bind:jaxb-api'){
-    ext.embed = true
-  }
+  implementation('javax.xml.bind:jaxb-api')
 
   //jaxb is used by cluster configuration
-  implementation('com.sun.xml.bind:jaxb-impl'){
-    ext.embed = true
-  }
+  implementation('com.sun.xml.bind:jaxb-impl')
 
 
   //istack appears to be used only by jaxb, not in our code. jaxb doesn't

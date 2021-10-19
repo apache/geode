@@ -337,7 +337,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
     if (classLoaderIsolated) {
-      cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+      cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management,javax.xml.bind");
       cmds.add("-Dgeode.deployments.extensions.path=distributedTestGeodeExtensions.properties");
       cmds.add(
           "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
