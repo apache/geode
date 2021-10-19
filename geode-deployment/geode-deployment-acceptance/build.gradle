@@ -1,3 +1,4 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.taskdefs.condition.Os
 
 /*
@@ -62,7 +63,8 @@ docker {
 }
 
 dependencies {
-  implementation(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
+  api(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
     implementation(project(it))
@@ -79,9 +81,8 @@ dependencies {
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
-  //spotless:off
-  acceptanceTestImplementation('org.gradle:gradle-tooling-api')
-  //spotless:on
+  acceptanceTestImplementation('org.gradle:gradle-tooling-api:' + DependencyConstraints.get('gradle-tooling-api.version'))
+
 
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 
