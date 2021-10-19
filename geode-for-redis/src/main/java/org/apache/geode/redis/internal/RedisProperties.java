@@ -15,19 +15,25 @@
 
 package org.apache.geode.redis.internal;
 
+
 public class RedisProperties {
   /** System Property Names **/
-  public static final String WRITE_TIMEOUT_SECONDS =
-      "gemfire.geode-for-redis-write-timeout-seconds";
+  public static final String WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
   public static final String EXPIRATION_INTERVAL_SECONDS =
-      "gemfire.geode-for-redis-expiration-interval-seconds";
+      "geode-for-redis-expiration-interval-seconds";
 
 
+  /** assumes that default is greater than or equal to minValue **/
   public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue) {
-    int timeout = Integer.getInteger(propName, defaultValue);
-    if (timeout < minValue) {
+    int geodeValue = Integer.getInteger("geode." + propName, defaultValue);
+    int gemfireValue = Integer.getInteger("gemfire." + propName, defaultValue);
+
+    if (geodeValue != defaultValue && geodeValue > minValue) {
+      return geodeValue;
+    } else if (gemfireValue != defaultValue && gemfireValue > minValue) {
+      return gemfireValue;
+    } else {
       return defaultValue;
     }
-    return timeout;
   }
 }
