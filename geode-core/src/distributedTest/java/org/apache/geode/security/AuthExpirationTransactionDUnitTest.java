@@ -118,7 +118,7 @@ public class AuthExpirationTransactionDUnitTest {
   }
 
   @Test
-  public void transactionFailsWhenAuthExpiresAndReAuthenticationFails() throws Exception {
+  public void transactionCanRollbackWhenAuthExpiresAndReAuthenticationFails() throws Exception {
     ClientCache clientCache = clientCacheRule.createCache();
     UpdatableUserAuthInitialize.setUser("transaction0");
 
@@ -152,7 +152,43 @@ public class AuthExpirationTransactionDUnitTest {
     Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
     assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3",
         "DATA:WRITE:region:4", "DATA:WRITE:region:5");
+  }
 
+  @Test
+  public void transactionCanCommitWhenAuthExpiresAndReAuthenticationFails() throws Exception {
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("transaction0");
+
+    Region<Object, Object> region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+    CacheTransactionManager txManager = clientCache.getCacheTransactionManager();
+
+    txManager.begin();
+    IntStream.range(0, 3).forEach(num -> region.put(num, "value" + num));
+
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("transaction0"),
+        locator, server0, server1, server2);
+
+    IntStream.range(3, 6)
+        .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num))
+            .isInstanceOf(ServerOperationException.class)
+            .hasCause(new AuthenticationFailedException("User already expired.")));
+    txManager.commit();
+
+    VMProvider.invokeInEveryMember(
+        () -> checkServerState("/region", 3),
+        server0, server1, server2);
+
+    ExpirableSecurityManager consolidated = collectSecurityManagers(server0, server1, server2);
+    assertThat(consolidated.getExpiredUsers()).containsExactly("transaction0");
+
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
+    assertThat(authorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:0",
+        "DATA:WRITE:region:1", "DATA:WRITE:region:2");
+
+    Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
+    assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3",
+        "DATA:WRITE:region:4", "DATA:WRITE:region:5");
   }
 
   @Test
