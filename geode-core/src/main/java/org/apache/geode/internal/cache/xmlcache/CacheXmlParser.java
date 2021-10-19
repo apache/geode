@@ -105,7 +105,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.Assert;
@@ -661,18 +661,19 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
 
     String id = atts.getValue(ID);
-    // Gateway-sender state
-    String state = atts.getValue(STATE);
-    if (state == null) {
-      gatewaySenderFactory.setState(null);
-    } else if (Objects.equals(state, GatewaySenderState.RUNNING.getState()) ||
-        Objects.equals(state, GatewaySenderState.STOPPED.getState()) ||
-        Objects.equals(state, GatewaySenderState.PAUSED.getState())) {
-      gatewaySenderFactory.setState(GatewaySenderState.valueOf(state.toUpperCase()));
+    // Gateway-sender startup action
+    String startupAction = atts.getValue(STARTUP_ACTION);
+    if (startupAction == null) {
+      gatewaySenderFactory.setStartupAction(GatewaySenderStartupAction.NONE);
+    } else if (Objects.equals(startupAction, GatewaySenderStartupAction.START.getAction()) ||
+        Objects.equals(startupAction, GatewaySenderStartupAction.STOP.getAction()) ||
+        Objects.equals(startupAction, GatewaySenderStartupAction.PAUSE.getAction())) {
+      gatewaySenderFactory
+          .setStartupAction(GatewaySenderStartupAction.valueOf(startupAction.toUpperCase()));
     } else {
       throw new InternalGemFireException(
-          String.format("An invalid state value (%s) was configured for gateway sender %s",
-              state, id));
+          String.format("An invalid startup-action value (%s) was configured for gateway sender %s",
+              startupAction, id));
     }
 
     String diskStoreName = atts.getValue(DISK_STORE_NAME);

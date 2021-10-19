@@ -73,7 +73,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderCommandDUnitTest
   }
 
   /**
-   * Test to validate that parallel and serial gateway-sender state is persisted within
+   * Test to validate that parallel and serial gateway-sender startup action is persisted within
    * cluster configuration after "start, stop and pause gateway-sender" commands are executed.
    */
   @Test
@@ -144,7 +144,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderCommandDUnitTest
   }
 
   /**
-   * Test to validate that gateway-sender state is persisted withing cluster configuration
+   * Test to validate that gateway-sender startup action is persisted withing cluster configuration
    * after start, stop and pause gateway-sender command is executed for particular group.
    */
   @Test
@@ -249,7 +249,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderCommandDUnitTest
   }
 
   /**
-   * Test to validate that gateway-sender state is persisted withing cluster configuration
+   * Test to validate that gateway-sender startup action is persisted withing cluster configuration
    * after "resume gateway-sender" command is executed.
    * This behavior is tested in a following way:
    *
@@ -340,7 +340,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderCommandDUnitTest
   }
 
   /**
-   * Test to validate that gateway-sender state is persisted withing cluster configuration
+   * Test to validate that gateway-sender startup action is persisted withing cluster configuration
    * after resume gateway-sender command is executed for particular group.
    * This behavior is tested in a following way:
    *

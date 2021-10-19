@@ -35,8 +35,8 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       Set<Region<?, ?>> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring,
-      boolean cleanQueues, boolean shouldOnlyRecoverQueues) {
-    super(sender, id, nDispatcher, tMonitoring, cleanQueues, shouldOnlyRecoverQueues);
+      boolean cleanQueues, boolean recoverQueuesOnly) {
+    super(sender, id, nDispatcher, tMonitoring, cleanQueues, recoverQueuesOnly);
   }
 
   @Override

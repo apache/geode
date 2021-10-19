@@ -16,49 +16,51 @@
 package org.apache.geode.cache.wan;
 
 /*
- * GatewaySenderState doesn't reflect current state, but the desired state of GatewaySender
- * at the startup of the member. This state is only persisted within cluster configuration when
- * start, stop, pause or resume gateway-sender command is successfully executed. When member starts
- * again, it will read the state from cluster configuration and bring gateway-sender
- * that desired state.
+ * GatewaySenderStartupAction is persisted in cluster configuration when start, stop, pause or
+ * resume gateway-sender command is successfully executed. At startup member will read persisted
+ * startup-action parameter and act accordingly.
  */
-public enum GatewaySenderState {
+public enum GatewaySenderStartupAction {
   /*
-   * This state ("running") is persisted in cluster configuration after
+   * This action ("start") is persisted in cluster configuration after
    * start or resume gateway-sender command is successfully executed.
    * At startup member will start gateway sender. When set then
    * this state has advantage over manual-start parameter.
    */
-  RUNNING("running"),
+  START("start"),
   /*
-   * This state ("stopped") is persisted in cluster configuration after
+   * This action ("stop") is persisted in cluster configuration after
    * stop gateway-sender command is successfully executed. At startup
    * member will not start gateway-sender. When set then
    * this state has advantage over manual-start parameter.
    */
-  STOPPED("stopped"),
+  STOP("stop"),
   /*
-   * This state ("paused") is persisted in cluster configuration after
+   * This action ("pause") is persisted in cluster configuration after
    * pause gateway-sender command is successfully executed. At startup
    * member will start gateway-sender in paused state. When set then
    * this state has advantage over manual-start parameter.
    */
-  PAUSED("paused");
+  PAUSE("pause"),
+  /*
+   * Used when startup-action parameter is not available in cluster configuration.
+   */
+  NONE("none");
 
-  private String state;
+  private String action;
 
-  GatewaySenderState(String state) {
-    this.state = state;
+  GatewaySenderStartupAction(String action) {
+    this.action = action;
   }
 
-  public String getState() {
-    return state;
+  public String getAction() {
+    return action;
   }
 
   @Override
   public String toString() {
-    return "GatewaySenderState{" +
-        "state='" + state + '\'' +
+    return "GatewaySenderStartupAction {" +
+        "action='" + action + '\'' +
         '}';
   }
 }

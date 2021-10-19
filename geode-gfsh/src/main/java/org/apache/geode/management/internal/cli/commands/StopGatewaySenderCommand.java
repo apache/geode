@@ -32,7 +32,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -143,7 +143,7 @@ public class StopGatewaySenderCommand extends SingleGfshCommand implements
     // Persist new state to Cluster Configuration
     if (isGatewaySenderStopped && onMember == null) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setState(GatewaySenderState.STOPPED.getState());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.STOP.getAction());
       gatewaySenderConfig.setId(id);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

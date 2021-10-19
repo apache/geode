@@ -77,9 +77,8 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         }
       }
       if (targetRs.isEmpty()) {
-        // Do not do anything if data region for which gateway-sender is configured is not
-        // available.
-        // Gateway-sender queue will be recovered during creation of that data region.
+        // Don't do anything if data region for which gateway-sender is configured is not
+        // available. Gateway-sender queue will be recovered during creation of that data region.
         return;
       }
 

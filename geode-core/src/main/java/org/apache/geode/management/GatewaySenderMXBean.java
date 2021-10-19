@@ -111,15 +111,11 @@ public interface GatewaySenderMXBean {
   boolean isManualStart();
 
   /**
-   * Returns the state of GatewaySender.
-   * Possible values:
-   * - running
-   * - stopped
-   * - started
+   * Returns the startup action of GatewaySender.
    *
-   * @return returns the state of GatewaySender.
+   * @return returns the startup-action
    */
-  String getState();
+  String getGatewaySenderStartupAction();
 
   /**
    * Returns whether or not this GatewaySender is running.

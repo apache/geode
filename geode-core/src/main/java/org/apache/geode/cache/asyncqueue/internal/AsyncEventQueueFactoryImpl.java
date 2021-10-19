@@ -178,7 +178,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       asyncEventQueue = asyncEventQueueImpl;
       cache.addAsyncEventQueue(asyncEventQueueImpl);
       if (pauseEventsDispatching) {
-        sender.setStartEventProcessorInPausedState(true);
+        sender.setStartEventProcessor(true);
       }
       if (!gatewaySenderAttributes.isManualStart()) {
         sender.start();

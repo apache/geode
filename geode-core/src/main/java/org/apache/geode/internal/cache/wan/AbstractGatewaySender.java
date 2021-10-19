@@ -33,7 +33,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
@@ -48,7 +47,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.GatewayCancelledException;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -154,7 +153,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private int serialNumber;
 
-  protected GatewaySenderState state;
+  protected GatewaySenderStartupAction startupAction;
 
   protected GatewaySenderStats statistics;
 
@@ -190,14 +189,17 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       new ConcurrentLinkedQueue<>();
 
   /**
-   * Contains all events that were stored in temporary dropped events queue when
-   * hook to collect tmp dropped events is enabled
+   * Contains wan replication events that were dropped by parallel gateway senders.
+   * Activate this hook by setting system property <code>ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS</code>
    */
-  private volatile ConcurrentLinkedQueue<EntryEventImpl> hookForTmpDroppedEvents;
+  private volatile ConcurrentLinkedQueue<EntryEventImpl> testHookTempDroppedEvents;
 
-  @MutableForTesting
-  public static boolean ENABLE_HOOK_TMP_DROPPED_EVENTS = false;
-
+  /**
+   * Only used for testing purpose. This property enables test hook which collects all
+   * wan replication events that are dropped by parallel gateway senders.
+   */
+  private static final boolean ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS =
+      Boolean.getBoolean("enable-test-hook-temp-dropped-events");
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
@@ -279,7 +281,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     transFilters = Collections.unmodifiableList(attrs.getGatewayTransportFilters());
     listeners = attrs.getAsyncEventListeners();
     substitutionFilter = attrs.getGatewayEventSubstitutionFilter();
-    locatorDiscoveryCallback = attrs.getGatewayLocatoDiscoveryCallback();
+    locatorDiscoveryCallback = attrs.getGatewayLocatorDiscoveryCallback();
     isDiskSynchronous = attrs.isDiskSynchronous();
     policy = attrs.getOrderPolicy();
     dispatcherThreads = attrs.getDispatcherThreads();
@@ -305,7 +307,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
     isBucketSorted = attrs.isBucketSorted();
     forwardExpirationDestroy = attrs.isForwardExpirationDestroy();
-    state = attrs.getState();
+    startupAction = attrs.getStartupAction();
   }
 
   public GatewaySenderAdvisor getSenderAdvisor() {
@@ -427,8 +429,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public GatewaySenderState getState() {
-    return state;
+  public GatewaySenderStartupAction getStartupAction() {
+    return startupAction;
   }
 
   @Override
@@ -938,7 +940,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
-  public void setStartEventProcessorInPausedState(boolean isPaused) {
+  public void setStartEventProcessor(boolean isPaused) {
     startEventProcessorInPausedState = isPaused;
   }
 
@@ -1233,11 +1235,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       eventProcessor.registerEventDroppedInPrimaryQueue(event);
     } else {
       tmpDroppedEvents.add(event);
-      if (ENABLE_HOOK_TMP_DROPPED_EVENTS) {
-        if (hookForTmpDroppedEvents == null) {
-          hookForTmpDroppedEvents = new ConcurrentLinkedQueue<>();
+      if (ENABLE_TEST_HOOK_TEMP_DROPPED_EVENTS) {
+        if (testHookTempDroppedEvents == null) {
+          testHookTempDroppedEvents = new ConcurrentLinkedQueue<>();
         }
-        hookForTmpDroppedEvents.add(event);
+        testHookTempDroppedEvents.add(event);
       }
       if (logger.isDebugEnabled()) {
         logger.debug("added to tmpDroppedEvents event: {}", event);
@@ -1245,14 +1247,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
-  @VisibleForTesting
-  public int getTmpDroppedEventSize() {
+  protected int getTempDroppedEventSize() {
     return tmpDroppedEvents.size();
   }
 
-  @VisibleForTesting
-  public int getTempDroppedEventsHookSize() {
-    return hookForTmpDroppedEvents.size();
+  protected int getTempDroppedEventsHookSize() {
+    return testHookTempDroppedEvents.size();
   }
 
   /**

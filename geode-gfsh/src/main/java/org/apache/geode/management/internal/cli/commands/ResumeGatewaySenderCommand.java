@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -111,7 +111,7 @@ public class ResumeGatewaySenderCommand extends SingleGfshCommand implements
     // Persist new state to Cluster Configuration
     if (isGatewaySenderResumed && onMember == null) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setState(GatewaySenderState.RUNNING.getState());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.START.getAction());
       gatewaySenderConfig.setId(senderId);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

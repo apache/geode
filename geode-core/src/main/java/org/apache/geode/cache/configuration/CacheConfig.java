@@ -2642,8 +2642,8 @@ public class CacheConfig {
     protected String batchTimeInterval;
     @XmlAttribute(name = "enable-persistence")
     protected Boolean enablePersistence;
-    @XmlAttribute(name = "state")
-    protected String state;
+    @XmlAttribute(name = "startup-action")
+    protected String startupAction;
     @XmlAttribute(name = "disk-store-name")
     protected String diskStoreName;
     @XmlAttribute(name = "disk-synchronous")
@@ -2759,25 +2759,25 @@ public class CacheConfig {
     }
 
     /**
-     * Gets the value of the state property.
+     * Gets the value of the startup-action property.
      *
      * possible object is
      * {@link String }
      *
      */
-    public String getState() {
-      return state;
+    public String getStartupAction() {
+      return startupAction;
     }
 
     /**
-     * Sets the value of the state property.
+     * Sets the value of the startup-action property.
      *
      * allowed object is
      * {@link String }
      *
      */
-    public void setState(String value) {
-      this.state = value;
+    public void setStartupAction(String value) {
+      this.startupAction = value;
     }
 
     /**

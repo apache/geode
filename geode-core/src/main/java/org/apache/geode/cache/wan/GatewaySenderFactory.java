@@ -118,18 +118,15 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setBatchSize(int size);
 
   /**
-   * Sets state of the <code>GatewaySender</code>. This state is set after start,
-   * stop, pause and resume gateway-sender gfsh commands as follows:
-   * - "running" (start or resume gateway-sender)
-   * - "stopped" (stop gateway-sender)
-   * - "paused" (pause gateway-sender)
+   * Sets startup-action of the <code>GatewaySender</code>. This action parameter is set after
+   * start, stop, pause and resume gateway-sender gfsh commands.
    *
-   * There is no default state, since state is set only after above gfsh commands are executed.
-   * If not set then state is equal to null.
+   * @param gatewaySenderStartupAction Gateway-sender gatewaySenderStartupAction
    *
-   * @param state Gateway-sender state
+   * @see GatewaySenderStartupAction
    */
-  GatewaySenderFactory setState(GatewaySenderState state);
+  GatewaySenderFactory setStartupAction(
+      GatewaySenderStartupAction gatewaySenderStartupAction);
 
   /**
    * Sets a time interval in milliseconds to wait to form a batch to be dispatched from a

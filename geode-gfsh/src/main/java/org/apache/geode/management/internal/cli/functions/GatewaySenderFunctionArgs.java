@@ -48,7 +48,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
   private final List<String> gatewayEventFilters;
   private final List<String> gatewayTransportFilters;
   private final Boolean enforceThreadsConnectSameReceiver;
-  private final String state;
+  private final String startupAction;
 
   public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
     id = sender.getId();
@@ -85,17 +85,16 @@ public class GatewaySenderFunctionArgs implements Serializable {
                 .stream().map(DeclarableType::getClassName)
                 .collect(Collectors.toList()))
             .orElse(null);
-
     enforceThreadsConnectSameReceiver = sender.getEnforceThreadsConnectSameReceiver();
-    state = sender.getState();
+    startupAction = sender.getStartupAction();
   }
 
   private Integer string2int(String x) {
     return Optional.ofNullable(x).map(Integer::valueOf).orElse(null);
   }
 
-  public String getState() {
-    return this.state;
+  public String getStartupAction() {
+    return this.startupAction;
   }
 
   public String getId() {

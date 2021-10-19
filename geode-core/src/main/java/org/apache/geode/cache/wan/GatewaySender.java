@@ -204,23 +204,10 @@ public interface GatewaySender {
   }
 
   /**
-   * When this flag is set to "true", then GatewaySender will be started in paused state.
-   */
-  void setStartEventProcessorInPausedState(boolean isPaused);
-
-  /**
    * Starts this GatewaySender. Once the GatewaySender is running, its configuration cannot be
    * changed.
    */
   void start();
-
-  /**
-   * Recovers partition region used by parallel gateway-sender queue. Parallel gateway sender
-   * queue region is colocated with partition region on which is collecting events. It is necessary
-   * to recover colocated gateway sender queue region, so it doesn't block the colocated data
-   * region to reach the online status.
-   */
-  void recoverInStoppedState();
 
   /**
    * Starts this GatewaySender and discards previous queue content. Once the GatewaySender is
@@ -275,8 +262,6 @@ public interface GatewaySender {
    * Returns whether or not this GatewaySender is running.
    */
   boolean isRunning();
-
-
 
   /**
    * Returns whether or not this GatewaySender is paused.
@@ -337,20 +322,14 @@ public interface GatewaySender {
   int getSocketReadTimeout();
 
   /**
-   * Returns the state of the <code>GatewaySender</code>. This state is set after start,
-   * stop, pause and resume gateway-sender gfsh commands.
-   * Possible values are:
-   * - running (start or resume gateway-sender)
-   * - stopped (stop gateway-sender)
-   * - paused (pause gateway-sender)
+   * Returns the startup-action of the <code>GatewaySender</code>. This action parameter is set
+   * after start, stop, pause and resume gateway-sender gfsh commands.
    *
-   * There is no default state, since state is set only after above gfsh commands are successfully
-   * executed.
-   * If it is not set then null will be returned.
+   * @return startup action
    *
-   * @return state Gateway-sender state
+   * @see GatewaySenderStartupAction
    */
-  GatewaySenderState getState();
+  GatewaySenderStartupAction getStartupAction();
 
   /**
    * Gets the disk store name for overflow or persistence.
