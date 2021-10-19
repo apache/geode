@@ -77,4 +77,10 @@ public class RedisPropertiesTest {
     System.setProperty("gemfire.prop.name6", "72");
     assertThat(getIntegerSystemProperty("prop.name6", 5, 0)).isEqualTo(72);
   }
+
+  @Test
+  public void getIntegerSystemProperty_shouldUseSetValue_whenSetToMinimumValue() {
+    System.setProperty("geode.prop.name7", "42");
+    assertThat(getIntegerSystemProperty("prop.name7", 5, 42)).isEqualTo(42);
+  }
 }

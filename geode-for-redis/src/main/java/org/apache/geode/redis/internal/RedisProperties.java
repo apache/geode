@@ -28,9 +28,9 @@ public class RedisProperties {
     int geodeValue = Integer.getInteger("geode." + propName, defaultValue);
     int gemfireValue = Integer.getInteger("gemfire." + propName, defaultValue);
 
-    if (geodeValue != defaultValue && geodeValue > minValue) {
+    if (geodeValue != defaultValue && geodeValue >= minValue) {
       return geodeValue;
-    } else if (gemfireValue != defaultValue && gemfireValue > minValue) {
+    } else if (gemfireValue != defaultValue && gemfireValue >= minValue) {
       return gemfireValue;
     } else {
       return defaultValue;
