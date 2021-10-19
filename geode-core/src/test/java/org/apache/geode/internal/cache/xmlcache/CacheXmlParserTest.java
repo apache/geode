@@ -24,7 +24,7 @@ import static org.apache.geode.internal.cache.xmlcache.CacheXml.LOCK_TIMEOUT;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.MESSAGE_SYNC_INTERVAL;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.REMOTE_DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.SEARCH_TIMEOUT;
-import static org.apache.geode.internal.cache.xmlcache.CacheXml.STATE;
+import static org.apache.geode.internal.cache.xmlcache.CacheXml.STARTUP_ACTION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +40,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 
 
@@ -118,7 +118,7 @@ public class CacheXmlParserTest {
   @Test
   public void testStartGatewaySenderStateParameterRunning() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    XmlGeneratorUtils.addAttribute(attrs, STATE, "running");
+    XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "start");
 
     GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
@@ -127,13 +127,13 @@ public class CacheXmlParserTest {
     parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
         attrs);
 
-    verify(gatewaySenderFactory).setState(GatewaySenderState.RUNNING);
+    verify(gatewaySenderFactory).setStartupAction(GatewaySenderStartupAction.START);
   }
 
   @Test
   public void testStartGatewaySenderStateParameterStopped() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    XmlGeneratorUtils.addAttribute(attrs, STATE, "stopped");
+    XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "stop");
 
     GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
@@ -142,13 +142,13 @@ public class CacheXmlParserTest {
     parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
         attrs);
 
-    verify(gatewaySenderFactory).setState(GatewaySenderState.STOPPED);
+    verify(gatewaySenderFactory).setStartupAction(GatewaySenderStartupAction.STOP);
   }
 
   @Test
   public void testStartGatewaySenderStateParameterPaused() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
-    XmlGeneratorUtils.addAttribute(attrs, STATE, "paused");
+    XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "pause");
 
     GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
@@ -157,7 +157,7 @@ public class CacheXmlParserTest {
     parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
         attrs);
 
-    verify(gatewaySenderFactory).setState(GatewaySenderState.PAUSED);
+    verify(gatewaySenderFactory).setStartupAction(GatewaySenderStartupAction.PAUSE);
   }
 
   @Test
@@ -171,14 +171,14 @@ public class CacheXmlParserTest {
     parser.startElement("http://geode.apache.org/schema/cache", "gateway-sender", "gateway-sender",
         attrs);
 
-    verify(gatewaySenderFactory).setState(null);
+    verify(gatewaySenderFactory).setStartupAction(GatewaySenderStartupAction.NONE);
   }
 
   @Test
   public void testGatewaySenderStateParameterInvalidValue() {
     AttributesImpl attrs = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "sender1");
-    XmlGeneratorUtils.addAttribute(attrs, STATE, "pausede");
+    XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "pausede");
 
     GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
@@ -189,7 +189,8 @@ public class CacheXmlParserTest {
             "gateway-sender",
             attrs));
     assertTrue(exception.getMessage()
-        .contains("An invalid state value (pausede) was configured for gateway sender sender1"));
+        .contains(
+            "An invalid startup-action value (pausede) was configured for gateway sender sender1"));
   }
 
 }

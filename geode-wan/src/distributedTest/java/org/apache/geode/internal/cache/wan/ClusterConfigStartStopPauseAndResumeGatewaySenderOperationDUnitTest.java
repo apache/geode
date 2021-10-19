@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.wancommand;
+package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
@@ -47,7 +47,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
@@ -84,7 +83,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
   private ClientVM clientSite2;
 
   /**
-   * Verify that gateway-sender state is persisted after pause and resume gateway-sender
+   * Verify that gateway-sender startup action is persisted after pause and resume gateway-sender
    * commands are executed, and that gateway-sender works as expected after member restart:
    *
    * - Region type: PARTITION and non-redundant
@@ -250,7 +249,7 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
   }
 
   /**
-   * Verify that gateway-sender state is persisted after stop and start gateway-sender
+   * Verify that gateway-sender startup action is persisted after stop and start gateway-sender
    * commands are executed, and that gateway-sender works as expected after member restart:
    *
    * - Region type: PARTITION and non-redundant
@@ -435,52 +434,53 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
   @Test
   public void testEventsAreQueuedInTmpDroppedEventQueueDuringRecoveryOfSenderInStoppedState()
       throws Exception {
-    configureSites(true, "PARTITION_REDUNDANT_PERSISTENT", "1", "true");
+    String property = "enable-test-hook-temp-dropped-events";
+    try {
+      setSystemPropertyOnServersSite2(property, "true");
+      configureSites(true, "PARTITION_REDUNDANT_PERSISTENT", "1", "true");
 
-    List<MemberVM> allMembers = new ArrayList<>();
-    allMembers.add(server1Site2);
-    allMembers.add(server2Site2);
+      List<MemberVM> allMembers = new ArrayList<>();
+      allMembers.add(server1Site2);
+      allMembers.add(server2Site2);
 
-    executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
-    verifyGatewaySenderState(false, false);
+      executeGfshCommand(CliStrings.STOP_GATEWAYSENDER);
+      verifyGatewaySenderState(false, false);
 
-    Set<String> keys1 = clientSite2.invoke(() -> doPutsInRange(0, 500));
-    clientSite2.invoke(() -> checkDataAvailable(keys1));
-    server1Site2.invoke(() -> checkQueueSize("ln", 0));
+      Set<String> keys1 = clientSite2.invoke(() -> doPutsInRange(0, 500));
+      clientSite2.invoke(() -> checkDataAvailable(keys1));
+      server1Site2.invoke(() -> checkQueueSize("ln", 0));
 
-    MemberVM startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
+      MemberVM startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
 
-    // perform rebalance operation to redistribute primaries on running servers
-    String command = new CommandStringBuilder(CliStrings.REBALANCE)
-        .getCommandString();
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
+      // perform rebalance operation to redistribute primaries on running servers
+      String command = new CommandStringBuilder(CliStrings.REBALANCE)
+          .getCommandString();
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    startServer.invoke(() -> AbstractGatewaySender.ENABLE_HOOK_TMP_DROPPED_EVENTS = true);
+      startServer.stop(false);
 
-    startServer.stop(false);
+      Thread thread = new Thread(
+          () -> clientSite2.invoke(() -> doPutsInRange(0, 15000)));
+      thread.start();
 
-    Thread thread = new Thread(
-        () -> clientSite2.invoke(() -> doPutsInRange(0, 15000)));
-    thread.start();
+      startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
 
-    startServer = clusterStartupRule.startServerVM(9, locatorSite2.getPort());
+      allMembers.add(startServer);
 
-    allMembers.add(startServer);
+      for (MemberVM member : allMembers) {
+        member.invoke(() -> {
+          // test that non of the events are stored in primary and secondary buckets
+          testLocalQueueIsEmpty("ln");
+          // check that tmpDroppedEvent queue has been drained after it recovered in stopped state
+          verifyTmpDroppedEventSize("ln", 0);
+        });
+      }
 
-    for (MemberVM member : allMembers) {
-      member.invoke(() -> {
-        // test that non of the events are stored in primary and secondary buckets
-        testLocalQueueIsEmpty("ln");
-        // check that tmpDroppedEvent queue has been drained after it recovered in stopped state
-        verifyTmpDroppedEventSize("ln", 0);
-      });
+      // check that events are stored in tmp dropped queue during the startup of server
+      startServer.invoke(() -> verifyThatTempDroppedEventsHookIsTriggered("ln"));
+    } finally {
+      setSystemPropertyOnServersSite2(property, null);
     }
-
-    // check that events are stored in tmp dropped queue during the startup of server
-    startServer.invoke(() -> {
-      AbstractGatewaySender.ENABLE_HOOK_TMP_DROPPED_EVENTS = false;
-      verifyThatTempDroppedEventsHookIsTriggered("ln");
-    });
   }
 
   public static void verifyTmpDroppedEventSize(String senderId, int size) {
@@ -488,7 +488,8 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
 
     AbstractGatewaySender ags = (AbstractGatewaySender) sender;
     await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
-        + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+        + " but actual size: " + ags.getTempDroppedEventSize(), size,
+        ags.getTempDroppedEventSize()));
   }
 
   public static void verifyThatTempDroppedEventsHookIsTriggered(String senderId) {
@@ -516,6 +517,18 @@ public class ClusterConfigStartStopPauseAndResumeGatewaySenderOperationDUnitTest
       }
     }
     assertEquals(0, totalSize);
+  }
+
+  private void setSystemPropertyOnServersSite2(String key, String value) {
+    if (value != null) {
+      clusterStartupRule.getVM(5).invoke(() -> System.setProperty(key, value));
+      clusterStartupRule.getVM(6).invoke(() -> System.setProperty(key, value));
+      clusterStartupRule.getVM(9).invoke(() -> System.setProperty(key, value));
+    } else {
+      clusterStartupRule.getVM(5).invoke(() -> System.clearProperty(key));
+      clusterStartupRule.getVM(6).invoke(() -> System.clearProperty(key));
+      clusterStartupRule.getVM(9).invoke(() -> System.clearProperty(key));
+    }
   }
 
   void configureSites(boolean enableGWSPersistence, String regionShortcut, String redundancy,

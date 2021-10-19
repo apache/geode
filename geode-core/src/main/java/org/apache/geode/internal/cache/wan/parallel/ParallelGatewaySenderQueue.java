@@ -246,14 +246,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region<?, ?>> userRegions,
       int idx,
-      int nDispatcher, boolean cleanQueues, boolean shouldOnlyRecoverQueues) {
+      int nDispatcher, boolean cleanQueues, boolean recoverQueuesOnly) {
     this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory(), cleanQueues,
-        shouldOnlyRecoverQueues);
+        recoverQueuesOnly);
   }
 
   ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region<?, ?>> userRegions, int idx,
       int nDispatcher, MetaRegionFactory metaRegionFactory, boolean cleanQueues,
-      boolean shouldOnlyRecoverQueues) {
+      boolean recoverQueuesOnly) {
 
     this.metaRegionFactory = metaRegionFactory;
 
@@ -299,7 +299,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     removalThread = new BatchRemovalThread(this.sender.getCache(), this);
     // initialize the conflation thread pool if conflation is enabled and queues are started
-    if (sender.isBatchConflationEnabled() && !shouldOnlyRecoverQueues) {
+    if (sender.isBatchConflationEnabled() && !recoverQueuesOnly) {
       initializeConflationThreadPool();
     }
   }

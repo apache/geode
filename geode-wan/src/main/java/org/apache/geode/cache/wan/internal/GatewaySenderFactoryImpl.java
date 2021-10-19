@@ -25,7 +25,7 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
-import org.apache.geode.cache.wan.GatewaySenderState;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
@@ -140,8 +141,9 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setState(GatewaySenderState state) {
-    this.attrs.state = state;
+  public GatewaySenderFactory setStartupAction(
+      GatewaySenderStartupAction gatewaySenderStartupAction) {
+    this.attrs.setStartupAction(gatewaySenderStartupAction);
     return this;
   }
 
@@ -322,44 +324,46 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   /**
-   * This method returns desired state of gateway-sender. The desired state is calculated
-   * based on the state (please check <code>{@link GatewaySenderState}</code>) and manual-start
-   * parameters. If set, then state parameter has advantage over the manual-start parameter.
+   * This method returns startup action of gateway-sender. The startup action is calculated
+   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
+   * manual-start parameters. If set, then startup-action parameter has advantage over
+   * the manual-start parameter.
    *
-   * @see GatewaySenderState
+   * @see GatewaySenderStartupAction
    */
-  private GatewaySenderState getGatewaySenderDesiredState() {
-    // If state parameter is not available, then use manual-start parameter
+  private GatewaySenderStartupAction getGatewaySenderDesiredState() {
+    // If startup-action parameter is not available, then use manual-start parameter
     // to determine initial state of gateway-sender
-    if (this.attrs.getState() == null) {
+    if (this.attrs.getStartupAction() == GatewaySenderStartupAction.NONE) {
       if (!this.attrs.isManualStart()) {
-        return GatewaySenderState.RUNNING;
+        return GatewaySenderStartupAction.START;
       }
-      return GatewaySenderState.STOPPED;
+      return GatewaySenderStartupAction.STOP;
     }
-    return this.attrs.getState();
+    return this.attrs.getStartupAction();
   }
 
   /**
-   * This method brings geode sender to desired state.
+   * This method brings geode sender to desi.
    *
-   * @see GatewaySenderState
+   * @see GatewaySenderStartupAction
    */
   private void bringGatewaySenderToConfiguredState(GatewaySender sender) {
-    GatewaySenderState state = getGatewaySenderDesiredState();
+    InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
+    GatewaySenderStartupAction startupAction = getGatewaySenderDesiredState();
 
-    switch (state) {
-      case RUNNING:
-        sender.start();
+    switch (startupAction) {
+      case START:
+        internalGatewaySender.start();
         break;
-      case PAUSED:
-        sender.setStartEventProcessorInPausedState(true);
-        sender.start();
-        sender.setStartEventProcessorInPausedState(false);
+      case PAUSE:
+        internalGatewaySender.setStartEventProcessor(true);
+        internalGatewaySender.start();
+        internalGatewaySender.setStartEventProcessor(false);
         break;
       default:
-        // GatewaySenderState.STOPPED and/or manual-start == true
-        sender.recoverInStoppedState();
+        // GatewaySenderStartupAction.STOP and/or manual-start == true
+        internalGatewaySender.recoverInStoppedState();
     }
   }
 
@@ -456,6 +460,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setGroupTransactionEvents(senderCreation.mustGroupTransactionEvents());
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
-    attrs.state = senderCreation.getState();
+    attrs.setStartupAction(senderCreation.getStartupAction());
   }
 }

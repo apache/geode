@@ -713,7 +713,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /** The name of the <code>enable-conflation</code> attribute */
   protected static final String ENABLE_PERSISTENCE = "enable-persistence";
   /** The name of the <code>state</code></></> */
-  protected static final String STATE = "state";
+  protected static final String STARTUP_ACTION = "startup-action";
 
   protected static final String DISPATCHER_THREADS = "dispatcher-threads";
 

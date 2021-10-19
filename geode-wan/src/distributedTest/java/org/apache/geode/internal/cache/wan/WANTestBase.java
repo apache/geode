@@ -3512,7 +3512,8 @@ public class WANTestBase extends DistributedTestCase {
 
     AbstractGatewaySender ags = (AbstractGatewaySender) sender;
     await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
-        + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+        + " but actual size: " + ags.getTempDroppedEventSize(), size,
+        ags.getTempDroppedEventSize()));
   }
 
   /**

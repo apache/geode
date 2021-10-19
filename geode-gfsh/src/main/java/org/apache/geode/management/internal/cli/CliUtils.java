@@ -99,7 +99,7 @@ public class CliUtils {
     String gatewaySenderId = gatewaySenderConfig.getId();
     for (CacheConfig.GatewaySender gatewaySender : gatewaySenders) {
       if (gatewaySender.getId().equals(gatewaySenderId)) {
-        gatewaySender.setState(gatewaySenderConfig.getState());
+        gatewaySender.setStartupAction(gatewaySenderConfig.getStartupAction());
         gatewaySenderConfigUpdated = true;
       }
     }

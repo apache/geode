@@ -190,8 +190,8 @@ public class GatewaySenderMBeanBridge {
     return sender.isManualStart();
   }
 
-  public String getGatewaySenderState() {
-    return sender.getState().getState();
+  public String getGatewaySenderStartupAction() {
+    return sender.getStartupAction().getAction();
   }
 
   public boolean isPaused() {

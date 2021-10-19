@@ -159,8 +159,8 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public String getState() {
-    return bridge.getGatewaySenderState();
+  public String getGatewaySenderStartupAction() {
+    return bridge.getGatewaySenderStartupAction();
   }
 
   @Override

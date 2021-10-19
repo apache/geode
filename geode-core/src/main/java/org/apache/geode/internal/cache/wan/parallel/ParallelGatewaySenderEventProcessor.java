@@ -67,16 +67,16 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       int id, int nDispatcher, ThreadsMonitoring tMonitoring,
-      boolean cleanQueues, boolean shouldOnlyRecoverQueues) {
+      boolean cleanQueues, boolean recoverQueuesOnly) {
     super("Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
     this.index = id;
     this.nDispatcher = nDispatcher;
-    initializeMessageQueue(sender.getId(), cleanQueues, shouldOnlyRecoverQueues);
+    initializeMessageQueue(sender.getId(), cleanQueues, recoverQueuesOnly);
   }
 
   @Override
   protected void initializeMessageQueue(String id, boolean cleanQueues,
-      boolean shouldOnlyRecoverQueues) {
+      boolean recoverQueuesOnly) {
     Set<Region<?, ?>> targetRs = new HashSet<>();
     for (InternalRegion region : sender.getCache().getApplicationRegions()) {
       if (region.getAllGatewaySenderIds().contains(id)) {
@@ -89,14 +89,14 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
     ParallelGatewaySenderQueue queue =
         new ParallelGatewaySenderQueue(sender, targetRs, index, nDispatcher, cleanQueues,
-            shouldOnlyRecoverQueues);
+            recoverQueuesOnly);
 
-    if (!shouldOnlyRecoverQueues) {
+    if (!recoverQueuesOnly) {
       queue.start();
     }
     this.queue = queue;
 
-    if (!shouldOnlyRecoverQueues) {
+    if (!recoverQueuesOnly) {
       if (queue.localSize() > 0) {
         queue.notifyEventProcessorIfRequired();
       }
