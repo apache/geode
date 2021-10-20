@@ -27,16 +27,10 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
-
   implementation('org.apache.logging.log4j:log4j-api')
 
-  testImplementation('org.mockito:mockito-core')
-  testImplementation(project(':geode-junit'))
-
-  integrationTestImplementation(project(':geode-membership'))
-  integrationTestImplementation(project(':geode-core'))
-  integrationTestImplementation('net.spy:spymemcached')
   integrationTestImplementation(project(':geode-junit'))
-
-  distributedTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('net.spy:spymemcached')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
 }

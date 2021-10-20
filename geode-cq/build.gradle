@@ -30,12 +30,16 @@ dependencies {
 
 
   testImplementation(project(':geode-junit'))
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.mockito:mockito-core')
 
 
   distributedTestImplementation(project(':geode-gfsh'))
@@ -48,6 +52,9 @@ dependencies {
   distributedTestImplementation('org.awaitility:awaitility')
   distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('com.google.guava:guava')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.mockito:mockito-core')
 
 
   upgradeTestImplementation(project(':geode-dunit'))
@@ -55,6 +62,7 @@ dependencies {
   upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('org.awaitility:awaitility')
   upgradeTestImplementation('org.mockito:mockito-core')
+  upgradeTestImplementation('org.assertj:assertj-core')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

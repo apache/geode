@@ -24,9 +24,7 @@ error_prone_annotations
 failureaccess
 fastutil-core
 fastutil-extra
-fastutil
 findbugs-annotations
-geo
 gfsh-dependencies.jar
 guava
 httpclient
@@ -98,6 +96,7 @@ spring-aop
 spring-aspects
 spring-beans
 spring-context
+spring-context-support
 spring-core
 spring-expression
 spring-hateoas

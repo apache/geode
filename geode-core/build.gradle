@@ -181,7 +181,9 @@ dependencies {
 
   //  The antlr configuration is used by the antlr plugin, which compiles grammar
   // files used by the query engine
-  antlr 'antlr:antlr'
+  gradleLint.ignore {
+    antlr 'antlr:antlr'
+  }
 
   // External
   //------------------------------------------------------------
@@ -189,51 +191,55 @@ dependencies {
   //Commons IO is used in persistence and management
   api('commons-io:commons-io')
 
+  //geode-management currently has pieces of the public API
+  //copied into it, so it is an API dependency
+  api(project(':geode-management'))
+
+  //Geode-common has annotations and other pieces used geode-core
+  api(project(':geode-common'))
+
+  //Shiro is used for security checks throughout geode-core
+  //API - Shiro is exposed in geode's ResourcePermission class
+  api('org.apache.shiro:shiro-core')
+
+  //The resource-API is used by the JCA support.
+  api('javax.resource:javax.resource-api')
+
+  //Jackson databind is used in gfsh, and also in pdx
+  api('com.fasterxml.jackson.core:jackson-databind')
+
+  //micrometer is used for micrometer based metrics from geode geode
+  api('io.micrometer:micrometer-core')
+
+  // swagger annotations are on public methods used outside of geode-core
+  gradleLint.ignore {
+    api('io.swagger:swagger-annotations') {
+      ext.optional = true
+    }
+  }
+
   //tools.jar seems to be used by gfsh is some cases to control processes using
   //the sun attach API? But this code path may not even be used?
   compileOnly(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   //Find bugs is used in multiple places in the code to suppress findbugs warnings
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
-  testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
 
-  //Spring web is used for SerializableObjectHttpMessageConverter
-  implementation('org.springframework:spring-web')
   // find bugs leaks in from spring, needed to remove warnings.
-  compileOnly('com.google.code.findbugs:jsr305')
+  gradleLint.ignore {
+    compileOnly('com.google.code.findbugs:jsr305')
+  }
 
   compileOnly('org.jetbrains:annotations')
 
-  //Jgroups is a core component of our membership system.
-  implementation('org.jgroups:jgroups')
-
-  //Antlr is used by the query engine.
-  implementation('antlr:antlr')
-
-  //Jackson annotations is used in gfsh
-  implementation('com.fasterxml.jackson.core:jackson-annotations')
-
-  //Jackson databind is used in gfsh, and also in pdx
-  implementation('com.fasterxml.jackson.core:jackson-databind')
-
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
-
 
   //jaxb is used by cluster configuration
   implementation('javax.xml.bind:jaxb-api')
 
   //jaxb is used by cluster configuration
   implementation('com.sun.xml.bind:jaxb-impl')
-
-  //istack appears to be used only by jaxb, not in our code. jaxb doesn't
-  //declare this as required dependency though. It's unclear if this is needed
-  //Runtime
-  runtimeOnly('com.sun.istack:istack-commons-runtime') {
-    exclude group: '*'
-  }
-
-  runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
   //Commons lang is used in many different places in core
   implementation('org.apache.commons:commons-lang3')
@@ -246,21 +252,19 @@ dependencies {
     ext.optional = true
   }
 
-  //micrometer is used for micrometer based metrics from geode geode
-  api('io.micrometer:micrometer-core')
-
-
-  //FastUtil contains optimized collections that are used in multiple places in core
-  implementation('it.unimi.dsi:fastutil')
-
   //Mail API is used by the deprecated admin API
   implementation('javax.mail:javax.mail-api') {
     ext.optional = true
   }
 
-  //The resource-API is used by the JCA support.
-  api('javax.resource:javax.resource-api')
+  //Jgroups is a core component of our membership system.
+  implementation('org.jgroups:jgroups')
 
+  //Antlr is used by the query engine.
+  implementation('antlr:antlr')
+
+  //Jackson annotations is used in gfsh
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
 
   //MX4J is used by the old admin API
   implementation('mx4j:mx4j') {
@@ -287,50 +291,67 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-
-  implementation('io.swagger:swagger-annotations') {
-    ext.optional = true
-  }
-
-  runtimeOnly(project(':geode-http-service')) {
-    ext.optional = true
-  }
-
   //Snappy is used for compressing values, if enabled
   implementation('org.iq80.snappy:snappy') {
     ext.optional = true
   }
 
-  //Shiro is used for security checks throughout geode-core
-  //API - Shiro is exposed in geode's ResourcePermission class
-  api('org.apache.shiro:shiro-core')
-
   //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
   //in response to a gfsh command)
   implementation('io.github.classgraph:classgraph')
 
+  //Spring web is used for SerializableObjectHttpMessageConverter
+  implementation('org.springframework:spring-web')
+
   //RMIIO is used for uploading jar files and copying them between locator an servers
   implementation('com.healthmarketscience.rmiio:rmiio')
-
-  //Geode-common has annotations and other pieces used geode-core
-  api(project(':geode-common'))
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('commons-collections:commons-collections')
+  implementation('commons-logging:commons-logging')
+  //FastUtil contains optimized collections that are used in multiple places in core
+  implementation('it.unimi.dsi:fastutil-core')
+  implementation('it.unimi.dsi:fastutil-extra')
+  implementation('javax.transaction:javax.transaction-api')
+  implementation('org.apache.shiro:shiro-cache')
+  implementation('org.apache.shiro:shiro-config-core')
+  implementation('org.apache.shiro:shiro-config-ogdl')
+  implementation('org.apache.shiro:shiro-lang')
+  implementation('org.springframework:spring-core')
+  implementation('org.springframework:spring-jcl')
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-unsafe'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
 
-  //geode-management currently has pieces of the public API
-  //copied into it, so it is an API dependency
-  api(project(':geode-management'))
+  runtimeOnly(project(':geode-http-service')) {
+    ext.optional = true
+  }
+
+  //istack appears to be used only by jaxb, not in our code. jaxb doesn't
+  //declare this as required dependency though. It's unclear if this is needed
+  //Runtime
+  runtimeOnly('com.sun.istack:istack-commons-runtime') {
+    exclude group: '*'
+  }
+  runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
 
   jcaImplementation(sourceSets.main.output)
+
+
+  //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  gradleLint.ignore {
+    testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+  }
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-concurrency-test'))
+  //FastUtil contains optimized collections that are used in multiple places in core
+  testImplementation('it.unimi.dsi:fastutil')
+  testImplementation('junit:junit')
   testImplementation('org.apache.bcel:bcel')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
@@ -338,7 +359,13 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation(project(path: ':geode-core', configuration: 'raOutput'))
-
+  testImplementation('com.google.code.findbugs:jsr305')
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('com.tngtech.archunit:archunit')
+  testImplementation('com.google.guava:guava')
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('org.hamcrest:hamcrest-core')
+  testImplementation('org.hamcrest:hamcrest')
   testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   testRuntimeOnly('commons-collections:commons-collections')
@@ -346,6 +373,7 @@ dependencies {
   testRuntimeOnly('commons-io:commons-io')
   testRuntimeOnly('commons-validator:commons-validator')
   testRuntimeOnly('com.pholser:junit-quickcheck-generators')
+
 
   // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
   integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
@@ -355,14 +383,24 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j'))
   integrationTestImplementation(project(':geode-concurrency-test'))
   integrationTestImplementation('org.apache.bcel:bcel')
-  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  gradleLint.ignore {
+    integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  }
   integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
-
+  integrationTestImplementation('com.tngtech.archunit:archunit')
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('com.google.guava:guava')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest')
+  integrationTestImplementation('org.mockito:mockito-core')
 
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {
@@ -377,6 +415,14 @@ dependencies {
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
   distributedTestImplementation('net.openhft:compiler')
+  distributedTestImplementation('com.google.guava:guava')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.hamcrest:hamcrest')
+  distributedTestImplementation('org.mockito:mockito-core')
+  distributedTestImplementation('org.springframework.shell:spring-shell')
 
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
@@ -384,17 +430,28 @@ dependencies {
   upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  upgradeTestImplementation('junit:junit')
+  upgradeTestImplementation('com.github.stefanbirkner:system-rules')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('org.mockito:mockito-core')
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('org.hamcrest:hamcrest-core')
+  upgradeTestImplementation('org.hamcrest:hamcrest')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':geode-log4j'))
   upgradeTestRuntimeOnly(project(':geode-old-client-support'))
 
+
   performanceTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))
+  performanceTestImplementation('junit:junit')
+
 
   jmhImplementation('org.jctools:jctools-core')
+  jmhImplementation('junit:junit')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

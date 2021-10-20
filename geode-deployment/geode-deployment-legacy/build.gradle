@@ -24,14 +24,26 @@ dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-core'))
-  implementation(project(':geode-common'))
-  implementation('io.swagger:swagger-annotations')
 
   compileOnly(project(':geode-logging'))
-  compileOnly('com.fasterxml.jackson.core:jackson-databind')
+
+
+  implementation(project(':geode-core'))
+  implementation(project(':geode-common'))
+  implementation('commons-io:commons-io')
+  implementation('org.apache.logging.log4j:log4j-api')
+
 
   testImplementation(project(':geode-junit'))
+  testImplementation('org.awaitility:awaitility')
+  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+
 
   integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('org.mockito:mockito-core')
 }

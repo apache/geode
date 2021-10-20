@@ -27,7 +27,6 @@ compileJava {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  testImplementation(project(':geode-common'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-logging'))
@@ -52,20 +51,25 @@ dependencies {
   api('com.google.guava:guava')
   api('com.jayway.jsonpath:json-path')
   api('commons-io:commons-io')
-
   api('org.apache.commons:commons-lang3')
   api('org.apache.logging.log4j:log4j-api')
-
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')
   api('io.micrometer:micrometer-core')
 
-  api('org.skyscreamer:jsonassert')
 
   implementation('org.junit.jupiter:junit-jupiter-engine')
   implementation('org.junit.vintage:junit-vintage-engine')
 
   implementation('pl.pragmatists:JUnitParams')
+  implementation('javax.transaction:javax.transaction-api')
+  implementation('org.apache.shiro:shiro-core')
+  implementation('org.hamcrest:hamcrest-core')
+  implementation('org.springframework.shell:spring-shell')
+
+
+  testImplementation(project(':geode-common'))
+
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-serialization'))

@@ -47,6 +47,13 @@ dependencies {
 
   implementation('org.springframework:spring-webmvc')
   implementation('org.apache.commons:commons-lang3')
+  implementation('commons-io:commons-io')
+  implementation('org.apache.shiro:shiro-core')
+  implementation('org.springframework:spring-beans')
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-core')
+  implementation('org.springframework:spring-jcl')
+  implementation('org.springframework:spring-web')
 
   runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'
@@ -54,21 +61,28 @@ dependencies {
   runtimeOnly('org.springframework:spring-oxm')
   runtimeOnly('commons-fileupload:commons-fileupload')
 
+
   testImplementation(project(':geode-junit'))
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
   testImplementation('org.springframework:spring-test')
+  testImplementation('org.mockito:mockito-core')
 
   integrationTestImplementation(project(':geode-dunit'));
+  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.assertj:assertj-core')
 
   integrationTestRuntimeOnly(files(war.destinationDirectory))
 
   distributedTestImplementation(project(':geode-common'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
 
   distributedTestRuntimeOnly(files(war.destinationDirectory))
-
-  upgradeTestImplementation(project(':geode-dunit')) {
-  }
 }
 
 distributedTest.dependsOn(war)
