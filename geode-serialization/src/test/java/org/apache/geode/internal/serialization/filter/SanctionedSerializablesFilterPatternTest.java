@@ -109,17 +109,7 @@ public class SanctionedSerializablesFilterPatternTest {
 
   @Test
   public void includesShiroPackage() {
-    assertThat(defaultPattern).contains("org.apache.shiro.*");
-  }
-
-  @Test
-  public void includesShiroAuthzPackage() {
-    assertThat(defaultPattern).contains("org.apache.shiro.authz.*");
-  }
-
-  @Test
-  public void includesShiroAuthcPackage() {
-    assertThat(defaultPattern).contains("org.apache.shiro.authc.*");
+    assertThat(defaultPattern).contains("org.apache.shiro.**");
   }
 
   @Test
