@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal;
 
+import java.net.UnknownHostException;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -22,6 +24,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -74,7 +77,7 @@ public class GeodeRedisServer {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
 
-    redisStats = createStats(cache);
+    redisStats = createStats(cache, bindAddress, port);
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
@@ -99,15 +102,29 @@ public class GeodeRedisServer {
     return ((PubSubImpl) pubSub).getSubscriptionCount();
   }
 
-  private static RedisStats createStats(InternalCache cache) {
+  private static RedisStats createStats(InternalCache cache, String bindAddress, int port) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     StatisticsClock statisticsClock =
         StatisticsClockFactory.clock(true);
 
     return new RedisStats(statisticsClock,
-        new GeodeRedisStats(system.getStatisticsManager(),
-            "redisStats",
+        new GeodeRedisStats(system.getStatisticsManager(), getServerName(bindAddress, port),
             statisticsClock));
+  }
+
+  private static String getServerName(String bindAddress, int port) {
+    String name = "geodeForRedis:";
+    if (bindAddress != null && !bindAddress.isEmpty()) {
+      name += bindAddress;
+    } else {
+      try {
+        name += LocalHostUtil.getCanonicalLocalHostName();
+      } catch (UnknownHostException e) {
+        name += "*.*.*.*";
+      }
+    }
+    name += ':' + port;
+    return name;
   }
 
   @VisibleForTesting

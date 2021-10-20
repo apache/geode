@@ -53,10 +53,9 @@ public class GeodeRedisStats {
   private final Statistics stats;
   private final StatisticsClock clock;
 
-  public GeodeRedisStats(StatisticsFactory factory, String textId,
-      StatisticsClock clock) {
+  public GeodeRedisStats(StatisticsFactory factory, String name, StatisticsClock clock) {
     this.clock = clock;
-    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
+    stats = factory == null ? null : factory.createAtomicStatistics(type, name);
   }
 
   static {
@@ -68,15 +67,15 @@ public class GeodeRedisStats {
     fillListWithCommandDescriptors(statisticsTypeFactory, descriptorList);
 
     StatisticDescriptor[] descriptorArray =
-        descriptorList.toArray(new StatisticDescriptor[descriptorList.size()]);
+        descriptorList.toArray(new StatisticDescriptor[0]);
 
     type = statisticsTypeFactory
-        .createType("statsForServergeodeForRedis",
-            "Statistics for a Geode server compatible with Redis",
+        .createType("GeodeForRedisStats",
+            "Statistics for a geode-for-redis server",
             descriptorArray);
 
-    fillCompletedIdMap(type);
-    fillTimeIdMap(type);
+    fillCompletedIdMap();
+    fillTimeIdMap();
 
     currentlyConnectedClients = type.nameToId("connectedClients");
     passiveExpirationChecksId = type.nameToId("passiveExpirationChecks");
@@ -182,7 +181,7 @@ public class GeodeRedisStats {
     }
   }
 
-  private static void fillCompletedIdMap(StatisticsType type) {
+  private static void fillCompletedIdMap() {
     for (RedisCommandType command : RedisCommandType.values()) {
       String name = command.name().toLowerCase();
       String statName = name + "Completed";
@@ -242,7 +241,7 @@ public class GeodeRedisStats {
         "nanoseconds"));
   }
 
-  private static void fillTimeIdMap(StatisticsType type) {
+  private static void fillTimeIdMap() {
     for (RedisCommandType command : RedisCommandType.values()) {
       String name = command.name().toLowerCase();
       String statName = name + "Time";
