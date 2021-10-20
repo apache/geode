@@ -2168,7 +2168,12 @@ public class WANTestBase extends DistributedTestCase {
 
   public static int createServer(int locPort, int maximumTimeBetweenPings) {
     WANTestBase test = new WANTestBase();
-    Properties props = test.getDistributedSystemProperties();
+    Properties properties = test.getDistributedSystemProperties();
+    return createServer(locPort, maximumTimeBetweenPings, properties);
+  }
+
+  public static int createServer(int locPort, int maximumTimeBetweenPings, Properties props) {
+    WANTestBase test = new WANTestBase();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);

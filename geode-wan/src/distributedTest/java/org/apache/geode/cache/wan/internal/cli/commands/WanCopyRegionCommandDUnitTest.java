@@ -962,10 +962,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     });
 
     // Create servers
-    serverInB.invoke(() -> createServer(senderReceiverLocatorPort));
-    serverInC.invoke(() -> createServer(receiverLocatorPort));
+    Properties properties = new Properties();
+    serverInB.invoke(() -> createServer(senderReceiverLocatorPort, -1, properties));
+    serverInC.invoke(() -> createServer(receiverLocatorPort, -1, properties));
     for (VM server : serversInA) {
-      server.invoke(() -> createServer(senderLocatorPort));
+      server.invoke(() -> createServer(senderLocatorPort, -1, properties));
     }
 
     // Create region in servers
@@ -1339,8 +1340,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void createServersAndRegions(int locatorPort, List<VM> servers,
       boolean usePartitionedRegion, String regionName, String senderId) {
 
+    Properties properties = new Properties();
     for (VM server : servers) {
-      server.invoke(() -> createServer(locatorPort));
+      server.invoke(() -> createServer(locatorPort, -1, properties));
       if (usePartitionedRegion) {
         server
             .invoke(() -> createPartitionedRegion(regionName, senderId, 1, 100,
