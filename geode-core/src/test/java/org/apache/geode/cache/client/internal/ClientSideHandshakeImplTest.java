@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVEN
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServer;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.GatewayToGateway;
-import static org.apache.geode.management.internal.security.ResourceConstants.USER_NAME;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,9 +30,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
@@ -53,142 +55,106 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 public class ClientSideHandshakeImplTest {
   private ClientProxyMembershipID proxyId;
-  private InternalDistributedSystem ds;
+  private InternalDistributedSystem system;
   private SecurityService securityService;
 
-  private static final byte REPLY_OK = (byte) 59;
+  private Connection connection;
+  private Properties properties;
+  private ServerLocation member;
+  private Properties securityproperties;
+  private Socket socket;
+  private BufferDataOutputStream outputStream;
+  private ByteBufferInputStream inputStream;
+  private DistributionManager distributionManager;
+  private InternalDistributedMember internalDistributedMember;
 
   private static final byte REPLY_REFUSED = (byte) 60;
-
   private static final byte REPLY_INVALID = (byte) 61;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
   @Before
   public void setUp() throws Exception {
     proxyId = mock(ClientProxyMembershipID.class);
-    ds = mock(InternalDistributedSystem.class);
+    system = mock(InternalDistributedSystem.class);
     securityService = mock(SecurityService.class);
+    connection = mock(Connection.class);
+    properties = mock(Properties.class);
+    member = mock(ServerLocation.class);
+    securityproperties = mock(Properties.class);
+    socket = mock(Socket.class);
+    when(system.getProperties()).thenReturn(properties);
+
+    distributionManager = mock(DistributionManager.class);
+    when(system.getDistributionManager()).thenReturn(distributionManager);
+    internalDistributedMember = mock(InternalDistributedMember.class);
+    when(distributionManager.getDistributionManagerId()).thenReturn(internalDistributedMember);
+    when(internalDistributedMember.getMembershipPort()).thenReturn(80);
+    when(proxyId.getDSFID()).thenReturn(1);
+
+    when(connection.getSocket()).thenReturn(socket);
+    outputStream = new BufferDataOutputStream(KnownVersion.getCurrentVersion());
   }
-
-  @After
-  public void tearDown() throws Exception {}
-
 
   @Test
   public void testClientSideHandshakeRefused() throws IOException {
-    Connection conn = mock(Connection.class);
-    Properties props = mock(Properties.class);
-    ServerLocation location = mock(ServerLocation.class);
-    when(ds.getProperties()).thenReturn(props);
-    when(props.getProperty(anyString())).thenReturn("false");
-    when(ds.getSecurityLogWriter()).thenReturn(mock(LogWriter.class));
+    when(properties.getProperty(anyString())).thenReturn("false");
+    when(system.getSecurityLogWriter()).thenReturn(mock(LogWriter.class));
 
-    Socket sock = mock(Socket.class);
-    when(conn.getSocket()).thenReturn(sock);
+    inputStream = returnRefuseHandshake();
 
-    DistributionManager dm = mock(DistributionManager.class);
-    when(ds.getDistributionManager()).thenReturn(dm);
-    InternalDistributedMember idm = mock(InternalDistributedMember.class);
-    when(dm.getDistributionManagerId()).thenReturn(idm);
-    when(idm.getMembershipPort()).thenReturn(80);
-    when(proxyId.getDSFID()).thenReturn(1);
-
-    BufferDataOutputStream out =
-        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
-
-    ByteBufferInputStream bbis = returnRefuseHandshake();
-
-    when(sock.getOutputStream()).thenReturn(out);
-    when(sock.getInputStream()).thenReturn(bbis);
+    when(socket.getOutputStream()).thenReturn(outputStream);
+    when(socket.getInputStream()).thenReturn(inputStream);
 
     ClientSideHandshakeImpl handshake =
-        new ClientSideHandshakeImpl(proxyId, ds, securityService, false);
-    assertThatThrownBy(() -> handshake.handshakeWithServer(conn, location, ClientToServer))
+        new ClientSideHandshakeImpl(proxyId, system, securityService, false);
+    assertThatThrownBy(() -> handshake.handshakeWithServer(connection, member, ClientToServer))
         .isInstanceOf(ServerRefusedConnectionException.class);
   }
 
   @Test
   public void testClientSideHandshakeRefusedbyGWReceiver() throws IOException {
-    Connection conn = mock(Connection.class);
-    Properties props = mock(Properties.class);
-    Properties securityprops = mock(Properties.class);
+    when(system.getSecurityProperties()).thenReturn(securityproperties);
 
-    ServerLocation location = mock(ServerLocation.class);
-    when(ds.getProperties()).thenReturn(props);
-    when(ds.getSecurityProperties()).thenReturn(securityprops);
+    when(properties.getProperty(eq(CONFLATE_EVENTS))).thenReturn("false");
+    when(properties.getProperty(eq(SECURITY_CLIENT_AUTH_INIT))).thenReturn("");
 
-    when(props.getProperty(eq(CONFLATE_EVENTS))).thenReturn("false");
-    when(props.getProperty(eq(SECURITY_CLIENT_AUTH_INIT))).thenReturn("");
-    when(securityprops.contains(eq(USER_NAME))).thenReturn(false);
+    when(system.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
 
-    when(ds.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
+    inputStream = returnRefuseHandshake();
 
-    Socket sock = mock(Socket.class);
-    when(conn.getSocket()).thenReturn(sock);
-
-    DistributionManager dm = mock(DistributionManager.class);
-    when(ds.getDistributionManager()).thenReturn(dm);
-    InternalDistributedMember idm = mock(InternalDistributedMember.class);
-    when(dm.getDistributionManagerId()).thenReturn(idm);
-    when(idm.getMembershipPort()).thenReturn(80);
-    when(proxyId.getDSFID()).thenReturn(1);
-
-    BufferDataOutputStream out =
-        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
-
-    ByteBufferInputStream bbis = returnRefuseHandshake();
-
-    when(sock.getOutputStream()).thenReturn(out);
-    when(sock.getInputStream()).thenReturn(bbis);
+    when(socket.getOutputStream()).thenReturn(outputStream);
+    when(socket.getInputStream()).thenReturn(inputStream);
 
     ClientSideHandshakeImpl handshake =
-        new ClientSideHandshakeImpl(proxyId, ds, securityService, false);
-    assertThatThrownBy(() -> handshake.handshakeWithServer(conn, location, GatewayToGateway))
+        new ClientSideHandshakeImpl(proxyId, system, securityService, false);
+    assertThatThrownBy(() -> handshake.handshakeWithServer(connection, member, GatewayToGateway))
         .isInstanceOf(ServerRefusedConnectionException.class);
   }
 
   @Test
   public void testClientSideInvalidHandshakebyGWReceiver() throws IOException {
-    Connection conn = mock(Connection.class);
-    Properties props = mock(Properties.class);
-    Properties securityprops = mock(Properties.class);
+    when(system.getSecurityProperties()).thenReturn(securityproperties);
 
-    ServerLocation location = mock(ServerLocation.class);
-    when(ds.getProperties()).thenReturn(props);
-    when(ds.getSecurityProperties()).thenReturn(securityprops);
+    when(properties.getProperty(eq(CONFLATE_EVENTS))).thenReturn("false");
+    when(properties.getProperty(eq(SECURITY_CLIENT_AUTH_INIT))).thenReturn("");
 
-    when(props.getProperty(eq(CONFLATE_EVENTS))).thenReturn("false");
-    when(props.getProperty(eq(SECURITY_CLIENT_AUTH_INIT))).thenReturn("");
+    when(system.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
 
-    when(securityprops.contains(eq(USER_NAME))).thenReturn(false);
+    inputStream = returnInvalidHandshake();
 
-    when(ds.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
-
-    Socket sock = mock(Socket.class);
-    when(conn.getSocket()).thenReturn(sock);
-
-    DistributionManager dm = mock(DistributionManager.class);
-    when(ds.getDistributionManager()).thenReturn(dm);
-    InternalDistributedMember idm = mock(InternalDistributedMember.class);
-    when(dm.getDistributionManagerId()).thenReturn(idm);
-    when(idm.getMembershipPort()).thenReturn(80);
-    when(proxyId.getDSFID()).thenReturn(1);
-
-    BufferDataOutputStream out =
-        new BufferDataOutputStream(KnownVersion.getCurrentVersion());
-
-    ByteBufferInputStream bbis = returnInvalidHandshake();
-
-    when(sock.getOutputStream()).thenReturn(out);
-    when(sock.getInputStream()).thenReturn(bbis);
+    when(socket.getOutputStream()).thenReturn(outputStream);
+    when(socket.getInputStream()).thenReturn(inputStream);
 
     ClientSideHandshakeImpl handshake =
-        new ClientSideHandshakeImpl(proxyId, ds, securityService, false);
-    assertThatThrownBy(() -> handshake.handshakeWithServer(conn, location, GatewayToGateway))
+        new ClientSideHandshakeImpl(proxyId, system, securityService, false);
+    assertThatThrownBy(() -> handshake.handshakeWithServer(connection, member, GatewayToGateway))
         .isInstanceOf(ServerRefusedConnectionException.class);
   }
 
 
-  ByteBufferInputStream returnRefuseHandshake() throws IOException {
+  private ByteBufferInputStream returnRefuseHandshake() throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
     // Write refused reply
     hdos.writeByte(REPLY_REFUSED);
@@ -217,7 +183,7 @@ public class ClientSideHandshakeImplTest {
     return bbis;
   }
 
-  ByteBufferInputStream returnInvalidHandshake() throws IOException {
+  private ByteBufferInputStream returnInvalidHandshake() throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, KnownVersion.CURRENT);
     // Write refused reply
     hdos.writeByte(REPLY_INVALID);
