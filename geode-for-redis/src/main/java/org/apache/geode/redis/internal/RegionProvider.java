@@ -93,7 +93,7 @@ public class RegionProvider {
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
 
     redisRegionName =
-        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME, false);
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
 
     dataRegion = redisDataRegionFactory.create(redisRegionName);
 

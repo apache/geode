@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class RedisProperties {
   /** System Property Names **/
   public static final String REDIS_REGION_NAME_PROPERTY = "geode-for-redis-region-name";
@@ -22,14 +24,13 @@ public class RedisProperties {
   public static final String EXPIRATION_INTERVAL_SECONDS =
       "geode-for-redis-expiration-interval-seconds";
 
-  public static String getStringSystemProperty(String propName, String defaultValue,
-      boolean emptyIsValid) {
+  public static String getStringSystemProperty(String propName, String defaultValue) {
     String geodeValue = System.getProperty("geode." + propName, defaultValue);
     String gemfireValue = System.getProperty("gemfire." + propName, defaultValue);
 
-    if ((emptyIsValid || !geodeValue.isEmpty()) && !geodeValue.equals(defaultValue)) {
+    if (StringUtils.isNotBlank(geodeValue) && !geodeValue.equals(defaultValue)) {
       return geodeValue;
-    } else if ((emptyIsValid || !gemfireValue.isEmpty()) && !gemfireValue.equals(defaultValue)) {
+    } else if (StringUtils.isNotBlank(geodeValue) && !gemfireValue.equals(defaultValue)) {
       return gemfireValue;
     } else {
       return defaultValue;

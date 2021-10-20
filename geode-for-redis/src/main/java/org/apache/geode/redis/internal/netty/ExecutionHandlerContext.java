@@ -101,7 +101,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   static {
     ResourcePermission tempPermission;
-    String regionName = getRegionName();
+    String regionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
     String resourcePermission = System.getProperty("redis.resource-permission", "DATA:WRITE:"
         + regionName);
     String[] parts = resourcePermission.split(":");
@@ -517,7 +518,4 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return getRegionProvider().getRedisData(key, updateStats);
   }
 
-  private static String getRegionName() {
-    return getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME, false);
-  }
 }
