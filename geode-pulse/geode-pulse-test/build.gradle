@@ -20,25 +20,24 @@ apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  api(project(':geode-core'))
-  api(project(':geode-membership'))
-  api(project(':geode-http-service'))
-  api(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-
-
-  compileOnly(project(':geode-pulse'))
-
-
   implementation('org.awaitility:awaitility')
   implementation('junit:junit')
+  implementation('org.eclipse.jetty:jetty-server')
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
   implementation('mx4j:mx4j')
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
+
+  api(project(':geode-core'))
+  api(project(':geode-membership'))
+  api(project(':geode-http-service'))
+  api(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  compileOnly(project(':geode-pulse'))
+
   implementation('org.seleniumhq.selenium:selenium-api')
   implementation('org.seleniumhq.selenium:selenium-chrome-driver')
   implementation('org.seleniumhq.selenium:selenium-support')

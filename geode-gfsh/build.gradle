@@ -25,6 +25,52 @@ dependencies {
 
   api(project(':geode-core'))
   api(project(':geode-common'))
+
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-unsafe'))
+  implementation('org.springframework:spring-web')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('com.healthmarketscience.rmiio:rmiio')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('io.swagger:swagger-annotations')
+
+  //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
+  testImplementation('org.springframework:spring-test')
+  testImplementation(project(':geode-junit'))
+
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestRuntimeOnly('org.apache.derby:derby')
+
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestRuntimeOnly('org.apache.derby:derby')
+
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('io.swagger:swagger-annotations')
+
+  upgradeTestImplementation(project(':geode-junit'))
+  upgradeTestImplementation(project(':geode-dunit'))
+
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('junit:junit')
+  upgradeTestImplementation('xml-apis:xml-apis')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+
+  implementation('net.sf.jopt-simple:jopt-simple')
+
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
+
+  //Spring core is used by the the gfsh cli
+  implementation('org.springframework:spring-core') {
+    ext.optional = true
+  }
+
   //Spring shell is used by the gfsh cli. It's unclear why we can exclude
   //So many transitive dependencies - are these really optional?
   //GfshCommand is a public API class that depends on spring shell
@@ -37,68 +83,4 @@ dependencies {
     exclude module: 'spring-context-support'
     exclude module: 'spring-core'
   }
-
-
-  implementation(project(':geode-logging'))
-  implementation(project(':geode-membership'))
-  implementation(project(':geode-serialization'))
-  implementation(project(':geode-unsafe'))
-  implementation('org.springframework:spring-web')
-  implementation('org.apache.commons:commons-lang3')
-  implementation('com.healthmarketscience.rmiio:rmiio')
-  implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('net.sf.jopt-simple:jopt-simple')
-  implementation('com.fasterxml.jackson.core:jackson-annotations')
-  implementation('com.fasterxml.jackson.core:jackson-core')
-  implementation('commons-collections:commons-collections')
-  implementation('commons-io:commons-io')
-  implementation('io.micrometer:micrometer-core')
-  implementation('jline:jline')
-  implementation('org.apache.shiro:shiro-core')
-
-  //Log4j is used everywhere
-  implementation('org.apache.logging.log4j:log4j-api')
-
-  //Spring core is used by the the gfsh cli
-  implementation('org.springframework:spring-core') {
-    ext.optional = true
-  }
-
-  testImplementation('org.springframework:spring-test')
-  testImplementation(project(':geode-junit'))
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('com.github.stefanbirkner:system-rules')
-  testImplementation('com.google.guava:guava')
-  testImplementation('org.mockito:mockito-core')
-
-
-  integrationTestImplementation(project(':geode-dunit'))
-  integrationTestImplementation('pl.pragmatists:JUnitParams')
-  integrationTestImplementation('com.github.stefanbirkner:system-rules')
-  integrationTestImplementation('org.mockito:mockito-core')
-  integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestRuntimeOnly('org.apache.derby:derby')
-
-
-  distributedTestImplementation(project(':geode-dunit'))
-  distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestImplementation('org.awaitility:awaitility')
-  distributedTestImplementation('com.google.guava:guava')
-  distributedTestImplementation('javax.resource:javax.resource-api')
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest')
-
-  distributedTestRuntimeOnly('org.apache.derby:derby')
-
-  upgradeTestImplementation(project(':geode-junit'))
-  upgradeTestImplementation(project(':geode-dunit'))
-  upgradeTestImplementation('org.assertj:assertj-core')
-  upgradeTestImplementation('junit:junit')
-  upgradeTestImplementation('xml-apis:xml-apis')
-
-  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

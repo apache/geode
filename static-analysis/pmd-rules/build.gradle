@@ -22,8 +22,5 @@ dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   implementation('net.sourceforge.pmd:pmd-java')
-  implementation('net.sourceforge.pmd:pmd-core')
-
-
   testImplementation('net.sourceforge.pmd:pmd-test')
 }

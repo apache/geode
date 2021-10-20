@@ -185,10 +185,7 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
-
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-membership'))
@@ -205,25 +202,15 @@ dependencies {
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
-  integrationTestImplementation('com.fasterxml.jackson.core:jackson-core')
-  integrationTestImplementation('com.fasterxml.jackson.core:jackson-databind')
-  integrationTestImplementation('com.github.stefanbirkner:system-rules')
-  integrationTestImplementation('com.jayway.jsonpath:json-path')
-  integrationTestImplementation('commons-io:commons-io')
-  integrationTestImplementation('javax.annotation:javax.annotation-api')
-  integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.apache.httpcomponents:httpcore')
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('org.awaitility:awaitility')
-  integrationTestImplementation('org.hamcrest:hamcrest')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.mockito:mockito-core')
+  integrationTestImplementation('org.apache.httpcomponents:httpclient')
   integrationTestImplementation('org.springframework:spring-beans')
-  gradleLint.ignore {
-    integrationTestImplementation('org.springframework:spring-context')
-  }
-  integrationTestImplementation('org.springframework:spring-core')
+  integrationTestImplementation('org.springframework:spring-context')
   integrationTestImplementation('org.springframework:spring-web')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-core')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-client')
+  integrationTestImplementation('org.springframework.security:spring-security-oauth2-jose')
+  integrationTestImplementation('javax.annotation:javax.annotation-api')
+  integrationTestImplementation('javax.servlet:javax.servlet-api')
 
 
   integrationTestRuntimeOnly('io.swagger:swagger-annotations')
@@ -231,8 +218,8 @@ dependencies {
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
   integrationTestRuntimeOnly('joda-time:joda-time')
 
-
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  distributedTestCompileOnly('io.swagger:swagger-annotations')
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-membership'))
@@ -253,17 +240,6 @@ dependencies {
   distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
   distributedTestImplementation('javax.servlet:javax.servlet-api')
-  distributedTestImplementation('com.fasterxml.jackson.core:jackson-databind')
-  distributedTestImplementation('org.apache.httpcomponents:httpcore')
-  distributedTestImplementation('org.codehaus.cargo:cargo-core-api-container')
-  distributedTestImplementation('org.hamcrest:hamcrest-core')
-  distributedTestImplementation('org.hamcrest:hamcrest')
-  distributedTestImplementation('commons-io:commons-io')
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.apache.commons:commons-lang3')
-  distributedTestImplementation('org.apache.logging.log4j:log4j-api')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.awaitility:awaitility')
 
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
@@ -288,16 +264,6 @@ dependencies {
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:' + DependencyConstraints.get('gradle-tooling-api.version'))
 
   acceptanceTestImplementation('org.testcontainers:testcontainers')
-  acceptanceTestImplementation('com.fasterxml.jackson.core:jackson-databind')
-  acceptanceTestImplementation('com.github.docker-java:docker-java-api')
-  acceptanceTestImplementation('commons-io:commons-io')
-  acceptanceTestImplementation('io.micrometer:micrometer-core')
-  acceptanceTestImplementation('junit:junit')
-  acceptanceTestImplementation('org.apache.commons:commons-lang3')
-  acceptanceTestImplementation('org.apache.logging.log4j:log4j-api')
-  acceptanceTestImplementation('org.assertj:assertj-core')
-  acceptanceTestImplementation('org.awaitility:awaitility')
-
 
   uiTestImplementation(project(':geode-core'))
   uiTestImplementation(project(':geode-dunit')) {
@@ -309,14 +275,9 @@ dependencies {
   uiTestImplementation('org.seleniumhq.selenium:selenium-api')
   uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
-  uiTestImplementation('org.assertj:assertj-core')
-  uiTestImplementation('junit:junit')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
-
-
-  upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-logging'))
@@ -326,20 +287,15 @@ dependencies {
     exclude module: 'geode-core'
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
+
   upgradeTestImplementation('org.apache.httpcomponents:httpclient')
-  upgradeTestImplementation('com.fasterxml.jackson.core:jackson-core')
-  upgradeTestImplementation('com.fasterxml.jackson.core:jackson-databind')
-  upgradeTestImplementation('org.apache.commons:commons-lang3')
-  upgradeTestImplementation('org.apache.httpcomponents:httpcore')
-  upgradeTestImplementation('org.assertj:assertj-core')
-  upgradeTestImplementation('junit:junit')
 
-
+  upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  upgradeTestCompileOnly('io.swagger:swagger-annotations')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
   upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
   upgradeTestRuntimeOnly files({ downloadWebServers } )
-
 
   //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')

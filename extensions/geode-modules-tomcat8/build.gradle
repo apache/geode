@@ -32,10 +32,6 @@ dependencies {
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
-  compileOnly('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version'))
-  compileOnly('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
-  compileOnly('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat8.version'))
-  compileOnly('org.apache.tomcat:tomcat-util:' + DependencyConstraints.get('tomcat8.version'))
 
 
   // test
@@ -44,18 +40,12 @@ dependencies {
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
-  testImplementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version'))
-  testImplementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
-  testImplementation('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat8.version'))
-  testImplementation('org.apache.tomcat:tomcat-util:' + DependencyConstraints.get('tomcat8.version'))
 
 
   // integrationTest
   integrationTestImplementation(project(':extensions:geode-modules-test'))
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
-  integrationTestImplementation('org.mockito:mockito-core')
-  integrationTestImplementation('junit:junit')
 
 
   // distributedTest
@@ -64,13 +54,6 @@ dependencies {
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation('org.httpunit:httpunit')
   distributedTestImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.apache.logging.log4j:log4j-api')
-  distributedTestImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
-  distributedTestImplementation('org.apache.tomcat:tomcat-servlet-api:' + DependencyConstraints.get('tomcat8.version'))
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.awaitility:awaitility')
-
 }
 
 sonarqube {

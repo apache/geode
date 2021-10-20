@@ -118,9 +118,9 @@
         <version>2.3.2</version>
       </dependency>
       <dependency>
-        <groupId>com.vaadin.external.google</groupId>
-        <artifactId>android-json</artifactId>
-        <version>0.0.20131108.vaadin1</version>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit4</artifactId>
+        <version>0.15.0</version>
       </dependency>
       <dependency>
         <groupId>com.zaxxer</groupId>
@@ -208,6 +208,11 @@
         <version>1.6.2</version>
       </dependency>
       <dependency>
+        <groupId>it.unimi.dsi</groupId>
+        <artifactId>fastutil</artifactId>
+        <version>8.5.4</version>
+      </dependency>
+      <dependency>
         <groupId>javax.annotation</groupId>
         <artifactId>javax.annotation-api</artifactId>
         <version>1.3.2</version>
@@ -236,11 +241,6 @@
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>3.1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.transaction</groupId>
-        <artifactId>javax.transaction-api</artifactId>
-        <version>1.3</version>
       </dependency>
       <dependency>
         <groupId>javax.xml.bind</groupId>
@@ -356,6 +356,11 @@
         <groupId>org.buildobjects</groupId>
         <artifactId>jproc</artifactId>
         <version>2.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-core-uberjar</artifactId>
+        <version>1.9.7</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -513,16 +518,6 @@
         <version>1.0</version>
       </dependency>
       <dependency>
-        <groupId>com.tngtech.archunit</groupId>
-        <artifactId>archunit-junit4</artifactId>
-        <version>0.15.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.tngtech.archunit</groupId>
-        <artifactId>archunit</artifactId>
-        <version>0.15.0</version>
-      </dependency>
-      <dependency>
         <groupId>io.springfox</groupId>
         <artifactId>springfox-swagger-ui</artifactId>
         <version>2.9.2</version>
@@ -531,21 +526,6 @@
         <groupId>io.springfox</groupId>
         <artifactId>springfox-swagger2</artifactId>
         <version>2.9.2</version>
-      </dependency>
-      <dependency>
-        <groupId>it.unimi.dsi</groupId>
-        <artifactId>fastutil</artifactId>
-        <version>8.5.4</version>
-      </dependency>
-      <dependency>
-        <groupId>it.unimi.dsi</groupId>
-        <artifactId>fastutil-core</artifactId>
-        <version>8.5.4</version>
-      </dependency>
-      <dependency>
-        <groupId>it.unimi.dsi</groupId>
-        <artifactId>fastutil-extra</artifactId>
-        <version>8.5.4</version>
       </dependency>
       <dependency>
         <groupId>mx4j</groupId>
@@ -608,26 +588,6 @@
         <version>6.6.6</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-core-uberjar</artifactId>
-        <version>1.9.7</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-core-api-container</artifactId>
-        <version>1.9.7</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-core-api-generic</artifactId>
-        <version>1.9.7</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-core-api-util</artifactId>
-        <version>1.9.7</version>
-      </dependency>
-      <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest</artifactId>
         <version>2.2</version>
@@ -675,11 +635,6 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-config</artifactId>
-        <version>5.5.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.security</groupId>
-        <artifactId>spring-security-crypto</artifactId>
         <version>5.5.2</version>
       </dependency>
       <dependency>
@@ -744,11 +699,6 @@
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
-        <artifactId>spring-jcl</artifactId>
-        <version>5.3.9</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
         <artifactId>spring-oxm</artifactId>
         <version>5.3.9</version>
       </dependency>
@@ -804,6 +754,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-for-redis</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -835,12 +791,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-for-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
