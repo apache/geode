@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -72,7 +71,7 @@ public class AuthExpirationTransactionDUnitTest {
     server2 = clusterStartupRule.startServerVM(3, s -> s.withConnectionToLocator(locatorPort)
         .withSecurityManager(ExpirableSecurityManager.class).withCredential("test", "test"));
 
-    VMProvider.invokeInEveryMember(() -> Objects.requireNonNull(ClusterStartupRule.getCache())
+    VMProvider.invokeInEveryMember(() -> ClusterStartupRule.getCache()
         .createRegionFactory(RegionShortcut.REPLICATE).create("region"), server0, server1, server2);
 
     clientCacheRule
