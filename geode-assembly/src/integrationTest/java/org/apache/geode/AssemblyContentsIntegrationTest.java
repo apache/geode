@@ -64,7 +64,7 @@ public class AssemblyContentsIntegrationTest {
         .as("The assembly contents have changed. Verify dependencies and "
             + "copy geode-assembly/build/integrationTest/assembly_content.txt to "
             + "geode-assembly/src/integrationTest/resources/assembly_content.txt")
-        .containsExactlyElementsOf(expectedAssemblyContent);
+        .hasSameElementsAs(expectedAssemblyContent);
   }
 
 

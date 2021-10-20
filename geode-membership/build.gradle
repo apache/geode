@@ -26,6 +26,10 @@ dependencies {
   // Geode-common has annotations and other pieces used by geode-logging
   api(project(':geode-common'))
 
+
+  compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
@@ -34,7 +38,6 @@ dependencies {
   implementation('org.jgroups:jgroups')
   implementation('org.apache.commons:commons-lang3')
   implementation('it.unimi.dsi:fastutil')
-  implementation('com.github.stephenc.findbugs:findbugs-annotations')
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
   //Jgroups is a core component of our membership system.

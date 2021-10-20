@@ -25,46 +25,11 @@ import java.nio.file.Paths
 
 // This project aggressively reaches into many other projects and must wait for those configurations
 // to be evaluated and resolved.  Evaluation depends on each of these subprojects.
-
-// This list is used in a loop to defined the /lib copySpec
-def dependentProjectNames = [
-  ':geode-common',
-  ':geode-connectors',
-  ':geode-core',
-  ':geode-unsafe',
-  ':geode-cq',
-  ':geode-gfsh',
-  ':geode-log4j',
-  ':geode-logging',
-  ':geode-lucene',
-  ':geode-memcached',
-  ':geode-old-client-support',
-  ':geode-rebalancer',
-  ':geode-for-redis',
-  ':geode-serialization',
-  ':geode-tcp-server',
-  ':geode-wan'
-]
-
-// These other dependencies are explicitly referenced throughout other copySpec
-def otherDependentProjectNames = [
-  ':extensions:geode-modules',
-  ':extensions:geode-modules-assembly',
-  ':extensions:geode-modules-session',
-  ':extensions:geode-modules-session',
-  ':extensions:geode-modules-tomcat7',
-  ':extensions:geode-modules-tomcat8',
-  ':extensions:geode-modules-tomcat9',
-  ':geode-management',
-  ':geode-pulse',
-  ':geode-web',
-  ':geode-web-api',
-  ':geode-web-management',
-]
-
 evaluationDependsOnChildren()
-(dependentProjectNames + otherDependentProjectNames).each { neighborProjectName ->
-  project.evaluationDependsOn(neighborProjectName)
+rootProject.subprojects.each {neighborProject ->
+  if (neighborProject != project) {
+    project.evaluationDependsOn(neighborProject.path)
+  }
 }
 
 apply plugin: 'distribution'
@@ -162,16 +127,9 @@ dependencies {
   api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
-  dependentProjectNames.each {
-    geodeArchives(project(it))
-  }
-  geodeArchives project(':geode-management')
-  geodeArchives project(path: ':geode-web', configuration: 'war')
-  geodeArchives project(path: ':geode-web-api', configuration: 'war')
-  geodeArchives project(path: ':geode-web-management', configuration: 'war')
+  geodeArchives(platform(project(':boms:geode-server-bom')))
 
   javadocOnly project(':extensions:geode-modules')
-  javadocOnly project(':extensions:geode-modules-session')
   javadocOnly project(':extensions:geode-modules-session')
   javadocOnly project(':extensions:geode-modules-tomcat7')
   javadocOnly project(':extensions:geode-modules-tomcat9')
@@ -321,7 +279,7 @@ tasks.register('defaultDistributionConfig', JavaExec) {
   }
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
-  classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  classpath { project(':geode-core').sourceSets.main.runtimeClasspath }
   workingDir buildDir
 
   doFirst {
@@ -335,7 +293,7 @@ tasks.register('defaultCacheConfig', JavaExec) {
   }
   outputs.file file("$buildDir/cache.xml")
   main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
-  classpath project(':geode-core').sourceSets.main.runtimeClasspath
+  classpath { project(':geode-core').sourceSets.main.runtimeClasspath }
   workingDir buildDir
 
   doFirst {
@@ -343,47 +301,48 @@ tasks.register('defaultCacheConfig', JavaExec) {
   }
 }
 
+def getDependencyProjectsFor(String configurationName) {
+  List<Project> rval = configurations[configurationName].allDependencies.collect {
+    it.dependencyProject
+  }.collect {
+    if ((it as Project).pluginManager.hasPlugin('java-library')) {
+      it
+    } else if ((it as Project).pluginManager.hasPlugin('java-platform')) {
+      (it as Project).configurations.runtime.dependencies.collect {
+        it.dependencyProject
+      }
+    }
+  }.flatten()
+  return rval
+}
+
 // This closure sets the geode classpath.  If we add another jar to the classpath it must
 // be included in the filter logic below.
 def cp = {
   // first add all the dependent project jars
-  def jars = configurations.geodeArchives.dependencies.collect { it.dependencyProject }
-  .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
-  .collect { it.jar.archiveName }
-
-  // then add all the dependencies of the dependent jars
-  def depJars = configurations.geodeArchives.dependencies.collect {
-    it.dependencyProject.findAll {
-      !(it.name.contains('geode-web') ||
-          it.name.contains('geode-pulse'))
-    }.collect {
-      it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
-        !(
-            it.contains('geode-all-bom') ||
-
-            // exclude mx4j, once the deprecated code is deleted we can remove these entirely
-            it.contains('commons-digester') ||
-            it.contains('commons-modeler') ||
-            it.contains('javax.mail-api') ||
-            it.contains('mx4j') ||
-
-            // misc jars, these should be removed from the lib dir
-            it.contains('findbugs-annotations') ||
-            it.contains('geode-dependencies') ||
-            it.contains('geode-jca') ||
-            it.contains('geode-web') ||
-            it.contains('gfsh-dependencies') ||
-            it.contains('ra.jar') ||
-
-            // spring web deps that shouldn't be here either
-            it.contains('spring-aop') ||
-            it.contains('spring-beans') ||
-            it.contains('spring-context') ||
-            it.contains('spring-expression') ||
-            it.contains('spring-web')
-            )}
-    }
+  def jars = getDependencyProjectsFor('geodeArchives').collect {
+    it.jar.archiveName
   }.flatten()
+
+  def excludeFromCP = [
+          'geode-all-bom',
+
+          // exclude mx4j, once the deprecated code is deleted we can remove these entirely
+          'commons-digester', // geode-core, brought by modeler and validator, and geode-membership via validator
+          'commons-modeler', // geode-core, old admin api
+          'javax.mail-api', // geode-core, old admin api
+          'mx4j', // geode-core and geode-lucene, old admin api
+
+          // spring web deps that shouldn't be here either
+          'spring-beans', // geode-management, via spring-web
+          'spring-web' // geode-gfsh, geode-management, geode-core
+  ]
+  // then add all the dependencies of the dependent jars
+  def depJars = configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts
+    .collect {it.file.name}
+    .findAll {resolvedArtifact ->
+      !excludeFromCP.any{resolvedArtifact.contains(it)}
+    }.flatten()
 
   return jars.plus(depJars).unique().join(' ')
 }
@@ -462,8 +421,8 @@ tasks.register('docs', Javadoc) {
   title = "${productName} ${project.version}"
   destinationDir = docsDir
 
-  configurations.getByName("javadocOnly").allDependencies.each() { proj ->
-    proj.dependencyProject.tasks.withType(Javadoc).findAll { it.enabled }.each { javadocTask ->
+  getDependencyProjectsFor('javadocOnly').forEach() { Project proj ->
+    proj.tasks.withType(Javadoc).findAll { it.enabled }.each { javadocTask ->
       source += javadocTask.source
       classpath += javadocTask.classpath
       excludes += javadocTask.excludes
@@ -555,12 +514,7 @@ distributions {
       with copySpec {
         into('lib')
         from {
-          dependentProjectNames.collect {
-            [
-              project(':'.concat(it)).configurations.runtimeClasspath,
-              project(':'.concat(it)).configurations.archives.allArtifacts.files
-            ]
-          }.flatten()
+          project(':boms:geode-server-bom').configurations.classpath
         }
 
         from configurations.gfshDependencies
