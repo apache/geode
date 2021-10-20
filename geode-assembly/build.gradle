@@ -127,7 +127,18 @@ dependencies {
   api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
-  geodeArchives(platform(project(':boms:geode-server-bom')))
+  geodeArchives(platform(project(':boms:geode-server-bom'))) {
+    // Deprecated admin API
+    exclude group: 'commons-digester', module: 'commons-digester' // geode-core, brought by modeler and validator, and geode-membership via validator
+    exclude group: 'commons-modeler', module: 'commons-modeler' // geode-core, old admin api
+    exclude group: 'javax.mail', module: 'javax.mail-api'
+
+    // exclude mx4j, once the deprecated code is deleted we can remove these entirely
+    exclude group: 'mx4j'
+
+    // spring web should be only part of gfsh or pulse. It is in core due to incomplete refactoring
+    exclude group: 'org.springframework', module: 'spring-web'
+  }
 
   javadocOnly project(':extensions:geode-modules')
   javadocOnly project(':extensions:geode-modules-session')
@@ -316,33 +327,16 @@ def getDependencyProjectsFor(String configurationName) {
   return rval
 }
 
-// This closure sets the geode classpath.  If we add another jar to the classpath it must
-// be included in the filter logic below.
 def cp = {
   // first add all the dependent project jars
   def jars = getDependencyProjectsFor('geodeArchives').collect {
     it.jar.archiveName
   }.flatten()
 
-  def excludeFromCP = [
-          'geode-all-bom',
-
-          // exclude mx4j, once the deprecated code is deleted we can remove these entirely
-          'commons-digester', // geode-core, brought by modeler and validator, and geode-membership via validator
-          'commons-modeler', // geode-core, old admin api
-          'javax.mail-api', // geode-core, old admin api
-          'mx4j', // geode-core and geode-lucene, old admin api
-
-          // spring web deps that shouldn't be here either
-          'spring-beans', // geode-management, via spring-web
-          'spring-web' // geode-gfsh, geode-management, geode-core
-  ]
   // then add all the dependencies of the dependent jars
   def depJars = configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts
-    .collect {it.file.name}
-    .findAll {resolvedArtifact ->
-      !excludeFromCP.any{resolvedArtifact.contains(it)}
-    }.flatten()
+    .collect {it.file.name }
+    .flatten()
 
   return jars.plus(depJars).unique().join(' ')
 }
