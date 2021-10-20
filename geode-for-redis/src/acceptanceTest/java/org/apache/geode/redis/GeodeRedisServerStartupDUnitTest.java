@@ -62,6 +62,15 @@ public class GeodeRedisServerStartupDUnitTest {
   }
 
   @Test
+  public void startupOnDefaultPort_whenPortIsNotSpecified() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    assertThat(cluster.getRedisPort(server)).isEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
+  }
+
+  @Test
   public void startupOnRandomPort_whenPortIsZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
         .withProperty(REDIS_PORT, "0")
@@ -120,6 +129,16 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(REDIS_ENABLED, "true")))
             .hasStackTraceContaining(
                 "The geode-for-redis-bind-address 1.1.1.1 is not a valid address for this machine");
+  }
+
+  @Test
+  public void startupOnSpecifiedPort() {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(REDIS_PORT, "4242")
+        .withProperty(REDIS_BIND_ADDRESS, "localhost")
+        .withProperty(REDIS_ENABLED, "true"));
+
+    assertThat(cluster.getRedisPort(server)).isEqualTo(4242);
   }
 
   @Test

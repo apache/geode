@@ -16,15 +16,16 @@
 
 package org.apache.geode.redis.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
+import static org.apache.geode.redis.internal.RedisProperties.EXPIRATION_INTERVAL_SECONDS;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -36,15 +37,17 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public class PassiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
+  public static final int DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS = 180;
+
   private final ScheduledExecutorService expirationExecutor;
 
-  @VisibleForTesting
-  public static final int INTERVAL = 3;
-
   public PassiveExpirationManager(RegionProvider regionProvider) {
+    int interval = getIntegerSystemProperty(EXPIRATION_INTERVAL_SECONDS,
+        DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS, 1);
+
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), INTERVAL,
-        INTERVAL, MINUTES);
+    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), interval,
+        interval, SECONDS);
   }
 
   public void stop() {
