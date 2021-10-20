@@ -37,29 +37,32 @@ dependencies {
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-membership'))
   compileOnly(project(':geode-serialization'))
-  compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('io.swagger:swagger-annotations')
-  compileOnly('org.apache.logging.log4j:log4j-api')
-  // jackson-annotations must be accessed from the geode classloader and not the webapp
-  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
 
+  compileOnly('javax.servlet:javax.servlet-api')
 
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
+  // jackson-annotations must be accessed from the geode classloader and not the webapp
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind'){
     exclude module: 'jackson-annotations'
   }
+
+  compileOnly('io.swagger:swagger-annotations')
+
   implementation('io.springfox:springfox-swagger2') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
     exclude module: 'swagger-annotations'
   }
+
   implementation('io.springfox:springfox-swagger-ui') {
     exclude module: 'slf4j-api'
   }
+
   implementation('org.springframework:spring-beans')
   implementation('org.springframework.security:spring-security-core')
   implementation('org.springframework.security:spring-security-web')
@@ -83,16 +86,17 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
   }
+  compileOnly('org.apache.logging.log4j:log4j-api')
 
 
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-core'))
-  testImplementation('junit:junit')
   testImplementation('javax.servlet:javax.servlet-api')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+
+  integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework.security:spring-security-test')
 
   integrationTestImplementation(project(':geode-core'))
   integrationTestImplementation(project(':geode-junit')) {
@@ -101,16 +105,6 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestImplementation('org.springframework.security:spring-security-test')
-  integrationTestImplementation('org.springframework.security:spring-security-test')
-  integrationTestImplementation('org.skyscreamer:jsonassert')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.hamcrest:hamcrest')
-  integrationTestImplementation('com.jayway.jsonpath:json-path')
-  integrationTestImplementation('org.springframework:spring-test')
-  integrationTestImplementation('junit:junit')
-  integrationTestImplementation('com.vaadin.external.google:android-json')
-  integrationTestImplementation('org.assertj:assertj-core')
 }
 
 sourceSets {

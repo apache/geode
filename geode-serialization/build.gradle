@@ -27,8 +27,10 @@ dependencies {
   implementation(project(':geode-common'))
 
   //FastUtil contains optimized collections that are used in multiple places in core
-  implementation('it.unimi.dsi:fastutil-core')
+  implementation('it.unimi.dsi:fastutil')
 
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.jetbrains:annotations')
@@ -37,8 +39,10 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   testImplementation(project(':geode-concurrency-test'))
+
   testImplementation('com.tngtech.archunit:archunit-junit4')
-  testImplementation('com.tngtech.archunit:archunit')
+  testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.mockito:mockito-core')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
 
@@ -49,7 +53,15 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-serialization'
   }
-  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-serialization'
+  }
+  distributedTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-serialization'
+  }
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }
 
 distributedTest {

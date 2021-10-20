@@ -30,10 +30,6 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
-
-  compileOnly('org.mortbay.jetty:servlet-api')
-
-
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
   implementation('mx4j:mx4j') {
@@ -42,8 +38,17 @@ dependencies {
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
+
+  uiTestImplementation('junit:junit')
+  uiTestImplementation('org.apache.httpcomponents:httpcore')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-api')
+  uiTestImplementation('org.assertj:assertj-core')
+  uiTestImplementation('org.apache.httpcomponents:httpclient')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-support')
   implementation('org.springframework:spring-beans')
+
   // Needed to fully use log4j instead of commons-logging.
+  implementation('org.apache.logging.log4j:log4j-jcl')
   implementation('org.apache.logging.log4j:log4j-api')
 
   implementation('commons-beanutils:commons-beanutils')
@@ -82,12 +87,12 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('org.springframework.security:spring-security-crypto')
 
+  compileOnly('org.mortbay.jetty:servlet-api')
 
   runtimeOnly('org.springframework:spring-expression')
-  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
 
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl')
 
   providedCompile('commons-logging:commons-logging')
 
@@ -99,10 +104,7 @@ dependencies {
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testImplementation('com.github.stefanbirkner:system-rules')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.springframework:spring-test')
 
 
   integrationTestImplementation(project(':geode-core'))
@@ -112,19 +114,19 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
+
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
   integrationTestImplementation(project(':geode-serialization'))
+
   integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework:spring-webmvc')
   integrationTestImplementation('org.springframework.security:spring-security-test')
-  integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.mockito:mockito-core')
-  integrationTestImplementation('org.springframework:spring-core')
+
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('org.hamcrest:hamcrest')
 
-
+  uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
@@ -133,15 +135,6 @@ dependencies {
   }
   uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
   uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
-  uiTestImplementation('junit:junit')
-  uiTestImplementation('org.apache.httpcomponents:httpcore')
-  uiTestImplementation('org.seleniumhq.selenium:selenium-api')
-  uiTestImplementation('org.assertj:assertj-core')
-  uiTestImplementation('org.apache.httpcomponents:httpclient')
-  uiTestImplementation('org.seleniumhq.selenium:selenium-support')
-  uiTestImplementation('com.vaadin.external.google:android-json')
-
-  uiTestRuntimeOnly(project(':geode-core'))
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

@@ -17,16 +17,20 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-dependencies {
-  compileOnly(platform(project(':boms:geode-all-bom')))
 
+
+
+dependencies {
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(project(':extensions:geode-modules-test'))
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-pulse'))
   compileOnly(project(':geode-junit'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('org.apache.commons:commons-lang3')
   compileOnly(project(':geode-tcp-server'))
-  compileOnly(project(':geode-logging'))
-  compileOnly(project(':geode-membership'))
   compileOnly('com.fasterxml.jackson.core:jackson-databind')
   compileOnly('commons-io:commons-io')
   compileOnly('junit:junit')
@@ -34,11 +38,4 @@ dependencies {
   compileOnly('org.apache.logging.log4j:log4j-api')
   compileOnly('org.assertj:assertj-core')
   compileOnly('org.codehaus.cargo:cargo-core-uberjar')
-  compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.apache.commons:commons-lang3')
-  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
-  compileOnly('org.apache.httpcomponents:httpcore')
-  compileOnly('org.codehaus.cargo:cargo-core-api-container')
-  compileOnly('org.codehaus.cargo:cargo-core-api-generic')
-  compileOnly('org.codehaus.cargo:cargo-core-api-util')
 }

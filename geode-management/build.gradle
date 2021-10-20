@@ -23,38 +23,34 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  api('io.swagger:swagger-annotations') {
-    ext.optional = true
-  }
-
-
-  compileOnly(project(':geode-common'))
-
-
   implementation(project(':geode-serialization'))
+
   implementation('org.apache.commons:commons-lang3')
   implementation('commons-io:commons-io')
   implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('com.fasterxml.jackson.core:jackson-core')
   implementation('com.fasterxml.jackson.core:jackson-annotations')
   implementation('org.springframework:spring-web')
   implementation('org.apache.httpcomponents:httpclient')
-  implementation('org.apache.httpcomponents:httpcore')
-  implementation('org.springframework:spring-core')
 
+  compileOnly(project(':geode-common')) {
+    exclude module: 'junit'
+  }
+  compileOnly('io.springfox:springfox-swagger2') {
+    exclude module: 'slf4j-api'
+    exclude module: "jackson-annotations"
+  }
 
   testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testImplementation('com.fasterxml.jackson.core:jackson-core')
-  testImplementation('junit:junit')
-  testImplementation('com.github.stefanbirkner:system-rules')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.awaitility:awaitility')
-  testImplementation('org.mockito:mockito-core')
 
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('io.swagger:swagger-annotations')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
 }

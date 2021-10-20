@@ -36,8 +36,26 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('com.tngtech.archunit:archunit')
+
+
+  integrationTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-logging'
+  }
+  integrationTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-logging'
+  }
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-logging'
+  }
+  distributedTestImplementation(project(':geode-dunit')) {
+    exclude module: 'geode-logging'
+  }
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
+
   testImplementation('com.tngtech.archunit:archunit-junit4')
+
 }
 
 distributedTest {

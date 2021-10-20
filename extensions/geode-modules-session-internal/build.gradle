@@ -24,5 +24,4 @@ dependencies {
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
-  compileOnly('org.slf4j:slf4j-api')
 }

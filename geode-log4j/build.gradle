@@ -27,7 +27,7 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation('org.apache.commons:commons-lang3')
-  implementation('commons-io:commons-io')
+
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
 
@@ -45,23 +45,37 @@ dependencies {
     ext.optional = true
   }
 
-
-  jmhImplementation(project(':geode-junit'))
+  jmhImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  jmhImplementation('junit:junit')
   jmhImplementation('org.assertj:assertj-core')
   jmhImplementation('org.mockito:mockito-core')
 
-
-  testImplementation(project(':geode-junit'))
+  testImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   testImplementation('junit:junit')
   testImplementation('org.assertj:assertj-core')
-  testImplementation('com.github.stefanbirkner:system-rules')
+  testImplementation('org.mockito:mockito-core')
 
-  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.mockito:mockito-core')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::tests')
   integrationTestImplementation('org.apache.logging.log4j:log4j-core::test-sources')
   integrationTestImplementation('org.assertj:assertj-core')
-  integrationTestImplementation('org.awaitility:awaitility')
-  integrationTestImplementation('com.github.stefanbirkner:system-rules')
+
+  distributedTestImplementation(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestImplementation('commons-io:commons-io')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.apache.commons:commons-lang3')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest')
+  distributedTestImplementation('org.mockito:mockito-core')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 }
