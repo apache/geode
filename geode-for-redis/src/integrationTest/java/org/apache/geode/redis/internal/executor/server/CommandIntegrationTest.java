@@ -40,7 +40,7 @@ import org.apache.geode.redis.internal.RedisCommandType;
 public class CommandIntegrationTest {
 
   @ClassRule
-  public static NativeRedisTestRule redisServer = new NativeRedisTestRule("redis:6.2.4");
+  public static NativeRedisTestRule redisServer = new NativeRedisTestRule();
 
   @ClassRule
   public static GeodeRedisServerRule radishServer = new GeodeRedisServerRule();
