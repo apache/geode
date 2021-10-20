@@ -83,7 +83,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final PubSub pubsub;
   private final String redisUsername;
   private final Supplier<Boolean> allowUnsupportedSupplier;
-  private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
@@ -114,7 +113,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       RegionProvider regionProvider,
       PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
-      Runnable shutdownInvoker,
       RedisStats redisStats,
       String username,
       int serverPort,
@@ -123,7 +121,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
-    this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.redisUsername = username;
     this.client = new Client(channel, pubsub);
@@ -357,10 +354,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public Client getClient() {
     return client;
-  }
-
-  public void shutdown() {
-    shutdownInvoker.run();
   }
 
   public PubSub getPubSub() {
