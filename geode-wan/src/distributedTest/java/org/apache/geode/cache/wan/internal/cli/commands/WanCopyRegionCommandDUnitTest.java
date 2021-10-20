@@ -438,16 +438,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .containsExactly("ERROR");
 
     Condition<String> regionDestroyedError;
-    if (isPartitionedRegion && !isParallelGatewaySender) {
-      regionDestroyedError = new Condition<>(
-          s -> (s.startsWith(
-              "Execution failed. Error: org.apache.geode.cache.RegionDestroyedException: ")),
-          "execution error");
-    } else {
-      regionDestroyedError = new Condition<>(
-          s -> (s.startsWith("Error (Region destroyed) in operation after having copied")),
-          "execution error");
-    }
+    regionDestroyedError = new Condition<>(
+        s -> (s.startsWith(
+            "Execution failed. Error: org.apache.geode.cache.RegionDestroyedException: ")
+            || s.startsWith("Error (Region destroyed) in operation after having copied")),
+        "execution error");
     result
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
