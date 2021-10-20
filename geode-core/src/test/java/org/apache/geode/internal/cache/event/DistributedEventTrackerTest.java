@@ -37,6 +37,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -58,12 +59,16 @@ public class DistributedEventTrackerTest {
   private ClientProxyMembershipID memberId;
   private DistributedMember member;
   private KeyInfo keyInfo;
+  private DistributionConfig config;
+
 
   @Before
   public void setup() {
     region = mock(DistributedRegion.class);
     RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     memberId = mock(ClientProxyMembershipID.class);
+    config = mock(DistributionConfig.class);
+
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
@@ -78,9 +83,13 @@ public class DistributedEventTrackerTest {
 
     keyInfo = new KeyInfo("key", "value", null);
     when(region.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
+    when(region.getDistributionConfig()).thenReturn(config);
+
+    when(config.getKeySequenceNumberMapSize()).thenReturn(0);
 
     member = mock(DistributedMember.class);
     eventTracker = new DistributedEventTracker(region);
+
   }
 
   @Test

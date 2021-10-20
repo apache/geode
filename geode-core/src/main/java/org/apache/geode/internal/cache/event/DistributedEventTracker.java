@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -277,9 +278,11 @@ public class DistributedEventTracker implements EventTracker {
     if (event instanceof EntryEventImpl) {
       key = ((EntryEventImpl) event).getKey();
     }
+    DistributionConfig config = region.getDistributionConfig();
 
     EventSequenceNumberHolder newEventSequenceHolder =
-        new EventSequenceNumberHolder(eventID.getSequenceID(), tag, key);
+        new EventSequenceNumberHolder(eventID.getSequenceID(), tag, key,
+            config.getKeySequenceNumberMapSize());
     if (logger.isTraceEnabled()) {
       logger.trace("region event tracker recording {}", event);
     }

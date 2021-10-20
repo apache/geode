@@ -2293,4 +2293,16 @@ public interface ConfigurationProperties {
    * <p>
    */
   String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
+  /**
+   * The static String definition of the <i>"key-sequence-number-map-size"</i> property <a
+   * name="key-sequence-number-map-size"/a>
+   * <p>
+   * <U>Description</U>: Sets the size of key-sequence-number map.
+   * <U>Default</U>: "0"
+   * <p>
+   * <U>Allowed values</U>: 0..180000
+   * <p>
+   * <U>Since</U>: Geode 1.15
+   */
+  String KEY_SEQUENCE_NUMBER_MAP_SIZE = "key-sequence-number-map-size";
 }

@@ -93,6 +93,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_UPDATE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.KEY_SEQUENCE_NUMBER_MAP_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
@@ -5374,6 +5375,41 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Current value is a pattern for rejecting everything <code>"!*"</code>
    */
   String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
+
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} property.
+   */
+  @ConfigAttributeGetter(name = KEY_SEQUENCE_NUMBER_MAP_SIZE)
+  int getKeySequenceNumberMapSize();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} property.
+   */
+  @ConfigAttributeSetter(name = KEY_SEQUENCE_NUMBER_MAP_SIZE)
+  void setKeySequenceNumberMapSize(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} is
+   * <code>0</code>.
+   */
+  int DEFAULT_KEY_SEQUENCE_NUMBER_MAP_SIZE = 0;
+  /**
+   * The minimum value of {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} is
+   * <code>0</code>.
+   */
+  int MIN_KEY_SEQUENCE_NUMBER_MAP_SIZE = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} is
+   * <code>180000</code>.
+   */
+  int MAX_KEY_SEQUENCE_NUMBER_MAP_SIZE = 180000;
+  /**
+   * The name of the {@link ConfigurationProperties#KEY_SEQUENCE_NUMBER_MAP_SIZE} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_KEY_SEQUENCE_NUMBER_MAP_SIZE,
+      max = MAX_KEY_SEQUENCE_NUMBER_MAP_SIZE)
+  String KEY_SEQUENCE_NUMBER_MAP_SIZE_NAME = KEY_SEQUENCE_NUMBER_MAP_SIZE;
 
   /**
    * Returns true if locators and mcast-port are not configured.

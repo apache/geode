@@ -675,6 +675,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
+
+  /**
+   * the thread monitoring time limit after which the monitored thread is considered stuck
+   */
+  private int keySequenceNumberMapSize = DEFAULT_KEY_SEQUENCE_NUMBER_MAP_SIZE;
+
   /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
    * <code>DistributionConfig</code>.
@@ -840,6 +846,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     httpServiceSSLTrustStore = other.getHttpServiceSSLTrustStore();
     httpServiceSSLTrustStorePassword = other.getHttpServiceSSLTrustStorePassword();
     httpServiceSSLProperties = other.getHttpServiceSSLProperties();
+    keySequenceNumberMapSize = other.getKeySequenceNumberMapSize();
 
     startDevRestApi = other.getStartDevRestApi();
 
@@ -3363,7 +3370,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
         .append(threadMonitorEnabled, that.threadMonitorEnabled)
         .append(threadMonitorInterval, that.threadMonitorInterval)
-        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit).isEquals();
+        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit)
+        .append(keySequenceNumberMapSize, that.keySequenceNumberMapSize).isEquals();
   }
 
   /**
@@ -3437,7 +3445,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)
-        .append(threadMonitorTimeLimit).toHashCode();
+        .append(threadMonitorTimeLimit).append(keySequenceNumberMapSize).toHashCode();
   }
 
   /**
@@ -3984,4 +3992,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public void setThreadMonitorTimeLimit(int newValue) {
     threadMonitorTimeLimit = newValue;
   }
+
+  @Override
+  public int getKeySequenceNumberMapSize() {
+    return keySequenceNumberMapSize;
+  }
+
+  @Override
+  public void setKeySequenceNumberMapSize(int newValue) {
+    keySequenceNumberMapSize = newValue;
+  }
+
 }

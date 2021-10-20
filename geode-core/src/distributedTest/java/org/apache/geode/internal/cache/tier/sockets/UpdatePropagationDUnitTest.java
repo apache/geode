@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.KEY_SEQUENCE_NUMBER_MAP_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
@@ -302,7 +303,9 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private Integer createServerCache() throws Exception {
-    Cache cache = getCache();
+    Properties props = getDistributedSystemProperties();
+    props.put(KEY_SEQUENCE_NUMBER_MAP_SIZE, "100");
+    Cache cache = getCache(props);
     RegionAttributes attrs = createCacheServerAttributes();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server = cache.addCacheServer();

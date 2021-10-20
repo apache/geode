@@ -60,7 +60,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
 
   private Map<Object, Long> keySequenceIdMap = null;
 
-  private final int limit = 150;
+  private int limit = 0;
 
   // for debugging
   // transient Exception context;
@@ -71,9 +71,14 @@ public class EventSequenceNumberHolder implements DataSerializable {
   }
 
   EventSequenceNumberHolder(long id, VersionTag versionTag, Object key) {
+    this(id, versionTag, key, 0);
+  }
+
+  EventSequenceNumberHolder(long id, VersionTag versionTag, Object key, int limit) {
     this.lastSequenceNumber = id;
     this.versionTag = versionTag;
-    if (key != null) {
+    this.limit = limit;
+    if (key != null && limit > 0) {
       keySequenceIdMap = new LinkedHashMap<Object, Long>() {
         protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
           return size() > limit;
@@ -124,7 +129,20 @@ public class EventSequenceNumberHolder implements DataSerializable {
     lastSequenceNumber = in.readLong();
     versionTag = (VersionTag) DataSerializer.readObject(in);
     if (getVersionForDataStream(in).isNotOlderThan(GEODE_1_15_0)) {
+      limit = in.readInt();
+      if (limit == 0)
+        return;
+
       final int size = InternalDataSerializer.readArrayLength(in);
+      if (size == 0)
+        return;
+
+      keySequenceIdMap = new LinkedHashMap<Object, Long>() {
+        protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
+          return size() > limit;
+        }
+      };
+
       Object key;
       Long value;
       for (int i = 0; i < size; i++) {
@@ -141,6 +159,10 @@ public class EventSequenceNumberHolder implements DataSerializable {
     DataSerializer.writeObject(versionTag, out);
     if (getVersionForDataStream(out)
         .isNotOlderThan(GEODE_1_15_0)) {
+      out.write(limit);
+      if (limit == 0)
+        return;
+
       InternalDataSerializer.writeHashMap(this.keySequenceIdMap, out);
     }
   }

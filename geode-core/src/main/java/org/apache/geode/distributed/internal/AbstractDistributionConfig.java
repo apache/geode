@@ -93,6 +93,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_UPDATE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.KEY_SEQUENCE_NUMBER_MAP_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
@@ -1492,6 +1493,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Defines whether thread monitoring is to be enabled.");
     m.put(THREAD_MONITOR_TIME_LIMIT,
         "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
+    m.put(KEY_SEQUENCE_NUMBER_MAP_SIZE,
+        "Defines size of key sequence-number map.");
     dcAttDescriptions = Collections.unmodifiableMap(m);
   }
 
