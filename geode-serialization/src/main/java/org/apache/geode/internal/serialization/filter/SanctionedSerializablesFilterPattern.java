@@ -90,9 +90,7 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
         .add("org.apache.geode.internal.cache.tier.sockets.VersionedObjectList")
 
         // security services
-        .add("org.apache.shiro.*")
-        .add("org.apache.shiro.authz.*")
-        .add("org.apache.shiro.authc.*")
+        .add("org.apache.shiro.**")
 
         // export logs
         .add("org.apache.logging.log4j.Level")
