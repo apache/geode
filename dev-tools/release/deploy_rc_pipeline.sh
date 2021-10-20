@@ -113,7 +113,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               java -version
@@ -149,7 +149,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
@@ -187,7 +187,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > bin.tgz
@@ -253,7 +253,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
+              FULL_VERSION=$(cd geode-examples && git fetch && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               if [ "${FULL_VERSION}" = "${VERSION}" ] ; then
                 GRADLE_ARGS=""
@@ -293,7 +293,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
@@ -339,7 +339,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               # build geode from source
               cd geode
@@ -389,7 +389,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git gpg wget
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests
@@ -422,7 +422,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git keychain
-              FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-benchmarks && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
@@ -463,7 +463,7 @@ jobs:
               set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git gpg
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
@@ -556,7 +556,7 @@ jobs:
               set -e
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
               BINARY_EXTENSIONS="jar|war|class|exe|dll|o|so|obj|bin|out|pyc"
@@ -608,7 +608,7 @@ jobs:
               set -e
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               ./geode-develop/dev-tools/release/license_review.sh -v $FULL_VERSION
   - name: all-passed
     serial: true
