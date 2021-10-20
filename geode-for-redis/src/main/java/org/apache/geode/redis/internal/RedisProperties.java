@@ -28,9 +28,9 @@ public class RedisProperties {
     String geodeValue = System.getProperty("geode." + propName, defaultValue);
     String gemfireValue = System.getProperty("gemfire." + propName, defaultValue);
 
-    if (StringUtils.isNotBlank(geodeValue) && !geodeValue.equals(defaultValue)) {
+    if (StringUtils.isNotEmpty(geodeValue) && !geodeValue.equals(defaultValue)) {
       return geodeValue;
-    } else if (StringUtils.isNotBlank(geodeValue) && !gemfireValue.equals(defaultValue)) {
+    } else if (StringUtils.isNotEmpty(gemfireValue) && !gemfireValue.equals(defaultValue)) {
       return gemfireValue;
     } else {
       return defaultValue;

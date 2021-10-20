@@ -104,13 +104,6 @@ public class RedisPropertiesTest {
   }
 
   @Test
-  public void getStringSystemProperty_shouldReturnEmptyString_whenSetToEmptyString_whenTrue() {
-    System.setProperty(geodePrefix + propName, "");
-    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("");
-    clearSystemProperties(propName);
-  }
-
-  @Test
   public void getStringSystemProperty_shouldReturnString_whenSet() {
     System.setProperty(geodePrefix + propName, "not default");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("not default");
