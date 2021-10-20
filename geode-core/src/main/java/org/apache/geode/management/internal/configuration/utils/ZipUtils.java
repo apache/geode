@@ -44,8 +44,8 @@ public class ZipUtils {
       parentDir.toFile().mkdirs();
     }
 
-    try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(targetFile))
-         Stream<Path> stream = Files.walk(sourceDirectory)) {
+    try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(targetFile));
+        Stream<Path> stream = Files.walk(sourceDirectory)) {
       stream.filter(path -> !Files.isDirectory(path)).forEach(path -> {
         ZipEntry zipEntry = new ZipEntry(sourceDirectory.relativize(path).toString());
         try {

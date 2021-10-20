@@ -186,10 +186,10 @@ public class LogExporter {
     }
     try (Stream<Path> stream = Files.list(workingDir)) {
       return stream
-        .filter(Files::isRegularFile)
-        .filter(fileSelector)
-        .filter(this.logFilter::acceptsFile)
-        .collect(toList());
+          .filter(Files::isRegularFile)
+          .filter(fileSelector)
+          .filter(this.logFilter::acceptsFile)
+          .collect(toList());
     }
   }
 }
