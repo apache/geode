@@ -138,8 +138,7 @@ public class MemberTypeCommonTagsTest {
         "--port=" + locatorPort,
         "--classpath=" + serviceJarPath + pathSeparator + functionJarPath,
         "--http-service-port=0",
-        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
-        "--J=-Djdk.serialFilter=*");
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     gfshRule.execute(startLocatorCommand);
 
@@ -177,7 +176,7 @@ public class MemberTypeCommonTagsTest {
     if (withLocator) {
       additionalParameters = String.join(" ",
           "--J=-Dgemfire.start-locator=localhost[" + locatorPort + "]",
-          "--J=-Dgemfire.jmx-manager=false", "--J=-Djdk.serialFilter=*");
+          "--J=-Dgemfire.jmx-manager=false");
     }
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
