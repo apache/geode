@@ -37,12 +37,10 @@ import org.junit.Test;
 
 public class ReflectionObjectInputFilterApiTest {
 
-  // private ApiPackage apiPackage;
   private ObjectInputFilterApi api;
 
   @Before
   public void setUp() throws ClassNotFoundException, NoSuchMethodException {
-    // System.out.println("JC debug jdk: " + System.getProperty("java.version"));
     if (isJavaVersionAtLeast(JAVA_9)) {
       api = new Java9ReflectionObjectInputFilterApi(ApiPackage.JAVA_IO);
     } else if (isJavaVersionAtLeast(JAVA_1_8)) {
@@ -58,9 +56,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void createFilterGivenValidPatternReturnsNewFilter()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
-      NoSuchMethodException {
-    // ReflectionObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException {
 
     Object filter = api.createFilter("!*");
 
@@ -72,9 +68,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void createFilterGivenEmptyPatternReturnsNull()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException {
 
     Object filter = api.createFilter("");
 
@@ -85,9 +79,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void createFilterGivenBlankPatternReturnsNewFilter()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
-      NoSuchMethodException {
-    // ReflectionObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException {
 
     Object filter = api.createFilter(" ");
 
@@ -99,9 +91,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void getSerialFilterReturnsNullWhenFilterDoesNotExist()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException {
 
     Object filter = api.getSerialFilter();
 
@@ -125,9 +115,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void getObjectInputFilterReturnsExistingFilter()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException, IOException {
     Object existingFilter = api.createFilter("*");
     Serializable object = "hello";
     ObjectInputStream inputStream = new ObjectInputStream(byteArrayInputStream(object));
@@ -140,9 +128,8 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void setObjectInputFilterGivenAcceptFilterReadsObject()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
+      IOException {
     Serializable object = new SerializableClass("hello");
     Object filter = api.createFilter(object.getClass().getName() + ";!*");
 
@@ -155,9 +142,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void setObjectInputFilterGivenDenyFilterThrowsInvalidClassException()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException, IOException {
     Serializable object = new SerializableClass("hello");
     Object filter = api.createFilter("!" + object.getClass().getName());
 
@@ -174,9 +159,8 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void createObjectInputFilterProxyGivenAcceptFilterReadsObject()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new ReflectionObjectInputFilterApi(apiPackage);
+      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException,
+      IOException {
     Serializable object = new SerializableClass("hello");
     String className = object.getClass().getName();
     Object filter = api.createObjectInputFilterProxy(className + ";!*", singleton(className));
@@ -190,9 +174,7 @@ public class ReflectionObjectInputFilterApiTest {
 
   @Test
   public void createObjectInputFilterProxyGivenRejectFilterThrowsInvalidClassException()
-      throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, IOException,
-      NoSuchMethodException {
-    // ObjectInputFilterApi api = new Java9ReflectionObjectInputFilterApi(apiPackage);
+      throws IllegalAccessException, InvocationTargetException, IOException {
     Serializable object = new SerializableClass("hello");
     String className = object.getClass().getName();
     Object filter = api.createObjectInputFilterProxy("!" + className + ";*", emptyList());
