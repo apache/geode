@@ -26,6 +26,7 @@ public class Java9SystemPropertyConfigurationFactory implements SystemPropertyCo
     }
     return () -> {
       // nothing
+      return false;
     };
   }
 }

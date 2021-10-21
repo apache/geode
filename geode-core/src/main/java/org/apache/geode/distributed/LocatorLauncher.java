@@ -726,10 +726,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
-      // TODO:KIRK: write new LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest
-      // LocatorLauncher should configure BOTH jdk.serialFilter AND enable
-      // `validate-serializable-objects`
-      // when start() is invoked and the JVM is Java 8.
+      boolean serializationFilterConfigured = false;
       if (isJavaVersionAtLeast(JAVA_1_8) && isJavaVersionAtMost(JAVA_1_8)) {
         SerializableObjectConfig serializableObjectConfig =
             new DistributedSerializableObjectConfig(getDistributedSystemProperties());
@@ -746,7 +743,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         GlobalSerialFilter globalSerialFilter = new DelegatingGlobalSerialFilterFactory()
             .create(filterPattern, sanctionedClasses);
 
-        new Java8GlobalSerialFilterConfigurationFactory()
+        serializationFilterConfigured = new Java8GlobalSerialFilterConfigurationFactory()
             .create(globalSerialFilter)
             .configure();
       }
@@ -772,6 +769,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               && this.locator.getCache().getInternalDistributedSystem().getConfig() != null) {
             this.locator.getCache().getInternalDistributedSystem().getConfig()
                 .setValidateSerializableObjects(true);
+            if (serializationFilterConfigured) {
+              log.info("Global serial filter is now configured.");
+            }
           }
         } finally {
           ProcessLauncherContext.remove();

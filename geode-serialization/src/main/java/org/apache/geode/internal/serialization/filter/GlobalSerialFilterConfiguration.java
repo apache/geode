@@ -44,8 +44,8 @@ public class GlobalSerialFilterConfiguration implements FilterConfiguration {
   }
 
   @Override
-  public void configure() {
-    new SetSerialFilter(globalSerialFilter, infoLogger).execute();
+  public boolean configure() {
+    return new SetSerialFilter(globalSerialFilter, infoLogger).execute();
   }
 
   private static class SetSerialFilter {
@@ -58,15 +58,17 @@ public class GlobalSerialFilterConfiguration implements FilterConfiguration {
       this.infoLogger = infoLogger;
     }
 
-    public void execute() {
+    public boolean execute() {
       try {
         globalSerialFilter.setFilter();
         infoLogger.accept(("Global serial filter is now configured."));
+        return true;
       } catch (UnsupportedOperationException e) {
         if (hasRootCauseWithMessage(e, IllegalStateException.class,
             "Serial filter can only be set once")) {
           infoLogger.accept("Global serial filter is already configured.");
         }
+        return false;
       }
     }
 

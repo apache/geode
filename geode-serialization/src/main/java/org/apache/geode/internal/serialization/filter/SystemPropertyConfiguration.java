@@ -55,8 +55,8 @@ public class SystemPropertyConfiguration implements FilterConfiguration {
   }
 
   @Override
-  public void configure() {
-    new SetSystemProperty(propertyName, filterPattern, infoLogger).execute();
+  public boolean configure() {
+    return new SetSystemProperty(propertyName, filterPattern, infoLogger).execute();
   }
 
   private static class SetSystemProperty {
@@ -72,14 +72,15 @@ public class SystemPropertyConfiguration implements FilterConfiguration {
       this.infoLogger = infoLogger;
     }
 
-    public void execute() {
+    public boolean execute() {
       if (isNotEmpty(System.getProperty(propertyName))) {
         infoLogger.accept("System property " + propertyName + " is already configured.");
-        return;
+        return false;
       }
       System.setProperty(propertyName, filterPattern);
       infoLogger.accept("System property " + propertyName + " is now configured with '"
           + filterPattern + "'.");
+      return true;
     }
   }
 

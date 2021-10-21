@@ -17,5 +17,5 @@ package org.apache.geode.internal.serialization.filter;
 @FunctionalInterface
 public interface FilterConfiguration {
 
-  void configure();
+  boolean configure();
 }

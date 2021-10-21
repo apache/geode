@@ -19,6 +19,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 
+
+
 public class Java8GlobalSerialFilterConfigurationFactory
     implements GlobalSerialFilterConfigurationFactory {
 
@@ -30,6 +32,7 @@ public class Java8GlobalSerialFilterConfigurationFactory
     }
     return () -> {
       // nothing
+      return false;
     };
   }
 }
