@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -108,6 +109,15 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
     assertThat(resultString).isEqualTo("OK");
 
     assertThat(jedis.mget(keys)).containsExactly(vals);
+  }
+
+  @Test
+  public void txBehaviorDoesNotCauseBucketSizeToBecomeNegative() {
+    String key = "key";
+
+    jedis.mset(key, "value");
+    assertThatNoException().isThrownBy(() -> jedis.set(key, "much larger value"));
+
   }
 
   @Test
