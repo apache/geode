@@ -66,7 +66,7 @@ public class RegisterDriverCommandDUnitTest {
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();
 
-    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --dependencies=java.sql --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
         .doesNotContainOutput(JDBC_DRIVER_CLASS_NAME);

@@ -69,14 +69,16 @@ public class ModularClasspathService implements ClasspathService {
       normalizedName = name.replaceAll("/", ".");
     }
 
+    Throwable tempThrowable = null;
+
     for (ClassLoader classLoader : getClassLoaders()) {
       try {
         return classLoader.loadClass(normalizedName);
       } catch (ClassNotFoundException | NoClassDefFoundError e) {
-        // ignore
+        tempThrowable = e;
       }
     }
-    throw new ClassNotFoundException(name);
+    throw new ClassNotFoundException(name, tempThrowable);
   }
 
   @Override
