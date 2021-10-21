@@ -54,6 +54,10 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
       return;
     }
 
+    if (redundancyProvider.getPartitionedRegion().isLocallyDestroyed
+        || redundancyProvider.getPartitionedRegion().isClosed)
+      return;
+
     PartitionedRegion leaderRegion =
         ColocationHelper.getLeaderRegion(redundancyProvider.getPartitionedRegion());
     RecoveryLock lock = leaderRegion.getRecoveryLock();
@@ -67,14 +71,16 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
 
   protected void createMissingBuckets(PartitionedRegion region) {
     PartitionedRegion parentRegion = ColocationHelper.getColocatedRegion(region);
-    if (parentRegion == null) {
+    if (parentRegion == null)
       return;
-    }
+
     // Make sure the parent region has created missing buckets
     // before we create missing buckets for this child region.
     createMissingBuckets(parentRegion);
 
     for (int i = 0; i < region.getTotalNumberOfBuckets(); i++) {
+      if (region.isClosed || region.isLocallyDestroyed)
+        return;
 
       if (parentRegion.getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy() != region
           .getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy()) {
@@ -104,6 +110,9 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
           Thread.currentThread().interrupt();
         }
       }
+
+      if (partitionedRegion.isLocallyDestroyed || partitionedRegion.isClosed)
+        return false;
 
       retryCount++;
       if (retryCount == SMALL_200MS_INTERVALS) {
