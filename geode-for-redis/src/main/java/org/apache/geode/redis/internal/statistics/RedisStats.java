@@ -171,7 +171,7 @@ public class RedisStats {
         newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
 
     perSecondExecutor.scheduleWithFixedDelay(
-        () -> doPerSecondUpdates(),
+        this::doPerSecondUpdates,
         INTERVAL,
         INTERVAL,
         SECONDS);
@@ -189,15 +189,15 @@ public class RedisStats {
   }
 
   private void updateNetworkKilobytesReadLastSecond() {
-    long totalNetworkBytesRead = getTotalNetworkBytesRead();
+    final long totalNetworkBytesRead = getTotalNetworkBytesRead();
     long deltaNetworkBytesRead = totalNetworkBytesRead - previousNetworkBytesRead;
-    networkKiloBytesReadOverLastSecond = deltaNetworkBytesRead / 1000;
-    previousNetworkBytesRead = getTotalNetworkBytesRead();
+    networkKiloBytesReadOverLastSecond = deltaNetworkBytesRead / 1024.0;
+    previousNetworkBytesRead = totalNetworkBytesRead;
   }
 
   private void updateOpsPerformedOverLastSecond() {
-    long totalOpsPerformed = getCommandsProcessed();
+    final long totalOpsPerformed = getCommandsProcessed();
     opsPerformedOverLastSecond = totalOpsPerformed - opsPerformedLastTick;
-    opsPerformedLastTick = getCommandsProcessed();
+    opsPerformedLastTick = totalOpsPerformed;
   }
 }
