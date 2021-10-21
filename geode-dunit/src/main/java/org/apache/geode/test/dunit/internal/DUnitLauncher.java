@@ -181,7 +181,7 @@ public class DUnitLauncher {
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
-    launchIfNeeded(vmCount, false, runClassloaderIsolated());
+    launchIfNeeded(vmCount, true, runClassloaderIsolated());
   }
 
   private static boolean runClassloaderIsolated() {

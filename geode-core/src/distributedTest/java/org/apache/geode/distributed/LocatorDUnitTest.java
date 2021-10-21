@@ -484,7 +484,7 @@ public class LocatorDUnitTest implements Serializable {
 
     // we set port2 so that the state file gets cleaned up later.
     vm2.invoke(() -> {
-      assertThatThrownBy(() -> startLocatorBase(properties, 0))
+      assertThatThrownBy(() -> startLocatorBase(properties, port2))
           .isInstanceOfAny(IllegalThreadStateException.class, SystemConnectException.class);
 
       assertThat(Locator.getLocator()).isNull();
@@ -909,6 +909,10 @@ public class LocatorDUnitTest implements Serializable {
     });
 
     // Test runner will be locator 2
+    properties.setProperty(ConfigurationProperties.HTTP_SERVICE_PORT,
+        "" + AvailablePortHelper.getRandomAvailableTCPPort());
+    properties.setProperty(ConfigurationProperties.JMX_MANAGER_PORT,
+        "" + AvailablePortHelper.getRandomAvailableTCPPort());
     Locator locator = Locator.startLocatorAndDS(port1, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertThat(locator.getDistributedSystem().isConnected()).isTrue();
