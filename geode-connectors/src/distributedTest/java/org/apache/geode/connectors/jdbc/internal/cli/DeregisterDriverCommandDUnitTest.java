@@ -59,7 +59,7 @@ public class DeregisterDriverCommandDUnitTest {
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();
 
-    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --dependencies=java.sql --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
         .statusIsSuccess();
