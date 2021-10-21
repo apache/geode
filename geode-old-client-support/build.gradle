@@ -16,8 +16,12 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
+apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+distributedTest {
+  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeOldClientSupportExtensions.properties"
+}
 
 
 dependencies {
@@ -30,5 +34,5 @@ dependencies {
   }
 
 
-  distributedTestImplementation('junit:junit')
+  distributedTestImplementation(project(':geode-junit'))
 }
