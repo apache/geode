@@ -108,9 +108,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -144,9 +143,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -182,9 +180,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -219,9 +216,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip
               cd geode-examples
@@ -248,9 +244,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-examples && git fetch && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
@@ -288,9 +283,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -334,9 +328,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -384,9 +377,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git gpg wget
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -417,9 +409,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git keychain
               FULL_VERSION=$(cd geode-benchmarks && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -458,9 +449,8 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git gpg
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -551,9 +541,8 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -e
               apt update -q
               apt install -qq -y --no-install-recommends git
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
@@ -603,9 +592,8 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -e
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
