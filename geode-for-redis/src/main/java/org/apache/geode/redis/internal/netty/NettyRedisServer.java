@@ -17,10 +17,8 @@
 package org.apache.geode.redis.internal.netty;
 
 
-import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
-import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -92,7 +90,6 @@ public class NettyRedisServer {
   private final DistributedMember member;
   private final RedisSecurityService securityService;
   private final int writeTimeoutSeconds;
-  private final String regionName;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
@@ -107,15 +104,8 @@ public class NettyRedisServer {
     this.member = member;
     this.securityService = securityService;
 
-    this.regionName =
-        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
     this.writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
-
-    if (port < RANDOM_PORT_INDICATOR) {
-      throw new IllegalArgumentException(
-          "The geode-for-redis-port cannot be less than " + RANDOM_PORT_INDICATOR);
-    }
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
