@@ -14,9 +14,13 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,5 +38,13 @@ public class DistributionMessageTest {
     mockDistributionMessage.setReplySender(mockReplySender);
 
     verify(mockDistributionMessage, times(1)).setReplySender(mockReplySender);
+  }
+
+  @Test
+  public void membershipMessengerThreadsAreRecognized() {
+    List<String> threadNames = Arrays.asList("unicast receiver", "multicast receiver", "Geode UDP");
+    for (String threadName : threadNames) {
+      assertThat(DistributionMessage.isMembershipMessengerThreadName(threadName)).isTrue();
+    }
   }
 }
