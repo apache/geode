@@ -358,8 +358,9 @@ tasks.register('gfshDepsJar', Jar) {
   archiveFileName='gfsh-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path": configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' ') +
-                  configurations.gfshDependencies.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' '))
+      attributes("Class-Path":
+      configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' ') +
+      configurations.gfshDependencies.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' '))
     }
   }
 }
