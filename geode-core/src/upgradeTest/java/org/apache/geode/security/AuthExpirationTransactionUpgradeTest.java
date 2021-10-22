@@ -52,7 +52,7 @@ import org.apache.geode.test.version.VersionManager;
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class AuthExpirationTransactionUGDUnitTest {
+public class AuthExpirationTransactionUpgradeTest {
   // only test versions greater than or equal to 1.14.0
   private static final String test_start_version = "1.14.0";
 
