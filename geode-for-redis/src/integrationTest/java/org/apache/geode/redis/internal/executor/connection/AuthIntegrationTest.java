@@ -145,6 +145,25 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
   }
 
   @Test
+  public void givenSecurity_readOpWithReadAuthorization_passes() throws Exception {
+    setupCacheWithSecurity();
+
+    jedis.auth("dataRead", "dataRead");
+
+    assertThat(jedis.get("foo")).isNull();
+  }
+
+  @Test
+  public void givenSecurity_readOpWithWriteAuthorization_fails() throws Exception {
+    setupCacheWithSecurity();
+
+    jedis.auth("dataWrite", "dataWrite");
+
+    assertThatThrownBy(() -> jedis.get("foo"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+  }
+
+  @Test
   public void givenSecurity_multipleClientsConnectIndependently() throws Exception {
     setupCacheWithSecurity();
 

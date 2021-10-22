@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
@@ -79,7 +80,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final ResourcePermission RESOURCE_PERMISSION;
+  private static final ResourcePermission WRITE_RESOURCE_PERMISSION;
+  private static final ResourcePermission READ_RESOURCE_PERMISSION;
+
+  static {
+    String regionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
+    WRITE_RESOURCE_PERMISSION = new ResourcePermission("DATA", "WRITE", regionName);
+    READ_RESOURCE_PERMISSION = new ResourcePermission("DATA", "READ", regionName);
+  }
 
   private final Client client;
   private final RegionProvider regionProvider;
@@ -97,26 +106,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final int serverPort;
 
   private Subject subject;
-
-  static {
-    ResourcePermission tempPermission;
-    String regionName =
-        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
-    String resourcePermission = System.getProperty("redis.resource-permission", "DATA:WRITE:"
-        + regionName);
-    String[] parts = resourcePermission.split(":");
-
-    try {
-      if (parts.length != 3) {
-        throw new IllegalArgumentException();
-      }
-      tempPermission = new ResourcePermission(parts[0], parts[1], parts[2]);
-    } catch (IllegalArgumentException e) {
-      tempPermission = new ResourcePermission("DATA", "WRITE", DEFAULT_REDIS_REGION_NAME);
-    }
-
-    RESOURCE_PERMISSION = tempPermission;
-  }
 
   /**
    * Default constructor for execution contexts.
@@ -255,7 +244,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      if (!isAuthorized()) {
+      if (!isAuthorized(command.getCommandType())) {
         writeToChannel(RedisResponse.error(ERROR_NOT_AUTHORIZED));
         return;
       }
@@ -339,13 +328,15 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return (!securityService.isEnabled()) || subject != null;
   }
 
-  public boolean isAuthorized() {
+  public boolean isAuthorized(RedisCommandType commandType) {
     if (subject == null) {
       return true;
     }
 
+    ResourcePermission permission =
+        commandType.isReadOnly() ? READ_RESOURCE_PERMISSION : WRITE_RESOURCE_PERMISSION;
     try {
-      securityService.authorize(RESOURCE_PERMISSION, subject);
+      securityService.authorize(permission, subject);
     } catch (NotAuthorizedException nex) {
       return false;
     }
@@ -356,7 +347,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Sets an authenticated principal in the context. This implies that the connection has been
    * successfully authenticated.
    */
-  public void setSubject(Subject subject) {
+  @VisibleForTesting
+  void setSubject(Subject subject) {
     this.subject = subject;
   }
 

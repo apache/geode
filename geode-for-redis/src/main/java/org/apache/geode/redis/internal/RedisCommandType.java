@@ -468,6 +468,10 @@ public enum RedisCommandType {
     }
   }
 
+  public boolean isReadOnly() {
+    return parameterRequirements.getFlags().contains(READONLY);
+  }
+
   public void checkDeferredParameters(Command command,
       ExecutionHandlerContext executionHandlerContext) {
     deferredParameterRequirements.checkParameters(command, executionHandlerContext);
