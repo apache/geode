@@ -324,7 +324,7 @@ def getDependencyProjectsFor(String configurationName) {
     if ((it as Project).pluginManager.hasPlugin('java-library')) {
       it
     } else if ((it as Project).pluginManager.hasPlugin('java-platform')) {
-      (it as Project).configurations.runtime.dependencies.collect {
+      (it as Project).configurations.api.dependencies.collect {
         it.dependencyProject
       }
     }
