@@ -460,6 +460,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setGroupTransactionEvents(senderCreation.mustGroupTransactionEvents());
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
-    attrs.setStartupAction(senderCreation.getStartupAction());
+    attrs.setStartupAction(((InternalGatewaySender) senderCreation).getStartupAction());
   }
 }

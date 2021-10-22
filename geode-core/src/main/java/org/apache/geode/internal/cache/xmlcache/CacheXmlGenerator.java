@@ -127,6 +127,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 import org.apache.geode.management.internal.configuration.utils.XmlConstants;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -1436,9 +1437,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     // gateway-sender startup action
-    if (sender.getStartupAction() != GatewaySenderStartupAction.NONE) {
+    InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
+    if (internalGatewaySender.getStartupAction() != GatewaySenderStartupAction.NONE) {
       atts.addAttribute("", "", STARTUP_ACTION, "",
-          sender.getStartupAction().getAction());
+          internalGatewaySender.getStartupAction().getAction());
     }
 
     // dispatcher-threads

@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -55,6 +56,16 @@ public interface InternalGatewaySender extends GatewaySender {
    * region to reach the online status.
    */
   void recoverInStoppedState();
+
+  /**
+   * Returns the startup-action of the <code>GatewaySender</code>. This action parameter is set
+   * after start, stop, pause and resume gateway-sender gfsh commands.
+   *
+   * @return startup action
+   *
+   * @see GatewaySenderStartupAction
+   */
+  GatewaySenderStartupAction getStartupAction();
 
   int getEventQueueSize();
 }

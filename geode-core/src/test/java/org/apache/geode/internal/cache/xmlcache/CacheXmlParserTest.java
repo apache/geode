@@ -39,9 +39,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 
 
 public class CacheXmlParserTest {
@@ -104,7 +104,7 @@ public class CacheXmlParserTest {
     XmlGeneratorUtils.addAttribute(attrs, REMOTE_DISTRIBUTED_SYSTEM_ID, "1");
     XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "gateway-sender");
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);
@@ -116,11 +116,11 @@ public class CacheXmlParserTest {
   }
 
   @Test
-  public void testStartGatewaySenderStateParameterRunning() throws SAXException {
+  public void testStartGatewaySenderStartupActionParameterStart() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "start");
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);
@@ -131,11 +131,11 @@ public class CacheXmlParserTest {
   }
 
   @Test
-  public void testStartGatewaySenderStateParameterStopped() throws SAXException {
+  public void testStartGatewaySenderStartupActionParameterStop() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "stop");
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);
@@ -146,11 +146,11 @@ public class CacheXmlParserTest {
   }
 
   @Test
-  public void testStartGatewaySenderStateParameterPaused() throws SAXException {
+  public void testStartGatewaySenderStartupActionParameterPause() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "pause");
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);
@@ -161,10 +161,10 @@ public class CacheXmlParserTest {
   }
 
   @Test
-  public void testStartGatewaySenderStateParameterNull() throws SAXException {
+  public void testStartGatewaySenderStartupActionParameterNull() throws SAXException {
     AttributesImpl attrs = new AttributesImpl();
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);
@@ -175,12 +175,12 @@ public class CacheXmlParserTest {
   }
 
   @Test
-  public void testGatewaySenderStateParameterInvalidValue() {
+  public void testGatewaySenderStartupActionParameterInvalidValue() {
     AttributesImpl attrs = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attrs, CacheXml.ID, "sender1");
     XmlGeneratorUtils.addAttribute(attrs, STARTUP_ACTION, "pausede");
 
-    GatewaySenderFactory gatewaySenderFactory = mock(GatewaySenderFactory.class);
+    InternalGatewaySenderFactory gatewaySenderFactory = mock(InternalGatewaySenderFactory.class);
     when(cacheCreation.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
 
     CacheXmlParser parser = new CacheXmlParser(cacheCreation);

@@ -29,6 +29,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.CliUtils;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -100,7 +101,7 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
 
     String startupAction = gatewaySenderCreateArgs.getStartupAction();
     if (startupAction != null) {
-      gateway
+      ((InternalGatewaySenderFactory) gateway)
           .setStartupAction(GatewaySenderStartupAction.valueOf(startupAction.toUpperCase()));
     }
 

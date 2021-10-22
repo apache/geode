@@ -122,6 +122,6 @@ public class PauseGatewaySenderCommand extends SingleGfshCommand implements
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
-    return CliUtils.updateGatewaySenderState(config, configObject);
+    return CliUtils.updateGatewaySenderStartupAction(config, configObject);
   }
 }

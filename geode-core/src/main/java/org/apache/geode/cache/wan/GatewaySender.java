@@ -322,16 +322,6 @@ public interface GatewaySender {
   int getSocketReadTimeout();
 
   /**
-   * Returns the startup-action of the <code>GatewaySender</code>. This action parameter is set
-   * after start, stop, pause and resume gateway-sender gfsh commands.
-   *
-   * @return startup action
-   *
-   * @see GatewaySenderStartupAction
-   */
-  GatewaySenderStartupAction getStartupAction();
-
-  /**
    * Gets the disk store name for overflow or persistence.
    *
    * @return disk store name

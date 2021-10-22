@@ -111,13 +111,6 @@ public interface GatewaySenderMXBean {
   boolean isManualStart();
 
   /**
-   * Returns the startup action of GatewaySender.
-   *
-   * @return returns the startup-action
-   */
-  String getGatewaySenderStartupAction();
-
-  /**
    * Returns whether or not this GatewaySender is running.
    *
    * @return True if the GatewaySender is running, false otherwise.
@@ -295,7 +288,5 @@ public interface GatewaySenderMXBean {
    * Returns number of events which have exceeded the configured alert threshold.
    */
   int getEventsExceedingAlertThreshold();
-
-
 
 }
