@@ -1082,10 +1082,6 @@ public class CachePerfStats {
     }
   }
 
-  public void incMisses() {
-    stats.incLong(missesId, 1L);
-  }
-
   public void endGetForClient(long start, boolean miss) {}
 
   /**

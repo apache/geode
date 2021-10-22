@@ -3296,12 +3296,13 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   protected long startGet() {
-    return getCachePerfStats().startGet();
+    return 0;
   }
 
   @Override
   protected void endGet(long start, boolean isMiss) {
-    getCachePerfStats().endGet(start, isMiss);
+    // get stats are recorded by the BucketRegion
+    // so nothing is needed on the PartitionedRegion.
   }
 
   public InternalDistributedMember getOrCreateNodeForBucketRead(int bucketId) {
@@ -4946,9 +4947,6 @@ public class PartitionedRegion extends LocalRegion
     }
     if (logger.isDebugEnabled()) {
       logger.debug("getRemotely: got value {} for key {}", value, key);
-    }
-    if (value != null) {
-      getCachePerfStats().incMisses();
     }
     return value;
   }

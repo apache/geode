@@ -89,8 +89,6 @@ public interface RegionStats {
 
   void endGet(long start, boolean miss);
 
-  void incMisses();
-
   void endGetForClient(long start, boolean miss);
 
   long endPut(long start, boolean isUpdate);
