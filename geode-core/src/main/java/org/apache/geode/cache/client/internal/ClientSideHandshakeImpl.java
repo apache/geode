@@ -211,7 +211,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
-          || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
+          || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED
+          || acceptanceCode == REPLY_REFUSED || acceptanceCode == REPLY_INVALID)) {
         short wanSiteVersion = Version.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
