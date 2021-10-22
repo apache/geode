@@ -48,6 +48,7 @@ configurations {
     setDescription("Composite builds wishing to consume this apache-geode@tgz artifact must specify \"targetConfiguration = 'compositeTarget'\" for correct composite task dependency detection.")
   }
 
+  geodeDependencies
   gfshDependencies
 
   // Configurations used to download and cache web application servers for session module testing
@@ -127,6 +128,10 @@ dependencies {
   api(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
+  // The complete runtime deps as defined in the server bom
+  geodeDependencies(platform(project(':boms:geode-server-bom')))
+
+  // What we actually want on the runtime classpath, minus deprecated stuff
   geodeArchives(platform(project(':boms:geode-server-bom'))) {
     // Deprecated admin API
     exclude group: 'commons-digester', module: 'commons-digester' // geode-core, brought by modeler and validator, and geode-membership via validator
@@ -327,80 +332,34 @@ def getDependencyProjectsFor(String configurationName) {
   return rval
 }
 
-def cp = {
-  // first add all the dependent project jars
-  def jars = getDependencyProjectsFor('geodeArchives').collect {
-    it.jar.archiveName
-  }.flatten()
-
-  // then add all the dependencies of the dependent jars
-  def depJars = configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts
-    .collect {it.file.name }
-    .flatten()
-
-  return jars.plus(depJars).unique().join(' ')
-}
-
-tasks.register('configureDepsJar') {
-  inputs.files {
-    configurations.geodeArchives
-  }
-
-  def output = project.buildDir.toPath().resolve('reports').resolve('deps_jar_cp.txt')
-  outputs.file {
-    output
-  }
-  doLast {
-    output.write(cp())
-  }
-}
-
-tasks.register('configureGfshDepsJar') {
-  inputs.files {
-    configurations.gfshDependencies
-  }
-
-  inputs.files {
-    configureDepsJar
-  }
-
-  def output = project.buildDir.toPath().resolve('reports').resolve('gfsh_deps_jar_cp.txt')
-  outputs.file {
-    output
-  }
-  doLast {
-    def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
-        configurations.gfshDependencies.collect { it.getName() }.findAll {
-          !it.contains('geode-all-bom')
-        }.flatten().unique().join(' ')
-    output.write(classpath)
-  }
-}
-
 // Configure the manifest contents in a separate always-running task to ensure correctness of
 // these dependency jars
 tasks.register('depsJar', Jar) {
   inputs.files {
-    configureDepsJar
+    configurations.geodeArchives
   }
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveFileName='geode-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
+      attributes("Class-Path": configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.flatten().unique().join(' '))
     }
   }
 }
 
 tasks.register('gfshDepsJar', Jar) {
   inputs.files {
-    configureGfshDepsJar
+    configurations.geodeArchives
+  }
+  inputs.files {
+    configurations.gfshDependencies
   }
   description 'Assembles the jar archive that defines the gfsh classpath.'
   archiveFileName='gfsh-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
+      attributes("Class-Path": configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' ') +
+                  configurations.gfshDependencies.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' '))
     }
   }
 }
@@ -507,11 +466,9 @@ distributions {
 
       with copySpec {
         into('lib')
-        from {
-          project(':boms:geode-server-bom').configurations.classpath
-        }
+        from {configurations.geodeDependencies}
 
-        from configurations.gfshDependencies
+        from {configurations.gfshDependencies}
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
@@ -519,8 +476,8 @@ distributions {
         from {project(':geode-core').tasks.named('jcaJar')}
 
         // dependency jars
-        from tasks.named('depsJar')
-        from tasks.named('gfshDepsJar')
+        from {tasks.named('depsJar')}
+        from {tasks.named('gfshDepsJar')}
       }
 
       with copySpec {
