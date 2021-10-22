@@ -107,7 +107,7 @@ public class RedisStats {
     return totalNetworkBytesRead.get();
   }
 
-  private long getCurrentTimeNanos() {
+  public long getCurrentTimeNanos() {
     return clock.getTime();
   }
 
@@ -157,6 +157,27 @@ public class RedisStats {
   public void endExpiration(long start) {
     geodeRedisStats.endExpiration(start);
     expirations.incrementAndGet();
+  }
+
+
+  public long startPublish() {
+    return geodeRedisStats.startPublish();
+  }
+
+  public void endPublish(long publishCount, long time) {
+    geodeRedisStats.endPublish(publishCount, time);
+  }
+
+  public void changeSubscribers(long delta) {
+    geodeRedisStats.changeSubscribers(delta);
+  }
+
+  public void changeUniqueChannelSubscriptions(long delta) {
+    geodeRedisStats.changeUniqueChannelSubscriptions(delta);
+  }
+
+  public void changeUniquePatternSubscriptions(long delta) {
+    geodeRedisStats.changeUniquePatternSubscriptions(delta);
   }
 
   public void close() {

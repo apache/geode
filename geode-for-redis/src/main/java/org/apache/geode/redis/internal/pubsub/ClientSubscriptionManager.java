@@ -44,7 +44,7 @@ interface ClientSubscriptionManager {
   /**
    * Remove any subscription added for the given client.
    *
-   * @return true if removed or already removed; false if caller should remove this manager
+   * @return true if removed false if not removed
    */
   boolean remove(Client client);
 

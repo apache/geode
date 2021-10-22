@@ -34,10 +34,11 @@ import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class SubscriptionsJUnitTest {
 
-  private final Subscriptions subscriptions = new Subscriptions();
+  private final Subscriptions subscriptions = new Subscriptions(mock(RedisStats.class));
 
   @Test
   public void correctlyIdentifiesChannelSubscriber() {
