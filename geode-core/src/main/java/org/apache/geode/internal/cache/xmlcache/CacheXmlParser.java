@@ -117,6 +117,7 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
@@ -662,13 +663,15 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     String id = atts.getValue(ID);
     // Gateway-sender startup action
+    InternalGatewaySenderFactory internalGatewaySenderFactory =
+        (InternalGatewaySenderFactory) gatewaySenderFactory;
     String startupAction = atts.getValue(STARTUP_ACTION);
     if (startupAction == null) {
-      gatewaySenderFactory.setStartupAction(GatewaySenderStartupAction.NONE);
+      internalGatewaySenderFactory.setStartupAction(GatewaySenderStartupAction.NONE);
     } else if (Objects.equals(startupAction, GatewaySenderStartupAction.START.getAction()) ||
         Objects.equals(startupAction, GatewaySenderStartupAction.STOP.getAction()) ||
         Objects.equals(startupAction, GatewaySenderStartupAction.PAUSE.getAction())) {
-      gatewaySenderFactory
+      internalGatewaySenderFactory
           .setStartupAction(GatewaySenderStartupAction.valueOf(startupAction.toUpperCase()));
     } else {
       throw new InternalGemFireException(

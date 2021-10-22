@@ -88,7 +88,7 @@ public class CliUtils {
     return nameOrId;
   }
 
-  public static boolean updateGatewaySenderState(CacheConfig config, Object configObject) {
+  public static boolean updateGatewaySenderStartupAction(CacheConfig config, Object configObject) {
     boolean gatewaySenderConfigUpdated = false;
     List<CacheConfig.GatewaySender> gatewaySenders = config.getGatewaySenders();
     if (gatewaySenders.isEmpty() || configObject == null) {
