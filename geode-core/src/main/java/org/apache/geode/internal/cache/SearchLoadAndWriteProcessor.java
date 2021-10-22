@@ -600,9 +600,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return;
       }
     } finally {
-      if (this.result != null) {
-        stats.incMisses();
-      }
       stats.endNetsearch(start);
     }
   }
@@ -769,9 +766,6 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
         } while (stayInLoop);
       } finally {
-        if (this.result != null) {
-          stats.incMisses();
-        }
         stats.endNetload(start);
       }
 
