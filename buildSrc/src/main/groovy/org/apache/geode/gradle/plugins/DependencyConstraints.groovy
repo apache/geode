@@ -114,7 +114,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.52')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.48.Final')
+        api(group: 'io.netty', name: 'netty-all', version: '4.1.68.Final')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
