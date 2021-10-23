@@ -88,4 +88,4 @@ lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 protobuf-java-3.11.4.jar
 geo-0.7.7.jar
-netty-all-4.1.48.Final.jar
+netty-all-4.1.68.Final.jar
