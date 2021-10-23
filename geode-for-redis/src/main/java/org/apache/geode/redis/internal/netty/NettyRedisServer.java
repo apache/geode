@@ -72,7 +72,6 @@ public class NettyRedisServer {
 
   private static final int RANDOM_PORT_INDICATOR = 0;
   public static final int DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS = 10;
-  public static final String DEFAULT_REDIS_REGION_NAME = "GEODE_FOR_REDIS";
 
   private static final Logger logger = LogService.getLogger();
 
