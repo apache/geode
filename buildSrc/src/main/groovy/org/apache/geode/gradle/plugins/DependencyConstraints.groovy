@@ -120,7 +120,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.4.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.67.Final')
+        api(group: 'io.netty', name: 'netty-all', version: '4.1.69.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
