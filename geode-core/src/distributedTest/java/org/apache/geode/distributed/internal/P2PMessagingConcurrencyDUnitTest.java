@@ -71,10 +71,6 @@ public class P2PMessagingConcurrencyDUnitTest {
   // random seed
   private static final int RANDOM_SEED = 1234;
 
-  /*
-   * At the time this comment was written, ClusterStartupRule was ignoring the vmCount.
-   * Nevertheless since we need only 3, we're specifying it.
-   */
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
