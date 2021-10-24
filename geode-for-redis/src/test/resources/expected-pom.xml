@@ -83,7 +83,12 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
+      <artifactId>netty-codec-redis</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-handler</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
