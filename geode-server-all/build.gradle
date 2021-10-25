@@ -44,11 +44,10 @@ dependencies {
   api(project(':geode-unsafe'))
   api(project(':geode-wan'))
 
+
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')
 }
-
-// Move the geode-dependencies jar build to here too, and this becomes a java-library, not a java-platform
 
 // Override some things from java.gradle
 jar {
@@ -57,9 +56,10 @@ jar {
   }
 }
 
-
-integrationTest {
-  systemProperty 'test.buildVersion', version
-  systemProperty 'test.buildDirectory', buildDir
-  dependsOn(tasks.named('jar'))
+['integrationTest', 'repeatIntegrationTest'].each {
+  tasks.named(it).configure {
+    systemProperty 'test.buildVersion', version
+    systemProperty 'test.buildDirectory', buildDir
+    dependsOn(tasks.named('jar'))
+  }
 }
