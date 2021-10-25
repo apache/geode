@@ -12,15 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-
 public class RedisPropertiesTest {
+  private final String geodePrefix = "geode.";
+  private final String gemfirePrefix = "gemfire.";
+  private final String propName = "prop-name";
+  private final String defaultValue = "default";
+
   @Test
   public void getIntegerSystemProperty_shouldReturnSpecifiedDefault_whenNeitherPrefixIsSet() {
     assertThat(getIntegerSystemProperty("prop.name", 5, 0)).isEqualTo(5);
@@ -82,5 +88,62 @@ public class RedisPropertiesTest {
   public void getIntegerSystemProperty_shouldUseSetValue_whenSetToMinimumValue() {
     System.setProperty("geode.prop.name7", "42");
     assertThat(getIntegerSystemProperty("prop.name7", 5, 42)).isEqualTo(42);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnSpecifiedDefault_whenNeitherAreSet() {
+    clearSystemProperties(propName);
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnSpecifiedDefault_whenSetToEmptyString_whenFalse() {
+    System.setProperty(geodePrefix + propName, "");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
+    clearSystemProperties(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldReturnString_whenSet() {
+    System.setProperty(geodePrefix + propName, "not default");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("not default");
+    clearSystemProperties(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldDefaultToGeodePrefix_whenBothAreSet() {
+    System.setProperty(geodePrefix + propName, "String1");
+    System.setProperty(gemfirePrefix + propName, "String2");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
+    clearSystemProperties(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldUseGemfirePrefix_whenGeodeNotSet() {
+    System.setProperty(gemfirePrefix + propName, "String1");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
+    clearSystemProperties(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldUseDefault_whenBothSetToEmptyString() {
+    System.setProperty(geodePrefix + propName, "");
+    System.setProperty(gemfirePrefix + propName, "");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
+    clearSystemProperties(propName);
+  }
+
+  @Test
+  public void getStringSystemProperty_shouldUseGemfirePrefix_whenGeodeSetToEmptyString() {
+    System.setProperty(geodePrefix + propName, "");
+    System.setProperty(gemfirePrefix + propName, "String1");
+    assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
+    clearSystemProperties(propName);
+  }
+
+  /************* Helper Methods *************/
+  private void clearSystemProperties(String property) {
+    System.clearProperty(geodePrefix + property);
+    System.clearProperty(gemfirePrefix + property);
   }
 }

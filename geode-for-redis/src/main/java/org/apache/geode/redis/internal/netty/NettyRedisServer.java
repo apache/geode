@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.netty;
 
 
-
 import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 

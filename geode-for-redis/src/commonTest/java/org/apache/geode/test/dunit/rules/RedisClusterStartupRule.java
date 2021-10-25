@@ -177,7 +177,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return getMember(1).invoke("moveBucketForKey: " + key + " -> " + targetServerName,
         () -> {
           Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-              .getRegion(RegionProvider.REDIS_DATA_REGION);
+              .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
           RedisKey redisKey = new RedisKey(key.getBytes());
           DistributedMember primaryMember =
@@ -222,7 +222,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   public String getKeyOnServer(String keyPrefix, int vmId) {
     return getMember(1).invoke("getKeyOnServer", () -> {
       Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-          .getRegion(RegionProvider.REDIS_DATA_REGION);
+          .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
       String server = "server-" + vmId;
       String key;

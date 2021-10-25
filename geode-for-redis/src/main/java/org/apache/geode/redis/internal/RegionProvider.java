@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_DATA;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
@@ -55,7 +57,7 @@ public class RegionProvider {
   /**
    * The name of the region that holds data stored in redis.
    */
-  public static final String REDIS_DATA_REGION = "REDIS_DATA";
+  public static final String DEFAULT_REDIS_REGION_NAME = "GEODE_FOR_REDIS";
   public static final String REDIS_REGION_BUCKETS_PARAM = "redis.region.buckets";
 
   // Ideally the bucket count should be a power of 2, but technically it is not required.
@@ -72,6 +74,7 @@ public class RegionProvider {
   private final StripedCoordinator stripedCoordinator;
   private final RedisStats redisStats;
   private final CacheTransactionManager txManager;
+  private final String redisRegionName;
 
   public RegionProvider(InternalCache cache, StripedCoordinator stripedCoordinator,
       RedisStats redisStats) {
@@ -89,7 +92,11 @@ public class RegionProvider {
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
 
-    dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
+    redisRegionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
+
+    dataRegion = redisDataRegionFactory.create(redisRegionName);
+
     partitionedRegion = (PartitionedRegion) dataRegion;
 
     txManager = cache.getCacheTransactionManager();
@@ -111,6 +118,10 @@ public class RegionProvider {
 
   public RedisStats getRedisStats() {
     return redisStats;
+  }
+
+  public String getRedisRegionName() {
+    return redisRegionName;
   }
 
   public <T> T lockedExecute(RedisKey key, Callable<T> callable) {

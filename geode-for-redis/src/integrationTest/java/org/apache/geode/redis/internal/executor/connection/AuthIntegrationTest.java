@@ -19,12 +19,15 @@ package org.apache.geode.redis.internal.executor.connection;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.CacheFactory;
@@ -42,6 +45,9 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
   private GeodeRedisServer server;
   private GemFireCache cache;
   private int port;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @After
   public void tearDown() {
@@ -64,6 +70,11 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     return "dataWrite";
   }
 
+  @Override
+  protected void setupCacheWithSecurityAndRegionName(String regionName) throws Exception {
+    setupCacheWithRegionName(getUsername(), regionName, true);
+  }
+
   public void setupCacheWithSecurity() throws Exception {
     setupCache(getUsername(), true);
   }
@@ -78,25 +89,27 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
      * setting this value.
      */
     System.setProperty("io.netty.eventLoopThreads", "1");
-    try {
-      port = AvailablePortHelper.getRandomAvailableTCPPort();
-      CacheFactory cf = new CacheFactory();
-      cf.set(LOG_LEVEL, "error");
-      cf.set(MCAST_PORT, "0");
-      cf.set(LOCATORS, "");
-      if (username != null) {
-        cf.set(ConfigurationProperties.REDIS_USERNAME, username);
-      }
-      if (withSecurityManager) {
-        cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-      }
-      cache = cf.create();
-      server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
-      server.getRegionProvider().getSlotAdvisor().getBucketSlots();
-      this.jedis = new Jedis("localhost", port, 100000);
-    } finally {
-      System.clearProperty("io.netty.eventLoopThreads");
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    CacheFactory cf = new CacheFactory();
+    cf.set(LOG_LEVEL, "error");
+    cf.set(MCAST_PORT, "0");
+    cf.set(LOCATORS, "");
+    if (username != null) {
+      cf.set(ConfigurationProperties.REDIS_USERNAME, username);
     }
+    if (withSecurityManager) {
+      cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    }
+    cache = cf.create();
+    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
+    server.getRegionProvider().getSlotAdvisor().getBucketSlots();
+    this.jedis = new Jedis("localhost", port, 100000);
+  }
+
+  private void setupCacheWithRegionName(String username, String regionName,
+      boolean withSecurityManager) throws Exception {
+    System.setProperty(REDIS_REGION_NAME_PROPERTY, regionName);
+    setupCache(username, withSecurityManager);
   }
 
   @Test

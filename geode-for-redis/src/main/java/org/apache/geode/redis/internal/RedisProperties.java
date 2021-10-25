@@ -15,13 +15,27 @@
 
 package org.apache.geode.redis.internal;
 
+import org.apache.commons.lang3.StringUtils;
 
 public class RedisProperties {
   /** System Property Names **/
+  public static final String REDIS_REGION_NAME_PROPERTY = "geode-for-redis-region-name";
   public static final String WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
   public static final String EXPIRATION_INTERVAL_SECONDS =
       "geode-for-redis-expiration-interval-seconds";
 
+  public static String getStringSystemProperty(String propName, String defaultValue) {
+    String geodeValue = System.getProperty("geode." + propName, defaultValue);
+    String gemfireValue = System.getProperty("gemfire." + propName, defaultValue);
+
+    if (StringUtils.isNotEmpty(geodeValue) && !geodeValue.equals(defaultValue)) {
+      return geodeValue;
+    } else if (StringUtils.isNotEmpty(gemfireValue) && !gemfireValue.equals(defaultValue)) {
+      return gemfireValue;
+    } else {
+      return defaultValue;
+    }
+  }
 
   /** assumes that default is greater than or equal to minValue **/
   public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue) {

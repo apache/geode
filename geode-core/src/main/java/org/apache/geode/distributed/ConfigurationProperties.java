@@ -1929,10 +1929,6 @@ public interface ConfigurationProperties {
    * all local addresses.
    * </p>
    * <U>Default</U>: ""
-   *
-   * <p>
-   * Experimental: Geode API compatible with Redis is subject to change in future releases
-   * <p/>
    */
 
   String REDIS_BIND_ADDRESS = "geode-for-redis-bind-address";
@@ -1948,10 +1944,6 @@ public interface ConfigurationProperties {
    * When the default value of false, Geode for Redis is not available.
    * Set to true to enable Geode for Redis.
    * </p>
-   *
-   * <p>
-   * Experimental: Geode API compatible with Redis is subject to change in future releases
-   * <p/>
    */
   String REDIS_ENABLED = "geode-for-redis-enabled";
   /**
@@ -1962,10 +1954,6 @@ public interface ConfigurationProperties {
    * to authenticate using only a password. This requires a SecurityManager to be configured.
    * </p>
    * <U>Default</U>: default
-   *
-   * <p>
-   * Experimental: Geode API compatible with Redis is subject to change in future releases
-   * <p/>
    */
   String REDIS_USERNAME = "geode-for-redis-username";
   /**
@@ -1978,10 +1966,6 @@ public interface ConfigurationProperties {
    * <U>Default</U>: 6379
    * </p>
    * <U>Allowed values</U>: 0..65535
-   *
-   * <p>
-   * Experimental: Geode API compatible with Redis is subject to change in future releases
-   * <p/>
    */
   String REDIS_PORT = "geode-for-redis-port";
   /**
