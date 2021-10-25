@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -114,6 +116,60 @@ public class AuthExpirationTransactionDUnitTest {
 
     Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
     assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3");
+  }
+
+  @Test
+  public void transactionSucceedsWhenAuthenticationExpiresWithPartitionRegion() throws Exception {
+    VMProvider.invokeInEveryMember(() -> ClusterStartupRule.getCache()
+        .createRegionFactory(RegionShortcut.PARTITION).create("partitionRegion"), server0, server1,
+        server2);
+
+    ClientCache clientCache = clientCacheRule.createCache();
+    UpdatableUserAuthInitialize.setUser("transaction0");
+
+    Region<Object, Object> partitionRegion =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("partitionRegion");
+    CacheTransactionManager txManager = clientCache.getCacheTransactionManager();
+
+    txManager.begin();
+    List<Integer> partitionKeys1 = IntStream.range(0, 10)
+        .filter(num -> tryPartitionPut(partitionRegion, num))
+        .boxed().collect(Collectors.toList());
+
+    UpdatableUserAuthInitialize.setUser("transaction1");
+    VMProvider.invokeInEveryMember(() -> getSecurityManager().addExpiredUser("transaction0"),
+        locator, server0, server1, server2);
+
+    List<Integer> partitionKeys2 = IntStream.range(10, 20)
+        .filter(num -> tryPartitionPut(partitionRegion, num))
+        .boxed().collect(Collectors.toList());
+    txManager.commit();
+
+    partitionKeys1.addAll(partitionKeys2);
+    VMProvider.invokeInEveryMember(
+        () -> checkPartitionServerState("/partitionRegion", partitionKeys1),
+        server0, server1, server2);
+
+    ExpirableSecurityManager consolidated = collectSecurityManagers(server0, server1, server2);
+    assertThat(consolidated.getExpiredUsers()).containsExactly("transaction0");
+
+    Map<String, List<String>> authorizedOps = consolidated.getAuthorizedOps();
+    assertThat(authorizedOps.get("transaction0")).containsExactly("DATA:WRITE:partitionRegion:0",
+        "DATA:WRITE:partitionRegion:1", "DATA:WRITE:partitionRegion:2",
+        "DATA:WRITE:partitionRegion:3", "DATA:WRITE:partitionRegion:4",
+        "DATA:WRITE:partitionRegion:5", "DATA:WRITE:partitionRegion:6",
+        "DATA:WRITE:partitionRegion:7", "DATA:WRITE:partitionRegion:8",
+        "DATA:WRITE:partitionRegion:9");
+    assertThat(authorizedOps.get("transaction1")).containsExactly("DATA:WRITE:partitionRegion:10",
+        "DATA:WRITE:partitionRegion:11", "DATA:WRITE:partitionRegion:12",
+        "DATA:WRITE:partitionRegion:13", "DATA:WRITE:partitionRegion:14",
+        "DATA:WRITE:partitionRegion:15", "DATA:WRITE:partitionRegion:16",
+        "DATA:WRITE:partitionRegion:17", "DATA:WRITE:partitionRegion:18",
+        "DATA:WRITE:partitionRegion:19");
+
+    Map<String, List<String>> unAuthorizedOps = consolidated.getUnAuthorizedOps();
+    assertThat(unAuthorizedOps.get("transaction0"))
+        .containsExactly("DATA:WRITE:partitionRegion:10");
   }
 
   @Test
@@ -264,11 +320,28 @@ public class AuthExpirationTransactionDUnitTest {
     assertThat(unAuthorizedOps.get("transaction0")).containsExactly("DATA:WRITE:region:3");
   }
 
+  private static boolean tryPartitionPut(Region<Object, Object> region, int num) {
+    try {
+      region.put(num, "value" + num);
+    } catch (TransactionDataNotColocatedException transactionDataNotColocatedException) {
+      return false;
+    }
+    return true;
+  }
+
   private static void checkServerState(String regionPath, int numTransactions) {
     InternalCache cache = ClusterStartupRule.getCache();
     Region<Object, Object> region = cache.getRegion(regionPath);
     assertThat(region.keySet()).hasSize(numTransactions);
     IntStream.range(0, numTransactions).forEach(
+        transaction -> assertThat(region.get(transaction)).isEqualTo("value" + transaction));
+  }
+
+  private static void checkPartitionServerState(String regionPath, List<Integer> keys) {
+    InternalCache cache = ClusterStartupRule.getCache();
+    Region<Object, Object> region = cache.getRegion(regionPath);
+    assertThat(region.keySet()).hasSize(keys.size());
+    keys.forEach(
         transaction -> assertThat(region.get(transaction)).isEqualTo("value" + transaction));
   }
 }
