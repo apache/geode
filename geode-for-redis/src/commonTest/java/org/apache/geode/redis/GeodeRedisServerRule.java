@@ -16,10 +16,10 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_USERNAME;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -73,7 +73,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   }
 
   public GeodeRedisServerRule withUsername(String username) {
-    cacheFactory.set(REDIS_USERNAME, username);
+    cacheFactory.set(GEODE_FOR_REDIS_USERNAME, username);
 
     return this;
   }

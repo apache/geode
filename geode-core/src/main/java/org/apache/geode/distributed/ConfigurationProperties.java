@@ -1931,7 +1931,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: ""
    */
 
-  String REDIS_BIND_ADDRESS = "geode-for-redis-bind-address";
+  String GEODE_FOR_REDIS_BIND_ADDRESS = "geode-for-redis-bind-address";
   /**
    * The static String definition of the <i>"geode-for-redis-enabled"</i> property <a
    * name="geode-for-redis-enabled"/a>
@@ -1945,7 +1945,7 @@ public interface ConfigurationProperties {
    * Set to true to enable Geode for Redis.
    * </p>
    */
-  String REDIS_ENABLED = "geode-for-redis-enabled";
+  String GEODE_FOR_REDIS_ENABLED = "geode-for-redis-enabled";
   /**
    * The static String definition of the <i>"geode-for-redis-username"</i> property <a
    * name="geode-for-redis-username"/a>
@@ -1955,7 +1955,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Default</U>: default
    */
-  String REDIS_USERNAME = "geode-for-redis-username";
+  String GEODE_FOR_REDIS_USERNAME = "geode-for-redis-username";
   /**
    * The static String definition of the <i>"geode-for-redis-port"</i> property <a
    * name="geode-for-redis-port"/a>
@@ -1967,7 +1967,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Allowed values</U>: 0..65535
    */
-  String REDIS_PORT = "geode-for-redis-port";
+  String GEODE_FOR_REDIS_PORT = "geode-for-redis-port";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>

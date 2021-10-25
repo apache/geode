@@ -95,7 +95,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     if (username != null) {
-      cf.set(ConfigurationProperties.REDIS_USERNAME, username);
+      cf.set(ConfigurationProperties.GEODE_FOR_REDIS_USERNAME, username);
     }
     if (withSecurityManager) {
       cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
