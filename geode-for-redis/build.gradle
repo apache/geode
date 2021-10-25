@@ -80,6 +80,7 @@ dependencies {
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
+  acceptanceTestRuntimeOnly('io.netty:netty-codec-redis')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
     exclude module: 'spring-boot-starter-logging'
