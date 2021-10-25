@@ -705,7 +705,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         senderIdInA, senderIdInB);
 
     int wanCopyRegionBatchSize = 20;
-    int entries = 10000;
+    int entries = 1000;
     Set<Long> keySet = LongStream.range(0L, entries).boxed().collect(Collectors.toSet());
     String regionName = getRegionName(isPartitionedRegion);
     // Put entries
