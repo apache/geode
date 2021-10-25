@@ -165,9 +165,11 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(pa.getColocatedWith()).thenReturn(null);
     when(userPR.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(userPR.getFullPath()).thenReturn(regionPath);
-    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE")).thenReturn(prQ);
+    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true)).thenReturn(prQ);
     when(cache.getRegion(regionPath, true)).thenReturn(userPR);
     when(prQ.getColocatedWithRegion()).thenReturn(userPR);
+    when(prQ.isDestroyed()).thenReturn(false);
+
     RegionAdvisor ra = mock(RegionAdvisor.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     when(userPR.getRegionAdvisor()).thenReturn(ra);

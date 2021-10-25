@@ -1435,6 +1435,21 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
+
+  public static void waitForSenderNonRunningState(String senderId) {
+    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    try {
+      Set<GatewaySender> senders = cache.getGatewaySenders();
+      final GatewaySender sender = getGatewaySenderById(senders, senderId);
+      await()
+          .untilAsserted(
+              () -> assertEquals("Expected sender isRunning state to " + "be false but is true",
+                  true, (sender != null && !sender.isRunning())));
+    } finally {
+      exln.remove();
+    }
+  }
+
   public static void waitForSenderToBecomePrimary(String senderId) {
     Set<GatewaySender> senders = ((GemFireCacheImpl) cache).getAllGatewaySenders();
     final GatewaySender sender = getGatewaySenderById(senders, senderId);
