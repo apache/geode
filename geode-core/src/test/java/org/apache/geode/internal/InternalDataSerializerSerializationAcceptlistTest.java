@@ -29,9 +29,8 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,24 +47,23 @@ public class InternalDataSerializerSerializationAcceptlistTest {
   private Object testSerializable;
   private Properties properties;
 
-  @BeforeClass
-  public static void hasObjectInputFilter() {
-    assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
-        isClassAvailable("sun.misc.ObjectInputFilter") ||
-            isClassAvailable("java.io.ObjectInputFilter"));
-  }
-
   @Before
   public void setUp() {
+    assumeTrue("ObjectInputFilter is present in this JVM (post- 8.111)",
+        hasObjectInputFilter());
     outputStream = new HeapDataOutputStream(Version.CURRENT);
     testSerializable = new TestSerializable();
     properties = new Properties();
   }
 
-  @AfterClass
-  public static void clearDataSerializerFilter() {
-    InternalDataSerializer
-        .initializeSerializationFilter(new DistributionConfigImpl(new Properties()), emptySet());
+  private boolean hasObjectInputFilter() {
+    return isClassAvailable("sun.misc.ObjectInputFilter")
+        || isClassAvailable("java.io.ObjectInputFilter");
+  }
+
+  @After
+  public void clearSerializationFilter() {
+    InternalDataSerializer.clearSerializationFilter();
   }
 
   @Test
