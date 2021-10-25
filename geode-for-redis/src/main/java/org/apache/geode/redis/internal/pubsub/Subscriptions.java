@@ -28,6 +28,7 @@ import java.util.Objects;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * Class that manages both channel and pattern subscriptions.
@@ -47,8 +48,13 @@ public class Subscriptions {
   private static final Collection<Collection<?>> EMPTY_PUNSUBSCRIBE_RESULT =
       singletonList(createUnsubscribeItem(false, null, 0));
 
-  private final ChannelSubscriptionManager channelSubscriptions = new ChannelSubscriptionManager();
-  private final PatternSubscriptionManager patternSubscriptions = new PatternSubscriptionManager();
+  private final ChannelSubscriptionManager channelSubscriptions;
+  private final PatternSubscriptionManager patternSubscriptions;
+
+  public Subscriptions(RedisStats redisStats) {
+    channelSubscriptions = new ChannelSubscriptionManager(redisStats);
+    patternSubscriptions = new PatternSubscriptionManager(redisStats);
+  }
 
   public int getChannelSubscriptionCount(byte[] channel) {
     return channelSubscriptions.getSubscriptionCount(channel);
@@ -107,10 +113,7 @@ public class Subscriptions {
       if (subscriptions.size() != that.subscriptions.size()) {
         return false;
       }
-      if (!subscriptions.containsAll(that.subscriptions)) {
-        return false;
-      }
-      return true;
+      return subscriptions.containsAll(that.subscriptions);
     }
 
     @Override

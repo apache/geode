@@ -20,6 +20,8 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -32,8 +34,8 @@ import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions
 public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
-  protected AbstractSubscriptionManager createManager() {
-    return new PatternSubscriptionManager();
+  protected PatternSubscriptionManager createManager() {
+    return new PatternSubscriptionManager(redisStats);
   }
 
   @Test
@@ -54,11 +56,13 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     assertThat(manager.getSubscriptionCount(channel)).isEqualTo(2);
     assertThat(manager.getIds()).containsExactlyInAnyOrder(pattern1, pattern2);
     assertThat(manager.getIds(stringToBytes("cha*"))).containsExactlyInAnyOrder(pattern2);
+    verify(redisStats, times(2)).changeSubscribers(1L);
+    verify(redisStats, times(2)).changeUniquePatternSubscriptions(1L);
   }
 
   @Test
   public void emptyManagerReturnsEmptyPatternSubscriptions() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] channel = stringToBytes("channel");
 
     List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
@@ -70,7 +74,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
   @Test
   public void emptyManagerDoesNotCachePatternSubscriptions() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] channel = stringToBytes("channel");
 
     List<PatternSubscriptions> subscriptions = manager.getPatternSubscriptions(channel);
@@ -81,7 +85,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
   @Test
   public void managerWithOneSubscriptionReturnsIt() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] pattern = stringToBytes("ch*");
     byte[] channel = stringToBytes("channel");
     byte[] otherChannel = stringToBytes("otherChannel");
@@ -98,11 +102,13 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
     assertThat(subscriptions).containsExactly(expected);
     assertThat(manager.getPatternSubscriptions(otherChannel)).isEmpty();
     assertThat(manager.cacheSize()).isOne();
+    verify(redisStats, times(1)).changeSubscribers(1L);
+    verify(redisStats, times(1)).changeUniquePatternSubscriptions(1L);
   }
 
   @Test
   public void managerWithOneSubscriptionThatDoesNotMatchChannelDoesNotCache() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] pattern = stringToBytes("ch*");
     byte[] otherChannel = stringToBytes("otherChannel");
     Client client = mock(Client.class);
@@ -115,7 +121,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
   @Test
   public void clientsSubscribedToSamePattern() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] pattern = stringToBytes("ch*");
     byte[] channel = stringToBytes("channel");
     Client client = mock(Client.class);
@@ -132,11 +138,13 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
     assertThat(cachedSubscriptions).isSameAs(subscriptions);
     assertThat(subscriptions).containsExactly(expected);
+    verify(redisStats, times(2)).changeSubscribers(1L);
+    verify(redisStats, times(1)).changeUniquePatternSubscriptions(1L);
   }
 
   @Test
   public void clientSubscribedToTwoPatterns() {
-    PatternSubscriptionManager manager = new PatternSubscriptionManager();
+    PatternSubscriptionManager manager = createManager();
     byte[] pattern = stringToBytes("ch*");
     byte[] pattern2 = stringToBytes("*l");
     byte[] channel = stringToBytes("channel");
@@ -155,5 +163,7 @@ public class PatternSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
     assertThat(cachedSubscriptions).isSameAs(subscriptions);
     assertThat(subscriptions).containsExactlyInAnyOrder(expected, expected2);
+    verify(redisStats, times(2)).changeSubscribers(1L);
+    verify(redisStats, times(2)).changeUniquePatternSubscriptions(1L);
   }
 }

@@ -64,11 +64,11 @@ class ClientSubscriptionManagerImpl
 
   @Override
   public boolean remove(Client client) {
-    boolean result = true;
     if (subscriptionMap.remove(client) != null) {
-      result = size.decrementAndGet() > 0;
+      size.decrementAndGet();
+      return true;
     }
-    return result;
+    return false;
   }
 
   @Override

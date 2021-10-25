@@ -24,8 +24,11 @@ import io.netty.channel.ChannelFuture;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public abstract class SubscriptionManagerTestBase {
+
+  protected RedisStats redisStats = mock(RedisStats.class);
 
   @Test
   public void defaultManagerIsEmpty() {

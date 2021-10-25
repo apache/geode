@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions
@@ -33,8 +34,8 @@ public class PubSubImpl implements PubSub {
   private final Subscriptions subscriptions;
   private final Publisher publisher;
 
-  public PubSubImpl(Subscriptions subscriptions, RegionProvider regionProvider) {
-    this(subscriptions, new Publisher(regionProvider, subscriptions));
+  public PubSubImpl(Subscriptions subscriptions, RegionProvider regionProvider, RedisStats stats) {
+    this(subscriptions, new Publisher(regionProvider, subscriptions, stats));
   }
 
   @VisibleForTesting

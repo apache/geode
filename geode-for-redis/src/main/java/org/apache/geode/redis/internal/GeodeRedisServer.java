@@ -82,7 +82,7 @@ public class GeodeRedisServer {
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
-    pubSub = new PubSubImpl(new Subscriptions(), regionProvider);
+    pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 

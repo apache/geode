@@ -30,12 +30,15 @@ import org.junit.Test;
 
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PublisherTest {
   private final RegionProvider regionProvider = mock(RegionProvider.class);
   private final Subscriptions subscriptions = mock(Subscriptions.class);
+  private final RedisStats stats = mock(RedisStats.class);
   private final ExecutorService executorService = createExecutorService();
-  private final Publisher publisher = new Publisher(regionProvider, subscriptions, executorService);
+  private final Publisher publisher =
+      new Publisher(regionProvider, subscriptions, executorService, stats);
 
   private ExecutorService createExecutorService() {
     // This service will do synchronous execution

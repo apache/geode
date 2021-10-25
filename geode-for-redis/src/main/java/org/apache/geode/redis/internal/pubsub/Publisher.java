@@ -60,6 +60,7 @@ import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.CoderException;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**
  * This class deals with doing a redis pubsub publish operation.
@@ -84,27 +85,32 @@ public class Publisher {
   private final ExecutorService executor;
   private final RegionProvider regionProvider;
   private final Subscriptions subscriptions;
+  private final RedisStats redisStats;
   private final Map<Client, ClientPublisher> clientPublishers = new ConcurrentHashMap<>();
 
-  public Publisher(RegionProvider regionProvider, Subscriptions subscriptions) {
+  public Publisher(RegionProvider regionProvider, Subscriptions subscriptions, RedisStats stats) {
     this.executor = createExecutorService();
     this.regionProvider = regionProvider;
     this.subscriptions = subscriptions;
+    this.redisStats = stats;
     registerPublishFunction();
   }
 
   @VisibleForTesting
-  Publisher(RegionProvider regionProvider, Subscriptions subscriptions, ExecutorService executor) {
+  Publisher(RegionProvider regionProvider, Subscriptions subscriptions, ExecutorService executor,
+      RedisStats stats) {
     this.executor = executor;
     this.regionProvider = regionProvider;
     this.subscriptions = subscriptions;
+    this.redisStats = stats;
     // no need to register function in unit tests
   }
 
   public void publish(Client client, byte[] channel, byte[] message) {
+    long startTime = redisStats.startPublish();
     ClientPublisher clientPublisher =
         computeIfAbsent(clientPublishers, client, key -> new ClientPublisher());
-    clientPublisher.publish(channel, message);
+    clientPublisher.publish(channel, message, startTime);
   }
 
   public void disconnect(Client client) {
@@ -139,7 +145,8 @@ public class Publisher {
   @SuppressWarnings("unchecked")
   private void internalPublish(PublishRequestBatch batch) {
     Set<DistributedMember> remoteMembers = regionProvider.getRemoteRegionMembers();
-    List<PublishRequest> optimizedBatch = batch.optimize();
+    List<PublishRequest> optimizedBatch = batch.optimize(redisStats);
+    long start = redisStats.getCurrentTimeNanos();
     try {
       ResultCollector<?, ?> resultCollector = null;
       try {
@@ -166,6 +173,10 @@ public class Publisher {
             "Exception executing publish function on batch {}. If a server departed during the publish then an exception is expected.",
             batch, e);
       }
+    } finally {
+      long end = redisStats.getCurrentTimeNanos();
+      redisStats.endPublish(batch.getPublishRequestCount(),
+          (end - start) + batch.getTimeLocalRequestWasInQueue());
     }
   }
 
@@ -316,10 +327,12 @@ public class Publisher {
   public static class LocalPublishRequest {
     private final byte[] channel;
     private final byte[] message;
+    private final long startTime;
 
-    public LocalPublishRequest(byte[] channel, byte[] message) {
+    public LocalPublishRequest(byte[] channel, byte[] message, long startTime) {
       this.channel = channel;
       this.message = message;
+      this.startTime = startTime;
     }
 
     public byte[] getChannel() {
@@ -337,6 +350,10 @@ public class Publisher {
           ", message=" + bytesToString(message) +
           '}';
     }
+
+    public long getStartTime() {
+      return startTime;
+    }
   }
 
   /**
@@ -351,17 +368,28 @@ public class Publisher {
     private final List<LocalPublishRequest> batch = new ArrayList<>(MAX_BATCH_SIZE);
     private final List<PublishRequest> optimizedBatch = new ArrayList<>();
     private final PublishRequest firstPublishRequest = new PublishRequest(null);
+    private long timeLocalRequestWasInQueue = 0;
 
     public boolean fill(BlockingQueue<LocalPublishRequest> requests) {
       batch.clear();
       return requests.drainTo(batch, MAX_BATCH_SIZE) > 0;
     }
 
+    public long getPublishRequestCount() {
+      return batch.size();
+    }
+
+    public long getTimeLocalRequestWasInQueue() {
+      return timeLocalRequestWasInQueue;
+    }
+
     /**
      * consecutive LocalPublishRequests on same channel are conflated into a single PublishRequest
      */
-    public List<PublishRequest> optimize() {
+    public List<PublishRequest> optimize(RedisStats redisStats) {
       optimizedBatch.clear();
+      timeLocalRequestWasInQueue = 0;
+      long now = redisStats.getCurrentTimeNanos();
       PublishRequest currentPublishRequest = null;
       for (LocalPublishRequest localPublishRequest : batch) {
         if (currentPublishRequest == null ||
@@ -376,6 +404,7 @@ public class Publisher {
           optimizedBatch.add(currentPublishRequest);
         }
         currentPublishRequest.addMessage(localPublishRequest.getMessage());
+        timeLocalRequestWasInQueue += now - localPublishRequest.getStartTime();
       }
       return optimizedBatch;
     }
@@ -406,12 +435,12 @@ public class Publisher {
      */
     private volatile boolean active;
 
-    public void publish(byte[] channel, byte[] message) {
+    public void publish(byte[] channel, byte[] message, long startTime) {
       // Only one thread for a given Client will call this method
       // and this is the only place that adds to the queue.
       // But one of the executor threads can be concurrently
       // removing items from the queue.
-      requests.add(new LocalPublishRequest(channel, message));
+      requests.add(new LocalPublishRequest(channel, message, startTime));
       if (!active) {
         fillBatchIfNeeded();
       }

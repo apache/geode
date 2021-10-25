@@ -50,6 +50,12 @@ public class GeodeRedisStats {
   private static final int keyspaceHits;
   private static final int keyspaceMisses;
   private static final int totalNetworkBytesRead;
+  private static final int publishRequestsCompletedId;
+  private static final int publishRequestsInProgressId;
+  private static final int publishRequestTimeId;
+  private static final int subscribersId;
+  private static final int uniqueChannelSubscriptionsId;
+  private static final int uniquePatternSubscriptionsId;
   private final Statistics stats;
   private final StatisticsClock clock;
 
@@ -88,6 +94,12 @@ public class GeodeRedisStats {
     totalNetworkBytesRead = type.nameToId("totalNetworkBytesRead");
     keyspaceHits = type.nameToId("keyspaceHits");
     keyspaceMisses = type.nameToId("keyspaceMisses");
+    publishRequestsCompletedId = type.nameToId("publishRequestsCompleted");
+    publishRequestsInProgressId = type.nameToId("publishRequestsInProgress");
+    publishRequestTimeId = type.nameToId("publishRequestTime");
+    subscribersId = type.nameToId("subscribers");
+    uniqueChannelSubscriptionsId = type.nameToId("uniqueChannelSubscriptions");
+    uniquePatternSubscriptionsId = type.nameToId("uniquePatternSubscriptions");
   }
 
   private long getCurrentTimeNanos() {
@@ -145,6 +157,31 @@ public class GeodeRedisStats {
 
   public void incrementKeyspaceMisses() {
     stats.incLong(keyspaceMisses, 1);
+  }
+
+  public long startPublish() {
+    stats.incLong(publishRequestsInProgressId, 1);
+    return getCurrentTimeNanos();
+  }
+
+  public void endPublish(long publishCount, long time) {
+    stats.incLong(publishRequestsInProgressId, -publishCount);
+    stats.incLong(publishRequestsCompletedId, publishCount);
+    if (clock.isEnabled()) {
+      stats.incLong(publishRequestTimeId, time);
+    }
+  }
+
+  public void changeSubscribers(long delta) {
+    stats.incLong(subscribersId, delta);
+  }
+
+  public void changeUniqueChannelSubscriptions(long delta) {
+    stats.incLong(uniqueChannelSubscriptionsId, delta);
+  }
+
+  public void changeUniquePatternSubscriptions(long delta) {
+    stats.incLong(uniquePatternSubscriptionsId, delta);
   }
 
   public void close() {
@@ -239,6 +276,26 @@ public class GeodeRedisStats {
     descriptorList.add(statisticsTypeFactory.createLongCounter("expirationTime",
         "Total amount of time, in nanoseconds, spent expiring keys on this server.",
         "nanoseconds"));
+
+    descriptorList.add(statisticsTypeFactory.createLongCounter("publishRequestsCompleted",
+        "Total number of publish requests received by this server that have completed processing.",
+        "ops"));
+    descriptorList.add(statisticsTypeFactory.createLongGauge("publishRequestsInProgress",
+        "Current number of publish requests received by this server that are still being processed.",
+        "ops"));
+    descriptorList.add(statisticsTypeFactory.createLongCounter("publishRequestTime",
+        "Total amount of time, in nanoseconds, processing publish requests on this server. For each request this stat measures the time elapsed between when the request arrived on the server and when the request was delivered to all subscribers.",
+        "nanoseconds"));
+    descriptorList.add(statisticsTypeFactory.createLongGauge("subscribers",
+        "Current number of subscribers connected to this server.",
+        "subscribers"));
+    descriptorList.add(statisticsTypeFactory.createLongGauge("uniqueChannelSubscriptions",
+        "Current number of unique channel subscriptions on this server. Multiple subscribers can be on the same channel.",
+        "subscriptions"));
+    descriptorList.add(statisticsTypeFactory.createLongGauge("uniquePatternSubscriptions",
+        "Current number of unique pattern subscriptions on this server. Multiple subscribers can be on the same pattern.",
+        "subscriptions"));
+
   }
 
   private static void fillTimeIdMap() {

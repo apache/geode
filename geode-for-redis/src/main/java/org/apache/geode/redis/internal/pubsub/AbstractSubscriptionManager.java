@@ -27,10 +27,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 abstract class AbstractSubscriptionManager implements SubscriptionManager {
   protected final Map<SubscriptionId, ClientSubscriptionManager> clientManagers =
       new ConcurrentHashMap<>();
+  protected final RedisStats redisStats;
+
+  public AbstractSubscriptionManager(RedisStats redisStats) {
+    this.redisStats = redisStats;
+  }
 
   protected ClientSubscriptionManager getClientManager(byte[] channelOrPattern) {
     if (isEmpty()) {
@@ -103,11 +109,13 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
         if (existingManager == null) {
           // newManager was added to map so all done
           subscriptionAdded(subscriptionId);
+          redisStats.changeSubscribers(1);
           return subscription;
         }
       }
       if (existingManager.add(client, subscription)) {
         // subscription added to existingManager so all done
+        redisStats.changeSubscribers(1);
         return subscription;
       }
       // existingManager is empty so remove it
@@ -127,9 +135,13 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
     if (manager == null) {
       return;
     }
-    if (!manager.remove(client)) {
-      clientManagers.remove(subscriptionId, manager);
-      subscriptionRemoved(subscriptionId);
+    if (manager.remove(client)) {
+      redisStats.changeSubscribers(-1);
+      if (manager.getSubscriptionCount() == 0) {
+        if (clientManagers.remove(subscriptionId, manager)) {
+          subscriptionRemoved(subscriptionId);
+        }
+      }
     }
   }
 
@@ -148,7 +160,7 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
 
         @Override
         public boolean remove(Client client) {
-          return true;
+          return false;
         }
 
         @Override
@@ -172,12 +184,12 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
    * This method will be called when a subscription is added to this manager
    * and it was not in already in the manager.
    */
-  protected void subscriptionAdded(SubscriptionId id) {}
+  protected abstract void subscriptionAdded(SubscriptionId id);
 
   /**
    * This method will be called when a subscription is removed from this manager
    */
-  protected void subscriptionRemoved(SubscriptionId id) {}
+  protected abstract void subscriptionRemoved(SubscriptionId id);
 
   /**
    * Wraps a id (channel or pattern) so it can be used as a key on a hash map
