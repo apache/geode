@@ -64,10 +64,10 @@ include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
-include 'boms:geode-server-bom'
 include 'static-analysis:pmd-rules'
 include 'geode-deployment'
 include 'geode-deployment:geode-deployment-legacy'
+include 'geode-server-all'
 
 
 ['1.0.0-incubating',

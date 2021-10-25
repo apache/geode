@@ -999,6 +999,7 @@ lib/geode-memcached-0.0.0.jar
 lib/geode-old-client-support-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
 lib/geode-serialization-0.0.0.jar
+lib/geode-server-all-0.0.0.jar
 lib/geode-tcp-server-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar

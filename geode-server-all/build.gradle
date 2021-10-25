@@ -16,12 +16,14 @@
  */
 
 plugins {
-  id 'java-platform'
+  id 'java-library'
 }
 
-apply from: "${rootDir}/gradle/publish-common.gradle"
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/japicmp.gradle"
 
-javaPlatform.allowDependencies()
+
 dependencies {
   api(enforcedPlatform(project(':boms:geode-all-bom')))
   api(project(':geode-common'))
@@ -41,21 +43,23 @@ dependencies {
   api(project(':geode-tcp-server'))
   api(project(':geode-unsafe'))
   api(project(':geode-wan'))
+
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
 }
 
-publishing {
-  publications {
-    maven(MavenPublication) {
-      from components.javaPlatform
+// Move the geode-dependencies jar build to here too, and this becomes a java-library, not a java-platform
 
-      versionMapping {
-        usage('java-api') {
-          fromResolutionResult()
-        }
-        usage('java-runtime') {
-          fromResolutionResult()
-        }
-      }
-    }
+// Override some things from java.gradle
+jar {
+  manifest {
+    attributes.put("Class-Path", configurations.runtimeClasspath.files.collect {it.name}.join(' '))
   }
+}
+
+
+integrationTest {
+  systemProperty 'test.buildVersion', version
+  systemProperty 'test.buildDirectory', buildDir
+  dependsOn(tasks.named('jar'))
 }

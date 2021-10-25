@@ -48,8 +48,10 @@ configurations {
     setDescription("Composite builds wishing to consume this apache-geode@tgz artifact must specify \"targetConfiguration = 'compositeTarget'\" for correct composite task dependency detection.")
   }
 
-  geodeDependencies
+
+  geodeLibdirJars
   gfshDependencies
+  geodeLibdirJarsDeprecated
 
   // Configurations used to download and cache web application servers for session module testing
   webServerTomcat6
@@ -58,13 +60,13 @@ configurations {
   webServerTomcat9
   webServerJetty
 
-  geodeArchives {
+  geodeDependenciesJar {
     setDescription("An 'archives' configuration without the legacy publication implications")
   }
 
   javadocOnly {
     setDescription('Projects that must be included in the JavaDocs.')
-    extendsFrom geodeArchives
+    extendsFrom geodeDependenciesJar
   }
 }
 
@@ -126,23 +128,30 @@ task downloadWebServers(type:Copy) {
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  gfshDependencies(platform(project(':boms:geode-all-bom')))
+
+  geodeLibdirJars(project(':geode-server-all'))
+
 
   // The complete runtime deps as defined in the server bom
-  geodeDependencies(platform(project(':boms:geode-server-bom')))
+  geodeLibdirJarsDeprecated(platform(project(':boms:geode-all-bom')))
+  // Deprecated admin API
+  geodeLibdirJarsDeprecated(group: 'commons-modeler', name: 'commons-modeler') {
+    // geode-core, old admin api
+    transitive false
+  }
+  // Deprecated admin API
+  geodeLibdirJarsDeprecated(group: 'javax.mail', name: 'javax.mail-api')
+  // exclude mx4j, once the deprecated code is deleted we can remove these entirely
+  geodeLibdirJarsDeprecated('mx4j:mx4j')
+  geodeLibdirJarsDeprecated('mx4j:mx4j-remote')
+  geodeLibdirJarsDeprecated('mx4j:mx4j-tools')
 
-  // What we actually want on the runtime classpath, minus deprecated stuff
-  geodeArchives(platform(project(':boms:geode-server-bom'))) {
-    // Deprecated admin API
-    exclude group: 'commons-digester', module: 'commons-digester' // geode-core, brought by modeler and validator, and geode-membership via validator
-    exclude group: 'commons-modeler', module: 'commons-modeler' // geode-core, old admin api
-    exclude group: 'javax.mail', module: 'javax.mail-api'
+  // spring web should be only part of gfsh or pulse. It is in core due to incomplete refactoring
+  geodeLibdirJarsDeprecated(group: 'org.springframework', name: 'spring-web')
 
-    // exclude mx4j, once the deprecated code is deleted we can remove these entirely
-    exclude group: 'mx4j'
-
-    // spring web should be only part of gfsh or pulse. It is in core due to incomplete refactoring
-    exclude group: 'org.springframework', module: 'spring-web'
+  // Deprecated: Used to make geode-dependencies.jar point to geode-server-all.jar
+  geodeDependenciesJar(project(':geode-server-all')) {
+    transitive false
   }
 
   javadocOnly project(':extensions:geode-modules')
@@ -223,11 +232,7 @@ dependencies {
   distributedTestRuntimeOnly('io.swagger:swagger-annotations')
   distributedTestRuntimeOnly(project(':geode-wan'))
 
-  // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
-  // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
-  // dependencies should be a part of geodeArchives and should not need to be added as individual
-  // dependencies here.
-  acceptanceTestImplementation(configurations.geodeArchives)
+  acceptanceTestImplementation(project(':geode-server-all'))
   acceptanceTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
@@ -278,10 +283,7 @@ dependencies {
   webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
-  gfshDependencies ('org.springframework:spring-web') {
-    exclude module: 'spring-core'
-    exclude module: 'commons-logging'
-  }
+  gfshDependencies(project(':geode-gfsh'))
 }
 
 acceptanceTest {
@@ -321,13 +323,13 @@ def getDependencyProjectsFor(String configurationName) {
   List<Project> rval = configurations[configurationName].allDependencies.collect {
     it.dependencyProject
   }.collect {
+    def projs = [it]
     if ((it as Project).pluginManager.hasPlugin('java-library')) {
-      it
-    } else if ((it as Project).pluginManager.hasPlugin('java-platform')) {
       (it as Project).configurations.api.dependencies.collect {
-        it.dependencyProject
+        projs += it.dependencyProject
       }
     }
+    projs
   }.flatten()
   return rval
 }
@@ -336,21 +338,18 @@ def getDependencyProjectsFor(String configurationName) {
 // these dependency jars
 tasks.register('depsJar', Jar) {
   inputs.files {
-    configurations.geodeArchives
+    configurations.geodeDependenciesJar
   }
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveFileName='geode-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path": configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.flatten().unique().join(' '))
+      attributes("Class-Path": configurations.geodeDependenciesJar.files.collect {it.name}.flatten().unique().join(' '))
     }
   }
 }
 
 tasks.register('gfshDepsJar', Jar) {
-  inputs.files {
-    configurations.geodeArchives
-  }
   inputs.files {
     configurations.gfshDependencies
   }
@@ -358,9 +357,7 @@ tasks.register('gfshDepsJar', Jar) {
   archiveFileName='gfsh-dependencies.jar'
   doFirst {
     manifest {
-      attributes("Class-Path":
-      configurations.geodeArchives.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' ') +
-      configurations.gfshDependencies.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' '))
+      attributes("Class-Path": configurations.gfshDependencies.resolvedConfiguration.resolvedArtifacts.collect {it.file.name}.unique().join(' '))
     }
   }
 }
@@ -467,8 +464,8 @@ distributions {
 
       with copySpec {
         into('lib')
-        from {configurations.geodeDependencies}
-
+        from {configurations.geodeLibdirJars}
+        from {configurations.geodeLibdirJarsDeprecated}
         from {configurations.gfshDependencies}
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
@@ -591,5 +588,3 @@ acceptanceTest {
     dependsOn(tasks.docker)
   }
 }
-
-apply from: Paths.get("${rootDir}", 'gradle', 'japicmp.gradle')
