@@ -588,3 +588,8 @@ acceptanceTest {
     dependsOn(tasks.docker)
   }
 }
+
+dependencies {
+  runtimeOnly(project(':geode-server-all'))
+}
+apply from: "${rootDir}/gradle/japicmp.gradle"
