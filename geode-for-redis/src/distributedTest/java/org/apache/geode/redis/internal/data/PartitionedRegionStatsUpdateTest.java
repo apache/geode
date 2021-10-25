@@ -25,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -86,6 +85,9 @@ public class PartitionedRegionStatsUpdateTest {
     long finalDataStoreBytesInUse = clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
 
     assertThat(finalDataStoreBytesInUse).isGreaterThan(initialDataStoreBytesInUse);
+    long server2finalDataStoreBytesInUse =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+    assertThat(server2finalDataStoreBytesInUse).isEqualTo(finalDataStoreBytesInUse);
   }
 
   @Test
@@ -381,36 +383,34 @@ public class PartitionedRegionStatsUpdateTest {
   }
 
   @Test
-  @Ignore("find a way to force deserialization on both members before enabling")
-  public void should_showMembersAgreeUponUsedStringMemory_afterDeltaPropagation() {
-    String value = "value";
-
-    jedis.set(STRING_KEY, "12345"); // two sets are required to force
-    jedis.set(STRING_KEY, value); // deserialization on both servers
-    // otherwise primary/secondary can disagree on size, and which server is primary varies
-
-    long initialDataStoreBytesInUse =
+  public void bothPrimaryAndSecondaryChangeWhenRedisStringAddedAndRemoved() {
+    long server1SizeBeforeSet =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-
-    for (int i = 0; i < 10; i++) {
-      jedis.set(STRING_KEY, value);
-    }
-
-    assertThat(jedis.exists(STRING_KEY)).isTrue();
-    assertThat(jedis.exists(STRING_KEY)).isTrue();
-
-    assertThat(jedis.get(STRING_KEY)).isEqualTo(value);
-    assertThat(jedis.get(STRING_KEY)).isEqualTo(value);
-
-    long server1FinalDataStoreBytesInUse =
-        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
-    long server2FinalDataStoreBytesInUse =
+    long server2SizeBeforeSet =
         clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
 
-    assertThat(server1FinalDataStoreBytesInUse)
-        .isEqualTo(initialDataStoreBytesInUse);
+    jedis.set(STRING_KEY, "value");
 
-    assertThat(server2FinalDataStoreBytesInUse)
-        .isEqualTo(initialDataStoreBytesInUse);
+    long server1SizeAfterSet =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long server2SizeAfterSet =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    jedis.del(STRING_KEY);
+
+    long server1SizeAfterDel =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server1);
+    long server2SizeAfterDel =
+        clusterStartUpRule.getDataStoreBytesInUseForDataRegion(server2);
+
+    assertThat(server1SizeAfterSet)
+        .isGreaterThan(server1SizeBeforeSet);
+    assertThat(server2SizeAfterSet)
+        .isGreaterThan(server2SizeBeforeSet);
+
+    assertThat(server1SizeAfterDel)
+        .isEqualTo(server1SizeBeforeSet);
+    assertThat(server2SizeAfterDel)
+        .isEqualTo(server2SizeBeforeSet);
   }
 }
