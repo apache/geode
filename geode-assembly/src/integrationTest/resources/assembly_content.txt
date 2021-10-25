@@ -1047,7 +1047,6 @@ lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
 lib/netty-buffer-4.1.69.Final.jar
 lib/netty-codec-4.1.69.Final.jar
-lib/netty-codec-redis-4.1.69.Final.jar
 lib/netty-common-4.1.69.Final.jar
 lib/netty-handler-4.1.69.Final.jar
 lib/netty-resolver-4.1.69.Final.jar

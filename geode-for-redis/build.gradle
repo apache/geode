@@ -41,7 +41,6 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation('it.unimi.dsi:fastutil')
   implementation('com.github.davidmoten:geo')
-  implementation('io.netty:netty-codec-redis')
   implementation('io.netty:netty-handler')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('commons-codec:commons-codec')
@@ -55,6 +54,7 @@ dependencies {
   testImplementation('com.pholser:junit-quickcheck-generators')
   testImplementation('pl.pragmatists:JUnitParams')
 
+  commonTestImplementation('io.netty:netty-codec-redis')
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
   commonTestImplementation('org.testcontainers:testcontainers')

@@ -80,7 +80,6 @@ mx4j-remote
 mx4j-tools
 netty-buffer
 netty-codec
-netty-codec-redis
 netty-common
 netty-handler
 netty-resolver

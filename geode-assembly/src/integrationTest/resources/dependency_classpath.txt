@@ -87,7 +87,6 @@ lucene-queryparser-6.6.6.jar
 lucene-core-6.6.6.jar
 lucene-queries-6.6.6.jar
 geo-0.7.7.jar
-netty-codec-redis-4.1.69.Final.jar
 netty-handler-4.1.69.Final.jar
 netty-codec-4.1.69.Final.jar
 netty-transport-4.1.69.Final.jar
