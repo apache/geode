@@ -56,7 +56,10 @@ jar {
   }
 }
 
-['integrationTest', 'repeatIntegrationTest'].each {
+[
+  'integrationTest',
+  'repeatIntegrationTest'
+].each {
   tasks.named(it).configure {
     systemProperty 'test.buildVersion', version
     systemProperty 'test.buildDirectory', buildDir
