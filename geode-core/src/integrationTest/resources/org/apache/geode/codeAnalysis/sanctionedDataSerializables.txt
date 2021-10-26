@@ -1283,7 +1283,7 @@ fromData,68
 toData,64
 
 org/apache/geode/internal/cache/event/EventSequenceNumberHolder,2
-fromData,112
+fromData,118
 toData,58
 
 org/apache/geode/internal/cache/execute/FunctionRemoteContext,2

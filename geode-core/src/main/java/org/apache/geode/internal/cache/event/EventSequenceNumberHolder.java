@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
  * A sequence number tracker to keep events from clients from being re-applied to the cache if
- * they've already been seen.
+ * * they've already been seen.
  *
  * @since GemFire 5.5
  */
@@ -58,9 +58,9 @@ public class EventSequenceNumberHolder implements DataSerializable {
    */
   private VersionTag versionTag;
 
-  private Map<Object, Long> keySequenceIdMap = null;
-
   private int limit = 0;
+
+  private Map<Object, Long> keySequenceIdMap = null;
 
   // for debugging
   // transient Exception context;
@@ -68,10 +68,6 @@ public class EventSequenceNumberHolder implements DataSerializable {
   EventSequenceNumberHolder(long id, VersionTag versionTag) {
     this.lastSequenceNumber = id;
     this.versionTag = versionTag;
-  }
-
-  EventSequenceNumberHolder(long id, VersionTag versionTag, Object key) {
-    this(id, versionTag, key, 0);
   }
 
   EventSequenceNumberHolder(long id, VersionTag versionTag, Object key, int limit) {
@@ -134,10 +130,10 @@ public class EventSequenceNumberHolder implements DataSerializable {
         return;
 
       final int size = InternalDataSerializer.readArrayLength(in);
-      if (size == 0)
+      if (size < 0)
         return;
 
-      keySequenceIdMap = new LinkedHashMap<Object, Long>() {
+      keySequenceIdMap = new LinkedHashMap<Object, Long>(size) {
         protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
           return size() > limit;
         }
@@ -159,7 +155,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
     DataSerializer.writeObject(versionTag, out);
     if (getVersionForDataStream(out)
         .isNotOlderThan(GEODE_1_15_0)) {
-      out.write(limit);
+      out.writeInt(limit);
       if (limit == 0)
         return;
 

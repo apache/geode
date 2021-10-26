@@ -322,8 +322,6 @@ org/apache/geode/internal/cache/control/InternalResourceManager$ResourceType,fal
 org/apache/geode/internal/cache/control/MemoryThresholds$MemoryState,false
 org/apache/geode/internal/cache/control/PartitionRebalanceDetailsImpl,true,5880667005758250156,bucketCreateBytes:long,bucketCreateTime:long,bucketCreatesCompleted:int,bucketRemoveBytes:long,bucketRemoveTime:long,bucketRemovesCompleted:int,bucketTransferBytes:long,bucketTransferTime:long,bucketTransfersCompleted:int,numOfMembers:int,partitionMemberDetailsAfter:java/util/Set,partitionMemberDetailsBefore:java/util/Set,primaryTransferTime:long,primaryTransfersCompleted:int,time:long
 org/apache/geode/internal/cache/control/RebalanceResultsImpl,false,detailSet:java/util/Set,totalBucketCreateBytes:long,totalBucketCreateTime:long,totalBucketCreatesCompleted:int,totalBucketTransferBytes:long,totalBucketTransferTime:long,totalBucketTransfersCompleted:int,totalNumOfMembers:int,totalPrimaryTransferTime:long,totalPrimaryTransfersCompleted:int,totalTime:long
-org/apache/geode/internal/cache/control/SerializableRegionRedundancyStatusImpl,false
-org/apache/geode/internal/cache/control/SerializableRestoreRedundancyResultsImpl,true,-6385537590999520662
 org/apache/geode/internal/cache/execute/BucketMovedException,true,4893171227542647452
 org/apache/geode/internal/cache/execute/InternalFunctionException,true,3532698050312820319
 org/apache/geode/internal/cache/execute/InternalFunctionInvocationTargetException,true,-6063507496829271815,failedIds:java/util/Set
