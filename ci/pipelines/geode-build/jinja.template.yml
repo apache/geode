@@ -59,6 +59,9 @@
 
 {% macro common_instance_params(test) -%}
 GCP_PROJECT: ((gcp-project))
+GCP_NETWORK: ((gcp-network))
+GCP_SUBNETWORK: ((gcp-subnet))
+GCP_ZONE: ((gcp-zone))
 CPUS: {{ test.CPUS }}
 RAM: {{ test.RAM }}
 {%- endmacro %}
