@@ -299,7 +299,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void numpat_shouldReturnCountOfAllPatternSubscriptions_includingDuplicates() {
+  public void numpat_shouldReturnCountOfAllPatternSubscriptions_ignoringDuplicates() {
     Jedis subscriber2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
@@ -310,7 +310,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     Long result = introspector.pubsubNumPat();
 
-    assertThat(result).isEqualTo(2);
+    assertThat(result).isEqualTo(1);
 
     punsubscribeWithSuccess(mockSubscriber);
     punsubscribeWithSuccess(mockSubscriber2);
@@ -331,7 +331,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     Long result = introspector.pubsubNumPat();
 
-    assertThat(result).isEqualTo(3);
+    assertThat(result).isEqualTo(2);
 
     punsubscribeWithSuccess(mockSubscriber);
     punsubscribeWithSuccess(patternSubscriber);

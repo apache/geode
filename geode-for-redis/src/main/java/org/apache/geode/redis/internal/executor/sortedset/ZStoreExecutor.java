@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_REQUIRED;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT;
@@ -56,7 +55,7 @@ public abstract class ZStoreExecutor implements CommandExecutor {
       if (numKeys > commandElements.size() - 2) {
         return syntaxErrorResponse;
       } else if (numKeys <= 0) {
-        return RedisResponse.error(ERROR_KEY_REQUIRED);
+        return getKeyRequiredError();
       }
     } catch (NumberFormatException ex) {
       return RedisResponse.error(ERROR_NOT_INTEGER);
@@ -129,7 +128,8 @@ public abstract class ZStoreExecutor implements CommandExecutor {
     return keysToLock;
   }
 
+  protected abstract RedisResponse getKeyRequiredError();
 
-  public abstract long getResult(ExecutionHandlerContext context, Command command,
+  protected abstract long getResult(ExecutionHandlerContext context, Command command,
       List<ZKeyWeight> keyWeights, ZAggregator aggregator);
 }
