@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.data;
+package org.apache.geode.redis.internal;
 
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
