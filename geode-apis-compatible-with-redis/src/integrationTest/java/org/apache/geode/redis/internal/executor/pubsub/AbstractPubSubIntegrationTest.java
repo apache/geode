@@ -450,11 +450,8 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     Jedis publisher = getConnection();
 
     while (iterationCount < minimumIterations || running.get()) {
-      List<String> result = subscribeAndPublish(index, iterationCount, publisher);
+      subscribeAndPublish(index, iterationCount, publisher);
 
-      assertThat(result)
-          .as("Failed at iteration " + iterationCount)
-          .containsExactly("message", "pmessage");
 
       iterationCount++;
     }
@@ -462,7 +459,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     publisher.close();
   }
 
-  private List<String> subscribeAndPublish(int index, int iteration, Jedis localPublisher)
+  private void subscribeAndPublish(int index, int iteration, Jedis localPublisher)
       throws Exception {
     String channel = index + ".foo.bar";
     String pChannel = index + ".foo.*";
@@ -480,6 +477,12 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
       localPublisher.publish(channel, "hello-" + index + "-" + iteration);
 
+
+      GeodeAwaitility.await()
+          .pollDelay(0, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertThat(mockSubscriber.getReceivedEvents())
+              .as("Failed at iteration " + iteration)
+              .containsExactly("message", "pmessage"));
       mockSubscriber.unsubscribe(channel);
       mockSubscriber.awaitUnsubscribe(channel);
       mockSubscriber.punsubscribe(pChannel);
@@ -487,8 +490,6 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
       future.get();
     }
-
-    return mockSubscriber.getReceivedEvents();
   }
 
   @Test
