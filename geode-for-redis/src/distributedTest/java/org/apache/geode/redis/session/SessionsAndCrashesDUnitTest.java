@@ -16,7 +16,7 @@
 package org.apache.geode.redis.session;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ public class SessionsAndCrashesDUnitTest {
     int locatorPort = locator.getPort();
 
     return cluster.startRedisVM(vmId, x -> x
-        .withProperty(REDIS_PORT, redisPort.toString())
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort.toString())
         .withConnectionToLocator(locatorPort));
   }
 
