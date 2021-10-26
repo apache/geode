@@ -227,7 +227,7 @@ log4j-
 lucene-
 mapstruct
 micrometer-core
-netty-all
+netty-
 nimbus-jose-jwt
 oauth2-oidc-sdk
 rmiio
