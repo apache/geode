@@ -210,4 +210,21 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
     assertThat(jedis.clusterNodes()).isNotEmpty();
   }
+
+  @Test
+  public void givenSecurityWithWritePermission_setCommandSucceeds() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurityWithWritePermission_getCommandFails() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThatThrownBy(() -> jedis.get("foo"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+  }
 }
