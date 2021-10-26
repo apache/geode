@@ -311,7 +311,6 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
     cmds.add("-D" + GEMFIRE_PREFIX
         + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
-    // cmds.add("-Djavax.net.debug=all");
     cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
