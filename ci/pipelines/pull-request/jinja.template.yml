@@ -124,6 +124,9 @@ jobs:
               CPUS: {{build_test.CPUS}}
               RAM: {{build_test.RAM}}
               GCP_PROJECT: ((gcp-project))
+              GCP_NETWORK: ((gcp-network))
+              GCP_SUBNETWORK: ((gcp-subnet))
+              GCP_ZONE: ((gcp-zone))
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               JAVA_BUILD_VERSION: 8
@@ -285,6 +288,9 @@ jobs:
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               GCP_PROJECT: ((gcp-project))
+              GCP_NETWORK: ((gcp-network))
+              GCP_SUBNETWORK: ((gcp-subnet))
+              GCP_ZONE: ((gcp-zone))
               RAM: {{test.RAM}}
               JAVA_BUILD_VERSION: {{ java_build_version.version }}
               JAVA_TEST_VERSION: {{ java_test_version.version }}
