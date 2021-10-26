@@ -59,7 +59,7 @@ public class ExecutionHandlerContextTest {
     verify(securityService, times(1)).authorize(argumentCaptor.capture(), any());
     assertThat(argumentCaptor.getValue().getOperationString()).isEqualTo("READ");
     assertThat(argumentCaptor.getValue().getResourceString()).isEqualTo("DATA");
-    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.REDIS_DATA_REGION);
+    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class ExecutionHandlerContextTest {
     verify(securityService, times(1)).authorize(argumentCaptor.capture(), any());
     assertThat(argumentCaptor.getValue().getOperationString()).isEqualTo("WRITE");
     assertThat(argumentCaptor.getValue().getResourceString()).isEqualTo("DATA");
-    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.REDIS_DATA_REGION);
+    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
   }
 
   @Test
