@@ -364,6 +364,7 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+  integrationTestRuntimeOnly('commons-modeler:commons-modeler')
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {
