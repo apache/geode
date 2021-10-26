@@ -360,11 +360,19 @@ dependencies {
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
-
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+
+  // The block below is only for the deprecated admin mbeans API
   integrationTestRuntimeOnly('commons-modeler:commons-modeler')
+  integrationTestRuntimeOnly('org.springframework:spring-web')
+  integrationTestRuntimeOnly('javax.mail:javax.mail-api')
+  integrationTestRuntimeOnly('mx4j:mx4j')
+  integrationTestRuntimeOnly('mx4j:mx4j-remote')
+  integrationTestRuntimeOnly('mx4j:mx4j-tools')
+  // End deprecated requirements
+
 
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {
