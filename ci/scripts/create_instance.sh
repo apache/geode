@@ -48,6 +48,21 @@ if [[ -z "${IMAGE_FAMILY_NAME}" ]]; then
   exit 1
 fi
 
+if [[ -z "${GCP_NETWORK}" ]]; then
+  echo "GCP_NETWORK environment variable must be set for this script to work."
+  exit 1
+fi
+
+if [[ -z "${GCP_SUBNETWORK}" ]]; then
+  echo "GCP_SUBNETWORK environment variable must be set for this script to work."
+  exit 1
+fi
+
+if [[ -z "${GCP_ZONE}" ]]; then
+  echo "GCP_ZONE environment variable must be set for this script to work."
+  exit 1
+fi
+
 . ${SCRIPTDIR}/shared_utilities.sh
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
@@ -87,14 +102,8 @@ if [[ -z "${IMAGE_NAME}" ]]; then
   exit 1
 fi
 
-MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
-MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
+MY_ZONE=${GCP_ZONE}
 MY_ZONE=${MY_ZONE##*/}
-NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
-GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
-GCP_NETWORK=${GCP_NETWORK##*/}
-GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
-GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 
 # Determine and store our attempt number
 cp old/attempts new/
