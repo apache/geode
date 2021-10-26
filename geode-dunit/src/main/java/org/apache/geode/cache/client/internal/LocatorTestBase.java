@@ -215,6 +215,26 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     return server.getPort();
   }
 
+
+  protected int startPartitionedRegionServer(final String locators, final String region)
+      throws IOException {
+    CacheFactory cacheFactory = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, locators);
+
+    Cache cache = cacheFactory.create();
+    cache.createRegionFactory(RegionShortcut.PARTITION).setEnableSubscriptionConflation(true)
+        .create(region);
+
+    CacheServer server = cache.addCacheServer();
+    server.setPort(0);
+
+    server.start();
+
+    remoteObjects.put(CACHE_KEY, cache);
+
+    return server.getPort();
+  }
+
+
   protected int startBridgeServerWithEmbeddedLocator(final String[] groups, final String locators,
       final String[] regions, final ServerLoadProbe probe) throws IOException {
     Cache cache = new CacheFactory().set(MCAST_PORT, "0").set(LOCATORS, locators)

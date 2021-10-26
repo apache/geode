@@ -101,7 +101,8 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       try {
         socket.connect(inetSocketAddress, Math.max(timeout, 0));
       } catch (ConnectException connectException) {
-        logger.info("Failed to connect to " + inetSocketAddress);
+        logger.info("Failed to connect to " + inetSocketAddress,
+            new Exception("connection failure"));
         throw connectException;
       } finally {
         if (optionalWatcher != null) {

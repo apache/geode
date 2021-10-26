@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Assert;
@@ -43,9 +44,11 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -60,6 +63,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   private static final String VALUE = "value";
   private static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
   private static final long MAX_WAIT = 60000;
+  private Logger logger;
 
   @Override
   public final void postSetUp() {
@@ -189,24 +193,23 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     final String hostName = getServerHostName();
     VM locator0VM = VM.getVM(0);
     VM locator1VM = VM.getVM(1);
-    VM clientVM = VM.getVM(2);
+    VM locator2VM = VM.getVM(2);
     VM serverVM = VM.getVM(3);
+    VM serverVM2 = VM.getVM(4);
+    VM clientVM2 = VM.getVM(5);
+    logger = LogService.getLogger();
 
     final int locator0Port = locator0VM.invoke("Start Locator1 ", () -> startLocator(hostName, ""));
     final int locator1Port = locator1VM.invoke("Start Locator2 ",
         () -> startLocator(hostName, getLocatorString(hostName, locator0Port)));
     assertThat(locator0Port).isGreaterThan(0);
     assertThat(locator1Port).isGreaterThan(0);
+    logger.info("MLH starting client Locator 0 = " + locator0Port + " Locator 1 = " + locator1Port);
 
     startBridgeClient(null, hostName, locator0Port);
     InetSocketAddress locatorToWaitFor = new InetSocketAddress(hostName, locator1Port);
-    MyLocatorCallback callback = (MyLocatorCallback) remoteObjects.get(CALLBACK_KEY);
 
-    boolean discovered = callback.waitForDiscovery(locatorToWaitFor, MAX_WAIT);
-    Assert.assertTrue(
-        "Waited " + MAX_WAIT + " for " + locatorToWaitFor
-            + " to be discovered on client. List is now: " + callback.getDiscovered(),
-        discovered);
+    waitForLocatorDiscovery(VM.getVM(-1), locatorToWaitFor);
 
     InetSocketAddress[] initialLocators =
         new InetSocketAddress[] {new InetSocketAddress(hostName, locator0Port)};
@@ -221,20 +224,58 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
     verifyLocatorsMatched(expectedLocators, pool.getOnlineLocators());
 
-    // stop one of the locators and ensure that the client can find and use a server
-    locator0VM.invoke("Stop Locator", this::stopLocator);
+    logger.info("MLH Locators = " + pool.getLocators().size() + " online locators = "
+        + pool.getOnlineLocators().size());
 
-    await().until(() -> pool.getOnlineLocators().size() == 1);
 
+    await().until(() -> pool.getOnlineLocators().size() == 2);
+    logger.info("MLH Starting the server");
     int serverPort = serverVM.invoke("Start BridgeServer",
-        () -> startBridgeServer(null, getLocatorString(hostName, locator1Port)));
+        () -> startPartitionedRegionServer(getLocatorString(hostName, locator0Port), REGION_NAME));
+    logger.info("MLH Server port is " + serverPort);
     assertThat(serverPort).isGreaterThan(0);
+
+
+    int server2Port = serverVM2.invoke("Start BridgeServer 2",
+        () -> startPartitionedRegionServer(getLocatorString(hostName, locator0Port), REGION_NAME));
+    logger.info("MLH Server port is " + serverPort);
+    assertThat(server2Port).isGreaterThan(0);
+
+    logger.info("MLH Stopping locator 1 expect messages for " + locator1Port);
+    // stop one of the locators and ensure that the client can find and use a server
+    AsyncInvocation<Void> asycInvocation =
+        locator1VM.invokeAsync("Stop Locator", this::stopLocator);
+
+    doPuts(20000);
+
+    asycInvocation.get();
+
+    logger.info("MLH verifyLocatorsMatched before shutdown");
 
     verifyLocatorsMatched(initialLocators, pool.getLocators());
 
     InetSocketAddress[] postShutdownLocators =
-        new InetSocketAddress[] {new InetSocketAddress(hostName, locator1Port)};
+        new InetSocketAddress[] {new InetSocketAddress(hostName, locator0Port)};
     verifyLocatorsMatched(postShutdownLocators, pool.getOnlineLocators());
+    logger.info("MLH staring locator2 ");
+
+    final int locator2Port = locator2VM.invoke("Start Locator 3 ",
+        () -> startLocator(hostName, getLocatorString(hostName, locator0Port)));
+    logger.info("MLH started locator2 port = " + locator2Port);
+
+
+    await().until(() -> pool.getOnlineLocators().size() == 2);
+
+    logger
+        .info("MLH starting clientvm2 Hostname = " + hostName + " locator0Port = " + locator0Port);
+    InetSocketAddress locatorToWaitFor2 = new InetSocketAddress(hostName, locator2Port);
+    clientVM2.invoke("StartBridgeClient", () -> startBridgeClient(null, hostName, locator0Port));
+    AsyncInvocation<Void> asyncInvocation2 = clientVM2.invokeAsync("doPuts", () -> doPuts(20000));
+    logger.info("MLH 2 Online Locators = " + pool.getOnlineLocators());
+    stopBridgeMemberVM(serverVM2);
+    asyncInvocation2.get();
+    doPuts(20000);
+    waitForLocatorDiscovery(clientVM2, locatorToWaitFor2);
 
     await().untilAsserted(
         () -> assertThatCode(
@@ -242,6 +283,14 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
                 .doesNotThrowAnyException());
     Assert.assertEquals(VALUE, getInVM(serverVM, KEY));
 
+  }
+
+  private void doPuts(int putCount) throws InterruptedException {
+    Cache cache = (Cache) LocatorTestBase.remoteObjects.get(CACHE_KEY);
+    Region<Integer, String> region = cache.getRegion(REGION_NAME);
+    for (int i = 0; i < putCount; i++) {
+      region.put(i, "value" + i);
+    }
   }
 
   @Test
