@@ -34,12 +34,9 @@ import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.control.RebalanceFactory;
-import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -47,13 +44,15 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("tracked by GEODE-9692")
 public class HashesAndCrashesDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
+
+  @ClassRule
+  public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static MemberVM locator;
   private static MemberVM server1;
@@ -63,11 +62,10 @@ public class HashesAndCrashesDUnitTest {
   private static RedisAdvancedClusterCommands<String, String> commands;
   private static RedisClusterClient clusterClient;
 
-  @Rule
-  public ExecutorServiceRule executor = new ExecutorServiceRule();
+  private static final int MAX_RETRIES = 10;
 
   @BeforeClass
-  public static void classSetup() throws Exception {
+  public void setup() {
     locator = clusterStartUp.startLocatorVM(0);
 
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
@@ -80,6 +78,7 @@ public class HashesAndCrashesDUnitTest {
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
+            .refreshTriggersReconnectAttempts(1)
             .build();
 
     clusterClient.setOptions(ClusterClientOptions.builder()
@@ -94,6 +93,10 @@ public class HashesAndCrashesDUnitTest {
   public static void cleanup() {
     try {
       clusterClient.shutdown();
+      clusterStartUp.stop(0);
+      clusterStartUp.stop(1);
+      clusterStartUp.stop(2);
+      clusterStartUp.stop(3);
     } catch (Exception ignored) {
       // https://github.com/lettuce-io/lettuce-core/issues/1800
     }
@@ -187,22 +190,32 @@ public class HashesAndCrashesDUnitTest {
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String fieldName = "field-" + iterationCount;
-      try {
-        commands.hset(key, fieldName, "value-" + iterationCount);
-        iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
+      for (int numRetries = 0; numRetries <= MAX_RETRIES; numRetries++) {
+        try {
+          commands.hset(key, fieldName, "value-" + iterationCount);
+          iterationCount += 1;
+          break;
+        } catch (RedisCommandExecutionException ignore) {
+          numRetries++;
+        } catch (RedisException ex) {
+          numRetries++;
+          if (!ex.getMessage().contains("Connection reset by peer")) {
+            if (numRetries == MAX_RETRIES) {
+              throw ex;
+            }
+          }
         }
       }
     }
 
+    List<String> missingFields = new ArrayList<>();
     for (int i = 0; i < iterationCount; i++) {
       String field = "field-" + i;
-      String value = "value-" + i;
-      assertThat(commands.hget(key, field)).isEqualTo(value);
+      if (!commands.hexists(key, field)) {
+        missingFields.add(field);
+      }
     }
+    assertThat(missingFields).isEmpty();
 
     logger.info("--->>> HSET test ran {} iterations", iterationCount);
   }
@@ -213,13 +226,18 @@ public class HashesAndCrashesDUnitTest {
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String member = "member-" + index + "-" + iterationCount;
-      try {
-        commands.sadd(key, member);
-        iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
+      for (int retryCount = 0; retryCount <= MAX_RETRIES; retryCount++) {
+        try {
+          commands.sadd(key, member);
+          iterationCount += 1;
+          break;
+        } catch (RedisCommandExecutionException ignore) {
+        } catch (RedisException ex) {
+          if (!ex.getMessage().contains("Connection reset by peer")) {
+            if (retryCount == MAX_RETRIES) {
+              throw ex;
+            }
+          }
         }
       }
     }
@@ -241,13 +259,18 @@ public class HashesAndCrashesDUnitTest {
 
     while (iterationCount < minimumIterations || isRunning.get()) {
       String key = "set-key-" + index + "-" + iterationCount;
-      try {
-        commands.set(key, key);
-        iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
+      for (int retryCount = 0; retryCount <= MAX_RETRIES; retryCount++) {
+        try {
+          commands.set(key, key);
+          iterationCount += 1;
+          break;
+        } catch (RedisCommandExecutionException ignore) {
+        } catch (RedisException ex) {
+          if (!ex.getMessage().contains("Connection reset by peer")) {
+            if (retryCount == MAX_RETRIES) {
+              throw ex;
+            }
+          }
         }
       }
     }
@@ -269,7 +292,7 @@ public class HashesAndCrashesDUnitTest {
       RebalanceFactory factory = manager.createRebalanceFactory();
 
       try {
-        RebalanceResults result = factory.start().getResults();
+        factory.start().getResults();
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
