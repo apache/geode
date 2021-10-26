@@ -26,13 +26,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,6 +45,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.version.VersionManager;
@@ -73,6 +73,10 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
+
+  @ClassRule
+  public static final DistributedExecutorServiceRule senderExecutorServiceRule =
+      new DistributedExecutorServiceRule(SENDER_COUNT, 3);
 
   private MemberVM sender;
   private MemberVM receiver;
@@ -119,14 +123,15 @@ public class P2PMessagingConcurrencyDUnitTest {
       final AtomicInteger nextSenderId = new AtomicInteger();
 
       /*
-       * When this comment was written the nThreads parameter to the thread pool
-       * constructor was SENDER_COUNT. When SENDER_COUNT is much larger than the
-       * number of CPUs that is counterproductive. In an ideal world we'd want
-       * only as many threads as CPUs here. OTOH the P2P messaging system at the
-       * time this comment was written, used blocking I/O, so we were not, as it
-       * turns out, living in that ideal world.
+       * When this comment was written DistributedExecutorServiceRule's
+       * getExecutorService had no option to specify the number of threads.
+       * If it had we might have liked to specify the number of CPU cores.
+       * In an ideal world we'd want only as many threads as CPUs here.
+       * OTOH the P2P messaging system at the time this comment was written,
+       * used blocking I/O, so we were not, as it turns out, living in that
+       * ideal world.
        */
-      final ExecutorService executor = Executors.newFixedThreadPool(SENDER_COUNT);
+      final ExecutorService executor = senderExecutorServiceRule.getExecutorService();
 
       final CountDownLatch startLatch = new CountDownLatch(SENDER_COUNT);
       final CountDownLatch stopLatch = new CountDownLatch(SENDER_COUNT);
@@ -163,8 +168,6 @@ public class P2PMessagingConcurrencyDUnitTest {
 
       stopLatch.await();
 
-      stop(executor);
-
       assertThat(failedRecipientCount.sum()).as("message delivery failed N times").isZero();
 
     });
@@ -173,17 +176,6 @@ public class P2PMessagingConcurrencyDUnitTest {
     final long bytesReceived = receiver.invoke(() -> bytesTransferredAdder.sum());
 
     assertThat(bytesReceived).as("bytes received != bytes sent").isEqualTo(bytesSent);
-  }
-
-  private static void stop(final ExecutorService executor) {
-    executor.shutdown();
-    try {
-      if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-        executor.shutdownNow();
-      }
-    } catch (InterruptedException e) {
-      executor.shutdownNow();
-    }
   }
 
   private static ClusterDistributionManager getCDM() {

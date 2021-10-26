@@ -206,13 +206,13 @@ public class ByteBufferVendor {
     }
 
     /*
-     NOTE WELL: it may appear that this method is available outside this package but it is not!
-     Unlike the methods above, this one is overridden from the private ByteBufferSharingInternal
-     interface defined in our outer class ByteBufferVendor. It is called only by
-     ByteBufferVendor.dropReference(), itself a private method.
-
-     The whole point of this framework is to control release of buffers. We don't let any
-     code outside this file cause them (directly) to be released.
+     * NOTE WELL: it may appear that this method is available outside this package but it is not!
+     * Unlike the methods above, this one is overridden from the private ByteBufferSharingInternal
+     * interface defined in our outer class ByteBufferVendor. It is called only by
+     * ByteBufferVendor.dropReference(), itself a private method.
+     *
+     * The whole point of this framework is to control release of buffers. We don't let any
+     * code outside this file cause them (directly) to be released.
      */
     @Override
     public void releaseBuffer() {
