@@ -23,37 +23,37 @@
 #-----------------------------------------------------------------
 # Serialization
 #-----------------------------------------------------------------
-geode-serialization/**                                            @echobravopapa @Bill @kirklund
+geode-serialization/**                                            @echobravopapa @Bill @kirklund @kamilla1201
 geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade
 geode-core/**/org/apache/geode/codeAnalysis/**                    @upthewaterspout @dschneider-pivotal @agingade @kirklund
-geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund
+geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund @kamilla1201
 
 #-----------------------------------------------------------------
 # Membership
 #-----------------------------------------------------------------
-geode-membership/**                                               @echobravopapa @Bill
-geode-old-client-support/**                                       @echobravopapa @Bill
-geode-tcp-server/**                                               @echobravopapa @Bill
-geode-core/**/org/apache/geode/distributed/internal/membership/** @echobravopapa @Bill @kirklund
+geode-membership/**                                               @echobravopapa @Bill @kamilla1201
+geode-old-client-support/**                                       @echobravopapa @Bill @kamilla1201
+geode-tcp-server/**                                               @echobravopapa @Bill @kamilla1201
+geode-core/**/org/apache/geode/distributed/internal/membership/** @echobravopapa @Bill @kirklund @kamilla1201
 
 #-----------------------------------------------------------------
 # P2P Messaging
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/tcp/**                    @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/distributed/internal/direct/**     @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/internal/net/**                    @echobravopapa @Bill @kirklund
+geode-core/**/org/apache/geode/internal/tcp/**                    @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/distributed/internal/direct/**     @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/internal/net/**                    @echobravopapa @Bill @kirklund @kamilla1201
 geode-core/**/org/apache/geode/net/**                             @Bill @mivanac @kirklund
-geode-core/**/org/apache/geode/distributed/*                      @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa @Bill @kirklund
+geode-core/**/org/apache/geode/distributed/*                      @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa @Bill @kirklund @kamilla1201
 
 #-----------------------------------------------------------------
 # Client/server messaging and cache operations
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kirklund
-geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa @kirklund
-geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade @kirklund
-geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa
+geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa @kirklund @kamilla1201
+geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade @kirklund @kamilla1201
+geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa @kamilla1201
 
 #-----------------------------------------------------------------
 # Client Queues
