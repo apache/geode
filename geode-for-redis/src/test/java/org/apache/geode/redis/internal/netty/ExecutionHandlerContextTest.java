@@ -46,8 +46,9 @@ public class ExecutionHandlerContextTest {
   }
 
   @Test
-  public void isAuthorized_withReadOp_checksForWritePermission() {
+  public void isAuthorized_withReadOp_checksForReadPermission() {
     RedisSecurityService securityService = mock(RedisSecurityService.class);
+    when(securityService.isEnabled()).thenReturn(true);
     ExecutionHandlerContext context = createContext(securityService);
     context.setSubject(mock(Subject.class));
 
@@ -59,12 +60,14 @@ public class ExecutionHandlerContextTest {
     verify(securityService, times(1)).authorize(argumentCaptor.capture(), any());
     assertThat(argumentCaptor.getValue().getOperationString()).isEqualTo("READ");
     assertThat(argumentCaptor.getValue().getResourceString()).isEqualTo("DATA");
-    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+    assertThat(argumentCaptor.getValue().getTarget())
+        .isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
   }
 
   @Test
   public void isAuthorized_withWriteOp_checksForWritePermission() {
     RedisSecurityService securityService = mock(RedisSecurityService.class);
+    when(securityService.isEnabled()).thenReturn(true);
     ExecutionHandlerContext context = createContext(securityService);
     context.setSubject(mock(Subject.class));
 
@@ -76,14 +79,15 @@ public class ExecutionHandlerContextTest {
     verify(securityService, times(1)).authorize(argumentCaptor.capture(), any());
     assertThat(argumentCaptor.getValue().getOperationString()).isEqualTo("WRITE");
     assertThat(argumentCaptor.getValue().getResourceString()).isEqualTo("DATA");
-    assertThat(argumentCaptor.getValue().getTarget()).isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+    assertThat(argumentCaptor.getValue().getTarget())
+        .isEqualTo(RegionProvider.DEFAULT_REDIS_REGION_NAME);
   }
 
   @Test
-  public void isAuthorized_withNoSubject_doesNoCheckAndReturnsTrue() {
+  public void isAuthorized_withDisabledSecurity_doesNoCheckAndReturnsTrue() {
     RedisSecurityService securityService = mock(RedisSecurityService.class);
+    when(securityService.isEnabled()).thenReturn(false);
     ExecutionHandlerContext context = createContext(securityService);
-    context.setSubject(null);
 
     boolean result = context.isAuthorized(RedisCommandType.SET);
 
@@ -94,6 +98,7 @@ public class ExecutionHandlerContextTest {
   @Test
   public void isAuthorized_withFailedCheckReturnsFalse() {
     RedisSecurityService securityService = mock(RedisSecurityService.class);
+    when(securityService.isEnabled()).thenReturn(true);
     doThrow(NotAuthorizedException.class).when(securityService).authorize(any(), any());
     ExecutionHandlerContext context = createContext(securityService);
     context.setSubject(mock(Subject.class));

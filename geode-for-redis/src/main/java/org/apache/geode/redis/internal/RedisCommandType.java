@@ -468,8 +468,9 @@ public enum RedisCommandType {
     }
   }
 
-  public boolean isReadOnly() {
-    return parameterRequirements.getFlags().contains(READONLY);
+  public boolean getRequiresWritePermission() {
+    return parameterRequirements.getFlags().contains(WRITE)
+        || (parameterRequirements.getFlags().contains(Flag.PUBSUB) && this != PUBSUB);
   }
 
   public void checkDeferredParameters(Command command,

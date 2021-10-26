@@ -329,12 +329,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public boolean isAuthorized(RedisCommandType commandType) {
-    if (subject == null) {
+    if (!securityService.isEnabled()) {
       return true;
     }
 
     ResourcePermission permission =
-        commandType.isReadOnly() ? READ_RESOURCE_PERMISSION : WRITE_RESOURCE_PERMISSION;
+        commandType.getRequiresWritePermission() ? WRITE_RESOURCE_PERMISSION
+            : READ_RESOURCE_PERMISSION;
     try {
       securityService.authorize(permission, subject);
     } catch (NotAuthorizedException nex) {

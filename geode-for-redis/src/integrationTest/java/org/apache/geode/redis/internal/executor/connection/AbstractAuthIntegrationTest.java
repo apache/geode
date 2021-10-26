@@ -50,7 +50,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   protected abstract void setupCacheWithSecurityAndRegionName(String regionName) throws Exception;
 
-  protected abstract void setupCacheWithSecurity() throws Exception;
+  protected abstract void setupCacheWithSecurity(boolean needsWritePermission) throws Exception;
 
   protected abstract void setupCacheWithoutSecurity() throws Exception;
 
@@ -62,7 +62,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithIncorrectNumberOfArguments_fails() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
         .hasMessageContaining("ERR wrong number of arguments for 'auth' command");
     assertThatThrownBy(
@@ -72,7 +72,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_clientCanAuthAfterFailedAuth_passes() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     assertThatThrownBy(() -> jedis.auth(getUsername(), "wrongpwd"))
         .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
@@ -83,7 +83,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authorizedUser_passes() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(true);
 
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
         .hasMessage("NOAUTH Authentication required.");
@@ -95,7 +95,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithCorrectPasswordForDefaultUser_passes() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     assertThat(jedis.auth(getPassword())).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
@@ -103,7 +103,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_authWithIncorrectPasswordForDefaultUser_fails() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     assertThatThrownBy(() -> jedis.auth("wrong-password"))
         .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
@@ -118,7 +118,7 @@ public abstract class AbstractAuthIntegrationTest {
    */
   @Test
   public void givenSecurity_separateClientRequest_doNotInteract() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(true);
     Jedis nonAuthorizedJedis = new Jedis("localhost", getPort(), 100000);
     Jedis authorizedJedis = new Jedis("localhost", getPort(), 100000);
 
@@ -134,7 +134,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_lettuceV6AuthClient_passes() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     RedisURI uri =
         RedisURI.create(String.format("redis://%s@localhost:%d", getUsername(), getPort()));
@@ -160,7 +160,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_largeMultiBulkRequestsFail_whenNotAuthenticated() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     try (Socket clientSocket = new Socket(BIND_ADDRESS, getPort())) {
       clientSocket.setSoTimeout(1000);
@@ -177,7 +177,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_largeMultiBulkRequestsSucceed_whenAuthenticated() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(true);
 
     List<String> msetArgs = new ArrayList<>();
     for (int i = 0; i < ByteToCommandDecoder.UNAUTHENTICATED_MAX_ARRAY_SIZE; i++) {
@@ -205,7 +205,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_largeBulkStringRequestsFail_whenNotAuthenticated() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     try (Socket clientSocket = new Socket(BIND_ADDRESS, getPort())) {
       clientSocket.setSoTimeout(1000);
@@ -222,7 +222,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_largeBulkStringRequestsSucceed_whenAuthenticated() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(true);
     int stringSize = ByteToCommandDecoder.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH + 1;
 
     String largeString = StringUtils.repeat('a', stringSize);
@@ -244,7 +244,7 @@ public abstract class AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_closingConnectionLogsClientOut() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     int localPort = AvailablePortHelper.getRandomAvailableTCPPort();
 

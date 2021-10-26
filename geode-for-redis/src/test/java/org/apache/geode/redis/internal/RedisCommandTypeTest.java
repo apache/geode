@@ -22,8 +22,11 @@ import org.junit.Test;
 public class RedisCommandTypeTest {
 
   @Test
-  public void testReadOnly() {
-    assertThat(RedisCommandType.APPEND.isReadOnly()).isFalse();
-    assertThat(RedisCommandType.GET.isReadOnly()).isTrue();
+  public void testRequiresWritePermission() {
+    assertThat(RedisCommandType.APPEND.getRequiresWritePermission()).isTrue();
+    assertThat(RedisCommandType.SUBSCRIBE.getRequiresWritePermission()).isTrue();
+    assertThat(RedisCommandType.GET.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.PUBSUB.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.CLUSTER.getRequiresWritePermission()).isFalse();
   }
 }
