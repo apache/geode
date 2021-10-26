@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.net;
 
+import static java.lang.Thread.sleep;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,64 +41,91 @@ import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 @LoopRunnerConfig(count = 100)
 public class ByteBufferConcurrencyTest {
 
-  private BufferPool poolMock;
+  /*
+   * Milliseconds to hold onto the buffer for, when simulating application access.
+   */
+  public static final int USE_BUFFER_FOR_MILLIS = 2;
+  public static final int PARALLEL_TASK_COUNT = 10;
 
   @Test
-  public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(ParallelExecutor executor)
+  public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(final ParallelExecutor executor)
       throws Exception {
-    poolMock = mock(BufferPool.class);
-    ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferVendor sharing =
+    final BufferPool poolMock = mock(BufferPool.class);
+    final ByteBuffer someBuffer = ByteBuffer.allocate(1);
+    final ByteBufferVendor vendor =
         new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
-    executor.inParallel(() -> {
-      sharing.destruct();
-    });
-    executor.inParallel(() -> {
-      try {
-        try (ByteBufferSharing localSharing = sharing.open()) {
-          localSharing.getBuffer();
-        }
+
+    final RunnableWithException useBuffer = () -> {
+      try (final ByteBufferSharing sharing = vendor.open()) {
+        useBuffer(sharing);
       } catch (IOException e) {
-        // It's ok to get an IOException if the sharing was destroyed before this runs
+        // It's ok to get an IOException if the sharing was destruct()ed before this runs
       }
+    };
+
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(useBuffer);
+    }
+    executor.inParallel(() -> {
+      vendor.destruct();
     });
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(useBuffer);
+    }
+
     executor.execute();
 
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
+  private void useBuffer(final ByteBufferSharing sharing) throws IOException, InterruptedException {
+    sharing.getBuffer();
+    /*
+     * Give up the thread, in an attempt to maximize the probability that
+     * a competing task might try to access this buffer now.
+     */
+    sleep(USE_BUFFER_FOR_MILLIS);
+  }
+
   @Test
-  public void concurrentDestructAndOpenShouldNotAllowUseOfReturnedBuffer(ParallelExecutor executor)
+  public void concurrentDestructAndOpenShouldNotAllowUseOfReturnedBuffer(
+      final ParallelExecutor executor)
       throws Exception {
-    poolMock = mock(BufferPool.class);
-    AtomicBoolean returned = new AtomicBoolean(false);
+    final BufferPool poolMock = mock(BufferPool.class);
+    final AtomicBoolean returned = new AtomicBoolean(false);
     doAnswer(arguments -> {
       returned.set(true);
       return null;
     }).when(poolMock).releaseBuffer(any(), any());
 
-    ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferVendor sharing =
+    final ByteBuffer someBuffer = ByteBuffer.allocate(1);
+    final ByteBufferVendor vendor =
         new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
-    executor.inParallel(() -> {
-      sharing.destruct();
-    });
-
-    executor.inParallel(() -> {
+    final RunnableWithException accessBufferAndVerify = () -> {
       try {
-        try (ByteBufferSharing localSharing = sharing.open()) {
-          ByteBuffer buffer = localSharing.getBuffer();
-
+        try (final ByteBufferSharing sharing = vendor.open()) {
+          useBuffer(sharing);
           // The above buffer should not have been returned to the pool at this point!
           assertFalse(returned.get());
         }
       } catch (IOException e) {
-        // It's ok to get an IOException if the sharing was destroyed before this runs
+        // It's ok to get an IOException if the sharing was destruct()ed before this runs
       }
+    };
+
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(accessBufferAndVerify);
+    }
+    executor.inParallel(() -> {
+      vendor.destruct();
     });
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(accessBufferAndVerify);
+    }
+
     executor.execute();
 
     verify(poolMock, times(1)).releaseBuffer(any(), any());
@@ -105,61 +133,62 @@ public class ByteBufferConcurrencyTest {
 
   // Exclusive access test
   @Test
-  public void concurrentAccessToSharingShouldBeExclusive(ParallelExecutor executor)
+  public void concurrentAccessToSharingShouldBeExclusive(final ParallelExecutor executor)
       throws Exception {
-    poolMock = mock(BufferPool.class);
-    ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferVendor sharing =
+    final BufferPool poolMock = mock(BufferPool.class);
+    final ByteBuffer someBuffer = ByteBuffer.allocate(1);
+    final ByteBufferVendor vendor =
         new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
+
     final RunnableWithException useBufferAndCheckAccess = () -> {
-      try (ByteBufferSharing localSharing = sharing.open()) {
+      try (final ByteBufferSharing sharing = vendor.open()) {
         assertFalse(inUse.getAndSet(true));
-        localSharing.getBuffer();
+        useBuffer(sharing);
         assertTrue(inUse.getAndSet(false));
       }
     };
-    executor.inParallel(useBufferAndCheckAccess);
-    executor.inParallel(useBufferAndCheckAccess);
+
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(useBufferAndCheckAccess);
+    }
     executor.execute();
     verify(poolMock, times(0)).releaseBuffer(any(), any());
-    sharing.destruct();
+    vendor.destruct();
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
   @Test
-  public void concurrentAccessToSharingShouldBeExclusiveWithExtraCloses(ParallelExecutor executor)
+  public void concurrentAccessToSharingShouldBeExclusiveWithExtraCloses(
+      final ParallelExecutor executor)
       throws Exception {
-    poolMock = mock(BufferPool.class);
-    ByteBuffer someBuffer = ByteBuffer.allocate(1);
-    ByteBufferVendor sharing =
+    final BufferPool poolMock = mock(BufferPool.class);
+    final ByteBuffer someBuffer = ByteBuffer.allocate(1);
+    final ByteBufferVendor vendor =
         new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
     final RunnableWithException useBufferAndCheckAccess = () -> {
       Assertions.assertThatThrownBy(() -> {
-        try (ByteBufferSharing localSharing = sharing.open()) {
+        try (final ByteBufferSharing sharing = vendor.open()) {
           assertFalse(inUse.getAndSet(true));
-          localSharing.getBuffer();
+          useBuffer(sharing);
           assertTrue(inUse.getAndSet(false));
-          localSharing.close();
+          sharing.close(); // extra close() is what we're testing
         }
       }).isInstanceOf(IllegalMonitorStateException.class);
     };
-    executor.inParallel(useBufferAndCheckAccess);
-    executor.inParallel(useBufferAndCheckAccess);
-    executor.inParallel(useBufferAndCheckAccess);
+    for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
+      executor.inParallel(useBufferAndCheckAccess);
+    }
     executor.execute();
 
-
     verify(poolMock, times(0)).releaseBuffer(any(), any());
-    sharing.destruct();
+    vendor.destruct();
     verify(poolMock, times(1)).releaseBuffer(any(), any());
   }
 
-
-  // Extra closes with concurrent access?
 }

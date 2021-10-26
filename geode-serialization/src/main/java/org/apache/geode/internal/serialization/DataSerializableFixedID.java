@@ -697,7 +697,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**
-   * This special code is a way for an implementor if this interface to say that it does not have a
+   * This special code is a way for an implementer of this interface to say that it does not have a
    * fixed id. In that case its class name is serialized. Currently only test classes just return
    * this code and it is only available for use in geode-core and its downstream modules.
    */
