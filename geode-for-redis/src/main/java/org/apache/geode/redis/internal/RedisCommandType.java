@@ -469,8 +469,7 @@ public enum RedisCommandType {
   }
 
   public boolean getRequiresWritePermission() {
-    return parameterRequirements.getFlags().contains(WRITE)
-        || (parameterRequirements.getFlags().contains(Flag.PUBSUB) && this != PUBSUB);
+    return parameterRequirements.getFlags().contains(WRITE) || (this == PUBLISH);
   }
 
   public void checkDeferredParameters(Command command,

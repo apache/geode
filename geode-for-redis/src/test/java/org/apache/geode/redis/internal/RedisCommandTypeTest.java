@@ -23,10 +23,14 @@ public class RedisCommandTypeTest {
 
   @Test
   public void testRequiresWritePermission() {
-    assertThat(RedisCommandType.APPEND.getRequiresWritePermission()).isTrue();
-    assertThat(RedisCommandType.SUBSCRIBE.getRequiresWritePermission()).isTrue();
+    assertThat(RedisCommandType.SET.getRequiresWritePermission()).isTrue();
+    assertThat(RedisCommandType.PUBLISH.getRequiresWritePermission()).isTrue();
+
     assertThat(RedisCommandType.GET.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.SUBSCRIBE.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.UNSUBSCRIBE.getRequiresWritePermission()).isFalse();
     assertThat(RedisCommandType.PUBSUB.getRequiresWritePermission()).isFalse();
     assertThat(RedisCommandType.CLUSTER.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.PING.getRequiresWritePermission()).isFalse();
   }
 }

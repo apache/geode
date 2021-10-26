@@ -203,4 +203,11 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
         .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
   }
 
+  @Test
+  public void givenSecurityWithReadPermission_clusterCommandSucceeds() throws Exception {
+    setupCacheWithSecurity(false);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.clusterNodes()).isNotEmpty();
+  }
 }
