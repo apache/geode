@@ -32,20 +32,8 @@ if [[ -n "${CONCOURSE_GCP_KEY}" ]]; then
   export GOOGLE_APPLICATION_CREDENTIALS=${PACKERDIR}/credentials.json
 fi
 
-GCP_NETWORK="default"
-GCP_SUBNETWORK="default"
-
-MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
-if [[ -n "${MY_NAME}" ]]; then
-  MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
-  MY_ZONE=${MY_ZONE##*/}
-  NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
-  GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
-  GCP_NETWORK=${GCP_NETWORK##*/}
-  GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
-  GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
-  INTERNAL=true
-fi
+GCP_NETWORK="${GCP_NETWORK:-default}"
+GCP_SUBNETWORK="${GCP_SUBNETWORK:-default}"
 
 if [[ -z "${GCP_PROJECT}" ]]; then
   echo "GCP_PROJECT is unset. Cowardly refusing to continue."
