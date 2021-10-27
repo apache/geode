@@ -37,8 +37,8 @@ benchmarks:
     timeout: 12h
   - title: 'radish'
     # The current radish baseline version is taken from the commit:
-    #   GEODE-9567: Restore accidentally-removed patch file.
-    baseline_branch: '311ba9853ee32742690374b9e57b1ffa2c750843'
+    #   GEODE-9773: move RedisPropertiesTest to match the location of the source class
+    baseline_branch: '80bd4419998c9334d68c9a4863a800e83fad8870'
     baseline_version: ''
     flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
     options: '--tests=org.apache.geode.benchmark.redis.tests.*'
