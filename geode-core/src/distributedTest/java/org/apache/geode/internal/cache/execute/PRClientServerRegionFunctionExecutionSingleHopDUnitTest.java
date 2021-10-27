@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.execute;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -423,6 +426,41 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         PRClientServerRegionFunctionExecutionDUnitTest::FunctionExecution_Inline_Bug40714);
   }
 
+  @Test
+  public void testSingleHopFunctionExecutionDoingNetworkHopClearsNetworkHopVariableAtExit() {
+    ArrayList commonAttributes =
+        createCommonServerAttributes(PartitionedRegionName, null, 0, null);
+    createClientServerScenarioSingleHop(commonAttributes, 20, 20, 20);
+    Function forceNetworkHopFunction =
+        new TestFunction(true, TestFunction.TEST_FUNCTION_SINGLE_HOP_FORCE_NETWORK_HOP);
+    registerFunctionAtServer(forceNetworkHopFunction);
+    Function getNetworkHopFunction =
+        new TestFunction(true, TestFunction.TEST_FUNCTION_GET_NETWORK_HOP);
+    registerFunctionAtServer(getNetworkHopFunction);
+
+    // Populate region and at the same time update client metadata
+    Set<String> keys = IntStream.rangeClosed(0, totalNumBuckets * 10).boxed().map((x) -> "" + x)
+        .collect(Collectors.toSet());
+    for (String key : keys) {
+      client.invoke(() -> {
+        cache.getRegion(PartitionedRegionName).put(key, key);
+      });
+    }
+
+    Set<String> keyFilter = Collections.singleton("1");
+
+    // Execute the function that does one hop
+    client.invoke(() -> executeFunctionOnPartitionedRegion(PartitionedRegionName,
+        TestFunction.TEST_FUNCTION_SINGLE_HOP_FORCE_NETWORK_HOP, keyFilter, keys));
+
+    // Execute the function that gets the networkHop value previously set
+    Object result = client.invoke(() -> executeFunctionOnPartitionedRegion(PartitionedRegionName,
+        TestFunction.TEST_FUNCTION_GET_NETWORK_HOP, keyFilter, new HashSet()));
+    int networkHop = (int) ((List) result).get(0);
+
+    assertThat(networkHop).isEqualTo(0);
+  }
+
   public static void registerFunction() {
     FunctionService.registerFunction(new FunctionAdapter() {
       @Override
@@ -524,6 +562,17 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     List l = ((List) rc1.getResult());
     logger.info("Result size : " + l.size());
     return l;
+  }
+
+  public Object executeFunctionOnPartitionedRegion(String regionName, String functionName,
+      Set filter, Object arguments) {
+    Region region = cache.getRegion(regionName);
+    Function function = new TestFunction(true, functionName);
+    FunctionService.registerFunction(function);
+    Execution execution = FunctionService.onRegion(region);
+    ResultCollector rc1 =
+        execution.withFilter(filter).setArguments(arguments).execute(function.getId());
+    return rc1.getResult();
   }
 
   private static void putOperation() {
