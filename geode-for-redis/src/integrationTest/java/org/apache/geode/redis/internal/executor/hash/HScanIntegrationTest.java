@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -29,7 +30,8 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
   String GREATER_THAN_LONG_MAX = "9_223_372_036_854_775_808";
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {

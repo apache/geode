@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -30,7 +31,8 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class ScanIntegrationTest extends AbstractScanIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {

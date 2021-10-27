@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
@@ -44,7 +45,8 @@ public class ShutdownIntegrationTest implements RedisIntegrationTest {
   }
 
   @Rule
-  public GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {

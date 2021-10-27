@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,7 +44,8 @@ public class CommandIntegrationTest {
   public static NativeRedisTestRule redisServer = new NativeRedisTestRule();
 
   @ClassRule
-  public static GeodeRedisServerRule radishServer = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule radishServer =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   private RedisCommands<String, String> redisClient;
   private RedisCommands<String, String> radishClient;

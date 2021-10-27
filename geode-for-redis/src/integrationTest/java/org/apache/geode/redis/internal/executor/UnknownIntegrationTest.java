@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.ClassRule;
@@ -25,7 +26,8 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {

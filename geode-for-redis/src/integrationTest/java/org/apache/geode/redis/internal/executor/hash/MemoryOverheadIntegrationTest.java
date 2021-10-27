@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumMap;
@@ -40,6 +41,7 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
 
   @Rule
   public GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0")
       .withProperty(ConfigurationProperties.LOG_LEVEL, "error");
 
   @Before

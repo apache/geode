@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,7 +28,8 @@ public class ZScanIntegrationTest extends AbstractZScanIntegrationTest {
   String GREATER_THAN_LONG_MAX = "9_223_372_036_854_775_808";
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {

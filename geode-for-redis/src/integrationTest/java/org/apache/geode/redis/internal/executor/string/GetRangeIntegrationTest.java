@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
+
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -21,7 +23,8 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class GetRangeIntegrationTest extends AbstractGetRangeIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server =
+      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
 
   @Override
   public int getPort() {
