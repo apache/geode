@@ -45,6 +45,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
   private GeodeRedisServer server;
   private GemFireCache cache;
   private int port;
+  private boolean needsWritePermission;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -62,12 +63,15 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   @Override
   public String getUsername() {
-    return "dataWrite";
+    if (needsWritePermission) {
+      return "dataWrite";
+    }
+    return "dataRead";
   }
 
   @Override
   public String getPassword() {
-    return "dataWrite";
+    return getUsername();
   }
 
   @Override
@@ -75,7 +79,8 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithRegionName(getUsername(), regionName, true);
   }
 
-  public void setupCacheWithSecurity() throws Exception {
+  public void setupCacheWithSecurity(boolean needsWritePermission) throws Exception {
+    this.needsWritePermission = needsWritePermission;
     setupCache(getUsername(), true);
   }
 
@@ -114,7 +119,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   @Test
   public void testAuthConfig() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
     InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
     assertThat(iD.getConfig().getRedisUsername()).isEqualTo(getUsername());
   }
@@ -137,7 +142,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_accessWithCorrectAuthorization_passes() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     jedis.auth("dataWrite", "dataWrite");
 
@@ -145,8 +150,37 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
   }
 
   @Test
+  public void givenSecurity_readOpWithReadAuthorization_passes() throws Exception {
+    setupCacheWithSecurity(false);
+
+    jedis.auth("dataRead", "dataRead");
+
+    assertThat(jedis.get("foo")).isNull();
+  }
+
+  @Test
+  public void givenSecurity_readOpWithWriteAuthorization_fails() throws Exception {
+    setupCacheWithSecurity(false);
+
+    jedis.auth("dataWrite", "dataWrite");
+
+    assertThatThrownBy(() -> jedis.get("foo"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+  }
+
+  @Test
+  public void givenSecurity_writeOpWithReadAuthorization_fails() throws Exception {
+    setupCacheWithSecurity(false);
+
+    jedis.auth("dataRead", "dataRead");
+
+    assertThatThrownBy(() -> jedis.set("foo", "bar"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+  }
+
+  @Test
   public void givenSecurity_multipleClientsConnectIndependently() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     jedis.auth("dataWrite", "dataWrite");
     assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
@@ -159,7 +193,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   @Test
   public void givenSecurity_accessWithIncorrectAuthorization_fails() throws Exception {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
 
     // Authentication is successful
     jedis.auth("dataWriteOther", "dataWriteOther");
@@ -169,4 +203,28 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
         .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
   }
 
+  @Test
+  public void givenSecurityWithReadPermission_clusterCommandSucceeds() throws Exception {
+    setupCacheWithSecurity(false);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.clusterNodes()).isNotEmpty();
+  }
+
+  @Test
+  public void givenSecurityWithWritePermission_setCommandSucceeds() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
+  }
+
+  @Test
+  public void givenSecurityWithWritePermission_getCommandFails() throws Exception {
+    setupCacheWithSecurity(true);
+
+    assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
+    assertThatThrownBy(() -> jedis.get("foo"))
+        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+  }
 }

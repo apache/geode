@@ -54,11 +54,11 @@ public class AuthNativeRedisAcceptanceTest extends AbstractAuthIntegrationTest {
 
   @Override
   protected void setupCacheWithSecurityAndRegionName(String regionName) {
-    setupCacheWithSecurity();
+    setupCacheWithSecurity(false);
   }
 
   @Override
-  public void setupCacheWithSecurity() {
+  public void setupCacheWithSecurity(boolean needsWritePermission) {
     redisContainer =
         new GenericContainer<>(REDIS_DOCKER_IMAGE).withExposedPorts(6379)
             .withCommand("redis-server --requirepass " + getPassword());

@@ -468,6 +468,10 @@ public enum RedisCommandType {
     }
   }
 
+  public boolean getRequiresWritePermission() {
+    return parameterRequirements.getFlags().contains(WRITE) || (this == PUBLISH);
+  }
+
   public void checkDeferredParameters(Command command,
       ExecutionHandlerContext executionHandlerContext) {
     deferredParameterRequirements.checkParameters(command, executionHandlerContext);
