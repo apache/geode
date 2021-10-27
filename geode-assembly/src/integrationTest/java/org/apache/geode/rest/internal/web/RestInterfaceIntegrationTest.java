@@ -14,6 +14,7 @@
  */
 package org.apache.geode.rest.internal.web;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -281,7 +282,7 @@ public class RestInterfaceIntegrationTest {
           String line;
 
           while ((line = responseBodyReader.readLine()) != null) {
-            buffer.append(line).append(System.getProperty("line.separator"));
+            buffer.append(line).append(lineSeparator());
           }
 
           return buffer.toString().trim();

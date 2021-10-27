@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
-import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
@@ -4354,17 +4354,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (key instanceof VersionedObjectList) {
             Set keys = ((VersionedObjectList) key).keySet();
             for (Object k : keys) {
-              buffer.append("  ").append(k).append(getLineSeparator());
+              buffer.append("  ").append(k).append(lineSeparator());
             }
           } else {
-            buffer.append("  ").append(key).append(getLineSeparator());
+            buffer.append("  ").append(key).append(lineSeparator());
           }
         }
       }
     } // for
     if (logger.isDebugEnabled()) {
       logger.debug("{} refreshEntriesFromServerKeys count={} policy={}{}{}", this, totalKeys, pol,
-          getLineSeparator(), buffer);
+          lineSeparator(), buffer);
     }
   }
 
@@ -8465,8 +8465,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (rvv != null && getDataPolicy().withStorage()) {
       if (isRvvDebugEnabled) {
         logger.trace(LogMarker.RVV_VERBOSE,
-            "waiting for my version vector to dominate{}mine={}{} other={}", getLineSeparator(),
-            getLineSeparator(), versionVector.fullToString(), rvv);
+            "waiting for my version vector to dominate{}mine={}{} other={}", lineSeparator(),
+            lineSeparator(), versionVector.fullToString(), rvv);
       }
       boolean result = versionVector.waitToDominate(rvv, this);
       if (!result) {
@@ -8988,7 +8988,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (isDebugEnabled) {
           logger.debug(
               "putAll in client encountered a PutAllPartialResultException:{}{}. Adjusted keys are: {}",
-              e.getMessage(), getLineSeparator(), proxyResult.getKeys());
+              e.getMessage(), lineSeparator(), proxyResult.getKeys());
         }
         Throwable txException = e.getFailure();
         while (txException != null) {
@@ -9205,7 +9205,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (isDebugEnabled) {
           logger.debug(
               "removeAll in client encountered a BulkOpPartialResultException: {}{}. Adjusted keys are: {}",
-              e.getMessage(), getLineSeparator(), proxyResult.getKeys());
+              e.getMessage(), lineSeparator(), proxyResult.getKeys());
         }
         Throwable txException = e.getFailure();
         while (txException != null) {

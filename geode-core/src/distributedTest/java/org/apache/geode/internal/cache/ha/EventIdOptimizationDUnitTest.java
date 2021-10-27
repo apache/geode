@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -530,7 +531,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
       if (!containsEventId) {
         validationFailed = true;
         failureMsg.append("key = ").append(key).append(" ; eventID = ").append(eventIdAtClient2)
-            .append(System.getProperty("line.separator"));
+            .append(lineSeparator());
       }
     }
   }

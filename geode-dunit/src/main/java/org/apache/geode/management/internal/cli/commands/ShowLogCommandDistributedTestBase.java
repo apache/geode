@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -130,7 +131,7 @@ public class ShowLogCommandDistributedTestBase implements Serializable {
     assertThat(gfsh.getGfshOutput()).doesNotContain(MESSAGE_ON_MANAGER);
     assertThat(gfsh.getGfshOutput()).doesNotContain(MESSAGE_ON_SERVER2);
 
-    assertThat(output.split(System.getProperty("line.separator"))).hasSize(51);
+    assertThat(output.split(lineSeparator())).hasSize(51);
   }
 
   @Test

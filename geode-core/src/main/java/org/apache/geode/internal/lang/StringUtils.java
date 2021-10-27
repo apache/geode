@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.lang;
 
+import static java.lang.System.lineSeparator;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -33,9 +35,9 @@ import org.apache.geode.internal.cache.Token;
 @Deprecated
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
-  public static final String COMMA_DELIMITER = ",";
-  public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-  public static final String SPACE = " ";
+  static final String COMMA_DELIMITER = ",";
+  static final String LINE_SEPARATOR = lineSeparator();
+  static final String SPACE = " ";
 
   private static final int MAX_ARRAY_ELEMENTS_TO_CONVERT =
       Integer.getInteger("StringUtils.MAX_ARRAY_ELEMENTS_TO_CONVERT", 16);

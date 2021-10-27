@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -717,13 +717,13 @@ public class PartitionedRegion extends LocalRegion
 
     public synchronized String dump() {
       StringBuilder sb = new StringBuilder("prIdToPR Map@");
-      sb.append(System.identityHashCode(prIdToPR)).append(':').append(getLineSeparator());
+      sb.append(System.identityHashCode(prIdToPR)).append(':').append(lineSeparator());
       Map.Entry mapEntry;
       for (Iterator iterator = prIdToPR.entrySet().iterator(); iterator.hasNext();) {
         mapEntry = (Map.Entry) iterator.next();
         sb.append(mapEntry.getKey()).append("=>").append(mapEntry.getValue());
         if (iterator.hasNext()) {
-          sb.append(getLineSeparator());
+          sb.append(lineSeparator());
         }
       }
       return sb.toString();

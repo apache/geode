@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
@@ -73,7 +75,7 @@ public class ExportConfigFunction implements InternalFunction<Object> {
           (DistributionConfigImpl) ((InternalDistributedSystem) cache.getDistributedSystem())
               .getConfig();
       StringBuilder propStringBuf = new StringBuilder();
-      String lineSeparator = System.getProperty("line.separator");
+      String lineSeparator = lineSeparator();
       for (Map.Entry entry : config.getConfigPropsFromSource(ConfigSource.runtime()).entrySet()) {
         if (entry.getValue() != null && !entry.getValue().equals("")) {
           propStringBuf.append(entry.getKey()).append("=").append(entry.getValue())

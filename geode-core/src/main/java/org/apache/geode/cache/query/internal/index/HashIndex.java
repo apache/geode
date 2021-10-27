@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
-import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -813,18 +813,18 @@ public class HashIndex extends AbstractIndex {
   }
 
   public String dump() {
-    StringBuilder sb = new StringBuilder(toString()).append(" {").append(getLineSeparator());
-    sb.append(" -----------------------------------------------").append(getLineSeparator());
+    StringBuilder sb = new StringBuilder(toString()).append(" {").append(lineSeparator());
+    sb.append(" -----------------------------------------------").append(lineSeparator());
     for (Object anEntriesSet : this.entriesSet) {
       Entry indexEntry = (Entry) anEntriesSet;
-      sb.append(" Key = ").append(indexEntry.getKey()).append(getLineSeparator());
+      sb.append(" Key = ").append(indexEntry.getKey()).append(lineSeparator());
       sb.append(" Value Type = ").append(' ').append(indexEntry.getValue().getClass().getName())
-          .append(getLineSeparator());
+          .append(lineSeparator());
       if (indexEntry.getValue() instanceof Collection) {
         sb.append(" Value Size = ").append(' ').append(((Collection) indexEntry.getValue()).size())
-            .append(getLineSeparator());
+            .append(lineSeparator());
       } else if (indexEntry.getValue() instanceof RegionEntry) {
-        sb.append(" Value Size = ").append(" " + 1).append(getLineSeparator());
+        sb.append(" Value Size = ").append(" " + 1).append(lineSeparator());
       } else {
         throw new AssertionError("value instance of " + indexEntry.getValue().getClass().getName());
       }
@@ -837,9 +837,9 @@ public class HashIndex extends AbstractIndex {
         if (value instanceof Collection) {
           sb.append("  Value.size = ").append(((Collection) value).size());
         }
-        sb.append(getLineSeparator());
+        sb.append(lineSeparator());
       }
-      sb.append(" -----------------------------------------------").append(getLineSeparator());
+      sb.append(" -----------------------------------------------").append(lineSeparator());
     }
     sb.append("}// Index ").append(getName()).append(" end");
     return sb.toString();
@@ -983,11 +983,11 @@ public class HashIndex extends AbstractIndex {
 
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("No Keys = ").append(getNumberOfKeys()).append(getLineSeparator());
-      sb.append("No Values = ").append(getNumberOfValues()).append(getLineSeparator());
-      sb.append("No Uses = ").append(getTotalUses()).append(getLineSeparator());
-      sb.append("No Updates = ").append(getNumUpdates()).append(getLineSeparator());
-      sb.append("Total Update time = ").append(getTotalUpdateTime()).append(getLineSeparator());
+      sb.append("No Keys = ").append(getNumberOfKeys()).append(lineSeparator());
+      sb.append("No Values = ").append(getNumberOfValues()).append(lineSeparator());
+      sb.append("No Uses = ").append(getTotalUses()).append(lineSeparator());
+      sb.append("No Updates = ").append(getNumUpdates()).append(lineSeparator());
+      sb.append("Total Update time = ").append(getTotalUpdateTime()).append(lineSeparator());
       return sb.toString();
     }
   }

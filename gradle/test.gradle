@@ -219,7 +219,7 @@ gradle.taskGraph.whenReady({ graph ->
         systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
       }
 
-      def eol = System.getProperty('line.separator')
+      def eol = System.lineSeparator()
       def progress = new File(resultsDir, "$test.name-progress.txt")
       beforeTest { desc ->
         def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')

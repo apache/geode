@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
+import static java.lang.System.lineSeparator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1347,7 +1347,7 @@ public class IndexManager {
       if (ind instanceof FutureTask) {
         continue;
       }
-      sb.append(ind).append(getLineSeparator());
+      sb.append(ind).append(lineSeparator());
     }
     return sb.toString();
   }

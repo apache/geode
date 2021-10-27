@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
+import static java.lang.System.lineSeparator;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -767,9 +767,9 @@ public class MemberMBeanBridge {
     StringBuilder result = new StringBuilder();
     result.append(mainTail);
     if (childTail != null) {
-      result.append(getLineSeparator())
+      result.append(lineSeparator())
           .append("-------------------- tail of child log --------------------")
-          .append(getLineSeparator());
+          .append(lineSeparator());
       result.append(childTail);
     }
     return result.toString();
