@@ -24,8 +24,8 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
  */
 public class SetOptions extends BaseSetOptions {
 
-  private long expirationMillis;
-  private boolean keepTTL;
+  private final long expirationMillis;
+  private final boolean keepTTL;
 
   public SetOptions(Exists exists, long expiration, boolean keepTTL) {
     super(exists);

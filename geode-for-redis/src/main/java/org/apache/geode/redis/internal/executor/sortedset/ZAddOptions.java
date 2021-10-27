@@ -24,8 +24,8 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
  * Class representing different options that can be used with Redis Sorted Set ZADD command.
  */
 public class ZAddOptions extends BaseSetOptions {
-  private boolean isCH;
-  private boolean isINCR;
+  private final boolean isCH;
+  private final boolean isINCR;
 
   public ZAddOptions(Exists existsOption, boolean isCH, boolean isINCR) {
     super(existsOption);

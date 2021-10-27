@@ -23,7 +23,7 @@ package org.apache.geode.redis.internal.executor;
  */
 public abstract class BaseSetOptions {
 
-  private Exists exists;
+  private final Exists exists;
 
   public BaseSetOptions(Exists exists) {
     this.exists = exists;
