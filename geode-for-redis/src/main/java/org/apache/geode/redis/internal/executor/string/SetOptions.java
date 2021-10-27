@@ -16,12 +16,7 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.executor.BaseSetOptions;
 
 /**
@@ -29,8 +24,8 @@ import org.apache.geode.redis.internal.executor.BaseSetOptions;
  */
 public class SetOptions extends BaseSetOptions {
 
-  private long expirationMillis;
-  private boolean keepTTL;
+  private final long expirationMillis;
+  private final boolean keepTTL;
 
   public SetOptions(Exists exists, long expiration, boolean keepTTL) {
     super(exists);
@@ -38,33 +33,12 @@ public class SetOptions extends BaseSetOptions {
     this.keepTTL = keepTTL;
   }
 
-  public SetOptions() {}
-
   public long getExpiration() {
     return expirationMillis;
   }
 
   public boolean isKeepTTL() {
     return keepTTL;
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_SET_OPTIONS_ID;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
-    out.writeLong(expirationMillis);
-    out.writeBoolean(keepTTL);
-  }
-
-  @Override
-  public void fromData(DataInput in, DeserializationContext context) throws IOException {
-    super.fromData(in, context);
-    expirationMillis = in.readLong();
-    keepTTL = in.readBoolean();
   }
 
 }

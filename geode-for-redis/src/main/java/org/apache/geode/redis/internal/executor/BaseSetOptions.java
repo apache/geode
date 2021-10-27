@@ -16,28 +16,18 @@
 
 package org.apache.geode.redis.internal.executor;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
- * Class representing different options that can be used with Redis Sorted Set ZADD command.
+ * Class representing different options that can be used with Redis commands.
  */
-public abstract class BaseSetOptions implements DataSerializableFixedID {
+public abstract class BaseSetOptions {
 
-  private Exists exists;
+  private final Exists exists;
 
   public BaseSetOptions(Exists exists) {
     this.exists = exists;
   }
-
-  public BaseSetOptions() {}
 
   public boolean isNX() {
     return exists.equals(Exists.NX);
@@ -49,21 +39,6 @@ public abstract class BaseSetOptions implements DataSerializableFixedID {
 
   public Exists getExists() {
     return exists;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
-    DataSerializer.writeEnum(exists, out);
-  }
-
-  @Override
-  public void fromData(DataInput in, DeserializationContext context) throws IOException {
-    exists = DataSerializer.readEnum(BaseSetOptions.Exists.class, in);
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   public enum Exists {
