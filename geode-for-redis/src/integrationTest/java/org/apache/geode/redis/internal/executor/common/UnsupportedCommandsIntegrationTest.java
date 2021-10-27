@@ -25,8 +25,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.util.SafeEncoder;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.internal.RedisCommandType;
@@ -45,6 +43,17 @@ public class UnsupportedCommandsIntegrationTest {
   @Before
   public void setUp() {
     jedis = new Jedis("localhost", server.getPort(), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @After
+  public void tearDown() {
+    server.setEnableUnsupportedCommands(true);
+    jedis.flushAll();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    jedis.close();
   }
 
   @Test
@@ -73,60 +82,5 @@ public class UnsupportedCommandsIntegrationTest {
     assertThatThrownBy(
         () -> jedis.unlink(KEY))
             .hasMessageContaining(EXPECTED_ERROR_MSG);
-  }
-
-  @Test
-  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommand_whenEnableUnSupportedCommandsFlagNotSet() {
-    server.setEnableUnsupportedCommands(false);
-
-    final String TEST_PARAMETER = "this is only a test";
-    final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, InternalCommands.INTERNALPTTL,
-            "`" + TEST_PARAMETER + "`");
-
-    assertThatThrownBy(
-        () -> jedis.sendCommand(InternalCommands.INTERNALPTTL, TEST_PARAMETER))
-            .hasMessageContaining(EXPECTED_ERROR_MSG);
-  }
-
-  @Test
-  public void shouldReturnUnknownCommandMessage_givenCallToInternalCommand_whenEnableUnSupportedCommandsFlagSet() {
-    server.setEnableUnsupportedCommands(true);
-
-    final String TEST_PARAMETER = " this is only a test";
-    final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, InternalCommands.INTERNALTYPE,
-            "`" + TEST_PARAMETER + "`");
-
-    assertThatThrownBy(
-        () -> jedis.sendCommand(InternalCommands.INTERNALTYPE, TEST_PARAMETER))
-            .hasMessageContaining(EXPECTED_ERROR_MSG);
-  }
-
-  @After
-  public void tearDown() {
-    server.setEnableUnsupportedCommands(true);
-    jedis.flushAll();
-  }
-
-  @AfterClass
-  public static void afterClass() {
-    jedis.close();
-  }
-
-  private enum InternalCommands implements ProtocolCommand {
-    INTERNALPTTL("INTERNALPTTL"),
-    INTERNALTYPE("INTERNALTYPE");
-
-    private final byte[] raw;
-
-    InternalCommands(String command) {
-      this.raw = SafeEncoder.encode(command);
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
   }
 }
