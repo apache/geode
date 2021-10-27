@@ -16,16 +16,20 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +38,9 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.Delta;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -44,6 +50,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.LockObject;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -100,6 +107,8 @@ public class BucketRegionTest {
     when(regionAttributes.getMembershipAttributes()).thenReturn(membershipAttributes);
     when(regionAttributes.getScope()).thenReturn(scope);
     when(partitionedRegion.getFullPath()).thenReturn("parent");
+    when(partitionedRegion.getPrStats()).thenReturn(mock(PartitionedRegionStats.class));
+    when(partitionedRegion.getDataStore()).thenReturn(mock(PartitionedRegionDataStore.class));
     when(internalRegionArgs.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(internalRegionArgs.isUsedForPartitionedRegionBucket()).thenReturn(true);
     when(internalRegionArgs.getBucketAdvisor()).thenReturn(bucketAdvisor);
@@ -110,6 +119,110 @@ public class BucketRegionTest {
     when(bucketAdvisor.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(event.getOperation()).thenReturn(operation);
     when(operation.isDistributed()).thenReturn(true);
+  }
+
+  @Test
+  public void ensureCachedDeserializable_isCreated() {
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+
+    bucketRegion.txApplyPut(Operation.CREATE, "key", "value", false,
+        txId, null, null, null, new ArrayList<>(), null, null, null, null, 1);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(bucketRegion, times(1)).superTxApplyPut(any(), any(), captor.capture(),
+        eq(false), any(), isNull(), isNull(), isNull(), any(), isNull(), isNull(), isNull(),
+        isNull(), eq(1L));
+
+    assertThat(captor.getValue()).isInstanceOf(VMCachedDeserializable.class);
+  }
+
+  @Test
+  public void ensureCachedDeserializable_isNotCreatedForExistingCachedDeserializable() {
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+
+    CachedDeserializable newValue = mock(CachedDeserializable.class);
+    bucketRegion.txApplyPut(Operation.CREATE, "key", newValue, false,
+        txId, null, null, null, new ArrayList<>(), null, null, null, null, 1);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(bucketRegion, times(1)).superTxApplyPut(any(), any(), captor.capture(),
+        eq(false), any(), isNull(), isNull(), isNull(), any(), isNull(), isNull(), isNull(),
+        isNull(), eq(1L));
+
+    assertThat(captor.getValue()).isEqualTo(newValue);
+  }
+
+  @Test
+  public void ensureCachedDeserializable_isNotCreatedForByteArray() {
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+
+    byte[] newValue = new byte[] {0};
+    bucketRegion.txApplyPut(Operation.CREATE, "key", newValue, false,
+        txId, null, null, null, new ArrayList<>(), null, null, null, null, 1);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(bucketRegion, times(1)).superTxApplyPut(any(), any(), captor.capture(),
+        eq(false), any(), isNull(), isNull(), isNull(), any(), isNull(), isNull(), isNull(),
+        isNull(), eq(1L));
+
+    assertThat(captor.getValue()).isEqualTo(newValue);
+  }
+
+  @Test
+  public void ensureCachedDeserializable_isNotCreatedForInvalidToken() {
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+
+    Token newValue = Token.INVALID;
+    bucketRegion.txApplyPut(Operation.CREATE, "key", newValue, false,
+        txId, null, null, null, new ArrayList<>(), null, null, null, null, 1);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(bucketRegion, times(1)).superTxApplyPut(any(), any(), captor.capture(),
+        eq(false), any(), isNull(), isNull(), isNull(), any(), isNull(), isNull(), isNull(),
+        isNull(), eq(1L));
+
+    assertThat(captor.getValue()).isEqualTo(newValue);
+  }
+
+  @Test
+  public void ensureCachedDeserializable_isCreatedForDelta() {
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    when(partitionedRegion.getObjectSizer()).thenReturn(o -> 1);
+
+    Delta newValue = mock(Delta.class);
+    bucketRegion.txApplyPut(Operation.CREATE, "key", newValue, false,
+        txId, null, null, null, new ArrayList<>(), null, null, null, null, 1);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(bucketRegion, times(1)).superTxApplyPut(any(), any(), captor.capture(),
+        eq(false), any(), isNull(), isNull(), isNull(), any(), isNull(), isNull(), isNull(),
+        isNull(), eq(1L));
+
+    Object rawValue = captor.getValue();
+    assertThat(rawValue).isInstanceOf(VMCachedDeserializable.class);
+
+    VMCachedDeserializable value = (VMCachedDeserializable) rawValue;
+    assertThat(value.getValue()).isEqualTo(newValue);
   }
 
   @Test(expected = RegionDestroyedException.class)
