@@ -18,9 +18,7 @@ package org.apache.geode.redis.internal.collections;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Collection;
-import java.util.Iterator;
 
-import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.internal.size.Sizeable;
@@ -33,10 +31,6 @@ public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCusto
 
   private int memberOverhead;
 
-  public SizeableObjectOpenCustomHashSet(int expected, float f, Strategy<? super K> strategy) {
-    super(expected, f, strategy);
-  }
-
   public SizeableObjectOpenCustomHashSet(int expected, Strategy<? super K> strategy) {
     super(expected, strategy);
   }
@@ -45,50 +39,8 @@ public abstract class SizeableObjectOpenCustomHashSet<K> extends ObjectOpenCusto
     super(strategy);
   }
 
-  public SizeableObjectOpenCustomHashSet(Collection<? extends K> c, float f,
-      Strategy<? super K> strategy) {
-    super(c, f, strategy);
-  }
-
   public SizeableObjectOpenCustomHashSet(Collection<? extends K> c, Strategy<? super K> strategy) {
     super(c, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(ObjectCollection<? extends K> c, float f,
-      Strategy<? super K> strategy) {
-    super(c, f, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(ObjectCollection<? extends K> c,
-      Strategy<? super K> strategy) {
-    super(c, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(Iterator<? extends K> i, float f,
-      Strategy<? super K> strategy) {
-    super(i, f, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(Iterator<? extends K> i, Strategy<? super K> strategy) {
-    super(i, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(K[] a, int offset, int length, float f,
-      Strategy<? super K> strategy) {
-    super(a, offset, length, f, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(K[] a, int offset, int length,
-      Strategy<? super K> strategy) {
-    super(a, offset, length, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(K[] a, float f, Strategy<? super K> strategy) {
-    super(a, f, strategy);
-  }
-
-  public SizeableObjectOpenCustomHashSet(K[] a, Strategy<? super K> strategy) {
-    super(a, strategy);
   }
 
   @Override

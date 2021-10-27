@@ -344,10 +344,6 @@ public class RedisSet extends AbstractRedisData {
       super(size, ByteArrays.HASH_STRATEGY);
     }
 
-    public MemberSet(int expected, float f) {
-      super(expected, f, ByteArrays.HASH_STRATEGY);
-    }
-
     public MemberSet(Collection<byte[]> initialElements) {
       super(initialElements, ByteArrays.HASH_STRATEGY);
     }
