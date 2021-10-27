@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.executor;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -23,17 +25,14 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractUnknownIntegrationTest implements RedisIntegrationTest {
 
-  private Jedis jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  protected Jedis jedis;
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
   }
 
   @After

@@ -17,15 +17,16 @@ package org.apache.geode.redis.internal.pubsub;
 
 import static java.util.Collections.emptyList;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -91,12 +92,10 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
   }
 
   public int getUniqueSubscriptionCount() {
-    Set<ByteBuffer> uniques = new HashSet<>();
+    Set<byte[]> uniques = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
     for (ClientSubscriptionManager manager : clientManagers.values()) {
       for (Subscription s : manager.getSubscriptions()) {
-        for (byte[] bytes : s.getClient().getPatternSubscriptions()) {
-          uniques.add(ByteBuffer.wrap(bytes).asReadOnlyBuffer());
-        }
+        uniques.addAll(s.getClient().getPatternSubscriptions());
       }
     }
     return uniques.size();
