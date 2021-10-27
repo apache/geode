@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.PrintStream;
 import java.util.EnumSet;
 import java.util.Map;
@@ -914,7 +916,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   }
 
   public String dump2() {
-    final String lineSeparator = System.getProperty("line.separator");
+    final String lineSeparator = lineSeparator();
     StringBuffer sb = new StringBuffer();
     String name = getName();
     if (isBucket() && logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {

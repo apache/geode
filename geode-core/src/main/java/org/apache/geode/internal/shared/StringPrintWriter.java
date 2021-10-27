@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.shared;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -56,8 +58,8 @@ public class StringPrintWriter extends PrintWriter {
    * Create a new string writer using the specified string-builder and line separator.
    *
    * @param sb the {@link StringBuilder} to use as the internal buffer
-   * @param lineSep the line separator to use, or null to use the default from system
-   *        "line.separator" property
+   * @param lineSep the line separator to use, or null to use the default from
+   *        {@link System#lineSeparator()}.
    */
   public StringPrintWriter(StringBuilder sb, String lineSep) {
     super(dummyLock, false);
@@ -66,7 +68,7 @@ public class StringPrintWriter extends PrintWriter {
         : java.security.AccessController.doPrivileged(new PrivilegedAction<String>() {
           @Override
           public String run() {
-            return System.getProperty("line.separator");
+            return lineSeparator();
           }
         });
   }

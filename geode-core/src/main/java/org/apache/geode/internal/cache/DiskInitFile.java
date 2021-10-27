@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -2555,7 +2557,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     boolean statisticsEnabled = drv.getStatisticsEnabled();
     boolean offHeap = drv.getOffHeap();
     StringBuilder sb = new StringBuilder();
-    final String lineSeparator = System.getProperty("line.separator");
+    final String lineSeparator = lineSeparator();
 
     if (lruOption != null) {
       EvictionAlgorithm ea = EvictionAlgorithm.parseAction(lruOption);

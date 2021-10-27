@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class RebalanceCommand extends GfshCommand {
     }
 
     TabularResultModel table1 = result.addTable("Table" + index);
-    String newLine = System.getProperty("line.separator");
+    String newLine = lineSeparator();
     StringBuilder resultStr = new StringBuilder();
     resultStr.append(newLine);
     table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);

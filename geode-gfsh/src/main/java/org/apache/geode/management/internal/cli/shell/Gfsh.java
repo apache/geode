@@ -107,7 +107,7 @@ public class Gfsh extends JLineShell {
   public static final String GFSH_APP_NAME = "gfsh";
 
   public static final String LINE_INDENT = "    ";
-  public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+  public static final String LINE_SEPARATOR = lineSeparator();
   // Default Window dimensions
   public static final int DEFAULT_WIDTH = 100;
   public static final String ENV_APP_NAME = "APP_NAME";
@@ -456,7 +456,7 @@ public class Gfsh extends JLineShell {
     env.put(ENV_SYS_CLASSPATH, System.getProperty("java.class.path"));
     env.put(ENV_SYS_JAVA_VERSION, System.getProperty("java.version"));
     env.put(ENV_SYS_OS, System.getProperty("os.name"));
-    env.put(ENV_SYS_OS_LINE_SEPARATOR, System.getProperty("line.separator"));
+    env.put(ENV_SYS_OS_LINE_SEPARATOR, lineSeparator());
     env.put(ENV_SYS_GEODE_HOME_DIR, System.getenv("GEODE_HOME"));
 
     env.put(ENV_APP_NAME, Gfsh.GFSH_APP_NAME);

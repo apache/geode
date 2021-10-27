@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.lang;
 
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -47,8 +48,6 @@ public class SystemUtils {
   public static final String MAC_OSX_NAME = "Mac";
   public static final String WINDOWS_OS_NAME = "Windows";
   public static final String SOLARIS_OS_NAME = "SunOS";
-
-  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
   /**
    * Utility method to determine whether the Java application process is executing on the Apple JVM.
@@ -253,13 +252,6 @@ public class SystemUtils {
   private static boolean isOS(final String expectedOsName) {
     String osName = getOsName();
     return osName != null && osName.contains(expectedOsName);
-  }
-
-  /**
-   * Returns the value of {@code System.getProperty("line.separator")}.
-   */
-  public static String getLineSeparator() {
-    return LINE_SEPARATOR;
   }
 
 }

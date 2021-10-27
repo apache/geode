@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.wan;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -223,7 +224,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
-    String lines[] = gfshOutput.split(System.getProperty("line.separator"));
+    String lines[] = gfshOutput.split(lineSeparator());
     final String sendersConnectedColumnHeader = "Senders Connected";
     String receiverInfo = null;
     for (int i = 0; i < lines.length; i++) {

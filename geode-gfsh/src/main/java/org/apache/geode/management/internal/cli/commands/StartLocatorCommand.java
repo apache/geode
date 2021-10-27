@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
 
 import java.io.File;
@@ -233,7 +234,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
-        message.append(SystemUtils.getLineSeparator());
+        message.append(lineSeparator());
       }
     };
 

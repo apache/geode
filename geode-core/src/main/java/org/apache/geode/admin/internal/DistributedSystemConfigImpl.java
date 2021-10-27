@@ -14,6 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.admin.internal.InetAddressUtils.toHostString;
 import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
@@ -1189,7 +1190,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public String toString() {
     StringBuffer buf = new StringBuffer(1000);
-    String lf = System.getProperty("line.separator");
+    String lf = lineSeparator();
     if (lf == null) {
       lf = ",";
     }

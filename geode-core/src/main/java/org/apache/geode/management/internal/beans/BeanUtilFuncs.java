@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.beans;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,7 +58,7 @@ public class BeanUtilFuncs {
     long seekPosition = fileLength - readSize;
     StringBuilder returnStr = new StringBuilder();
     StringBuilder workingString = new StringBuilder();
-    String separator = System.getProperty("line.separator");
+    String separator = lineSeparator();
 
     while (linesRead < numLines) {
 

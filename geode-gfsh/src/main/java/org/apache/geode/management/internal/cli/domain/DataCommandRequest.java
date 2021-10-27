@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
+import static java.lang.System.lineSeparator;
+
 import java.io.Serializable;
 
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -40,7 +42,7 @@ public class DataCommandRequest implements Serializable {
   private String valueClass;
   private Object principal;
 
-  public static final String NEW_LINE = System.getProperty("line.separator");
+  public static final String NEW_LINE = lineSeparator();
 
   @Override
   public String toString() {

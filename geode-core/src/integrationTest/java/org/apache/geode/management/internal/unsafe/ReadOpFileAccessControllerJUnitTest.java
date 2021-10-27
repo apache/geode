@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.unsafe;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
@@ -71,7 +72,6 @@ public class ReadOpFileAccessControllerJUnitTest {
   private Registry registry = null;
 
   public static final String SERVICE_URLPREFIX = "service:jmx:rmi:///jndi/rmi:";
-  private static final String NEW_LINE = System.getProperty("line.separator");
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -169,9 +169,9 @@ public class ReadOpFileAccessControllerJUnitTest {
     File file = tempFolder.newFile("jmxremote.access");
     BufferedWriter writer = new BufferedWriter(new FileWriter(file));
     writer.append("admin readwrite");
-    writer.append(NEW_LINE);
+    writer.append(lineSeparator());
     writer.append("user readonly");
-    writer.append(NEW_LINE);
+    writer.append(lineSeparator());
     writer.flush();
     writer.close();
     return file.getAbsolutePath();
@@ -181,9 +181,9 @@ public class ReadOpFileAccessControllerJUnitTest {
     File file = tempFolder.newFile("jmxremote.password");
     BufferedWriter writer = new BufferedWriter(new FileWriter(file));
     writer.append("admin admin");
-    writer.append(NEW_LINE);
+    writer.append(lineSeparator());
     writer.append("user user");
-    writer.append(NEW_LINE);
+    writer.append(lineSeparator());
     writer.flush();
     writer.close();
     return file.getAbsolutePath();

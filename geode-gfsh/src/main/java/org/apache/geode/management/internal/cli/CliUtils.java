@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
@@ -185,7 +186,7 @@ public class CliUtils {
 
   public static void runLessCommandAsExternalViewer(Result commandResult) {
     StringBuilder sb = new StringBuilder();
-    String NEW_LINE = System.getProperty("line.separator");
+    String NEW_LINE = lineSeparator();
 
     while (commandResult.hasNextLine()) {
       sb.append(commandResult.nextLine()).append(NEW_LINE);

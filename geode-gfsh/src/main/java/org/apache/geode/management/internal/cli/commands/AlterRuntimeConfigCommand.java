@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
 import java.util.HashMap;
@@ -199,7 +200,7 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
         successfulMembers.add(result.getMemberIdOrName());
       }
     }
-    final String lineSeparator = System.getProperty("line.separator");
+    final String lineSeparator = lineSeparator();
 
 
     if (!successfulMembers.isEmpty()) {

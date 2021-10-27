@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -722,9 +723,9 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
             }
 
             // compare.
-            getLogWriter().info("Execute query : " + System.getProperty("line.separator")
+            getLogWriter().info("Execute query : " + lineSeparator()
                 + " QUERY_STR with index: " + queryStrings[0] + " "
-                + System.getProperty("line.separator") + " QUERY_STR without index: "
+                + lineSeparator() + " QUERY_STR without index: "
                 + queryStrings[1]);
             resultsSet.CompareQueryResultsWithoutAndWithIndexes(selectResults, 1, queryStrings);
           }
