@@ -80,7 +80,7 @@ public class PubSubImpl implements PubSub {
     try {
       subscriberCounts = subscriberCountCollector.getResult();
     } catch (Exception e) {
-      logger.warn("Failed to execute publish function {}", e.getMessage());
+      logger.warn("Failed to execute publish function {}", e.getMessage(), e);
       return 0;
     }
 

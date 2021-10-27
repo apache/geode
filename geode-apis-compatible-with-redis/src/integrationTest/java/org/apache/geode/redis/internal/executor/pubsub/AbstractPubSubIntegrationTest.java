@@ -436,11 +436,13 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
   public void ensureOrderingOfPublishedMessages() throws Exception {
     AtomicBoolean running = new AtomicBoolean(true);
 
+    System.out.println("Starting ensureOrderingOfPublishedMessages");
     Future<Void> future1 =
         executor.submit(() -> runSubscribeAndPublish(1, 10000, running));
 
     running.set(false);
     future1.get();
+    System.out.println("Done with ensureOrderingOfPublishedMessages");
   }
 
   private void runSubscribeAndPublish(int index, int minimumIterations, AtomicBoolean running)
