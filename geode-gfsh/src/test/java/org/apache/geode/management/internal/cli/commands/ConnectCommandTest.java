@@ -147,7 +147,7 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void notPromptForPasswordIfUsernameIsGiven() {
+  public void notPromptForPasswordIfUsernameAndPasswordAreGiven() {
     doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
         any());
     result = gfshParserRule.executeCommandWithInstance(connectCommand,
@@ -159,7 +159,30 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void notPromptForPasswordIfuserNameIsGivenInFile() {
+  public void promptForPasswordIfUsernameLongFormIsGiven() {
+    doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
+        any());
+    result = gfshParserRule.executeCommandWithInstance(connectCommand, "connect --username=user");
+    verify(gfsh).readPassword(CliStrings.CONNECT__PASSWORD + ": ");
+
+    assertThat(properties.getProperty("security-username")).isEqualTo("user");
+    assertThat(properties.getProperty("security-password")).isEqualTo("");
+  }
+
+  @Test
+  public void notPromptForPasswordIfUsernameLongFormAndPasswordAreGiven() {
+    doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
+        any());
+    result = gfshParserRule.executeCommandWithInstance(connectCommand,
+        "connect --username=user --password=pass");
+    verify(gfsh, times(0)).readPassword(CliStrings.CONNECT__PASSWORD + ": ");
+
+    assertThat(properties.getProperty("security-username")).isEqualTo("user");
+    assertThat(properties.getProperty("security-password")).isEqualTo("pass");
+  }
+
+  @Test
+  public void notPromptForPasswordIfUsernameIsGivenInFile() {
     // username specified in property file won't prompt for password
     properties.setProperty("security-username", "user");
     doReturn(properties).when(connectCommand).loadProperties(any(File.class));
