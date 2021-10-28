@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.partitioned;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -71,16 +70,18 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
 
   protected void createMissingBuckets(PartitionedRegion region) {
     PartitionedRegion parentRegion = ColocationHelper.getColocatedRegion(region);
-    if (parentRegion == null)
+    if (parentRegion == null) {
       return;
+    }
 
     // Make sure the parent region has created missing buckets
     // before we create missing buckets for this child region.
     createMissingBuckets(parentRegion);
 
     for (int i = 0; i < region.getTotalNumberOfBuckets(); i++) {
-      if (region.isClosed || region.isLocallyDestroyed)
+      if (region.isClosed || region.isLocallyDestroyed) {
         return;
+      }
 
       if (parentRegion.getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy() != region
           .getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy()) {
@@ -111,8 +112,9 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
         }
       }
 
-      if (partitionedRegion.isLocallyDestroyed || partitionedRegion.isClosed)
+      if (partitionedRegion.isLocallyDestroyed || partitionedRegion.isClosed) {
         return false;
+      }
 
       retryCount++;
       if (retryCount == SMALL_200MS_INTERVALS) {
@@ -132,8 +134,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
 
   }
 
-  @VisibleForTesting
-  public int getRetryCount() {
+  int getRetryCount() {
     return retryCount;
   }
 

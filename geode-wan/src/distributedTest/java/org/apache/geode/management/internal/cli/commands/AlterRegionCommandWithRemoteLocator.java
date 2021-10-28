@@ -223,7 +223,7 @@ public class AlterRegionCommandWithRemoteLocator {
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=13")
+        "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=1103")
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
@@ -234,7 +234,7 @@ public class AlterRegionCommandWithRemoteLocator {
         "create gateway-sender --id=parallelPositions --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=data --parallel=true")
         .statusIsSuccess();
 
-    GeodeAwaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+    GeodeAwaitility.await().until(() -> {
       gfsh.execute("alter region --name=Positions --gateway-sender-id=parallelPositions");
       return true;
     });
