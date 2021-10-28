@@ -29,8 +29,6 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
-  compile(project(':geode-serialization'))
-
   compile('org.springframework.security:spring-security-core')
   compile('javax.servlet:javax.servlet-api')
   compile('mx4j:mx4j') {
