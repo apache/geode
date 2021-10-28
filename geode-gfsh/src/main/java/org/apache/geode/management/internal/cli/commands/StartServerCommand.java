@@ -175,7 +175,9 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
           unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__USERNAME, unspecifiedDefaultValue = "",
+      @CliOption(
+          key = {CliStrings.START_SERVER__USERNAME, CliStrings.START_SERVER__USERNAME_LONGFORM},
+          unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,
       @CliOption(key = CliStrings.START_SERVER__PASSWORD, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,

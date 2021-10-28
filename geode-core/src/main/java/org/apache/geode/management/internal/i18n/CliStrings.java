@@ -3256,6 +3256,7 @@ public class CliStrings {
   public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
   public static final String START_SERVER__USERNAME = "user";
+  public static final String START_SERVER__USERNAME_LONGFORM = "username";
   public static final String START_SERVER__USERNAME__HELP =
       "User name to securely connect to the cluster. If the --password parameter is not specified then it will be prompted for.";
   public static final String START_SERVER__PASSWORD = "password";

@@ -377,7 +377,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
     [--start-rest-api=value] [--redirect-output(=value)]
     [--http-service-port=value] [--http-service-bind-address=value]
-    [--user=value] [--password=value]
+    [--username=value] [--password=value]
 ```
 
 **Parameters, start server**
@@ -430,7 +430,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 | \\-\\-redirect-output                 | When true, redirect standard output and standard error to the server log file. If specified without a value, the value is set to true. | false |
 | \\-\\-http-service-port               | Specifies the HTTP service port. | 7070 |
 | \\-\\-http-service-bind-address       | Specifies the IP address to which the HTTP service will be bound. | the local host machine's address |
-| \\-\\-user                            | The user name of the credential to use in authenticating to the cluster. When specified, if the `--password` option is not also specified, then `gfsh` will prompt for the password.| |
+| \\-\\-username<br />\\-\\-user        | The user name of the credential to use in authenticating to the cluster. When specified, if the `--password` option is not also specified, then `gfsh` will prompt for the password.| |
 | \\-\\-password                        | The password portion of the credential to use in authenticating to the cluster. | |
 
 

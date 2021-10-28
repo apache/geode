@@ -33,6 +33,7 @@ import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER_
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__SECURITY_PROPERTIES;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__SERVER_PORT;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__USERNAME;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__USERNAME_LONGFORM;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.isA;
@@ -164,7 +165,7 @@ public class StartServerCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testWithMissingPassword() throws IOException {
+  public void testWithUsernameAndMissingPassword() throws IOException {
     String expectedError = "password must be specified.";
 
     String command = new CommandStringBuilder(START_SERVER)
@@ -172,6 +173,22 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .addOption(START_SERVER__USERNAME, "usernameValue")
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
+  }
+
+  @Test
+  public void testWithUsernameLongFormAndMissingPassword() throws IOException {
+    String expectedError = "password must be specified.";
+
+    String command = new CommandStringBuilder(START_SERVER)
+        .addOption(START_SERVER__NAME, memberName)
+        .addOption(START_SERVER__LOCATORS, locatorConnectionString)
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
+        .addOption(START_SERVER__USERNAME_LONGFORM, "usernameValue")
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
