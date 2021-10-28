@@ -164,49 +164,31 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       vsdStats.incReadLockCount(delta);
     }
 
-    /**
-     * Returns the total amount of time (in nanoseconds) spent updating this index.
-     */
     @Override
     public long getTotalUpdateTime() {
       return vsdStats.getTotalUpdateTime();
     }
 
-    /**
-     * Returns the total number of times this index has been accessed by a query.
-     */
     @Override
     public long getTotalUses() {
       return vsdStats.getTotalUses();
     }
 
-    /**
-     * Returns the number of keys in this index at the highest level
-     */
     @Override
     public long getNumberOfMapIndexKeys() {
       return vsdStats.getNumberOfMapIndexKeys();
     }
 
-    /**
-     * Returns the number of keys in this index.
-     */
     @Override
     public long getNumberOfKeys() {
       return vsdStats.getNumberOfKeys();
     }
 
-    /**
-     * Returns the number of values in this index.
-     */
     @Override
     public long getNumberOfValues() {
       return vsdStats.getNumberOfValues();
     }
 
-    /**
-     * Return the number of values for the specified key in this index.
-     */
     @Override
     public long getNumberOfValues(Object key) {
       long numValues = 0;
@@ -216,11 +198,8 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       return numValues;
     }
 
-    /**
-     * Return the number of read locks taken on this index
-     */
     @Override
-    public int getReadLockCount() {
+    public long getReadLockCountLong() {
       return vsdStats.getReadLockCount();
     }
 

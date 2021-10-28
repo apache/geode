@@ -108,6 +108,7 @@ public class PRIndexStatisticsJUnitTest {
 
     IndexStatistics keyIndex1Stats = keyIndex1.getStatistics();
     assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexesLong());
 
     // Initial stats test (keys, values & updates)
     assertEquals(2 * 100/* Num of values in region */, keyIndex1Stats.getNumberOfKeys());
@@ -179,6 +180,7 @@ public class PRIndexStatisticsJUnitTest {
 
     IndexStatistics keyIndex1Stats = keyIndex2.getStatistics();
     assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexesLong());
 
     // Initial stats test (keys, values & updates)
     assertEquals(100, keyIndex1Stats.getNumberOfKeys());
@@ -249,6 +251,7 @@ public class PRIndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
     assertTrue(keyIndexStats instanceof IndexStatistics);
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndexStats.getNumberOfBucketIndexesLong());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
@@ -322,8 +325,8 @@ public class PRIndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
     assertTrue(keyIndexStats instanceof IndexStatistics);
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndexStats.getNumberOfBucketIndexesLong());
 
-    assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
     assertEquals(200, keyIndexStats.getNumberOfValues());
@@ -404,6 +407,7 @@ public class PRIndexStatisticsJUnitTest {
 
     IndexStatistics keyIndex1Stats = keyIndex1.getStatistics();
     assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexesLong());
 
     // Initial stats test (keys, values & updates)
     assertEquals(2 * 100/* Num of values in region */, keyIndex1Stats.getNumberOfKeys());
@@ -483,6 +487,7 @@ public class PRIndexStatisticsJUnitTest {
 
     IndexStatistics keyIndex1Stats = keyIndex2.getStatistics();
     assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndex1Stats.getNumberOfBucketIndexesLong());
 
     // Initial stats test (keys, values & updates)
     assertEquals(100, keyIndex1Stats.getNumberOfKeys());
@@ -560,6 +565,7 @@ public class PRIndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
     assertTrue(keyIndexStats instanceof IndexStatistics);
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndexStats.getNumberOfBucketIndexesLong());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());
@@ -642,6 +648,7 @@ public class PRIndexStatisticsJUnitTest {
     IndexStatistics keyIndexStats = keyIndex3.getStatistics();
     assertTrue(keyIndexStats instanceof IndexStatistics);
     assertEquals(89, keyIndexStats.getNumberOfBucketIndexes());
+    assertEquals(89, keyIndexStats.getNumberOfBucketIndexesLong());
 
     assertEquals(2, keyIndexStats.getNumberOfMapIndexKeys());
     assertEquals(100, keyIndexStats.getNumberOfKeys());

@@ -65,12 +65,12 @@ public class IndexStats {
             f.createLongCounter("numUses", numUsesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
             f.createLongCounter("useTime", "Total time spent using this index", "nanoseconds"),
-            f.createIntGauge("updatesInProgress", "Current number of updates in progress.",
+            f.createLongGauge("updatesInProgress", "Current number of updates in progress.",
                 "updates"),
-            f.createIntGauge("usesInProgress", "Current number of uses in progress.", "uses"),
-            f.createIntGauge("readLockCount", "Current number of read locks taken.", "uses"),
+            f.createLongGauge("usesInProgress", "Current number of uses in progress.", "uses"),
+            f.createLongGauge("readLockCount", "Current number of read locks taken.", "uses"),
             f.createLongGauge("numMapIndexKeys", "Number of keys in this Map index", "keys"),
-            f.createIntGauge("numBucketIndexes",
+            f.createLongGauge("numBucketIndexes",
                 "Number of bucket indexes in the partitioned region", "indexes"),});
 
     // Initialize id fields
@@ -124,16 +124,16 @@ public class IndexStats {
     return clock.isEnabled() ? stats.getLong(useTimeId) : 0;
   }
 
-  public int getReadLockCount() {
-    return stats.getInt(readLockCountId);
+  public long getReadLockCount() {
+    return stats.getLong(readLockCountId);
   }
 
   public long getNumberOfMapIndexKeys() {
     return stats.getLong(numMapIndexKeysId);
   }
 
-  public int getNumberOfBucketIndexes() {
-    return stats.getInt(numBucketIndexesId);
+  public long getNumberOfBucketIndexes() {
+    return stats.getLong(numBucketIndexesId);
   }
 
   public void incNumUpdates() {
@@ -167,11 +167,11 @@ public class IndexStats {
   }
 
   public void incUpdatesInProgress(int delta) {
-    stats.incInt(updatesInProgressId, delta);
+    stats.incLong(updatesInProgressId, delta);
   }
 
   public void incUsesInProgress(int delta) {
-    stats.incInt(usesInProgressId, delta);
+    stats.incLong(usesInProgressId, delta);
   }
 
   public void incUseTime(long delta) {
@@ -181,7 +181,7 @@ public class IndexStats {
   }
 
   public void incReadLockCount(int delta) {
-    stats.incInt(readLockCountId, delta);
+    stats.incLong(readLockCountId, delta);
   }
 
   public void incNumMapIndexKeys(long delta) {
@@ -189,7 +189,7 @@ public class IndexStats {
   }
 
   public void incNumBucketIndexes(int delta) {
-    stats.incInt(numBucketIndexesId, delta);
+    stats.incLong(numBucketIndexesId, delta);
   }
 
   /**

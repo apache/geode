@@ -887,19 +887,31 @@ public abstract class AbstractIndex implements IndexProtocol {
       return 0L;
     }
 
+    @Deprecated
     @Override
     public int getReadLockCount() {
-      return 0;
+      return (int) getReadLockCountLong();
+    }
+
+    @Override
+    public long getReadLockCountLong() {
+      return 0L;
     }
 
     @Override
     public long getNumberOfMapIndexKeys() {
-      return 0;
+      return 0L;
+    }
+
+    @Deprecated
+    @Override
+    public int getNumberOfBucketIndexes() {
+      return (int) getNumberOfBucketIndexesLong();
     }
 
     @Override
-    public int getNumberOfBucketIndexes() {
-      return 0;
+    public long getNumberOfBucketIndexesLong() {
+      return 0L;
     }
 
     public void close() {}

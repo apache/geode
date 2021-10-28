@@ -56,8 +56,17 @@ public interface IndexStatistics {
 
   /**
    * Return number of read locks taken on this index
+   *
+   * @deprecated Use {@link #getReadLockCountLong()}
    */
+  @Deprecated
   int getReadLockCount();
+
+  /**
+   * Return number of read locks taken on this index
+   */
+  long getReadLockCountLong();
+
 
   /**
    * Returns the number of keys in this index at the highest level
@@ -66,6 +75,14 @@ public interface IndexStatistics {
 
   /**
    * Returns the number of bucket indexes created in the Partitioned Region
+   *
+   * @deprecated Use {@link #getNumberOfBucketIndexesLong()}
    */
+  @Deprecated
   int getNumberOfBucketIndexes();
+
+  /**
+   * Returns the number of bucket indexes created in the Partitioned Region
+   */
+  long getNumberOfBucketIndexesLong();
 }
