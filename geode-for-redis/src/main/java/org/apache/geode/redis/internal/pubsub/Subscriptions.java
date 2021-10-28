@@ -166,7 +166,7 @@ public class Subscriptions {
    * Return a count of all pattern subscriptions ignoring duplicates.
    */
   public int getUniquePatternSubscriptionCount() {
-    return patternSubscriptions.getUniqueSubscriptionCount();
+    return patternSubscriptions.size();
   }
 
   @VisibleForTesting

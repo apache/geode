@@ -22,11 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.GlobPattern;
@@ -91,16 +87,6 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
     return sum;
   }
 
-  public int getUniqueSubscriptionCount() {
-    Set<byte[]> uniques = new ObjectOpenCustomHashSet<>(ByteArrays.HASH_STRATEGY);
-    for (ClientSubscriptionManager manager : clientManagers.values()) {
-      for (Subscription s : manager.getSubscriptions()) {
-        uniques.addAll(s.getClient().getPatternSubscriptions());
-      }
-    }
-    return uniques.size();
-  }
-
   @Override
   public Subscription add(byte[] channelOrPattern, Client client) {
     if (!addToClient(client, channelOrPattern)) {
@@ -157,6 +143,10 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
         }
       }
     }
+  }
+
+  public int size() {
+    return clientManagers.size();
   }
 
   @Immutable

@@ -305,13 +305,17 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
 
     executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    mockSubscriber.psubscribe("g*");
+    mockSubscriber.subscribe("my-channel");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 3);
     executor.submit(() -> subscriber2.psubscribe(mockSubscriber2, "f*"));
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
 
     Long result = introspector.pubsubNumPat();
 
-    assertThat(result).isEqualTo(1);
+    assertThat(result).isEqualTo(2);
 
+    unsubscribeWithSuccess(mockSubscriber);
     punsubscribeWithSuccess(mockSubscriber);
     punsubscribeWithSuccess(mockSubscriber2);
 
