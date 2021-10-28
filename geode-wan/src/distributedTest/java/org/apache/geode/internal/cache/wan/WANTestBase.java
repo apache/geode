@@ -39,6 +39,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -1435,18 +1436,14 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-
   public static void waitForSenderNonRunningState(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
-    try {
+    try (IgnoredException ie = addIgnoredException("Could not connect")) {
       Set<GatewaySender> senders = cache.getGatewaySenders();
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
       await()
           .untilAsserted(
               () -> assertEquals("Expected sender isRunning state to " + "be false but is true",
                   true, (sender != null && !sender.isRunning())));
-    } finally {
-      exln.remove();
     }
   }
 

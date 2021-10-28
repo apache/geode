@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,6 +30,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -39,6 +41,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
+  protected static final Logger logger = LogService.getLogger();
 
   public ParallelWANPersistenceEnabledGatewaySenderDUnitTest() {
     super();
@@ -2095,7 +2098,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * events.
    */
   @Test
-  public void testpersistentWanGateway_restartSenderWithCleanQueuesDelayed_expectNoEventsReceived() {
+  public void testpersistentWanGateway_restartSenderWithCleanQueuesDelayed_expectNoEventsReceived()
+      throws InterruptedException {
     // create locator on local site
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
@@ -2117,7 +2121,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     String diskStore4 = (String) vm7.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
         true, 100, 10, false, true, null, null, true));
 
-    LogWriterUtils.getLogWriter()
+    logger
         .info("The DS are: " + diskStore1 + "," + diskStore2 + "," + diskStore3 + "," + diskStore4);
 
     // create PR on remote site
@@ -2141,16 +2145,16 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All senders are running.");
+    logger.info("All senders are running.");
 
     // start puts in region on local site
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
-    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+    logger.info("Completed puts in the region");
 
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
-    LogWriterUtils.getLogWriter().info("Check that no events are propagated to remote site");
+    logger.info("Check that no events are propagated to remote site");
 
     // --------------------close and rebuild local site
     // -------------------------------------------------
@@ -2161,7 +2165,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-    LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+    logger.info("Stopped all the senders.");
 
     // wait for senders to stop
     vm4.invoke(waitForSenderNonRunnable());
@@ -2176,10 +2180,12 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
 
-    LogWriterUtils.getLogWriter().info("Start all the senders.");
+    logger.info("Start all the senders.");
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> {
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM4 =
+        vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
+
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM5 = vm5.invokeAsync(() -> {
       try {
         Thread.sleep(200);
       } catch (InterruptedException e) {
@@ -2187,7 +2193,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       }
       startSenderwithCleanQueues("ln");
     });
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> {
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM6 = vm6.invokeAsync(() -> {
       try {
         Thread.sleep(250);
       } catch (InterruptedException e) {
@@ -2195,7 +2201,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       }
       startSenderwithCleanQueues("ln");
     });
-    AsyncInvocation inv4 = vm7.invokeAsync(() -> {
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM7 = vm7.invokeAsync(() -> {
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {
@@ -2204,24 +2210,19 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       startSenderwithCleanQueues("ln");
     });
 
-    try {
-      inv1.join();
-      inv2.join();
-      inv3.join();
-      inv4.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    startSenderwithCleanQueuesInVM4.await();
+    startSenderwithCleanQueuesInVM5.await();
+    startSenderwithCleanQueuesInVM6.await();
+    startSenderwithCleanQueuesInVM7.await();
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    logger.info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(waitForSenderRunnable());
     vm5.invoke(waitForSenderRunnable());
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    logger.info("All the senders are now running...");
 
     // stop the senders
 
@@ -2230,7 +2231,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(() -> WANTestBase.stopSender("ln"));
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
-    LogWriterUtils.getLogWriter().info("Stopped all the senders.");
+    logger.info("Stopped all the senders.");
 
     // wait for senders to stop
     vm4.invoke(waitForSenderNonRunnable());
@@ -2238,10 +2239,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(waitForSenderNonRunnable());
     vm7.invoke(waitForSenderNonRunnable());
 
-    LogWriterUtils.getLogWriter().info("Start all the senders.");
+    logger.info("Start all the senders.");
 
-    inv1 = vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
-    inv2 = vm5.invokeAsync(() -> {
+    startSenderwithCleanQueuesInVM4 = vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
+    startSenderwithCleanQueuesInVM5 = vm5.invokeAsync(() -> {
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {
@@ -2249,7 +2250,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       }
       startSenderwithCleanQueues("ln");
     });
-    inv3 = vm6.invokeAsync(() -> {
+    startSenderwithCleanQueuesInVM6 = vm6.invokeAsync(() -> {
       try {
         Thread.sleep(350);
       } catch (InterruptedException e) {
@@ -2257,7 +2258,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       }
       startSenderwithCleanQueues("ln");
     });
-    inv4 = vm7.invokeAsync(() -> {
+    startSenderwithCleanQueuesInVM7 = vm7.invokeAsync(() -> {
       try {
         Thread.sleep(400);
       } catch (InterruptedException e) {
@@ -2266,24 +2267,19 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       startSenderwithCleanQueues("ln");
     });
 
-    try {
-      inv1.join();
-      inv2.join();
-      inv3.join();
-      inv4.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    startSenderwithCleanQueuesInVM4.await();
+    startSenderwithCleanQueuesInVM5.await();
+    startSenderwithCleanQueuesInVM6.await();
+    startSenderwithCleanQueuesInVM7.await();
 
-    LogWriterUtils.getLogWriter().info("Waiting for senders running.");
+    logger.info("Waiting for senders running.");
     // wait for senders running
     vm4.invoke(waitForSenderRunnable());
     vm5.invoke(waitForSenderRunnable());
     vm6.invoke(waitForSenderRunnable());
     vm7.invoke(waitForSenderRunnable());
 
-    LogWriterUtils.getLogWriter().info("All the senders are now running...");
+    logger.info("All the senders are now running...");
 
     // ----------------------------------------------------------------------------------------------------
 

@@ -499,8 +499,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
-          logger.info("wait for destroy to finish");
-
+          if (logger.isDebugEnabled()) {
+            logger.debug("wait for destroy to finish");
+          }
           prQ = (PartitionedRegion) cache.getRegion(prQName, true);
         }
       }
