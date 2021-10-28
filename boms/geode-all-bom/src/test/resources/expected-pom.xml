@@ -198,6 +198,11 @@
         <version>1.7.3</version>
       </dependency>
       <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.1.67.Final</version>
+      </dependency>
+      <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
         <version>1.6.2</version>
@@ -608,16 +613,6 @@
         <version>5.7.2</version>
       </dependency>
       <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-codec-redis</artifactId>
-        <version>4.1.69.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-handler</artifactId>
-        <version>4.1.69.Final</version>
-      </dependency>
-      <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>selenium-api</artifactId>
         <version>3.141.59</version>
@@ -759,6 +754,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-for-redis</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
@@ -790,12 +791,6 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
-        <version>${version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-for-redis</artifactId>
         <version>${version}</version>
         <scope>compile</scope>
       </dependency>
