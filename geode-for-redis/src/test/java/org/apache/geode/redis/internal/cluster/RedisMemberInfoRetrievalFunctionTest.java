@@ -36,7 +36,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 public class RedisMemberInfoRetrievalFunctionTest {
 
-  RedisMemberInfoRetrievalFunction function;
+  private RedisMemberInfoRetrievalFunction function;
 
   @Before
   public void setUp() {
