@@ -57,5 +57,5 @@ While a member is running, its disk stores are online. When the member exits and
 
 -   Online, a disk store is owned and managed by its member process. To run operations on an online disk store, use API calls in the member process, or use the `gfsh` command-line interface.
 -   Offline, the disk store is just a collection of files in the host file system. The files are accessible based on file system permissions. You can copy the files for backup or to move the member’s disk store location. You can also run some maintenance operations, such as file compaction and validation, by using the `gfsh` command-line interface. When offline, the disk store's information is unavailable to the cluster. 
-For partitioned regions, region data is split between multiple members, and therefore the start up of a member is dependent onall members, and must wait for all members to be online. An attempt to access an entry that is stored on disk by an offline member results in a `PartitionOfflineException`.
+For partitioned regions, region data is split between multiple members, and therefore the start up of a member is dependent on all members, and must wait for all members to be online. An attempt to access an entry that is stored on disk by an offline member results in a `PartitionOfflineException`.
 
