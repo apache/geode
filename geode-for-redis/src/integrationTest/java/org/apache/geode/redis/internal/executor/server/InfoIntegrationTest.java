@@ -16,8 +16,10 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
+import org.junit.Test;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -31,4 +33,14 @@ public class InfoIntegrationTest extends AbstractInfoIntegrationTest {
   public int getPort() {
     return server.getPort();
   }
+
+  @Test
+  public void shouldReturnRedisVersion() {
+    String expectedResult = "redis_version:5.0.6";
+
+    String actualResult = jedis.info();
+
+    assertThat(actualResult).contains(expectedResult);
+  }
+
 }

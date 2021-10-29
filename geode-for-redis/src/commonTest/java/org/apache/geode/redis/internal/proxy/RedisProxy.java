@@ -62,7 +62,7 @@ public final class RedisProxy {
             p.addLast(new RedisDecoder());
             p.addLast(new RedisBulkStringAggregator());
             p.addLast(new RedisArrayAggregator());
-            p.addLast(new RedisProxyInboundHandler("127.0.0.1", targetPort, mappings));
+            p.addLast(new RedisProxyInboundHandler(ch, "127.0.0.1", targetPort, mappings));
           }
         })
         .childOption(ChannelOption.AUTO_READ, false)

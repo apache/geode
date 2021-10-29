@@ -34,6 +34,8 @@ public class RedisConstants {
   public static final String ERROR_WRONG_TYPE =
       "Operation against a key holding the wrong kind of value";
   public static final String ERROR_NOT_INTEGER = "value is not an integer or out of range";
+  public static final String ERROR_VALUE_MUST_BE_POSITIVE =
+      "value is out of range, must be positive";
   public static final String ERROR_OVERFLOW = "increment or decrement would overflow";
   public static final String ERROR_NAN_OR_INFINITY = "increment would produce NaN or Infinity";
   public static final String ERROR_OPERATION_PRODUCED_NAN = "resulting score is not a number (NaN)";
@@ -69,11 +71,15 @@ public class RedisConstants {
       "invalid username-password pair or user is disabled.";
   public static final String ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED =
       "AUTH called without a Security Manager configured.";
-  public static final String ERROR_KEY_REQUIRED =
-      "at least 1 input key is needed for ZUNIONSTORE/ZINTERSTORE";
+  public static final String ERROR_KEY_REQUIRED_ZINTERSTORE =
+      "at least 1 input key is needed for zinterstore";
+  public static final String ERROR_KEY_REQUIRED_ZUNIONSTORE =
+      "at least 1 input key is needed for zunionstore";
   public static final String ERROR_UNAUTHENTICATED_MULTIBULK =
       "Protocol error: unauthenticated multibulk length";
   public static final String ERROR_UNAUTHENTICATED_BULK =
       "Protocol error: unauthenticated bulk length";
   public static final String INTERNAL_SERVER_ERROR = "Internal server error: ";
+  public static final String ERROR_PUBSUB_WRONG_COMMAND =
+      "Can't execute '%s': only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context";
 }

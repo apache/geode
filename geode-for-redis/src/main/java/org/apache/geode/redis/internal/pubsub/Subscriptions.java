@@ -162,6 +162,13 @@ public class Subscriptions {
     return patternSubscriptions.getSubscriptionCount();
   }
 
+  /**
+   * Return a count of all pattern subscriptions ignoring duplicates.
+   */
+  public int getUniquePatternSubscriptionCount() {
+    return patternSubscriptions.size();
+  }
+
   @VisibleForTesting
   int getChannelSubscriptionCount() {
     return channelSubscriptions.getSubscriptionCount();

@@ -15,7 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_VALUE_MUST_BE_POSITIVE;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
@@ -43,7 +43,7 @@ public class SPopExecutor implements CommandExecutor {
       try {
         popCount = narrowLongToInt(bytesToLong(commandElems.get(2)));
       } catch (NumberFormatException nex) {
-        return RedisResponse.error(ERROR_NOT_INTEGER);
+        return RedisResponse.error(ERROR_VALUE_MUST_BE_POSITIVE);
       }
     } else {
       popCount = 1;

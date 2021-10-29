@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_PUBSUB_WRONG_COMMAND;
 import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.apache.geode.redis.internal.RegionProvider.DEFAULT_REDIS_REGION_NAME;
@@ -257,7 +258,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       if (getClient().hasSubscriptions()) {
         if (!command.getCommandType().isAllowedWhileSubscribed()) {
           writeToChannel(RedisResponse
-              .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
+              .error(String.format(ERROR_PUBSUB_WRONG_COMMAND,
+                  command.getCommandType().name().toLowerCase())));
         }
       }
 

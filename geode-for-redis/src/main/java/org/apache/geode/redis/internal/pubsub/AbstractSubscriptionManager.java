@@ -145,6 +145,10 @@ abstract class AbstractSubscriptionManager implements SubscriptionManager {
     }
   }
 
+  public int size() {
+    return clientManagers.size();
+  }
+
   @Immutable
   private static final ClientSubscriptionManager EMPTY_CLIENT_MANAGER =
       new ClientSubscriptionManager() {

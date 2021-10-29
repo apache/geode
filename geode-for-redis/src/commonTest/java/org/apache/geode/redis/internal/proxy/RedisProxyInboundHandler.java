@@ -29,11 +29,13 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
+import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
+import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.util.CharsetUtil;
 import org.apache.logging.log4j.Logger;
 
@@ -46,13 +48,15 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
   private final int remotePort;
   private final Map<HostPort, HostPort> mappings;
   private Channel outboundChannel;
+  private Channel inboundChannel;
   private RedisProxyOutboundHandler outboundHandler;
   private final ClusterSlotsResponseProcessor slotsResponseProcessor;
   private final ClusterNodesResponseProcessor nodesResponseProcessor;
   private MovedResponseHandler movedResponseHandler;
 
-  public RedisProxyInboundHandler(String remoteHost, int remotePort,
+  public RedisProxyInboundHandler(Channel inboundChannel, String remoteHost, int remotePort,
       Map<HostPort, HostPort> mappings) {
+    this.inboundChannel = inboundChannel;
     this.remoteHost = remoteHost;
     this.remotePort = remotePort;
     this.mappings = mappings;
@@ -129,6 +133,13 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
             outboundHandler.addResponseProcessor(nodesResponseProcessor);
           }
           break;
+        case "hello":
+          // Lettuce tries to use RESP 3 if possible but Netty's Redis codecs can't handle that yet.
+          // We implicitly fake the client into thinking this is an older Redis so that it uses
+          // RESP 2.
+          RedisMessage error = new ErrorRedisMessage("ERR unknown command");
+          inboundChannel.writeAndFlush(error);
+          return;
         default:
           outboundHandler.addResponseProcessor(NoopRedisResponseProcessor.INSTANCE);
       }

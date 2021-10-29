@@ -96,8 +96,8 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long findNumberOfSubscribedPatterns() {
-    return subscriptions.getPatternSubscriptionCount();
+  public long findNumberOfUniqueSubscribedPatterns() {
+    return subscriptions.getUniquePatternSubscriptionCount();
   }
 
   @Override

@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_PUBSUB_WRONG_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -88,7 +89,7 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisInteg
     client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
 
     assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
-        "ERR only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context");
+        String.format(ERROR_PUBSUB_WRONG_COMMAND, "set"));
     client.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }
 
