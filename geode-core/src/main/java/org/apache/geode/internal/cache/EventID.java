@@ -354,9 +354,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       InternalDistributedMember member = getDistributedMember(KnownVersion.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes
-      HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.GFE_90);
-      member.writeEssentialData(hdos);
-      DataSerializer.writeByteArray(hdos.toByteArray(), dop);
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.GFE_90)) {
+        member.writeEssentialData(hdos);
+        DataSerializer.writeByteArray(hdos.toByteArray(), dop);
+      }
     } else {
       DataSerializer.writeByteArray(membershipID, dop);
     }

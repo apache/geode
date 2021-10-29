@@ -274,20 +274,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
       SerializationContext context) throws IOException {
     super.toData(out, context);
 
-    HeapDataOutputStream hdos = null;
     boolean failedSerialization = false;
-    final boolean hasReturnValue = this.returnValueIsException || this.returnValue != null;
-    if (hasReturnValue) {
-      hdos = new HeapDataOutputStream(context.getSerializationVersion());
-      try {
-        context.getSerializer().writeObject(this.returnValue, hdos);
-      } catch (NotSerializableException e) {
-        logger.warn("Unable to serialize a reply to " + getRecipientsDescription(), e);
-        failedSerialization = true;
-        this.returnValue = new ReplyException(e);
-        this.returnValueIsException = true;
-      }
-    }
     byte status = 0;
     if (this.ignored) {
       status |= IGNORED_FLAG;
@@ -310,11 +297,21 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     if (this.processorId != 0) {
       out.writeInt(processorId);
     }
+
+    final boolean hasReturnValue = this.returnValueIsException || this.returnValue != null;
     if (hasReturnValue) {
+      try (
+          HeapDataOutputStream hdos = new HeapDataOutputStream(context.getSerializationVersion())) {
+        context.getSerializer().writeObject(this.returnValue, hdos);
+        hdos.sendTo(out);
+      } catch (NotSerializableException e) {
+        logger.warn("Unable to serialize a reply to " + getRecipientsDescription(), e);
+        failedSerialization = true;
+        this.returnValue = new ReplyException(e);
+        this.returnValueIsException = true;
+      }
       if (failedSerialization) {
         context.getSerializer().writeObject(this.returnValue, out);
-      } else {
-        hdos.sendTo(out);
       }
     }
   }

@@ -160,9 +160,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithServer(Connection conn, ServerLocation location,
       CommunicationMode communicationMode) throws IOException, AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
-    try {
-      Socket sock = conn.getSocket();
-      DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+    try (Socket sock = conn.getSocket();
+        DataOutputStream dos = new DataOutputStream(sock.getOutputStream())) {
       final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       InternalDistributedMember member = getIDForSocket(sock);
@@ -285,8 +284,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
-    try {
-      final DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+    try (final DataOutputStream dos = new DataOutputStream(sock.getOutputStream())) {
       final InputStream in = sock.getInputStream();
       final DataInputStream dis = new DataInputStream(in);
       final DistributedMember member = getIDForSocket(sock);
