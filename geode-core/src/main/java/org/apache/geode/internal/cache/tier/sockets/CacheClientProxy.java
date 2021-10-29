@@ -310,7 +310,7 @@ public class CacheClientProxy implements ClientSession {
         acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
         ccn.getCache().getInternalDistributedSystem().getStatisticsManager(),
         DEFAULT_CACHECLIENTPROXYSTATSFACTORY,
-        DEFAULT_MESSAGEDISPATCHERFACTORY);
+        DEFAULT_MESSAGEDISPATCHERFACTORY, ServerConnection.getClientUserAuths(proxyID));
   }
 
   @VisibleForTesting
@@ -320,7 +320,7 @@ public class CacheClientProxy implements ClientSession {
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
-      MessageDispatcherFactory messageDispatcherFactory)
+      MessageDispatcherFactory messageDispatcherFactory, ClientUserAuths clientUserAuths)
       throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     _cacheClientNotifier = ccn;
@@ -345,11 +345,7 @@ public class CacheClientProxy implements ClientSession {
     _cacheClientNotifier.getAcceptorStats().incCurrentQueueConnections();
     creationDate = new Date();
     this.messageDispatcherFactory = messageDispatcherFactory;
-    initializeClientAuths();
-  }
-
-  void initializeClientAuths() {
-    clientUserAuths = ServerConnection.getClientUserAuths(proxyID);
+    this.clientUserAuths = clientUserAuths;
   }
 
   private void reinitializeClientAuths() {
@@ -774,14 +770,22 @@ public class CacheClientProxy implements ClientSession {
 
     connected = false;
 
-    // Close the Authorization callback (if any)
+    // Close the Authorization callback or subject if we are not keeping the proxy
     try {
       if (!pauseDurable) {
-        if (postAuthzCallback != null) {// for single user
+        // single user case -- old security
+        if (postAuthzCallback != null) {
           postAuthzCallback.close();
           postAuthzCallback = null;
         }
-        if (clientUserAuths != null) {// for multiple users
+        // single user case -- integrated security
+        // connection is closed, so we can log out this subject
+        else if (subject != null) {
+          logger.debug("CacheClientProxy.close, logging out: " + subject.getPrincipal());
+          subject.logout();
+        }
+        // for multiUser case, in non-durable case, we are closing the connection
+        else {
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
@@ -941,7 +945,8 @@ public class CacheClientProxy implements ClientSession {
     return false;
   }
 
-  private void closeTransientFields() {
+  @VisibleForTesting
+  protected void closeTransientFields() {
     if (!closeSocket()) {
       // The thread who closed the socket will be responsible to
       // releaseResourcesForAddress and clearClientInterestList
@@ -973,6 +978,8 @@ public class CacheClientProxy implements ClientSession {
 
     // Logout the subject
     if (subject != null) {
+      logger.info(
+          "CacheClientProxy.closeOtherTransientFields, logging out: " + subject.getPrincipal());
       subject.logout();
     }
   }

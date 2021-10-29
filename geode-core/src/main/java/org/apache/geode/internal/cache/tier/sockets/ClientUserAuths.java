@@ -18,13 +18,18 @@ import static org.apache.geode.cache.client.internal.AuthenticateUserOp.NOT_A_US
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -38,7 +43,12 @@ public class ClientUserAuths {
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, UserAuthAttributes> cqNameVsUserAuth =
       new ConcurrentHashMap<>();
-  private final ConcurrentMap<Long, Subject> uniqueIdVsSubject = new ConcurrentHashMap<>();
+  // use a list to store all the subjects that's created for this user id
+  // it's observed that even in the non-expirable credential case, the will be multiple
+  // subjects created associated with one userId. We always save the current subject to the top of
+  // the list. The rest are "to-be-retired".
+  private final ConcurrentMap<Long, CopyOnWriteArrayList<Subject>> uniqueIdVsSubject =
+      new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
   private final int m_seed;
@@ -52,17 +62,32 @@ public class ClientUserAuths {
     return newId;
   }
 
-  public Long putSubject(Subject subject, long existingUniqueId) {
-    final Long newId;
+
+  public long putSubject(@NotNull Subject subject, long existingUniqueId) {
+    final long newId;
     if (existingUniqueId == 0 || existingUniqueId == NOT_A_USER_ID) {
       newId = getNextID();
     } else {
       newId = existingUniqueId;
     }
 
-    Subject oldSubject = uniqueIdVsSubject.put(newId, subject);
-    removeSubject(oldSubject);
-    logger.debug("Subject of {} added.", newId);
+    // we are saving all the subjects that's related to this uniqueId
+    // we cannot immediately log out the old subject of this userId because
+    // it might already be bound to another thread and doing operations. If
+    // we log out that subject immediately, that thread "authorize" would get null principal.
+    synchronized (this) {
+      CopyOnWriteArrayList<Subject> subjects;
+      if (!uniqueIdVsSubject.containsKey(newId)) {
+        logger.debug("Subject of {} added.", newId);
+        subjects = new CopyOnWriteArrayList<>();
+        uniqueIdVsSubject.put(newId, subjects);
+      } else {
+        logger.debug("Subject of {} replaced.", newId);
+        subjects = uniqueIdVsSubject.get(newId);
+      }
+      // always add the latest subject to the top of the list;
+      subjects.add(0, subject);
+    }
     return newId;
   }
 
@@ -90,28 +115,29 @@ public class ClientUserAuths {
   }
 
   @VisibleForTesting
+  @TestOnly
   protected Collection<Subject> getSubjects() {
-    return Collections.unmodifiableCollection(uniqueIdVsSubject.values());
+    List<Subject> all = uniqueIdVsSubject.values().stream()
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+    return Collections.unmodifiableCollection(all);
   }
 
-  public Subject getSubject(final Long userId) {
-    return uniqueIdVsSubject.get(userId);
+  public synchronized Subject getSubject(final Long userId) {
+    CopyOnWriteArrayList<Subject> subjects = uniqueIdVsSubject.get(userId);
+    if (subjects == null || subjects.isEmpty()) {
+      return null;
+    }
+    return subjects.get(0);
   }
 
-  public void removeSubject(final Long userId) {
+  public synchronized void removeSubject(final Long userId) {
     logger.debug("Subject of {} removed.", userId);
-    removeSubject(uniqueIdVsSubject.remove(userId));
-  }
-
-  @VisibleForTesting
-  void removeSubject(Subject subject) {
-    if (subject == null) {
+    CopyOnWriteArrayList<Subject> subjects = uniqueIdVsSubject.remove(userId);
+    if (subjects == null) {
       return;
     }
-    if (subject.getPrincipal() == null) {
-      return;
-    }
-    subject.logout();
+    subjects.forEach(Subject::logout);
   }
 
   public UserAuthAttributes getUserAuthAttributes(final String cqName) {
@@ -121,7 +147,7 @@ public class ClientUserAuths {
   public Subject getSubject(final String cqName) {
     Long uniqueId = cqNameVsUniqueId.get(cqName);
     if (uniqueId != null) {
-      return uniqueIdVsSubject.get(uniqueId);
+      return uniqueIdVsSubject.get(uniqueId).get(0);
     }
     return null;
   }
@@ -188,6 +214,7 @@ public class ClientUserAuths {
   }
 
   public void cleanup(boolean fromCacheClientProxy) {
+    // for old security model
     for (UserAuthAttributes userAuth : uniqueIdVsUserAuth.values()) {
       // isDurable is checked for multiuser in CQ
       if (!fromCacheClientProxy && !userAuth.isDurable()) {
@@ -199,7 +226,8 @@ public class ClientUserAuths {
       }
     }
 
-    // Logout the subjects
+    // for integrated security, doesn't matter if this is called from proxy
+    // or from the connection, we are closing the client connection
     for (final Long subjectId : uniqueIdVsSubject.keySet()) {
       removeSubject(subjectId);
     }

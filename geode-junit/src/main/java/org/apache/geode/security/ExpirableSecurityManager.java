@@ -29,13 +29,11 @@ import org.apache.geode.examples.SimpleSecurityManager;
  * this is a test security manager that will authenticate credentials when username matches the
  * password. It will authorize all operations. It keeps a list of expired users, and will throw
  * AuthenticationExpiredException if the user is in that list. This security manager is usually used
- * with NewCredentialAuthInitialize.
+ * with UpdatableUserAuthInitialize.
  *
  * make sure to call reset after each test to clean things up.
  */
 public class ExpirableSecurityManager extends SimpleSecurityManager implements Serializable {
-  // use static field for ease of testing since there is only one instance of this in each VM
-  // we only need ConcurrentHashSet here, but map is only construct available in the library
   private final Set<String> expired_users = ConcurrentHashMap.newKeySet();
   private final Map<String, List<String>> authorizedOps =
       new ConcurrentHashMap<>();
