@@ -88,9 +88,4 @@ public abstract class AbstractUnknownIntegrationTest implements RedisIntegration
                 "ERR unknown command `INTERNALTYPE`, with args beginning with: `something`, ");
   }
 
-  @Test // HELLO is not a recognized command until Redis 6.0.0
-  public void givenHelloCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(() -> jedis.sendCommand(() -> "HELLO".getBytes()))
-        .hasMessage("ERR unknown command `HELLO`, with args beginning with: ");
-  }
 }
