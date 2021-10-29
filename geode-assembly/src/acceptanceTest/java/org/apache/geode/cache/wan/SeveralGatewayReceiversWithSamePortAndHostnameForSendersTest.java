@@ -18,10 +18,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.net.URL;
@@ -153,7 +151,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     Thread.sleep(maxTimeBetweenPingsInReceiver);
 
     int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
-    assertEquals(0, senderPoolDisconnects);
+    assertThat(senderPoolDisconnects).isZero();
   }
 
   @Test
@@ -172,8 +170,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
     createPartitionedRegion(vm1, regionName, senderId, 0, 10);
 
-    assertTrue(allDispatchersConnectedToSameReceiver(1));
-    assertTrue(allDispatchersConnectedToSameReceiver(2));
+    assertThat(allDispatchersConnectedToSameReceiver(1)).isTrue();
+    assertThat(allDispatchersConnectedToSameReceiver(2)).isTrue();
 
   }
 
@@ -190,15 +188,14 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     VM vm2 = VM.getVM(2);
     createCache(vm2, locPort);
 
-    createGatewaySender(vm1, senderId, 2, false, 5,
-        3, GatewaySender.DEFAULT_ORDER_POLICY);
+    createGatewaySender(vm1, senderId, 2, false, 5, 3, GatewaySender.DEFAULT_ORDER_POLICY);
 
-    Exception exception =
-        assertThrows(Exception.class, () -> createGatewaySender(vm2, senderId, 2, false, 5,
-            3, GatewaySender.DEFAULT_ORDER_POLICY, false));
-    assertEquals(exception.getCause().getMessage(), "Cannot create Gateway Sender " + senderId
-        + " with enforceThreadsConnectSameReceiver false because another cache has the same Gateway Sender defined with enforceThreadsConnectSameReceiver true");
-
+    assertThatThrownBy(() -> createGatewaySender(vm2, senderId, 2, false, 5, 3,
+        GatewaySender.DEFAULT_ORDER_POLICY, false))
+            .isInstanceOf(Exception.class)
+            .getCause()
+            .hasMessage("Cannot create Gateway Sender " + senderId
+                + " with enforceThreadsConnectSameReceiver false because another cache has the same Gateway Sender defined with enforceThreadsConnectSameReceiver true");
   }
 
   private boolean allDispatchersConnectedToSameReceiver(int server) {
@@ -210,8 +207,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       if (firstSenderId.equals("")) {
         firstSenderId = senderId;
       } else {
-        assertEquals("Found two different senders (" + firstSenderId + " and " + senderId
-            + ") connected to same receiver in server " + server, firstSenderId, senderId);
+        assertThat(senderId).as("Found two different senders (" + firstSenderId + " and " + senderId
+            + ") connected to same receiver in server " + server).isEqualTo(firstSenderId);
       }
     }
     return true;
@@ -232,9 +229,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
         break;
       }
     }
-    assertNotNull(
-        "Error parsing gfsh output. '" + sendersConnectedColumnHeader + "' column header not found",
-        receiverInfo);
+    assertThat(receiverInfo).as("Error parsing gfsh output. '" + sendersConnectedColumnHeader
+        + "' column header not found").isNotNull();
     String[] tableRow = receiverInfo.split("\\|");
     String sendersConnectedColumnValue = tableRow[3].trim();
     Vector<String> senders = new Vector<String>();
@@ -302,7 +298,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       IgnoredException exp1 =
           IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
       try {
-        RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Object, Object> fact = cache.createRegionFactory(RegionShortcut.PARTITION);
         if (senderIds != null) {
           StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
           while (tokenizer.hasMoreTokens()) {
@@ -310,13 +306,13 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
             fact.addGatewaySenderId(senderId);
           }
         }
-        PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+        PartitionAttributesFactory<Object, Object> pfact = new PartitionAttributesFactory<>();
         pfact.setTotalNumBuckets(totalNumBuckets);
         pfact.setRedundantCopies(redundantCopies);
         pfact.setRecoveryDelay(0);
         fact.setPartitionAttributes(pfact.create());
-        Region r = fact.create(regionName);
-        assertNotNull(r);
+        Region<Object, Object> r = fact.create(regionName);
+        assertThat(r).isNotNull();
       } finally {
         exp.remove();
         exp1.remove();
@@ -328,7 +324,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     return vm.invoke(() -> {
       AbstractGatewaySender sender =
           (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
-      assertNotNull(sender);
+      assertThat(sender).isNotNull();
       PoolStats poolStats = sender.getProxy().getStats();
       return poolStats.getDisConnects();
     });
@@ -344,7 +340,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   private static void putGivenKeyValue(String regionName, Map<Integer, Integer> keyValues) {
     Region<Integer, Integer> r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    assertThat(r).isNotNull();
     for (Object key : keyValues.keySet()) {
       r.put((Integer) key, keyValues.get(key));
     }

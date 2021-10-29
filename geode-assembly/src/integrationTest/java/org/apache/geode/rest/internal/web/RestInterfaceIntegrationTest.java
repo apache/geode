@@ -19,12 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -191,7 +187,7 @@ public class RestInterfaceIntegrationTest {
   }
 
   protected Region<String, Object> getPeopleRegion() {
-    assertNotNull("The 'People' Region was not properly initialized!", people);
+    assertThat(people).as("The 'People' Region was not properly initialized!").isNotNull();
     return people;
   }
 
@@ -299,30 +295,30 @@ public class RestInterfaceIntegrationTest {
     String key = "1";
     Person jonDoe = createPerson("Jon", "Doe", createDate(1977, Calendar.OCTOBER, 31));
 
-    assertTrue(getPeopleRegion().isEmpty());
+    assertThat(getPeopleRegion().isEmpty()).isTrue();
 
     getPeopleRegion().put(key, jonDoe);
 
-    assertFalse(getPeopleRegion().isEmpty());
-    assertEquals(1, getPeopleRegion().size());
-    assertTrue(getPeopleRegion().containsKey(key));
+    assertThat(getPeopleRegion().isEmpty()).isFalse();
+    assertThat(getPeopleRegion().size()).isEqualTo(1);
+    assertThat(getPeopleRegion().containsKey(key)).isTrue();
 
     Object jonDoeRef = getPeopleRegion().get(key);
 
-    assertTrue(jonDoeRef instanceof PdxInstance);
-    assertEquals(jonDoe.getClass().getName(), ((PdxInstance) jonDoeRef).getClassName());
-    assertEquals(jonDoe.getFirstName(), ((PdxInstance) jonDoeRef).getField("firstName"));
-    assertEquals(jonDoe.getLastName(), ((PdxInstance) jonDoeRef).getField("lastName"));
-    assertEquals(jonDoe.getBirthDate(), ((PdxInstance) jonDoeRef).getField("birthDate"));
+    assertThat(jonDoeRef).isInstanceOf(PdxInstance.class);
+    assertThat(((PdxInstance) jonDoeRef).getClassName()).isEqualTo(jonDoe.getClass().getName());
+    assertThat(((PdxInstance) jonDoeRef).getField("firstName")).isEqualTo(jonDoe.getFirstName());
+    assertThat(((PdxInstance) jonDoeRef).getField("lastName")).isEqualTo(jonDoe.getLastName());
+    assertThat(((PdxInstance) jonDoeRef).getField("birthDate")).isEqualTo(jonDoe.getBirthDate());
 
     RestTemplate restTemplate = createRestTemplate();
 
     Person jonDoeResource = restTemplate
         .getForObject(getRegionGetRestApiEndpoint(getPeopleRegion(), key), Person.class);
 
-    assertNotNull(jonDoeResource);
-    assertNotSame(jonDoe, jonDoeResource);
-    assertEquals(jonDoe, jonDoeResource);
+    assertThat(jonDoeResource).isNotNull();
+    assertThat(jonDoeResource).isNotSameAs(jonDoe);
+    assertThat(jonDoeResource).isEqualTo(jonDoe);
 
     /*
      * Object result = runQueryUsingApi(getPeopleRegion().getRegionService(),
@@ -338,15 +334,14 @@ public class RestInterfaceIntegrationTest {
 
     List<?> queryResults = restTemplate.getForObject(url, List.class);
 
-    assertNotNull(queryResults);
-    assertFalse(queryResults.isEmpty());
-    assertEquals(1, queryResults.size());
+    assertThat(queryResults).isNotNull();
+    assertThat(queryResults.size()).isOne();
 
     jonDoeResource = objectMapper.convertValue(queryResults.get(0), Person.class);
 
-    assertNotNull(jonDoeResource);
-    assertNotSame(jonDoe, jonDoeResource);
-    assertEquals(jonDoe, jonDoeResource);
+    assertThat(jonDoeResource).isNotNull();
+    assertThat(jonDoeResource).isNotSameAs(jonDoe);
+    assertThat(jonDoeResource).isEqualTo(jonDoe);
   }
 
   public static class Person implements PdxSerializable {

@@ -18,7 +18,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URLEncoder;
 
@@ -83,8 +83,8 @@ public class RestSecurityPostProcessorTest {
             .hasContentType(APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
 
-    assertEquals("*********", jsonNode.get("ssn").asText());
-    assertEquals(1L, jsonNode.get("id").asLong());
+    assertThat(jsonNode.get("ssn").asText()).isEqualTo("*********");
+    assertThat(jsonNode.get("id").asLong()).isEqualTo(1L);
 
     // Try with super-user
     jsonNode =
@@ -92,8 +92,8 @@ public class RestSecurityPostProcessorTest {
             .hasStatusCode(200)
             .hasContentType(APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
-    assertEquals("555555555", jsonNode.get("ssn").asText());
-    assertEquals(1L, jsonNode.get("id").asLong());
+    assertThat(jsonNode.get("ssn").asText()).isEqualTo("555555555");
+    assertThat(jsonNode.get("id").asLong()).isEqualTo(1L);
   }
 
   // Test multiple keys
@@ -106,14 +106,13 @@ public class RestSecurityPostProcessorTest {
             .getJsonObject();
 
     JsonNode customers = jsonNode.get("customers");
-    final int length = customers.size();
-    assertEquals(2, length);
+    assertThat(customers.size()).isEqualTo(2);
     JsonNode customer = customers.get(0);
-    assertEquals("*********", customer.get("ssn").asText());
-    assertEquals(1, customer.get("id").asLong());
+    assertThat(customer.get("ssn").asText()).isEqualTo("*********");
+    assertThat(customer.get("id").asLong()).isEqualTo(1);
     customer = customers.get(1);
-    assertEquals("*********", customer.get("ssn").asText());
-    assertEquals(3, customer.get("id").asLong());
+    assertThat(customer.get("ssn").asText()).isEqualTo("*********");
+    assertThat(customer.get("id").asLong()).isEqualTo(3);
   }
 
   @Test
@@ -127,8 +126,8 @@ public class RestSecurityPostProcessorTest {
     final int length = customers.size();
     for (int index = 0; index < length; ++index) {
       JsonNode customer = customers.get(index);
-      assertEquals("*********", customer.get("ssn").asText());
-      assertEquals((long) index + 1, customer.get("id").asLong());
+      assertThat(customer.get("ssn").asText()).isEqualTo("*********");
+      assertThat(customer.get("id").asLong()).isEqualTo((long) index + 1);
     }
   }
 
@@ -145,8 +144,8 @@ public class RestSecurityPostProcessorTest {
     final int length = jsonArray.size();
     for (int index = 0; index < length; ++index) {
       JsonNode customer = jsonArray.get(index);
-      assertEquals("*********", customer.get("ssn").asText());
-      assertEquals((long) index + 1, customer.get("id").asLong());
+      assertThat(customer.get("ssn").asText()).isEqualTo("*********");
+      assertThat(customer.get("id").asLong()).isEqualTo((long) index + 1);
     }
   }
 
@@ -174,9 +173,9 @@ public class RestSecurityPostProcessorTest {
                 .hasStatusCode(200)
                 .getJsonObject();
 
-    assertEquals(1, jsonArray.size());
+    assertThat(jsonArray.size()).isEqualTo(1);
     JsonNode customer = jsonArray.get(0);
-    assertEquals("*********", customer.get("ssn").asText());
-    assertEquals(1L, customer.get("id").asLong());
+    assertThat(customer.get("ssn").asText()).isEqualTo("*********");
+    assertThat(customer.get("id").asLong()).isEqualTo(1L);
   }
 }

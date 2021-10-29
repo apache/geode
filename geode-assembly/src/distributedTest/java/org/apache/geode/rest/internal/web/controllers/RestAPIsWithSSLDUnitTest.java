@@ -35,7 +35,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -238,11 +238,11 @@ public class RestAPIsWithSSLDUnitTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode json = mapper.readTree(str.toString());
 
-    assertEquals(json.get("id").asInt(), 101);
-    assertEquals(json.get("firstName").asText(), "Mithali");
-    assertEquals(json.get("middleName").asText(), "Dorai");
-    assertEquals(json.get("lastName").asText(), "Raj");
-    assertEquals(json.get("gender").asText(), Gender.FEMALE.name());
+    assertThat(json.get("id").asInt()).isEqualTo(101);
+    assertThat(json.get("firstName").asText()).isEqualTo("Mithali");
+    assertThat(json.get("middleName").asText()).isEqualTo("Dorai");
+    assertThat(json.get("lastName").asText()).isEqualTo("Raj");
+    assertThat(json.get("gender").asText()).isEqualTo(Gender.FEMALE.name());
   }
 
   @Test

@@ -19,11 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -82,9 +78,9 @@ public class PdxBasedCrudControllerIntegrationTest {
   @Before
   public void setupGemFire() {
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
-    if (agentUtil.findWarLocation("geode-web-api") == null) {
-      fail("unable to locate geode-web-api WAR file");
-    }
+    assertThat(agentUtil.findWarLocation("geode-web-api"))
+        .as("unable to locate geode-web-api WAR file")
+        .isNotNull();
 
     if (cache == null) {
       gemfireProperties = (gemfireProperties != null ? gemfireProperties : new Properties());
@@ -128,7 +124,8 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate.getForObject(
         String.format(PORT_AND_ONE_STRING_FORMAT, port, region.getName()), String.class);
-    assertTrue(result.replaceAll("\r", "").contains("{\n" + "  \"Region\" : [ "));
+    assertThat(result).isNotNull();
+    assertThat(result.replaceAll("\r", "")).contains("{\n" + "  \"Region\" : [ ");
   }
 
   @Test
@@ -136,7 +133,8 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate.getForObject(
         String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "keys"), String.class);
-    assertTrue(result.replaceAll("\r", "").contains("{\n  \"keys\" : [ "));
+    assertThat(result).isNotNull();
+    assertThat(result.replaceAll("\r", "")).contains("{\n  \"keys\" : [ ");
   }
 
   @Test
@@ -144,7 +142,8 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate.getForObject(
         String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "0"), String.class);
-    assertTrue(result.contains("\\\"zero\\\""));
+    assertThat(result).isNotNull();
+    assertThat(result).contains("\\\"zero\\\"");
   }
 
   @Test
@@ -155,7 +154,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     HttpEntity<String> entity = new HttpEntity<>(formatJson("four", "cuatro"), headers);
     restTemplate.put(String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "4"),
         entity);
-    assertTrue(region.containsKey("4"));
+    assertThat(region.containsKey("4")).isTrue();
   }
 
   @Test
@@ -167,7 +166,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     restTemplate.put(String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "4"),
         entity);
     restTemplate.delete(String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "4"));
-    assertFalse(region.containsKey("4"));
+    assertThat(region.containsKey("4")).isFalse();
   }
 
   @Test
@@ -175,7 +174,8 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "queries"), String.class);
-    assertEquals("{\n  \"queries\" : [ ]\n}", result.replaceAll("\r", ""));
+    assertThat(result).isNotNull();
+    assertThat(result.replaceAll("\r", "")).isEqualTo("{\n  \"queries\" : [ ]\n}");
   }
 
   @Test
@@ -183,7 +183,8 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "functions"), String.class);
-    assertEquals("{\n  \"functions\" : [ ]\n}", result.replaceAll("\r", ""));
+    assertThat(result).isNotNull();
+    assertThat(result.replaceAll("\r", "")).isEqualTo("{\n  \"functions\" : [ ]\n}");
   }
 
   @Test
@@ -191,7 +192,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "ping"), String.class);
-    assertNull(result);
+    assertThat(result).isNull();
   }
 
   @Test
@@ -199,7 +200,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "servers"), String.class);
-    assertEquals("[ \"http://localhost:" + port + "\" ]", result);
+    assertThat(result).isEqualTo("[ \"http://localhost:" + port + "\" ]");
   }
 
   private String formatJson(String english, String spanish) {

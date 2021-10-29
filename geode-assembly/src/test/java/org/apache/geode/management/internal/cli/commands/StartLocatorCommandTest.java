@@ -17,9 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -60,7 +57,7 @@ public class StartLocatorCommandTest {
             .concat(File.pathSeparator).concat(System.getProperty("java.class.path"))
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = startLocatorCommand.getLocatorClasspath(true, userClasspath);
-    assertEquals(expectedClasspath, actualClasspath);
+    assertThat(actualClasspath).isEqualTo(expectedClasspath);
   }
 
   @Test
@@ -78,8 +75,7 @@ public class StartLocatorCommandTest {
         startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
             null, null, gemfireProperties, null, false, new String[0], null, null);
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotEmpty();
 
     Set<String> expectedCommandLineElements = new HashSet<>(6);
 
@@ -95,8 +91,7 @@ public class StartLocatorCommandTest {
       expectedCommandLineElements.remove(commandLineElement.toLowerCase());
     }
 
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(expectedCommandLineElements).isEmpty();
   }
 
   @Test
@@ -122,16 +117,8 @@ public class StartLocatorCommandTest {
     expectedCommandLineElements.add("defaultLocator");
     expectedCommandLineElements.add("--port=10334");
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
-    assertEquals(commandLineElements.length, expectedCommandLineElements.size());
-
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement);
-    }
-
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(commandLineElements)
+        .containsExactlyInAnyOrderElementsOf(expectedCommandLineElements);
   }
 
   @Test
@@ -187,8 +174,7 @@ public class StartLocatorCommandTest {
     expectedCommandLineElements.add("--port=10101");
     expectedCommandLineElements.add("--redirect-output");
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotEmpty();
 
     assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }

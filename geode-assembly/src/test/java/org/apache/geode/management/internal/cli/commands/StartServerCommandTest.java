@@ -20,9 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.apache.geode.management.internal.cli.commands.StartServerCommand.addJvmOptionsForOutOfMemoryErrors;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -65,7 +62,7 @@ public class StartServerCommandTest {
         StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
             .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
     String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
-    assertEquals(expectedClasspath, actualClasspath);
+    assertThat(actualClasspath).isEqualTo(expectedClasspath);
   }
 
   @Test
@@ -76,18 +73,16 @@ public class StartServerCommandTest {
 
     if (SystemUtils.isHotSpotVM()) {
       if (SystemUtils.isWindows()) {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=taskkill /F /PID %p"));
+        assertThat(jvmOptions).contains("-XX:OnOutOfMemoryError=taskkill /F /PID %p");
       } else {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=kill -KILL %p"));
+        assertThat(jvmOptions).contains("-XX:OnOutOfMemoryError=kill -KILL %p");
       }
     } else if (SystemUtils.isJ9VM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-Xcheck:memory"));
+      assertThat(jvmOptions).containsExactly("-Xcheck:memory");
     } else if (SystemUtils.isJRockitVM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-XXexitOnOutOfMemory"));
+      assertThat(jvmOptions).containsExactly("-XXexitOnOutOfMemory");
     } else {
-      assertTrue(jvmOptions.isEmpty());
+      assertThat(jvmOptions).isEmpty();
     }
   }
 
@@ -102,13 +97,12 @@ public class StartServerCommandTest {
     String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
         null, new Properties(), null, false, new String[0], false, null, null);
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotEmpty();
 
     Set<String> expectedCommandLineElements = new HashSet<>(6);
     expectedCommandLineElements.add(serverLauncher.getCommand().getName());
     expectedCommandLineElements.add("--disable-default-server");
-    expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
+    expectedCommandLineElements.add(serverLauncher.getMemberName());
     expectedCommandLineElements.add("--rebalance");
     expectedCommandLineElements
         .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
@@ -121,11 +115,8 @@ public class StartServerCommandTest {
     expectedCommandLineElements
         .add(String.format("--message-time-to-live=%1$d", serverLauncher.getMessageTimeToLive()));
 
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
-    }
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(commandLineElements)
+        .containsExactlyInAnyOrderElementsOf(expectedCommandLineElements);
   }
 
   @Test
@@ -143,14 +134,13 @@ public class StartServerCommandTest {
     String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
         null, gemfireProperties, null, false, new String[0], false, null, null);
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotEmpty();
 
     Set<String> expectedCommandLineElements = new HashSet<>(6);
 
     expectedCommandLineElements.add(serverLauncher.getCommand().getName());
     expectedCommandLineElements.add("--disable-default-server");
-    expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
+    expectedCommandLineElements.add(serverLauncher.getMemberName());
     expectedCommandLineElements.add("--rebalance");
     expectedCommandLineElements
         .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
@@ -160,17 +150,13 @@ public class StartServerCommandTest {
         serverLauncher.getEvictionHeapPercentage()));
 
     expectedCommandLineElements
-        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
+        .add("-D" + GeodeGlossary.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
     expectedCommandLineElements
-        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
-    expectedCommandLineElements.add("-d" + GeodeGlossary.GEMFIRE_PREFIX + ""
+        .add("-D" + GeodeGlossary.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
+    expectedCommandLineElements.add("-D" + GeodeGlossary.GEMFIRE_PREFIX + ""
         + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
 
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
-    }
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
 
   @Test
@@ -244,8 +230,7 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add("--socket-buffer-size=1048576");
     expectedCommandLineElements.add("--hostname-for-clients=localhost");
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+    assertThat(commandLineElements).isNotEmpty();
 
     assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }

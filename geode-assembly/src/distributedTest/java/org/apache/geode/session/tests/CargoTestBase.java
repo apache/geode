@@ -16,7 +16,6 @@ package org.apache.geode.session.tests;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,8 +131,8 @@ public abstract class CargoTestBase {
 
       // Null would mean we don't expect the same cookie as before
       if (expectedCookie != null) {
-        assertEquals("Sessions are not replicating properly", expectedCookie,
-            resp.getSessionCookie());
+        assertThat(resp.getSessionCookie()).as("Sessions are not replicating properly")
+            .isEqualTo(expectedCookie);
       }
 
       // Check that the response from this server is correct
@@ -152,7 +151,8 @@ public abstract class CargoTestBase {
       } else {
         // either p2p cache or client cache which has proxy/empty region - retrieving session from
         // servers
-        assertEquals("Session data is not replicating properly", expectedValue, resp.getResponse());
+        assertThat(resp.getResponse()).as("Session data is not replicating properly")
+            .isEqualTo(expectedValue);
       }
     }
   }
@@ -318,8 +318,8 @@ public abstract class CargoTestBase {
         await().atMost(30, TimeUnit.SECONDS).until(() -> Integer.toString(expected)
             .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
       } else {
-        assertEquals(Integer.toString(expected),
-            client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+        assertThat(client.executionFunction(GetMaxInactiveInterval.class).getResponse())
+            .isEqualTo(Integer.toString(expected));
       }
     }
   }
@@ -350,16 +350,16 @@ public abstract class CargoTestBase {
 
     workingResponse = client.setMaxInactive(timeToExp);
 
-    assertEquals(cookie, workingResponse.getSessionCookie());
+    assertThat(workingResponse.getSessionCookie()).isEqualTo(cookie);
 
     await().untilAsserted(() -> {
       Client.Response resp = client.get(key);
       Thread.sleep(500);
-      assertEquals("Sessions are not replicating properly", cookie,
-          resp.getSessionCookie());
+      assertThat(resp.getSessionCookie()).as("Sessions are not replicating properly")
+          .isEqualTo(cookie);
 
-      assertEquals("Containers are not replicating session expiration reset", value,
-          resp.getResponse());
+      assertThat(resp.getResponse()).as("Containers are not replicating session expiration reset")
+          .isEqualTo(value);
 
     });
 
@@ -419,7 +419,7 @@ public abstract class CargoTestBase {
 
     manager.startAllInactiveContainers();
     // Check that a container was added
-    assertEquals(numContainers + 1, manager.numContainers());
+    assertThat(manager.numContainers()).isEqualTo(numContainers + 1);
     await().untilAsserted(() -> getKeyValueDataOnAllClients(key, value, resp.getSessionCookie()));
   }
 

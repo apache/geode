@@ -15,7 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +90,7 @@ public class BundledJarsJUnitTest {
             + String.join(System.lineSeparator(), newJars) + System.lineSeparator()
             + System.lineSeparator();
 
-    assertTrue(message, expectedJars.equals(bundledJarNames));
+    assertThat(bundledJarNames).as(message).isEqualTo(expectedJars);
   }
 
   /**
@@ -99,9 +99,9 @@ public class BundledJarsJUnitTest {
   private Map<String, String> getBundledJars() {
     File geodeHomeDirectory = new File(GEODE_HOME);
 
-    assertTrue(
-        "Please set the GEODE_HOME environment variable to the product installation directory.",
-        geodeHomeDirectory.isDirectory());
+    assertThat(geodeHomeDirectory)
+        .as("Please set the GEODE_HOME environment variable to the product installation directory.")
+        .isDirectory();
 
     Collection<File> jars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"jar"}, true);
     Map<String, String> sortedJars = new TreeMap<>();

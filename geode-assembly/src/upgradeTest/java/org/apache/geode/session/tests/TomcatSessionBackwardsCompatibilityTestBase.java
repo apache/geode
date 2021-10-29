@@ -14,7 +14,7 @@
  */
 package org.apache.geode.session.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -198,8 +198,10 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       resp = client.get(key);
 
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals("Session data is not replicating properly", value, resp.getResponse());
+      assertThat(resp.getSessionCookie()).as("Sessions are not replicating properly")
+          .isEqualTo(cookie);
+      assertThat(resp.getResponse()).as("Session data is not replicating properly")
+          .isEqualTo(value);
     }
   }
 

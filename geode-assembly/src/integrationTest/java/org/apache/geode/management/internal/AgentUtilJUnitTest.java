@@ -14,9 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,26 +43,26 @@ public class AgentUtilJUnitTest {
   @Test
   public void testRESTApiExists() {
     URI gemFireWarLocation = agentUtil.findWarLocation("geode-web-api");
-    assertNotNull("GemFire REST API WAR File was not found", gemFireWarLocation);
+    assertThat(gemFireWarLocation).as("GemFire REST API WAR File was not found").isNotNull();
   }
 
   @Test
   public void testPulseWarExists() {
     URI gemFireWarLocation = agentUtil.findWarLocation("geode-pulse");
-    assertNotNull("Pulse WAR File was not found", gemFireWarLocation);
+    assertThat(gemFireWarLocation).as("Pulse WAR File was not found").isNotNull();
   }
 
   @Test
   public void testLookupOfWarFileOnClassPath() {
     String classpath = System.getProperty("java.class.path");
     URI gemFireWarLocation = agentUtil.findWarLocation("testWarFile");
-    assertNull(gemFireWarLocation);
+    assertThat(gemFireWarLocation).isNull();
 
     classpath =
         classpath + System.getProperty("path.separator") + "somelocation/testWarFile.war";
     System.setProperty("java.class.path", classpath);
     gemFireWarLocation = agentUtil.findWarLocation("testWarFile");
-    assertNotNull(gemFireWarLocation);
+    assertThat(gemFireWarLocation).isNotNull();
     assertThat(gemFireWarLocation.toString()).endsWith("somelocation/testWarFile.war");
   }
 }

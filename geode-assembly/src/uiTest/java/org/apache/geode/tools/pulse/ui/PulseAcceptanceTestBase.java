@@ -37,7 +37,6 @@ import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.MEMBER_VI
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.REDUNDANCY_GRID_ID;
 import static org.apache.geode.tools.pulse.tests.ui.PulseTestConstants.SERVER_GROUP_GRID_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -72,19 +71,19 @@ public abstract class PulseAcceptanceTestBase {
   private void searchByLinkAndClick(String linkText) {
     WebElement element = new WebDriverWait(getWebDriver(), 2)
         .until(ExpectedConditions.elementToBeClickable(By.linkText(linkText)));
-    assertNotNull(element);
+    assertThat(element).isNotNull();
     element.click();
   }
 
   private void searchByIdAndClick(String id) {
     WebElement element = getWebDriver().findElement(By.id(id));
-    assertNotNull(element);
+    assertThat(element).isNotNull();
     element.click();
   }
 
   private void searchByXPathAndClick(String xpath) {
     WebElement element = getWebDriver().findElement(By.xpath(xpath));
-    assertNotNull(element);
+    assertThat(element).isNotNull();
     element.click();
   }
 

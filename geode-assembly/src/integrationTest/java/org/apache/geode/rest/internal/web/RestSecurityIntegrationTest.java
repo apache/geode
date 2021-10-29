@@ -15,9 +15,7 @@
 package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
@@ -178,12 +176,12 @@ public class RestSecurityIntegrationTest {
         .getJsonObject();
 
     JsonNode regions = jsonObject.get("regions");
-    assertNotNull(regions);
-    assertTrue(regions.size() > 0);
+    assertThat(regions).isNotNull();
+    assertThat(regions.size()).isGreaterThan(0);
 
     JsonNode region = regions.get(0);
-    assertEquals("AuthRegion", region.get("name").asText());
-    assertEquals("REPLICATE", region.get("type").asText());
+    assertThat(region.get("name").asText()).isEqualTo("AuthRegion");
+    assertThat(region.get("type").asText()).isEqualTo("REPLICATE");
 
     // List regions with an unknown user - 401
     assertResponse(restClient.doGet("", "user", "wrongPswd"))

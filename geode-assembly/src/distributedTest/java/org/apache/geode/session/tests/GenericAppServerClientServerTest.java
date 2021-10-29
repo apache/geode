@@ -15,7 +15,7 @@
 package org.apache.geode.session.tests;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -63,14 +63,15 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       resp = client.get(key);
 
-      assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
-      assertEquals(value, resp.getResponse());
+      assertThat(resp.getSessionCookie()).as("Sessions are not replicating properly")
+          .isEqualTo(cookie);
+      assertThat(resp.getResponse()).isEqualTo(value);
     }
 
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
       resp = client.executionFunction(GetSessionCount.class);
-      assertEquals("Should have 0 native sessions", "0", resp.getResponse());
+      assertThat(resp.getResponse()).as("Should have 0 native sessions").isEqualTo("0");
     }
   }
 
@@ -79,7 +80,7 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
     serverVM.invoke("verify session is removed", () -> {
       final InternalCache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion("gemfire_modules_sessions");
-      await("for region to be empty").untilAsserted(() -> assertEquals(0, region.size()));
+      await("for region to be empty").untilAsserted(() -> assertThat(region.size()).isEqualTo(0));
     });
     super.verifySessionIsRemoved(key);
   }
@@ -90,7 +91,8 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
     serverVM.invoke("verify max inactive interval", () -> {
       final InternalCache cache = ClusterStartupRule.getCache();
       Region<Object, HttpSession> region = cache.getRegion("gemfire_modules_sessions");
-      region.values().forEach(session -> assertEquals(expected, session.getMaxInactiveInterval()));
+      region.values().forEach(session -> assertThat(session.getMaxInactiveInterval())
+          .isEqualTo(expected));
     });
   }
 }
