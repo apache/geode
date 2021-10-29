@@ -109,7 +109,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor<IN, OUT, AGG> other,
-      Set<Integer> bucketsAsFilter, boolean executeOnBucketSet) {
+      Set<BucketId> bucketsAsFilter, boolean executeOnBucketSet) {
     // super copies args, rc and memberMappedArgument
     super(other);
     pr = other.pr;
@@ -239,7 +239,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
 
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -252,7 +252,7 @@ public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
 
     bucketIDs.retainAll(actualBucketSet);
 
-    for (final int bid : bucketIDs) {
+    for (final BucketId bid : bucketIDs) {
       if (!actualBucketSet.contains(bid)) {
         throw new FunctionException("Bucket " + bid + " does not exist.");
       }

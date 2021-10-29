@@ -945,7 +945,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
       } catch (AllConnectionsInUseException ignore) {
       }
 
-      Map<ServerLocation, Set<Integer>> serverBucketMap =
+      Map<ServerLocation, Set<BucketId>> serverBucketMap =
           clientMetadataService.groupByServerToAllBuckets(partitionedRegion, true);
 
       return serverBucketMap != null;
@@ -978,7 +978,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
         clientMetadataService.getClientPRMetadata((InternalRegion) partitionedRegion);
       } catch (AllConnectionsInUseException ignore) {
       }
-      Map<ServerLocation, Set<Integer>> serverBucketMap =
+      Map<ServerLocation, Set<BucketId>> serverBucketMap =
           clientMetadataService.groupByServerToAllBuckets(partitionedRegion, true);
 
       assertThat(serverBucketMap).hasSize(4);

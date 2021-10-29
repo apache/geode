@@ -97,7 +97,7 @@ public class ClientPartitionAdvisor {
     }
   }
 
-  public BucketServerLocation66 adviseServerLocation(int bucketId) {
+  public BucketServerLocation66 adviseServerLocation(final BucketId bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
       List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
@@ -115,7 +115,7 @@ public class ClientPartitionAdvisor {
   }
 
   public ServerLocation adviseRandomServerLocation() {
-    ArrayList<BucketId> bucketList = new ArrayList<>(this.bucketServerLocationsMap.keySet());
+    ArrayList<BucketId> bucketList = new ArrayList<>(bucketServerLocationsMap.keySet());
     int size = bucketList.size();
     if (size > 0) {
       List<BucketServerLocation66> locations =
@@ -131,14 +131,14 @@ public class ClientPartitionAdvisor {
     return null;
   }
 
-  public List<BucketServerLocation66> adviseServerLocations(int bucketId) {
+  public List<BucketServerLocation66> adviseServerLocations(final BucketId bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       return new ArrayList<>(bucketServerLocationsMap.get(bucketId));
     }
     return null;
   }
 
-  public ServerLocation advisePrimaryServerLocation(int bucketId) {
+  public ServerLocation advisePrimaryServerLocation(final BucketId bucketId) {
     if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
       List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
@@ -151,7 +151,7 @@ public class ClientPartitionAdvisor {
     return null;
   }
 
-  public void updateBucketServerLocations(BucketId bucketId,
+  public void updateBucketServerLocations(final BucketId bucketId,
       List<BucketServerLocation66> bucketServerLocations, ClientMetadataService cms) {
     List<BucketServerLocation66> locationCopy = new ArrayList<>();
     List<BucketServerLocation66> locations;
@@ -181,7 +181,7 @@ public class ClientPartitionAdvisor {
   }
 
   public void removeBucketServerLocation(ServerLocation serverLocation) {
-    for (final Map.Entry<BucketId, List<BucketServerLocation66>> entry : this.bucketServerLocationsMap
+    for (final Map.Entry<BucketId, List<BucketServerLocation66>> entry : bucketServerLocationsMap
         .entrySet()) {
       BucketId key = entry.getKey();
       List<BucketServerLocation66> oldLocations = entry.getValue();
@@ -245,19 +245,19 @@ public class ClientPartitionAdvisor {
     return fixedPAMap.keySet();
   }
 
-  public int assignFixedBucketId(String partition, Object resolveKey) {
+  public BucketId assignFixedBucketId(String partition, Object resolveKey) {
     if (fixedPAMap.containsKey(partition)) {
       List<Integer> attList = fixedPAMap.get(partition);
       int hc = resolveKey.hashCode();
       int bucketId = Math.abs(hc % (attList.get(0)));
-      return bucketId + attList.get(1);
+      return BucketId.valueOf(bucketId + attList.get(1));
     } else {
       // We don't know as we might not have got the all FPAttributes
       // from the FPR, So don't throw the exception but send the request
       // to the server and update the FPA attributes
       // This exception should be thrown from the server as we will
       // not be sure of partition not available unless we contact the server.
-      return -1;
+      return BucketId.UNKNOWN_BUCKET;
     }
   }
 

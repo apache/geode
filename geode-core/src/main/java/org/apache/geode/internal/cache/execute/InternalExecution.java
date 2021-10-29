@@ -21,6 +21,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * Internal interface that adds some internal methods to the Execution interface.
@@ -44,7 +45,7 @@ public interface InternalExecution<IN, OUT, AGG> extends Execution<IN, OUT, AGG>
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since Geode 1.0
    */
-  InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs);
+  InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs);
 
   /**
    * If true, function execution waits for all exceptions from target nodes <br>

@@ -484,6 +484,12 @@ public class PartitionedRegionHelper {
     }
   }
 
+  public static BucketId getBucket(PartitionedRegion pr, Operation operation, Object key,
+      Object value,
+      Object callbackArgument) {
+    return BucketId.valueOf(getHashKey(pr, operation, key, value, callbackArgument));
+  }
+
   /**
    * Runs hashCode() on given key/routing object producing a long value and then finds absolute
    * value of the modulus with bucketSize. For better key distribution, possibly use MD5 or SHA or
@@ -494,6 +500,10 @@ public class PartitionedRegionHelper {
    */
   public static int getHashKey(EntryOperation<?, ?> event) {
     return getHashKey(event, null, null, null, null, null);
+  }
+
+  public static BucketId getBucket(EntryOperation<?, ?> event) {
+    return BucketId.valueOf(getHashKey(event));
   }
 
   /**
@@ -649,11 +659,19 @@ public class PartitionedRegionHelper {
     return getHashKey(routingObject, pr.getTotalNumberOfBuckets());
   }
 
+  public static BucketId getBucket(PartitionedRegion pr, Object routingObject) {
+    return BucketId.valueOf(getHashKey(pr, routingObject));
+  }
+
   public static int getHashKey(Object routingObject, int totalNumBuckets) {
     int hc = routingObject.hashCode();
     int bucketId = hc % totalNumBuckets;
     // Force positive bucket ids only
     return Math.abs(bucketId);
+  }
+
+  public static BucketId getBucket(Object routingObject, int totalNumBuckets) {
+    return BucketId.valueOf(getHashKey(routingObject, totalNumBuckets));
   }
 
   public static PartitionedRegion getPartitionedRegion(String prName, Cache cache) {

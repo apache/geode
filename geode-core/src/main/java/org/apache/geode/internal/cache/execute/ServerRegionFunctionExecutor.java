@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -114,7 +115,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
 
   private ServerRegionFunctionExecutor(
       ServerRegionFunctionExecutor<IN, OUT, AGG> serverRegionFunctionExecutor,
-      Set<Integer> bucketsAsFilter, boolean executeOnBucketSet) {
+      Set<BucketId> bucketsAsFilter, boolean executeOnBucketSet) {
 
     super(serverRegionFunctionExecutor);
 
@@ -136,7 +137,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",

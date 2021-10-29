@@ -137,7 +137,7 @@ public class LocalDataSet<K, V> implements Region<K, V>, QueryExecutor {
 
   private boolean isInDataSet(Object key, Object callbackArgument) {
     int bucketId = getHashKey(Operation.CONTAINS_KEY, key, null, callbackArgument);
-    return buckets.contains(bucketId);
+    return buckets.contains(BucketId.valueOf(bucketId));
   }
 
   public InternalRegionFunctionContext<?> getFunctionContext() {

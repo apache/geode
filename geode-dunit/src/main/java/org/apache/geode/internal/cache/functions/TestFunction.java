@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.MyFunctionExecutionException;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -220,17 +220,13 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
     // check if the node contains the bucket passed as filter
     RegionFunctionContextImpl rfc = (RegionFunctionContextImpl) context;
     PartitionedRegion pr = (PartitionedRegion) rfc.getDataSet();
-    int[] bucketIDs = rfc.getLocalBucketArray(pr);
-    pr.getGemFireCache().getLogger().fine("LOCAL BUCKETSET =" + Arrays.toString(bucketIDs));
-    ResultSender<Integer> rs = context.<Integer>getResultSender();
+    Set<BucketId> bucketIDs = rfc.getLocalBuckets(pr);
+    pr.getGemFireCache().getLogger().fine("LOCAL BUCKETSET = " + bucketIDs);
+    ResultSender<Set<BucketId>> rs = context.getResultSender();
     if (!pr.getDataStore().areAllBucketsHosted(bucketIDs)) {
-      throw new AssertionError(
-          "bucket IDs =" + Arrays.toString(bucketIDs) + " not all hosted locally");
+      throw new AssertionError("bucket IDs =" + bucketIDs + " not all hosted locally");
     } else {
-      for (int i = 1; i < bucketIDs[0]; ++i) {
-        rs.sendResult(bucketIDs[i]);
-      }
-      rs.lastResult(bucketIDs[bucketIDs[0]]);
+      rs.lastResult(bucketIDs);
     }
   }
 

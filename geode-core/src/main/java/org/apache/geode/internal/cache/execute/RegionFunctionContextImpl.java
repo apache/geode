@@ -15,10 +15,13 @@
 
 package org.apache.geode.internal.cache.execute;
 
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -27,6 +30,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * Context available to data dependent functions. When function is executed using
@@ -48,7 +52,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   private final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap;
 
-  private final int[] localBucketArray;
+  private final Set<BucketId> localBuckets;
 
   private final boolean isPossibleDuplicate;
 
@@ -56,21 +60,21 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
       final Region<?, ?> dataSet, final T args, final Set<?> filter,
-      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, Set<BucketId> localBuckets,
       ResultSender<?> resultSender, boolean isPossibleDuplicate) {
-    this(cache, functionId, dataSet, args, filter, colocatedLocalDataMap, localBucketArray,
+    this(cache, functionId, dataSet, args, filter, colocatedLocalDataMap, localBuckets,
         resultSender, isPossibleDuplicate, null);
   }
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
       final Region<?, ?> dataSet, final T args, final Set<?> filter,
-      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, Set<BucketId> localBuckets,
       ResultSender<?> resultSender, boolean isPossibleDuplicate, Object principal) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = filter;
     this.colocatedLocalDataMap = colocatedLocalDataMap;
-    this.localBucketArray = localBucketArray;
+    this.localBuckets = localBuckets;
     this.isPossibleDuplicate = isPossibleDuplicate;
 
     if (principal == null) {
@@ -152,11 +156,11 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
   }
 
   @Override
-  public <K, V> int[] getLocalBucketArray(Region<K, V> region) {
+  public <K, V> @Nullable Set<BucketId> getLocalBuckets(Region<K, V> region) {
     if (!region.getAttributes().getDataPolicy().withPartitioning()) {
       return null;
     }
-    return localBucketArray;
+    return localBuckets;
   }
 
   @Override

@@ -49,6 +49,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -147,14 +148,14 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
 
-    Set<Integer> bucketFilterSet = new HashSet<>();
-    bucketFilterSet.add(3);
-    bucketFilterSet.add(6);
-    bucketFilterSet.add(8);
+    Set<BucketId> bucketFilterSet = new HashSet<>();
+    bucketFilterSet.add(BucketId.valueOf(3));
+    bucketFilterSet.add(BucketId.valueOf(6));
+    bucketFilterSet.add(BucketId.valueOf(8));
     client.invoke(() -> serverBucketFilterExecution(bucketFilterSet));
     bucketFilterSet.clear();
     // Test single filter
-    bucketFilterSet.add(7);
+    bucketFilterSet.add(BucketId.valueOf(7));
     client.invoke(() -> serverBucketFilterExecution(bucketFilterSet));
   }
 
@@ -164,10 +165,10 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
     // test multi key filter
-    Set<Integer> bucketFilterSet = new HashSet<>();
-    bucketFilterSet.add(3);
-    bucketFilterSet.add(6);
-    bucketFilterSet.add(8);
+    Set<BucketId> bucketFilterSet = new HashSet<>();
+    bucketFilterSet.add(BucketId.valueOf(3));
+    bucketFilterSet.add(BucketId.valueOf(6));
+    bucketFilterSet.add(BucketId.valueOf(8));
 
     Set<Integer> keyFilterSet = new HashSet<>();
     keyFilterSet.add(75);

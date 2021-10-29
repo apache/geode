@@ -140,7 +140,7 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
         partNumber = partNumber + 1;
 
         for (int i = 0; i < removedNodesSize; i++) {
-          removedNodesSet.add((String) clientMessage.getPart(partNumber + i).getStringOrObject());
+          removedNodesSet.add((String) clientMessage.getPart(partNumber + i).getString());
         }
       }
 

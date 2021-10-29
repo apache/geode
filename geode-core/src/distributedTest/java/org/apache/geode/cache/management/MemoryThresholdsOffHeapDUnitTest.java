@@ -1553,7 +1553,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         if (r instanceof PartitionedRegion) {
           final PartitionedRegion pr = (PartitionedRegion) r;
           final BucketId bucketId =
-              BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, bigKey, null, null));
+              PartitionedRegionHelper.getBucket(pr, null, bigKey, null, null);
           wc = new WaitCriterion() {
             @Override
             public String description() {

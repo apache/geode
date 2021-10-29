@@ -768,7 +768,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
           final BucketRegion b;
           try {
             b = pr.getDataStore().getInitializedBucketForId(key,
-                BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null)));
+                PartitionedRegionHelper.getBucket(pr, null, key, null, null));
           } catch (final ForceReattemptException e) {
             fail();
           }

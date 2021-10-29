@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList.Iterator;
@@ -689,7 +690,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       if (cms.isMetadataStable()) {
 
         if (serverRegionExecutor.getFilter().isEmpty()) {
-          Map<ServerLocation, Set<Integer>> serverToBuckets =
+          Map<ServerLocation, Set<BucketId>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
 
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
@@ -780,7 +781,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       if (cms.isMetadataStable()) {
 
         if (serverRegionExecutor.getFilter().isEmpty()) {
-          Map<ServerLocation, Set<Integer>> serverToBuckets =
+          Map<ServerLocation, Set<BucketId>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
 
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {

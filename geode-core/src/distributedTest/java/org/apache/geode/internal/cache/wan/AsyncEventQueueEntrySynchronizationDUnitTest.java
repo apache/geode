@@ -118,7 +118,7 @@ public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueu
   private void createBucket(String regionName, Object key) throws Exception {
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
     BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+        PartitionedRegionHelper.getBucket(pr, null, key, null, null);
     pr.getRedundancyProvider().createBackupBucketOnMember(bucketId, getMember(), false, false, null,
         true);
   }
@@ -126,7 +126,7 @@ public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueu
   private void assertPrimaryBucket(String regionName, Object key) throws Exception {
     PartitionedRegion pr = (PartitionedRegion) cache.getRegion(regionName);
     BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+        PartitionedRegionHelper.getBucket(pr, null, key, null, null);
     assertThat(pr.getRegionAdvisor().isPrimaryForBucket(bucketId)).isTrue();
   }
 

@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
   protected InternalDistributedSystem distributedSystem;
@@ -237,7 +238,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "bucket as filter"));

@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
 
@@ -297,7 +298,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "buckets as filter"));

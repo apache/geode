@@ -35,7 +35,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
@@ -87,6 +90,9 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected LuceneIndexImpl indexForPR;
   protected PartitionedRepositoryManager repoManager;
   protected GemFireCacheImpl cache;
+
+  private final Set<BucketId> buckets =
+      Stream.of(2, 0, 1).map(BucketId::valueOf).collect(Collectors.toSet());
 
   @Before
   public void setUp() {
@@ -237,9 +243,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.isIndexAvailable(bucket0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(bucket1)).thenReturn(true);
 
-    int[] buckets = new int[] {2, 0, 1};
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
+    when(ctx.getLocalBuckets((any()))).thenReturn(buckets);
     Collection<IndexRepository> repos = repoManager.getRepositories(ctx);
     assertEquals(2, repos.size());
 
@@ -263,10 +268,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     setUpMockBucket(0);
     when(indexForPR.isIndexAvailable(BucketId.valueOf(0))).thenReturn(true);
 
-    int[] buckets = new int[] {2, 0, 1};
-
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
+    when(ctx.getLocalBuckets((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
 
@@ -278,10 +281,8 @@ public class PartitionedRepositoryManagerJUnitTest {
       throws BucketNotFoundException {
     setUpMockBucket(0);
 
-    int[] buckets = new int[] {2, 0, 1};
-
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
+    when(ctx.getLocalBuckets((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
 
@@ -296,9 +297,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.isIndexAvailable(bucket0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(bucket1)).thenReturn(true);
 
-    int[] buckets = new int[] {2, 0, 1};
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
+    when(ctx.getLocalBuckets((any()))).thenReturn(buckets);
 
     await().until(() -> {
       final Collection<IndexRepository> repositories = new HashSet<>();
@@ -335,7 +335,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(serializer, repo0.getSerializer());
   }
 
-  protected BucketRegion setUpMockBucket(final int key) {
+  protected void setUpMockBucket(final int key) {
     final BucketId bucketId = BucketId.valueOf(key);
     final BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     final BucketRegion fileAndChunkBucket = Mockito.mock(BucketRegion.class);
@@ -355,6 +355,5 @@ public class PartitionedRepositoryManagerJUnitTest {
     BucketAdvisor mockBucketAdvisor = Mockito.mock(BucketAdvisor.class);
     when(fileAndChunkBucket.getBucketAdvisor()).thenReturn(mockBucketAdvisor);
     when(mockBucketAdvisor.isPrimary()).thenReturn(true);
-    return mockBucket;
   }
 }

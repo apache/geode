@@ -53,6 +53,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.fixed.QuarterPartitionResolver;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -348,7 +349,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       int[] expected = new int[] {port1, port1, port1, port4, port4, port4, port2, port2, port2,
           port4, port4, port4};
       for (int i = 0; i < expected.length; i++) {
-        ServerLocation primary = advisor.advisePrimaryServerLocation(i);
+        ServerLocation primary = advisor.advisePrimaryServerLocation(BucketId.valueOf(i));
         assertNotNull("bucket " + i + " had no primary server", primary);
         assertEquals("bucket " + i + " was incorrect", expected[i], primary.getPort());
       }

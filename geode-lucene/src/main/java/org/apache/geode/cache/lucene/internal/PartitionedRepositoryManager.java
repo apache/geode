@@ -14,9 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -84,13 +87,12 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   public Collection<IndexRepository> getRepositories(RegionFunctionContext<?> ctx,
       boolean waitForRepository) throws BucketNotFoundException {
     Region<Object, Object> region = ctx.getDataSet();
-    int[] buckets = ((InternalRegionFunctionContext<?>) ctx).getLocalBucketArray(region);
-    if (buckets == null || buckets[0] == 0) {
+    Set<BucketId> buckets = ((InternalRegionFunctionContext<?>) ctx).getLocalBuckets(region);
+    if (isEmpty(buckets)) {
       return null;
     }
-    ArrayList<IndexRepository> repos = new ArrayList<>(buckets[0]);
-    for (int i = 1; i <= buckets[0]; i++) {
-      BucketId bucketId = BucketId.valueOf(buckets[i]);
+    ArrayList<IndexRepository> repos = new ArrayList<>(buckets.size());
+    for (final BucketId bucketId : buckets) {
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
       if (userBucket == null) {
         throw new BucketNotFoundException(

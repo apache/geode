@@ -19,15 +19,17 @@ import static java.util.Objects.requireNonNull;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketSetHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
@@ -40,7 +42,7 @@ public class FunctionRemoteContext implements DataSerializable {
 
   private Object args;
 
-  private int[] bucketArray;
+  private Set<BucketId> buckets;
 
   private boolean isReExecute;
 
@@ -55,12 +57,12 @@ public class FunctionRemoteContext implements DataSerializable {
   public FunctionRemoteContext() {}
 
   public FunctionRemoteContext(final Function<?> function, Object args, Set<Object> filter,
-      int[] bucketArray, boolean isReExecute, boolean isFunctionSerializationRequired,
+      final Set<BucketId> buckets, boolean isReExecute, boolean isFunctionSerializationRequired,
       Object principal) {
     this.function = function;
     this.args = args;
     this.filter = filter;
-    this.bucketArray = bucketArray;
+    this.buckets = buckets;
     this.isReExecute = isReExecute;
     this.isFunctionSerializationRequired = isFunctionSerializationRequired;
     this.principal = principal;
@@ -81,11 +83,14 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     args = DataSerializer.readObject(in);
     filter = DataSerializer.readHashSet(in);
-    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
-      bucketArray = DataSerializer.readIntArray(in);
+    if (StaticSerialization.getVersionForDataStream(in).isNotOlderThan(KnownVersion.GEODE_1_15_0)) {
+      buckets = BucketId.fromIntValues(DataSerializer.readIntArray(in));
+    } else if (StaticSerialization.getVersionForDataStream(in)
+        .isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
+      buckets = BucketSetHelper.toBuckets(DataSerializer.readIntArray(in));
     } else {
-      HashSet<Integer> bucketSet = requireNonNull(DataSerializer.readHashSet(in));
-      bucketArray = BucketSetHelper.fromSet(bucketSet);
+      final HashSet<Integer> bucketSet = requireNonNull(DataSerializer.readHashSet(in));
+      buckets = bucketSet.stream().map(BucketId::valueOf).collect(Collectors.toSet());
     }
     isReExecute = DataSerializer.readBoolean(in);
 
@@ -109,11 +114,15 @@ public class FunctionRemoteContext implements DataSerializable {
     DataSerializer.writeObject(args, out);
     DataSerializer.writeHashSet((HashSet<?>) filter, out);
     if (StaticSerialization.getVersionForDataStream(out)
+        .isNotOlderThan(KnownVersion.GEODE_1_15_0)) {
+      DataSerializer.writeIntArray(BucketId.toIntValues(buckets), out);
+    } else if (StaticSerialization.getVersionForDataStream(out)
         .isNotOlderThan(KnownVersion.GEODE_1_11_0)) {
-      DataSerializer.writeIntArray(bucketArray, out);
+      DataSerializer.writeIntArray(BucketSetHelper.fromBuckets(buckets), out);
     } else {
-      Set<Integer> bucketSet = BucketSetHelper.toSet(bucketArray);
-      DataSerializer.writeHashSet((HashSet<?>) bucketSet, out);
+      final Set<Integer> bucketSet =
+          buckets.stream().map(BucketId::intValue).collect(Collectors.toSet());
+      InternalDataSerializer.writeSet(bucketSet, out);
     }
     DataSerializer.writeBoolean(isReExecute, out);
 
@@ -135,8 +144,8 @@ public class FunctionRemoteContext implements DataSerializable {
     return args;
   }
 
-  public int[] getBucketArray() {
-    return bucketArray;
+  public Set<BucketId> getBuckets() {
+    return buckets;
   }
 
   public boolean isReExecute() {
@@ -162,6 +171,6 @@ public class FunctionRemoteContext implements DataSerializable {
         + " args=" + args
         + " isReExecute=" + isReExecute
         + " filter=" + filter
-        + " bucketArray=" + Arrays.toString(bucketArray) + "}";
+        + " buckets=" + buckets + "}";
   }
 }

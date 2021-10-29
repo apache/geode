@@ -20,6 +20,8 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
@@ -36,6 +38,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.MemoryThresholdInfo;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * Executes Function on Distributed Regions.
@@ -235,8 +238,8 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
-    if (bucketIDs != null && !bucketIDs.isEmpty()) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<BucketId> bucketIDs) {
+    if (!CollectionUtils.isEmpty(bucketIDs)) {
       throw new IllegalArgumentException(
           String.format("Buckets as filter cannot be applied to a non partitioned region: %s",
               region.getName()));

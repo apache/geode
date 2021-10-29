@@ -55,6 +55,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
@@ -614,7 +615,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     }
   }
 
-  void serverBucketFilterExecution(Set<Integer> bucketFilterSet) {
+  void serverBucketFilterExecution(Set<BucketId> bucketFilterSet) {
     Region<Integer, Integer> region = cache.getRegion(PartitionedRegionName);
     assertNotNull(region);
     final HashSet<Integer> testKeysSet = new HashSet<>();
@@ -643,7 +644,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertTrue(bucketFilterSet.isEmpty());
   }
 
-  void serverBucketFilterOverrideExecution(Set<Integer> bucketFilterSet,
+  void serverBucketFilterOverrideExecution(Set<BucketId> bucketFilterSet,
       Set<Integer> ketFilterSet) {
 
     Region<Integer, Integer> region = cache.getRegion(PartitionedRegionName);

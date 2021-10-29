@@ -91,6 +91,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStre
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserver;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -218,7 +219,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         new RegionPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
             "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(), pr,
             pr.getCache().getMeterRegistry(), statisticsClock);
-    keysOfInterest = new ConcurrentHashMap();
+    keysOfInterest = new ConcurrentHashMap<>();
   }
 
   /**
@@ -1784,8 +1785,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return an initialized local bucket or null
    */
   public BucketRegion getLocalBucketByKey(Object key) {
-    BucketId bucketId = BucketId.valueOf(
-        PartitionedRegionHelper.getHashKey(partitionedRegion, null, key, null, null));
+    BucketId bucketId = PartitionedRegionHelper.getBucket(partitionedRegion, null, key, null, null);
     return getLocalBucketById(bucketId);
   }
 
@@ -2732,9 +2732,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   /** a fast estimate of total bucket size */
-  public long getEstimatedLocalBucketSize(Set<Integer> bucketIds) {
+  public long getEstimatedLocalBucketSize(Set<BucketId> bucketIds) {
     long size = 0;
-    for (Integer bid : bucketIds) {
+    for (BucketId bid : bucketIds) {
       BucketRegion br = localBucket2RegionMap.get(bid);
       if (br != null) {
         size += br.getEstimatedLocalSize();
@@ -2925,24 +2925,24 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public void executeOnDataStore(final Set localKeys, final Function function, final Object object,
-      final int prid, final int[] bucketArray, final boolean isReExecute,
+      final int prid, final Set<BucketId> buckets, final boolean isReExecute,
       final PartitionedRegionFunctionStreamingMessage msg, long time, ServerConnection servConn,
       int transactionID, Object principal) {
 
-    if (!areAllBucketsHosted(bucketArray)) {
+    if (!areAllBucketsHosted(buckets)) {
       throw new BucketMovedException(
           "Bucket migrated to another node. Please retry.");
     }
     final DistributionManager dm = partitionedRegion.getDistributionManager();
 
     ResultSender resultSender = new PartitionedRegionFunctionResultSender(dm,
-        partitionedRegion, time, msg, function, bucketArray);
+        partitionedRegion, time, msg, function, buckets);
 
     final RegionFunctionContextImpl prContext =
         new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             partitionedRegion, object, localKeys, ColocationHelper
-                .constructAndGetAllColocatedLocalDataSet(partitionedRegion, bucketArray),
-            bucketArray, resultSender, isReExecute, principal);
+                .constructAndGetAllColocatedLocalDataSet(partitionedRegion, buckets),
+            buckets, resultSender, isReExecute, principal);
 
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
     long start = stats.startFunctionExecution(function.hasResult());
@@ -2968,6 +2968,21 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
       throw functionException;
     }
+  }
+
+  public boolean areAllBucketsHosted(final Set<BucketId> buckets) {
+    if (null == buckets || buckets.isEmpty()) {
+      return true;
+    }
+
+    final RegionAdvisor regionAdvisor = partitionedRegion.getRegionAdvisor();
+    for (final BucketId bucket : buckets) {
+      if (!regionAdvisor.getBucketAdvisor(bucket).isHosting()) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public boolean areAllBucketsHosted(final int[] bucketArray) {

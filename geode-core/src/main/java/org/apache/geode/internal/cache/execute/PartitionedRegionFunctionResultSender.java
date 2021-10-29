@@ -18,6 +18,8 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
@@ -28,6 +30,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -71,7 +74,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
 
   private boolean enableOrderedResultStreaming;
 
-  private final int[] bucketArray;
+  private Set<BucketId> buckets;
 
   private BucketMovedException bme;
 
@@ -89,13 +92,13 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
    */
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
       long time, PartitionedRegionFunctionStreamingMessage msg, Function<IN> function,
-      int[] bucketArray) {
+      Set<BucketId> buckets) {
     this.msg = msg;
     this.dm = dm;
     this.pr = pr;
     this.time = time;
     this.function = function;
-    this.bucketArray = bucketArray;
+    this.buckets = buckets;
 
     forwardExceptions = false;
   }
@@ -107,7 +110,7 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
       PartitionedRegion partitionedRegion, long time, ResultCollector<OUT, AGG> rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
-      boolean forwardExceptions, Function<IN> function, int[] bucketArray) {
+      boolean forwardExceptions, Function<IN> function, Set<BucketId> buckets) {
     this.dm = dm;
     pr = partitionedRegion;
     this.time = time;
@@ -117,12 +120,12 @@ public class PartitionedRegionFunctionResultSender<IN, OUT, AGG>
     this.onlyRemote = onlyRemote;
     this.forwardExceptions = forwardExceptions;
     this.function = function;
-    this.bucketArray = bucketArray;
+    this.buckets = buckets;
   }
 
   private void checkForBucketMovement(Object oneResult) {
     if (!(forwardExceptions && oneResult instanceof Throwable)
-        && !pr.getDataStore().areAllBucketsHosted(bucketArray)) {
+        && !pr.getDataStore().areAllBucketsHosted(buckets)) {
       // making sure that we send all the local results first
       // before sending this exception to client
       bme = new BucketMovedException(

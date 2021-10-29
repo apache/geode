@@ -93,7 +93,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   }
 
   @Override
-  protected BucketRegion setUpMockBucket(final int key) {
+  protected void setUpMockBucket(final int key) {
     final BucketId bucketId = BucketId.valueOf(key);
     final BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     when(mockBucket.getId()).thenReturn(bucketId);
@@ -103,7 +103,6 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     dataBuckets.put(bucketId, mockBucket);
 
     repoManager.computeRepository(mockBucket.getId());
-    return mockBucket;
   }
 
   @Override

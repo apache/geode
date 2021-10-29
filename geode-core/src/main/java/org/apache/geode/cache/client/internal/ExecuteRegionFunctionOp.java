@@ -184,7 +184,7 @@ public class ExecuteRegionFunctionOp {
       }
       getMessage().addIntPart(removedNodes.size());
       for (String nodes : removedNodes) {
-        getMessage().addStringOrObjPart(nodes);
+        getMessage().addStringPart(nodes);
       }
     }
 

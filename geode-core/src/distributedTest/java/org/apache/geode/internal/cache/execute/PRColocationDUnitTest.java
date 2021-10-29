@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -1906,6 +1908,8 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void executeFunction() {
+    final Set<BucketId> buckets = Stream.of(2, 0, 1).map(BucketId::valueOf).collect(
+        Collectors.toSet());
 
     Function inlineFunction = new FunctionAdapter() {
       @Override
@@ -1918,7 +1922,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new int[] {2, 0, 1});
+              buckets);
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(OrderPartitionedRegionName)) {
@@ -1927,7 +1931,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new int[] {2, 0, 1});
+              buckets);
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(ShipmentPartitionedRegionName)) {
@@ -1936,7 +1940,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new int[] {2, 0, 1});
+              buckets);
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         }

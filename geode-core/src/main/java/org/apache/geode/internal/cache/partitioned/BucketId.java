@@ -16,8 +16,11 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents the unique integer index of a {@link Bucket} as an object for use in
@@ -66,6 +69,31 @@ public final class BucketId implements Comparable<BucketId> {
       return UNKNOWN_BUCKET;
     }
     return values[bucketId];
+  }
+
+  public static @Nullable Set<BucketId> fromIntValues(final int @Nullable [] intValues) {
+    if (null == intValues) {
+      return null;
+    }
+
+    final Set<BucketId> bucketIds = new HashSet<>(intValues.length);
+    for (final int intValue : intValues) {
+      bucketIds.add(BucketId.valueOf(intValue));
+    }
+    return bucketIds;
+  }
+
+  public static int @Nullable [] toIntValues(@Nullable Collection<BucketId> bucketIds) {
+    if (null == bucketIds) {
+      return null;
+    }
+
+    final int[] intValues = new int[bucketIds.size()];
+    int i = 0;
+    for (final BucketId bucketId : bucketIds) {
+      intValues[i++] = bucketId.intValue();
+    }
+    return intValues;
   }
 
   @Override

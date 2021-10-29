@@ -182,10 +182,10 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   public void setModifiedEventId(EntryEventImpl clonedEvent) {
     final BucketId bucketId;
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
-      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
-          getMaxParallelismForReplicatedRegion()));
+      bucketId = PartitionedRegionHelper.getBucket(clonedEvent.getKey(),
+          getMaxParallelismForReplicatedRegion());
     } else {
-      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(clonedEvent));
+      bucketId = PartitionedRegionHelper.getBucket(clonedEvent);
     }
     EventID originalEventId = clonedEvent.getEventId();
     long originatingThreadId = ThreadIdentifier.getRealThreadID(originalEventId.getThreadID());

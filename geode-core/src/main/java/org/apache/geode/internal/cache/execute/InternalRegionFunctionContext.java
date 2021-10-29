@@ -16,11 +16,15 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Map;
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 
 /**
  * Internal interface used to provide for some essential functionality for
@@ -63,5 +67,5 @@ public interface InternalRegionFunctionContext<T> extends RegionFunctionContext<
    *
    * @return the set of bucket IDs for this node in this function context for the given region
    */
-  <K, V> int[] getLocalBucketArray(Region<K, V> region);
+  <K, V> @Nullable Set<BucketId> getLocalBuckets(Region<K, V> region);
 }

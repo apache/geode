@@ -21,6 +21,8 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import org.apache.geode.internal.cache.partitioned.BucketId;
+
 
 public class BucketSetHelper {
   public static int get(final int @NotNull [] bucketSet, int index) {
@@ -65,4 +67,34 @@ public class BucketSetHelper {
     }
     return resultArray;
   }
+
+  public static Set<BucketId> toBuckets(int[] bucketSet) {
+    Set<BucketId> resultSet;
+    int arrayLength = length(bucketSet);
+    if (arrayLength > 0) {
+      resultSet = new HashSet<>(arrayLength);
+      for (int i = 1; i <= arrayLength; i++) {
+        resultSet.add(BucketId.valueOf(bucketSet[i]));
+      }
+    } else {
+      resultSet = new HashSet<>();
+    }
+    return resultSet;
+  }
+
+  public static int[] fromBuckets(Set<BucketId> bucketSet) {
+    int setSize = bucketSet.size();
+    int[] resultArray = new int[setSize + 1];
+    resultArray[0] = setSize;
+
+    if (setSize > 0) {
+      int i = 1;
+      for (BucketId element : bucketSet) {
+        resultArray[i] = element.intValue();
+        i++;
+      }
+    }
+    return resultArray;
+  }
+
 }

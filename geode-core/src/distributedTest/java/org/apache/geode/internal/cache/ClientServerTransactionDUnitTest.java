@@ -3540,7 +3540,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         List<CustId> keys = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
           cust = new CustId(i);
-          BucketId bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(r, cust));
+          BucketId bucketId = PartitionedRegionHelper.getBucket(r, cust);
           if (!myId.equals(r.getBucketPrimary(bucketId))) {
             keys.add(cust);
           }

@@ -1172,7 +1172,7 @@ public abstract class BaseCommand implements Command {
       Map<BucketId, Set<Object>> bucketKeys = new HashMap<>();
       for (Object key : (List<?>) keyInfo) {
         BucketId id =
-            BucketId.valueOf(PartitionedRegionHelper.getHashKey(region, null, key, null, null));
+            PartitionedRegionHelper.getBucket(region, null, key, null, null);
         if (bucketKeys.containsKey(id)) {
           bucketKeys.get(id).add(key);
         } else {

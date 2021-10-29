@@ -264,7 +264,7 @@ public final class PartitionRegionHelper {
   public static <K, V> DistributedMember getPrimaryMemberForKey(final Region<K, V> r, final K key) {
     PartitionedRegion pr = isPartitionedCheck(r);
     BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+        PartitionedRegionHelper.getBucket(pr, null, key, null, null);
     return pr.getBucketPrimary(bucketId);
   }
 
@@ -322,7 +322,7 @@ public final class PartitionRegionHelper {
       final K key) {
     PartitionedRegion pr = isPartitionedCheck(r);
     BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
+        PartitionedRegionHelper.getBucket(pr, null, key, null, null);
     return pr.getRegionAdvisor().getBucketOwners(bucketId);
   }
 

@@ -1221,12 +1221,12 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       FunctionService.registerFunction(function);
       InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
 
-      Set<Integer> bucketIdSet = createBucketIdSet(2);
+      Set<BucketId> bucketIdSet = createBucketIdSet(2);
 
-      ResultCollector<Integer, List<Integer>> resultCollector =
+      ResultCollector<BucketId, List<BucketId>> resultCollector =
           execution.withBucketFilter(bucketIdSet).execute(function);
 
-      List<Integer> results = resultCollector.getResult();
+      List<BucketId> results = resultCollector.getResult();
       assertThat(results).hasSameElementsAs(bucketIdSet);
     });
 
@@ -1237,12 +1237,12 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       FunctionService.registerFunction(function);
       InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
 
-      Set<Integer> bucketIdSet = createBucketIdSet(2, 3);
+      Set<BucketId> bucketIdSet = createBucketIdSet(2, 3);
 
-      ResultCollector<Integer, List<Integer>> resultCollector =
+      ResultCollector<BucketId, List<BucketId>> resultCollector =
           execution.withBucketFilter(bucketIdSet).execute(function);
 
-      List<Integer> results = resultCollector.getResult();
+      List<BucketId> results = resultCollector.getResult();
       assertThat(results).hasSameElementsAs(bucketIdSet);
     });
 
@@ -1253,12 +1253,12 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       FunctionService.registerFunction(function);
       InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(pr);
 
-      Set<Integer> bucketIdSet = createBucketIdSet(1, 2, 3, 0, 4);
+      Set<BucketId> bucketIdSet = createBucketIdSet(1, 2, 3, 0, 4);
 
-      ResultCollector<Integer, List<Integer>> resultCollector =
+      ResultCollector<BucketId, List<BucketId>> resultCollector =
           dataSet.withBucketFilter(bucketIdSet).execute(function);
 
-      List<Integer> results = resultCollector.getResult();
+      List<BucketId> results = resultCollector.getResult();
       assertThat(results).hasSameElementsAs(bucketIdSet);
     });
   }
@@ -1303,14 +1303,14 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       FunctionService.registerFunction(function);
       InternalExecution execution = (InternalExecution) FunctionService.onRegion(pr);
 
-      Set<Integer> bucketIdSet = createBucketIdSet(2);
+      Set<BucketId> bucketIdSet = createBucketIdSet(2);
       Set<Integer> keySet = createKeySet(33, 43);
-      Set<Integer> expectedBucketIdSet = createBucketIdSet(3, 4);
+      Set<BucketId> expectedBucketIdSet = createBucketIdSet(3, 4);
 
-      ResultCollector<Integer, List<Integer>> resultCollector =
+      ResultCollector<BucketId, List<BucketId>> resultCollector =
           execution.withBucketFilter(bucketIdSet).withFilter(keySet).execute(function);
 
-      List<Integer> results = resultCollector.getResult();
+      List<BucketId> results = resultCollector.getResult();
       assertThat(results).hasSameElementsAs(expectedBucketIdSet);
     });
   }
@@ -2308,10 +2308,10 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
     return entryMap;
   }
 
-  private Set<Integer> createBucketIdSet(final int... bucketIds) {
-    Set<Integer> bucketIdSet = new HashSet<>();
+  private Set<BucketId> createBucketIdSet(final int... bucketIds) {
+    Set<BucketId> bucketIdSet = new HashSet<>();
     for (int bucketId : bucketIds) {
-      bucketIdSet.add(bucketId);
+      bucketIdSet.add(BucketId.valueOf(bucketId));
     }
     return bucketIdSet;
   }

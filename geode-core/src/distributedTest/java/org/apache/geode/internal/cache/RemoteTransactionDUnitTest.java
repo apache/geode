@@ -2188,7 +2188,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               custId = new CustId(i);
               customer = new Customer("customer" + i, "address" + i);
               BucketId bucketId =
-                  BucketId.valueOf(PartitionedRegionHelper.getHashKey(custRegion, custId));
+                  PartitionedRegionHelper.getBucket(custRegion, custId);
               InternalDistributedMember primary = custRegion.getBucketPrimary(bucketId);
               if (primary.equals(getCache().getMyId())) {
                 custRegion.put(custId, customer);
@@ -2203,7 +2203,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               custId = new CustId(i);
               customer = new Customer("customer" + i, "address" + i);
               BucketId bucketId =
-                  BucketId.valueOf(PartitionedRegionHelper.getHashKey(custRegion, custId));
+                  PartitionedRegionHelper.getBucket(custRegion, custId);
               InternalDistributedMember primary = custRegion.getBucketPrimary(bucketId);
               if (primary.equals(getCache().getMyId())) {
                 custRegion.destroy(custId);

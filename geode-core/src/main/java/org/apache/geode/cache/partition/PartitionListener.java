@@ -90,8 +90,7 @@ public interface PartitionListener {
    * @deprecated Use {@link #afterSecondary(BucketId)}
    */
   @Deprecated
-  default void afterSecondary(int bucketId) {
-  }
+  default void afterSecondary(int bucketId) {}
 
   /**
    * Callback invoked when any bucket in a partitioned region stops being primary

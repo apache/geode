@@ -162,7 +162,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       }
       return;
     }
-    BucketId bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(droppedEvent));
+    BucketId bucketId = PartitionedRegionHelper.getBucket(droppedEvent);
     long shadowKey = droppedEvent.getTailKey();
 
     ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);

@@ -501,7 +501,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         BucketId bucketId =
-            BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getBucket(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);
@@ -543,7 +543,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         BucketId bucketId =
-            BucketId.valueOf(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getBucket(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);

@@ -18,6 +18,7 @@ import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -51,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -595,8 +597,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public <T> T computeWithPrimaryLocked(Object key, Callable<T> callable) throws Exception {
-    BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, null, null));
+    BucketId bucketId = PartitionedRegionHelper.getBucket(this, null, key, null, null);
 
     BucketRegion br;
     try {
@@ -1713,8 +1714,7 @@ public class PartitionedRegion extends LocalRegion
     try {
       BucketId bucketId = keyInfo.getBucketId();
       if (bucketId == null) {
-        bucketId = BucketId.valueOf(
-            PartitionedRegionHelper.getHashKey(this, Operation.GET_ENTRY, key, null, null));
+        bucketId = PartitionedRegionHelper.getBucket(this, Operation.GET_ENTRY, key, null, null);
         keyInfo.setBucketId(bucketId);
       }
       InternalDistributedMember targetNode = getOrCreateNodeForBucketRead(bucketId);
@@ -3455,9 +3455,8 @@ public class PartitionedRegion extends LocalRegion
     try {
       BucketId bucketId = keyInfo.getBucketId();
       if (bucketId == null) {
-        bucketId = BucketId.valueOf(
-            PartitionedRegionHelper.getHashKey(this, isCreate ? Operation.CREATE : null, key,
-                null, aCallbackArgument));
+        bucketId = PartitionedRegionHelper.getBucket(this, isCreate ? Operation.CREATE : null, key,
+            null, aCallbackArgument);
         keyInfo.setBucketId(bucketId);
       }
       final InternalDistributedMember targetNode;
@@ -3570,20 +3569,15 @@ public class PartitionedRegion extends LocalRegion
         FunctionExecutionNodePruner.groupByBucket(this,
             routingKeys, primaryMembersNeeded, false, isBucketSetAsFilter);
     final Map<InternalDistributedMember, Set<Object>> memberToKeysMap = new HashMap<>();
-    Map<InternalDistributedMember, int[]> memberToBuckets =
+    Map<InternalDistributedMember, Set<BucketId>> memberToBuckets =
         FunctionExecutionNodePruner.groupByMemberToBuckets(this, bucketToKeysMap.keySet(),
             primaryMembersNeeded);
 
     if (isPRSingleHop && (memberToBuckets.size() > 1)) {
       for (InternalDistributedMember targetNode : memberToBuckets.keySet()) {
         if (!targetNode.equals(getMyId())) {
-          int[] bucketArray = memberToBuckets.get(targetNode);
-          int length = BucketSetHelper.length(bucketArray);
-          if (length == 0) {
-            continue;
-          }
-          for (int i = 0; i < length; i++) {
-            BucketId bucketId = BucketId.valueOf(BucketSetHelper.get(bucketArray, i));
+          final Set<BucketId> bucketArray = memberToBuckets.get(targetNode);
+          for (final BucketId bucketId : bucketArray) {
             Set<ServerBucketProfile> profiles =
                 getRegionAdvisor().getClientBucketProfiles(bucketId);
             if (profiles != null) {
@@ -3630,32 +3624,29 @@ public class PartitionedRegion extends LocalRegion
       }
     }
 
-    for (Map.Entry<InternalDistributedMember, int[]> entry : memberToBuckets.entrySet()) {
-      InternalDistributedMember member = entry.getKey();
-      int[] buckets = entry.getValue();
-      int length = BucketSetHelper.length(buckets);
-      if (length == 0) {
-        continue;
-      }
-      for (int i = 0; i < length; i++) {
-        final int bucket = BucketSetHelper.get(buckets, i);
+    for (final Map.Entry<InternalDistributedMember, Set<BucketId>> entry : memberToBuckets
+        .entrySet()) {
+      final InternalDistributedMember member = entry.getKey();
+      final Set<BucketId> buckets = entry.getValue();
+      for (final BucketId bucket : buckets) {
         memberToKeysMap.computeIfAbsent(member, k -> new HashSet<>())
-            .addAll(bucketToKeysMap.get(BucketId.valueOf(bucket)));
+            .addAll(bucketToKeysMap.get(bucket));
       }
     }
-    // memberToKeysMap.keySet().retainAll(memberToBuckets.keySet());
+
     if (memberToKeysMap.isEmpty()) {
       throw new FunctionException(format("No target node found for KEY, %s",
           routingKeys));
     }
-    Set<InternalDistributedMember> dest = memberToKeysMap.keySet();
+
+    final Set<InternalDistributedMember> dest = memberToKeysMap.keySet();
     execution.validateExecution(function, dest);
     // added for the data aware procedure.
     execution.setExecutionNodes(dest);
     // end
 
     final Set<Object> localKeys = memberToKeysMap.remove(getMyId());
-    final int[] localBucketSet;
+    final Set<BucketId> localBucketSet;
     final boolean remoteOnly;
     if (localKeys == null) {
       localBucketSet = null;
@@ -3730,9 +3721,8 @@ public class PartitionedRegion extends LocalRegion
     if (isBucketSetAsFilter) {
       bucketId = BucketId.valueOf((Integer) key);
     } else {
-      bucketId =
-          BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, Operation.FUNCTION_EXECUTION,
-              key, null, null));
+      bucketId = PartitionedRegionHelper.getBucket(this, Operation.FUNCTION_EXECUTION,
+          key, null, null);
     }
     InternalDistributedMember targetNode;
     if (function.optimizeForWrite()) {
@@ -3788,8 +3778,7 @@ public class PartitionedRegion extends LocalRegion
       }
     }
 
-    final int[] buckets = new int[2];
-    BucketSetHelper.add(buckets, bucketId.intValue());
+    final Set<BucketId> buckets = Collections.singleton(bucketId);
     final Set<InternalDistributedMember> singleMember = Collections.singleton(targetNode);
     execution.validateExecution(function, singleMember);
     execution.setExecutionNodes(singleMember);
@@ -3823,7 +3812,7 @@ public class PartitionedRegion extends LocalRegion
     } catch (NoSuchElementException ignore) {
       // done
     }
-    HashMap<InternalDistributedMember, int[]> memberToBuckets =
+    Map<InternalDistributedMember, Set<BucketId>> memberToBuckets =
         FunctionExecutionNodePruner.groupByMemberToBuckets(this, bucketSet,
             function.optimizeForWrite());
 
@@ -3846,13 +3835,8 @@ public class PartitionedRegion extends LocalRegion
     if (memberToBuckets.size() > 1) {
       for (InternalDistributedMember targetNode : memberToBuckets.keySet()) {
         if (!targetNode.equals(getMyId())) {
-          int[] bucketArray = memberToBuckets.get(targetNode);
-          int length = BucketSetHelper.length(bucketArray);
-          if (length == 0) {
-            continue;
-          }
-          for (int i = 0; i < length; i++) {
-            BucketId bucketId = BucketId.valueOf(BucketSetHelper.get(bucketArray, i));
+          final Set<BucketId> bucketArray = memberToBuckets.get(targetNode);
+          for (final BucketId bucketId : bucketArray) {
             Set<ServerBucketProfile> profiles =
                 getRegionAdvisor().getClientBucketProfiles(bucketId);
             if (profiles != null) {
@@ -3900,16 +3884,13 @@ public class PartitionedRegion extends LocalRegion
       }
     }
 
-    Set<InternalDistributedMember> dest = memberToBuckets.keySet();
+    final Set<InternalDistributedMember> dest = memberToBuckets.keySet();
     cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function,
-        Collections.unmodifiableSet(dest));
-
-    boolean isSelf = false;
+        unmodifiableSet(dest));
     execution.setExecutionNodes(dest);
-    final int[] localBucketSet = memberToBuckets.remove(getMyId());
-    if (BucketSetHelper.length(localBucketSet) > 0) {
-      isSelf = true;
-    }
+
+    final Set<BucketId> localBucketSet = memberToBuckets.remove(getMyId());
+    final boolean isSelf = CollectionUtils.isEmpty(localBucketSet);
     final HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
         new HashMap<>();
     for (InternalDistributedMember recip : dest) {
@@ -3958,7 +3939,8 @@ public class PartitionedRegion extends LocalRegion
       } catch (NoSuchElementException ignore) {
       }
     }
-    HashMap<InternalDistributedMember, int[]> memberToBuckets =
+
+    Map<InternalDistributedMember, Set<BucketId>> memberToBuckets =
         FunctionExecutionNodePruner.groupByMemberToBuckets(this, bucketSet,
             function.optimizeForWrite());
 
@@ -3997,11 +3979,9 @@ public class PartitionedRegion extends LocalRegion
     execution.validateExecution(function, dest);
     execution.setExecutionNodes(dest);
 
-    boolean isSelf = false;
-    final int[] localBucketSet = memberToBuckets.remove(getMyId());
-    if (BucketSetHelper.length(localBucketSet) > 0) {
-      isSelf = true;
-    }
+    final Set<BucketId> localBucketSet = memberToBuckets.remove(getMyId());
+    boolean isSelf = !CollectionUtils.isEmpty(localBucketSet);
+
     final HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
         new HashMap<>();
     for (InternalDistributedMember recip : memberToBuckets.keySet()) {
@@ -4269,7 +4249,7 @@ public class PartitionedRegion extends LocalRegion
    */
   public DistributedMember getMemberOwning(Object key) {
     BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, null, null));
+        PartitionedRegionHelper.getBucket(this, null, key, null, null);
     return getNodeForBucketRead(bucketId);
   }
 
@@ -4752,9 +4732,7 @@ public class PartitionedRegion extends LocalRegion
       return 0L;
     }
     long ret = 0L;
-    Integer i;
-    for (final Integer integer : dataStore.getSizeLocally().values()) {
-      i = integer;
+    for (final Integer i : dataStore.getSizeLocally().values()) {
       ret += i;
     }
     return ret;
@@ -4801,7 +4779,7 @@ public class PartitionedRegion extends LocalRegion
       InternalDistributedMember targetNode,
       final Function<IN> function, final Object object, final Set<Object> routingKeys,
       ResultCollector<OUT, AGG> rc,
-      int[] bucketArray, ServerToClientFunctionResultSender sender,
+      Set<BucketId> bucketArray, ServerToClientFunctionResultSender sender,
       AbstractExecution<IN, OUT, AGG> execution) {
     PartitionedRegionFunctionResultSender<IN, OUT, AGG> resultSender =
         new PartitionedRegionFunctionResultSender<>(null, this, 0, rc, sender, false, true,
@@ -5855,7 +5833,7 @@ public class PartitionedRegion extends LocalRegion
     if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
-    return Collections.unmodifiableSet(new PREntriesSet());
+    return unmodifiableSet(new PREntriesSet());
   }
 
   public Set<Region.Entry<?, ?>> entrySet(Set<BucketId> bucketIds) {
@@ -5921,13 +5899,13 @@ public class PartitionedRegion extends LocalRegion
     if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
-    return Collections.unmodifiableSet(new KeysSet());
+    return unmodifiableSet(new KeysSet());
   }
 
   @Override
   public Set keySet(boolean allowTombstones) {
     checkReadiness();
-    return Collections.unmodifiableSet(new KeysSet(allowTombstones));
+    return unmodifiableSet(new KeysSet(allowTombstones));
   }
 
   /**
@@ -5947,7 +5925,7 @@ public class PartitionedRegion extends LocalRegion
         availableBuckets.add(bucketId);
       }
     }
-    return Collections.unmodifiableSet(new KeysSet(availableBuckets));
+    return unmodifiableSet(new KeysSet(availableBuckets));
   }
 
   /** Set view of entries */
@@ -6113,7 +6091,7 @@ public class PartitionedRegion extends LocalRegion
     if (!restoreSetOperationTransactionBehavior) {
       discoverJTA();
     }
-    return Collections.unmodifiableSet(new ValuesSet());
+    return unmodifiableSet(new ValuesSet());
   }
 
   /**
@@ -6241,8 +6219,8 @@ public class PartitionedRegion extends LocalRegion
     try {
       BucketId bucketId = keyInfo.getBucketId();
       if (bucketId == null) {
-        bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, Operation.CONTAINS_KEY,
-            keyInfo.getKey(), keyInfo.getValue(), keyInfo.getCallbackArg()));
+        bucketId = PartitionedRegionHelper.getBucket(this, Operation.CONTAINS_KEY,
+            keyInfo.getKey(), keyInfo.getValue(), keyInfo.getCallbackArg());
         keyInfo.setBucketId(bucketId);
       }
       InternalDistributedMember targetNode = getOrCreateNodeForBucketRead(bucketId);
@@ -6425,9 +6403,8 @@ public class PartitionedRegion extends LocalRegion
     boolean containsValueForKey = false;
     BucketId bucketId = keyInfo.getBucketId();
     if (bucketId == null) {
-      bucketId = BucketId
-          .valueOf(PartitionedRegionHelper.getHashKey(this, Operation.CONTAINS_VALUE_FOR_KEY,
-              keyInfo.getKey(), keyInfo.getValue(), keyInfo.getCallbackArg()));
+      bucketId = PartitionedRegionHelper.getBucket(this, Operation.CONTAINS_VALUE_FOR_KEY,
+          keyInfo.getKey(), keyInfo.getValue(), keyInfo.getCallbackArg());
       keyInfo.setBucketId(bucketId);
     }
     InternalDistributedMember targetNode = getOrCreateNodeForBucketRead(bucketId);
@@ -8820,7 +8797,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public Object getValueOnDiskOrBuffer(Object key) throws EntryNotFoundException {
     final BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, null, null));
+        PartitionedRegionHelper.getBucket(this, null, key, null, null);
     if (dataStore == null) {
       throw new EntryNotFoundException(key.toString());
     }
@@ -8979,8 +8956,8 @@ public class PartitionedRegion extends LocalRegion
   RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
     BucketId bucketId = keyInfo.getBucketId();
     if (bucketId == null) {
-      bucketId = BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, keyInfo.getKey(),
-          keyInfo.getValue(), keyInfo.getCallbackArg()));
+      bucketId = PartitionedRegionHelper.getBucket(this, null, keyInfo.getKey(),
+          keyInfo.getValue(), keyInfo.getCallbackArg());
       keyInfo.setBucketId(bucketId);
     }
     if (keyInfo.isCheckPrimary()) {
@@ -9320,9 +9297,8 @@ public class PartitionedRegion extends LocalRegion
       // TODO provide appropriate Operation and arg
       BucketId bucketId = keyInfo.getBucketId();
       if (bucketId == null) {
-        bucketId = BucketId
-            .valueOf(PartitionedRegionHelper.getHashKey(this, null, entryKey, keyInfo.getValue(),
-                keyInfo.getCallbackArg()));
+        bucketId = PartitionedRegionHelper.getBucket(this, null, entryKey, keyInfo.getValue(),
+            keyInfo.getCallbackArg());
         keyInfo.setBucketId(bucketId);
       }
       br = ds.getInitializedBucketWithKnownPrimaryForId(null, bucketId);
@@ -9353,9 +9329,8 @@ public class PartitionedRegion extends LocalRegion
       // TODO provide appropriate Operation and arg
       BucketId bucketId = keyInfo.getBucketId();
       if (bucketId == null) {
-        bucketId = BucketId
-            .valueOf(PartitionedRegionHelper.getHashKey(this, null, entryKey, keyInfo.getValue(),
-                keyInfo.getCallbackArg()));
+        bucketId = PartitionedRegionHelper.getBucket(this, null, entryKey, keyInfo.getValue(),
+            keyInfo.getCallbackArg());
         keyInfo.setBucketId(bucketId);
       }
       int count = 0;
@@ -9396,9 +9371,8 @@ public class PartitionedRegion extends LocalRegion
     // TODO provide appropriate Operation and arg
     BucketId bucketId = key.getBucketId();
     if (bucketId == null) {
-      bucketId = BucketId
-          .valueOf(PartitionedRegionHelper.getHashKey(this, null, key.getKey(), key.getValue(),
-              key.getCallbackArg()));
+      bucketId = PartitionedRegionHelper.getBucket(this, null, key.getKey(), key.getValue(),
+          key.getCallbackArg());
       key.setBucketId(bucketId);
     }
     return createBucket(bucketId, 0, null);
@@ -9422,7 +9396,7 @@ public class PartitionedRegion extends LocalRegion
       bucketId = null;
     } else {
       bucketId =
-          BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, value, callbackArg));
+          PartitionedRegionHelper.getBucket(this, null, key, value, callbackArg);
     }
     return new KeyInfo(key, callbackArg, bucketId);
   }
@@ -9672,8 +9646,7 @@ public class PartitionedRegion extends LocalRegion
     if (dataStore == null) {
       return null;
     }
-    final BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, null, null));
+    final BucketId bucketId = PartitionedRegionHelper.getBucket(this, null, key, null, null);
     return dataStore.getLocalBucketById(bucketId);
   }
 
@@ -9684,8 +9657,7 @@ public class PartitionedRegion extends LocalRegion
     if (dataStore == null) {
       return null;
     }
-    final BucketId bucketId =
-        BucketId.valueOf(PartitionedRegionHelper.getHashKey(this, null, key, value, null));
+    final BucketId bucketId = PartitionedRegionHelper.getBucket(this, null, key, value, null);
     return dataStore.getLocalBucketById(bucketId);
   }
 
