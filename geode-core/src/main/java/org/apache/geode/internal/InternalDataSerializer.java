@@ -99,6 +99,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
@@ -890,6 +891,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
         public boolean toData(Object o, DataOutput out) throws IOException {
           out.writeByte(DSCODE.TIMESTAMP.toByte());
           writeTimestamp((Timestamp) o, out);
+          return true;
+        }
+      });
+      classesToSerializers.put(BucketId.class.getName(), new WellKnownDS() {
+        @Override
+        public boolean toData(Object o, DataOutput out) throws IOException {
+          out.writeByte(DSCODE.BUCKET_ID.toByte());
+          writeBucketId((BucketId) o, out);
           return true;
         }
       });
@@ -1951,6 +1960,15 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return result;
   }
 
+  private static void writeBucketId(BucketId o, DataOutput out) throws IOException {
+    writeUnsignedVL(o.intValue(), out);
+  }
+
+  private static BucketId readBucketId(DataInput in) throws IOException {
+    InternalDataSerializer.checkIn(in);
+    return BucketId.valueOf((int) readUnsignedVL(in));
+  }
+
   private static void writeUUID(java.util.UUID o, DataOutput out) throws IOException {
     InternalDataSerializer.checkOut(out);
 
@@ -2714,6 +2732,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return readUUID(in);
       case TIMESTAMP:
         return readTimestamp(in);
+      case BUCKET_ID:
+        return readBucketId(in);
       default:
         throw new IOException("Unknown header byte: " + header);
     }

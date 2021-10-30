@@ -659,9 +659,9 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
       FunctionService.registerFunction(function);
     }
     InternalExecution dataSet = (InternalExecution) FunctionService.onRegion(region);
-    Set<Integer> expectedBucketSet = new HashSet<>();
+    Set<BucketId> expectedBucketSet = new HashSet<>();
     for (Integer key : ketFilterSet) {
-      expectedBucketSet.add(BucketFilterPRResolver.getBucketID(key));
+      expectedBucketSet.add(BucketId.valueOf(BucketFilterPRResolver.getBucketID(key)));
     }
     int j = 0;
     for (Integer integer : testKeysSet) {
@@ -669,14 +669,17 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
       region.put(integer, val);
     }
 
-    ResultCollector<Integer, List<Integer>> rc = dataSet.withBucketFilter(bucketFilterSet)
-        .withFilter(ketFilterSet).execute(function.getId());
-    List<Integer> results = rc.getResult();
-    assertEquals(expectedBucketSet.size(), results.size());
-    for (Integer bucket : results) {
-      expectedBucketSet.remove(bucket);
+    ResultCollector<Set<BucketId>, List<Set<BucketId>>> rc =
+        dataSet.withBucketFilter(bucketFilterSet)
+            .withFilter(ketFilterSet).execute(function.getId());
+    List<Set<BucketId>> results = rc.getResult();
+
+    Set<BucketId> actualBucketSet = new HashSet<>(expectedBucketSet.size());
+    for (Set<BucketId> bucket : results) {
+      actualBucketSet.addAll(bucket);
     }
-    assertTrue(expectedBucketSet.isEmpty());
+
+    assertEquals(expectedBucketSet, actualBucketSet);
   }
 
   public static class BucketFilterPRResolver implements PartitionResolver, Serializable {

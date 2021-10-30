@@ -93,6 +93,7 @@ public enum DSCODE {
    */
   PROPERTIES(11),
 
+  BUCKET_ID(12),
   // 12..16 unused
 
   /**

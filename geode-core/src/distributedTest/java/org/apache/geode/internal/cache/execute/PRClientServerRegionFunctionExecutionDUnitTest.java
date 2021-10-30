@@ -329,16 +329,23 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     createScenarioForBucketFilter();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
+
     // test multi key filter
-    Set<BucketId> bucketFilterSet = new HashSet<>();
-    bucketFilterSet.add(BucketId.valueOf(3));
-    bucketFilterSet.add(BucketId.valueOf(6));
-    bucketFilterSet.add(BucketId.valueOf(8));
-    client.invoke(() -> serverBucketFilterExecution(bucketFilterSet));
-    bucketFilterSet.clear();
+    client.invoke(() -> {
+      Set<BucketId> bucketFilterSet = new HashSet<>();
+      bucketFilterSet.add(BucketId.valueOf(3));
+      bucketFilterSet.add(BucketId.valueOf(6));
+      bucketFilterSet.add(BucketId.valueOf(8));
+      serverBucketFilterExecution(bucketFilterSet);
+    });
+
     // Test single filter
-    bucketFilterSet.add(BucketId.valueOf(7));
-    client.invoke(() -> serverBucketFilterExecution(bucketFilterSet));
+    client.invoke(() -> {
+      Set<BucketId> bucketFilterSet = new HashSet<>();
+      bucketFilterSet.add(BucketId.valueOf(7));
+      serverBucketFilterExecution(bucketFilterSet);
+      serverBucketFilterExecution(bucketFilterSet);
+    });
 
   }
 
@@ -347,17 +354,19 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     createScenarioForBucketFilter();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_BUCKET_FILTER);
     registerFunctionAtServer(function);
+
     // test multi key filter
-    Set<BucketId> bucketFilterSet = new HashSet<>();
-    bucketFilterSet.add(BucketId.valueOf(3));
-    bucketFilterSet.add(BucketId.valueOf(6));
-    bucketFilterSet.add(BucketId.valueOf(8));
+    client.invoke(() -> {
+      Set<BucketId> bucketFilterSet = new HashSet<>();
+      bucketFilterSet.add(BucketId.valueOf(3));
+      bucketFilterSet.add(BucketId.valueOf(6));
+      bucketFilterSet.add(BucketId.valueOf(8));
 
-    Set<Integer> keyFilterSet = new HashSet<>();
-    keyFilterSet.add(75);
-    keyFilterSet.add(25);
-
-    client.invoke(() -> serverBucketFilterOverrideExecution(bucketFilterSet, keyFilterSet));
+      Set<Integer> keyFilterSet = new HashSet<>();
+      keyFilterSet.add(75);
+      keyFilterSet.add(25);
+      serverBucketFilterOverrideExecution(bucketFilterSet, keyFilterSet);
+    });
 
   }
 
