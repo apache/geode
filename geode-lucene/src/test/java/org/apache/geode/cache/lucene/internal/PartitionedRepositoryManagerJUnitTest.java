@@ -92,7 +92,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected GemFireCacheImpl cache;
 
   private final Set<BucketId> buckets =
-      Stream.of(2, 0, 1).map(BucketId::valueOf).collect(Collectors.toSet());
+      Stream.of(0, 1).map(BucketId::valueOf).collect(Collectors.toSet());
 
   @Before
   public void setUp() {

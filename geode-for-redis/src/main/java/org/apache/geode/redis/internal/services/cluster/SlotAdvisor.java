@@ -58,12 +58,12 @@ public class SlotAdvisor {
   public boolean isLocal(RedisKey key) {
     // This call returns early with the member if the bucket already exists
     DistributedMember primaryMember =
-        dataRegion.createBucket(BucketId.valueOf(key.getBucketId()), 1, null);
+        dataRegion.createBucket(key.getBucketId(), 1, null);
     return thisMember.equals(primaryMember);
   }
 
   public RedisMemberInfo getMemberInfo(RedisKey key) throws InterruptedException {
-    return getMemberInfo(BucketId.valueOf(key.getBucketId()));
+    return getMemberInfo(key.getBucketId());
   }
 
   /**

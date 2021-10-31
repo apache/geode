@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.partitioned.BucketId;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -42,8 +43,8 @@ public class RedisKey implements DataSerializableFixedID {
     slot = KeyHashUtil.slotForKey(value);
   }
 
-  public int getBucketId() {
-    return getSlot() / REDIS_SLOTS_PER_BUCKET;
+  public BucketId getBucketId() {
+    return BucketId.valueOf(getSlot() / REDIS_SLOTS_PER_BUCKET);
   }
 
   /**

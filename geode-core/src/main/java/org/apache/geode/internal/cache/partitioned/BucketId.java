@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
  * {@link Integer} cache is -128 to +127. This class is optimized for positive bucket indexes only.
  */
 public final class BucketId implements Comparable<BucketId> {
-  static final int max = 113;
+  static final int max = 256;
   private static final BucketId[] values;
 
   static {

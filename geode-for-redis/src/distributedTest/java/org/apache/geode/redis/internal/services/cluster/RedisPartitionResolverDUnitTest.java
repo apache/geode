@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -107,24 +108,26 @@ public class RedisPartitionResolverDUnitTest {
   private void validateBucketMapping(Map<String, BucketId> bucketMap) {
     for (Map.Entry<String, BucketId> e : bucketMap.entrySet()) {
       assertThat(new RedisKey(e.getKey().getBytes()).getBucketId())
-          .isEqualTo(e.getValue().intValue());
+          .isEqualTo(e.getValue());
     }
   }
 
   private Map<String, BucketId> getKeyToBucketMap(MemberVM vm) {
-    return vm.invoke((SerializableCallableIF<Map<String, BucketId>>) () -> {
+    return vm.invoke((SerializableCallableIF<Map<String, Integer>>) () -> {
       Region<RedisKey, RedisData> region =
           RedisClusterStartupRule.getCache().getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
-      LocalDataSet local = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(region);
-      Map<String, BucketId> keyMap = new HashMap<>();
+      LocalDataSet<?, ?> local =
+          (LocalDataSet<?, ?>) PartitionRegionHelper.getLocalPrimaryData(region);
+      Map<String, Integer> keyMap = new HashMap<>();
 
       for (Object key : local.localKeys()) {
         BucketId id = local.getProxy().getKeyInfo(key).getBucketId();
-        keyMap.put(key.toString(), id);
+        keyMap.put(key.toString(), id.intValue());
       }
 
       return keyMap;
-    });
+    }).entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, v -> BucketId.valueOf(v.getValue())));
   }
 }

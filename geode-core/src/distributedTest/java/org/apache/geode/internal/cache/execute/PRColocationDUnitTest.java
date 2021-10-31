@@ -1908,7 +1908,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void executeFunction() {
-    final Set<BucketId> buckets = Stream.of(2, 0, 1).map(BucketId::valueOf).collect(
+    final Set<BucketId> buckets = Stream.of(0, 1).map(BucketId::valueOf).collect(
         Collectors.toSet());
 
     Function inlineFunction = new FunctionAdapter() {
