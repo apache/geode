@@ -15,11 +15,13 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -37,6 +39,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.security.templates.TrackableUserPasswordAuthInit;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -209,7 +213,10 @@ public class MultiUserAPIDUnitTest {
 
   @Test
   public void jsonFormatterOnTheClientWithSingleUser() throws Exception {
-    client.withCredential("data", "data").withMultiUser(false)
+    client.withProperty(SECURITY_CLIENT_AUTH_INIT, TrackableUserPasswordAuthInit.class.getName())
+        .withProperty(UserPasswordAuthInit.USER_NAME, "data")
+        .withProperty(UserPasswordAuthInit.PASSWORD, "data")
+        .withMultiUser(false)
         .withServerConnection(server.getPort()).createCache();
     Region region = client.createProxyRegion("region");
 
@@ -217,6 +224,14 @@ public class MultiUserAPIDUnitTest {
     String json = "{\"key\" : \"value\"}";
     PdxInstance value = JSONFormatter.fromJSON(json);
     region.put("key", value);
+
+    // make sure the client only needs to authenticate once
+    assertThat(TrackableUserPasswordAuthInit.timeInitialized.get()).isEqualTo(1);
+  }
+
+  @After
+  public void after() throws Exception {
+    TrackableUserPasswordAuthInit.reset();
   }
 
   @Test
