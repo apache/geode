@@ -1194,7 +1194,8 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public boolean enforceUniqueZone() {
     return system.getConfig().getEnforceUniqueHost()
-        || system.getConfig().getRedundancyZone() != null;
+        || (system.getConfig().getRedundancyZone() != null
+            && !system.getConfig().getRedundancyZone().isEmpty());
   }
 
   @Override
