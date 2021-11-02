@@ -1929,9 +1929,8 @@ public interface ConfigurationProperties {
    * all local addresses.
    * </p>
    * <U>Default</U>: ""
-   * </p>
-   * <U>Since</U>: Geode 1.15
    */
+
   String GEODE_FOR_REDIS_BIND_ADDRESS = "geode-for-redis-bind-address";
   /**
    * The static String definition of the <i>"geode-for-redis-enabled"</i> property <a
@@ -1945,7 +1944,6 @@ public interface ConfigurationProperties {
    * When the default value of false, Geode for Redis is not available.
    * Set to true to enable Geode for Redis.
    * </p>
-   * <U>Since</U>: Geode 1.15
    */
   String GEODE_FOR_REDIS_ENABLED = "geode-for-redis-enabled";
   /**
@@ -1956,47 +1954,20 @@ public interface ConfigurationProperties {
    * to authenticate using only a password. This requires a SecurityManager to be configured.
    * </p>
    * <U>Default</U>: default
-   * </p>
-   * <U>Since</U>: Geode 1.15
    */
   String GEODE_FOR_REDIS_USERNAME = "geode-for-redis-username";
   /**
    * The static String definition of the <i>"geode-for-redis-port"</i> property <a
    * name="geode-for-redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port on which the Geode for Redis server listens for clients.
-   * A value of 0 selects a random port.</td>
+   * <U>Description</U>: Specifies the port on which the server listens for connections from Geode
+   * Geode for Redis. A value of 0 selects a random port.</td>
    * </p>
    * <U>Default</U>: 6379
    * </p>
    * <U>Allowed values</U>: 0..65535
-   * </p>
-   * <U>Since</U>: Geode 1.15
    */
   String GEODE_FOR_REDIS_PORT = "geode-for-redis-port";
-  /**
-   * The static String definition of the <i>"geode-for-redis-replica-count"</i> property <a
-   * name="geode-for-redis-replica-count"/a>
-   * </p>
-   * <U>Description</U>: Specifies the number of replicas Geode for Redis will attempt to keep
-   * in the cluster. A value of 0 means no replicas; no extra copies of data will be stored in
-   * the cluster. Note that extra servers need to be running for replicas to be made. For
-   * example if the cluster only has one server then no replicas will exist no matter what the
-   * value of this property is. Also note that Geode for Redis uses a Geode partitioned region
-   * to implement replicas and this property corresponds to the partitioned region's
-   * "redundantCopies"
-   * attribute. Because of this, geode-for-redis-replica-count can also be customized by setting
-   * {@link #ENFORCE_UNIQUE_HOST} or {@link #REDUNDANCY_ZONE}.
-   * This property must be set the same on every server in the cluster that is running a
-   * Geode for Redis server.</td>
-   * </p>
-   * <U>Default</U>: 1
-   * </p>
-   * <U>Allowed values</U>: 0..3
-   * </p>
-   * <U>Since</U>: Geode 1.15
-   */
-  String GEODE_FOR_REDIS_REPLICA_COUNT = "geode-for-redis-replica-count";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>
