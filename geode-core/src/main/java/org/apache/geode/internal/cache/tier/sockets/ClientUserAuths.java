@@ -121,7 +121,7 @@ public class ClientUserAuths {
 
   @VisibleForTesting
   @TestOnly
-  protected Collection<Subject> getSubjects() {
+  protected synchronized Collection<Subject> getSubjects() {
     List<Subject> all = uniqueIdVsSubject.values().stream()
         .flatMap(List::stream)
         .collect(Collectors.toList());
