@@ -143,7 +143,9 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm1 = getVM(1);
     vm2 = getVM(2);
     vm3 = getVM(3);
+
     Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
+
     for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
       vm.invoke(() -> {
         CLIENT.set(DUMMY_CLIENT);

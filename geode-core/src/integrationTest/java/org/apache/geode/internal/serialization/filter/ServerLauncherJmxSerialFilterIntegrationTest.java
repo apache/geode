@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
@@ -38,12 +38,11 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.internal.serialization.filter.OpenMBeanFilterPattern;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class ServerJmxSerialFilterIntegrationTest {
+public class ServerLauncherJmxSerialFilterIntegrationTest {
 
   private static final String NAME = "server";
   private static final String JMX_SERIAL_FILTER_PROPERTY =
@@ -92,7 +91,7 @@ public class ServerJmxSerialFilterIntegrationTest {
   }
 
   @Test
-  public void changesEmptyJmxSerialFilter_onJava9orGreater() {
+  public void configuresJmxSerialFilter_whenPropertyIsEmpty_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     System.setProperty(JMX_SERIAL_FILTER_PROPERTY, "");
@@ -118,7 +117,7 @@ public class ServerJmxSerialFilterIntegrationTest {
   }
 
   @Test
-  public void doesNotChangeNonEmptyJmxSerialFilter_onJava9orGreater() {
+  public void doesNotChangeJmxSerialFilter_whenPropertyIsNotEmpty_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     String existingSerialFilter = "!*";
@@ -169,7 +168,7 @@ public class ServerJmxSerialFilterIntegrationTest {
   }
 
   @Test
-  public void doesNotChangeEmptyJmxSerialFilter_onJava8() {
+  public void doesNotConfigureJmxSerialFilter_whenPropertyIsEmpty_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     System.setProperty(JMX_SERIAL_FILTER_PROPERTY, "");
@@ -195,7 +194,7 @@ public class ServerJmxSerialFilterIntegrationTest {
   }
 
   @Test
-  public void doesNotChangeNonEmptyJmxSerialFilter_onJava8() {
+  public void doesNotConfigureJmxSerialFilter_whenPropertyIsNotEmpty_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     String existingSerialFilter = "!*";

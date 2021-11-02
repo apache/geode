@@ -50,6 +50,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
@@ -214,12 +215,7 @@ public class LocatorIntegrationTest {
 
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
 
-    // TODO: switch to Awaitility.onTimeout to await without throwing when it releases
-    for (int i = 0; i < 10; i++) {
-      if (threadCount < Thread.activeCount()) {
-        Thread.sleep(1000);
-      }
-    }
+    GeodeAwaitility.await().until(() -> threadCount < Thread.activeCount());
 
     // TODO: since AssertJ supports withThreadDumpOnError, should we delete OSProcess.printStacks?
     OSProcess.printStacks(0);

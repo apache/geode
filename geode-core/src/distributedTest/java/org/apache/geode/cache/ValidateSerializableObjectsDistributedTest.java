@@ -86,6 +86,8 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
           .addCacheListener(new CacheListenerAdapter<Object, Object>() {
             @Override
             public void afterCreate(EntryEvent<Object, Object> event) {
+              // cache listener afterCreate causes all creates to deserialize the value which causes
+              // the tests to pass if serialization filter is configured
               assertThat(event.getNewValue()).isNotNull();
             }
           })
@@ -103,7 +105,7 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   }
 
   @Test
-  public void primitiveIsAllows() {
+  public void primitiveIsAllowed() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
       region.put(1, 1);
@@ -122,7 +124,7 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   }
 
   @Test
-  public void nonAllowedIsNotPutInOtherServer() {
+  public void nonAllowedIsNotPropagatedToOtherServer() {
     addIgnoredException(InvalidClassException.class);
     addIgnoredException(SerializationException.class);
 

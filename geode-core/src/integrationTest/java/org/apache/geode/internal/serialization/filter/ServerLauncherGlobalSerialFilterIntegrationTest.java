@@ -12,24 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNotNull;
-import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsNull;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,20 +36,19 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorGlobalSerialFilterPropertyEmptyIntegrationTest {
+public class ServerLauncherGlobalSerialFilterIntegrationTest {
 
-  private static final String NAME = "locator";
+  private static final String NAME = "server";
   private static final String JDK_SERIAL_FILTER_PROPERTY = "jdk.serialFilter";
 
   private File workingDirectory;
-  private int locatorPort;
   private int jmxPort;
 
   @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
+  public CloseableReference<ServerLauncher> server = new CloseableReference<>();
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
@@ -59,45 +57,21 @@ public class LocatorGlobalSerialFilterPropertyEmptyIntegrationTest {
   @Before
   public void setUp() throws IOException {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    int[] ports = getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    locatorPort = ports[1];
+    jmxPort = getRandomAvailableTCPPort();
   }
 
   @Test
-  public void setsSerialFilterWhenJdkSerialFilterPropertyIsSetToEmpty_onJava8()
-      throws InvocationTargetException, IllegalAccessException {
-    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
-
-    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
-
-    locator.set(new LocatorLauncher.Builder()
-        .setMemberName(NAME)
-        .setPort(locatorPort)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
-        .set(HTTP_SERVICE_PORT, "0")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
-        .set(JMX_MANAGER_START, "true")
-        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
-        .build())
-        .get()
-        .start();
-
-    assertThatSerialFilterIsNotNull();
-  }
-
-  @Test
-  public void doesNotSetSerialFilterWhenJdkSerialFilterPropertyIsSetToEmpty_onJava9orGreater()
-      throws InvocationTargetException, IllegalAccessException {
+  public void doesNotConfigureGlobalSerialFilter_whenPropertyIsEmpty_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
 
-    locator.set(new LocatorLauncher.Builder()
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
+        .setDisableDefaultServer(true)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
@@ -105,6 +79,82 @@ public class LocatorGlobalSerialFilterPropertyEmptyIntegrationTest {
         .get()
         .start();
 
-    assertThatSerialFilterIsNull();
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEmpty();
+  }
+
+  @Test
+  public void doesNotConfigureGlobalSerialFilter_whenPropertyIsNotEmpty_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter);
+
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setDisableDefaultServer(true)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo(existingSerialFilter);
+  }
+
+  @Test
+  public void doesNotConfigureGlobalSerialFilter_whenPropertyIsEmpty_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, "");
+
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setDisableDefaultServer(true)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo("");
+  }
+
+  @Test
+  public void doesNotConfigureGlobalSerialFilter_whenPropertyIsNotEmpty_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
+    String existingSerialFilter = "!*";
+    System.setProperty(JDK_SERIAL_FILTER_PROPERTY, existingSerialFilter);
+
+    server.set(new ServerLauncher.Builder()
+        .setMemberName(NAME)
+        .setDisableDefaultServer(true)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
+        .build())
+        .get()
+        .start();
+
+    assertThat(System.getProperty(JDK_SERIAL_FILTER_PROPERTY))
+        .as(JDK_SERIAL_FILTER_PROPERTY)
+        .isEqualTo(existingSerialFilter);
   }
 }

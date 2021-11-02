@@ -378,11 +378,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     serializationFilter = defaultSerializationFilter;
   }
 
-  @VisibleForTesting
-  public static ObjectInputFilter getSerializationFilter() {
-    return serializationFilter;
-  }
-
   private static SERIALIZATION_VERSION calculateSerializationVersion() {
     if (serializationVersionTxt == null || serializationVersionTxt.isEmpty()) {
       return latestVersion;

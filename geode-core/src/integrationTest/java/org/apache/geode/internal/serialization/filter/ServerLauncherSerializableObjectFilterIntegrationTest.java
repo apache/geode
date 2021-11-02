@@ -12,10 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -23,12 +25,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
-import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
+import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,24 +38,24 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class Java9LocatorSerializableObjectFilterIntegrationTest {
+public class ServerLauncherSerializableObjectFilterIntegrationTest {
 
-  private static final String NAME = "locator";
+  private static final String NAME = "server";
 
   private File workingDirectory;
-  private int locatorPort;
   private int jmxPort;
 
   @Rule
-  public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
+  public CloseableReference<ServerLauncher> server = new CloseableReference<>();
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
@@ -62,19 +64,17 @@ public class Java9LocatorSerializableObjectFilterIntegrationTest {
   @Before
   public void setUp() throws Exception {
     workingDirectory = temporaryFolder.newFolder(NAME);
-    int[] ports = getRandomAvailableTCPPorts(2);
-    locatorPort = ports[0];
-    jmxPort = ports[1];
+    jmxPort = getRandomAvailableTCPPort();
   }
 
   @Test
   public void doesNotConfigureValidateSerializableObjects_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    locator.set(new LocatorLauncher.Builder()
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -94,11 +94,11 @@ public class Java9LocatorSerializableObjectFilterIntegrationTest {
   @Test
   public void doesNotConfigureSerializableObjectFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    locator.set(new LocatorLauncher.Builder()
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
@@ -110,74 +110,66 @@ public class Java9LocatorSerializableObjectFilterIntegrationTest {
 
     assertThat(isJmxManagerStarted())
         .isTrue();
-    assertThat(getDistributionConfig().getSerializableObjectFilter())
+    assertThat(getSerializableObjectFilter())
         .as(SERIALIZABLE_OBJECT_FILTER)
-        .isEqualTo(DEFAULT_SERIALIZABLE_OBJECT_FILTER);
+        .isEqualTo("!*");
   }
 
   @Test
-  public void doesNotChangeEmptySerializableObjectFilter_onJava9orGreater() {
+  public void doesNotConfigureValidateSerializableObjects_onJava8() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    locator.set(new LocatorLauncher.Builder()
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
-        .set(SERIALIZABLE_OBJECT_FILTER, "")
-        .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
         .build())
         .get()
         .start();
 
     assertThat(isJmxManagerStarted())
         .isTrue();
-    assertThat(getDistributionConfig().getSerializableObjectFilter())
-        .as(SERIALIZABLE_OBJECT_FILTER)
-        .isEqualTo("");
+    assertThat(isValidateSerializableObjectsConfigured())
+        .as(VALIDATE_SERIALIZABLE_OBJECTS)
+        .isFalse();
   }
 
   @Test
-  public void doesNotChangeNonEmptySerializableObjectFilter_onJava9orGreater() {
-    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
-
-    String existingSerializableObjectFilter = "!foo.Bar;*";
-
-    locator.set(new LocatorLauncher.Builder()
+  public void doesNotConfigureSerializableObjectFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    server.set(new ServerLauncher.Builder()
         .setMemberName(NAME)
-        .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .setServerPort(serverPort)
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
         .set(JMX_MANAGER_START, "true")
         .set(LOG_FILE, new File(workingDirectory, NAME + ".log").getAbsolutePath())
-        .set(SERIALIZABLE_OBJECT_FILTER, existingSerializableObjectFilter)
-        .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
         .build())
         .get()
         .start();
 
     assertThat(isJmxManagerStarted())
         .isTrue();
-    assertThat(getDistributionConfig().getSerializableObjectFilter())
+    assertThat(getSerializableObjectFilter())
         .as(SERIALIZABLE_OBJECT_FILTER)
-        .isEqualTo(existingSerializableObjectFilter);
+        .isEqualTo("!*");
   }
 
   private DistributionConfig getDistributionConfig() {
-    InternalLocator locator = (InternalLocator) this.locator.get().getLocator();
-    InternalCache cache = locator.getCache();
+    InternalCache cache = (InternalCache) server.get().getCache();
     return cache.getInternalDistributedSystem().getConfig();
   }
 
   private SystemManagementService getSystemManagementService() {
-    InternalLocator locator = (InternalLocator) this.locator.get().getLocator();
-    InternalCache cache = locator.getCache();
+    Cache cache = server.get().getCache();
     return (SystemManagementService) ManagementService.getManagementService(cache);
   }
 
@@ -187,5 +179,22 @@ public class Java9LocatorSerializableObjectFilterIntegrationTest {
 
   private boolean isJmxManagerStarted() {
     return getSystemManagementService().isManager();
+  }
+
+  private String getSerializableObjectFilter() {
+    return getDistributionConfig().getSerializableObjectFilter();
+  }
+
+  private static class SerializableClass implements Serializable {
+
+    private final String value;
+
+    private SerializableClass(String value) {
+      this.value = value;
+    }
+
+    private String getValue() {
+      return value;
+    }
   }
 }

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.launchers;
+package org.apache.geode.serialization.filter;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
@@ -34,7 +34,7 @@ import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest {
+public class LocatorLauncherGlobalSerialFilterAcceptanceTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -51,7 +51,7 @@ public class LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest {
   private File locatorFolder;
 
   @Test
-  public void gfshStartLocatorJava8() {
+  public void startLocatorConfiguresGlobalSerialFilter_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     locatorFolder = temporaryFolder.getRoot();
@@ -85,7 +85,7 @@ public class LocatorLauncherConfiguresGlobalSerialFilterAcceptanceTest {
 
   // another test for java 9 that does not create global serial filter
   @Test
-  public void gfshStartLocatorJava9AndAbove() {
+  public void startLocatorDoesNotConfigureGlobalSerialFilter_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     locatorFolder = temporaryFolder.getRoot();

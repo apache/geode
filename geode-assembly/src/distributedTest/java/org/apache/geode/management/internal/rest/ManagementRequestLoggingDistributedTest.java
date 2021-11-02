@@ -84,7 +84,9 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     int[] ports = getRandomAvailableTCPPorts(2);
     httpPort = ports[0];
     jmxManagerPort = ports[1];
+
     Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
+
     locatorPort = locatorVM.invoke(this::startLocator);
     serverVM.invoke(this::startServer);
 

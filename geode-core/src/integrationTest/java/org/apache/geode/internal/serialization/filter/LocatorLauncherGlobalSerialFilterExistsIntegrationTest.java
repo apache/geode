@@ -12,14 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.io.SerialFilterAssertions.assertThatSerialFilterIsSameAs;
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsSameAs;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,11 +31,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.serialization.filter.ObjectInputFilterApi;
-import org.apache.geode.internal.serialization.filter.ReflectionObjectInputFilterApiFactory;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorGlobalSerialFilterBlankIntegrationTest {
+public class LocatorLauncherGlobalSerialFilterExistsIntegrationTest {
 
   private static final String NAME = "locator";
   private static final ObjectInputFilterApi OBJECT_INPUT_FILTER_API =
@@ -59,9 +57,9 @@ public class LocatorGlobalSerialFilterBlankIntegrationTest {
   }
 
   @Test
-  public void doesNotSetSerialFilterWhenSerialFilterIsSetToBlank()
+  public void doesNotConfigureGlobalSerialFilter_whenFilterExists()
       throws InvocationTargetException, IllegalAccessException {
-    Object existingJdkSerialFilter = OBJECT_INPUT_FILTER_API.createFilter(" ");
+    Object existingJdkSerialFilter = OBJECT_INPUT_FILTER_API.createFilter("!*");
     OBJECT_INPUT_FILTER_API.setSerialFilter(existingJdkSerialFilter);
 
     locator.set(new LocatorLauncher.Builder()

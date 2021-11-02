@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Objects.hash;
 import static java.util.Objects.requireNonNull;
@@ -88,7 +88,7 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   }
 
   @Test
-  public void primitiveIsAllows() {
+  public void primitiveIsAllowed() {
     locatorVM.invoke(() -> {
       Integer integerObject = 1;
       try (ObjectInput inputStream = new ObjectInputStream(byteArrayInputStream(integerObject))) {
@@ -98,8 +98,9 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   }
 
   @Test
-  public void nonAllowedDoesThrowJava8() {
+  public void nonAllowedThrowsInvalidClassException_onJava8() {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
+
     addIgnoredException(InvalidClassException.class);
 
     locatorVM.invoke(() -> {
@@ -114,8 +115,9 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
   }
 
   @Test
-  public void allowedDoesNotThrowJava9() {
+  public void allowedDoesNotThrow_onJava9orGreater() {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
+
     // As long as it is not sent within the JMX RMI socket, SerializableClass is allowed.
     locatorVM.invoke(() -> {
       Throwable thrown = catchThrowable(() -> {
@@ -140,7 +142,7 @@ public class LocatorLauncherGlobalSerialFilterDistributedTest implements Seriali
         .set(HTTP_SERVICE_PORT, "0")
         .set(VALIDATE_SERIALIZABLE_OBJECTS, "true")
         .set(SERIALIZABLE_OBJECT_FILTER,
-            "org.apache.geode.internal.io.LocatorLauncherGlobalSerialFilterDistributedTest;org.apache.geode.internal.io.LocatorLauncherGlobalSerialFilterDistributedTest$$Lambda*;org.apache.geode.test.dunit.**")
+            "org.apache.geode.internal.serialization.filter.LocatorLauncherGlobalSerialFilterDistributedTest;org.apache.geode.internal.serialization.filter.LocatorLauncherGlobalSerialFilterDistributedTest$$Lambda*;org.apache.geode.test.dunit.**")
         .build();
 
     locatorLauncher.start();

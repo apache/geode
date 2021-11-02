@@ -476,11 +476,6 @@ public class StartLocatorCommand extends OfflineGfshCommand {
           .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
     }
 
-    // TODO:KIRK: alternative to LocatorLauncher.start changes
-    // commandLine.add("-Djdk.serialFilter=" + new SanctionedSerializablesFilterPattern()
-    // //.append(serializableObjectConfig.getFilterPatternIfEnabled())
-    // .pattern());
-
     commandLine.add(LocatorLauncher.class.getName());
     commandLine.add(LocatorLauncher.Command.START.getName());
 

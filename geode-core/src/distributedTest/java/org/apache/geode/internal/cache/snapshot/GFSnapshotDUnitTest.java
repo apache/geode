@@ -78,7 +78,9 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     String serverHostName = NetworkUtils.getServerHostName(host);
 
     Properties properties = configureCommonProperties(new Properties());
+
     Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
+
     locator.invoke("Start Locator",
         () -> configureAndStartLocator(locatorPort, serverHostName, properties));
     server.invoke("Start Server",
