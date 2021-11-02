@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.internal.version.ComponentVersion;
 import org.apache.geode.internal.version.DistributionVersion;
-import org.jetbrains.annotations.NotNull;
 
 public class GeodeVersion implements ComponentVersion, DistributionVersion {
 
