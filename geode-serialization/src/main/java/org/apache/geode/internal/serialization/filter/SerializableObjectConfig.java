@@ -20,9 +20,9 @@ public interface SerializableObjectConfig {
     return getValidateSerializableObjects() ? getSerializableObjectFilter() : null;
   }
 
-  boolean getValidateSerializableObjects(); // validate-serializable-objects -- boolean
+  boolean getValidateSerializableObjects();
 
-  void setValidateSerializableObjects(boolean value); // set validate-serializable-objects
+  void setValidateSerializableObjects(boolean value);
 
-  String getSerializableObjectFilter(); // serializable-object-filter -- string
+  String getSerializableObjectFilter();
 }

@@ -48,12 +48,6 @@ public class ReflectionObjectInputFilterApiTest {
     }
   }
 
-  // @Test
-  // public void constructsWithoutThrowing() {
-  // assertThatCode(() -> new
-  // ReflectionObjectInputFilterApi(apiPackage)).doesNotThrowAnyException();
-  // }
-
   @Test
   public void createFilterGivenValidPatternReturnsNewFilter()
       throws IllegalAccessException, InvocationTargetException {
