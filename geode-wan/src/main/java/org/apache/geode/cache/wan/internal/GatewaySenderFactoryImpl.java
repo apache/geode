@@ -31,6 +31,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -256,7 +257,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   static void validate(final @NotNull InternalCache cache,
       final @NotNull GatewaySenderAttributesImpl attributes) {
-    final int myDSId = cache.getDistributionManager().getDistributedSystemId();
+    int myDSId;
+    if (cache instanceof CacheCreation) {
+      myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
+          .getDistributedSystemId();
+    } else {
+      myDSId = cache.getDistributionManager().getDistributedSystemId();
+    }
     final int remoteDSId = attributes.getRemoteDSId();
 
     if (remoteDSId == myDSId) {
@@ -371,5 +378,4 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     attrs.setEnforceThreadsConnectSameReceiver(
         senderCreation.getEnforceThreadsConnectSameReceiver());
   }
-
 }
