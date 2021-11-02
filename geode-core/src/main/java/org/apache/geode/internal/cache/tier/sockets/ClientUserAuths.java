@@ -36,6 +36,11 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * This is per ServerConnection or per CacheClientProxy, corresponding to only one client
+ * connection.
+ * Credentials should usually be just one, only multiple in multi-user case.
+ */
 public class ClientUserAuths {
   private static final Logger logger = LogService.getLogger();
 
@@ -43,9 +48,9 @@ public class ClientUserAuths {
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, UserAuthAttributes> cqNameVsUserAuth =
       new ConcurrentHashMap<>();
-  // use a list to store all the subjects that's created for this user id
-  // it's observed that even in the non-expirable credential case, the will be multiple
-  // subjects created associated with one userId. We always save the current subject to the top of
+  // use a list to store all the subjects that's created for this uniqueId
+  // In the expirable credential case, there will be multiple
+  // subjects created associated with one uniqueId. We always save the current subject to the top of
   // the list. The rest are "to-be-retired".
   private final ConcurrentMap<Long, CopyOnWriteArrayList<Subject>> uniqueIdVsSubject =
       new ConcurrentHashMap<>();
@@ -72,7 +77,7 @@ public class ClientUserAuths {
     }
 
     // we are saving all the subjects that's related to this uniqueId
-    // we cannot immediately log out the old subject of this userId because
+    // we cannot immediately log out the old subject of this uniqueId because
     // it might already be bound to another thread and doing operations. If
     // we log out that subject immediately, that thread "authorize" would get null principal.
     synchronized (this) {
@@ -146,10 +151,10 @@ public class ClientUserAuths {
 
   public Subject getSubject(final String cqName) {
     Long uniqueId = cqNameVsUniqueId.get(cqName);
-    if (uniqueId != null) {
-      return uniqueIdVsSubject.get(uniqueId).get(0);
+    if (uniqueId == null) {
+      return null;
     }
-    return null;
+    return getSubject(uniqueId);
   }
 
   public void setUserAuthAttributesForCq(final String cqName, final Long uniqueId,

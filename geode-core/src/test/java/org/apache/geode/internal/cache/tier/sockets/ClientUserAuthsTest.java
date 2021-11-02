@@ -98,6 +98,16 @@ public class ClientUserAuthsTest {
   }
 
   @Test
+  public void getSubjectWithCq() {
+    long id = auth.putSubject(subject1, -1);
+    auth.setUserAuthAttributesForCq("cq", id, true);
+    assertThat(auth.getSubject("cq")).isSameAs(subject1);
+
+    auth.removeSubject(id);
+    assertThat(auth.getSubject("cq")).isNull();
+  }
+
+  @Test
   public void removeSubject() {
     Long id1 = auth.putSubject(subject1, -1);
     auth.putSubject(subject2, id1);

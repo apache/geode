@@ -223,7 +223,7 @@ public class CacheClientProxy implements ClientSession {
   private Subject subject;
 
   /**
-   * used for cq name to subject/auth mapping, always initialized in single/multi user casees
+   * used for cq name to subject/auth mapping, always initialized in single/multi user cases
    */
   private ClientUserAuths clientUserAuths;
 
@@ -783,9 +783,10 @@ public class CacheClientProxy implements ClientSession {
         else if (subject != null) {
           logger.debug("CacheClientProxy.close, logging out: " + subject.getPrincipal());
           subject.logout();
+          subject = null;
         }
         // for multiUser case, in non-durable case, we are closing the connection
-        else {
+        else if (clientUserAuths != null) {
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
