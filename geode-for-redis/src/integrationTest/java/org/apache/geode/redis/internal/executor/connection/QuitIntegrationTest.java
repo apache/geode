@@ -37,8 +37,7 @@ public class QuitIntegrationTest {
   protected static Jedis jedis;
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Before
   public void setUp() {

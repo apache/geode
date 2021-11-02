@@ -38,8 +38,7 @@ public class UnsupportedCommandsIntegrationTest {
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Before
   public void setUp() {

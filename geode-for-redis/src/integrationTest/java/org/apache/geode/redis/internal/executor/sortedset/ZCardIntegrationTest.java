@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -22,8 +21,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class ZCardIntegrationTest extends AbstractZCardIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

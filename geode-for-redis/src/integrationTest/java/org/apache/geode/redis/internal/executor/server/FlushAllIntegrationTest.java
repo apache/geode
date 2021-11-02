@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.executor.server;
 
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -25,8 +24,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class FlushAllIntegrationTest extends AbstractFlushAllIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

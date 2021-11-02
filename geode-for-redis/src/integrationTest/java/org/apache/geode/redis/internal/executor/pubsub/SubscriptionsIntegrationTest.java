@@ -29,8 +29,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class SubscriptionsIntegrationTest extends AbstractSubscriptionsIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

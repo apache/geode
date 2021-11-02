@@ -14,15 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.string;
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class AppendMemoryIntegrationTest extends AbstractAppendMemoryIntegrationTest {
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

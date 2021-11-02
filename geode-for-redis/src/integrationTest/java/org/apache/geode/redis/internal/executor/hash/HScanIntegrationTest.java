@@ -29,8 +29,7 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
   String GREATER_THAN_LONG_MAX = "9_223_372_036_854_775_808";
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

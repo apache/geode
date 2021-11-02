@@ -25,8 +25,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class UnknownIntegrationTest extends AbstractUnknownIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

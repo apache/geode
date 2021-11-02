@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -24,8 +23,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class SubCommandsIntegrationTest extends AbstractSubCommandsIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

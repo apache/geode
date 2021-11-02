@@ -29,8 +29,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

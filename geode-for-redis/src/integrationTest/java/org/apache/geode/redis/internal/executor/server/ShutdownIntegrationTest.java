@@ -44,8 +44,7 @@ public class ShutdownIntegrationTest implements RedisIntegrationTest {
   }
 
   @Rule
-  public GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

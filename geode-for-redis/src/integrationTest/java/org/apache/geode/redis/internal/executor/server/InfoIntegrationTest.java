@@ -26,9 +26,8 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class InfoIntegrationTest extends AbstractInfoIntegrationTest {
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule()
-          .withProperty(LOG_LEVEL, "info");
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(LOG_LEVEL, "info");
 
   @Override
   public int getPort() {

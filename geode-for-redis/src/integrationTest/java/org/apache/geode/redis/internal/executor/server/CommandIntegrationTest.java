@@ -43,8 +43,7 @@ public class CommandIntegrationTest {
   public static NativeRedisTestRule redisServer = new NativeRedisTestRule();
 
   @ClassRule
-  public static GeodeRedisServerRule radishServer =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule radishServer = new GeodeRedisServerRule();
 
   private RedisCommands<String, String> redisClient;
   private RedisCommands<String, String> radishClient;

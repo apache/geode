@@ -40,9 +40,8 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
   private Jedis jedis;
 
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule()
-          .withProperty(LOG_LEVEL, "info");
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule()
+      .withProperty(LOG_LEVEL, "info");
 
   @Override
   public int getPort() {

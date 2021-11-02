@@ -14,15 +14,13 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-
 import org.junit.ClassRule;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class ZRemIntegrationTest extends AbstractZRemIntegrationTest {
   @ClassRule
-  public static GeodeRedisServerRule redis =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule redis = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

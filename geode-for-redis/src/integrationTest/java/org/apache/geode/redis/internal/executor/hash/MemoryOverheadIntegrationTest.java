@@ -40,7 +40,6 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
 
   @Rule
   public GeodeRedisServerRule server = new GeodeRedisServerRule()
-
       .withProperty(ConfigurationProperties.LOG_LEVEL, "error");
 
   @Before

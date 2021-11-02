@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-
 import org.junit.ClassRule;
 import redis.clients.jedis.Jedis;
 
@@ -23,8 +22,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 
 public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
-  public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule();
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
   public int getPort() {
