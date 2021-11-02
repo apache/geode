@@ -34,7 +34,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +56,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -1497,41 +1495,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                    // finished with peeked object.
   }
 
-  // TODO jbarrett move this
-  protected List<Object> peekEventsWithTransactionId(PartitionedRegion prQ, int bucketId,
-      TransactionId transactionId) throws CacheException {
-    List<Object> objects;
-    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
-
-    try {
-      Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-          getHasTransactionIdPredicate(transactionId);
-      Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-          getIsLastEventInTransactionPredicate();
-      objects =
-          brq.getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate);
-    } catch (BucketRegionQueueUnavailableException e) {
-      // BucketRegionQueue unavailable. Can be due to the BucketRegionQueue being destroyed.
-      return Collections.emptyList();
-    }
-
-    return objects; // OFFHEAP: ok since callers are careful to do destroys on region queue after
-    // finished with peeked objects.
-  }
-
-  // TODO jbarrett move this
-  @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getIsLastEventInTransactionPredicate() {
-    return x -> x.isLastEventInTransaction();
-  }
-
-  // TODO jbarrett move this
-  @VisibleForTesting
-  public static Predicate<GatewaySenderEventImpl> getHasTransactionIdPredicate(
-      TransactionId transactionId) {
-    return x -> transactionId.equals(x.getTransactionId());
-  }
-
   protected BucketRegionQueue getBucketRegionQueueByBucketId(final PartitionedRegion prQ,
       final int bucketId) {
     return (BucketRegionQueue) prQ.getDataStore().getLocalBucketById(bucketId);
@@ -1977,7 +1940,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     throw new RuntimeException("This method(size)is not supported by ParallelGatewaySenderQueue");
   }
 
-  static class MetaRegionFactory {
+  public static class MetaRegionFactory {
     ParallelGatewaySenderQueueMetaRegion newMetataRegion(InternalCache cache, final String prQName,
         final RegionAttributes ra, AbstractGatewaySender sender) {
       ParallelGatewaySenderQueueMetaRegion meta =

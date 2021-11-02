@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -39,7 +40,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 
@@ -169,26 +169,25 @@ public class BucketRegionQueueJUnitTest {
     this.bucketRegionQueue.addToQueue(8L, event7);
 
     Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
-        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx1);
+        x -> tx1.equals(x.getTransactionId());
     Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
-        ParallelGatewaySenderQueue.getIsLastEventInTransactionPredicate();
+        GatewaySenderEventImpl::isLastEventInTransaction;
     List<Object> objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
 
     assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event1, event3}));
+    assertEquals(objects, Arrays.asList(event1, event3));
 
     objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(1, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event7}));
+    assertEquals(objects, Collections.singletonList(event7));
 
-    hasTransactionIdPredicate =
-        ParallelGatewaySenderQueue.getHasTransactionIdPredicate(tx2);
+    hasTransactionIdPredicate = x -> tx2.equals(x.getTransactionId());
     objects = this.bucketRegionQueue.getElementsMatching(hasTransactionIdPredicate,
         isLastEventInTransactionPredicate);
     assertEquals(2, objects.size());
-    assertEquals(objects, Arrays.asList(new Object[] {event2, event4}));
+    assertEquals(objects, Arrays.asList(event2, event4));
   }
 
   @Test

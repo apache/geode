@@ -643,33 +643,6 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
     });
   }
 
-  private void updateGroupTransactionEvents(boolean groupTransactionEvents) {
-    vm4.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-    vm5.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-  }
-
   private void updateGatewayEventFilters(List<GatewayEventFilter> filters) {
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
@@ -718,19 +691,6 @@ public class SerialGatewaySenderAlterOperationsDUnitTest extends CacheTestCase {
       assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
     });
   }
-
-  private void checkGroupTransactionEvents(boolean groupTransactionEvents) {
-    vm4.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
-    });
-    vm5.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
-    });
-
-  }
-
 
   public static class MyGatewayEventFilter implements GatewayEventFilter, Serializable {
 

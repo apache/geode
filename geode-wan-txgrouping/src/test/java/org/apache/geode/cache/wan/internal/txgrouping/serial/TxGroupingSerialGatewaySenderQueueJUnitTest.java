@@ -12,15 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.serial;
+package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,14 +46,14 @@ import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.metrics.internal.NoopMeterRegistry;
 
-public class SerialGatewaySenderQueueJUnitTest {
+public class TxGroupingSerialGatewaySenderQueueJUnitTest {
 
   private static final String QUEUE_REGION = "queueRegion";
 
-  private SerialGatewaySenderQueue.MetaRegionFactory metaRegionFactory;
   private AbstractGatewaySender sender;
   Region region;
   InternalRegionFactory regionFactory;
@@ -65,18 +70,6 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     region = createLocalRegionMock();
 
-    regionFactory = mock(InternalRegionFactory.class, RETURNS_DEEP_STUBS);
-    when(regionFactory.setInternalMetaRegion(any())
-        .setDestroyLockFlag(anyBoolean())
-        .setSnapshotInputStream(any())
-        .setImageTarget(any())
-        .setIsUsedForSerialGatewaySenderQueue(anyBoolean())
-        .setInternalRegion(anyBoolean())
-        .setSerialGatewaySender(any())).thenReturn(regionFactory);
-    when(regionFactory.create(QUEUE_REGION)).thenReturn(region);
-
-    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
-
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
 
@@ -84,30 +77,96 @@ public class SerialGatewaySenderQueueJUnitTest {
 
     when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
     when(sender.getCache()).thenReturn(cache);
+    when(cache.getRegion(any())).thenReturn(region);
     when(sender.getMaximumQueueMemory()).thenReturn(100);
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
     when(sender.getId()).thenReturn("");
     when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
-
-    metaRegionFactory = mock(SerialGatewaySenderQueue.MetaRegionFactory.class);
-
-    SerialGatewaySenderQueue.SerialGatewaySenderQueueMetaRegion mockMetaRegion =
-        mock(SerialGatewaySenderQueue.SerialGatewaySenderQueueMetaRegion.class);
-
-    when(metaRegionFactory.newMetaRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
   }
 
   @Test
-  public void peekDoesNotGetExtraEventsWhenNotMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchMaxSize() {
-    TestableSerialGatewaySenderQueue queue = new TestableSerialGatewaySenderQueue(sender,
-        QUEUE_REGION, metaRegionFactory);
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInMaxSizeBatch() {
+    TestableTxGroupingSerialGatewaySenderQueue queue =
+        new TestableTxGroupingSerialGatewaySenderQueue(sender,
+            QUEUE_REGION);
 
     List<AsyncEvent<?, ?>> peeked = queue.peek(3, 100);
-    assertEquals(3, peeked.size());
+    assertEquals(4, peeked.size());
     List<AsyncEvent<?, ?>> peekedAfter = queue.peek(3, 100);
     assertEquals(3, peekedAfter.size());
-    peekedAfter = queue.peek(1, 100);
-    assertEquals(1, peekedAfter.size());
+  }
+
+  @Test
+  public void peekGetsExtraEventsWhenMustGroupTransactionEventsAndNotAllEventsForTransactionsInBatchByTime() {
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
+    GatewaySenderEventImpl event3 = createMockGatewaySenderEventImpl(1, true, region);
+    GatewaySenderEventImpl event4 = createMockGatewaySenderEventImpl(2, true, region);
+    TxGroupingSerialGatewaySenderQueue.KeyAndEventPair eventPair1 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(0L, event1);
+    SerialGatewaySenderQueue.KeyAndEventPair eventPair2 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(1L, event2);
+    SerialGatewaySenderQueue.KeyAndEventPair eventPair3 =
+        new SerialGatewaySenderQueue.KeyAndEventPair(2L, event3);
+
+    TestableTxGroupingSerialGatewaySenderQueue realQueue =
+        new TestableTxGroupingSerialGatewaySenderQueue(sender,
+            QUEUE_REGION);
+
+    TestableTxGroupingSerialGatewaySenderQueue queue = spy(realQueue);
+
+    doAnswer(invocation -> eventPair1)
+        .doAnswer(invocation -> eventPair2)
+        .doAnswer(invocation -> eventPair3)
+        .doAnswer(invocation -> null)
+        .when(queue).peekAhead();
+
+    doAnswer(invocation -> Collections
+        .singletonList(new TxGroupingSerialGatewaySenderQueue.KeyAndEventPair(1L, event4)))
+            .when(queue).getElementsMatching(any(), any(), anyLong());
+
+    List<AsyncEvent<?, ?>> peeked = queue.peek(-1, 1);
+    assertEquals(4, peeked.size());
+  }
+
+  @Test
+  public void peekEventsFromIncompleteTransactionsDoesNotThrowConcurrentModificationExceptionWhenCompletingTwoTransactions() {
+    GatewaySenderEventImpl event1 = createMockGatewaySenderEventImpl(1, false, region);
+    GatewaySenderEventImpl event2 = createMockGatewaySenderEventImpl(2, false, region);
+
+    TestableTxGroupingSerialGatewaySenderQueue queue =
+        new TestableTxGroupingSerialGatewaySenderQueue(sender,
+            QUEUE_REGION);
+
+    @SuppressWarnings("unchecked")
+    List<AsyncEvent<?, ?>> batch = new ArrayList(Arrays.asList(event1, event2));
+    queue.postProcessBatch(batch, 0);
+  }
+
+  @Test
+  public void removeExtraPeekedEventDoesNotRemoveFromExtraPeekedIdsUntilPreviousEventIsRemoved() {
+    TestableTxGroupingSerialGatewaySenderQueue queue =
+        new TestableTxGroupingSerialGatewaySenderQueue(sender,
+            QUEUE_REGION);
+    List<AsyncEvent<?, ?>> peeked = queue.peek(3, -1);
+    assertEquals(4, peeked.size());
+    assertThat(queue.getLastPeekedId()).isEqualTo(2);
+    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+
+
+    for (Object ignored : peeked) {
+      queue.remove();
+    }
+    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+
+    peeked = queue.peek(3, -1);
+    assertEquals(3, peeked.size());
+    assertThat(queue.getExtraPeekedIds().contains(5L)).isTrue();
+
+    for (Object ignored : peeked) {
+      queue.remove();
+    }
+    assertThat(queue.getExtraPeekedIds().contains(5L)).isFalse();
   }
 
   private GatewaySenderEventImpl createMockGatewaySenderEventImpl(int transactionId,
@@ -152,13 +211,11 @@ public class SerialGatewaySenderQueueJUnitTest {
     return region;
   }
 
-  private static class TestableSerialGatewaySenderQueue extends SerialGatewaySenderQueue {
-
-    private boolean groupTransactionEvents = false;
-
-    public TestableSerialGatewaySenderQueue(final AbstractGatewaySender sender,
-        String regionName, final MetaRegionFactory metaRegionFactory) {
-      super(sender, regionName, null, false, metaRegionFactory);
+  private static class TestableTxGroupingSerialGatewaySenderQueue
+      extends TxGroupingSerialGatewaySenderQueue {
+    public TestableTxGroupingSerialGatewaySenderQueue(final AbstractGatewaySender sender,
+        String regionName) {
+      super(sender, regionName, null, false);
     }
 
     @Override

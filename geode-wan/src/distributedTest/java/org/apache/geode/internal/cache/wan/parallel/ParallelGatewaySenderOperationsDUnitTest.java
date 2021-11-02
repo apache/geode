@@ -1075,12 +1075,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 5000));
 
-    updateGroupTransactionEvents(true);
     updateBatchTimeInterval(200);
 
     validateRegionSizes(getUniqueName() + "_PR", 0, vm2, vm3);
 
-    checkGroupTransactionEvents(true);
     checkBatchTimeInterval(200);
 
     vm4.invoke(() -> resumeSender("ln"));
@@ -1340,58 +1338,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     });
   }
 
-  private void updateGroupTransactionEvents(boolean groupTransactionEvents) {
-    vm4.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-    vm5.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-    vm6.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-    vm7.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      boolean paused = false;
-      if (sender.isRunning() && !sender.isPaused()) {
-        sender.pause();
-        paused = true;
-      }
-      sender.setGroupTransactionEvents(groupTransactionEvents);
-      if (paused) {
-        sender.resume();
-      }
-    });
-
-  }
-
   private void updateGatewayEventFilters(List<GatewayEventFilter> filters) {
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
@@ -1478,25 +1424,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
       assertThat(sender.getBatchTimeInterval()).isEqualTo(batchTimeInterval);
-    });
-  }
-
-  private void checkGroupTransactionEvents(boolean groupTransactionEvents) {
-    vm4.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
-    });
-    vm5.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
-    });
-    vm6.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
-    });
-    vm7.invoke(() -> {
-      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.mustGroupTransactionEvents()).isEqualTo(groupTransactionEvents);
     });
   }
 

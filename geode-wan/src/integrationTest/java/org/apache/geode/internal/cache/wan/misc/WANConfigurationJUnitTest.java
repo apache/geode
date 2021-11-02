@@ -82,31 +82,6 @@ public class WANConfigurationJUnitTest {
     }
   }
 
-  @Test
-  public void test_create_SerialGatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_DispatcherThreads_is_greaterThanOne() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    fact.setParallel(false);
-    fact.setDispatcherThreads(2);
-    fact.setGroupTransactionEvents(true);
-    assertThatThrownBy(() -> fact.create("NYSender", 2))
-        .isInstanceOf(GatewaySenderException.class)
-        .hasMessageContaining(
-            "SerialGatewaySender NYSender cannot be created with group transaction events set to true when dispatcher threads is greater than 1");
-  }
-
-  @Test
-  public void test_create_GatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_BatchConflation_is_enabled() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    fact.setBatchConflationEnabled(true);
-    fact.setGroupTransactionEvents(true);
-    assertThatThrownBy(() -> fact.create("NYSender", 2))
-        .isInstanceOf(GatewaySenderException.class)
-        .hasMessageContaining(
-            "GatewaySender NYSender cannot be created with both group transaction events set to true and batch conflation enabled");
-  }
-
   /**
    * Test to validate that sender with same Id can not be added to cache.
    */

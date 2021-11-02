@@ -27,10 +27,12 @@ dependencies {
 
   compileOnly('org.jetbrains:annotations')
 
-  implementation(project(':geode-wan'))
   implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
   implementation(project(':geode-core'))
+  implementation(project(':geode-wan'))
 
 
   // test
@@ -39,4 +41,15 @@ dependencies {
   testImplementation('junit:junit')
   testImplementation('org.mockito:mockito-core')
 
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('junit:junit')
+
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-junit'))
+
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 }

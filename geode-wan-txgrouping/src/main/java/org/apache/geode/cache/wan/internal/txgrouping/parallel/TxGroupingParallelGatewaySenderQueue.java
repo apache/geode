@@ -17,20 +17,26 @@ package org.apache.geode.cache.wan.internal.txgrouping.parallel;
 
 import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionId;
+import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 
 public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQueue {
@@ -94,6 +100,38 @@ public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQ
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
+  }
+
+  protected List<Object> peekEventsWithTransactionId(PartitionedRegion prQ, int bucketId,
+      TransactionId transactionId) throws CacheException {
+    List<Object> objects;
+    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
+
+    try {
+      Predicate<GatewaySenderEventImpl> hasTransactionIdPredicate =
+          getHasTransactionIdPredicate(transactionId);
+      Predicate<GatewaySenderEventImpl> isLastEventInTransactionPredicate =
+          getIsLastEventInTransactionPredicate();
+      objects =
+          brq.getElementsMatching(hasTransactionIdPredicate, isLastEventInTransactionPredicate);
+    } catch (BucketRegionQueueUnavailableException e) {
+      // BucketRegionQueue unavailable. Can be due to the BucketRegionQueue being destroyed.
+      return Collections.emptyList();
+    }
+
+    return objects; // OFFHEAP: ok since callers are careful to do destroys on region queue after
+    // finished with peeked objects.
+  }
+
+  @VisibleForTesting
+  public static Predicate<GatewaySenderEventImpl> getIsLastEventInTransactionPredicate() {
+    return x -> x.isLastEventInTransaction();
+  }
+
+  @VisibleForTesting
+  public static Predicate<GatewaySenderEventImpl> getHasTransactionIdPredicate(
+      TransactionId transactionId) {
+    return x -> transactionId.equals(x.getTransactionId());
   }
 
   private Map<TransactionId, Integer> getIncompleteTransactionsInBatch(
