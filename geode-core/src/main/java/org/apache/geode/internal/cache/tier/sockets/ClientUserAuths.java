@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.client.internal.AuthenticateUserOp.NOT_A_USER_ID;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +24,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -52,7 +52,7 @@ public class ClientUserAuths {
   // In the expirable credential case, there will be multiple
   // subjects created associated with one uniqueId. We always save the current subject to the top of
   // the list. The rest are "to-be-retired".
-  private final ConcurrentMap<Long, CopyOnWriteArrayList<Subject>> uniqueIdVsSubject =
+  private final ConcurrentMap<Long, List<Subject>> uniqueIdVsSubject =
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
@@ -81,10 +81,10 @@ public class ClientUserAuths {
     // it might already be bound to another thread and doing operations. If
     // we log out that subject immediately, that thread "authorize" would get null principal.
     synchronized (this) {
-      CopyOnWriteArrayList<Subject> subjects;
+      List<Subject> subjects;
       if (!uniqueIdVsSubject.containsKey(newId)) {
         logger.debug("Subject of {} added.", newId);
-        subjects = new CopyOnWriteArrayList<>();
+        subjects = new ArrayList<>();
         uniqueIdVsSubject.put(newId, subjects);
       } else {
         logger.debug("Subject of {} replaced.", newId);
@@ -129,7 +129,7 @@ public class ClientUserAuths {
   }
 
   public synchronized Subject getSubject(final Long userId) {
-    CopyOnWriteArrayList<Subject> subjects = uniqueIdVsSubject.get(userId);
+    List<Subject> subjects = uniqueIdVsSubject.get(userId);
     if (subjects == null || subjects.isEmpty()) {
       return null;
     }
@@ -138,7 +138,7 @@ public class ClientUserAuths {
 
   public synchronized void removeSubject(final Long userId) {
     logger.debug("Subject of {} removed.", userId);
-    CopyOnWriteArrayList<Subject> subjects = uniqueIdVsSubject.remove(userId);
+    List<Subject> subjects = uniqueIdVsSubject.remove(userId);
     if (subjects == null) {
       return;
     }
@@ -233,8 +233,10 @@ public class ClientUserAuths {
 
     // for integrated security, doesn't matter if this is called from proxy
     // or from the connection, we are closing the client connection
-    for (final Long subjectId : uniqueIdVsSubject.keySet()) {
-      removeSubject(subjectId);
+    synchronized (this) {
+      for (final Long subjectId : uniqueIdVsSubject.keySet()) {
+        removeSubject(subjectId);
+      }
     }
   }
 
