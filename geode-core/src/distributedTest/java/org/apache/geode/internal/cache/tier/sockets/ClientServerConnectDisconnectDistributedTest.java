@@ -151,9 +151,9 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     authorizations = new ArrayList<>();
     for (ServerConnection sc : acceptor.getAllServerConnections()) {
       ClientUserAuths auth = sc.getClientUserAuths();
-      assertThat(auth.getSubjects().size()).isNotEqualTo(0);
+      assertThat(auth.getAllSubjects().size()).isNotEqualTo(0);
       authorizations.add(auth);
-      for (Subject subject : auth.getSubjects()) {
+      for (Subject subject : auth.getAllSubjects()) {
         assertThat(subject.getPrincipal()).isNotNull();
         assertThat(subject.getPrincipals()).isNotNull();
         assertThat(subject.isAuthenticated()).isTrue();
@@ -204,7 +204,7 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     }
 
     for (ClientUserAuths auth : authorizations) {
-      assertThat(auth.getSubjects().size()).isEqualTo(0);
+      assertThat(auth.getAllSubjects().size()).isEqualTo(0);
     }
   }
 

@@ -80,6 +80,8 @@ public class CacheClientProxyTest {
     proxyStatsFactory = mock(CacheClientProxyStatsFactory.class);
     dispatcherFactory = mock(MessageDispatcherFactory.class);
     clientUserAuths = mock(ClientUserAuths.class);
+    when(proxyStatsFactory.create(any(), any(), any()))
+        .thenReturn(mock(CacheClientProxyStats.class));
 
     proxyWithSingleUser =
         new CacheClientProxy(cache, notifier, socket, id, true, (byte) 1, version, 1L, true,
@@ -104,8 +106,6 @@ public class CacheClientProxyTest {
 
   @Test
   public void deliverMessageWhenSubjectIsNotNull() {
-    when(proxyStatsFactory.create(any(), any(), any()))
-        .thenReturn(mock(CacheClientProxyStats.class));
     proxyWithSingleUser =
         new CacheClientProxy(cache, notifier, socket, id, true, (byte) 1, version, 1L, true,
             securityService, subject, clock, statsFactory, proxyStatsFactory, dispatcherFactory,
@@ -120,8 +120,6 @@ public class CacheClientProxyTest {
 
   @Test
   public void deliverMessageWhenSubjectIsNull() {
-    when(proxyStatsFactory.create(any(), any(), any()))
-        .thenReturn(mock(CacheClientProxyStats.class));
     proxyWithMultiUser =
         new CacheClientProxy(cache, notifier, socket, id, true, (byte) 1, version, 1L, true,
             securityService, null, clock, statsFactory, proxyStatsFactory, dispatcherFactory,
@@ -157,18 +155,18 @@ public class CacheClientProxyTest {
   }
 
   @Test
-  public void close_singleUser() {
+  public void close_singleUser_logout_subject() {
     when(id.isDurable()).thenReturn(false);
     CacheClientProxy spy = spy(proxyWithSingleUser);
     doNothing().when(spy).closeTransientFields();
     boolean keepProxy = spy.close(true, false);
     assertThat(keepProxy).isFalse();
-    verify(subject, times(1)).logout();
+    verify(subject).logout();
     verify(clientUserAuths, never()).cleanup(anyBoolean());
   }
 
   @Test
-  public void close_multiUser() {
+  public void close_multiUser_calls_ClientUserAuthsCleanUp() {
     when(id.isDurable()).thenReturn(false);
     CacheClientProxy spy = spy(proxyWithMultiUser);
     doNothing().when(spy).closeTransientFields();

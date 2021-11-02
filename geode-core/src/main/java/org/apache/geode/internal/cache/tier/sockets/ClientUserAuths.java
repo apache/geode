@@ -52,7 +52,7 @@ public class ClientUserAuths {
   // In the expirable credential case, there will be multiple
   // subjects created associated with one uniqueId. We always save the current subject to the top of
   // the list. The rest are "to-be-retired".
-  private final ConcurrentMap<Long, List<Subject>> uniqueIdVsSubject =
+  private final ConcurrentMap<Long, List<Subject>> uniqueIdVsSubjects =
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
@@ -82,13 +82,13 @@ public class ClientUserAuths {
     // we log out that subject immediately, that thread "authorize" would get null principal.
     synchronized (this) {
       List<Subject> subjects;
-      if (!uniqueIdVsSubject.containsKey(newId)) {
+      if (!uniqueIdVsSubjects.containsKey(newId)) {
         logger.debug("Subject of {} added.", newId);
         subjects = new ArrayList<>();
-        uniqueIdVsSubject.put(newId, subjects);
+        uniqueIdVsSubjects.put(newId, subjects);
       } else {
         logger.debug("Subject of {} replaced.", newId);
-        subjects = uniqueIdVsSubject.get(newId);
+        subjects = uniqueIdVsSubjects.get(newId);
       }
       // always add the latest subject to the top of the list;
       subjects.add(0, subject);
@@ -121,15 +121,15 @@ public class ClientUserAuths {
 
   @VisibleForTesting
   @TestOnly
-  protected synchronized Collection<Subject> getSubjects() {
-    List<Subject> all = uniqueIdVsSubject.values().stream()
+  protected synchronized Collection<Subject> getAllSubjects() {
+    List<Subject> all = uniqueIdVsSubjects.values().stream()
         .flatMap(List::stream)
         .collect(Collectors.toList());
     return Collections.unmodifiableCollection(all);
   }
 
   public synchronized Subject getSubject(final Long userId) {
-    List<Subject> subjects = uniqueIdVsSubject.get(userId);
+    List<Subject> subjects = uniqueIdVsSubjects.get(userId);
     if (subjects == null || subjects.isEmpty()) {
       return null;
     }
@@ -137,11 +137,11 @@ public class ClientUserAuths {
   }
 
   public synchronized void removeSubject(final Long userId) {
-    logger.debug("Subject of {} removed.", userId);
-    List<Subject> subjects = uniqueIdVsSubject.remove(userId);
+    List<Subject> subjects = uniqueIdVsSubjects.remove(userId);
     if (subjects == null) {
       return;
     }
+    logger.debug("{} Subjects of {} removed.", subjects.size(), userId);
     subjects.forEach(Subject::logout);
   }
 
@@ -234,7 +234,7 @@ public class ClientUserAuths {
     // for integrated security, doesn't matter if this is called from proxy
     // or from the connection, we are closing the client connection
     synchronized (this) {
-      for (final Long subjectId : uniqueIdVsSubject.keySet()) {
+      for (final Long subjectId : uniqueIdVsSubjects.keySet()) {
         removeSubject(subjectId);
       }
     }

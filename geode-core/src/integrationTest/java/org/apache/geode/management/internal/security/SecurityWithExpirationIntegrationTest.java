@@ -59,7 +59,7 @@ public class SecurityWithExpirationIntegrationTest {
   }
 
   @Test
-  public void logoutMultipleTimeOnTheSameSubjectShouldNotThrowExcpetion() {
+  public void logoutMultipleTimeOnTheSameSubjectShouldNotThrowException() {
     this.securityService.login(loginCredentials("data", "data"));
     Subject subject = securityService.getSubject();
     subject.logout();
