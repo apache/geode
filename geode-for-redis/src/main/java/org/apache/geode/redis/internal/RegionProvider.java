@@ -90,7 +90,7 @@ public class RegionProvider {
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
     DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-    attributesFactory.setRedundantCopies(config.getRedisReplicaCount());
+    attributesFactory.setRedundantCopies(config.getRedisRedundantCopies());
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());

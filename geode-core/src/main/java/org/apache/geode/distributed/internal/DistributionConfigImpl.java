@@ -503,7 +503,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * port on which GeodeRedisServer is started
    */
   private int redisPort = DEFAULT_REDIS_PORT;
-  private int redisReplicaCount = DEFAULT_REDIS_REPLICA_COUNT;
+  private int redisRedundantCopies = DEFAULT_REDIS_REDUNDANT_COPIES;
 
 
   private boolean jmxManager =
@@ -797,7 +797,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     redisBindAddress = other.getRedisBindAddress();
     redisUsername = other.getRedisUsername();
     redisEnabled = other.getRedisEnabled();
-    redisReplicaCount = other.getRedisReplicaCount();
+    redisRedundantCopies = other.getRedisRedundantCopies();
     userCommandPackages = other.getUserCommandPackages();
 
     // following added for 8.0
@@ -3309,7 +3309,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(redisBindAddress, that.redisBindAddress)
         .append(redisUsername, that.redisUsername)
         .append(redisPort, that.redisPort)
-        .append(redisReplicaCount, that.redisReplicaCount)
+        .append(redisRedundantCopies, that.redisRedundantCopies)
         .append(redisEnabled, that.redisEnabled)
         .append(jmxManagerBindAddress, that.jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients, that.jmxManagerHostnameForClients)
@@ -3405,7 +3405,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(loadSharedConfigurationFromDir).append(clusterConfigDir).append(httpServicePort)
         .append(httpServiceBindAddress).append(startDevRestApi).append(memcachedPort)
         .append(memcachedProtocol).append(memcachedBindAddress).append(distributedTransactions)
-        .append(redisPort).append(redisBindAddress).append(redisUsername).append(redisReplicaCount)
+        .append(redisPort).append(redisBindAddress).append(redisUsername).append(
+            redisRedundantCopies)
         .append(redisEnabled).append(jmxManager)
         .append(jmxManagerStart).append(jmxManagerPort).append(jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients).append(jmxManagerPasswordFile)
@@ -3517,13 +3518,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public int getRedisReplicaCount() {
-    return redisReplicaCount;
+  public int getRedisRedundantCopies() {
+    return redisRedundantCopies;
   }
 
   @Override
-  public void setRedisReplicaCount(int value) {
-    redisReplicaCount = value;
+  public void setRedisRedundantCopies(int value) {
+    redisRedundantCopies = value;
   }
 
   @Override

@@ -1975,17 +1975,17 @@ public interface ConfigurationProperties {
    */
   String GEODE_FOR_REDIS_PORT = "geode-for-redis-port";
   /**
-   * The static String definition of the <i>"geode-for-redis-replica-count"</i> property <a
-   * name="geode-for-redis-replica-count"/a>
+   * The static String definition of the <i>"geode-for-redis-redundant-copies"</i> property <a
+   * name="geode-for-redis-redundant-copies"/a>
    * </p>
-   * <U>Description</U>: Specifies the number of replicas Geode for Redis will attempt to keep
-   * in the cluster. A value of 0 means no replicas; no extra copies of data will be stored in
-   * the cluster. Note that extra servers need to be running for replicas to be made. For
-   * example if the cluster only has one server then no replicas will exist no matter what the
-   * value of this property is. Also note that Geode for Redis uses a Geode partitioned region
-   * to implement replicas and this property corresponds to the partitioned region's
-   * "redundantCopies"
-   * attribute. Because of this, geode-for-redis-replica-count can also be customized by setting
+   * <U>Description</U>: Specifies the number of redundant copies Geode for Redis will attempt to
+   * keep in the cluster. A value of 0 means no extra copies of data will be stored in
+   * the cluster. Note that extra servers need to be running for redundant copies to be made. For
+   * example if the cluster only has one server then no redundant copies will exist no matter what
+   * the value of this property is. Also note that Geode for Redis uses a Geode partitioned region
+   * to implement redundant copies and this property corresponds to the partitioned region's
+   * "redundant-copies" attribute.
+   * Because of this, geode-for-redis-redundant-copies can also be customized by setting
    * {@link #ENFORCE_UNIQUE_HOST} or {@link #REDUNDANCY_ZONE}.
    * This property must be set the same on every server in the cluster that is running a
    * Geode for Redis server.</td>
@@ -1996,7 +1996,7 @@ public interface ConfigurationProperties {
    * </p>
    * <U>Since</U>: Geode 1.15
    */
-  String GEODE_FOR_REDIS_REPLICA_COUNT = "geode-for-redis-replica-count";
+  String GEODE_FOR_REDIS_REDUNDANT_COPIES = "geode-for-redis-redundant-copies";
   /**
    * The static String definition of the <i>"lock-memory"</i> property <a name="lock-memory"/a>
    * </p>

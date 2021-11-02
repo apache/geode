@@ -61,7 +61,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_T
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -1322,7 +1322,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Specifies the username that the Geode for Redis server uses when a client attempts to authenticate using only a password. The default is 'default'.");
     m.put(GEODE_FOR_REDIS_PORT,
         "Specifies the port on which the Geode for Redis server listens for client connections. A value of 0 selects a random port.  Default is 6379.");
-    m.put(GEODE_FOR_REDIS_REPLICA_COUNT,
+    m.put(GEODE_FOR_REDIS_REDUNDANT_COPIES,
         "Specifies how many extra copies of data will be stored in the cluster by Geode for Redis.  Default is 1.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,
         "Enables cluster configuration support in dedicated locators.  This allows the locator to share configuration information amongst members and save configuration changes made using GFSH.");

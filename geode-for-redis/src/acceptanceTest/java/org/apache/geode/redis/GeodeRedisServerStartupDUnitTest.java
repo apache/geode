@@ -19,7 +19,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -135,7 +135,7 @@ public class GeodeRedisServerStartupDUnitTest {
   }
 
   @Test
-  public void startupFailsGivenInvalidReplicaCount() {
+  public void startupFailsGivenInvalidRedundantCopies() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     addIgnoredException("Could not start server compatible with Redis");
@@ -143,17 +143,17 @@ public class GeodeRedisServerStartupDUnitTest {
         .withProperty(GEODE_FOR_REDIS_PORT, "" + port)
         .withProperty(GEODE_FOR_REDIS_BIND_ADDRESS, "localhost")
         .withProperty(GEODE_FOR_REDIS_ENABLED, "true")
-        .withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "4")))
+        .withProperty(GEODE_FOR_REDIS_REDUNDANT_COPIES, "4")))
             .hasStackTraceContaining(
-                "Could not set \"" + GEODE_FOR_REDIS_REPLICA_COUNT
+                "Could not set \"" + GEODE_FOR_REDIS_REDUNDANT_COPIES
                     + "\" to \"4\" because its value can not be greater than \"3\".");
     assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
         .withProperty(GEODE_FOR_REDIS_PORT, "" + port)
         .withProperty(GEODE_FOR_REDIS_BIND_ADDRESS, "localhost")
         .withProperty(GEODE_FOR_REDIS_ENABLED, "true")
-        .withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "-1")))
+        .withProperty(GEODE_FOR_REDIS_REDUNDANT_COPIES, "-1")))
             .hasStackTraceContaining(
-                "Could not set \"" + GEODE_FOR_REDIS_REPLICA_COUNT
+                "Could not set \"" + GEODE_FOR_REDIS_REDUNDANT_COPIES
                     + "\" to \"-1\" because its value can not be less than \"0\".");
   }
 
@@ -190,32 +190,32 @@ public class GeodeRedisServerStartupDUnitTest {
   }
 
   @Test
-  public void startupWorksGivenReplicaCountOfZero() {
+  public void startupWorksGivenRedundantCopiesOfZero() {
     MemberVM server = cluster.startServerVM(0, s -> s
-        .withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0")
+        .withProperty(GEODE_FOR_REDIS_REDUNDANT_COPIES, "0")
         .withProperty(GEODE_FOR_REDIS_PORT, "0")
         .withProperty(GEODE_FOR_REDIS_ENABLED, "true"));
 
-    int replicaCount = cluster.getMember(0).invoke("getReplicaCount", () -> {
+    int RedundantCopies = cluster.getMember(0).invoke("getRedundantCopies", () -> {
       PartitionedRegion pr = (PartitionedRegion) RedisClusterStartupRule.getCache()
           .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
       return pr.getPartitionAttributes().getRedundantCopies();
     });
-    assertThat(replicaCount).isEqualTo(0);
+    assertThat(RedundantCopies).isEqualTo(0);
   }
 
   @Test
-  public void startupWorksGivenReplicaCountOfThree() {
+  public void startupWorksGivenRedundantCopiesOfThree() {
     MemberVM server = cluster.startServerVM(0, s -> s
-        .withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "3")
+        .withProperty(GEODE_FOR_REDIS_REDUNDANT_COPIES, "3")
         .withProperty(GEODE_FOR_REDIS_PORT, "0")
         .withProperty(GEODE_FOR_REDIS_ENABLED, "true"));
 
-    int replicaCount = cluster.getMember(0).invoke("getReplicaCount", () -> {
+    int RedundantCopies = cluster.getMember(0).invoke("getRedundantCopies", () -> {
       PartitionedRegion pr = (PartitionedRegion) RedisClusterStartupRule.getCache()
           .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
       return pr.getPartitionAttributes().getRedundantCopies();
     });
-    assertThat(replicaCount).isEqualTo(3);
+    assertThat(RedundantCopies).isEqualTo(3);
   }
 }

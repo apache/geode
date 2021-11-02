@@ -61,7 +61,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_T
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -3547,20 +3547,21 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   int DEFAULT_REDIS_PORT = 6379;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_REPLICA_COUNT} property
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_REDUNDANT_COPIES}
+   * property
    *
-   * @return the Geode for Redis replica count
+   * @return the Geode for Redis redundant copies
    *
    */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_REPLICA_COUNT)
-  int getRedisReplicaCount();
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
+  int getRedisRedundantCopies();
 
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_REPLICA_COUNT)
-  void setRedisReplicaCount(int value);
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
+  void setRedisRedundantCopies(int value);
 
   @ConfigAttribute(type = Integer.class, min = 0, max = 3)
-  String REDIS_REPLICA_COUNT_NAME = GEODE_FOR_REDIS_REPLICA_COUNT;
-  int DEFAULT_REDIS_REPLICA_COUNT = 1;
+  String REDIS_REDUNDANT_COPIES_NAME = GEODE_FOR_REDIS_REDUNDANT_COPIES;
+  int DEFAULT_REDIS_REDUNDANT_COPIES = 1;
 
   // Added for the HTTP service
 

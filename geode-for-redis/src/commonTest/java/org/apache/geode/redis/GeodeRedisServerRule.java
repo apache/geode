@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -39,7 +39,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cacheFactory.set(LOG_LEVEL, "warn");
     cacheFactory.set(MCAST_PORT, "0");
     cacheFactory.set(LOCATORS, "");
-    cacheFactory.set(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
+    cacheFactory.set(GEODE_FOR_REDIS_REDUNDANT_COPIES, "0");
   }
 
   public void setEnableUnsupportedCommands(boolean allow) {
