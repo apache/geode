@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
@@ -31,7 +30,7 @@ public class SubscriptionsIntegrationTest extends AbstractSubscriptionsIntegrati
 
   @ClassRule
   public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
+      new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

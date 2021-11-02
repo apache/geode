@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.common;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,7 +39,7 @@ public class UnsupportedCommandsIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
+      new GeodeRedisServerRule();
 
   @Before
   public void setUp() {

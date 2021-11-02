@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.executor.connection;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 
 import org.junit.ClassRule;
 
@@ -26,7 +25,7 @@ public class EchoIntegrationTest extends AbstractEchoIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
+      new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

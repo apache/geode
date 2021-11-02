@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 
 import org.junit.ClassRule;
 
@@ -23,7 +22,7 @@ import org.apache.geode.redis.GeodeRedisServerRule;
 public class ZRemRangeByScoreIntegrationTest extends AbstractZRemRangeByScoreIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule redis =
-      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0");
+      new GeodeRedisServerRule();
 
   @Override
   public int getPort() {

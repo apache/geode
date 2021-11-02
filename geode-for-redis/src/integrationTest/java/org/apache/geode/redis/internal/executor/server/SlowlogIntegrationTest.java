@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
 import org.junit.ClassRule;
@@ -26,7 +25,7 @@ public class SlowlogIntegrationTest extends AbstractSlowlogIntegrationTest {
 
   @ClassRule
   public static GeodeRedisServerRule server =
-      new GeodeRedisServerRule().withProperty(GEODE_FOR_REDIS_REPLICA_COUNT, "0")
+      new GeodeRedisServerRule()
           .withProperty(LOG_LEVEL, "info");
 
   @Override
