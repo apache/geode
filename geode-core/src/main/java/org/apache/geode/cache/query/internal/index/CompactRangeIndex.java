@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -72,7 +74,6 @@ import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeap;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PdxString;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A CompactRangeIndex is a range index that has simple data structures to minimize its footprint,
@@ -95,6 +96,7 @@ public class CompactRangeIndex extends AbstractIndex {
   protected ThreadLocal<OldKeyValuePair> oldKeyValue;
 
   private IndexStore indexStore;
+
 
   @MutableForTesting
   static boolean TEST_ALWAYS_UPDATE_IN_PROGRESS = false;
@@ -482,12 +484,10 @@ public class CompactRangeIndex extends AbstractIndex {
     int limit = -1;
 
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
-    String indexThresholdSize =
-        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE");
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (indexThresholdSize != null && limit < Integer.parseInt(indexThresholdSize)) {
-        limit = Integer.parseInt(indexThresholdSize);
+      if (limit < indexThresholdSize) {
+        limit = indexThresholdSize;
       }
     }
 
@@ -523,6 +523,9 @@ public class CompactRangeIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
+      if (limit < indexThresholdSize) {
+        limit = indexThresholdSize;
+      }
     }
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
 

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.util.ArrayList;
@@ -494,6 +495,9 @@ public class HashIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
+      if (limit < indexThresholdSize) {
+        limit = indexThresholdSize;
+      }
     }
 
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);

@@ -27,38 +27,29 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.assertj.core.api.Java6Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
+@SuppressWarnings("ALL")
 public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   @Rule
@@ -70,36 +61,26 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  private String locatorName, serverName;
+  private static final String locatorName = "locator";
+  private static final String serverName = "server";
 
-  private File locatorDir, serverDir;
+  private File locatorDir;
+  private File serverDir;
 
-  private int locatorPort, locatorJmxPort, serverPort;
+  private int locatorPort;
+  private int locatorJmxPort;
+  private int serverPort;
 
   private String locators;
 
-  private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
+  private VM server;
 
-  private static final AtomicReference<LocatorLauncher> LOCATOR =
-      new AtomicReference<>(DUMMY_LOCATOR);
-
-  private static final ServerLauncher DUMMY_SERVER = mock(ServerLauncher.class);
-
-  private static final AtomicReference<ServerLauncher> SERVER =
-      new AtomicReference<>(DUMMY_SERVER);
-
-  private VM locator, server;
-
-  private String regionName;
+  private static final String regionName = "exampleRegion";
 
   @Before
   public void setUp() throws Exception {
-    locator = getVM(0);
+    VM locator = getVM(0);
     server = getVM(1);
-
-    locatorName = "locator";
-    serverName = "server";
-    regionName = "exampleRegion";
 
     locatorDir = temporaryFolder.newFolder(locatorName);
     serverDir = temporaryFolder.newFolder(serverName);
@@ -111,11 +92,11 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
     locators = "localhost[" + locatorPort + "]";
 
-    locator.invoke(() -> startLocator(locatorName, locatorDir, locatorPort, locatorJmxPort));
+    locator.invoke(() -> startLocator(locatorDir, locatorPort, locatorJmxPort));
 
     gfsh.connectAndVerify(locatorJmxPort, GfshCommandRule.PortType.jmxManager);
 
-    server.invoke(() -> startServer(serverName, serverDir, serverPort, locators));
+    server.invoke(() -> startServer(serverDir, serverPort, locators));
   }
 
   @Test
@@ -124,64 +105,13 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         .statusIsSuccess();
 
     server.invoke(() -> {
-      QueryService cacheQS = GemFireCacheImpl.getInstance().getQueryService();
+      Cache cache = CacheFactory.getAnyInstance();
+      QueryService cacheQS = cache.getQueryService();
       cacheQS.createIndex("IdIndex", "value.positions['SUN']",
           SEPARATOR + regionName + ".entrySet");
       Region<Integer, Portfolio> region =
-          GemFireCacheImpl.getInstance().getRegion(regionName);
-      FunctionService.onRegion(region).execute(new MyFunction());
-      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(10000));
-    });
+          cache.getRegion(regionName);
 
-    String query = "query --query=\"<trace> select e.key, e.value from " +
-        SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'somethin%'\"";
-
-    String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
-    assertThat(cmdResult).contains("\"Rows\":\"1\"");
-    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
-  }
-
-  private static void startLocator(String name, File workingDirectory, int locatorPort,
-      int jmxPort) {
-    LOCATOR.set(new LocatorLauncher.Builder()
-        .setMemberName(name)
-        .setPort(locatorPort)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
-        .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
-        .set(JMX_MANAGER_START, "true")
-        .build());
-
-    LOCATOR.get().start();
-
-    await().untilAsserted(() -> {
-      InternalLocator locator = (InternalLocator) LOCATOR.get().getLocator();
-      assertThat(locator.isSharedConfigurationRunning())
-          .as("Locator shared configuration is running on locator" + getVMId())
-          .isTrue();
-    });
-  }
-
-  private static void startServer(String name, File workingDirectory, int serverPort,
-      String locators) {
-    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
-    SERVER.set(new ServerLauncher.Builder()
-        .setDeletePidFileOnStop(Boolean.TRUE)
-        .setMemberName(name)
-        .setServerPort(serverPort)
-        .setWorkingDirectory(workingDirectory.getAbsolutePath())
-        .set(HTTP_SERVICE_PORT, "0")
-        .set(LOCATORS, locators)
-        .build());
-
-    SERVER.get().start();
-  }
-
-  public static class MyFunction implements Function, DataSerializable {
-    @Override
-    public void execute(FunctionContext context) {
-      Java6Assertions.assertThat(context).isInstanceOf(RegionFunctionContext.class);
-      PartitionedRegion region = (PartitionedRegion) ((RegionFunctionContext) context).getDataSet();
       for (int i = 1; i < 10001; i++) {
         Portfolio p1 = new Portfolio(i, i);
         p1.positions = new HashMap<>();
@@ -193,12 +123,49 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
         }
         region.put(i, p1);
       }
-    }
+    });
 
-    @Override
-    public void fromData(DataInput in) {}
+    String query = "query --query=\"<trace> select e.key, e.value from " +
+        SEPARATOR + regionName + ".entrySet e where e.value.positions['SUN'] like 'somethin%'\"";
 
-    @Override
-    public void toData(DataOutput out) {}
+    String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
+    assertThat(cmdResult).contains("\"Rows\":\"1\"");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
+  }
+
+  private static void startLocator(File workingDirectory, int locatorPort,
+      int jmxPort) {
+    LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
+        .setMemberName(locatorName)
+        .setPort(locatorPort)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_PORT, String.valueOf(jmxPort))
+        .set(JMX_MANAGER_START, "true")
+        .build();
+
+    locatorLauncher.start();
+
+    await().untilAsserted(() -> {
+      InternalLocator locator = (InternalLocator) locatorLauncher.getLocator();
+      assertThat(locator.isSharedConfigurationRunning())
+          .as("Locator shared configuration is running on locator" + getVMId())
+          .isTrue();
+    });
+  }
+
+  private static void startServer(File workingDirectory, int serverPort,
+      String locators) {
+    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
+    ServerLauncher serverLauncher = new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(Boolean.TRUE)
+        .setMemberName(serverName)
+        .setServerPort(serverPort)
+        .setWorkingDirectory(workingDirectory.getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(LOCATORS, locators)
+        .build();
+
+    serverLauncher.start();
   }
 }
