@@ -460,14 +460,8 @@ public class AlterGatewaySenderCommandDUnitTest {
         .containsOutput("sender1P");
 
     gfsh.executeAndAssertThat("alter gateway-sender --id=sender1P --group-transaction-events=true")
-        .statusIsSuccess();
-
-    // verify that server1's event queue has the default value
-    server1.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      GatewaySender sender = cache.getGatewaySender("sender1P");
-      assertThat(sender.mustGroupTransactionEvents()).isTrue();
-    });
+        .statusIsError()
+        .containsOutput("alter-gateway-sender cannot be performed for --group-transaction-events");
   }
 
   public static class MyGatewayEventFilter implements GatewayEventFilter {
