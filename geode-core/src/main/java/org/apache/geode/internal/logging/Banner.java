@@ -25,6 +25,7 @@ import static org.apache.geode.internal.logging.Banner.BannerHeader.LOG4J2_CONFI
 import static org.apache.geode.internal.logging.Banner.BannerHeader.PROCESS_ID;
 import static org.apache.geode.internal.logging.Banner.BannerHeader.SYSTEM_PROPERTIES;
 import static org.apache.geode.internal.logging.Banner.BannerHeader.USER;
+import static org.apache.geode.internal.util.ProductVersionUtil.getFullVersion;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -40,7 +41,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.VersionDescription;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -141,7 +141,8 @@ public class Banner {
     out.println(SEPARATOR);
     printASFLicense(out);
     out.println(SEPARATOR);
-    GemFireVersion.print(out);
+    out.println(getFullVersion());
+    out.println(SEPARATOR);
     out.println(COMMUNICATIONS_VERSION.displayValue() + ": " + currentOrdinal);
     out.println(PROCESS_ID.displayValue() + ": " + processId);
     out.println(USER.displayValue() + ": " + userName);

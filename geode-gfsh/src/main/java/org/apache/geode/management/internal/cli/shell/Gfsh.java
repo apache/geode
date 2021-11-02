@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static org.apache.geode.internal.util.ProductVersionUtil.getFullVersion;
+import static org.apache.geode.internal.util.ProductVersionUtil.getProductVersion;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -45,7 +48,6 @@ import org.springframework.shell.event.ShellStatus.Status;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
@@ -674,11 +676,11 @@ public class Gfsh extends JLineShell {
   }
 
   public String getVersion(boolean full) {
-    if (full) {
-      return GemFireVersion.asString();
-    } else {
-      return GemFireVersion.getGemFireVersion();
-    }
+    return full ? getFullVersion() : getShortVersion();
+  }
+
+  private String getShortVersion() {
+    return getProductVersion().getVersion();
   }
 
   public String getGeodeSerializationVersion() {
@@ -686,7 +688,7 @@ public class Gfsh extends JLineShell {
   }
 
   public String getWelcomeMessage() {
-    return ansiHandler.decorateString("Monitor and Manage " + GemFireVersion.getProductName(),
+    return ansiHandler.decorateString("Monitor and Manage " + getProductVersion().getName(),
         ANSIStyle.CYAN);
   }
 
