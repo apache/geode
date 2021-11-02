@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis;
 
-
 import org.junit.ClassRule;
 
 public class CommandPipeliningIntegrationTest extends AbstractCommandPipeliningIntegrationTest {
