@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
@@ -28,7 +30,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.ColocationHelper;
+import org.apache.geode.internal.cache.DestroyPartitionedRegionMessage;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -2136,6 +2142,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(createPartitionedRegionRunnable());
     vm7.invoke(createPartitionedRegionRunnable());
 
+    vm7.invoke(() -> {
+      DistributionMessageObserver.setInstance(new BlockingDestroyRegionObserver());
+    });
+
     // start the senders on local site
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
@@ -2173,7 +2183,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6.invoke(waitForSenderNonRunnable());
     vm7.invoke(waitForSenderNonRunnable());
 
-
     // create receiver on remote site
     createReceiverInVMs(vm2, vm3);
 
@@ -2185,87 +2194,23 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     AsyncInvocation<Void> startSenderwithCleanQueuesInVM4 =
         vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
 
-    AsyncInvocation<Void> startSenderwithCleanQueuesInVM5 = vm5.invokeAsync(() -> {
-      try {
-        Thread.sleep(200);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
-    });
-    AsyncInvocation<Void> startSenderwithCleanQueuesInVM6 = vm6.invokeAsync(() -> {
-      try {
-        Thread.sleep(250);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
-    });
-    AsyncInvocation<Void> startSenderwithCleanQueuesInVM7 = vm7.invokeAsync(() -> {
-      try {
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM5 =
+        vm5.invokeAsync(() -> startSenderwithCleanQueues("ln"));
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM6 =
+        vm6.invokeAsync(() -> startSenderwithCleanQueues("ln"));
+    AsyncInvocation<Void> waitForConditionInVM7 = vm7.invokeAsync(() -> {
+      BlockingDestroyRegionObserver observer =
+          (BlockingDestroyRegionObserver) DistributionMessageObserver.getInstance();
+      observer.startedBlocking.await(1, TimeUnit.MINUTES);
     });
 
-    startSenderwithCleanQueuesInVM4.await();
-    startSenderwithCleanQueuesInVM5.await();
-    startSenderwithCleanQueuesInVM6.await();
-    startSenderwithCleanQueuesInVM7.await();
+    try {
+      waitForConditionInVM7.await();
+    } finally {
+    }
 
-    logger.info("Waiting for senders running.");
-    // wait for senders running
-    vm4.invoke(waitForSenderRunnable());
-    vm5.invoke(waitForSenderRunnable());
-    vm6.invoke(waitForSenderRunnable());
-    vm7.invoke(waitForSenderRunnable());
-
-    logger.info("All the senders are now running...");
-
-    // stop the senders
-
-    vm4.invoke(() -> WANTestBase.stopSender("ln"));
-    vm5.invoke(() -> WANTestBase.stopSender("ln"));
-    vm6.invoke(() -> WANTestBase.stopSender("ln"));
-    vm7.invoke(() -> WANTestBase.stopSender("ln"));
-
-    logger.info("Stopped all the senders.");
-
-    // wait for senders to stop
-    vm4.invoke(waitForSenderNonRunnable());
-    vm5.invoke(waitForSenderNonRunnable());
-    vm6.invoke(waitForSenderNonRunnable());
-    vm7.invoke(waitForSenderNonRunnable());
-
-    logger.info("Start all the senders.");
-
-    startSenderwithCleanQueuesInVM4 = vm4.invokeAsync(() -> startSenderwithCleanQueues("ln"));
-    startSenderwithCleanQueuesInVM5 = vm5.invokeAsync(() -> {
-      try {
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
-    });
-    startSenderwithCleanQueuesInVM6 = vm6.invokeAsync(() -> {
-      try {
-        Thread.sleep(350);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
-    });
-    startSenderwithCleanQueuesInVM7 = vm7.invokeAsync(() -> {
-      try {
-        Thread.sleep(400);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      startSenderwithCleanQueues("ln");
-    });
+    AsyncInvocation<Void> startSenderwithCleanQueuesInVM7 =
+        vm7.invokeAsync(() -> startSenderwithCleanQueues("ln"));
 
     startSenderwithCleanQueuesInVM4.await();
     startSenderwithCleanQueuesInVM5.await();
@@ -2287,6 +2232,16 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
   }
 
+  private static class BlockingDestroyRegionObserver extends DistributionMessageObserver {
+    private CountDownLatch startedBlocking = new CountDownLatch(1);
+
+    @Override
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (message instanceof DestroyPartitionedRegionMessage) {
+        startedBlocking.countDown();
+      }
+    }
+  }
 
   /**
    * setIgnoreQueue has lots of callers by reflection
