@@ -32,7 +32,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -89,8 +88,6 @@ public class RegionProvider {
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
-    DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
-    attributesFactory.setRedundantCopies(config.getRedisReplicaCount());
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());

@@ -61,7 +61,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_T
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REPLICA_COUNT;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -3501,6 +3500,8 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * {@link ConfigurationProperties#GEODE_FOR_REDIS_ENABLED} property
    *
    * @return boolean value indicating whether or not a Redis API for Geode Server should be started
+   *
+   * @since GemFire 14.0
    */
   @ConfigAttributeGetter(name = GEODE_FOR_REDIS_ENABLED)
   boolean getRedisEnabled();
@@ -3520,6 +3521,8 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * {@link ConfigurationProperties#GEODE_FOR_REDIS_USERNAME} property
    *
    * @return the authentication username for GeodeRedisServer
+   *
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = GEODE_FOR_REDIS_USERNAME)
   String getRedisUsername();
@@ -3535,6 +3538,8 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_PORT} property
    *
    * @return the port on which GeodeRedisServer should be started
+   *
+   * @since GemFire 8.0
    */
   @ConfigAttributeGetter(name = GEODE_FOR_REDIS_PORT)
   int getRedisPort();
@@ -3545,22 +3550,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
   String REDIS_PORT_NAME = GEODE_FOR_REDIS_PORT;
   int DEFAULT_REDIS_PORT = 6379;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_REPLICA_COUNT} property
-   *
-   * @return the Geode for Redis replica count
-   *
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_REPLICA_COUNT)
-  int getRedisReplicaCount();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_REPLICA_COUNT)
-  void setRedisReplicaCount(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 3)
-  String REDIS_REPLICA_COUNT_NAME = GEODE_FOR_REDIS_REPLICA_COUNT;
-  int DEFAULT_REDIS_REPLICA_COUNT = 1;
 
   // Added for the HTTP service
 
