@@ -27,6 +27,10 @@ groups:
   - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
+{%- for run_var in (benchmarks.flavors) %}
+  - benchmark-{{ run_var.title }}
+{%- endfor %}
+
 resources:
 - name: geode
   type: pull-request
@@ -51,6 +55,14 @@ resources:
     disable_ci_skip: false
     skip_ssl_verification: false
     labels: [jdk8]
+- name: geode-bench
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+    labels: [benchmarks]
 - name: geode-status
   type: pull-request
   source:
@@ -90,6 +102,13 @@ resources:
     key: ((concourse-gcp-key))
     family_project: ((gcp-project))
     family: ((pipeline-prefix))linux-geode-builder
+
+- name: geode-benchmarks
+  type: git
+  source:
+    branch: {{benchmarks.benchmark_branch}}
+    depth: 1
+    uri: https://github.com/((geode-fork))/geode-benchmarks.git
 
 resource_types:
 - name: gci
@@ -474,4 +493,104 @@ jobs:
           status: success
         get_params: {skip_download: true}
 {% endfor %}
+{% endfor %}
+
+{% for run_var in (benchmarks.flavors) %}
+- name: benchmark-{{ run_var.title }}
+  public: true
+  max_in_flight: {{ run_var.max_in_flight }}
+  plan:
+  - in_parallel:
+    - get: geode-ci
+      attempts: 2
+    - get: alpine-tools-image
+      attempts: 2
+    - get: geode
+      resource: geode-bench
+      trigger: true
+      version: every
+      attempts: 2
+      params:
+        integration_tool: rebase
+    - get: geode-benchmarks
+    - put: concourse-metadata-resource
+  - do:
+    - put: pull-request-job-pending
+      resource: geode-status
+      params:
+        context: benchmark-{{ run_var.title }}
+        path: geode
+        status: pending
+      get_params: {skip_download: true}
+  - do:
+    - task: run-benchmarks-{{ run_var.title }}
+      image: alpine-tools-image
+      config:
+        platform: linux
+        params:
+          AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+          AWS_DEFAULT_REGION: us-west-2
+          AWS_REGION: us-west-2
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
+          BASELINE_BRANCH: {{run_var.baseline_branch if run_var.baseline_branch is defined else benchmarks.baseline_branch_default}}
+          BASELINE_VERSION: {{run_var.baseline_version if run_var.baseline_version is defined else benchmarks.baseline_version_default}}
+          FLAGS: {{ run_var.flag }}
+          TAG_POSTFIX: -{{ run_var.title }}
+          TEST_OPTIONS: {{ run_var.options }}
+          PURPOSE: ((pipeline-prefix))geode-benchmarks
+        run:
+          path: geode-ci/ci/scripts/run_benchmarks.sh
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: geode-benchmarks
+        - name: concourse-metadata-resource
+        outputs:
+        - name: results
+      timeout: {{ run_var.timeout }}
+      on_failure:
+        do:
+        - put: pull-request-job-failure
+          resource: geode-status
+          params:
+            context: benchmark-{{ run_var.title }}
+            path: geode
+            status: failure
+          get_params: {skip_download: true}
+      ensure:
+        do:
+        - task: cleanup_benchmarks
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+              AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+              AWS_DEFAULT_REGION: us-west-2
+              AWS_REGION: us-west-2
+              ARTIFACT_BUCKET: ((artifact-bucket))
+              BASELINE_BRANCH: {{run_var.baseline_branch if run_var.baseline_branch is defined else benchmarks.baseline_branch_default}}
+              BASELINE_VERSION: {{run_var.baseline_version if run_var.baseline_version is defined else benchmarks.baseline_version_default}}
+              FLAGS: {{ run_var.flag }}
+              TAG_POSTFIX: -{{ run_var.title }}
+              TEST_OPTIONS: {{ run_var.options }}
+            run:
+              path: geode-ci/ci/scripts/cleanup_benchmarks.sh
+            inputs:
+            - name: geode
+            - name: geode-ci
+            - name: geode-benchmarks
+            - name: concourse-metadata-resource
+            - name: results
+      on_success:
+        do:
+        - put: pull-request-job-success
+          resource: geode-status
+          params:
+            context: benchmark-{{ run_var.title }}
+            path: geode
+            status: success
+          get_params: {skip_download: true}
 {% endfor %}
