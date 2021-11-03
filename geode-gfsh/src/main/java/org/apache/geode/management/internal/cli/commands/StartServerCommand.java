@@ -672,14 +672,9 @@ public class StartServerCommand extends OfflineGfshCommand {
         libPath).orElseThrow(
             () -> new GemFireConfigException(
                 "geode-jboss-extensions jar not found in " + libPath));
-    File mx4jJar = findJarByArtifactIdAtPath("mx4j",
-        libPath).orElseThrow(
-            () -> new GemFireConfigException(
-                "geode-jboss-extensions jar not found in " + libPath));
 
     String jbossClasspath =
-        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath()
-            + File.pathSeparator + mx4jJar.getAbsolutePath();
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath();
     if (!StringUtils.isEmpty(classpath)) {
       commandLine.add(classpath + File.pathSeparator + jbossClasspath);
     } else {

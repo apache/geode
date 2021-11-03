@@ -25,9 +25,7 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-server')
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
-  compileOnly('mx4j:mx4j'){
-    ext.embed = true
-  }
+  implementation('mx4j:mx4j')
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }

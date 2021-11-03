@@ -265,7 +265,7 @@ dependencies {
 
 
   //MX4J is used by the old admin API
-  compileOnly('mx4j:mx4j') {
+  implementation('mx4j:mx4j') {
     ext.optional = true
   }
 

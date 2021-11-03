@@ -38,7 +38,7 @@ dependencies {
     exclude module: 'lucene-sandbox'
   }
   implementation('org.apache.commons:commons-lang3')
-  compileOnly('mx4j:mx4j')
+  implementation('mx4j:mx4j')
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')

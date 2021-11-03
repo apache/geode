@@ -38,7 +38,7 @@ dependencies {
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('org.apache.commons:commons-lang3')
-  distributedTestRuntimeOnly('mx4j:mx4j')
+  distributedTestImplementation('mx4j:mx4j')
   distributedTestImplementation('org.hamcrest:hamcrest')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 

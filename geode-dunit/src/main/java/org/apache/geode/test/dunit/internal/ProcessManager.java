@@ -400,14 +400,9 @@ class ProcessManager implements ChildVMLauncher {
         libPath).orElseThrow(
             () -> new GemFireConfigException(
                 "geode-jboss-extensions jar not found in " + libPath));
-    File mx4jJar = findJarByArtifactIdAtPath("mx4j",
-        libPath).orElseThrow(
-            () -> new GemFireConfigException(
-                "geode-jboss-extensions jar not found in " + libPath));
 
     commandLine.add(
-        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath()
-            + File.pathSeparator + mx4jJar.getAbsolutePath());
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());
   }
 
   private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
