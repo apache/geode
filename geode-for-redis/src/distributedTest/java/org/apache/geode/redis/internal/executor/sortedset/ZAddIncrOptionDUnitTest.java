@@ -18,15 +18,16 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static redis.clients.jedis.BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -55,7 +56,7 @@ public class ZAddIncrOptionDUnitTest {
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
   private JedisCluster jedis;
-  private List<MemberVM> servers = new ArrayList<>();
+  private final List<MemberVM> servers = new ArrayList<>();
   private static final String sortedSetKey = "key";
   private final String baseMemberName = "member";
   private final int setSize = 1000;
@@ -73,7 +74,10 @@ public class ZAddIncrOptionDUnitTest {
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+    // making SO_TIMEOUT smaller so that crash and stop tests do not take minutes to run.
+    final int SO_TIMEOUT = 10000;
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT,
+        SO_TIMEOUT, DEFAULT_MAX_ATTEMPTS, new GenericObjectPoolConfig<>());
   }
 
   @After
@@ -84,28 +88,43 @@ public class ZAddIncrOptionDUnitTest {
   @Test
   public void zAddWithIncrOptionCanAddAndIncrementScoresConcurrently() {
     new ConcurrentLoopingThreads(setSize,
-        (i) -> doZAddIncr(i, increment1, total, true),
-        (i) -> doZAddIncr(i, increment2, total, true)).run();
+        (i) -> doConcurrentZAddIncr(i, increment1),
+        (i) -> doConcurrentZAddIncr(i, increment2)).run();
 
     assertThat(jedis.zcard(sortedSetKey)).isEqualTo(setSize);
-    verifyZScores();
+    verifyZScores(false);
   }
 
-  private void verifyZScores() {
+  private void verifyZScores(boolean withPrimaryCrash) {
     for (int i = 0; i < setSize; i++) {
-      assertThat(jedis.zscore(sortedSetKey, baseMemberName + i)).isEqualTo(total);
+      if (withPrimaryCrash) {
+        assertThat(jedis.zscore(sortedSetKey, baseMemberName + i)).isIn(total, total + increment2);
+      } else {
+        assertThat(jedis.zscore(sortedSetKey, baseMemberName + i)).isEqualTo(total);
+      }
     }
   }
 
-  private void doZAddIncr(int i, double increment, double total, boolean isConcurrentExecution) {
+  private void doConcurrentZAddIncr(int i, double increment) {
+    assertThat(doZAddIncr(i, increment)).isIn(increment, total);
+  }
+
+  private void doCrashZAddIncr(int i) {
+    // When the primary crashes jedis will retry the operation.
+    // But the operation being done during the crash may have finished on the secondary.
+    // In that case the retry results in the increment being done twice.
+    assertThat(doZAddIncr(i, increment2)).isIn(total, total + increment2);
+  }
+
+  private void doNormalZAddIncr(int i, double increment, double total) {
+    assertThat(doZAddIncr(i, increment)).isEqualTo(total);
+  }
+
+  private double doZAddIncr(int i, double increment) {
     Object result =
         jedis.sendCommand(sortedSetKey, Protocol.Command.ZADD, sortedSetKey, "INCR",
             String.valueOf(increment), baseMemberName + i);
-    if (isConcurrentExecution) {
-      assertThat(Double.parseDouble(new String((byte[]) result))).isIn(increment, total);
-    } else {
-      assertThat(Double.parseDouble(new String((byte[]) result))).isEqualTo(total);
-    }
+    return Double.parseDouble(new String((byte[]) result));
   }
 
   @Test
@@ -116,12 +135,12 @@ public class ZAddIncrOptionDUnitTest {
 
     doZCardWithRetries();
     doZAddIncrForAllMembers(increment2, total);
-    verifyZScores();
+    verifyZScores(false);
   }
 
   private void doZAddIncrForAllMembers(double increment1, double increment2) {
     for (int i = 0; i < setSize; i++) {
-      doZAddIncr(i, increment1, increment2, false);
+      doNormalZAddIncr(i, increment1, increment2);
     }
   }
 
@@ -148,7 +167,6 @@ public class ZAddIncrOptionDUnitTest {
   }
 
   @Test
-  @Ignore("tracked by GEODE-9671")
   public void zAddWithIncrOptionCanIncrementScoresDuringPrimaryIsCrashed() throws Exception {
     AtomicBoolean hitJedisClusterIssue2347 = new AtomicBoolean(false);
     doZAddIncrForAllMembers(increment1, increment1);
@@ -162,14 +180,14 @@ public class ZAddIncrOptionDUnitTest {
 
     if (!hitJedisClusterIssue2347.get()) {
       doZCardWithRetries();
-      verifyZScores();
+      verifyZScores(true);
     }
   }
 
   private void doZAddIncrForAllMembersDuringCrash(AtomicBoolean hitJedisClusterIssue2347) {
     for (int i = 0; i < setSize; i++) {
       try {
-        doZAddIncr(i, increment2, total, false);
+        doCrashZAddIncr(i);
       } catch (JedisClusterMaxAttemptsException ignore) {
         hitJedisClusterIssue2347.set(true);
       }
