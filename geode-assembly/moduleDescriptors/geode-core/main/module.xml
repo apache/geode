@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<module xmlns="urn:jboss:module:1.9" name="geode-core">
+    <resources>
+        <resource-root path="../../../../../lib/geode-dependencies.jar"/>
+    </resources>
+    <main-class name="org.apache.geode.distributed.ServerLauncher"/>
+    <dependencies>
+        <module export="false" name="java.se" optional="false" services="import"/>
+        <module export="false" name="jdk.unsupported" optional="false" services="import"/>
+        <module export="false" name="jdk.scripting.nashorn" optional="false" services="import"/>
+    </dependencies>
+    <exports/>
+</module>

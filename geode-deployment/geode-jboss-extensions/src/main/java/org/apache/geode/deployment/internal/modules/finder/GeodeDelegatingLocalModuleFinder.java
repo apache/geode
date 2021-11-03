@@ -48,6 +48,7 @@ public class GeodeDelegatingLocalModuleFinder implements ModuleFinder {
   public ModuleSpec findModule(String name, ModuleLoader delegateLoader)
       throws ModuleLoadException {
     ModuleSpec moduleSpec = moduleFinder.findModule(name, delegateLoader);
+    moduleSpec = ModuleSpecUtils.expandClasspath(moduleSpec);
     return ModuleSpecUtils.addSystemClasspathDependency(moduleSpec);
   }
 }

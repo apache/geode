@@ -42,7 +42,12 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   private static File pojoJar;
 
   public DeployJarAcceptanceTest(String launchCommand) throws IOException, InterruptedException {
-    launch(launchCommand);
+//    launch(launchCommand);
+  }
+
+  @Override
+  protected String getLocatorGFSHConnectionString() {
+    return "connect";
   }
 
   @BeforeClass
@@ -372,7 +377,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
         .of(getLocatorGFSHConnectionString(), "deploy --jar=" + jarPath)
         .execute(gfshRule).getOutputText());
 
-    if (isModular()) {
+    if (true) {
       assertThat(GfshScript
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .execute(gfshRule).getOutputText()).contains("Salutations, Earth");

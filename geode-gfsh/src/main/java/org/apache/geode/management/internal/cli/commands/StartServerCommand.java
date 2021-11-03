@@ -646,7 +646,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         }
       }
       commandLine.add(modulePaths.toString());
-      commandLine.add("geode-core:" + GemFireVersion.getGemFireVersion());
+      commandLine.add("geode-core");
     } else {
       commandLine.add(ServerLauncher.class.getName());
     }
@@ -656,16 +656,10 @@ public class StartServerCommand extends OfflineGfshCommand {
 
   private String getJBossModulePaths(String moduleBase) {
     String basepath = moduleBase + File.separator + "moduleDescriptors" + File.separator
-        + "distributedTest" + File.separator;
+        + "main" + File.separator;
     StringBuilder builder = new StringBuilder();
     builder.append(basepath);
     builder.append("modules");
-    builder.append(File.pathSeparatorChar);
-    builder.append(basepath);
-    builder.append("modules-support");
-    builder.append(File.pathSeparatorChar);
-    builder.append(basepath);
-    builder.append("combined-external-library-dependencies");
     return builder.toString();
   }
 

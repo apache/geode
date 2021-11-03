@@ -71,50 +71,38 @@ public class ExtensionContainer {
   }
 
   public synchronized boolean registerGeodeExtension(String name) {
-    GeodeExtension extension = ExtensionFactory.createGeodeExtension(name);
-    if (moduleLoader.registerGeodeExtension(extension)) {
-      extensions.put(name, extension);
-      for (String extensionName : extensions.keySet()) {
-        try {
-          moduleLoader.relinkModule(extensionName);
-        } catch (ModuleLoadException e) {
-          throw new RuntimeException("Could not relink extension.", e);
-        }
-      }
-      return true;
-    }
-    return false;
+    return true;
   }
 
   public synchronized boolean registerGeodeExtensions(String... extensionNames) {
-    for (String name : extensionNames) {
-      GeodeExtension extension = ExtensionFactory.createGeodeExtension(name);
-      if (moduleLoader.registerGeodeExtension(extension)) {
-        extensions.put(name, extension);
-      }
-    }
-    for (String extensionName : extensions.keySet()) {
-      try {
-        moduleLoader.relinkModule(extensionName);
-      } catch (ModuleLoadException e) {
-        throw new RuntimeException("Could not relink extension.", e);
-      }
-    }
+//    for (String name : extensionNames) {
+//      GeodeExtension extension = ExtensionFactory.createGeodeExtension(name);
+//      if (moduleLoader.registerGeodeExtension(extension)) {
+//        extensions.put(name, extension);
+//      }
+//    }
+//    for (String extensionName : extensions.keySet()) {
+//      try {
+//        moduleLoader.relinkModule(extensionName);
+//      } catch (ModuleLoadException e) {
+//        throw new RuntimeException("Could not relink extension.", e);
+//      }
+//    }
     return true;
   }
 
   public synchronized boolean unregisterExtension(String extensionName) {
-    Extension extension = extensions.get(extensionName);
-    if (extension == null) {
-      return false;
-    }
-    try {
-      moduleLoader.unregisterModule(extension.getName());
-    } catch (ModuleLoadException e) {
-      e.printStackTrace();
-      return false;
-    }
-    extensions.remove(extensionName);
+//    Extension extension = extensions.get(extensionName);
+//    if (extension == null) {
+//      return false;
+//    }
+//    try {
+//      moduleLoader.unregisterModule(extension.getName());
+//    } catch (ModuleLoadException e) {
+//      e.printStackTrace();
+//      return false;
+//    }
+//    extensions.remove(extensionName);
     return true;
   }
 

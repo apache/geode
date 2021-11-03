@@ -108,10 +108,6 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     if (name == null) {
       throw new IllegalArgumentException("Module name cannot be null");
     }
-    if (name.contains(CORE_MODULE_NAME) && findLoadedModuleLocal(name) == null) {
-      Module coreModule = super.preloadModule(name);
-      unloadModuleLocal(name, coreModule);
-    }
     return super.preloadModule(name);
   }
 

@@ -17,11 +17,21 @@
 package org.jboss.modules;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URLConnection;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
@@ -30,6 +40,62 @@ import org.jboss.modules.filter.PathFilters;
  * A set of utilities that simplify working with {@link ModuleSpec}s.
  */
 public class ModuleSpecUtils {
+
+  /**
+   * Adds resources deined by the Class-Path attribute of the manifest inside the modules resources.
+   *
+   * @param moduleSpec spec for the module to expand the classpath of.
+   * @return a {@link ModuleSpec} with expanded classpath.
+   */
+  public static ModuleSpec expandClasspath(ModuleSpec moduleSpec) {
+    if (!(moduleSpec instanceof ConcreteModuleSpec)) {
+      return moduleSpec;
+    }
+    ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder(moduleSpec);
+    try {
+      for (ResourceLoaderSpec resourceLoader : ((ConcreteModuleSpec) moduleSpec)
+          .getResourceLoaders()) {
+        URLConnection urlConnection = resourceLoader.getResourceLoader().getLocation()
+            .toURL().openConnection();
+        if (urlConnection instanceof JarURLConnection) {
+          File file = new File(((JarURLConnection) urlConnection).getJarFileURL().toURI());
+          JarFile jarFile = new JarFile(file);
+          Manifest manifest = jarFile.getManifest();
+          if (manifest != null) {
+            Attributes mainAttributes = manifest.getMainAttributes();
+            if (mainAttributes != null) {
+              addClassPathDependencies(builder, file.toPath(), mainAttributes);
+            }
+          }
+        }
+      }
+      return builder.create();
+    } catch (IOException | URISyntaxException e) {
+      e.printStackTrace();
+    }
+    return moduleSpec;
+  }
+
+  private static void addClassPathDependencies(final ModuleSpec.Builder builder,
+      final Path path, final Attributes mainAttributes) {
+    final String classPath = mainAttributes.getValue(Attributes.Name.CLASS_PATH);
+    final String[] classPathEntries =
+        classPath == null ? Utils.NO_STRINGS : classPath.split("\\s+");
+    for (String entry : classPathEntries) {
+      if (!entry.isEmpty()) {
+        try {
+          File resourceJar = path.resolveSibling(Paths.get(entry)).normalize().toFile();
+          if (resourceJar.exists()) {
+            builder.addResourceRoot(ResourceLoaderSpec
+                .createResourceLoaderSpec(
+                    ResourceLoaders.createJarResourceLoader(new JarFile(resourceJar))));
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
 
   /**
    * Creates a {@link ModuleSpec.Builder} given for a module of the given name.
@@ -69,8 +135,7 @@ public class ModuleSpecUtils {
    * @return a {@link ModuleSpec} which a classpath dependency.
    */
   public static ModuleSpec addSystemClasspathDependency(ModuleSpec moduleSpec) {
-    if (moduleSpec instanceof ConcreteModuleSpec
-        && moduleSpec.getName().contains("geode-deployment-jboss-modules")) {
+    if (moduleSpec instanceof ConcreteModuleSpec) {
       return createBuilder(moduleSpec).addDependency(new LocalDependencySpecBuilder()
           .setImportFilter(PathFilters.acceptAll())
           .setExport(true)

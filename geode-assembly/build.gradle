@@ -649,28 +649,28 @@ distributions {
       }
 
 
-      project.afterEvaluate {
-        tasks.named('combineModuleDescriptors').get().getOutputs().files.each { directory ->
-          with copySpec {
-            into("moduleDescriptors/main/modules/${directory.name}")
-            from directory
-          }
-        }
-      }
+//      project.afterEvaluate {
+//        tasks.named('combineModuleDescriptors').get().getOutputs().files.each { directory ->
+//          with copySpec {
+//            into("moduleDescriptors/main/modules/${directory.name}")
+//            from directory
+//          }
+//        }
+//      }
 
       with copySpec {
         into('moduleDescriptors/main/modules')
         afterEvaluate {
-          from tasks.named("distributedTestCombineModuleExternalLibraryDescriptors")
+          from('moduleDescriptors')
         }
       }
 
-      with copySpec {
-        into('moduleDescriptors/main/modules')
-        afterEvaluate {
-          from tasks.named("combineLibraryModuleDescriptors")
-        }
-      }
+//      with copySpec {
+//        into('moduleDescriptors/main/modules')
+//        afterEvaluate {
+//          from tasks.named("combineLibraryModuleDescriptors")
+//        }
+//      }
     }
   }
   distributedTest {
