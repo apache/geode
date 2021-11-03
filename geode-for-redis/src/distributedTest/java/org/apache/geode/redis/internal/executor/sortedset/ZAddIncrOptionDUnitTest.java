@@ -18,12 +18,14 @@ package org.apache.geode.redis.internal.executor.sortedset;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static redis.clients.jedis.BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,7 +74,10 @@ public class ZAddIncrOptionDUnitTest {
 
     int redisServerPort = clusterStartUp.getRedisPort(1);
 
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+    // making SO_TIMEOUT smaller so that crash and stop tests do not take minutes to run.
+    final int SO_TIMEOUT = 10000;
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT,
+        SO_TIMEOUT, DEFAULT_MAX_ATTEMPTS, new GenericObjectPoolConfig<>());
   }
 
   @After
@@ -83,8 +88,8 @@ public class ZAddIncrOptionDUnitTest {
   @Test
   public void zAddWithIncrOptionCanAddAndIncrementScoresConcurrently() {
     new ConcurrentLoopingThreads(setSize,
-        (i) -> doZAddIncr(i, increment1, total, true, false),
-        (i) -> doZAddIncr(i, increment2, total, true, false)).run();
+        (i) -> doConcurrentZAddIncr(i, increment1),
+        (i) -> doConcurrentZAddIncr(i, increment2)).run();
 
     assertThat(jedis.zcard(sortedSetKey)).isEqualTo(setSize);
     verifyZScores(false);
@@ -100,21 +105,26 @@ public class ZAddIncrOptionDUnitTest {
     }
   }
 
-  private void doZAddIncr(int i, double increment, double total, boolean isConcurrentExecution,
-      boolean withPrimaryCrash) {
+  private void doConcurrentZAddIncr(int i, double increment) {
+    assertThat(doZAddIncr(i, increment)).isIn(increment, total);
+  }
+
+  private void doCrashZAddIncr(int i) {
+    // When the primary crashes jedis will retry the operation.
+    // But the operation being done during the crash may have finished on the secondary.
+    // In that case the retry results in the increment being done twice.
+    assertThat(doZAddIncr(i, increment2)).isIn(total, total + increment2);
+  }
+
+  private void doNormalZAddIncr(int i, double increment, double total) {
+    assertThat(doZAddIncr(i, increment)).isEqualTo(total);
+  }
+
+  private double doZAddIncr(int i, double increment) {
     Object result =
         jedis.sendCommand(sortedSetKey, Protocol.Command.ZADD, sortedSetKey, "INCR",
             String.valueOf(increment), baseMemberName + i);
-    if (isConcurrentExecution) {
-      assertThat(Double.parseDouble(new String((byte[]) result))).isIn(increment, total);
-    } else if (withPrimaryCrash) {
-      // When the primary crashes jedis will retry the operation.
-      // But the operation being done during the crash may have finished on the secondary.
-      // In that case the retry results in the increment being done twice.
-      assertThat(Double.parseDouble(new String((byte[]) result))).isIn(total, total + increment);
-    } else {
-      assertThat(Double.parseDouble(new String((byte[]) result))).isEqualTo(total);
-    }
+    return Double.parseDouble(new String((byte[]) result));
   }
 
   @Test
@@ -130,7 +140,7 @@ public class ZAddIncrOptionDUnitTest {
 
   private void doZAddIncrForAllMembers(double increment1, double increment2) {
     for (int i = 0; i < setSize; i++) {
-      doZAddIncr(i, increment1, increment2, false, false);
+      doNormalZAddIncr(i, increment1, increment2);
     }
   }
 
@@ -177,7 +187,7 @@ public class ZAddIncrOptionDUnitTest {
   private void doZAddIncrForAllMembersDuringCrash(AtomicBoolean hitJedisClusterIssue2347) {
     for (int i = 0; i < setSize; i++) {
       try {
-        doZAddIncr(i, increment2, total, false, true);
+        doCrashZAddIncr(i);
       } catch (JedisClusterMaxAttemptsException ignore) {
         hitJedisClusterIssue2347.set(true);
       }
