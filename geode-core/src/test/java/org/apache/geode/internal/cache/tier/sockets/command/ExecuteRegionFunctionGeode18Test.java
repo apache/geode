@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -121,10 +122,8 @@ public class ExecuteRegionFunctionGeode18Test {
     when(clientMessage.getPart(9)).thenReturn(part3);
     int filterSize = 3;
     Set<Object> filter = executeRegionFunctionGeode18.populateFilters(clientMessage, filterSize);
+    assertThat(filter).containsExactlyInAnyOrder(object1, object2, object3);
     assertSame(filterSize, filter.size());
-    assertTrue(filter.contains(object1));
-    assertTrue(filter.contains(object2));
-    assertTrue(filter.contains(object3));
   }
 
   @Test
@@ -132,21 +131,19 @@ public class ExecuteRegionFunctionGeode18Test {
     Message clientMessage = mock(Message.class);
     Part part1 = mock(Part.class);
     String node1 = "node1";
-    when(part1.getStringOrObject()).thenReturn(node1);
+    when(part1.getString()).thenReturn(node1);
     Part part2 = mock(Part.class);
     String node2 = "node2";
-    when(part2.getStringOrObject()).thenReturn(node2);
+    when(part2.getString()).thenReturn(node2);
     Part part3 = mock(Part.class);
     String node3 = "node3";
-    when(part3.getStringOrObject()).thenReturn(node3);
+    when(part3.getString()).thenReturn(node3);
 
     when(clientMessage.getPart(7)).thenReturn(part1);
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
-    Set<String> nodes = executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
-    assertTrue(nodes.contains(node1));
-    assertTrue(nodes.contains(node2));
-    assertTrue(nodes.contains(node3));
+    Set<String> nodes = this.executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
+    assertThat(nodes).containsExactlyInAnyOrder(node1, node2, node3);
   }
 
   @Test
