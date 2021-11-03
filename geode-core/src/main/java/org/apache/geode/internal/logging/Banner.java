@@ -41,6 +41,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.SystemDescription;
 import org.apache.geode.internal.VersionDescription;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -142,6 +143,7 @@ public class Banner {
     printASFLicense(out);
     out.println(SEPARATOR);
     out.println(getFullVersion());
+    out.println(SystemDescription.RUNNING_ON + ": " + SystemDescription.getRunningOnInfo());
     out.println(SEPARATOR);
     out.println(COMMUNICATIONS_VERSION.displayValue() + ": " + currentOrdinal);
     out.println(PROCESS_ID.displayValue() + ": " + processId);
@@ -235,7 +237,7 @@ public class Banner {
     SOURCE_DATE(VersionDescription.SOURCE_DATE),
     SOURCE_REPOSITORY(VersionDescription.SOURCE_REPOSITORY),
     SOURCE_REVISION(VersionDescription.SOURCE_REVISION),
-    RUNNING_ON(VersionDescription.RUNNING_ON),
+    RUNNING_ON(SystemDescription.RUNNING_ON),
     COMMUNICATIONS_VERSION("Communications version"),
     PROCESS_ID("Process ID"),
     USER("User"),

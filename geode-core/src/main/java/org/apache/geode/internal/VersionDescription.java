@@ -14,13 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.lang.SystemUtils.getOsArchitecture;
-import static org.apache.geode.internal.lang.SystemUtils.getOsName;
-import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
+import static org.apache.geode.internal.SystemDescription.getRunningOnInfo;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -30,7 +27,6 @@ import java.util.TreeMap;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";
@@ -74,10 +70,6 @@ public class VersionDescription {
    * Constant for the build Java version Resource Property entry
    */
   public static final String BUILD_JAVA_VERSION = "Build-Java-Version";
-
-  public static final String NATIVE_VERSION = "Native version";
-
-  public static final String RUNNING_ON = "Running on";
 
   /**
    * the version properties
@@ -132,20 +124,6 @@ public class VersionDescription {
     }
 
     pw.println(getRunningOnInfo());
-  }
-
-  private static String getRunningOnInfo() {
-    String line = getLocalHost() + ", " + Runtime.getRuntime().availableProcessors() + " cpu(s), "
-        + getOsArchitecture() + ' ' + getOsName() + ' ' + getOsVersion() + ' ';
-    return String.format(RUNNING_ON + ": %s", line);
-  }
-
-  private static String getLocalHost() {
-    try {
-      return LocalHostUtil.getLocalHostString();
-    } catch (UnknownHostException e) {
-      return e.getMessage();
-    }
   }
 
   private Optional<String> validate(Properties props) {
