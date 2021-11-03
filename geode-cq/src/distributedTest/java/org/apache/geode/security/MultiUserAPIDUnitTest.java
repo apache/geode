@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -31,6 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.query.CqAttributesFactory;
@@ -39,11 +41,12 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.security.templates.TrackableUserPasswordAuthInit;
+import org.apache.geode.security.templates.CountableUserPasswordAuthInit;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class MultiUserAPIDUnitTest {
   @ClassRule
@@ -213,7 +216,7 @@ public class MultiUserAPIDUnitTest {
 
   @Test
   public void jsonFormatterOnTheClientWithSingleUser() throws Exception {
-    client.withProperty(SECURITY_CLIENT_AUTH_INIT, TrackableUserPasswordAuthInit.class.getName())
+    client.withProperty(SECURITY_CLIENT_AUTH_INIT, CountableUserPasswordAuthInit.class.getName())
         .withProperty(UserPasswordAuthInit.USER_NAME, "data")
         .withProperty(UserPasswordAuthInit.PASSWORD, "data")
         .withMultiUser(false)
@@ -226,12 +229,38 @@ public class MultiUserAPIDUnitTest {
     region.put("key", value);
 
     // make sure the client only needs to authenticate once
-    assertThat(TrackableUserPasswordAuthInit.timeInitialized.get()).isEqualTo(1);
+    assertThat(CountableUserPasswordAuthInit.count.get()).isEqualTo(1);
   }
+
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
+
+  @Test
+  public void multiUser_OneUserShouldOnlyAuthenticateOnceByDifferentThread() throws Exception {
+    ClientCache cache = client.withServerConnection(server.getPort())
+        .withProperty(SECURITY_CLIENT_AUTH_INIT, CountableUserPasswordAuthInit.class.getName())
+        .withMultiUser(true)
+        .createCache();
+    Properties properties = new Properties();
+    properties.setProperty(UserPasswordAuthInit.USER_NAME, "data");
+    properties.setProperty(UserPasswordAuthInit.PASSWORD, "data");
+    RegionService regionService = cache.createAuthenticatedView(properties);
+
+    cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+    Region region = regionService.getRegion(SEPARATOR + "region");
+
+    Future<Object> put1 = executor.submit(() -> region.put("key", "value"));
+    Future<Object> put2 = executor.submit(() -> region.put("key", "value"));
+
+    put1.get();
+    put2.get();
+    assertThat(CountableUserPasswordAuthInit.count.get()).isEqualTo(1);
+  }
+
 
   @After
   public void after() throws Exception {
-    TrackableUserPasswordAuthInit.reset();
+    CountableUserPasswordAuthInit.reset();
   }
 
   @Test

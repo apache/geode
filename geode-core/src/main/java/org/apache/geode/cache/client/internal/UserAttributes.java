@@ -23,6 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.distributed.internal.ServerLocation;
 
+/**
+ * An instance of the class is created per ProxyCache/RegionService
+ */
 public class UserAttributes {
 
   private Properties credentials;

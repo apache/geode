@@ -18,7 +18,6 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -63,7 +62,7 @@ public class OpExecutorImplUnitTest {
   @Test
   public void authenticateIfRequired_noOp_WhenNotRequireCredential() {
     when(server.getRequiresCredentials()).thenReturn(false);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
@@ -71,7 +70,7 @@ public class OpExecutorImplUnitTest {
   public void authenticateIfRequired_noOp_WhenOpNeedsNoUserId() {
     when(server.getRequiresCredentials()).thenReturn(true);
     when(op.needsUserId()).thenReturn(false);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
@@ -81,7 +80,7 @@ public class OpExecutorImplUnitTest {
     when(op.needsUserId()).thenReturn(true);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
     when(server.getUserId()).thenReturn(123L);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
 
   }
@@ -94,9 +93,8 @@ public class OpExecutorImplUnitTest {
     when(server.getUserId()).thenReturn(-1L);
     when(pool.executeOn(any(Connection.class), any(Op.class))).thenReturn(123L);
     when(connection.getWrappedConnection()).thenReturn(connection);
-    executor.authenticateIfRequired(connection, op);
-    verify(pool).executeOn(any(Connection.class), any(Op.class));
-    verify(server).setUserId(eq(123L));
+    executor.authenticateIfMultiUser(connection, op);
+    verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
 }

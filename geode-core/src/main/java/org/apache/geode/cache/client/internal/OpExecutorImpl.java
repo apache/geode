@@ -146,7 +146,8 @@ public class OpExecutorImpl implements ExecutablePool {
           absOp.getMessage().setIsRetry();
         }
         try {
-          authenticateIfRequired(conn, op);
+          // if single user, the connection is already authenticated and has userId already
+          authenticateIfMultiUser(conn, op);
           return executeWithPossibleReAuthentication(conn, op);
         } catch (MessageTooLargeException e) {
           throw new GemFireIOException("unable to transmit message to server", e);
@@ -695,7 +696,7 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
   @VisibleForTesting
-  void authenticateIfRequired(final Connection connection, final Op op) {
+  void authenticateIfMultiUser(final Connection connection, final Op op) {
     if (!connection.getServer().getRequiresCredentials()) {
       return;
     }
@@ -704,24 +705,20 @@ public class OpExecutorImpl implements ExecutablePool {
       return;
     }
 
-    if (pool.getMultiuserAuthentication()) {
-      final UserAttributes ua = UserAttributes.userAttributes.get();
-      if (ua == null || ua.getServerToId().containsKey(connection.getServer())) {
-        return;
-      }
-      authenticateMultiuser(pool, connection, ua);
+    if (!pool.getMultiuserAuthentication()) {
       return;
     }
 
-    if (connection.getServer().getUserId() == -1) {
-      // This should not be reached, but keeping this code here in case it is reached.
-      final Connection wrappedConnection = connection.getWrappedConnection();
-      connection.getServer().setUserId(AuthenticateUserOp.executeOn(wrappedConnection, pool));
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "OpExecutorImpl.execute() - single user mode - authenticated this user on {}",
-            connection);
+    final UserAttributes ua = UserAttributes.userAttributes.get();
+    if (ua == null) {
+      return;
+    }
+
+    synchronized (ua) {
+      if (ua.getServerToId().containsKey(connection.getServer())) {
+        return;
       }
+      authenticateMultiuser(pool, connection, ua);
     }
   }
 
