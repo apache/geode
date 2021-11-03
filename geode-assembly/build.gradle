@@ -479,6 +479,23 @@ tasks.register('depsJar', Jar) {
   }
 }
 
+// Configure the manifest contents in a separate always-running task to ensure correctness of
+// these dependency jars
+tasks.register('moduleDepsJar', Jar) {
+  inputs.files {
+    configureDepsJar
+  }
+  description 'Assembles the jar archive that defines the gemfire classpath.'
+  archiveFileName = 'geode-modules-dependencies.jar'
+  doFirst {
+    def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
+        configurations.jbossDependency.collect { it.getName() }.flatten().unique().join(' ')
+    manifest {
+      attributes("Class-Path": classpath)
+    }
+  }
+}
+
 tasks.register('gfshDepsJar', Jar) {
   inputs.files {
     configureGfshDepsJar
@@ -616,6 +633,7 @@ distributions {
 
         // dependency jars
         from tasks.named('depsJar')
+        from tasks.named('moduleDepsJar')
         from tasks.named('gfshDepsJar')
       }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <module xmlns="urn:jboss:module:1.9" name="geode-core">
     <resources>
-        <resource-root path="../../../../../lib/geode-dependencies.jar"/>
+        <resource-root path="../../../../../lib/geode-modules-dependencies.jar"/>
     </resources>
     <main-class name="org.apache.geode.distributed.ServerLauncher"/>
     <dependencies>

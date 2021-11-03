@@ -226,7 +226,7 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   }
 
   @Test
-  public void tesDeployModuleWithInvalidDependencies() throws IOException {
+  public void testDeployModuleWithInvalidDependencies() throws IOException {
     String outputText = GfshScript
         .of(getLocatorGFSHConnectionString(),
             "deploy --jars=" + dependencyFunctionJar.getCanonicalPath()
