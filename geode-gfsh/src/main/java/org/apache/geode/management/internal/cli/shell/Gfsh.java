@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.internal.util.ProductVersionUtil.getDistributionVersion;
 import static org.apache.geode.internal.util.ProductVersionUtil.getFullVersion;
 
@@ -48,12 +49,14 @@ import org.springframework.shell.event.ShellStatus.Status;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.internal.SystemDescription;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.HostName;
+import org.apache.geode.internal.util.ProductVersionUtil;
 import org.apache.geode.internal.util.SunAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.management.cli.CommandProcessingException;
@@ -681,6 +684,19 @@ public class Gfsh extends JLineShell {
 
   private String getShortVersion() {
     return getDistributionVersion().getVersion();
+  }
+
+  private String getFullVersion() {
+    try {
+      return ProductVersionUtil.appendFullVersion(new StringBuilder())
+          .append(lineSeparator())
+          .append(SystemDescription.RUNNING_ON)
+          .append(": ")
+          .append(SystemDescription.getRunningOnInfo())
+          .append(lineSeparator()).toString();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   public String getGeodeSerializationVersion() {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.internal.SystemDescription.RUNNING_ON;
 import static org.apache.geode.internal.VersionDescription.BUILD_ID;
 import static org.apache.geode.internal.VersionDescription.BUILD_JAVA_VERSION;
 import static org.apache.geode.internal.VersionDescription.BUILD_PLATFORM;
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 public class VersionCommandJUnitTest {
   private static final String[] EXPECTED_FULL_DATA =
       {BUILD_ID, BUILD_JAVA_VERSION, BUILD_PLATFORM, PRODUCT_NAME, PRODUCT_VERSION,
-          SOURCE_DATE, SOURCE_REPOSITORY, SOURCE_REVISION, "Running on"};
+          SOURCE_DATE, SOURCE_REPOSITORY, SOURCE_REVISION, RUNNING_ON};
 
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
