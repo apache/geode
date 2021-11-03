@@ -54,19 +54,22 @@ public interface DistributionVersion {
   String getVersion();
 
   /**
-   * Provides a string representation of all the version like information you might want to display
-   * in the full version or log preamble. The format of this string should be key value pairs
-   * separated by colons each on their own line. The basic version should be included in this output
-   * but the name should not.
+   * Provides a map representation of all the version like information you might want to display in
+   * the full version or log preamble. The key and value formats are not defined. The basic version
+   * should be included in this output but the name should not.
    * For example:
    *
    * <pre>
-   *   Version: 1.15.0
-   *   Repository: github.com/apache/geode
-   *   Revision: f5584205b0ee93904a5f2a9921459f99a1caa515
+   * new HashMap<String, String>() {
+   *   {
+   *     put("Version", "1.15.0");
+   *     put("Repository", "github.com/apache/geode");
+   *     put("Revision", "f5584205b0ee93904a5f2a9921459f99a1caa515");
+   *   }
+   * };
    * </pre>
    *
-   * @return Detailed distribution version information.
+   * @return Detailed component version information.
    */
   @NotNull
   Map<@NotNull String, @NotNull String> getDetails();
