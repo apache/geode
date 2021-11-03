@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static org.apache.geode.internal.util.ProductVersionUtil.getDistributionVersion;
 import static org.apache.geode.internal.util.ProductVersionUtil.getFullVersion;
-import static org.apache.geode.internal.util.ProductVersionUtil.getProductVersion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -680,7 +680,7 @@ public class Gfsh extends JLineShell {
   }
 
   private String getShortVersion() {
-    return getProductVersion().getVersion();
+    return getDistributionVersion().getVersion();
   }
 
   public String getGeodeSerializationVersion() {
@@ -688,7 +688,7 @@ public class Gfsh extends JLineShell {
   }
 
   public String getWelcomeMessage() {
-    return ansiHandler.decorateString("Monitor and Manage " + getProductVersion().getName(),
+    return ansiHandler.decorateString("Monitor and Manage " + getDistributionVersion().getName(),
         ANSIStyle.CYAN);
   }
 

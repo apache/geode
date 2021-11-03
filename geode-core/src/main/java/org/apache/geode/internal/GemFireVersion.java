@@ -31,7 +31,10 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
 
@@ -144,5 +147,9 @@ public class GemFireVersion {
       }
     }
     return csLoc;
+  }
+
+  public static @NotNull Map<String, String> asMap() {
+    return description.asMap();
   }
 }

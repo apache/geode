@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import java.util.Map;
+
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.internal.version.ComponentVersion;
@@ -32,7 +34,7 @@ public class GeodeVersion implements ComponentVersion, DistributionVersion {
   }
 
   @Override
-  public @NotNull String getDetails() {
-    return GemFireVersion.asString();
+  public @NotNull Map<@NotNull String, @NotNull String> getDetails() {
+    return GemFireVersion.asMap();
   }
 }

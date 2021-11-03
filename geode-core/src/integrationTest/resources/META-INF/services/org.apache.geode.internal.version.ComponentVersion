@@ -13,4 +13,4 @@
 # the License.
 #
 
-org.apache.geode.internal.GeodeVersion
+org.apache.geode.internal.util.ProductVersionUtilTest$FakeVersion

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.version;
 
+import java.util.Map;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -63,5 +65,5 @@ public interface ComponentVersion {
    * @return Detailed component version information.
    */
   @NotNull
-  String getDetails();
+  Map<@NotNull String, @NotNull String> getDetails();
 }

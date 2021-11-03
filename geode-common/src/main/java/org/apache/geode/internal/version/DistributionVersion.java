@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.version;
 
+import java.util.Map;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -67,5 +69,5 @@ public interface DistributionVersion {
    * @return Detailed distribution version information.
    */
   @NotNull
-  String getDetails();
+  Map<@NotNull String, @NotNull String> getDetails();
 }

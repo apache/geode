@@ -12,17 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.util;
 
+import static java.lang.System.lineSeparator;
+
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.ServiceLoader;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.internal.GeodeVersion;
 import org.apache.geode.internal.version.ComponentVersion;
 import org.apache.geode.internal.version.DistributionVersion;
 
 public class ProductVersionUtil {
-  public static DistributionVersion getProductVersion() {
+
+  public static final String line = "----------------------------------------";
+
+  public static @NotNull DistributionVersion getDistributionVersion() {
     final ServiceLoader<DistributionVersion> loader = ServiceLoader.load(DistributionVersion.class);
     final Iterator<DistributionVersion> loaderIter = loader.iterator();
     if (loaderIter.hasNext()) {
@@ -31,14 +41,32 @@ public class ProductVersionUtil {
     return new GeodeVersion();
   }
 
-  public static String getFullVersion() {
-    ServiceLoader<ComponentVersion> loader = ServiceLoader.load(ComponentVersion.class);
-    StringBuilder versionString = new StringBuilder();
-    loader.forEach(v -> versionString
-        .append("----------------------------------------\n")
-        .append(v.getName()).append("\n")
-        .append("----------------------------------------\n")
-        .append(v.getDetails()));
-    return versionString.toString();
+  public static @NotNull Iterable<ComponentVersion> getComponentVersions() {
+    return ServiceLoader.load(ComponentVersion.class);
   }
+
+  public static <T extends Appendable> @NotNull T appendFullVersion(final @NotNull T appendable)
+      throws IOException {
+    for (final ComponentVersion version : getComponentVersions()) {
+      appendable
+          .append(line).append(lineSeparator())
+          .append(version.getName()).append(lineSeparator())
+          .append(line).append(lineSeparator());
+      for (final Map.Entry<String, String> entry : version.getDetails().entrySet()) {
+        appendable.append(entry.getKey()).append(": ").append(entry.getValue())
+            .append(lineSeparator());
+      }
+    }
+
+    return appendable;
+  }
+
+  public static @NotNull String getFullVersion() {
+    try {
+      return appendFullVersion(new StringBuilder()).toString();
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
 }

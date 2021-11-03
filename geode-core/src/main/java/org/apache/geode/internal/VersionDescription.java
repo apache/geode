@@ -21,10 +21,13 @@ import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -112,6 +115,11 @@ public class VersionDescription {
 
   public String getProperty(String key) {
     return error.orElseGet(() -> description.getProperty(key));
+  }
+
+  @SuppressWarnings("unchecked")
+  public @NotNull Map<String, String> asMap() {
+    return (Map<String, String>) (Map<?, ?>) description;
   }
 
   void print(PrintWriter pw) {

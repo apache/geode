@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.web.http.support;
 
-import static org.apache.geode.internal.util.ProductVersionUtil.getProductVersion;
+import static org.apache.geode.internal.util.ProductVersionUtil.getDistributionVersion;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,6 +42,7 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.apache.geode.internal.version.DistributionVersion;
 import org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -61,9 +62,14 @@ public class HttpRequester {
   private final RestTemplate restTemplate;
   private Properties securityProperties;
 
-  protected static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE =
-      "gfsh (pronounced " + getProductVersion().getName() + " shell)/v"
-          + getProductVersion().getVersion();
+  protected static final String USER_AGENT_HTTP_REQUEST_HEADER_VALUE;
+
+  static {
+    final DistributionVersion distributionVersion = getDistributionVersion();
+    USER_AGENT_HTTP_REQUEST_HEADER_VALUE =
+        "gfsh (pronounced " + distributionVersion.getName() + " shell)/v"
+            + distributionVersion.getVersion();
+  }
 
   // a list of acceptable content/media types supported by Gfsh
   private final List<MediaType> acceptableMediaTypes = Arrays.asList(MediaType.APPLICATION_JSON,
