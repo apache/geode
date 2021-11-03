@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -794,14 +793,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public Object execute(Op op) {
-    // if(multiuser)
-    // get a server from threadlocal cache else throw cacheWriterException
-    // executeOn(ServerLocation server, Op op, boolean accessed,boolean onlyUseExistingCnx)
-
-    // Retries are ignored here. FIX IT - FIXED.
-    // But this may lead to a user getting authenticated on all servers, even if
-    // a single server could have serviced all its requests.
-    authenticateIfRequired(null, op);
+    checkMultiUserHasUserAttributes(op);
     return executor.execute(op);
   }
 
@@ -816,7 +808,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public Object execute(Op op, int retries) {
-    authenticateIfRequired(null, op);
+    checkMultiUserHasUserAttributes(op);
     return executor.execute(op, retries);
   }
 
@@ -829,7 +821,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public Object executeOn(ServerLocation server, Op op) {
-    authenticateIfRequired(server, op);
+    checkMultiUserHasUserAttributes(op);
     return executor.executeOn(server, op);
   }
 
@@ -844,7 +836,7 @@ public class PoolImpl implements InternalPool {
   @Override
   public Object executeOn(ServerLocation server, Op op, boolean accessed,
       boolean onlyUseExistingCnx) {
-    authenticateIfRequired(server, op);
+    checkMultiUserHasUserAttributes(op);
     return executor.executeOn(server, op, accessed, onlyUseExistingCnx);
   }
 
@@ -857,7 +849,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public Object executeOn(Connection con, Op op) {
-    authenticateIfRequired(con.getServer(), op);
+    checkMultiUserHasUserAttributes(op);
     return executor.executeOn(con, op);
   }
 
@@ -875,14 +867,14 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
-    authenticateOnAllServers(op);
+    checkMultiUserHasUserAttributes(op);
     return executor.executeOnQueuesAndReturnPrimaryResult(op);
   }
 
   @Override
   public void executeOnAllQueueServers(Op op)
       throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException {
-    authenticateOnAllServers(op);
+    checkMultiUserHasUserAttributes(op);
     executor.executeOnAllQueueServers(op);
   }
 
@@ -956,13 +948,6 @@ public class PoolImpl implements InternalPool {
    */
   public Connection acquireConnection(ServerLocation loc) {
     return manager.borrowConnection(loc, serverConnectionTimeout, false);
-  }
-
-  /**
-   * Test hook that returns an unnmodifiable list of the current denylisted servers
-   */
-  public Set getDenylistedServers() {
-    return connectionFactory.getDenyList().getBadServers();
   }
 
   /**
@@ -1265,10 +1250,6 @@ public class PoolImpl implements InternalPool {
     executor.setServerAffinityLocation(serverLocation);
   }
 
-  public ServerLocation getNextOpServerLocation() {
-    return executor.getNextOpServerLocation();
-  }
-
   /**
    * Test hook for getting the client proxy membership id from this proxy.
    */
@@ -1522,14 +1503,9 @@ public class PoolImpl implements InternalPool {
 
   /**
    * This is only for multi-user case
-   *
-   * Assert thread-local var is not null.
-   *
-   * If serverLocation is non-null, check if the the user is authenticated on that server. If not,
-   * authenticate it and return.
-   *
+   * make sure thread-local var is not null.
    */
-  private void authenticateIfRequired(ServerLocation serverLocation, Op op) {
+  private void checkMultiUserHasUserAttributes(Op op) {
     if (!multiuserSecureModeEnabled) {
       return;
     }
@@ -1542,51 +1518,6 @@ public class PoolImpl implements InternalPool {
     if (userAttributes == null) {
       throw new UnsupportedOperationException(
           "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
-    }
-
-    if (serverLocation != null) {
-      if (!userAttributes.getServerToId().containsKey(serverLocation)) {
-        Long userId = (Long) AuthenticateUserOp.executeOn(serverLocation, this,
-            userAttributes.getCredentials());
-        if (userId != null) {
-          userAttributes.setServerToId(serverLocation, userId);
-        }
-      }
-    }
-  }
-
-  private void authenticateOnAllServers(Op op) {
-    if (multiuserSecureModeEnabled && ((AbstractOp) op).needsUserId()) {
-      UserAttributes userAttributes = UserAttributes.userAttributes.get();
-      if (userAttributes != null) {
-        ConcurrentHashMap<ServerLocation, Long> map = userAttributes.getServerToId();
-
-        if (queueManager == null) {
-          throw new SubscriptionNotEnabledException();
-        }
-        Connection primary = queueManager.getAllConnectionsNoWait().getPrimary();
-        if (primary != null && !map.containsKey(primary.getServer())) {
-          Long userId = (Long) AuthenticateUserOp.executeOn(primary.getServer(), this,
-              userAttributes.getCredentials());
-          if (userId != null) {
-            map.put(primary.getServer(), userId);
-          }
-        }
-
-        List<Connection> backups = queueManager.getAllConnectionsNoWait().getBackups();
-        for (Connection conn : backups) {
-          if (!map.containsKey(conn.getServer())) {
-            Long userId = (Long) AuthenticateUserOp.executeOn(conn.getServer(), this,
-                userAttributes.getCredentials());
-            if (userId != null) {
-              map.put(conn.getServer(), userId);
-            }
-          }
-        }
-      } else {
-        throw new UnsupportedOperationException(
-            "Use Pool APIs for doing operations when multiuser-secure-mode-enabled is set to true.");
-      }
     }
   }
 
