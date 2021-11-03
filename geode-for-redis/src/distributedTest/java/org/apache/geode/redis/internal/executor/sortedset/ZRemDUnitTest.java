@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -55,9 +54,9 @@ public class ZRemDUnitTest {
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
 
-  private JedisCluster jedis;
-  private List<MemberVM> servers;
   private static final String sortedSetKey = "key";
+  private JedisCluster jedis;
+  private final List<MemberVM> servers = new ArrayList<>();
   private final String baseName = "member1-";
   private final int setSize = 1000;
 
@@ -68,7 +67,6 @@ public class ZRemDUnitTest {
     MemberVM server1 = clusterStartUp.startRedisVM(1, locatorPort);
     MemberVM server2 = clusterStartUp.startRedisVM(2, locatorPort);
     MemberVM server3 = clusterStartUp.startRedisVM(3, locatorPort);
-    servers = new ArrayList<>();
     servers.add(server1);
     servers.add(server2);
     servers.add(server3);
@@ -157,12 +155,15 @@ public class ZRemDUnitTest {
     return true;
   }
 
-  private void doZRem(Map<String, Double> map) {
+  private void doZRemWithCrash(Map<String, Double> map) {
     long removed = jedis.zrem(sortedSetKey, map.keySet().toArray(new String[] {}));
-    assertThat(removed).isEqualTo(map.size());
+    // when the primary crashed the zrem may not have happened on the secondary
+    // or it may have completed changing the data on the secondary.
+    // In both cases jedis will retry the zrem. If the zrem was already done
+    // then the retry will return 0 since everything was already removed.
+    assertThat(removed).isIn(map.size(), 0L);
   }
 
-  @Ignore("tracked by GEODE-9691")
   @Test
   public void zRemCanRemoveMembersFromSortedSetDuringPrimaryIsCrashed() throws Exception {
     int mapSize = 300;
@@ -175,7 +176,7 @@ public class ZRemDUnitTest {
     String memberNotRemoved = baseName + number;
     memberScoreMap.remove(memberNotRemoved);
 
-    Future<Void> future1 = executor.submit(() -> doZRem(memberScoreMap));
+    Future<Void> future1 = executor.submit(() -> doZRemWithCrash(memberScoreMap));
     Future<Void> future2 = executor.submit(() -> stopNodeWithPrimaryBucketOfTheKey(true));
 
     future1.get();
