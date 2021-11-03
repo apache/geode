@@ -107,7 +107,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit < indexThresholdSize) {
+      if (limit != -1 && limit < indexThresholdSize) {
         limit = indexThresholdSize;
       }
     }
@@ -189,7 +189,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
     if (applyLimit != null && applyLimit.booleanValue()) {
       limit = ((Integer) context.cacheGet(CompiledValue.RESULT_LIMIT)).intValue();
-      if (limit < indexThresholdSize) {
+      if (limit != -1 && limit < indexThresholdSize) {
         limit = indexThresholdSize;
       }
     }

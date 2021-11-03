@@ -671,7 +671,7 @@ public class QueryUtils {
       limit = context.cacheGet(CompiledValue.RESULT_LIMIT) != null
           ? (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT) : -1;
     }
-    if (limit < indexThresholdSize) {
+    if (limit != -1 && limit < indexThresholdSize) {
       limit = indexThresholdSize;
     }
     return limit;
