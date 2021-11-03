@@ -19,10 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class RedisProperties {
   /** System Property Names **/
-  public static final String REDIS_REGION_NAME_PROPERTY = "geode-for-redis-region-name";
-  public static final String WRITE_TIMEOUT_SECONDS = "geode-for-redis-write-timeout-seconds";
+  private static final String PREFIX = "geode-for-redis-";
+  public static final String REDIS_REGION_NAME_PROPERTY = PREFIX + "region-name";
+  public static final String WRITE_TIMEOUT_SECONDS = PREFIX + "write-timeout-seconds";
   public static final String EXPIRATION_INTERVAL_SECONDS =
-      "geode-for-redis-expiration-interval-seconds";
+      PREFIX + "expiration-interval-seconds";
 
   public static String getStringSystemProperty(String propName, String defaultValue) {
     String geodeValue = System.getProperty("geode." + propName, defaultValue);

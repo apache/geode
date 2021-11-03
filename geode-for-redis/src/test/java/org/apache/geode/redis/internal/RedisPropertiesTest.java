@@ -19,9 +19,15 @@ import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemPr
 import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 public class RedisPropertiesTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   private final String geodePrefix = "geode.";
   private final String gemfirePrefix = "gemfire.";
   private final String propName = "prop-name";
@@ -92,7 +98,6 @@ public class RedisPropertiesTest {
 
   @Test
   public void getStringSystemProperty_shouldReturnSpecifiedDefault_whenNeitherAreSet() {
-    clearSystemProperties(propName);
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
   }
 
@@ -100,14 +105,12 @@ public class RedisPropertiesTest {
   public void getStringSystemProperty_shouldReturnSpecifiedDefault_whenSetToEmptyString_whenFalse() {
     System.setProperty(geodePrefix + propName, "");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
-    clearSystemProperties(propName);
   }
 
   @Test
   public void getStringSystemProperty_shouldReturnString_whenSet() {
     System.setProperty(geodePrefix + propName, "not default");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("not default");
-    clearSystemProperties(propName);
   }
 
   @Test
@@ -115,14 +118,12 @@ public class RedisPropertiesTest {
     System.setProperty(geodePrefix + propName, "String1");
     System.setProperty(gemfirePrefix + propName, "String2");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
-    clearSystemProperties(propName);
   }
 
   @Test
   public void getStringSystemProperty_shouldUseGemfirePrefix_whenGeodeNotSet() {
     System.setProperty(gemfirePrefix + propName, "String1");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
-    clearSystemProperties(propName);
   }
 
   @Test
@@ -130,7 +131,6 @@ public class RedisPropertiesTest {
     System.setProperty(geodePrefix + propName, "");
     System.setProperty(gemfirePrefix + propName, "");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo(defaultValue);
-    clearSystemProperties(propName);
   }
 
   @Test
@@ -138,12 +138,5 @@ public class RedisPropertiesTest {
     System.setProperty(geodePrefix + propName, "");
     System.setProperty(gemfirePrefix + propName, "String1");
     assertThat(getStringSystemProperty(propName, defaultValue)).isEqualTo("String1");
-    clearSystemProperties(propName);
-  }
-
-  /************* Helper Methods *************/
-  private void clearSystemProperties(String property) {
-    System.clearProperty(geodePrefix + property);
-    System.clearProperty(gemfirePrefix + property);
   }
 }
