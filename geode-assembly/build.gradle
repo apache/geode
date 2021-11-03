@@ -489,7 +489,8 @@ tasks.register('moduleDepsJar', Jar) {
   archiveFileName = 'geode-modules-dependencies.jar'
   doFirst {
     def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
-        configurations.jbossDependency.collect { it.getName() }.flatten().unique().join(' ')
+        configurations.jbossDependency.filter {!it.getName().contains('jboss-modules')}.collect { it.getName() }.flatten().unique().join(' ')
+    classpath = classpath.replace('geode-deployment-legacy', 'geode-deployment-jboss-modules')
     manifest {
       attributes("Class-Path": classpath)
     }
@@ -666,29 +667,12 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distAppServer }
       }
 
-
-//      project.afterEvaluate {
-//        tasks.named('combineModuleDescriptors').get().getOutputs().files.each { directory ->
-//          with copySpec {
-//            into("moduleDescriptors/main/modules/${directory.name}")
-//            from directory
-//          }
-//        }
-//      }
-
       with copySpec {
         into('moduleDescriptors/main/modules')
         afterEvaluate {
           from('moduleDescriptors')
         }
       }
-
-//      with copySpec {
-//        into('moduleDescriptors/main/modules')
-//        afterEvaluate {
-//          from tasks.named("combineLibraryModuleDescriptors")
-//        }
-//      }
     }
   }
   distributedTest {

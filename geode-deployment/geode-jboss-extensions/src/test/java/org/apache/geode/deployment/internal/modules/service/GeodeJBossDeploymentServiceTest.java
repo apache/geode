@@ -18,22 +18,18 @@ package org.apache.geode.deployment.internal.modules.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.modules.ModuleLoadException;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.internal.modules.extensions.TestExtensionsContainer;
 import org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader;
 import org.apache.geode.test.compiler.JarBuilder;
 
@@ -45,16 +41,10 @@ public class GeodeJBossDeploymentServiceTest {
   private static File myJar;
 
   @BeforeClass
-  public static void setup() throws IOException, ModuleLoadException {
+  public static void setup() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     GeodeModuleLoader geodeModuleLoader = mock(GeodeModuleLoader.class);
-    when(geodeModuleLoader.registerApplication(any())).thenReturn(true);
-    TestExtensionsContainer testExtensionsContainer =
-        new TestExtensionsContainer(geodeModuleLoader);
-    geodeJBossDeploymentService =
-        new GeodeJBossDeploymentService(geodeModuleLoader, testExtensionsContainer);
-    geodeJBossDeploymentService.loadGeodeExtensionsFromPropertiesFile(
-        GeodeJBossDeploymentServiceTest.class.getClassLoader());
+    geodeJBossDeploymentService = new GeodeJBossDeploymentService(geodeModuleLoader);
     myJar = new File(stagingTempDir.newFolder(), "myJar.jar");
     jarBuilder.buildJarFromClassNames(myJar, "Class1");
   }

@@ -17,6 +17,7 @@
 package org.apache.geode.deployment.internal.modules.loader;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,14 +31,8 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.filter.MultiplePathFilterBuilder;
-import org.jboss.modules.filter.PathFilter;
-import org.jboss.modules.filter.PathFilters;
 
 import org.apache.geode.deployment.internal.modules.dependency.InboundModuleDependency;
-import org.apache.geode.deployment.internal.modules.extensions.impl.Application;
-import org.apache.geode.deployment.internal.modules.extensions.impl.GeodeExtension;
-import org.apache.geode.deployment.internal.modules.finder.GeodeApplicationModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeCompositeModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeDelegatingLocalModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
@@ -92,9 +87,6 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
       unloadModuleLocal(moduleName, loadedModuleLocal);
     }
     relinkModule(CORE_MODULE_NAME);
-    if (findLoadedModuleLocal("geode-dunit") != null) {
-      relinkModule("geode-dunit");
-    }
   }
 
   private void validate(String moduleName) {
@@ -108,42 +100,15 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     if (name == null) {
       throw new IllegalArgumentException("Module name cannot be null");
     }
+    if (!name.startsWith(CORE_MODULE_NAME)) {
+      excludeGeodePackages(name);
+    }
     return super.preloadModule(name);
   }
 
   @Override
   public void close() throws Exception {
 
-  }
-
-  public boolean registerApplication(Application application) {
-    try {
-      if (findLoadedModuleLocal(application.getName()) == null) {
-        compositeModuleFinder.addModuleFinder(application.getName(),
-            new GeodeApplicationModuleFinder(application));
-      }
-      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, application.getName());
-    } catch (ModuleLoadException e) {
-      return false;
-    }
-    return true;
-  }
-
-  public boolean registerGeodeExtension(GeodeExtension extension) {
-    try {
-      Module module = findLoadedModuleLocal(extension.getName());
-      if (module == null) {
-        preloadModule(extension.getName());
-      }
-      registerModulesAsDependencyOfModule(CORE_MODULE_NAME, extension.getName());
-      if (findLoadedModuleLocal("geode-dunit") != null) {
-        registerModulesAsDependencyOfModule("geode-dunit", extension.getName());
-      }
-      restoreDependencies(extension.getName());
-    } catch (ModuleLoadException e) {
-      return false;
-    }
-    return true;
   }
 
   private void restoreDependencies(String moduleName) throws ModuleLoadException {
@@ -153,7 +118,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
       for (InboundModuleDependency inboundDependency : inboundModuleDependencies) {
         if (findLoadedModuleLocal(inboundDependency.getInboundDependencyModuleName()) != null) {
           registerModulesAsDependencyOfModule(inboundDependency.getInboundDependencyModuleName(),
-              inboundDependency.getExportFilter(), moduleName);
+              moduleName);
         }
       }
     }
@@ -161,15 +126,9 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   public void registerModulesAsDependencyOfModule(String moduleName, String... modulesToDependOn)
       throws ModuleLoadException {
-    compositeModuleFinder.addDependencyToModule(moduleName, createDefaultExportFilter(),
-        modulesToDependOn);
-    relinkModule(moduleName);
-  }
-
-  public void registerModulesAsDependencyOfModule(String moduleName, PathFilter exportFilter,
-      String... modulesToDependOn)
-      throws ModuleLoadException {
-    compositeModuleFinder.addDependencyToModule(moduleName, exportFilter, modulesToDependOn);
+    for (String moduleToDependOn : modulesToDependOn) {
+      compositeModuleFinder.addDependencyToModule(moduleName, moduleToDependOn);
+    }
     relinkModule(moduleName);
   }
 
@@ -193,15 +152,11 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     }
   }
 
-  private PathFilter createDefaultExportFilter() {
-    final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(true);
-    exportBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
-    exportBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
-    exportBuilder.addFilter(PathFilters.getMetaInfFilter(), true);
-    return exportBuilder.create();
-  }
+  private void excludeGeodePackages(String moduleToExcludeFrom) {
+    List<String> restrictPathsAndChildren = Collections.singletonList(GEODE_BASE_PACKAGE_PATH);
 
-  public boolean isModuleLoaded(String moduleName) {
-    return findLoadedModuleLocal(moduleName) != null;
+    compositeModuleFinder.addExcludeFilterToModule(GeodeModuleLoader.CORE_MODULE_NAME,
+        moduleToExcludeFrom,
+        Collections.emptyList(), restrictPathsAndChildren);
   }
 }

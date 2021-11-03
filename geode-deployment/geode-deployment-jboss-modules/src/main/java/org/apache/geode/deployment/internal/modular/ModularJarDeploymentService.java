@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.deployment.internal.modules.service.DeploymentService;
@@ -48,7 +47,7 @@ import org.apache.geode.services.result.impl.Success;
  *
  * @since Geode 1.15
  */
-public class ModularJarDeploymentService implements JarDeploymentService, ExtensionAware {
+public class ModularJarDeploymentService implements JarDeploymentService {
 
   private static final Logger logger = LogService.getLogger();
   private static final String GEODE_CORE_MODULE_NAME = "geode-core";
@@ -62,8 +61,6 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
 
   public ModularJarDeploymentService() {
     this(new GeodeJBossDeploymentService());
-    geodeJBossDeploymentService
-        .loadGeodeExtensionsFromPropertiesFile(GemFireCache.class.getClassLoader());
   }
 
   @VisibleForTesting
@@ -225,15 +222,5 @@ public class ModularJarDeploymentService implements JarDeploymentService, Extens
     } catch (CacheClosedException ignored) {
       // That's okay, it just means there was nothing to flush to begin with
     }
-  }
-
-  @Override
-  public boolean registerApplication(String applicationName) {
-    return geodeJBossDeploymentService.registerApplication(applicationName);
-  }
-
-  @Override
-  public boolean registerGeodeExtension(String extensionName) {
-    return false;
   }
 }

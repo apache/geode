@@ -35,15 +35,9 @@ import org.jboss.modules.ModuleFinder;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
-import org.jboss.modules.filter.PathFilter;
-import org.jboss.modules.filter.PathFilters;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.deployment.internal.modules.extensions.Extension;
-import org.apache.geode.deployment.internal.modules.extensions.impl.ExtensionFactory;
-import org.apache.geode.deployment.internal.modules.extensions.impl.GeodeExtension;
-import org.apache.geode.deployment.internal.modules.utils.ModuleUtils;
 
 public class GeodeCompositeModuleFinderTest {
 
@@ -137,8 +131,7 @@ public class GeodeCompositeModuleFinderTest {
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     ModuleSpec moduleSpec = geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
     ModuleSpec moduleSpecAfterAdd =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpecAfterAdd).getDependencies().length).isEqualTo(2);
@@ -147,17 +140,15 @@ public class GeodeCompositeModuleFinderTest {
   @Test
   public void testAddDependencyToInvalidModule() {
     assertThatThrownBy(
-        () -> geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-            "other-module"))
-                .hasMessageContaining("No such module: my-module");
+        () -> geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module"))
+            .hasMessageContaining("No such module: my-module");
   }
 
   @Test
   public void testAddDependencyToNullModule() {
     assertThatThrownBy(
-        () -> geodeCompositeModuleFinder.addDependencyToModule(null, PathFilters.acceptAll(),
-            "other-module"))
-                .hasMessageContaining("Module name cannot be null");
+        () -> geodeCompositeModuleFinder.addDependencyToModule(null, "other-module"))
+            .hasMessageContaining("Module name cannot be null");
   }
 
   @Test
@@ -165,10 +156,8 @@ public class GeodeCompositeModuleFinderTest {
     ModuleSpec moduleSpecToReturn = ModuleSpec.build("my-module").create();
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
-    assertThatThrownBy(
-        () -> geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-            (String[]) null))
-                .hasMessageContaining("Modules to depend on cannot be null");
+    assertThatThrownBy(() -> geodeCompositeModuleFinder.addDependencyToModule("my-module", null))
+        .hasMessageContaining("Module to depend on cannot be null");
   }
 
   @Test
@@ -177,9 +166,8 @@ public class GeodeCompositeModuleFinderTest {
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     assertThatThrownBy(
-        () -> geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-            "other-module"))
-                .hasMessageContaining("No such module: my-module");
+        () -> geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module"))
+            .hasMessageContaining("No such module: my-module");
   }
 
   @Test
@@ -189,8 +177,7 @@ public class GeodeCompositeModuleFinderTest {
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     ModuleSpec moduleSpec = geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
     ModuleSpec moduleSpecAfterAdd =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpecAfterAdd).getDependencies().length).isEqualTo(2);
@@ -213,10 +200,8 @@ public class GeodeCompositeModuleFinderTest {
     geodeCompositeModuleFinder.addModuleFinder("other-module", otherModuleFinder);
     geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     geodeCompositeModuleFinder.findModule("other-module", moduleLoader);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "my-dependency");
-    geodeCompositeModuleFinder.addDependencyToModule("other-module", PathFilters.acceptAll(),
-        "my-dependency");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "my-dependency");
+    geodeCompositeModuleFinder.addDependencyToModule("other-module", "my-dependency");
     List<String> previouslyDependentModules =
         geodeCompositeModuleFinder.removeDependencyFromModules("other-module");
     assertThat(previouslyDependentModules).isEmpty();
@@ -246,8 +231,7 @@ public class GeodeCompositeModuleFinderTest {
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     ModuleSpec moduleSpec = geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(1);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
     ModuleSpec moduleSpecAfterAdd =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
     assertThat(((ConcreteModuleSpec) moduleSpecAfterAdd).getDependencies().length).isEqualTo(2);
@@ -300,15 +284,10 @@ public class GeodeCompositeModuleFinderTest {
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
 
-    PathFilter pathFilter =
-        ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
-    Extension extension = ExtensionFactory.createApplicationExtension("other-module", pathFilter);
-
-    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", extension);
+    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", "other-module", pathsToExclude,
+        pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 
@@ -341,11 +320,8 @@ public class GeodeCompositeModuleFinderTest {
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     ModuleSpec moduleSpec = geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 
-    PathFilter pathFilter =
-        ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
-    GeodeExtension extension = ExtensionFactory.createGeodeExtension("other-module");
-    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", extension);
+    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", "other-module", pathsToExclude,
+        pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 
@@ -353,32 +329,33 @@ public class GeodeCompositeModuleFinderTest {
   }
 
   @Test
-  public void testAddExcludeFilterWithNullModuleName() {
+  public void testAddExcludeFilterWithNullModuleName() throws ModuleLoadException {
     List<String> pathsToExclude = new LinkedList<>();
     pathsToExclude.add("path/to/exclude");
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
     pathsToExcludeChildrenOf.add("child/path");
 
-    PathFilter pathFilter =
-        ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
-    GeodeExtension extension = ExtensionFactory.createGeodeExtension("other-module");
-
     assertThatThrownBy(() -> geodeCompositeModuleFinder
-        .addExcludeFilterToModule(null, extension))
+        .addExcludeFilterToModule(null, "other-module", pathsToExclude, pathsToExcludeChildrenOf))
             .hasMessageContaining("Module name cannot be null");
   }
 
   @Test
   public void testAddExcludeFilterOnNullModule() throws ModuleLoadException {
+    List<String> pathsToExclude = new LinkedList<>();
+    pathsToExclude.add("path/to/exclude");
+    List<String> pathsToExcludeChildrenOf = new LinkedList<>();
+    pathsToExcludeChildrenOf.add("child/path");
+
     ModuleSpec moduleSpecToReturn = ModuleSpec.build("my-module").create();
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 
     assertThatThrownBy(
-        () -> geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", (Extension[]) null))
-            .hasMessageContaining("Extensions to exclude from cannot be null");
+        () -> geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", null, pathsToExclude,
+            pathsToExcludeChildrenOf))
+                .hasMessageContaining("Module to exclude from cannot be null");
   }
 
   @Test
@@ -392,14 +369,9 @@ public class GeodeCompositeModuleFinderTest {
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
 
-    PathFilter pathFilter =
-        ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
-    Extension extension = ExtensionFactory.createApplicationExtension("other-module", pathFilter);
-
     assertThatThrownBy(() -> geodeCompositeModuleFinder
-        .addExcludeFilterToModule("my-module", extension))
-            .hasMessageContaining("No such module: my-module");
+        .addExcludeFilterToModule("my-module", "other-module", pathsToExclude,
+            pathsToExcludeChildrenOf)).hasMessageContaining("No such module: my-module");
   }
 
   @Test
@@ -411,14 +383,10 @@ public class GeodeCompositeModuleFinderTest {
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
 
-    PathFilter pathFilter = ModuleUtils.createPathFilter(null, pathsToExcludeChildrenOf);
-
-    Extension extension = ExtensionFactory.createApplicationExtension("other-module", pathFilter);
-
-    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", extension);
+    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", "other-module", null,
+        pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 
@@ -446,14 +414,10 @@ public class GeodeCompositeModuleFinderTest {
     when(moduleFinder.findModule(anyString(), any())).thenReturn(moduleSpecToReturn);
     geodeCompositeModuleFinder.addModuleFinder("my-module", moduleFinder);
     geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
-    geodeCompositeModuleFinder.addDependencyToModule("my-module", PathFilters.acceptAll(),
-        "other-module");
+    geodeCompositeModuleFinder.addDependencyToModule("my-module", "other-module");
 
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, null);
-
-    Extension extension = ExtensionFactory.createApplicationExtension("other-module", pathFilter);
-
-    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", extension);
+    geodeCompositeModuleFinder.addExcludeFilterToModule("my-module", "other-module", pathsToExclude,
+        null);
     ModuleSpec moduleSpecWithExclude =
         geodeCompositeModuleFinder.findModule("my-module", moduleLoader);
 

@@ -33,6 +33,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.jboss.modules.filter.MultiplePathFilterBuilder;
 import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 
@@ -135,7 +136,7 @@ public class ModuleSpecUtils {
    * @return a {@link ModuleSpec} which a classpath dependency.
    */
   public static ModuleSpec addSystemClasspathDependency(ModuleSpec moduleSpec) {
-    if (moduleSpec instanceof ConcreteModuleSpec) {
+    if (moduleSpec instanceof ConcreteModuleSpec && moduleSpec.getName().startsWith("geode")) {
       return createBuilder(moduleSpec).addDependency(new LocalDependencySpecBuilder()
           .setImportFilter(PathFilters.acceptAll())
           .setExport(true)
@@ -197,19 +198,24 @@ public class ModuleSpecUtils {
    * @param dependencyNames the names of the modules to depend on.
    * @return a {@link ModuleSpec} that is dependent on the specified module.
    */
-  public static ModuleSpec addModuleDependencyToSpec(ModuleSpec moduleSpec, PathFilter importFilter,
-      PathFilter exportFilter, String... dependencyNames) {
+  public static ModuleSpec addModuleDependencyToSpec(ModuleSpec moduleSpec,
+      String... dependencyNames) {
     validate(moduleSpec);
     if (dependencyNames == null) {
       throw new IllegalArgumentException("Dependency names cannot be null");
     }
 
+    final MultiplePathFilterBuilder exportBuilder = PathFilters.multiplePathFilterBuilder(true);
+    exportBuilder.addFilter(PathFilters.getMetaInfServicesFilter(), true);
+    exportBuilder.addFilter(PathFilters.getMetaInfSubdirectoriesFilter(), true);
+    exportBuilder.addFilter(PathFilters.getMetaInfFilter(), true);
+
     ModuleSpec.Builder builder = createBuilder(moduleSpec);
     for (String dependencyName : dependencyNames) {
       builder.addDependency(new ModuleDependencySpecBuilder()
           .setName(dependencyName)
-          .setImportFilter(importFilter)
-          .setExportFilter(exportFilter)
+          .setImportFilter(PathFilters.getDefaultImportFilterWithServices())
+          .setExportFilter(exportBuilder.create())
           .build());
     }
 
@@ -220,16 +226,21 @@ public class ModuleSpecUtils {
    * Excludes the given paths from being imported from the given module.
    *
    * @param moduleSpec the {@link ModuleSpec} to add the filter to.
-   * @param pathFilter {@link PathFilter} representing the paths to exclude.
+   * @param pathsToExclude paths to be excluded from the given module.
+   * @param pathsToExcludeChildrenOf paths whose children should be excluded from the given module.
    * @param moduleToPutExcludeOn name of the module to exclude the paths from.
    * @return a {@link ModuleSpec} which will exclude the given paths from the given module.
    */
-  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, String moduleToPutExcludeOn,
-      PathFilter pathFilter) {
+  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, List<String> pathsToExclude,
+      List<String> pathsToExcludeChildrenOf,
+      String moduleToPutExcludeOn) {
     validate(moduleSpec);
     if (moduleToPutExcludeOn == null) {
       throw new IllegalArgumentException("Module to exclude from cannot be null");
     }
+
+    ModuleSpec.Builder builder =
+        createBuilderAndRemoveDependencies(moduleSpec, moduleToPutExcludeOn);
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
     Optional<ModuleDependencySpec> dependencySpecOptional =
@@ -241,13 +252,24 @@ public class ModuleSpecUtils {
       return moduleSpec;
     }
 
-    ModuleSpec.Builder builder =
-        createBuilderAndRemoveDependencies(moduleSpec, moduleToPutExcludeOn);
+    MultiplePathFilterBuilder pathFilterBuilder = PathFilters.multiplePathFilterBuilder(true);
+
+    if (pathsToExclude != null) {
+      for (String path : pathsToExclude) {
+        pathFilterBuilder.addFilter(PathFilters.is(path), false);
+      }
+    }
+
+    if (pathsToExcludeChildrenOf != null) {
+      for (String path : pathsToExcludeChildrenOf) {
+        pathFilterBuilder.addFilter(PathFilters.isOrIsChildOf(path), false);
+      }
+    }
 
     builder.addDependency(new ModuleDependencySpecBuilder()
         .setName(moduleToPutExcludeOn)
-        .setImportFilter(pathFilter)
-        .setExportFilter(pathFilter)
+        .setImportFilter(pathFilterBuilder.create())
+        .setExportFilter(pathFilterBuilder.create())
         .build());
 
     return builder.create();

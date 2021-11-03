@@ -24,11 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.jboss.modules.filter.PathFilter;
-import org.jboss.modules.filter.PathFilters;
 import org.junit.Test;
-
-import org.apache.geode.deployment.internal.modules.utils.ModuleUtils;
 
 public class ModuleSpecUtilsTest {
   @Test
@@ -57,8 +53,7 @@ public class ModuleSpecUtilsTest {
   public void addModuleDependencyToSpec() {
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
 
     assertThat(moduleSpec.getName()).isEqualTo("my-module");
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(2);
@@ -68,17 +63,15 @@ public class ModuleSpecUtilsTest {
 
   @Test
   public void addModuleDependencyToNulSpec() {
-    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(null,
-        PathFilters.acceptAll(), PathFilters.acceptAll(), "my-dependency"))
-            .hasMessageContaining("ModuleSpec cannot be null");
+    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(null, "my-dependency"))
+        .hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
   public void addNullModuleDependencyToSpec() {
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
-    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(builder.create(),
-        PathFilters.acceptAll(), PathFilters.acceptAll(), (String[]) null))
-            .hasMessageContaining("Dependency names cannot be null");
+    assertThatThrownBy(() -> ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), null))
+        .hasMessageContaining("Dependency names cannot be null");
   }
 
   @Test
@@ -102,8 +95,7 @@ public class ModuleSpecUtilsTest {
   public void testRemoveDependencyFromSpec() {
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
 
     assertThat(((ConcreteModuleSpec) moduleSpec).getDependencies().length).isEqualTo(2);
     ModuleSpec moduleSpecAfterRemoval =
@@ -187,8 +179,7 @@ public class ModuleSpecUtilsTest {
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
 
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
     Boolean moduleDependentOnModule =
         ModuleSpecUtils.moduleExportsModuleDependency(moduleSpec, "my-dependency");
 
@@ -220,11 +211,10 @@ public class ModuleSpecUtilsTest {
 
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, pathsToExclude, pathsToExcludeChildrenOf,
+            "my-dependency");
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
@@ -252,9 +242,9 @@ public class ModuleSpecUtilsTest {
 
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec = builder.create();
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, pathsToExclude, pathsToExcludeChildrenOf,
+            "my-dependency");
 
     assertThat(moduleSpecWithExclude).isEqualTo(moduleSpec);
   }
@@ -264,11 +254,9 @@ public class ModuleSpecUtilsTest {
     List<String> pathsToExclude = new LinkedList<>();
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
 
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
     assertThatThrownBy(
-        () -> ModuleSpecUtils.addExcludeFilter(null, "my-dependency", pathFilter))
-            .hasMessageContaining("ModuleSpec cannot be null");
+        () -> ModuleSpecUtils.addExcludeFilter(null, pathsToExclude, pathsToExcludeChildrenOf,
+            "my-dependency")).hasMessageContaining("ModuleSpec cannot be null");
   }
 
   @Test
@@ -276,11 +264,10 @@ public class ModuleSpecUtilsTest {
     List<String> pathsToExclude = new LinkedList<>();
     List<String> pathsToExcludeChildrenOf = new LinkedList<>();
 
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, pathsToExcludeChildrenOf);
-
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
-    assertThatThrownBy(() -> ModuleSpecUtils.addExcludeFilter(builder.create(),
-        null, pathFilter)).hasMessageContaining("Module to exclude from cannot be null");
+    assertThatThrownBy(() -> ModuleSpecUtils.addExcludeFilter(builder.create(), pathsToExclude,
+        pathsToExcludeChildrenOf,
+        null)).hasMessageContaining("Module to exclude from cannot be null");
   }
 
   @Test
@@ -290,11 +277,10 @@ public class ModuleSpecUtilsTest {
 
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
-    PathFilter pathFilter = ModuleUtils.createPathFilter(null, pathsToExcludeChildrenOf);
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, null, pathsToExcludeChildrenOf,
+            "my-dependency");
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
@@ -319,11 +305,9 @@ public class ModuleSpecUtilsTest {
 
     ModuleSpec.Builder builder = ModuleSpecUtils.createBuilder("my-module", true);
     ModuleSpec moduleSpec =
-        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), PathFilters.acceptAll(),
-            PathFilters.acceptAll(), "my-dependency");
-    PathFilter pathFilter = ModuleUtils.createPathFilter(pathsToExclude, null);
+        ModuleSpecUtils.addModuleDependencyToSpec(builder.create(), "my-dependency");
     ModuleSpec moduleSpecWithExclude =
-        ModuleSpecUtils.addExcludeFilter(moduleSpec, "my-dependency", pathFilter);
+        ModuleSpecUtils.addExcludeFilter(moduleSpec, pathsToExclude, null, "my-dependency");
 
     ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpecWithExclude;
     assertThat(concreteModuleSpec.getDependencies().length).isEqualTo(2);
