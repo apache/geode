@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan;
+package org.apache.geode.internal.cache.wan.txgrouping;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
@@ -24,12 +24,15 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,7 +47,10 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
@@ -53,10 +59,17 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -69,6 +82,10 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected static final String REGION_NAME = "TheRegion";
+
+  protected final String shipmentRegionName = "ShipmentsRegion";
+  protected final String customerRegionName = "CustomersRegion";
+  protected final String orderRegionName = "OrdersRegion";
 
   protected static LocatorLauncher locatorLauncher;
   protected static ServerLauncher serverLauncher;
@@ -101,6 +118,10 @@ public class TxGroupingBaseDUnitTest implements Serializable {
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
+  private static List<Integer> dispatcherThreads = new ArrayList<>(Arrays.asList(1, 3, 5));
+  // this will be set for each test method run with one of the values from above list
+  private static int numDispatcherThreadsForTheRun = 1;
+
   @Before
   public void setUp() {
     londonLocatorVM = getVM(0);
@@ -131,6 +152,10 @@ public class TxGroupingBaseDUnitTest implements Serializable {
       Properties config = createLocatorConfig(londonId, londonLocatorPort, newYorkLocatorPort);
       cacheRule.createCache(config);
     });
+    Collections.shuffle(dispatcherThreads);
+    int dispatcherThreadsNo = dispatcherThreads.get(0);
+    Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreadsNo));
+
   }
 
   @After
@@ -247,7 +272,7 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     senderFactory.setBatchSize(10);
     senderFactory.setBatchConflationEnabled(false);
     senderFactory.setManualStart(true);
-    senderFactory.setDispatcherThreads(1);
+    senderFactory.setDispatcherThreads(numDispatcherThreadsForTheRun);
     senderFactory.setOrderPolicy(GatewaySender.DEFAULT_ORDER_POLICY);
 
     DiskStoreFactory dsf = cacheRule.getCache().createDiskStoreFactory();
@@ -389,6 +414,69 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     }
   }
 
+  public void createCustomerOrderShipmentPartitionedRegion(String senderId) {
+    RegionFactory<Object, Object> fact =
+        cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
+    if (senderId != null) {
+      fact.addGatewaySenderId(senderId);
+    }
+
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    fact.setPartitionAttributes(paf.create());
+    fact.create(customerRegionName);
+
+    paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(customerRegionName)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
+    if (senderId != null) {
+      fact.addGatewaySenderId(senderId);
+    }
+    fact.setPartitionAttributes(paf.create());
+    fact.create(orderRegionName);
+
+    paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(orderRegionName)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
+    if (senderId != null) {
+      fact.addGatewaySenderId(senderId);
+    }
+    fact.setPartitionAttributes(paf.create());
+    fact.create(shipmentRegionName);
+  }
+
+  public void doOrderAndShipmentPutsInsideTransactions(Map<Object, Object> keyValues,
+      int eventsPerTransaction) {
+    Region<Object, Object> orderRegion = cacheRule.getCache().getRegion(orderRegionName);
+    Region<Object, Object> shipmentRegion = cacheRule.getCache().getRegion(shipmentRegionName);
+    assertNotNull(orderRegion);
+    assertNotNull(shipmentRegion);
+    int eventInTransaction = 0;
+    CacheTransactionManager cacheTransactionManager =
+        cacheRule.getCache().getCacheTransactionManager();
+    for (Object key : keyValues.keySet()) {
+      if (eventInTransaction == 0) {
+        cacheTransactionManager.begin();
+      }
+      Region<Object, Object> r;
+      if (key instanceof OrderId) {
+        r = orderRegion;
+      } else {
+        r = shipmentRegion;
+      }
+      r.put(key, keyValues.get(key));
+      if (++eventInTransaction == eventsPerTransaction) {
+        cacheTransactionManager.commit();
+        eventInTransaction = 0;
+      }
+    }
+    if (eventInTransaction != 0) {
+      cacheTransactionManager.commit();
+    }
+  }
+
   protected Integer getRegionSize(String regionName) {
     final Region<Object, Object> r = cacheRule.getCache().getRegion(SEPARATOR + regionName);
     return r.keySet().size();
@@ -406,5 +494,38 @@ public class TxGroupingBaseDUnitTest implements Serializable {
         .isGreaterThanOrEqualTo(processBatches);
     assertThat(gatewayReceiverStats.getEventsReceived()).isGreaterThanOrEqualTo(eventsReceived);
     assertThat(gatewayReceiverStats.getCreateRequest()).isGreaterThanOrEqualTo(creates);
+  }
+
+  protected void putGivenKeyValues(String regionName, Map<?, ?> keyValues) {
+    Region<Object, Object> r = cacheRule.getCache().getRegion(SEPARATOR + regionName);
+    assertNotNull(r);
+    for (Object key : keyValues.keySet()) {
+      r.put(key, keyValues.get(key));
+    }
+  }
+
+  protected void checkConflatedStats(String senderId, final int eventsConflated) {
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
+    assertEquals(eventsConflated, statistics.getEventsNotQueuedConflated());
+  }
+
+  protected GatewaySenderStats getGatewaySenderStats(String senderId) {
+    GatewaySender sender = cacheRule.getCache().getGatewaySender(senderId);
+    return ((AbstractGatewaySender) sender).getStatistics();
+  }
+
+  protected void validateGatewaySenderQueueAllBucketsDrained(final String senderId) {
+    GatewaySender sender = getGatewaySender(senderId);
+    final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
+    await().untilAsserted(() -> {
+      assertThat(abstractSender.getEventQueueSize()).isEqualTo(0);
+    });
+    await().untilAsserted(() -> {
+      assertThat(abstractSender.getSecondaryEventQueueSize()).isEqualTo(0);
+    });
+  }
+
+  public static void setNumDispatcherThreadsForTheRun(int numThreads) {
+    numDispatcherThreadsForTheRun = numThreads;
   }
 }

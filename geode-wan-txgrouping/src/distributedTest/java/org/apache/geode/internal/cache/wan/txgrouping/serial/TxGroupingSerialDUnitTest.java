@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.serial;
+package org.apache.geode.internal.cache.wan.txgrouping.serial;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +34,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.TxGroupingBaseDUnitTest;
+import org.apache.geode.internal.cache.wan.txgrouping.TxGroupingBaseDUnitTest;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -45,7 +45,9 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
   @Test
-  public void testReplicatedSerialPropagationWithoutGroupTransactionEventsSendsBatchesWithIncompleteTransactions() {
+  @Parameters({"true", "false"})
+  public void testReplicatedSerialPropagationWithVsWithoutGroupTransactionEvents(
+      boolean groupTransactionEvents) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
       createReplicatedRegion(REGION_NAME, null);
@@ -54,48 +56,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
         startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            false, 10);
-        createReplicatedRegion(REGION_NAME, newYorkName);
-        GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
-        await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
-      });
-    }
-
-    final Map<Object, Object> keyValues = new HashMap<>();
-    int entries = 12;
-    for (int i = 0; i < entries; i++) {
-      keyValues.put(i, i + "_Value");
-    }
-    int eventsPerTransaction = 3;
-    londonServer2VM.invoke(() -> doPutsInsideTransactions(REGION_NAME, keyValues,
-        eventsPerTransaction));
-
-    newYorkServerVM.invoke(() -> validateRegionSize(REGION_NAME, entries));
-
-    newYorkServerVM.invoke(() -> checkGatewayReceiverStats(2, entries, entries, true));
-
-    londonServer1VM.invoke(() -> checkQueueStats(newYorkName, 0, entries, entries, entries));
-    londonServer1VM.invoke(() -> checkBatchStats(newYorkName, 2, false));
-
-    // wait until queue is empty
-    londonServer2VM.invoke(() -> await()
-        .until(() -> getSenderStats(newYorkName, -1).get(0) == 0));
-
-    londonServer2VM.invoke(() -> checkQueueStats(newYorkName, 0, entries, 0, 0));
-    londonServer2VM.invoke(() -> checkBatchStats(newYorkName, 0, false));
-  }
-
-  @Test
-  public void testReplicatedSerialPropagationWithGroupTransactionEventsSendsBatchesWithCompleteTransactions() {
-    newYorkServerVM.invoke("create New York server", () -> {
-      startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
-      createReplicatedRegion(REGION_NAME, null);
-    });
-
-    for (VM server : londonServersVM) {
-      server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            true, 10);
+            groupTransactionEvents, 10, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -111,19 +72,25 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     // 4 transactions of 3 events each are sent so that the first batch
     // would initially contain the first 3 transactions complete and the first
     // event of the next transaction (10 entries).
-    // As --group-transaction-events is configured in the senders, the remaining
+    // If --group-transaction-events is configured in the senders, the remaining
     // events of the third transaction are added to the batch which makes
     // that the batch is sent with 12 events.
+    // If --group-transaction-events is not configured in the senders, the remaining
+    // events of the third transaction are added to the next batch which makes
+    // that the 2 batches are sent. One with 10 events and another one
+    // with 2 events.
+    int expectedBatchesSent = groupTransactionEvents ? 1 : 2;
     int eventsPerTransaction = 3;
     londonServer2VM.invoke(() -> doPutsInsideTransactions(REGION_NAME, keyValues,
         eventsPerTransaction));
 
     newYorkServerVM.invoke(() -> validateRegionSize(REGION_NAME, entries));
 
-    newYorkServerVM.invoke(() -> checkGatewayReceiverStats(1, entries, entries, true));
+    newYorkServerVM
+        .invoke(() -> checkGatewayReceiverStats(expectedBatchesSent, entries, entries, true));
 
     londonServer1VM.invoke(() -> checkQueueStats(newYorkName, 0, entries, entries, entries));
-    londonServer1VM.invoke(() -> checkBatchStats(newYorkName, 1, false));
+    londonServer1VM.invoke(() -> checkBatchStats(newYorkName, expectedBatchesSent, false));
     londonServer1VM.invoke(() -> checkConflatedStats(newYorkName));
 
     // wait until queue is empty
@@ -149,7 +116,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
       server.invoke("create London server " + server.getId(), () -> {
         startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
             true,
-            batchSize);
+            batchSize, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -199,7 +166,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
 
   @Test
   @Parameters({"true", "false"})
-  public void testReplicatedSerialPropagationWithBatchRedistribution(
+  public void testReplicatedSerialPropagationWithVsWithoutGroupTransactionEventsWithBatchRedistribution(
       boolean groupTransactionEvents) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort, false);
@@ -209,7 +176,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
         startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            groupTransactionEvents, 10);
+            groupTransactionEvents, 10, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -243,17 +210,13 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     // second batch which will contain 12 events too.
     // - Without group-transaction-events 3 batches are sent, 2 with 10 events
     // and one with 4.
-    int expectedBatches;
-    if (groupTransactionEvents) {
-      expectedBatches = 2;
-    } else {
-      expectedBatches = 3;
-    }
+    int expectedBatchesSent = groupTransactionEvents ? 2 : 3;
+
     newYorkServerVM
-        .invoke(() -> checkGatewayReceiverStats(expectedBatches, entries, entries, true));
+        .invoke(() -> checkGatewayReceiverStats(expectedBatchesSent, entries, entries, true));
 
     londonServer1VM.invoke(() -> checkQueueStats(newYorkName, 0, entries, entries, entries));
-    londonServer1VM.invoke(() -> checkBatchStats(newYorkName, expectedBatches, true));
+    londonServer1VM.invoke(() -> checkBatchStats(newYorkName, expectedBatchesSent, true));
 
     // wait until queue is empty
     londonServer2VM.invoke(() -> getSenderStats(newYorkName, 0));
@@ -273,7 +236,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
         startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            true, batchSize);
+            true, batchSize, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -320,20 +283,18 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
   private void checkQueuesAreEmptyAndOnlyCompleteTransactionsAreReplicated(
       boolean isBatchesRedistributed) {
     // Wait for sender queues to be empty
-    List<Integer> v4List =
-        londonServer1VM.invoke(() -> getSenderStats(newYorkName, 0));
-    List<Integer> v5List =
-        londonServer2VM.invoke(() -> getSenderStats(newYorkName, 0));
-    List<Integer> v6List =
-        londonServer3VM.invoke(() -> getSenderStats(newYorkName, 0));
-    List<Integer> v7List =
-        londonServer4VM.invoke(() -> getSenderStats(newYorkName, 0));
+    List<List<Integer>> londonServersStats = new ArrayList(londonServersVM.length);
+    int i = 0;
+    for (VM londonServer : londonServersVM) {
+      londonServersStats.add(londonServer.invoke(() -> getSenderStats(newYorkName, 0)));
+    }
 
-    // queue size must be 0
-    assertThat(v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)).isEqualTo(0);
+    int queueSize = londonServersStats.stream().map(x -> x.get(0)).reduce(0, (y, z) -> y + z);
+    assertThat(queueSize).isEqualTo(0);
 
     // batches redistributed:
-    int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
+    int batchesRedistributed =
+        londonServersStats.stream().map(x -> x.get(5)).reduce(0, (y, z) -> y + z);
     if (isBatchesRedistributed) {
       assertThat(batchesRedistributed).isGreaterThan(0);
     } else {
@@ -357,11 +318,6 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
     assertThat(statistics.getEventsQueued()).isEqualTo(eventsQueued);
     assertThat(statistics.getEventsDistributed()).isGreaterThanOrEqualTo(eventsDistributed);
-  }
-
-  private GatewaySenderStats getGatewaySenderStats(String senderId) {
-    GatewaySender sender = cacheRule.getCache().getGatewaySender(senderId);
-    return ((AbstractGatewaySender) sender).getStatistics();
   }
 
   private void checkBatchStats(String senderId, final int batches,

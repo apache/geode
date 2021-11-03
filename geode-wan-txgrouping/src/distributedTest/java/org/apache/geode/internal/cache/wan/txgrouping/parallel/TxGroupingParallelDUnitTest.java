@@ -12,12 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.txgrouping.parallel;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -30,14 +28,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
@@ -46,7 +41,7 @@ import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.TxGroupingBaseDUnitTest;
+import org.apache.geode.internal.cache.wan.txgrouping.TxGroupingBaseDUnitTest;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -57,13 +52,10 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @Category({WanTest.class})
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
-
-  private final String shipmentRegionName = "ShipmentsRegion";
-  private final String customerRegionName = "CustomersRegion";
-  private final String orderRegionName = "OrdersRegion";
-
   @Test
-  public void testPRParallelPropagationWithoutGroupTransactionEventsSendsBatchesWithIncompleteTransactions() {
+  @Parameters({"true", "false"})
+  public void testPRParallelPropagationWithVsWithoutGroupTransactionEvents(
+      boolean groupTransactionEvents) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
       createCustomerOrderShipmentPartitionedRegion(null);
@@ -72,7 +64,8 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
         startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, true,
-            false, 10);
+            groupTransactionEvents,
+            10);
         createCustomerOrderShipmentPartitionedRegion(newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -83,7 +76,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());
-    londonServer1VM.invoke(() -> putGivenKeyValue(customerRegionName, custKeyValue));
+    londonServer1VM.invoke(() -> putGivenKeyValues(customerRegionName, custKeyValue));
 
     int transactions = 3;
     final Map<Object, Object> keyValues = new HashMap<>();
@@ -97,6 +90,17 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
       keyValues.put(shipmentId2, new Shipment());
       keyValues.put(shipmentId3, new Shipment());
     }
+
+    // 3 transactions of 4 events each are sent so that the batch would
+    // initially contain the first 2 transactions complete and the first
+    // 2 events of the last transaction (10 entries).
+    // If --group-transaction-events is configured in the senders, the remaining
+    // 2 events of the last transaction are added to the batch which makes
+    // that only one batch of 12 events is sent.
+    // If --group-transaction-events is not configured in the senders, the
+    // remaining 2 events of the last transaction are added to the second batch
+    // which makes that 2 batches will be sent, one with 10 events and
+    // one with 2.
     int eventsPerTransaction = 4;
     londonServer1VM.invoke(() -> doOrderAndShipmentPutsInsideTransactions(keyValues,
         eventsPerTransaction));
@@ -107,8 +111,9 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     londonServer1VM.invoke(() -> validateRegionSize(orderRegionName, transactions));
     londonServer1VM.invoke(() -> validateRegionSize(shipmentRegionName, transactions * 3));
 
-    ArrayList<Integer> senderStatsLondonServers = getSenderStats(newYorkName, 0, londonServersVM);
+    List<Integer> senderStatsLondonServers = getSenderStats(newYorkName, 0, londonServersVM);
 
+    int expectedBatchesSent = groupTransactionEvents ? 1 : 2;
     // queue size:
     assertThat(senderStatsLondonServers.get(0)).isEqualTo(0);
     // eventsReceived:
@@ -118,9 +123,13 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     // events distributed:
     assertThat(senderStatsLondonServers.get(3)).isEqualTo(entries);
     // batches distributed:
-    assertThat(senderStatsLondonServers.get(4)).isEqualTo(2);
+    assertThat(senderStatsLondonServers.get(4)).isEqualTo(expectedBatchesSent);
     // batches redistributed:
     assertThat(senderStatsLondonServers.get(5)).isEqualTo(0);
+    // events not queued conflated:
+    assertThat(senderStatsLondonServers.get(7)).isEqualTo(0);
+    // batches with incomplete transactions:
+    assertThat(senderStatsLondonServers.get(13)).isEqualTo(0);
   }
 
   @Test
@@ -156,7 +165,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
       CustId custId = new CustId(intCustId);
       custKeyValue.put(custId, new Customer());
       customerData.add(new HashMap<>());
-      londonServer1VM.invoke(() -> putGivenKeyValue(customerRegionName, custKeyValue));
+      londonServer1VM.invoke(() -> putGivenKeyValues(customerRegionName, custKeyValue));
 
       for (int i = 0; i < transactions; i++) {
         OrderId orderId = new OrderId(i, custId);
@@ -213,79 +222,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
   }
 
   @Test
-  public void testPRParallelPropagationWithGroupTransactionEventsSendsBatchesWithCompleteTransactions() {
-    newYorkServerVM.invoke("create New York server", () -> {
-      startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
-      createCustomerOrderShipmentPartitionedRegion(null);
-    });
-
-    for (VM server : londonServersVM) {
-      server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, true, true,
-            10);
-        createCustomerOrderShipmentPartitionedRegion(newYorkName);
-        GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
-        await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
-      });
-    }
-
-    final Map<Object, Object> custKeyValue = new HashMap<>();
-    int intCustId = 1;
-    CustId custId = new CustId(intCustId);
-    custKeyValue.put(custId, new Customer());
-    londonServer1VM.invoke(() -> putGivenKeyValue(customerRegionName, custKeyValue));
-
-    int transactions = 3;
-    final Map<Object, Object> keyValues = new HashMap<>();
-    for (int i = 0; i < transactions; i++) {
-      OrderId orderId = new OrderId(i, custId);
-      ShipmentId shipmentId1 = new ShipmentId(i, orderId);
-      ShipmentId shipmentId2 = new ShipmentId(i + 1, orderId);
-      ShipmentId shipmentId3 = new ShipmentId(i + 2, orderId);
-      keyValues.put(orderId, new Order());
-      keyValues.put(shipmentId1, new Shipment());
-      keyValues.put(shipmentId2, new Shipment());
-      keyValues.put(shipmentId3, new Shipment());
-    }
-
-    // 3 transactions of 4 events each are sent so that the batch would
-    // initially contain the first 2 transactions complete and the first
-    // 2 events of the last transaction (10 entries).
-    // As --group-transaction-events is configured in the senders, the remaining
-    // 2 events of the last transaction are added to the batch which makes
-    // that only one batch of 12 events is sent.
-    int eventsPerTransaction = 4;
-    londonServer1VM.invoke(() -> doOrderAndShipmentPutsInsideTransactions(keyValues,
-        eventsPerTransaction));
-
-    int entries = (transactions * eventsPerTransaction) + 1;
-
-    londonServer1VM.invoke(() -> validateRegionSize(customerRegionName, 1));
-    londonServer1VM.invoke(() -> validateRegionSize(orderRegionName, transactions));
-    londonServer1VM.invoke(() -> validateRegionSize(shipmentRegionName, transactions * 3));
-
-    ArrayList<Integer> senderStatsLondonServers = getSenderStats(newYorkName, 0, londonServersVM);
-
-    // queue size:
-    assertThat(senderStatsLondonServers.get(0)).isEqualTo(0);
-    // eventsReceived:
-    assertThat(senderStatsLondonServers.get(1)).isEqualTo(entries);
-    // events queued:
-    assertThat(senderStatsLondonServers.get(2)).isEqualTo(entries);
-    // events distributed:
-    assertThat(senderStatsLondonServers.get(3)).isEqualTo(entries);
-    // batches distributed:
-    assertThat(senderStatsLondonServers.get(4)).isEqualTo(1);
-    // batches redistributed:
-    assertThat(senderStatsLondonServers.get(5)).isEqualTo(0);
-    // events not queued conflated:
-    assertThat(senderStatsLondonServers.get(7)).isEqualTo(0);
-    // batches with incomplete transactions:
-    assertThat(senderStatsLondonServers.get(13)).isEqualTo(0);
-  }
-
-  @Test
-  public void testPRParallelPropagationWithGroupTransactionEventsWithIncompleteTransactions() {
+  public void testPRParallelPropagationWithGroupTransactionEventsWithIncompleteTransactionsWhenTransactionEntriesOnNotColocatedBuckets() {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
       createPartitionedRegion(REGION_NAME, null);
@@ -348,7 +285,8 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
 
   @Test
   @Parameters({"true", "false"})
-  public void testPRParallelPropagationWithBatchRedistribution(boolean groupTransactionEvents) {
+  public void testPRParallelPropagationWithVsWithoutGroupTransactionEventsWithBatchRedistribution(
+      boolean groupTransactionEvents) {
     londonServer1VM.invoke("create London server " + londonServer1VM.getId(), () -> {
       startServerWithSender(londonServer1VM.getId(), londonLocatorPort, newYorkId, newYorkName,
           true, groupTransactionEvents, 10);
@@ -366,7 +304,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int intCustId = 1;
     CustId custId = new CustId(intCustId);
     custKeyValue.put(custId, new Customer());
-    londonServer1VM.invoke(() -> putGivenKeyValue(customerRegionName, custKeyValue));
+    londonServer1VM.invoke(() -> putGivenKeyValues(customerRegionName, custKeyValue));
 
     int transactions = 6;
     final Map<Object, Object> keyValues = new HashMap<>();
@@ -468,7 +406,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     newYorkServerVM
         .invoke(() -> validateRegionSize(REGION_NAME, transactions * putsPerTransaction));
 
-    ArrayList<Integer> londonServerStats =
+    List<Integer> londonServerStats =
         getSenderStats(newYorkName, 0, (VM[]) ArrayUtils.remove(londonServersVM, 0));
 
     // queue size
@@ -494,72 +432,9 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     newYorkServerVM.invoke(() -> checkGatewayReceiverStatsHA(batchesReceived, entries, entries));
   }
 
-  public void createCustomerOrderShipmentPartitionedRegion(String senderId) {
-    RegionFactory<Object, Object> fact =
-        cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
-    if (senderId != null) {
-      fact.addGatewaySenderId(senderId);
-    }
-
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    fact.setPartitionAttributes(paf.create());
-    fact.create(customerRegionName);
-
-    paf = new PartitionAttributesFactory();
-    paf.setColocatedWith(customerRegionName)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
-    if (senderId != null) {
-      fact.addGatewaySenderId(senderId);
-    }
-    fact.setPartitionAttributes(paf.create());
-    fact.create(orderRegionName);
-
-    paf = new PartitionAttributesFactory();
-    paf.setColocatedWith(orderRegionName)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
-    if (senderId != null) {
-      fact.addGatewaySenderId(senderId);
-    }
-    fact.setPartitionAttributes(paf.create());
-    fact.create(shipmentRegionName);
-  }
-
-  public void doOrderAndShipmentPutsInsideTransactions(Map<Object, Object> keyValues,
-      int eventsPerTransaction) {
-    Region<Object, Object> orderRegion = cacheRule.getCache().getRegion(orderRegionName);
-    Region<Object, Object> shipmentRegion = cacheRule.getCache().getRegion(shipmentRegionName);
-    assertNotNull(orderRegion);
-    assertNotNull(shipmentRegion);
-    int eventInTransaction = 0;
-    CacheTransactionManager cacheTransactionManager =
-        cacheRule.getCache().getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
-      if (eventInTransaction == 0) {
-        cacheTransactionManager.begin();
-      }
-      Region<Object, Object> r;
-      if (key instanceof OrderId) {
-        r = orderRegion;
-      } else {
-        r = shipmentRegion;
-      }
-      r.put(key, keyValues.get(key));
-      if (++eventInTransaction == eventsPerTransaction) {
-        cacheTransactionManager.commit();
-        eventInTransaction = 0;
-      }
-    }
-    if (eventInTransaction != 0) {
-      cacheTransactionManager.commit();
-    }
-  }
-
   private void checkQueuesAreEmptyAndOnlyCompleteTransactionsAreReplicated(String senderId,
       boolean isBatchesRedistributed) {
-    ArrayList<Integer> senderStatsLondonServers = getSenderStats(senderId, 0, londonServersVM);
+    List<Integer> senderStatsLondonServers = getSenderStats(senderId, 0, londonServersVM);
 
     // queue size:
     assertThat(senderStatsLondonServers.get(0)).isEqualTo(0);
@@ -573,21 +448,12 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     // batches with incomplete transactions
     assertThat(senderStatsLondonServers.get(13)).isEqualTo(0);
 
-    londonServer1VM.invoke(() -> validateParallelSenderQueueAllBucketsDrained(senderId));
-    londonServer2VM.invoke(() -> validateParallelSenderQueueAllBucketsDrained(senderId));
-    londonServer3VM.invoke(() -> validateParallelSenderQueueAllBucketsDrained(senderId));
-    londonServer4VM.invoke(() -> validateParallelSenderQueueAllBucketsDrained(senderId));
-  }
-
-  protected void putGivenKeyValue(String regionName, Map<?, ?> keyValues) {
-    Region<Object, Object> r = cacheRule.getCache().getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
-    for (Object key : keyValues.keySet()) {
-      r.put(key, keyValues.get(key));
+    for (VM londonServer : londonServersVM) {
+      londonServer.invoke(() -> validateGatewaySenderQueueAllBucketsDrained(senderId));
     }
   }
 
-  protected void validateParallelSenderQueueAllBucketsDrained(final String senderId) {
+  protected void validateGatewaySenderQueueAllBucketsDrained(final String senderId) {
     IgnoredException exp =
         IgnoredException.addIgnoredException(RegionDestroyedException.class.getName());
     IgnoredException exp1 =
@@ -621,12 +487,12 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     fact.create(regionName);
   }
 
-  protected ArrayList<Integer> getSenderStats(String senderId, int expectedQueueSize,
+  protected List<Integer> getSenderStats(String senderId, int expectedQueueSize,
       VM[] servers) {
-    ArrayList<Integer> stats = null;
+    List<Integer> stats = null;
     for (VM server : servers) {
-      ArrayList<Integer> serverStats =
-          (ArrayList<Integer>) server.invoke(() -> getSenderStats(senderId, expectedQueueSize));
+      List<Integer> serverStats =
+          server.invoke(() -> getSenderStats(senderId, expectedQueueSize));
       if (stats == null) {
         stats = serverStats;
       } else {
