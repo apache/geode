@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.apache.geode.internal.cache.partitioned.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,11 +49,6 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
-import org.apache.geode.internal.cache.partitioned.LoadProbe;
-import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
-import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
-import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
 @RunWith(JUnitParamsRunner.class)
@@ -283,6 +279,27 @@ public class PRHARedundancyProviderTest {
     verify(providerStartupTask, never()).complete(any());
     verify(providerStartupTask).completeExceptionally(exception);
   }
+
+
+  @Test
+  public void scheduleCreateMissingBucketsExecutesCreateMissingBucketsTask() {
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+    when(partitionedRegion.getColocatedWith()).thenReturn("leaderRegion");
+    when(partitionedRegion.getGemFireCache()).thenReturn(cache);
+    when(cache.getInternalResourceManager()).thenReturn(resourceManager);
+
+    ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+    when(resourceManager.getExecutor()).thenReturn(executorService);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+            (a, b) -> mock(PersistentBucketRecoverer.class),
+            PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
+
+    prHaRedundancyProvider.scheduleCreateMissingBuckets();
+
+    verify(executorService).execute(any(CreateMissingBucketsTask.class));
+  }
+
 
   private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
       boolean simulate, RebalanceDirector director, boolean replaceOfflineData,
