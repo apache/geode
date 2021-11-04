@@ -782,6 +782,7 @@ public class CacheClientProxy implements ClientSession {
           postAuthzCallback = null;
         }
         if (clientUserAuths != null) {// for multiple users
+          logger.info("Jinmei: cleanup from proxy");
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
@@ -973,6 +974,7 @@ public class CacheClientProxy implements ClientSession {
 
     // Logout the subject
     if (subject != null) {
+      logger.info("Jinmei: proxy subject {} log out.", subject.getPrincipal());
       subject.logout();
     }
   }

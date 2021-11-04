@@ -910,7 +910,7 @@ public class ServerConnection implements Runnable {
     }
 
     ThreadState threadState = securityService.bindSubject(subject);
-    logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+    logger.info("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
         uniqueId, messageType, getName());
 
     return threadState;

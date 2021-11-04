@@ -111,6 +111,7 @@ public class ClientUserAuths {
     if (subject.getPrincipal() == null) {
       return;
     }
+    logger.info("Jinmei: Subject {} log out.", subject.getPrincipal());
     subject.logout();
   }
 
