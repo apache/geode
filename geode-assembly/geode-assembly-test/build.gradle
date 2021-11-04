@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -33,12 +32,4 @@ dependencies {
   api('commons-io:commons-io')
   api('org.apache.httpcomponents:httpclient')
   api('org.codehaus.cargo:cargo-core-uberjar')
-}
-
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      parentModule = project.findProject(":geode-assembly")
-    }
-  }
 }

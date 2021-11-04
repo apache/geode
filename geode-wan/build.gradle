@@ -18,7 +18,6 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

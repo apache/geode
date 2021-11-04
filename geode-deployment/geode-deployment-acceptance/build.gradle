@@ -21,19 +21,6 @@ import org.apache.tools.ant.taskdefs.condition.Os
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply plugin: 'com.palantir.docker'
-//apply plugin: 'geode.jboss-modules-plugin'
-
-//jbossModulesExtension {
-//    assemblyProject = true
-//    facetsToAssemble = ["main", "distributedTest"]
-//    geodeConfigurations {
-//        distributedTest {
-//            outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-//            assembleFromSource = true
-//            packagesToExport = ["org/apache/geode","org/apache/geode/","META-INF/services/","META-INF/services"]
-//        }
-//    }
-//}
 
 def dependentProjectNames = [
   ':geode-common',

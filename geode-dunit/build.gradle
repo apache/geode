@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 configurations {
@@ -26,14 +25,6 @@ configurations {
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-
-  // this is used only for Dunit tests when run using classloader isolation
-  //  jbossModular(project(':extensions:geode-modules'))
-  jbossModular(project(path: ':geode-web-management', configuration: 'war'))
-  jbossModular(project(path: ':geode-web', configuration: 'war'))
-  jbossModular(project(':geode-web-management'))
-  jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
-  jbossModular('org.jboss.modules:jboss-modules')
 
   api(project(':geode-logging'))
   implementation(project(':geode-serialization'))
@@ -76,8 +67,6 @@ dependencies {
   }
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
-  distributedTestJbossModular(project(":geode-assembly"))
-  distributedTestJbossModular(project(":geode-core"))
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
@@ -85,12 +74,4 @@ dependencies {
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
-}
-
-jbossModulesExtension {
-  geodeConfigurations {
-    distributedTest {
-      mainClass = "org.apache.geode.test.dunit.internal.ChildVM"
-    }
-  }
 }

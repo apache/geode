@@ -20,7 +20,6 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
-apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 jar.enabled = false
 

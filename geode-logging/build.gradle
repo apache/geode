@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -25,10 +24,6 @@ dependencies {
 
   // Geode-common has annotations and other pieces used by geode-logging
   api(project(':geode-common'))
-
-  jbossModular(project(':geode-log4j')) {
-    ext.optional = true
-  }
 
   api('org.apache.logging.log4j:log4j-api') {
     ext.set("embed", true)

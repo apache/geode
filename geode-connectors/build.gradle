@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
@@ -125,15 +124,3 @@ task printConfigurations {
 }
 
 integrationTest.forkEvery 0
-
-jbossModulesExtension {
-  geodeConfigurations {
-    distributedTest {
-      packagesToExport = [
-        "org/apache/derby/",
-        "org/apache/derby",
-        "META-INF/services"
-      ]
-    }
-  }
-}

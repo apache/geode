@@ -19,23 +19,6 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply plugin: 'geode.jboss-modules-plugin'
 
-jbossModulesExtension {
-  assemblyProject = true
-  facetsToAssemble = ["main", "distributedTest"]
-  geodeConfigurations {
-    distributedTest {
-      outputRoot = project.buildDir.toPath().resolve("moduleDescriptors")
-      assembleFromSource = true
-      jbossJdkModulesDependencies = ["java.base"]
-      externalLibraryJbossJDKModules = [
-        "java.se",
-        "jdk.unsupported",
-        "jdk.scripting.nashorn"
-      ]
-    }
-  }
-}
-
 import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.taskdefs.condition.Os
 
@@ -667,12 +650,12 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distAppServer }
       }
 
-      with copySpec {
-        into('moduleDescriptors/main/modules')
-        afterEvaluate {
-          from('moduleDescriptors')
-        }
-      }
+//      with copySpec {
+//        into('moduleDescriptors/main/modules')
+//        afterEvaluate {
+//          from('moduleDescriptors')
+//        }
+//      }
     }
   }
   distributedTest {
@@ -701,28 +684,28 @@ distributions {
         from configurations.jbossDependency
       }
 
-      with copySpec {
-        into('moduleDescriptors/distributedTest/modules')
-        afterEvaluate {
-          from tasks.named("distributedTestCombineModuleExternalLibraryDescriptors")
-        }
-      }
-
+//      with copySpec {
+//        into('moduleDescriptors/distributedTest/modules')
+//        afterEvaluate {
+//          from tasks.named("distributedTestCombineModuleExternalLibraryDescriptors")
+//        }
+//      }
+//
       project.afterEvaluate {
-        tasks.getByName('distributedTestCombineModuleDescriptors').getOutputs().files.each { directory ->
+        tasks.getByName('distributedTestCombineTestModuleDescriptors').getOutputs().files.each { directory ->
           with copySpec {
             into("moduleDescriptors/distributedTest/modules/${directory.name}")
             from directory
           }
         }
       }
-
-      with copySpec {
-        into('moduleDescriptors/distributedTest/modules')
-        afterEvaluate {
-          from tasks.named("distributedTestCombineLibraryModuleDescriptors")
-        }
-      }
+//
+//      with copySpec {
+//        into('moduleDescriptors/distributedTest/modules')
+//        afterEvaluate {
+//          from tasks.named("distributedTestCombineLibraryModuleDescriptors")
+//        }
+//      }
 
     }
   }
@@ -741,8 +724,8 @@ distributions {
 build.dependsOn(installDist)
 
 project.afterEvaluate {
-  tasks.getByName("installDistributedTestDist").dependsOn(tasks.named('distributedTestCombineModuleDescriptors'))
-  tasks.getByName("installDist").dependsOn(tasks.named('combineModuleDescriptors'))
+  tasks.getByName("installDistributedTestDist").dependsOn(tasks.named('distributedTestGenerateTestModuleDescriptors'))
+//  tasks.getByName("installDist").dependsOn(tasks.named('combineModuleDescriptors'))
   tasks.getByName("installDistributedTestDist").dependsOn(installDist)
 }
 

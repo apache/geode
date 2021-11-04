@@ -22,7 +22,8 @@ apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
-apply from: "${rootProject.projectDir}/gradle/jboss-modules.gradle"
+
+apply plugin: 'geode.jboss-modules-plugin'
 
 sourceSets {
   jca {
@@ -321,8 +322,6 @@ dependencies {
   //copied into it, so it is an API dependency
   api(project(':geode-management'))
 
-  jbossModular(project(':geode-deployment:geode-deployment-jboss-modules'))
-
   jcaImplementation(sourceSets.main.output)
 
   testImplementation(project(':geode-junit')) {
@@ -407,11 +406,3 @@ distributedTest {
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
-
-jbossModulesExtension {
-  geodeConfigurations {
-    main {
-      mainClass = "org.apache.geode.distributed.ServerLauncher"
-    }
-  }
-}

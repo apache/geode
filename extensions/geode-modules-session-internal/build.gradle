@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 
 dependencies {
   // main

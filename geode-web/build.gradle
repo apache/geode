@@ -22,7 +22,6 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
-apply from: "${rootDir}/${scriptDir}/jboss-modules-extensions.gradle"
 
 jar.enabled = false
 
@@ -70,8 +69,6 @@ dependencies {
   distributedTestImplementation('pl.pragmatists:JUnitParams')
 
   distributedTestRuntimeOnly(files(war.destinationDirectory))
-
-  distributedTestJbossModular(project(':geode-core'))
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }

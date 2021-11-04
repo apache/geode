@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/jboss-modules.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 compileJava {
@@ -37,8 +36,6 @@ dependencies {
   implementation(project(':geode-unsafe'))
   implementation(project(':geode-gfsh'))
   implementation(project(':geode-logging'))
-  jbossModular(project(':geode-dunit'))
-  jbossModular(project(':geode-wan'))
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -83,17 +80,4 @@ test {
 integrationTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
-}
-
-jbossModulesExtension {
-  geodeConfigurations {
-    distributedTest {
-      packagesToExport = [
-        "util",
-        "perffmwk",
-        "parReg/query/unittest",
-        "com/examples/"
-      ]
-    }
-  }
 }
