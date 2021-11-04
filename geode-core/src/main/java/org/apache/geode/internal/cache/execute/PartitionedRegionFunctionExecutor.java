@@ -211,21 +211,27 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
-    if (!function.hasResult()) /* NO RESULT:fire-n-forget */ {
-      this.pr.executeFunction(function, this, null, this.executeOnBucketSet);
-      return new NoResult();
-    }
-    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-    ResultCollector rcToReturn =
-        this.pr.executeFunction(function, this, inRc, this.executeOnBucketSet);
-    if (timeout > 0) {
-      try {
-        rcToReturn.getResult(timeout, unit);
-      } catch (Exception exception) {
-        throw new FunctionException(exception);
+    try {
+      if (!function.hasResult()) /* NO RESULT:fire-n-forget */ {
+        this.pr.executeFunction(function, this, null, this.executeOnBucketSet);
+        return new NoResult();
+      }
+      ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
+      ResultCollector rcToReturn =
+          this.pr.executeFunction(function, this, inRc, this.executeOnBucketSet);
+      if (timeout > 0) {
+        try {
+          rcToReturn.getResult(timeout, unit);
+        } catch (Exception exception) {
+          throw new FunctionException(exception);
+        }
+      }
+      return rcToReturn;
+    } finally {
+      if (pr.getNetworkHopType() != PartitionedRegion.NETWORK_HOP_NONE) {
+        pr.clearNetworkHopData();
       }
     }
-    return rcToReturn;
   }
 
   @Override

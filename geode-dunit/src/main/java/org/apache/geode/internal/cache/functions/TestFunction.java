@@ -95,6 +95,9 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       "executeFunctionRunningForLongTime";
   public static final String TEST_FUNCTION_BUCKET_FILTER = "TestFunctionBucketFilter";
   public static final String TEST_FUNCTION_NONHA_NOP = "executeFunctionNoHANop";
+  public static final String TEST_FUNCTION_SINGLE_HOP_FORCE_NETWORK_HOP =
+      "executeFunctionSingleHopForceNetworkHop";
+  public static final String TEST_FUNCTION_GET_NETWORK_HOP = "executeFunctionGetNetworkHop";
   private static final String ID = "id";
   private static final String HAVE_RESULTS = "haveResults";
   private final Properties props;
@@ -189,6 +192,10 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       executeFunctionBucketFilter(context);
     } else if (id.equals(TEST_FUNCTION_NONHA_NOP)) {
       execute1(context);
+    } else if (id.equals(TEST_FUNCTION_SINGLE_HOP_FORCE_NETWORK_HOP)) {
+      executeSingleHopForceNetworkHop(context);
+    } else if (id.equals(TEST_FUNCTION_GET_NETWORK_HOP)) {
+      executeGetNetworkHop(context);
     } else if (noAckTest.equals("true")) {
       execute1(context);
     }
@@ -1006,6 +1013,25 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       e.printStackTrace();
     }
     context.getResultSender().lastResult(context.getArguments());
+  }
+
+  private void executeSingleHopForceNetworkHop(FunctionContext context) {
+    RegionFunctionContext rfContext = (RegionFunctionContext) context;
+    final PartitionedRegion pr = (PartitionedRegion) rfContext.getDataSet();
+    Set keySet = (Set) rfContext.getArguments();
+    // Read entries from the region to provoke hops to another server
+    for (Object key : keySet) {
+      pr.get(key);
+    }
+    int networkHopType = pr.getNetworkHopType();
+    context.getResultSender().lastResult(networkHopType);
+  }
+
+  private void executeGetNetworkHop(FunctionContext context) {
+    RegionFunctionContext rfContext = (RegionFunctionContext) context;
+    final PartitionedRegion pr = (PartitionedRegion) rfContext.getDataSet();
+    int networkHopType = pr.getNetworkHopType();
+    context.getResultSender().lastResult(networkHopType);
   }
 
   /**
