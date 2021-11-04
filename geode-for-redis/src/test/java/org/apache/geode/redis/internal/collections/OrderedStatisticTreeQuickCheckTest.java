@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.pholser.junit.quickcheck.Property;
@@ -95,5 +96,48 @@ public class OrderedStatisticTreeQuickCheckTest {
       assertThat(listIterator.next()).isEqualTo(expectedIterator.next());
     }
     assertThat(listIterator.hasNext()).isFalse();
+  }
+
+  /**
+   * An OrderStatisticsSet implemented using TreeSet. {@link #indexOf(Object)} and other
+   * rank operations will be O(N) instead of O(log(N))
+   * Only for testing and performance comparisons.
+   */
+  private static class IndexibleTreeSet<E> extends TreeSet<E> implements OrderStatisticsSet<E> {
+
+    private static final long serialVersionUID = 521865987126101683L;
+
+    @Override
+    public E get(int index) {
+      Iterator<E> iterator = iterator();
+      E value = null;
+
+      if (this.size() < index) {
+        return null;
+      }
+      for (int i = 0; i <= index; i++) {
+        if (!iterator.hasNext()) {
+          return null;
+        }
+        value = iterator.next();
+      }
+
+      return value;
+    }
+
+    @Override
+    public int indexOf(E element) {
+      return headSet(element).size();
+    }
+
+    @Override
+    public Iterator<E> getIndexRange(int startIndex, int maxElements, boolean reverseRange) {
+      return null;
+    }
+
+    @Override
+    public int getSizeInBytes() {
+      return 0;
+    }
   }
 }
