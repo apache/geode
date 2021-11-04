@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<module xmlns="urn:jboss:module:1.9" name="geode-core">
+<module xmlns="urn:jboss:module:1.9" name="geode">
     <resources>
         <resource-root path="../../../../../lib/geode-modules-dependencies.jar"/>
     </resources>

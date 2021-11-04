@@ -48,7 +48,6 @@ public class AggregateTestModuleDescriptorsTask extends DefaultTask {
                     project -> project.getTasks().findByName(facetTaskName) != null)
             .map(project -> project.getTasks().named(facetTaskName))
             .collect(Collectors.toSet());
-    System.out.println("tasks = " + tasks);
     dependsOn(tasks);
   }
 
@@ -69,7 +68,7 @@ public class AggregateTestModuleDescriptorsTask extends DefaultTask {
     return getProject().getRootProject().getSubprojects().stream()
         .filter(project -> project.getTasks().findByName(facetTaskName) != null)
         .map(project -> project.getTasks().getByName(facetTaskName).getOutputs()
-            .getFiles().getSingleFile().getParentFile().getParentFile())
+            .getFiles().getSingleFile().getParentFile().getParentFile().getParentFile())
         .collect(Collectors.toList());
   }
 

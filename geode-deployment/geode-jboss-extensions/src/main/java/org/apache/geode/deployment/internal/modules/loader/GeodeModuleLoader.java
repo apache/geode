@@ -44,7 +44,7 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   private final GeodeCompositeModuleFinder compositeModuleFinder;
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
-  private static final String CORE_MODULE_NAME = "geode-core";
+  private static final String CORE_MODULE_NAME = "geode";
   private final Map<String, List<InboundModuleDependency>> moduleDependencyInfoMap =
       new ConcurrentHashMap<>();
 
@@ -118,6 +118,10 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   public void registerModulesAsDependencyOfModule(String moduleName, String... modulesToDependOn)
       throws ModuleLoadException {
+    if (modulesToDependOn == null) {
+      throw new IllegalArgumentException("Modules to depend on cannot be null");
+    }
+
     for (String moduleToDependOn : modulesToDependOn) {
       compositeModuleFinder.addDependencyToModule(moduleName, moduleToDependOn);
     }

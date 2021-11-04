@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -18,12 +19,15 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.plugins.ide.eclipse.model.Link;
 
 import org.apache.geode.gradle.jboss.modules.plugins.generator.xml.JBossModuleDescriptorGenerator;
 
 public class GenerateTestModuleDescriptorsTask extends DefaultTask {
 
-  private static final String LIB_PATH_PREFIX = "../../../../../lib/";
+  // path to libs directory relative to module.xml location inside geode-assembly install directory
+  private static final String LIB_PATH_PREFIX = "../../../../../../lib/";
+  private static final String GEODE = "geode";
 
   @Inject
   public GenerateTestModuleDescriptorsTask() {
@@ -42,12 +46,12 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
 
   @OutputFile
   public File getOutputFile() {
-    return getRootPath()
+    return getRootPath().resolve(GEODE).resolve(getProject().getVersion().toString())
         .resolve("module.xml").toFile();
   }
 
   private Path getRootPath() {
-    return getProject().getBuildDir().toPath().resolve("moduleDescriptors").resolve("dunit");
+    return getProject().getBuildDir().toPath().resolve("moduleDescriptors").resolve("dunit").resolve(getProject().getName());
   }
 
   @TaskAction
@@ -63,10 +67,12 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
 
     resources.addAll(generateResourceRoots(getProject()));
 
-    List<ModuleDependency> modules =
-        Collections.singletonList(new ModuleDependency("java.se", false, false));
+    List<ModuleDependency> modules = new LinkedList<>();
+    modules.add(new ModuleDependency("java.se", false, false));
+    modules.add(new ModuleDependency("jdk.unsupported", false, false));
+    modules.add(new ModuleDependency("jdk.scripting.nashorn", false, false));
 
-    jBossModuleDescriptorGenerator.generate(getRootPath(), getProject().getName(),
+    jBossModuleDescriptorGenerator.generate(getRootPath(), GEODE,
         getProject().getVersion().toString(), resources, modules,
         "org.apache.geode.test.dunit.internal.ChildVM", Collections.EMPTY_LIST,
         Collections.EMPTY_LIST, Collections.EMPTY_LIST);
@@ -77,6 +83,7 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
     Set<String> resourceRoots = new TreeSet<>();
 
     String distributedTest = "distributedTest";
+    String commonTest = "commonTest";
 
     validateAndAddResourceRoot(resourceRoots,
         project.getBuildDir().toPath().resolve("classes").resolve("java").resolve(distributedTest)
@@ -85,6 +92,15 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
         project.getBuildDir().toPath().resolve("resources").resolve(distributedTest).toString());
     validateAndAddResourceRoot(resourceRoots,
         project.getBuildDir().toPath().resolve("generated-resources").resolve(distributedTest)
+            .toString());
+
+    validateAndAddResourceRoot(resourceRoots,
+        project.getBuildDir().toPath().resolve("classes").resolve("java").resolve(commonTest)
+            .toString());
+    validateAndAddResourceRoot(resourceRoots,
+        project.getBuildDir().toPath().resolve("resources").resolve(commonTest).toString());
+    validateAndAddResourceRoot(resourceRoots,
+        project.getBuildDir().toPath().resolve("generated-resources").resolve(commonTest)
             .toString());
     return resourceRoots;
   }

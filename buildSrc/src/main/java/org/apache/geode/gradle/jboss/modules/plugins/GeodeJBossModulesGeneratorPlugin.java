@@ -17,35 +17,27 @@
 package org.apache.geode.gradle.jboss.modules.plugins;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.geode.gradle.jboss.modules.plugins.task.AggregateTestModuleDescriptorsTask;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateTestModuleDescriptorsTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.tasks.TaskProvider;
 
-import org.apache.geode.gradle.jboss.modules.plugins.config.ModulesGeneratorConfig;
-import org.apache.geode.gradle.jboss.modules.plugins.services.GeodeModuleDescriptorService;
-import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateModuleDescriptorsTask;
-
-import java.util.Arrays;
+import org.apache.geode.gradle.jboss.modules.plugins.task.AggregateTestModuleDescriptorsTask;
+import org.apache.geode.gradle.jboss.modules.plugins.task.GenerateTestModuleDescriptorsTask;
 
 public class GeodeJBossModulesGeneratorPlugin implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
-    if (project.getConfigurations().findByName("distributedTestRuntimeClasspath") != null) {
-      TaskProvider generateModuleDescriptors = project.getTasks()
-          .register(getFacetTaskName("generateTestModuleDescriptors", "distributedTest"),
-                  (Class) GenerateTestModuleDescriptorsTask.class);
-    }
+    project.afterEvaluate(project1 -> {
+        project1.getTasks()
+            .register(getFacetTaskName("generateTestModuleDescriptors", "distributedTest"),
+                    (Class) GenerateTestModuleDescriptorsTask.class);
 
-    if (project.getName().equals("geode-assembly")) {
-
-      TaskProvider generateModuleDescriptors = project.getTasks()
-          .register(getFacetTaskName("combineTestModuleDescriptors", "distributedTest"),
-              AggregateTestModuleDescriptorsTask.class,"distributedTest");
-    }
+      if (project1.getName().equals("geode-assembly")) {
+        project1.getTasks()
+            .register(getFacetTaskName("combineTestModuleDescriptors", "distributedTest"),
+                AggregateTestModuleDescriptorsTask.class,"distributedTest");
+      }
+    });
   }
 
   private String getFacetTaskName(String baseTaskName, String facet) {

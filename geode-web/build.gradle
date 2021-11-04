@@ -22,6 +22,7 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
 
 jar.enabled = false
 

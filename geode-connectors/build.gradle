@@ -20,6 +20,8 @@ evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 configurations {
   //Configuration used to download mysql jar
   jdbcTestingJars

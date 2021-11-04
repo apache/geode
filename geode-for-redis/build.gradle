@@ -23,6 +23,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
 apply plugin: 'nebula.facet'
 facets {
   commonTest {

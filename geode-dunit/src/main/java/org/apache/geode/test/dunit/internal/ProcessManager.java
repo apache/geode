@@ -344,11 +344,18 @@ class ProcessManager implements ChildVMLauncher {
       final String GEODE_DISTRIBUTED_TEST_HOME =
           System.getenv("GEODE_DISTRIBUTED_TEST_HOME") == null ? ""
               : System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+      final String GEODE_DISTRIBUTED_TEST_MODULE_NAME =
+          System.getenv("GEODE_DISTRIBUTED_TEST_MODULE_NAME");
+      if (GEODE_DISTRIBUTED_TEST_MODULE_NAME == null) {
+        throw new IllegalArgumentException(
+            "GEODE_DISTRIBUTED_TEST_MODULE_NAME environment variable not set");
+      }
       addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
       cmds.add("org.jboss.modules.Main");
       cmds.add("-mp");
-      cmds.add(getJBossModulePaths(GEODE_DISTRIBUTED_TEST_HOME));
-      cmds.add("geode-dunit:" + GemFireVersion.getGemFireVersion());
+      cmds.add(
+          getJBossModulePaths(GEODE_DISTRIBUTED_TEST_HOME, GEODE_DISTRIBUTED_TEST_MODULE_NAME));
+      cmds.add("geode:" + GemFireVersion.getGemFireVersion());
     } else {
       cmds.add(ChildVM.class.getName());
     }
@@ -358,20 +365,11 @@ class ProcessManager implements ChildVMLauncher {
     return rst;
   }
 
-  private String getJBossModulePaths(String GEODE_DISTRIBUTED_TEST_HOME) {
-    String basepath =
-        GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
-            + "distributedTest" + File.separator;
-    StringBuilder builder = new StringBuilder();
-    builder.append(basepath);
-    builder.append("modules");
-    builder.append(File.pathSeparatorChar);
-    builder.append(basepath);
-    builder.append("module-support");
-    builder.append(File.pathSeparatorChar);
-    builder.append(basepath);
-    builder.append("combined-external-library-dependencies");
-    return builder.toString();
+  private String getJBossModulePaths(String GEODE_DISTRIBUTED_TEST_HOME,
+      String GEODE_DISTRIBUTED_TEST_MODULE_NAME) {
+    return GEODE_DISTRIBUTED_TEST_HOME + File.separator + "moduleDescriptors" + File.separator
+        + "distributedTest" + File.separator + "modules" + File.separator
+        + GEODE_DISTRIBUTED_TEST_MODULE_NAME + File.separator;
   }
 
   private String removeJbossFromPath(String classpath) {

@@ -724,7 +724,7 @@ distributions {
 build.dependsOn(installDist)
 
 project.afterEvaluate {
-  tasks.getByName("installDistributedTestDist").dependsOn(tasks.named('distributedTestGenerateTestModuleDescriptors'))
+  tasks.getByName("installDistributedTestDist").dependsOn(tasks.named('distributedTestCombineTestModuleDescriptors'))
   //  tasks.getByName("installDist").dependsOn(tasks.named('combineModuleDescriptors'))
   tasks.getByName("installDistributedTestDist").dependsOn(installDist)
 }

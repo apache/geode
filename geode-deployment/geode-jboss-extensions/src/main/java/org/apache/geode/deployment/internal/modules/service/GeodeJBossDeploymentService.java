@@ -30,7 +30,7 @@ import org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader;
  */
 public class GeodeJBossDeploymentService implements DeploymentService {
 
-  private static final String CORE_MODULE_NAME = "geode-core";
+  private static final String CORE_MODULE_NAME = "geode";
   private final GeodeModuleLoader geodeModuleLoader;
 
   public GeodeJBossDeploymentService() {

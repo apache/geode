@@ -23,6 +23,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 jar.enabled = false
 
+apply plugin: 'geode.jboss-modules-plugin'
 apply plugin: 'nebula.facet'
 facets {
   commonTest {

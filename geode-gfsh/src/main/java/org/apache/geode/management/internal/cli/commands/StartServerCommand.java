@@ -645,7 +645,7 @@ public class StartServerCommand extends OfflineGfshCommand {
         }
       }
       commandLine.add(modulePaths.toString());
-      commandLine.add("geode-core");
+      commandLine.add("geode");
     } else {
       commandLine.add(ServerLauncher.class.getName());
     }

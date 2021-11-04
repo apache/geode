@@ -18,10 +18,11 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 distributedTest {
   environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeOldClientSupportExtensions.properties"
 }
-
 
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))

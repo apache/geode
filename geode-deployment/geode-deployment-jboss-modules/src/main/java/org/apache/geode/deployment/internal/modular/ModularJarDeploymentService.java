@@ -50,7 +50,7 @@ import org.apache.geode.services.result.impl.Success;
 public class ModularJarDeploymentService implements JarDeploymentService {
 
   private static final Logger logger = LogService.getLogger();
-  private static final String GEODE_CORE_MODULE_NAME = "geode-core";
+  private static final String GEODE_CORE_MODULE_NAME = "geode";
 
 
   private final Map<String, Deployment> deployments = new ConcurrentHashMap<>();
