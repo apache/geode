@@ -16,39 +16,90 @@
 package org.apache.geode.redis.internal;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RedisProperties {
-  /** System Property Names **/
-  private static final String PREFIX = "geode-for-redis-";
+  private static final Logger logger = LogService.getLogger();
+
+  private static final String PREFIX = "geode.geode-for-redis-";
   public static final String REDIS_REGION_NAME_PROPERTY = PREFIX + "region-name";
   public static final String WRITE_TIMEOUT_SECONDS = PREFIX + "write-timeout-seconds";
-  public static final String EXPIRATION_INTERVAL_SECONDS =
-      PREFIX + "expiration-interval-seconds";
+  public static final String EXPIRATION_INTERVAL_SECONDS = PREFIX + "expiration-interval-seconds";
+  public static final String REGION_BUCKETS = PREFIX + "region-buckets";
+  public static final String UNAUTHENTICATED_MAX_ARRAY_SIZE =
+      PREFIX + "unauthenticated-max-array-size";
+  public static final String UNAUTHENTICATED_MAX_BULK_STRING_LENGTH =
+      PREFIX + "unauthenticated-max-bulk-string-length";
 
-  public static String getStringSystemProperty(String propName, String defaultValue) {
-    String geodeValue = System.getProperty("geode." + propName, defaultValue);
-    String gemfireValue = System.getProperty("gemfire." + propName, defaultValue);
 
-    if (StringUtils.isNotEmpty(geodeValue) && !geodeValue.equals(defaultValue)) {
-      return geodeValue;
-    } else if (StringUtils.isNotEmpty(gemfireValue) && !gemfireValue.equals(defaultValue)) {
-      return gemfireValue;
-    } else {
-      return defaultValue;
+  private static String convertToGemfire(String geodeName) {
+    return "gemfire." + geodeName.substring("geode.".length());
+  }
+
+  private static void validatePropertyName(String geodeName) {
+    if (!geodeName.startsWith(PREFIX)) {
+      throw new IllegalStateException("Property names must start with \"" + PREFIX + "\"");
     }
   }
 
-  /** assumes that default is greater than or equal to minValue **/
-  public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue) {
-    int geodeValue = Integer.getInteger("geode." + propName, defaultValue);
-    int gemfireValue = Integer.getInteger("gemfire." + propName, defaultValue);
+  public static String getStringSystemProperty(String propName, String defaultValue) {
+    validatePropertyName(propName);
 
-    if (geodeValue != defaultValue && geodeValue >= minValue) {
+    String geodeValue = System.getProperty(propName, defaultValue);
+    if (StringUtils.isNotEmpty(geodeValue) && !geodeValue.equals(defaultValue)) {
       return geodeValue;
-    } else if (gemfireValue != defaultValue && gemfireValue >= minValue) {
+    }
+
+    String gemfireValue = System.getProperty(convertToGemfire(propName), defaultValue);
+    if (StringUtils.isNotEmpty(gemfireValue) && !gemfireValue.equals(defaultValue)) {
       return gemfireValue;
-    } else {
+    }
+
+    return defaultValue;
+  }
+
+  public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue) {
+    return getIntegerSystemProperty(propName, defaultValue, minValue, Integer.MAX_VALUE);
+  }
+
+  public static int getIntegerSystemProperty(String propName, int defaultValue, int minValue,
+      int maxValue) {
+    validatePropertyName(propName);
+
+    int geodeValue = getIntegerFromProperty(propName, defaultValue, minValue, maxValue);
+    if (geodeValue != defaultValue) {
+      return geodeValue;
+    }
+
+    return getIntegerFromProperty(convertToGemfire(propName), defaultValue, minValue, maxValue);
+  }
+
+  private static int getIntegerFromProperty(String propName, int defaultValue, int minValue,
+      int maxValue) {
+    String stringValue = System.getProperty(propName);
+    if (stringValue == null) {
       return defaultValue;
     }
+    int intValue;
+    try {
+      intValue = Integer.decode(stringValue);
+    } catch (NumberFormatException e) {
+      logger.warn("Ignoring system property \"" + propName + "\" because it's value of \""
+          + stringValue + "\" is not a valid integer. Defaulting to " + defaultValue);
+      return defaultValue;
+    }
+    if (intValue < minValue) {
+      logger.warn("Ignoring system property \"" + propName + "\" because it's value of \""
+          + intValue + "\" is less than \"" + minValue + "\". Defaulting to " + defaultValue);
+      return defaultValue;
+    }
+    if (intValue > maxValue) {
+      logger.warn("Ignoring system property \"" + propName + "\" because it's value of \""
+          + intValue + "\" is greater than \"" + maxValue + "\". Defaulting to " + defaultValue);
+      return defaultValue;
+    }
+    return intValue;
   }
 }
