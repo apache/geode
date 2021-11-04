@@ -51,6 +51,7 @@ import org.apache.geode.redis.internal.parameters.RedisParametersMismatchExcepti
 
 
 public class ClusterExecutor implements CommandExecutor {
+
   private static final Logger logger = LogService.getLogger();
 
   @Override
