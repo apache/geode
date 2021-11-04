@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.RegionShortcut;
@@ -38,6 +37,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.examples.SimpleSecurityManager;
@@ -293,18 +293,10 @@ public class MultiUserAPIDUnitTest {
     CacheTransactionManager txManager =
         cache.getCacheTransactionManager();
 
-    try {
-      txManager.begin();
-      region.put("key1", "value1");
-      region.put("key2", "value2");
-      txManager.commit();
-    } catch (CommitConflictException conflict) {
-      // ... do necessary work for a transaction that failed on commit
-    } finally {
-      if(txManager.exists()) {
-        txManager.rollback();
-      }
-    }
+    txManager.begin();
+    region.put("key1", "value1");
+    region.put("key2", "value2");
+    txManager.commit();
   }
 
   @Test
@@ -321,12 +313,12 @@ public class MultiUserAPIDUnitTest {
 
     cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
     Region region = regionService.getRegion(SEPARATOR + "region");
-    assertThatThrownBy(()->region.registerInterestForAllKeys())
+    assertThatThrownBy(() -> region.registerInterestForAllKeys())
         .isInstanceOf(UnsupportedOperationException.class);
-    CqQuery
-        cqQuery =
+    CqQuery cqQuery =
         regionService.getQueryService()
             .newCq("select * from /region", new CqAttributesFactory().create());
-    cqQuery.execute();
+    assertThatThrownBy(() -> cqQuery.execute()).isInstanceOf(CqException.class)
+        .hasCauseInstanceOf(AuthenticationFailedException.class);
   }
 }

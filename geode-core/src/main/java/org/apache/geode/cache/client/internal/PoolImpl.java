@@ -951,6 +951,13 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
+   * Test hook that returns an unnmodifiable list of the current denylisted servers
+   */
+  public Set getDenylistedServers() {
+    return connectionFactory.getDenyList().getBadServers();
+  }
+
+  /**
    * Test hook to handle an exception that happened on the given connection
    */
   public void processException(Throwable e, Connection con) {
@@ -1248,6 +1255,10 @@ public class PoolImpl implements InternalPool {
   @Override
   public void setServerAffinityLocation(ServerLocation serverLocation) {
     executor.setServerAffinityLocation(serverLocation);
+  }
+
+  public ServerLocation getNextOpServerLocation() {
+    return executor.getNextOpServerLocation();
   }
 
   /**

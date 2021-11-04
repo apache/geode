@@ -760,7 +760,6 @@ public class OpExecutorImpl implements ExecutablePool {
           || sce.getMessage().contains("Connection error while authenticating user")
           || cause instanceof AuthenticationExpiredException) {
         // 2nd exception-message above is from AbstractOp.sendMessage()
-
         if (pool.getMultiuserAuthentication()) {
           final UserAttributes ua = UserAttributes.userAttributes.get();
           if (ua != null) {
