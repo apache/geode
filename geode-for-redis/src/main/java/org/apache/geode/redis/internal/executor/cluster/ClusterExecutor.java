@@ -38,6 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.SlotAdvisor;
 import org.apache.geode.redis.internal.data.KeyHashUtil;
 import org.apache.geode.redis.internal.data.RedisData;
@@ -47,6 +48,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
+
 
 public class ClusterExecutor implements CommandExecutor {
   private static final Logger logger = LogService.getLogger();
