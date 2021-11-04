@@ -29,6 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.proxy.RedisProxy;
+
 
 public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
@@ -41,12 +43,13 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @Override
   protected String getServer1SpecificGfshCommands() {
-    return "----geode-for-redis-port=6379";
+    return "--geode-for-redis-port=6379";
   }
 
   @Before
   public void setup() {
-    redisClient = RedisClient.create(RedisURI.Builder.redis(host, redisPort).build());
+    redisClient = RedisClient
+        .create(RedisURI.Builder.redis(host, new RedisProxy(redisPort).getExposedPort()).build());
     connection = redisClient.connect();
   }
 

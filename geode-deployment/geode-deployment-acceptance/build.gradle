@@ -64,11 +64,11 @@ dependencies {
     exclude module: 'geode-core'
   }
   acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
+  acceptanceTestImplementation(project(':geode-for-redis').sourceSets.commonTest.output)
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
   acceptanceTestImplementation('org.gradle:gradle-tooling-api:' + DependencyConstraints.get('gradle-tooling-api.version'))
-
 
   acceptanceTestImplementation('org.testcontainers:testcontainers')
 

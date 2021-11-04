@@ -650,12 +650,12 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distAppServer }
       }
 
-//      with copySpec {
-//        into('moduleDescriptors/main/modules')
-//        afterEvaluate {
-//          from('moduleDescriptors')
-//        }
-//      }
+      with copySpec {
+        into('moduleDescriptors/main/modules')
+        afterEvaluate {
+          from('moduleDescriptors')
+        }
+      }
     }
   }
   distributedTest {
@@ -684,13 +684,13 @@ distributions {
         from configurations.jbossDependency
       }
 
-//      with copySpec {
-//        into('moduleDescriptors/distributedTest/modules')
-//        afterEvaluate {
-//          from tasks.named("distributedTestCombineModuleExternalLibraryDescriptors")
-//        }
-//      }
-//
+      //      with copySpec {
+      //        into('moduleDescriptors/distributedTest/modules')
+      //        afterEvaluate {
+      //          from tasks.named("distributedTestCombineModuleExternalLibraryDescriptors")
+      //        }
+      //      }
+      //
       project.afterEvaluate {
         tasks.getByName('distributedTestCombineTestModuleDescriptors').getOutputs().files.each { directory ->
           with copySpec {
@@ -699,13 +699,13 @@ distributions {
           }
         }
       }
-//
-//      with copySpec {
-//        into('moduleDescriptors/distributedTest/modules')
-//        afterEvaluate {
-//          from tasks.named("distributedTestCombineLibraryModuleDescriptors")
-//        }
-//      }
+      //
+      //      with copySpec {
+      //        into('moduleDescriptors/distributedTest/modules')
+      //        afterEvaluate {
+      //          from tasks.named("distributedTestCombineLibraryModuleDescriptors")
+      //        }
+      //      }
 
     }
   }
@@ -725,7 +725,7 @@ build.dependsOn(installDist)
 
 project.afterEvaluate {
   tasks.getByName("installDistributedTestDist").dependsOn(tasks.named('distributedTestGenerateTestModuleDescriptors'))
-//  tasks.getByName("installDist").dependsOn(tasks.named('combineModuleDescriptors'))
+  //  tasks.getByName("installDist").dependsOn(tasks.named('combineModuleDescriptors'))
   tasks.getByName("installDistributedTestDist").dependsOn(installDist)
 }
 
