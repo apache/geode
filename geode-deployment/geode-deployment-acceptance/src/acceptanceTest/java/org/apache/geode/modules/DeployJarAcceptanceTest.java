@@ -42,13 +42,8 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   private static File pojoJar;
 
   public DeployJarAcceptanceTest(String launchCommand) throws IOException, InterruptedException {
-     launch(launchCommand);
+    launch(launchCommand);
   }
-//
-//  @Override
-//  protected String getLocatorGFSHConnectionString() {
-//    return "connect";
-//  }
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -386,38 +381,6 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
           .of(getLocatorGFSHConnectionString(), "execute function --id=" + "SpringFunction")
           .expectExitCode(1)
           .execute(gfshRule));
-    }
-  }
-
-  @Test
-  public void testDeployFailsWhenFunctionIsInExcludedPath() throws IOException {
-    File excludedFunctionSource = loadTestResource("/org/apache/geode/ExcludedFunction.java");
-    File includedFunctionSource = loadTestResource("/example/test/function/ExampleFunction.java");
-    File functionJar = new File(stagingTempDir.newFolder(), "function.jar");
-    jarBuilder.buildJar(functionJar, excludedFunctionSource, includedFunctionSource);
-
-    System.out.println(GfshScript
-        .of(getLocatorGFSHConnectionString(), "deploy --jars=" + functionJar.getAbsolutePath())
-        .execute(gfshRule).getOutputText());
-
-    if (isModular()) {
-      assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
-          .getOutputText()).doesNotContain("function");
-
-      assertThat(GfshScript
-          .of(getLocatorGFSHConnectionString(), "list functions")
-          .execute(gfshRule).getOutputText())
-              .doesNotContain("ExcludedFunction")
-              .doesNotContain("ExampleFunction");
-    } else {
-      assertThat(GfshScript.of(getLocatorGFSHConnectionString(), "list deployed").execute(gfshRule)
-          .getOutputText()).contains("function");
-
-      assertThat(GfshScript
-          .of(getLocatorGFSHConnectionString(), "list functions")
-          .execute(gfshRule).getOutputText())
-              .contains("ExcludedFunction")
-              .contains("ExampleFunction");
     }
   }
 

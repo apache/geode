@@ -41,7 +41,7 @@ public class RedisAcceptanceTest extends AbstractDockerizedAcceptanceTest {
 
   @Override
   protected String getServer1SpecificGfshCommands() {
-    return "--compatible-with-redis-port=6379";
+    return "----geode-for-redis-port=6379";
   }
 
   @Before

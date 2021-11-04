@@ -64,7 +64,6 @@ docker {
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  api(platform(project(':boms:geode-all-bom')))
 
   dependentProjectNames.each {
     implementation(project(it))

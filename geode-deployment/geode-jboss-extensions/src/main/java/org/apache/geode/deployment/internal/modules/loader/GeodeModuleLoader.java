@@ -17,7 +17,6 @@
 package org.apache.geode.deployment.internal.modules.loader;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +33,6 @@ import org.jboss.modules.ModuleSpec;
 
 import org.apache.geode.deployment.internal.modules.dependency.InboundModuleDependency;
 import org.apache.geode.deployment.internal.modules.finder.GeodeCompositeModuleFinder;
-import org.apache.geode.deployment.internal.modules.finder.GeodeDelegatingLocalModuleFinder;
 import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
 
 /**
@@ -43,7 +41,6 @@ import org.apache.geode.deployment.internal.modules.finder.GeodeJarModuleFinder;
  */
 public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoCloseable {
 
-  private static final String GEODE_BASE_PACKAGE_PATH = "org/apache/geode";
   private final GeodeCompositeModuleFinder compositeModuleFinder;
   private static final ModuleLoader JDK_MODULE_LOADER =
       new ModuleLoader(JDKModuleFinder.getInstance());
@@ -53,8 +50,6 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
 
   public GeodeModuleLoader(GeodeCompositeModuleFinder compositeModuleFinder) {
     super(JDK_MODULE_LOADER, new ModuleFinder[] {compositeModuleFinder});
-    compositeModuleFinder.addModuleFinder("__default__",
-        new GeodeDelegatingLocalModuleFinder());
     this.compositeModuleFinder = compositeModuleFinder;
   }
 
@@ -99,9 +94,6 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
   protected Module preloadModule(String name) throws ModuleLoadException {
     if (name == null) {
       throw new IllegalArgumentException("Module name cannot be null");
-    }
-    if (!name.startsWith(CORE_MODULE_NAME)) {
-      excludeGeodePackages(name);
     }
     return super.preloadModule(name);
   }
@@ -150,13 +142,5 @@ public class GeodeModuleLoader extends DelegatingModuleLoader implements AutoClo
     for (String moduleName : modulesToRelink) {
       relinkModule(moduleName);
     }
-  }
-
-  private void excludeGeodePackages(String moduleToExcludeFrom) {
-    List<String> restrictPathsAndChildren = Collections.singletonList(GEODE_BASE_PACKAGE_PATH);
-
-    compositeModuleFinder.addExcludeFilterToModule(GeodeModuleLoader.CORE_MODULE_NAME,
-        moduleToExcludeFrom,
-        Collections.emptyList(), restrictPathsAndChildren);
   }
 }

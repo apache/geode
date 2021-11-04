@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -218,59 +217,6 @@ public class ModuleSpecUtils {
           .setExportFilter(exportBuilder.create())
           .build());
     }
-
-    return builder.create();
-  }
-
-  /**
-   * Excludes the given paths from being imported from the given module.
-   *
-   * @param moduleSpec the {@link ModuleSpec} to add the filter to.
-   * @param pathsToExclude paths to be excluded from the given module.
-   * @param pathsToExcludeChildrenOf paths whose children should be excluded from the given module.
-   * @param moduleToPutExcludeOn name of the module to exclude the paths from.
-   * @return a {@link ModuleSpec} which will exclude the given paths from the given module.
-   */
-  public static ModuleSpec addExcludeFilter(ModuleSpec moduleSpec, List<String> pathsToExclude,
-      List<String> pathsToExcludeChildrenOf,
-      String moduleToPutExcludeOn) {
-    validate(moduleSpec);
-    if (moduleToPutExcludeOn == null) {
-      throw new IllegalArgumentException("Module to exclude from cannot be null");
-    }
-
-    ModuleSpec.Builder builder =
-        createBuilderAndRemoveDependencies(moduleSpec, moduleToPutExcludeOn);
-
-    ConcreteModuleSpec concreteModuleSpec = (ConcreteModuleSpec) moduleSpec;
-    Optional<ModuleDependencySpec> dependencySpecOptional =
-        Arrays.stream(concreteModuleSpec.getDependencies())
-            .filter(it -> it instanceof ModuleDependencySpec)
-            .map(it -> (ModuleDependencySpec) it)
-            .filter(it -> it.getName().equals(moduleToPutExcludeOn)).findFirst();
-    if (!dependencySpecOptional.isPresent()) {
-      return moduleSpec;
-    }
-
-    MultiplePathFilterBuilder pathFilterBuilder = PathFilters.multiplePathFilterBuilder(true);
-
-    if (pathsToExclude != null) {
-      for (String path : pathsToExclude) {
-        pathFilterBuilder.addFilter(PathFilters.is(path), false);
-      }
-    }
-
-    if (pathsToExcludeChildrenOf != null) {
-      for (String path : pathsToExcludeChildrenOf) {
-        pathFilterBuilder.addFilter(PathFilters.isOrIsChildOf(path), false);
-      }
-    }
-
-    builder.addDependency(new ModuleDependencySpecBuilder()
-        .setName(moduleToPutExcludeOn)
-        .setImportFilter(pathFilterBuilder.create())
-        .setExportFilter(pathFilterBuilder.create())
-        .build());
 
     return builder.create();
   }

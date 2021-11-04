@@ -45,6 +45,10 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
   private final Map<String, ModuleFinder> moduleFinders = new ConcurrentHashMap<>();
   private final Map<String, ModuleSpec> moduleSpecs = new ConcurrentHashMap<>();
 
+  public GeodeCompositeModuleFinder() {
+    moduleFinders.put("__default__", new GeodeDelegatingLocalModuleFinder());
+  }
+
   /**
    * Adds a {@link ModuleFinder} to the composite to be delegated to.
    *
@@ -131,28 +135,6 @@ public class GeodeCompositeModuleFinder implements ModuleFinder {
       }
     }
     return modulesThatDependOn;
-  }
-
-  /**
-   * Excludes the given paths of a specified module dependency from a specified module.
-   *
-   * @param moduleToPutExcludeFilterOn the module that will have the filter put on its dependency.
-   * @param moduleToExcludeFrom the module dependency to exclude things from.
-   * @param restrictPaths paths to exclude from the moduleToExcludeFrom.
-   * @param restrictPathsAndChildren paths to exclude the children of from the
-   *        moduleToExcludeFrom.
-   */
-  public void addExcludeFilterToModule(String moduleToPutExcludeFilterOn,
-      String moduleToExcludeFrom, List<String> restrictPaths,
-      List<String> restrictPathsAndChildren) {
-    ModuleSpec moduleSpec = getConcreteModuleSpec(moduleToPutExcludeFilterOn);
-    if (moduleSpec != null) {
-      moduleSpec = ModuleSpecUtils.addExcludeFilter(moduleSpec, restrictPaths,
-          restrictPathsAndChildren, moduleToExcludeFrom);
-      moduleSpecs.put(moduleSpec.getName(), moduleSpec);
-    } else {
-      throw new RuntimeException("No such module: " + moduleToPutExcludeFilterOn);
-    }
   }
 
   private ModuleSpec getConcreteModuleSpec(String moduleName) {
