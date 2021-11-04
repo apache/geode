@@ -59,7 +59,7 @@ public class ClusterExecutor implements CommandExecutor {
       throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
-    logger.warn("CLUSTER, args are:" + args);
+    logger.error("CLUSTER, args are:" + args);
     byte[] subcommand = args.get(1);
 
     if (equalsIgnoreCaseBytes(subcommand, bINFO)) {
