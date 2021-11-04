@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -47,12 +49,14 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
 public class ClusterExecutor implements CommandExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
       throws Exception {
 
     List<byte[]> args = command.getProcessedCommand();
+    logger.warn("CLUSTER, args are:" + args);
     byte[] subcommand = args.get(1);
 
     if (equalsIgnoreCaseBytes(subcommand, bINFO)) {
