@@ -718,57 +718,58 @@ public class DistributionImpl implements Distribution {
    * Wait for the given member to not be in the membership view and for all direct-channel receivers
    * for this member to be closed.
    *
-   * @param mbr the member
+   * @param distributedMember the member
    * @param timeoutMs amount of time to wait before giving up
    * @return for testing purposes this returns true if the serial queue for the member was flushed
    * @throws InterruptedException if interrupted by another thread
    * @throws TimeoutException if we wait too long for the member to go away
    */
   @Override
-  public boolean waitForDeparture(InternalDistributedMember mbr, long timeoutMs)
+  public boolean waitForDeparture(InternalDistributedMember distributedMember, long timeoutMs)
       throws TimeoutException, InterruptedException {
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
     boolean result = false;
     // TODO - Move the bulk of this method to the adapter.
-    DirectChannel dc = directChannel;
-    InternalDistributedMember idm = mbr;
+    DirectChannel directChannel = this.directChannel;
+    InternalDistributedMember internalDistributedMember = distributedMember;
     long pauseTime = (timeoutMs < 4000) ? 100 : timeoutMs / 40;
     boolean wait;
     int numWaits = 0;
     do {
       wait = false;
-      if (dc != null) {
-        if (dc.hasReceiversFor(idm)) {
+      if (directChannel != null) {
+        if (directChannel.hasReceiversFor(internalDistributedMember)) {
           wait = true;
         }
         if (wait && logger.isDebugEnabled()) {
-          logger.info("waiting for receivers for {} to shut down", mbr);
+          logger.info("waiting for receivers for {} to shut down", distributedMember);
         }
       }
       if (!wait) {
-        wait = memberExists(idm);
+        wait = memberExists(internalDistributedMember);
         if (wait && logger.isDebugEnabled()) {
-          logger.debug("waiting for {} to leave the membership view", mbr);
+          logger.debug("waiting for {} to leave the membership view", distributedMember);
         }
       }
       if (!wait) {
-        if (waitForSerialMessageProcessing(idm)) {
+        if (waitForSerialMessageProcessing(internalDistributedMember)) {
           result = true;
         }
       }
       if (wait) {
         numWaits++;
         if (numWaits > 40) {
-          throw new TimeoutException("waited too long for " + idm + " to be removed");
+          throw new TimeoutException(
+              "waited too long for " + internalDistributedMember + " to be removed");
         }
         Thread.sleep(pauseTime);
       }
-    } while (wait && (dc != null && dc.isOpen())
+    } while (wait && (directChannel != null && directChannel.isOpen())
         && !shutdownInProgress());
     if (logger.isDebugEnabled()) {
-      logger.debug("operations for {} should all be in the cache at this point", mbr);
+      logger.debug("operations for {} should all be in the cache at this point", distributedMember);
     }
     return result;
   }

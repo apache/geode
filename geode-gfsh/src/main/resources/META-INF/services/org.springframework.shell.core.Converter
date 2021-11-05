@@ -18,6 +18,7 @@ org.apache.geode.management.internal.cli.converters.ClassNameConverter
 org.apache.geode.management.internal.cli.converters.ClusterMemberIdNameConverter
 org.apache.geode.management.internal.cli.converters.ConfigPropertyConverter
 org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter
+org.apache.geode.management.internal.cli.converters.DependenciesConverter
 org.apache.geode.management.internal.cli.converters.DiskStoreNameConverter
 org.apache.geode.management.internal.cli.converters.EnumConverter
 org.apache.geode.management.internal.cli.converters.ExpirationActionConverter

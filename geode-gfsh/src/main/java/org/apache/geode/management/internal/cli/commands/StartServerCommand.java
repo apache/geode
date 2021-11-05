@@ -17,21 +17,34 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.lang.System.lineSeparator;
 import static org.apache.geode.management.internal.cli.commands.StartMemberUtils.resolveWorkingDirectory;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.management.MalformedObjectNameException;
 
+import joptsimple.internal.Strings;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -175,7 +188,10 @@ public class StartServerCommand extends OfflineGfshCommand {
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
       @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput,
+      @CliOption(key = CliStrings.START_SERVER_CLASSLOADER_ISOLATION,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.START_SERVER_CLASSLOADER_ISOLATION_HELP) final Boolean classloaderIsolated)
       throws Exception {
     // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
     // text
@@ -208,7 +224,8 @@ public class StartServerCommand extends OfflineGfshCommand {
         offHeapMemorySize, gemfirePropertiesFile, rebalance,
         gemfireSecurityPropertiesFile, serverBindAddress, serverPort, socketBufferSize,
         springXmlLocation, statisticsArchivePathname, requestSharedConfiguration, startRestApi,
-        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput);
+        httpServicePort, httpServiceBindAddress, userName, passwordToUse, redirectOutput,
+        classloaderIsolated);
   }
 
   ResultModel doStartServer(String memberName, Boolean assignBuckets, String bindAddress,
@@ -227,7 +244,7 @@ public class StartServerCommand extends OfflineGfshCommand {
       Integer serverPort, Integer socketBufferSize, String springXmlLocation,
       String statisticsArchivePathname, Boolean requestSharedConfiguration, Boolean startRestApi,
       String httpServicePort, String httpServiceBindAddress, String userName, String passwordToUse,
-      Boolean redirectOutput)
+      Boolean redirectOutput, Boolean classloaderIsolated)
       throws MalformedObjectNameException, IOException, InterruptedException {
     cacheXmlPathname = CliUtils.resolvePathname(cacheXmlPathname);
 
@@ -323,11 +340,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     String[] serverCommandLine = createStartServerCommandLine(serverLauncher, gemfirePropertiesFile,
         gemfireSecurityPropertiesFile, gemfireProperties, classpath, includeSystemClasspath,
-        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap);
-
-    if (getGfsh().getDebug()) {
-      getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
-    }
+        jvmArgsOpts, disableExitWhenOutOfMemory, initialHeap, maxHeap, classloaderIsolated);
 
     Process serverProcess =
         getProcess(serverLauncher.getWorkingDirectory(), serverCommandLine);
@@ -420,19 +433,25 @@ public class StartServerCommand extends OfflineGfshCommand {
   }
 
   String[] createStartServerCommandLine(final ServerLauncher launcher,
-      final File gemfirePropertiesFile, final File gemfireSecurityPropertiesFile,
-      final Properties gemfireProperties, final String userClasspath,
-      final Boolean includeSystemClasspath, final String[] jvmArgsOpts,
-      final Boolean disableExitWhenOutOfMemory, final String initialHeap, final String maxHeap)
+      final File gemfirePropertiesFile,
+      final File gemfireSecurityPropertiesFile,
+      final Properties gemfireProperties,
+      final String userClasspath,
+      final Boolean includeSystemClasspath,
+      final String[] jvmArgsOpts,
+      final Boolean disableExitWhenOutOfMemory,
+      final String initialHeap, final String maxHeap,
+      final boolean classloaderIsolated)
       throws MalformedObjectNameException {
     List<String> commandLine = new ArrayList<>();
 
     commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
-    commandLine.add("-classpath");
-    commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
-    commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
-
+    if (!classloaderIsolated) {
+      commandLine.add("-classpath");
+      commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+      commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
+    }
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
     StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
@@ -449,6 +468,9 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.addInitialHeap(commandLine, initialHeap);
     StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
+    if (classloaderIsolated) {
+      commandLine.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management,j,c");
+    }
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
     commandLine.add("-Djava.awt.headless=true");
@@ -457,7 +479,10 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (launcher.isRedirectingOutput()) {
       addOutputRedirect(commandLine);
     }
-    commandLine.add(ServerLauncher.class.getName());
+
+    commandLine.addAll(
+        resolveLauncherCommand(classloaderIsolated, userClasspath, launcher.getWorkingDirectory()));
+
     commandLine.add(ServerLauncher.Command.START.getName());
 
     if (StringUtils.isNotBlank(launcher.getMemberName())) {
@@ -552,6 +577,143 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
 
     return commandLine.toArray(new String[] {});
+  }
+
+  private List<String> resolveLauncherCommand(boolean classloaderIsolated, String classpath,
+      String workingDirectory) {
+    final String GEODE_HOME = System.getenv("GEODE_HOME");
+    List<String> commandLine = new LinkedList<>();
+    if (classloaderIsolated) {
+      commandLine
+          .add(
+              "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+      addJBossClassPath(GEODE_HOME, commandLine);
+      commandLine.add("org.jboss.modules.Main");
+      commandLine.add("-mp");
+      String modulePath;
+      if (!Strings.isNullOrEmpty(classpath)) {
+        // modify temp descriptor
+        modulePath = createTempModuleWithClasspath(classpath.split(File.pathSeparator), GEODE_HOME);
+      } else {
+        modulePath = getJBossModulePath(GEODE_HOME);
+      }
+      modulePath += File.pathSeparator + getJDeploymentsModulePath(workingDirectory);
+      commandLine.add(modulePath);
+
+      commandLine.add("geode");
+    } else {
+      commandLine.add(ServerLauncher.class.getName());
+    }
+
+    return commandLine;
+  }
+
+  // creates a temporary module descriptor based off the original, but with the items in the
+  // classpath added as resources. We can then point the -mp at the path returned by this method.
+  private static String createTempModuleWithClasspath(String[] classpath, String baseDirectory) {
+    if (classpath == null || classpath.length == 0) {
+      return null;
+    }
+
+    Path tempModuleDescriptorDirectory = Paths.get(baseDirectory).resolve("tempModuleDescriptors");
+
+    File tempModuleDescriptor = tempModuleDescriptorDirectory.resolve("geode").resolve("main")
+        .resolve("module.xml").toFile();
+
+    File geodeModuleDescriptor =
+        Paths.get(baseDirectory).resolve("moduleDescriptors").resolve("geode").resolve("main")
+            .resolve("module.xml").toFile();
+
+    // copy file, adding additional classpath
+    copyModuleDescriptorAndAddAdditionalResources(geodeModuleDescriptor,
+        tempModuleDescriptor, classpath);
+
+    // copy default_application's module.xml too
+    File tempApplicationModuleDescriptor =
+        tempModuleDescriptorDirectory.resolve("default_application").resolve("main")
+            .resolve("module.xml").toFile();
+    File applicationModuleDescriptor =
+        Paths.get(baseDirectory).resolve("moduleDescriptors").resolve("default_application")
+            .resolve("main")
+            .resolve("module.xml").toFile();
+
+    try {
+      FileUtils.copyFile(applicationModuleDescriptor, tempApplicationModuleDescriptor);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return tempModuleDescriptorDirectory.toString();
+  }
+
+  private static void copyModuleDescriptorAndAddAdditionalResources(File originalModuleDescriptor,
+      File tempModuleDescriptor, String[] classpath) {
+    try {
+      if (!tempModuleDescriptor.exists()) {
+        tempModuleDescriptor.getParentFile().mkdirs();
+        tempModuleDescriptor.createNewFile();
+      }
+
+      BufferedReader reader = new BufferedReader(new FileReader(originalModuleDescriptor));
+      List<String> lines = reader.lines().collect(Collectors.toList());
+      reader.close();
+
+      BufferedWriter writer = new BufferedWriter(new FileWriter(tempModuleDescriptor));
+
+      for (String line : lines) {
+        writer.write(line);
+        writer.newLine();
+        if (line.trim().equals("<resources>")) {
+          for (String classpathEntry : classpath) {
+            if (Files.exists(Paths.get(classpathEntry))
+                && !classpathEntry.contains("gfsh-dependencies")
+                && !classpathEntry.contains("geode-dependencies")) {
+              writer.write("\t\t<resource-root path=\"" + classpathEntry + "\"/>");
+              writer.newLine();
+            }
+          }
+        }
+      }
+      writer.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String getJBossModulePath(String moduleBase) {
+    return Paths.get(moduleBase).resolve("moduleDescriptors").toString();
+  }
+
+  private String getJDeploymentsModulePath(String moduleBase) {
+    return Paths.get(moduleBase).resolve("deployments").toString();
+  }
+
+  private void addJBossClassPath(String GEODE_HOME, List<String> commandLine) {
+    commandLine.add("-classpath");
+    String libPath = GEODE_HOME + File.separator + "lib";
+    File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
+        () -> new GemFireConfigException(
+            "jboss-modules jar not found in " + GEODE_HOME + File.separator + "lib"));
+    File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
+        libPath).orElseThrow(
+            () -> new GemFireConfigException(
+                "geode-jboss-extensions jar not found in " + libPath));
+
+    String jbossClasspath =
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath();
+
+    commandLine.add(jbossClasspath);
+  }
+
+  private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith(artifactId));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
   }
 
   @SuppressWarnings("deprecation")

@@ -31,9 +31,6 @@ dependencies {
     exclude module: 'JUnitParams'
     exclude module: 'junit'
   }
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('org.awaitility:awaitility')
 }
 
 tasks.withType(AbstractCompile) {

@@ -19,9 +19,6 @@ plugins {
   id 'standard-subproject-configuration'
 }
 
-
-
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   implementation('org.apache.lucene:lucene-core')

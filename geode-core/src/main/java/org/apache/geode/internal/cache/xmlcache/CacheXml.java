@@ -27,8 +27,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 
 /**
  * The abstract superclass of classes that convert XML into a {@link org.apache.geode.cache.Cache}

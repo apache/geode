@@ -30,25 +30,35 @@ class DUnitHost extends Host {
   private final transient ProcessManager processManager;
   private final transient VMEventNotifier vmEventNotifier;
 
-  DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
+  private final boolean classloaderIsolatedOverride;
+
+  DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier,
+      boolean classloaderIsolatedOverride)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    debuggingVM = new VM(this, VmConfiguration.current(), -1, new RemoteDUnitVM(0), null, null);
+    debuggingVM = new VM(this, VmConfiguration.current(), -1, new RemoteDUnitVM(0), null, null, false);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;
+    this.classloaderIsolatedOverride = classloaderIsolatedOverride;
   }
 
   public void init(int numVMs, boolean launchLocator)
       throws RemoteException, NotBoundException, InterruptedException {
+    boolean classLoaderIsolated = classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED;
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
-      addVM(i, VmConfiguration.current(), remote, processHolder, processManager);
+      addVM(i, VmConfiguration.current(), remote, processHolder, processManager, classLoaderIsolated);
     }
 
     if (launchLocator) {
       addLocator(DUnitLauncher.LOCATOR_VM_NUM, processManager.getStub(DUnitLauncher.LOCATOR_VM_NUM),
-          processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager);
+          processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager,
+          classLoaderIsolated);
     }
 
     addHost(this);
@@ -69,7 +79,7 @@ class DUnitHost extends Host {
       VM current = super.getVM(n);
       return getVM(current.getVersion(), n);
     } else {
-      return getVM(VersionManager.CURRENT_VERSION, n);
+      return getVM(VmConfiguration.current(), n);
     }
   }
 
@@ -99,20 +109,22 @@ class DUnitHost extends Host {
       try {
         // first fill in any gaps, to keep the superclass, Host, happy
         for (int i = oldVMCount; i < whichVM; i++) {
-          processManager.launchVM(i);
+          processManager.launchVM(i, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         }
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
 
         for (int i = oldVMCount; i < whichVM; i++) {
           addVM(i, VmConfiguration.current(), processManager.getStub(i),
-              processManager.getProcessHolder(i), processManager);
+              processManager.getProcessHolder(i), processManager,
+              classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         }
 
         // now create the one we really want
-        processManager.launchVM(configuration, whichVM, false, 0);
+        processManager.launchVM(configuration, whichVM, false, 0,
+            classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
-        addVM(whichVM, configuration, processManager.getStub(whichVM),
-            processManager.getProcessHolder(whichVM), processManager);
+        addVM(whichVM, configuration, processManager.getStub(whichVM), processManager.getProcessHolder(whichVM),
+            processManager, classloaderIsolatedOverride && RUN_VM_CLASSLOADER_ISOLATED);
 
       } catch (IOException | InterruptedException | NotBoundException e) {
         throw new RuntimeException("Could not dynamically launch vm + " + whichVM, e);

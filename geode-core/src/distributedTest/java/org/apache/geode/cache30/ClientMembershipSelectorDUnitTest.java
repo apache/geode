@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class ClientMembershipSelectorDUnitTest extends ClientMembershipDUnitTest {
   @Override
-  protected int getMaxThreads() {
+  public int getMaxThreads() {
     return 2;
   }
 }

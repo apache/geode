@@ -1873,8 +1873,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void init(Services<ID> s) throws MembershipConfigurationException {
-    services = s;
+  public void init(Services<ID> services) throws MembershipConfigurationException {
+    this.services = services;
 
     MembershipConfig config = services.getConfig();
     if (config.getMcastPort() != 0 && StringUtils.isBlank(config.getLocators())

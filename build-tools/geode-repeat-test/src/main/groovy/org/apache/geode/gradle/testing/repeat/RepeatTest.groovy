@@ -20,6 +20,7 @@ import org.gradle.api.internal.DocumentationRegistry
 import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.Input
 import org.gradle.internal.time.Clock

@@ -113,7 +113,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
    * Returns region attributes for a partitioned region with distributed-ack scope
    */
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setPartitionAttributes((new PartitionAttributesFactory()).create());
     return factory.create();

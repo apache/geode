@@ -23,7 +23,7 @@ import org.apache.geode.test.version.VmConfiguration;
 public interface ChildVMLauncher {
 
   ProcessHolder launchVM(VmConfiguration configuration, int vmNum, boolean bouncedVM,
-      int remoteStubPort) throws IOException;
+      int remoteStubPort, boolean classLoaderIsolated) throws IOException;
 
   RemoteDUnitVMIF getStub(int i) throws RemoteException, NotBoundException, InterruptedException;
 }

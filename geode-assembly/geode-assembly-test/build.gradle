@@ -19,9 +19,6 @@ plugins {
   id 'standard-subproject-configuration'
 }
 
-
-
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   compileOnly(project(':extensions:geode-modules-test'))

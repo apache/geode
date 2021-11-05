@@ -610,7 +610,7 @@ public class ExecutionContext {
     return pr;
   }
 
-  void cachePut(Object key, Object value) {}
+  public void cachePut(Object key, Object value) {}
 
   public Object cacheGet(Object key) {
     return null;

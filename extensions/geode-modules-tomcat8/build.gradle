@@ -23,6 +23,8 @@ plugins {
   id 'geode-publish-java'
 }
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 evaluationDependsOn(":geode-core")
 
 dependencies {
@@ -38,9 +40,7 @@ dependencies {
 
   // test
   testImplementation(project(':extensions:geode-modules-test'))
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':geode-junit'))
   testImplementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version'))
 
 
@@ -60,4 +60,8 @@ dependencies {
 
 sonarqube {
   skipProject = true
+}
+
+distributedTest {
+  environment 'CLASSLOADER_ISOLATED' , 'false'
 }

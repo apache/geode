@@ -291,13 +291,14 @@ public class BufferPool {
   }
 
   void releaseBuffer(BufferPool.BufferType type, @NotNull ByteBuffer buffer) {
-    switch (type) {
-      case UNTRACKED:
+    // Using strings here is a work-around needed on JDK 8.
+    switch (type.toString()) {
+      case "UNTRACKED":
         return;
-      case TRACKED_SENDER:
+      case "TRACKED_SENDER":
         releaseSenderBuffer(buffer);
         return;
-      case TRACKED_RECEIVER:
+      case "TRACKED_RECEIVER":
         releaseReceiveBuffer(buffer);
         return;
     }

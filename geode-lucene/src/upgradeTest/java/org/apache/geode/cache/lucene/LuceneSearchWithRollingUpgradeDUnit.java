@@ -45,8 +45,7 @@ import org.apache.geode.test.version.VmConfigurations;
 public abstract class LuceneSearchWithRollingUpgradeDUnit
     extends LuceneSearchWithRollingUpgradeTestBase {
 
-
-  @Parameterized.Parameters(name = "from {0}, with reindex={1}, singleHopEnabled={2}")
+  @Parameterized.Parameters(name = "from_v{0}, with reindex={1}, singleHopEnabled={2}")
   public static Collection<Object[]> data() {
     Collection<VmConfiguration> luceneVersions = getLuceneVersions();
     Collection<Object[]> rval = new ArrayList<>();

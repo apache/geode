@@ -945,7 +945,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     };
     ClientMembership.registerClientMembershipListener(listener);
 
-    final VM vm0 = Host.getHost(0).getVM(0);
+    final VM vm0 = Host.getHost(0).getVM(0).initializeAsClientVM();
     final String name = getUniqueName();
     final int[] ports = new int[1];
 
@@ -1284,7 +1284,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final String[] clientMemberIdArray = new String[host.getVMCount()];
 
     for (int i = 0; i < host.getVMCount(); i++) {
-      final VM vm = Host.getHost(0).getVM(i);
+      final VM vm = Host.getHost(0).getVM(i).initializeAsClientVM();
       System.out.println("creating pool in vm_" + i);
       clientMemberIdArray[i] = vm.invoke(createPool).toString();
     }

@@ -19,6 +19,8 @@ import static org.apache.geode.cache30.ClientServerTestCase.disconnectFromDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
@@ -58,7 +60,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -91,6 +92,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
@@ -108,7 +111,7 @@ import org.apache.geode.test.version.VersionManager;
  */
 @Deprecated
 public class SecurityTestUtils {
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private final JUnit4DistributedTestCase distributedTestCase = new JUnit4DistributedTestCase() {};
 
@@ -545,6 +548,8 @@ public class SecurityTestUtils {
       authProps.setProperty(MCAST_PORT, "0");
       authProps.setProperty(LOCATORS, getIPLiteral() + "[" + port + "]");
       authProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+      authProps.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+      authProps.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
 
       clearStaticSSLContext();
 

@@ -25,7 +25,7 @@ plugins {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   implementation('javax.servlet:javax.servlet-api')
-  implementation(project(':geode-deployment:geode-deployment-legacy'))
+  implementation(project(':geode-deployment:geode-deployment-chained-classloader'))
 }
 
 war {

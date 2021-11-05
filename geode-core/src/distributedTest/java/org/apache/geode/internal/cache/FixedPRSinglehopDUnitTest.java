@@ -402,7 +402,6 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(LOCATORS, locator);
     DistributedSystem ds = test.getSystem(props);
     new CacheFactory(props);
@@ -446,6 +445,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     Properties props = new Properties();
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
     } catch (IOException e) {

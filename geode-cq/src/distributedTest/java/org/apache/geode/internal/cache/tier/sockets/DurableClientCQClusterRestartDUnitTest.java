@@ -18,6 +18,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -64,6 +66,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.InternalCache;
@@ -150,8 +153,11 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
 
   private int startLocator(File locatorLog) throws IOException {
     InetAddress bindAddress = InetAddress.getByName(hostName);
+    Properties properties = new Properties();
+    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    properties.setProperty(HTTP_SERVICE_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     Locator locator =
-        Locator.startLocatorAndDS(locatorPort, locatorLog, bindAddress, new Properties());
+        Locator.startLocatorAndDS(locatorPort, locatorLog, bindAddress, properties);
     return locator.getPort();
   }
 
@@ -171,6 +177,8 @@ public class DurableClientCQClusterRestartDUnitTest implements Serializable {
     Properties config = new Properties();
     config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
     config.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    config.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    config.setProperty(HTTP_SERVICE_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     return config;
   }
 

@@ -19,7 +19,7 @@ version: '3.0'
 services:
 
   db:
-    image: mysql:5.7
+    image: mysql:latest
     restart: always
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "true"

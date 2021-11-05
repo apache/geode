@@ -100,7 +100,6 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
   }
-  compileOnly('org.apache.logging.log4j:log4j-api')
 
   commonTestImplementation(project(':geode-core'))
   commonTestImplementation(project(':geode-junit')) {

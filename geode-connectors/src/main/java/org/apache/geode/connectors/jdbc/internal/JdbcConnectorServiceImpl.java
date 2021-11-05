@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -48,6 +49,12 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   private static final Logger logger = LogService.getLogger();
   private final Map<String, RegionMapping> mappingsByRegion =
       new ConcurrentHashMap<>();
+
+  @Override
+  public boolean init(Cache cache) {
+    DriverManager.getDrivers();
+    return JdbcConnectorService.super.init(cache);
+  }
 
   @Override
   public Set<RegionMapping> getRegionMappings() {

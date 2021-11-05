@@ -47,4 +47,5 @@ public interface ConverterHint {
   String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;
   String JARFILES = "geode.converter.jarfiles" + DISABLE_STRING_CONVERTER;
   String JARDIR = "geode.converter.jardir" + DISABLE_STRING_CONVERTER;
+  String DEPENDENCIES = "geode.converter.dependencies" + DISABLE_STRING_CONVERTER;
 }

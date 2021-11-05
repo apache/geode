@@ -115,6 +115,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   public void setUp() {
     serverVM = getVM(0);
     clientVM = getController();
+    clientVM.initializeAsClientVM();
 
     regionName = testName.getMethodName();
     queryString = String.join(" ",

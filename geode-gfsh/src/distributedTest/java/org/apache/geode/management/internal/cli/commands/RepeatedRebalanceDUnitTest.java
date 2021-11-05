@@ -16,9 +16,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,23 +41,23 @@ public class RepeatedRebalanceDUnitTest {
   private static final int INITIAL_SERVERS = 4;
   private static final int NUMBER_OF_ENTRIES = 30000;
 
-  private final List<MemberVM> memberList = new ArrayList<>();
+  private MemberVM[] members = new MemberVM[6];
   private MemberVM locator1;
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
 
   @Before
   public void before() throws Exception {
 
-    locator1 = cluster.startLocatorVM(0);
+    locator1 = clusterStartupRule.startLocatorVM(0);
 
     for (int i = 0; i < INITIAL_SERVERS; ++i) {
-      memberList.add(cluster.startServerVM(i + 1, locator1.getPort()));
+      members[i] = clusterStartupRule.startServerVM(i + 1, locator1.getPort());
     }
 
     gfsh.connectAndVerify(locator1);
@@ -167,7 +164,7 @@ public class RepeatedRebalanceDUnitTest {
   }
 
   public void addDataToRegion(int entriesToAdd) {
-    memberList.get(0).invoke(() -> {
+    members[0].invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
       Region<String, String> region = cache.getRegion(PARENT_REGION);
@@ -183,15 +180,15 @@ public class RepeatedRebalanceDUnitTest {
   }
 
   public void addOrRestartServers(int serversToAdd, int serversToRestart) {
-    for (int i = 0; i < serversToAdd; ++i) {
-      memberList.add(cluster.startServerVM(INITIAL_SERVERS + i, locator1.getPort()));
+    for (int i = INITIAL_SERVERS; i < INITIAL_SERVERS + serversToAdd; ++i) {
+      members[i] = clusterStartupRule.startServerVM(i + 1, locator1.getPort());
     }
 
     for (int i = 0; i < serversToRestart; ++i) {
-      if (i < INITIAL_SERVERS && i < memberList.size()) {
-        memberList.get(i).stop(false);
-        memberList.remove(i);
-        memberList.add(i, cluster.startServerVM(i + 1, locator1.getPort()));
+      if (i < INITIAL_SERVERS && i < members.length) {
+        members[i].stop(false);
+        members[i] = null;
+        members[i] = clusterStartupRule.startServerVM(i + 1, locator1.getPort());
       }
     }
   }

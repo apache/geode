@@ -14,10 +14,6 @@
  */
 package org.apache.geode.examples;
 
-import static org.apache.geode.security.SecurityManager.PASSWORD;
-import static org.apache.geode.security.SecurityManager.TOKEN;
-import static org.apache.geode.security.SecurityManager.USER_NAME;
-
 import java.util.Properties;
 
 import org.apache.geode.security.AuthenticationFailedException;

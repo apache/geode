@@ -48,6 +48,7 @@ dependencies {
   runtimeOnly(project(':geode-wan'))
   runtimeOnly(project(':geode-tcp-server'))
   runtimeOnly(project(':geode-unsafe'))
+  runtimeOnly(project(':geode-deployment:geode-deployment-chained-classloader'))
 
 
   // These were ext.optional in geode-core

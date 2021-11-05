@@ -19,6 +19,9 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,21 +38,42 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   private String deployedTime;
   @Schema(accessMode = READ_ONLY)
   private String deployedBy;
+  private List<String> dependencies;
+  private String applicationName;
 
   // the file is not serialized over the wire
   private transient File file;
 
-  public Deployment() {}
+  public Deployment() {
+    dependencies = Collections.emptyList();
+  }
 
-  public Deployment(String jarFileName, String deployedBy, String deployedTime) {
+  public Deployment(String jarFileName, String deployedBy, String deployedTime,
+      List<String> dependencies, String applicationName) {
     this.jarFileName = jarFileName;
     this.deployedBy = deployedBy;
     this.deployedTime = deployedTime;
+    this.dependencies = new LinkedList<>(dependencies);
+    this.applicationName = applicationName;
+  }
+
+  public Deployment(String jarFileName, String deployedBy, String deployedTime,
+      String applicationName) {
+    this(jarFileName, deployedBy, deployedTime, Collections.emptyList(), applicationName);
   }
 
   public Deployment(Deployment deployment, File jarFile) {
-    this(deployment.getFileName(), deployment.getDeployedBy(), deployment.deployedTime);
+    this(deployment.getFileName(), deployment.getDeployedBy(), deployment.deployedTime,
+        deployment.getApplicationName());
     file = jarFile;
+  }
+
+  public Deployment(String name, String deployedBy, String deployedTime) {
+    this(name, deployedBy, deployedTime, null);
+  }
+
+  public String getApplicationName() {
+    return applicationName;
   }
 
   @JsonIgnore
@@ -129,6 +153,19 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   }
 
   @Override
+  public CommandType getCreationCommandType() {
+    return CommandType.CREATE_OR_UPDATE;
+  }
+
+  public List<String> getDependencies() {
+    return dependencies;
+  }
+
+  public void setDependencies(List<String> dependencies) {
+    this.dependencies = dependencies;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -145,10 +182,5 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   @Override
   public int hashCode() {
     return Objects.hash(jarFileName, deployedTime, deployedBy);
-  }
-
-  @Override
-  public CommandType getCreationCommandType() {
-    return CommandType.CREATE_OR_UPDATE;
   }
 }

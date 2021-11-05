@@ -846,8 +846,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected static void startLocator(final String serverHostName, final int port, Properties props)
       throws Exception {
 
-
-    InetAddress bindAddr = null;
+    InetAddress bindAddr;
     try {
       bindAddr = InetAddress.getByName(serverHostName);// getServerHostName(vm.getHost()));
     } catch (UnknownHostException uhe) {

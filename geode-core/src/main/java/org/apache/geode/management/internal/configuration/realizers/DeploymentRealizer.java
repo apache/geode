@@ -20,8 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;

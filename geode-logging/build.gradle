@@ -34,11 +34,6 @@ dependencies {
   }
   testImplementation(project(':geode-concurrency-test'))
 
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-
-
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-logging'
   }

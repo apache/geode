@@ -34,5 +34,3 @@ def thisProjectScoped = project
     dependsOn thisProjectScoped.tasks.named(taskName)
   }
 }
-
-

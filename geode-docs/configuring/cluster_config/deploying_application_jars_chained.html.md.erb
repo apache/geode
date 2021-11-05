@@ -1,0 +1,52 @@
+<% set_title("Deploying Application JARs to", product_name_long, "Members Without Classloader Isolation") %>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## Overview
+This provides implementation specific details for deploying JAR files when not using classloader isolation. Classloader isolation can be enabled/disabled using the `--enable-classloader-isolation` flag when starting servers through Gfsh using the `start server` command. With the non-classloader isolated, or chained, approach, JAR files are loaded into classloaders which are chained together with the system classloader where they are able to access other classes in the hierarchy.
+
+For information common between all deployment implementation, read [Deploying Application Jars](deploying_application_jars.html).
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A" class="no-quick-link"></a>Deployment Location for JAR Files
+
+The system location where JAR files are written on each member is determined by the `deploy-working-dir` <%=vars.product_name%> property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
+
+``` pre
+#gemfire.properties
+deploy-working-dir=/usr/local/gemfire/deploy
+```
+
+This deployment location can be local or a shared network resource (such as a mount location) used by multiple members in order to reduce disk space usage. If you use a shared directory, you still need to deploy the JAR file on every member that you want to have access to the application, because deployment updates the CLASSPATH and auto-registers functions.
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
+
+When you deploy JAR files to a cluster or member group, the JAR file is modified to indicate version information in its name. Each JAR filename contains a version number inserted just before the `.jar` suffix. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `MyClasses.v5.jar` when you list all deployed JAR files.
+
+When you deploy a new JAR file, the member receiving the deployment checks whether the JAR file is a duplicate, either because the JAR file has already been deployed on that member or because the JAR file has already been deployed to a shared deployment working directory that other members are also using. If another member has already deployed this JAR file to the shared directory (determined by doing a byte-for-byte compare to the latest version in its directory), the member receiving the latest deployment does not write the file to disk. Instead, the member updates the ClassPathLoader to use the already deployed JAR file. If a newer version of the JAR file is detected on disk and is already in use, the deployment is canceled.
+
+When a member begins using a JAR file, the member obtains a shared lock on the file. If the member receives a newer version by deployment, the member releases the shared lock and tries to delete the existing JAR file in favor of the newer version. If no other member has a shared lock on the existing JAR, the existing, older version JAR is deleted.
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_F8AC59EEC8C5434FBC6F38A12A7371CE" class="no-quick-link"></a>Automatic Class Path Loading
+
+When a cache is started, the new cache requests that the latest versions of each JAR file in the current working directory be added to the ClassPathLoader. If a JAR file has already been deployed to the ClassPathLoader, the ClassPathLoader updates its loaded version if a newer version is found; otherwise, there is no change. If detected, older versions of the JAR files are deleted if no other member has a shared lock on them.
+
+Undeploying a JAR file does not automatically unload the classes that were loaded during deployment. You need to restart your members to unload those classes.
+
+When a cache is closed it requests that all currently deployed JAR files be removed from the ClassPathLoader.
+
+If you are using a shared deployment working directory, all members sharing the directory should belong to the same member group. Upon restart, all members that share the same deployment working directory will deploy and autoload their CLASSPATH with any JARs found in the current working directory. This means that some members may load the JARs even though they are not part of the member group that received the original deployment.

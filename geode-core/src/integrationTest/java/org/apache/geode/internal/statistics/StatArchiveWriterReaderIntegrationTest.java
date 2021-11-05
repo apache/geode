@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -52,6 +51,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -63,7 +63,7 @@ import org.apache.geode.test.junit.categories.StatisticsTest;
 @SuppressWarnings({"rawtypes", "unused"})
 public class StatArchiveWriterReaderIntegrationTest {
 
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private File dir;
   private Map<String, String> statisticTypes;

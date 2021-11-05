@@ -40,12 +40,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.apache.commons.io.FileUtils;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -70,13 +72,13 @@ class ProcessManager implements ChildVMLauncher {
     this.registry = registry;
   }
 
-  public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VmConfiguration.current(), vmNum, false, 0);
+  public synchronized void launchVM(int vmNum, boolean classLoaderIsolated) throws IOException {
+    launchVM(VmConfiguration.current(), vmNum, false, 0, classLoaderIsolated);
   }
 
   @Override
-  public synchronized ProcessHolder launchVM(VmConfiguration vmConfiguration, int vmNum,
-      boolean bouncedVM, int remoteStubPort) throws IOException {
+  public synchronized ProcessHolder launchVM(VmConfiguration vmConfiguration, int vmNum, boolean bouncedVM,
+      int remoteStubPort, boolean classLoaderIsolated) throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
     }
@@ -100,7 +102,8 @@ class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, vmConfiguration, remoteStubPort);
+    String[] cmd = buildJavaCommand(vmNum, namingPort, vmConfiguration, remoteStubPort, workingDir,
+        classLoaderIsolated);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -109,11 +112,14 @@ class ProcessManager implements ChildVMLauncher {
 
     // TODO - delete directory contents, preferably with commons io FileUtils
     try {
-      String[] envp = null;
+      ProcessBuilder processBuilder = new ProcessBuilder();
       if (!VersionManager.isCurrentVersion(version)) {
-        envp = new String[] {"GEODE_HOME=" + versionManager.getInstall(version)};
+        processBuilder.environment().put("GEODE_HOME", versionManager.getInstall(version));
       }
-      Process process = Runtime.getRuntime().exec(cmd, envp, workingDir);
+      Process process = processBuilder.directory(workingDir)
+          // .inheritIO()
+          .command(cmd)
+          .start();
       pendingVMs++;
       ProcessHolder holder = new ProcessHolder(process);
       processes.put(vmNum, holder);
@@ -239,7 +245,7 @@ class ProcessManager implements ChildVMLauncher {
   }
 
   private String[] buildJavaCommand(int vmNum, int namingPort, VmConfiguration configuration,
-      int remoteStubPort)
+      int remoteStubPort, File workingDirectory, boolean classLoaderIsolated)
       throws IOException {
     Path javaCommand = configuration.javaVersion().home().resolve("bin").resolve("java");
     String classPath;
@@ -271,9 +277,13 @@ class ProcessManager implements ChildVMLauncher {
     String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<>();
     cmds.add(javaCommand.toString());
-    cmds.add("-classpath");
-    // Set the classpath via a "pathing" jar to shorten cmd to a length allowed by Windows.
-    cmds.add(createPathingJar(getVMDir(geodeVersion, vmNum).getName(), classPath).toString());
+    if (!classLoaderIsolated) {
+      cmds.add("-classpath");
+      classPath = removeJbossFromPath(classPath);
+      // Set the classpath via a "pathing" jar to shorten cmd to a length allowed by Windows.
+      cmds.add(createPathingJar(getVMDir(geodeVersion, vmNum).getName(), classPath).toString());
+    }
+
     cmds.add("-D" + DUnitLauncher.REMOTE_STUB_PORT_PARAM + "=" + remoteStubPort);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
@@ -304,8 +314,7 @@ class ProcessManager implements ChildVMLauncher {
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
-    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
-    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
+    // cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");
     cmds.add("-D" + GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
@@ -320,11 +329,85 @@ class ProcessManager implements ChildVMLauncher {
     if (configuration.javaVersion().specificationVersion() >= 11) {
       cmds.addAll(getJvmModuleOptions());
     }
-    cmds.add(ChildVM.class.getName());
+
+    if (classLoaderIsolated) {
+      cmds.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+      cmds.add(
+          "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+      final String GEODE_DISTRIBUTED_TEST_HOME =
+          System.getenv("GEODE_DISTRIBUTED_TEST_HOME") == null ? ""
+              : System.getenv("GEODE_DISTRIBUTED_TEST_HOME");
+      final String GEODE_DISTRIBUTED_TEST_MODULE_NAME =
+          System.getenv("GEODE_DISTRIBUTED_TEST_MODULE_NAME");
+      if (GEODE_DISTRIBUTED_TEST_MODULE_NAME == null) {
+        throw new IllegalArgumentException(
+            "GEODE_DISTRIBUTED_TEST_MODULE_NAME environment variable not set");
+      }
+      addJBossClassPath(GEODE_DISTRIBUTED_TEST_HOME, cmds);
+      cmds.add("org.jboss.modules.Main");
+      cmds.add("-mp");
+      cmds.add(
+          getJBossModulePaths(GEODE_DISTRIBUTED_TEST_HOME, GEODE_DISTRIBUTED_TEST_MODULE_NAME,
+              workingDirectory));
+      cmds.add("geode");
+    } else {
+      cmds.add(ChildVM.class.getName());
+    }
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  private String getJBossModulePaths(String GEODE_DISTRIBUTED_TEST_HOME,
+      String GEODE_DISTRIBUTED_TEST_MODULE_NAME, File workingDirectory) {
+    Path moduleDescriptorsDirectory =
+        Paths.get(GEODE_DISTRIBUTED_TEST_HOME, "moduleDescriptors",
+            GEODE_DISTRIBUTED_TEST_MODULE_NAME).toAbsolutePath();
+    Path deploymentsDirectory = workingDirectory.toPath().resolve("deployments").toAbsolutePath();
+    return moduleDescriptorsDirectory + File.pathSeparator + deploymentsDirectory;
+  }
+
+  private String removeJbossFromPath(String classpath) {
+    String[] jars = classpath.split(File.pathSeparator);
+    StringBuilder sb = new StringBuilder(classpath.length());
+    boolean firstjar = true;
+    for (String jar : jars) {
+      if (!jar.contains("jboss") || jar.contains("distributedTest")) {
+        if (!firstjar) {
+          sb.append(File.pathSeparator);
+        }
+        sb.append(jar);
+        firstjar = false;
+      }
+    }
+    return sb.toString();
+  }
+
+  private void addJBossClassPath(String rootPath, List<String> commandLine) {
+    commandLine.add("-classpath");
+    String libPath = rootPath + File.separator + "lib";
+    File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
+        () -> new GemFireConfigException(
+            "jboss-modules jar not found in " + libPath));
+    File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
+        libPath).orElseThrow(
+            () -> new GemFireConfigException(
+                "geode-jboss-extensions jar not found in " + libPath));
+
+    commandLine.add(
+        jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath());
+  }
+
+  private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
+    File libDir = new File(path);
+    if (libDir.isDirectory()) {
+      File[] files = libDir.listFiles((dir, name) -> name.startsWith(artifactId));
+      if (files.length > 0) {
+        return Optional.of(files[0]);
+      }
+    }
+    return Optional.empty();
   }
 
   // Write the entire classpath to a jar file. The command line can specify the child VM's

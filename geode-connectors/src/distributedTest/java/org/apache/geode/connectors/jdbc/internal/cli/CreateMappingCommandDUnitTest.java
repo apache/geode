@@ -153,6 +153,7 @@ public class CreateMappingCommandDUnitTest {
     executeSql("drop table mySchema." + EMPLOYEE_REGION);
     executeSql("drop table mySchema." + EMPLOYEE_UPPER);
     executeSql("drop table mySchema." + EMPLOYEE_NUMERIC);
+    undeployJars();
   }
 
   private void executeSql(String sql) {
@@ -571,6 +572,11 @@ public class CreateMappingCommandDUnitTest {
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
     csb.addOption(CliStrings.JAR, outputJar.getAbsolutePath());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  private void undeployJars() {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.UNDEPLOY);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 

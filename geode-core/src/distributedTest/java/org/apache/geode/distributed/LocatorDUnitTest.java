@@ -21,6 +21,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -462,7 +464,7 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     addDSProps(properties);
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
 
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
@@ -534,7 +536,7 @@ public class LocatorDUnitTest implements Serializable {
     Properties properties = getClusterProperties(locators, "true");
     addDSProps(properties);
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     addIgnoredException(ConnectException.class);
@@ -611,11 +613,11 @@ public class LocatorDUnitTest implements Serializable {
     Properties properties = getClusterProperties(locators, "true");
     addDSProps(properties);
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     vm3.invoke(() -> {
-      Locator loc = Locator.startLocatorAndDS(port2, null, properties);
+      Locator loc = startLocatorWithPortAndProperties(port2, properties);
       system = (InternalDistributedSystem) loc.getDistributedSystem();
       MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     });
@@ -684,13 +686,15 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
     properties.setProperty(MEMBER_TIMEOUT, "2000");
+    properties.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+    properties.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
     addDSProps(properties);
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     vm3.invoke(() -> {
-      Locator loc = Locator.startLocatorAndDS(port2, null, properties);
+      Locator loc = startLocatorWithPortAndProperties(port2, properties);
       system = (InternalDistributedSystem) loc.getDistributedSystem();
     });
 
@@ -778,13 +782,13 @@ public class LocatorDUnitTest implements Serializable {
     addDSProps(properties);
 
     locatorThatWillBeShutdownVM.invoke(() -> {
-      Locator localLocator = Locator.startLocatorAndDS(port2, null, properties);
+      Locator localLocator = startLocatorWithPortAndProperties(port2, properties);
       system = (InternalDistributedSystem) localLocator.getDistributedSystem();
       assertThat(localLocator.getDistributedSystem().isConnected()).isTrue();
     });
 
     // Test runner will be locator 2
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertThat(locator.getDistributedSystem().isConnected()).isTrue();
     DistributedSystem testRunnerLocatorDS = locator.getDistributedSystem();
@@ -1272,7 +1276,7 @@ public class LocatorDUnitTest implements Serializable {
     Properties props = getBasicProperties(locators);
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, props);
+    Locator locator = startLocatorWithPortAndProperties(port1, props);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     system.disconnect();
     locator.stop();
@@ -1308,7 +1312,7 @@ public class LocatorDUnitTest implements Serializable {
     }
 
     logger.info("Starting locator");
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     vm0.invoke(() -> {
@@ -1319,7 +1323,7 @@ public class LocatorDUnitTest implements Serializable {
     locator.stop();
 
     logger.info("Starting locator");
-    locator = Locator.startLocatorAndDS(port1, null, properties);
+    locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     vm0.invoke("disconnect", () -> getConnectedDistributedSystem(properties).disconnect());
@@ -1339,7 +1343,7 @@ public class LocatorDUnitTest implements Serializable {
       assertThat(stateFile.delete()).isTrue();
     }
 
-    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    Locator locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
     vm0.invoke(() -> {
@@ -1347,13 +1351,13 @@ public class LocatorDUnitTest implements Serializable {
     });
 
     locator.stop();
-    locator = Locator.startLocatorAndDS(port1, null, properties);
+    locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
         .getViewMembers().size());
 
     locator.stop();
-    locator = Locator.startLocatorAndDS(port1, null, properties);
+    locator = startLocatorWithPortAndProperties(port1, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
         .getViewMembers().size());
@@ -1372,11 +1376,14 @@ public class LocatorDUnitTest implements Serializable {
     return system;
   }
 
-  private void startLocatorWithPortAndProperties(final int port, final Properties properties)
+  private Locator startLocatorWithPortAndProperties(final int port, final Properties properties)
       throws IOException {
+    properties.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+    properties.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
     Locator locator = Locator.startLocatorAndDS(port, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertThat(locator).isNotNull();
+    return locator;
   }
 
   private String getSingleKeyKeystore() {
@@ -1400,6 +1407,8 @@ public class LocatorDUnitTest implements Serializable {
       AsyncInvocation<Void> async1 = loc1.invokeAsync("startLocator1", () -> {
         getBlackboard().signalGate("locator1");
         getBlackboard().waitForGate("go", 60, SECONDS);
+        properties.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+        properties.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
         startLocatorWithPortAndProperties(port1, properties);
       });
 
@@ -1446,11 +1455,9 @@ public class LocatorDUnitTest implements Serializable {
 
   private Locator startLocatorBase(Properties properties, int port) throws IOException {
     properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
-
-    Locator locator = Locator.startLocatorAndDS(port, null, properties);
-    system = (InternalDistributedSystem) locator.getDistributedSystem();
-
-    return locator;
+    properties.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+    properties.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+    return startLocatorWithPortAndProperties(port, properties);
   }
 
   void startLocatorWithSomeBasicProperties(VM vm, int port) {

@@ -19,7 +19,7 @@ version: '3.0'
 services:
 
   db:
-    image: postgres
+    image: postgres:latest
     restart: always
     environment:
       POSTGRES_DB: test

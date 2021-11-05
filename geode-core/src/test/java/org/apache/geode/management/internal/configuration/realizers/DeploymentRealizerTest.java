@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Instant;
 
@@ -96,22 +95,21 @@ public class DeploymentRealizerTest {
 
   @Test
   public void createWithNewJar() throws Exception {
-    String canonicalPath = "/home/sweet/home/test/test.jar";
+    String canonicalPath = Paths.get("home", "sweet", "home", "test", "test.jar").toString();
     Deployment expectedDeployment = new Deployment("test.jar", "by", "time");
-    File file = new File(canonicalPath);
-    expectedDeployment.setFile(file);
+    expectedDeployment.setFile(new File(canonicalPath));
     deployment = new Deployment(canonicalPath, "test", Instant.now().toString());
     deployment.setFile(new File("/test/test.jar"));
     doReturn(Success.of(expectedDeployment)).when(realizer).deploy(any(Deployment.class));
 
     RealizationResult realizationResult = realizer.create(deployment, null);
 
-    assertThat(realizationResult.getMessage()).contains(file.getCanonicalPath());
+    assertThat(realizationResult.getMessage()).contains(canonicalPath);
     assertThat(realizationResult.isSuccess()).isTrue();
   }
 
   @Test
-  public void createWithFailedDeploy() throws IOException, ClassNotFoundException {
+  public void createWithFailedDeploy() {
     String eMessage = "test runtime exception";
     RuntimeException runtimeException = new RuntimeException(eMessage);
     doThrow(runtimeException).when(realizer).deploy(any(Deployment.class));

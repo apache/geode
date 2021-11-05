@@ -128,6 +128,18 @@ tests:
   PLATFORM: linux
   RAM: '250'
   name: distributed
+- ARTIFACT_SLUG: distributedtestclasloaderisolatedfiles
+  CALL_STACK_TIMEOUT: '13500'
+  CPUS: '96'
+  DISK: '200GB'
+  DUNIT_PARALLEL_FORKS: '24'
+  EXECUTE_TEST_TIMEOUT: 4h
+  GRADLE_TASK: -Dclassloader.isolated=true distributedTest
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'true'
+  PLATFORM: linux
+  RAM: '250'
+  name: distributed-classloader-isolated
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
   CPUS: '96'
