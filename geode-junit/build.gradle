@@ -22,9 +22,6 @@ compileJava {
   options.compilerArgs << '-Xlint:-sunapi'
   options.compilerArgs << '-XDenableSunApiLintControl'
 }
-configurations {
-  jbossModular
-}
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))

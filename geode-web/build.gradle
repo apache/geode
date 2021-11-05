@@ -27,7 +27,6 @@ apply plugin: 'geode.jboss-modules-plugin'
 jar.enabled = false
 
 configurations {
-  distributedTestJbossModular
   war {}
 }
 dependencies {

@@ -34,6 +34,7 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
     if (getProject().getPluginManager().hasPlugin("java-library")) {
       addDependencies("compile" + StringUtils.capitalize("distributedTest") + "Java");
       addDependencies("process" + StringUtils.capitalize("distributedTest") + "Resources");
+      addDependencies("jar");
     }
   }
 
@@ -81,27 +82,18 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
   private Set<String> generateResourceRoots(Project project) {
 
     Set<String> resourceRoots = new TreeSet<>();
+    String[] facets = new String[] {"commonTest", "distributedTest", "main"};
 
-    String distributedTest = "distributedTest";
-    String commonTest = "commonTest";
-
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("classes").resolve("java").resolve(distributedTest)
-            .toString());
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("resources").resolve(distributedTest).toString());
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("generated-resources").resolve(distributedTest)
-            .toString());
-
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("classes").resolve("java").resolve(commonTest)
-            .toString());
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("resources").resolve(commonTest).toString());
-    validateAndAddResourceRoot(resourceRoots,
-        project.getBuildDir().toPath().resolve("generated-resources").resolve(commonTest)
-            .toString());
+    for (String facet : facets) {
+      validateAndAddResourceRoot(resourceRoots,
+          project.getBuildDir().toPath().resolve("classes").resolve("java").resolve(facet)
+              .toString());
+      validateAndAddResourceRoot(resourceRoots,
+          project.getBuildDir().toPath().resolve("resources").resolve(facet).toString());
+      validateAndAddResourceRoot(resourceRoots,
+          project.getBuildDir().toPath().resolve("generated-resources").resolve(facet)
+              .toString());
+    }
     return resourceRoots;
   }
 

@@ -20,11 +20,6 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 apply plugin: 'geode.jboss-modules-plugin'
 
-configurations {
-  jbossModular
-  distributedTestJbossModular
-}
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
