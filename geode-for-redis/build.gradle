@@ -41,7 +41,7 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation('it.unimi.dsi:fastutil')
   implementation('com.github.davidmoten:geo')
-  implementation('io.netty:netty-all')
+  implementation('io.netty:netty-handler')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
@@ -54,6 +54,7 @@ dependencies {
   testImplementation('com.pholser:junit-quickcheck-generators')
   testImplementation('pl.pragmatists:JUnitParams')
 
+  commonTestImplementation('io.netty:netty-codec-redis')
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
   commonTestImplementation('org.testcontainers:testcontainers')
@@ -79,6 +80,7 @@ dependencies {
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
+  acceptanceTestRuntimeOnly('io.netty:netty-codec-redis')
   acceptanceTestRuntimeOnly(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
     exclude module: 'spring-boot-starter-logging'
@@ -92,6 +94,7 @@ dependencies {
   acceptanceTestImplementation('io.lettuce:lettuce-core')
   acceptanceTestRuntimeOnly('io.lettuce:lettuce-core')
 
+  distributedTestRuntimeOnly('io.netty:netty-codec-redis')
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
