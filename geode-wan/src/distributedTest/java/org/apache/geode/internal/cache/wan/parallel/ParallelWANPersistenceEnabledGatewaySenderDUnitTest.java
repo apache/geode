@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
-  protected static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public ParallelWANPersistenceEnabledGatewaySenderDUnitTest() {
     super();
@@ -324,7 +325,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     return () -> WANTestBase.waitForSenderRunningState("ln");
   }
 
-  protected SerializableRunnableIF waitForSenderNonRunnable() {
+  private SerializableRunnableIF waitForSenderNonRunnable() {
     return () -> WANTestBase.waitForSenderNonRunningState("ln");
   }
 
@@ -2201,13 +2202,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     AsyncInvocation<Void> waitForConditionInVM7 = vm7.invokeAsync(() -> {
       BlockingDestroyRegionObserver observer =
           (BlockingDestroyRegionObserver) DistributionMessageObserver.getInstance();
-      observer.startedBlocking.await(1, TimeUnit.MINUTES);
+      observer.startedBlocking.await(getTimeout().toMinutes(), TimeUnit.MINUTES);
     });
 
-    try {
-      waitForConditionInVM7.await();
-    } finally {
-    }
+    waitForConditionInVM7.await();
+
 
     AsyncInvocation<Void> startSenderwithCleanQueuesInVM7 =
         vm7.invokeAsync(() -> startSenderwithCleanQueues("ln"));
@@ -2233,7 +2232,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   }
 
   private static class BlockingDestroyRegionObserver extends DistributionMessageObserver {
-    private CountDownLatch startedBlocking = new CountDownLatch(1);
+    private final CountDownLatch startedBlocking = new CountDownLatch(1);
 
     @Override
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
