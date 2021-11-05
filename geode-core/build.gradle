@@ -23,6 +23,8 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 sourceSets {
   jca {
     compileClasspath += configurations.compileClasspath
@@ -220,7 +222,6 @@ dependencies {
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
 
-
   //jaxb is used by cluster configuration
   implementation('javax.xml.bind:jaxb-api')
 
@@ -233,8 +234,6 @@ dependencies {
   runtimeOnly('com.sun.istack:istack-commons-runtime') {
     exclude group: '*'
   }
-
-  runtimeOnly(project(':geode-deployment:geode-deployment-legacy'))
 
   //Commons lang is used in many different places in core
   implementation('org.apache.commons:commons-lang3')
@@ -249,7 +248,6 @@ dependencies {
 
   //micrometer is used for micrometer based metrics from geode geode
   api('io.micrometer:micrometer-core')
-
 
   //FastUtil contains optimized collections that are used in multiple places in core
   implementation('it.unimi.dsi:fastutil')
@@ -288,7 +286,6 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-
   implementation('io.swagger:swagger-annotations') {
     ext.optional = true
   }
@@ -321,10 +318,12 @@ dependencies {
   api(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
 
+  //Only for running without classloader isolation and will be excluded from the module descriptors.
+  runtimeOnly(project(':geode-deployment:geode-deployment-chained-classloader'))
+
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency
   api(project(':geode-management'))
-
 
   jcaImplementation(sourceSets.main.output)
 
@@ -395,7 +394,6 @@ dependencies {
   distributedTestImplementation('net.openhft:compiler')
 
   distributedTestRuntimeOnly('org.apache.derby:derby')
-
 
   upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'

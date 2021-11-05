@@ -72,5 +72,4 @@ public class LuceneQueriesWithRegionCreatedBeforeReindexDUnitTest extends Lucene
     ai2.checkException();
     ai3.checkException();
   }
-
 }

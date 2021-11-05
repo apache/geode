@@ -132,13 +132,13 @@ org/apache/geode/test/dunit/RMIException,false,cause:java/lang/Throwable,classNa
 org/apache/geode/test/dunit/RMIException$HokeyException,false,stackTrace:java/lang/String,toString:java/lang/String
 org/apache/geode/test/dunit/SerializableCallable,false,id:long,name:java/lang/String
 org/apache/geode/test/dunit/SerializableRunnable,false,id:long,name:java/lang/String
-org/apache/geode/test/dunit/VM,false,available:boolean,client:org/apache/geode/test/dunit/internal/RemoteDUnitVMIF,host:org/apache/geode/test/dunit/Host,id:int,version:java/lang/String
+org/apache/geode/test/dunit/VM,false,available:boolean,classLoaderIsolated:boolean,client:org/apache/geode/test/dunit/internal/RemoteDUnitVMIF,host:org/apache/geode/test/dunit/Host,id:int,version:java/lang/String
 org/apache/geode/test/dunit/cache/CacheTestCase,false
 org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,false,RootRegionName:java/lang/String,cacheTestFixture:org/apache/geode/test/dunit/cache/internal/CacheTestFixture
 org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase$1,false,this$0:org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,val$exceptionStringToIgnore:java/lang/String
 org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase$2,false,this$0:org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,val$exceptionStringToIgnore:java/lang/String
-org/apache/geode/test/dunit/internal/DUnitHost,true,-8034165624503666383
-org/apache/geode/test/dunit/internal/DUnitLauncher$1,false,val$locatorLogFile:java/io/File,val$port:int
+org/apache/geode/test/dunit/internal/DUnitHost,true,-8034165624503666383,classloaderIsolatedOverride:boolean
+org/apache/geode/test/dunit/internal/DUnitLauncher$1,false,val$locatorLogFile:java/io/File
 org/apache/geode/test/dunit/internal/IdentifiableCallable,false,delegate:org/apache/geode/test/dunit/SerializableCallableIF,id:long,name:java/lang/String
 org/apache/geode/test/dunit/internal/IdentifiableRunnable,false,delegate:org/apache/geode/test/dunit/SerializableRunnableIF,id:long,name:java/lang/String
 org/apache/geode/test/dunit/internal/InternalBlackboardImpl,false,gates:java/util/Map,mailboxes:java/util/Map
@@ -149,7 +149,7 @@ org/apache/geode/test/dunit/internal/MethodInvokerResult$1,false
 org/apache/geode/test/dunit/internal/RemoteDUnitVM,true,251934856609958734
 org/apache/geode/test/dunit/internal/StackTrace,false
 org/apache/geode/test/dunit/internal/StackTraceInfo,false,message:java/lang/String,stackTraceElements:java/lang/StackTraceElement[]
-org/apache/geode/test/dunit/rules/AbstractDistributedRule,false,invoker:org/apache/geode/test/dunit/rules/RemoteInvoker,vmCount:int,vmEventListener:org/apache/geode/test/dunit/VMEventListener
+org/apache/geode/test/dunit/rules/AbstractDistributedRule,false,classloaderIsolated:boolean,invoker:org/apache/geode/test/dunit/rules/RemoteInvoker,vmCount:int,vmEventListener:org/apache/geode/test/dunit/VMEventListener
 org/apache/geode/test/dunit/rules/AbstractDistributedRule$1,false,this$0:org/apache/geode/test/dunit/rules/AbstractDistributedRule,val$base:org/junit/runners/model/Statement,val$description:org/junit/runner/Description
 org/apache/geode/test/dunit/rules/AbstractDistributedRule$InternalVMEventListener,false,this$0:org/apache/geode/test/dunit/rules/AbstractDistributedRule
 org/apache/geode/test/dunit/rules/CacheRule,false,config:java/util/Properties,createCache:boolean,createCacheInAll:boolean,createCacheInVMs:java/util/List,destroyRegions:boolean,disconnectAfter:boolean,replaceConfig:boolean,systemProperties:java/util/Properties

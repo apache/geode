@@ -47,7 +47,7 @@ public class GemFireVersionJUnitTest {
   @Test
   public void testNoFile() {
     String noFile = "not a property file";
-    VersionDescription noVersion = new VersionDescription(noFile);
+    VersionDescription noVersion = new VersionDescription(null, noFile);
 
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
@@ -62,7 +62,7 @@ public class GemFireVersionJUnitTest {
   @Test
   public void testNoFileGetProperty() {
     String noFile = "not a property file";
-    VersionDescription noVersion = new VersionDescription(noFile);
+    VersionDescription noVersion = new VersionDescription(null, noFile);
 
     String err =
         String.format("<Could not find resource org/apache/geode/internal/%s>",

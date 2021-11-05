@@ -87,43 +87,20 @@ datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/group1_functions.v1
 
 For more information on `gfsh` usage, see [gfsh](../../tools_modules/gfsh/chapter_overview.html).
 
-## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A" class="no-quick-link"></a>Deployment Location for JAR Files
-
-The system location where JAR files are written on each member is determined by the `deploy-working-dir` <%=vars.product_name%> property configured for that member. For example, you could have the following configured in the `gemfire.properties` file for your member:
-
-``` pre
-#gemfire.properties
-deploy-working-dir=/usr/local/gemfire/deploy
-```
-
-This deployment location can be local or a shared network resource (such as a mount location) used by multiple members in order to reduce disk space usage. If you use a shared directory, you still need to deploy the JAR file on every member that you want to have access to the application, because deployment updates the CLASSPATH and auto-registers functions.
-
 ## About Deploying JAR Files and the Cluster Configuration Service
 
 By default, the cluster configuration service distributes deployed JAR files to all locators in the cluster. When you start a new server using `gfsh`, the locator supplies configuration files and deployed jar files to the member and writes them to the server's directory.
 
 See [Overview of the Cluster Configuration Service](gfsh_persist.html).
 
-## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
-
-When you deploy JAR files to a cluster or member group, the JAR file is modified to indicate version information in its name. Each JAR filename contains a version number inserted just before the `.jar` suffix. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `MyClasses.v5.jar` when you list all deployed jars.
-
-When you deploy a new JAR file, the member receiving the deployment checks whether the JAR file is a duplicate, either because the JAR file has already been deployed on that member or because the JAR file has already been deployed to a shared deployment working directory that other members are also using. If another member has already deployed this JAR file to the shared directory (determined by doing a byte-for-byte compare to the latest version in its directory), the member receiving the latest deployment does not write the file to disk. Instead, the member updates the ClassPathLoader to use the already deployed JAR file. If a newer version of the JAR file is detected on disk and is already in use, the deployment is canceled.
-
-When a member begins using a JAR file, the member obtains a shared lock on the file. If the member receives a newer version by deployment, the member releases the shared lock and tries to delete the existing JAR file in favor of the newer version. If no other member has a shared lock on the existing JAR, the existing, older version JAR is deleted.
-
-## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_F8AC59EEC8C5434FBC6F38A12A7371CE" class="no-quick-link"></a>Automatic Class Path Loading
-
-When a cache is started, the new cache requests that the latest versions of each JAR file in the current working directory be added to the ClassPathLoader. If a JAR file has already been deployed to the ClassPathLoader, the ClassPathLoader updates its loaded version if a newer version is found; otherwise, there is no change. If detected, older versions of the JAR files are deleted if no other member has a shared lock on them.
-
-Undeploying a JAR file does not automatically unload the classes that were loaded during deployment. You need to restart your members to unload those classes.
-
-When a cache is closed it requests that all currently deployed JAR files be removed from the ClassPathLoader.
-
-If you are using a shared deployment working directory, all members sharing the directory should belong to the same member group. Upon restart, all members that share the same deployment working directory will deploy and autoload their CLASSPATH with any JARs found in the current working directory. This means that some members may load the JARs even though they are not part of the member group that received the original deployment.
-
 ## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_C1ECA5A66C27403A9A18D0E04EFCC66D" class="no-quick-link"></a>Automatic Function Registration
 
 When you deploy a JAR file that contains a function (in other words, contains a class that implements the Function interface), the function is automatically registered through the `FunctionService.registerFunction` method. If another JAR file is deployed (either with the same JAR filename or another filename) with the same function, the new implementation of the function is registered, overwriting the old one. If a JAR file is undeployed, any functions that were auto-registered at the time of deployment are unregistered. Because deploying a JAR file that has the same name multiple times results in the JAR being un-deployed and re-deployed, functions in the JAR are unregistered and re-registered each time this occurs. If a function with the same ID is registered from multiple differently named JAR files, the function is unregistered if any of those JAR files are re-deployed or un-deployed.
 
 During `cache.xml` load, the parameters for any declarables are saved. If functions found in a JAR file are also declarable, and have the same class name as the declarables whose parameters were saved after loading cache.xml, then function instances are created using those Parameters and are also registered. Therefore, if the same function is declared multiple times in the `cache.xml` with different sets of parameters, when the JAR is deployed a function is instantiated for each set of parameters. If any functions are registered using parameters from a `cache.xml` load, the default, no-argument function is not registered.
+
+## About Deployment Implementations
+
+There are two different implementations of the deployment system that each behave a bit differently: chained, which is the default and has been around the longest, and classloader isolated. Classloader isolation can be enabled/disabled using the `--enable-classloader-isolation` flag when starting servers through Gfsh using the `start server` command. If classloader isolation is not enabled, the system will default to chained. 
+
+The above information applies to both implementations. For more information on each implementation please read [Chained](deploying_application_jars_chained.html) and [Classloader Isolated](deploying_application_jars_classloader_isolated.html).

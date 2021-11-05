@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.logging.log4j.Level.INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -37,6 +36,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
 @Warmup(iterations = 1, time = 1, timeUnit = MINUTES)
@@ -54,13 +54,13 @@ public class FastLoggerEnabledLevelBenchmark {
 
   @Setup(Level.Trial)
   public void setUp() {
-    logger = LogManager.getLogger();
-    fastLogger = new FastLogger(LogManager.getLogger());
+    logger = LogService.getLogger();
+    fastLogger = new FastLogger(LogService.getLogger());
 
     FastLogger.setDelegating(false);
 
     org.apache.logging.log4j.core.Logger coreLogger =
-        (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
+        (org.apache.logging.log4j.core.Logger) LogService.getRootLogger();
     LoggerContext context = coreLogger.getContext();
 
     Configuration configuration = context.getConfiguration();

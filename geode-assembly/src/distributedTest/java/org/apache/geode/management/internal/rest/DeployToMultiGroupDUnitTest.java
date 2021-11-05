@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 
@@ -58,6 +59,7 @@ public class DeployToMultiGroupDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     // prepare the jars to be deployed
+    assumeThat(System.getenv("CLASSLOADER_ISOLATED")).isEqualTo("false");
     stagingDir = stagingTempDir.newFolder("staging");
     jar = new File(stagingDir, "lib.jar");
     JarBuilder jarBuilder = new JarBuilder();

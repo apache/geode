@@ -14,17 +14,17 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -32,12 +32,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
@@ -45,27 +43,21 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  * clusters (that are not connected to each other through WAN).
  */
 @Category({SerializationTest.class})
-public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
+public class PdxMultiClusterClientServerDUnitTest {
 
   public static final String REGION_NAME = "testSimplePdx";
   public static final int SITE_A_DSID = 1;
   public static final int SITE_B_DSID = 2;
   public static final int SITE_C_DSID = 3;
-  private VM locatorA;
-  private VM locatorB;
-  private VM locatorC;
-  private VM serverA;
-  private VM serverB;
-  private VM serverC;
+  private MemberVM serverA;
+  private MemberVM serverB;
+  private MemberVM serverC;
 
-  @Before
-  public void setupVMs() {
-    locatorA = VM.getVM(0);
-    locatorB = VM.getVM(1);
-    serverA = VM.getVM(2);
-    serverB = VM.getVM(3);
-    locatorC = VM.getVM(4);
-    serverC = VM.getVM(5);
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+
+  private static Cache getCache() {
+    return CacheFactory.getAnyInstance();
   }
 
   @Test
@@ -149,9 +141,9 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
   public void sendingTypeIgnoresClustersThatAreNotRunning() {
 
     ClientCache client = createScenario();
-    int siteCLocatorPort = createLocator(locatorC, SITE_C_DSID);
+    int siteCLocatorPort = createLocator(4, SITE_C_DSID);
 
-    createServerRegion(serverC, siteCLocatorPort, "regionC", SITE_C_DSID);
+    serverC = createServerRegion(5, siteCLocatorPort, "regionC", SITE_C_DSID);
 
     Pool poolC =
         PoolManager.createFactory().addLocator("localhost", siteCLocatorPort).create("poolC");
@@ -178,7 +170,7 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
         getCache().getRegion("regionA").get("key")));
   }
 
-  private void createType(VM vm, String region) {
+  private void createType(MemberVM vm, String region) {
     vm.invoke(() -> {
       getCache().getRegion(region).put("createType", new SimpleClass(5, (byte) 6));
 
@@ -193,11 +185,11 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
    * - regionB = connected using poolB to serverB
    */
   private ClientCache createScenario() {
-    int siteALocatorPort = createLocator(locatorA, SITE_A_DSID);
-    int siteBLocatorPort = createLocator(locatorB, SITE_B_DSID);
+    int siteALocatorPort = createLocator(0, SITE_A_DSID);
+    int siteBLocatorPort = createLocator(1, SITE_B_DSID);
 
-    createServerRegion(serverA, siteALocatorPort, "regionA", SITE_A_DSID);
-    createServerRegion(serverB, siteBLocatorPort, "regionB", SITE_B_DSID);
+    serverA = createServerRegion(2, siteALocatorPort, "regionA", SITE_A_DSID);
+    serverB = createServerRegion(3, siteBLocatorPort, "regionB", SITE_B_DSID);
 
     ClientCache client = new ClientCacheFactory().create();
 
@@ -216,31 +208,25 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
     return client;
   }
 
-  private int createLocator(VM vm, int dsid) {
-    return vm.invoke(() -> {
-
-      Properties properties = new Properties();
-      properties.setProperty(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, Integer.toString(dsid));
-      Locator locator = Locator.startLocatorAndDS(0, null, null);
-      return locator.getPort();
-    });
+  private int createLocator(int vmID, int dsid) {
+    Properties properties = new Properties();
+    properties.setProperty(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, Integer.toString(dsid));
+    MemberVM memberVM = clusterStartupRule.startLocatorVM(vmID, properties);
+    return memberVM.getPort();
   }
 
 
-  private int createServerRegion(VM vm, int locatorPort, String regionName, int dsid) {
-    SerializableCallableIF<Integer> createRegion = () -> {
-      Properties properties = new Properties();
-      properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-      properties.setProperty(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, Integer.toString(dsid));
-      Cache cache = getCache(properties);
+  private MemberVM createServerRegion(int vmID, int locatorPort, String regionName, int dsID) {
+    MemberVM serverVM = clusterStartupRule.startServerVM(vmID,
+        serverStarterRule -> serverStarterRule
+            .withProperty(ConfigurationProperties.DISTRIBUTED_SYSTEM_ID, Integer.toString(dsID))
+            .withConnectionToLocator(locatorPort));
+
+    serverVM.invoke(() -> {
+      Cache cache = CacheFactory.getAnyInstance();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-      CacheServer cacheServer = cache.addCacheServer();
-      cacheServer.setPort(0);
-      cacheServer.start();
-      return cacheServer.getPort();
-    };
+    });
 
-    return vm.invoke(createRegion);
+    return serverVM;
   }
-
 }

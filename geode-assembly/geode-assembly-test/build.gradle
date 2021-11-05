@@ -17,9 +17,6 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-
-
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   compileOnly(project(':extensions:geode-modules-test'))

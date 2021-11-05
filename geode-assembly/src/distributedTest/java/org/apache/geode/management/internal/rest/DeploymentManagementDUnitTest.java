@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert.assertManagementGetResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.util.List;
@@ -42,36 +43,40 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert;
 import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 
+/**
+ * This test is only run when we are NOT running with classloader isolation.
+ *
+ * @see DeploymentManagementClassloaderIsolatedDUnitTest
+ */
 public class DeploymentManagementDUnitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
-
-  private static MemberVM locator, server1, server2;
 
   private static ClusterManagementService client;
 
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
-  private static File stagingDir, group1Jar, group2Jar, clusterJar;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    // ignore if classloader isolation is enabled
+    assumeFalse(Boolean.parseBoolean(System.getProperty("classloader.isolated")));
     // prepare the jars to be deployed
-    stagingDir = stagingTempDir.newFolder("staging");
-    group1Jar = new File(stagingDir, "group1.jar");
-    group2Jar = new File(stagingDir, "group2.jar");
-    clusterJar = new File(stagingDir, "cluster.jar");
+    File stagingDir = stagingTempDir.newFolder("staging");
+    File group1Jar = new File(stagingDir, "group1.jar");
+    File group2Jar = new File(stagingDir, "group2.jar");
+    File clusterJar = new File(stagingDir, "cluster.jar");
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(group1Jar, "Class1");
     jarBuilder.buildJarFromClassNames(group2Jar, "Class2");
     jarBuilder.buildJarFromClassNames(clusterJar, "Class3");
 
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService().withSecurityManager(
+    MemberVM locator = cluster.startLocatorVM(0, l -> l.withHttpService().withSecurityManager(
         SimpleSecurityManager.class));
     int locatorPort = locator.getPort();
-    server1 = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort).withProperty(
+    cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort).withProperty(
         DistributionConfig.GROUPS_NAME, "group1").withCredential("cluster", "cluster"));
-    server2 = cluster.startServerVM(2, s -> s.withConnectionToLocator(locatorPort).withProperty(
+    cluster.startServerVM(2, s -> s.withConnectionToLocator(locatorPort).withProperty(
         DistributionConfig.GROUPS_NAME, "group2").withCredential("cluster", "cluster"));
 
     client = new ClusterManagementServiceBuilder()
@@ -79,7 +84,6 @@ public class DeploymentManagementDUnitTest {
         .setUsername("cluster")
         .setPassword("cluster")
         .build();
-
 
     Deployment deployment = new Deployment();
     deployment.setFile(clusterJar);
@@ -109,7 +113,7 @@ public class DeploymentManagementDUnitTest {
   }
 
   @Test
-  public void listByGroup() throws Exception {
+  public void listByGroup() {
     Deployment filter = new Deployment();
     filter.setGroup("group1");
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(filter);
@@ -124,7 +128,7 @@ public class DeploymentManagementDUnitTest {
   }
 
   @Test
-  public void listById() throws Exception {
+  public void listById() {
     Deployment filter = new Deployment();
     filter.setFileName("cluster.jar");
 
@@ -148,7 +152,7 @@ public class DeploymentManagementDUnitTest {
   }
 
   @Test
-  public void getById() throws Exception {
+  public void getById() {
     Deployment filter = new Deployment();
     filter.setFileName("cluster.jar");
     ClusterManagementGetResult<Deployment, DeploymentInfo> result = client.get(filter);

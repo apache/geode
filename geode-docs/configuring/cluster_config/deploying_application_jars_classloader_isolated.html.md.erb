@@ -1,0 +1,41 @@
+<% set_title("Deploying Application JARs to", product_name_long, "Members With Classloader Isolation") %>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## Overview
+This provides implementation specific details for deploying JAR files when using classloader isolation. Classloader isolation can be enabled/disabled using the `--enable-classloader-isolation` flag when starting servers through Gfsh using the `start server` command. With the classloader isolated approach, JAR files are loaded into their own classloaders which are isolated from the rest of the system and from each other. Deployments will be able to access classes from other deployed JAR files and from the system, but will look inside it's own classloader first before looking externally.
+
+For information common between all deployment implementation, read [Deploying Application Jars](deploying_application_jars.html).
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D36E345C6E254D27B0F4B0C8711F5E6A" class="no-quick-link"></a>Deployment Location for JAR Files
+
+JAR files are placed to into a staging directory on the system and are not copied to the server's working directory. Since JAR files are not located in the working directory, they will not be automatically redeployed from disk when the server restarts. JAR files will be redeployed by cluster configuration assuming it has been enabled.
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
+
+When you deploy a new JAR file, the member receiving the deployment checks whether the JAR file is a duplicate, meaning a JAR file with the same name and byte-for-byte contents is already deployed. If the JAR file is determined to be a duplicate, the deployment will succeed, but no changes will occur as a result. If the JAR file is not a duplicate, the old JAR file will be removed, it's classes will be unloaded, and the new JAR file will be deployed.
+
+When a member begins using a JAR file, the member obtains a shared lock on the file. If the member receives a newer version by deployment, the member releases the shared lock and tries to delete the existing JAR file in favor of the newer version. If no other member has a shared lock on the existing JAR, the existing, older version JAR is deleted.
+
+## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_F8AC59EEC8C5434FBC6F38A12A7371CE" class="no-quick-link"></a>Automatic Class Path Loading
+
+Once a JAR file is deployed, it's classes and resources will be loaded into a classloader whihc will be accessible via the ClassPathLoader.
+
+Undeploying a JAR file automatically unloads the classes and fucntions that were loaded during deployment. You do NOT need to restart your members to unload those classes.
+
+JAR files will not be automatically loaded from disk when the member starts. JAR files will, however, be automcatially deployed by cluster configuration if it is enabled.

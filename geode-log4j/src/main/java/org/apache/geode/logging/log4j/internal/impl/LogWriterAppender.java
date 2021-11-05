@@ -115,6 +115,7 @@ public class LogWriterAppender extends AbstractAppender
     }
     this.loggingSessionRegistry = loggingSessionRegistry;
     paused = startPaused;
+    logWriter = new NullLogWriter();
   }
 
   @PluginBuilderFactory

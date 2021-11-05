@@ -637,7 +637,7 @@ public class RestAPIsAndInterOpsDUnitTest
     VM locator = VM.getVM(0);
     VM manager = VM.getVM(1);
     VM server = VM.getVM(2);
-    VM client = VM.getVM(3);
+    VM client = VM.getVM(3).initializeAsClientVM();
 
     // start locator
     final String hostName = NetworkUtils.getServerHostName();

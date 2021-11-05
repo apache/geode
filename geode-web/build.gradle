@@ -22,6 +22,8 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 jar.enabled = false
 
 configurations {
@@ -69,6 +71,10 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-dunit')) {
   }
+}
+
+distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
 }
 
 distributedTest.dependsOn(war)

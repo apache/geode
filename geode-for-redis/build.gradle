@@ -21,6 +21,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
 apply plugin: 'nebula.facet'
 facets {
   commonTest {
@@ -97,7 +98,7 @@ dependencies {
   distributedTestRuntimeOnly('io.netty:netty-codec-redis')
   distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
   distributedTestCompileOnly('javax.servlet:javax.servlet-api')
-  distributedTestImplementation('org.apache.logging.log4j:log4j-core')
+  distributedTestImplementation(project(':geode-log4j'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)
   distributedTestImplementation('redis.clients:jedis')

@@ -28,7 +28,7 @@ Only one of either `--jars` or `--dir` may be specified.
 **Syntax:**
 
 ``` pre
-deploy [--groups=value(,value)*] [--jars=value(,value)*] [--dir=value]
+deploy [--groups=value(,value)*] [--jars=value(,value)*] [--dir=value] [--dependencies=value]
 ```
 
 <a id="concept_6B38CB283BC048778A8E3908C1BDF221__table_gfk_42h_2w"></a>
@@ -38,6 +38,7 @@ deploy [--groups=value(,value)*] [--jars=value(,value)*] [--dir=value]
 | <span class="keyword parmname">&#8209;&#8209;groups</span> | Group(s) to which the specified JARs will be deployed. If this option is not specified, the deployment will occur on all members. |
 | <span class="keyword parmname">\\-\\-jars</span>   | Path(s) of the JAR(s) to deploy.                                                                                                        |
 | <span class="keyword parmname">\\-\\-dir</span>   | Directory from which to deploy the JARs.                                                                                          |
+| <span class="keyword parmname">\\-\\-dependencies</span>   | Names of other deployments that this deployment should depend on. The deployment will be able to access classes defined in the listed deployments. This option is valid only when starting servers with the --enable-classloader-isolation flag set to true.     |
 
 <span class="tablecap">Table 1. Deploy Parameters</span>
 

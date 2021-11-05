@@ -117,10 +117,10 @@ public class AbstractPoolCacheJUnitTest {
 
     map.put("connection-url", "jdbc:derby:newDB;create=true");
 
-    GemFireTransactionDataSource gtds =
+    GemFireTransactionDataSource tranxDataSourcegtds =
         (GemFireTransactionDataSource) new DataSourceFactory().getTranxDataSource(map, props);
 
-    XAConnection xaconn = (XAConnection) gtds.provider.borrowConnection();
+    XAConnection xaconn = (XAConnection) tranxDataSourcegtds.provider.borrowConnection();
     try {
       Thread.sleep(4);
     } catch (InterruptedException e) {

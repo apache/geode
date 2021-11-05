@@ -22,6 +22,8 @@ evaluationDependsOn(":geode-core")
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 configurations {
   //Configuration used to download mysql jar
   jdbcTestingJars
@@ -35,6 +37,7 @@ sourceSets {
     output.dir(jdbcJarsDir, builtBy: 'downloadJdbcJars')
   }
 }
+
 task downloadJdbcJars(type:Copy) {
   from {configurations.jdbcTestingJars}
   into jdbcJarsDir
@@ -95,12 +98,8 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation('junit:junit')
-  integrationTestImplementation('org.assertj:assertj-core')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-  distributedTestImplementation('junit:junit')
-  distributedTestImplementation('org.assertj:assertj-core')
-  distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntimeOnly('org.apache.derby:derby')
 

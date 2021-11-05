@@ -14,8 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import org.gradle.util.GradleVersion
+
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+  }
+}
 
 rootProject.name = 'geode'
 
@@ -65,8 +71,11 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
-include 'geode-deployment'
-include 'geode-deployment:geode-deployment-legacy'
+include 'geode-deployment:geode-jboss-extensions'
+include 'geode-deployment:geode-deployment-chained-classloader'
+include 'geode-deployment:geode-deployment-jboss-modules'
+include 'geode-deployment:geode-deployment-test'
+include 'geode-deployment:geode-deployment-acceptance'
 include 'geode-server-all'
 
 

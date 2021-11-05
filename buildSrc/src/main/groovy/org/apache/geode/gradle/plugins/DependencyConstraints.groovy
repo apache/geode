@@ -44,7 +44,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("micrometer.version", "1.8.2")
     deps.put("shiro.version", "1.8.0")
     deps.put("slf4j-api.version", "1.7.32")
-    deps.put("jboss-modules.version", "1.11.0.Final")
+    deps.put("jboss-modules.version", "2.0.2.Final")
     deps.put("jackson.version", "2.13.1")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.15")
@@ -243,6 +243,7 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'io.netty', version: '4.1.74.Final') {
       entry('netty-codec-redis')
       entry('netty-handler')
+      entry('netty-all')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

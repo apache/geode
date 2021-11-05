@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -498,6 +500,8 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
   private void startLocatorOnPort(int port1, Properties dsProps, String name) {
     File logFile = new File(getUniqueName() + "-locator" + port1 + ".log");
     try {
+      dsProps.setProperty(HTTP_SERVICE_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+      dsProps.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
       Locator.startLocatorAndDS(port1, logFile, null, dsProps, true, true, name);
     } catch (IllegalStateException | IOException ex) {
       Assertions.fail("While starting locator on port " + port1, ex);

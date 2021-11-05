@@ -22,7 +22,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LifeCycle;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
@@ -39,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -79,7 +79,7 @@ public class ConsoleAppenderWithLoggerContextRuleIntegrationTest {
 
   @Before
   public void setUp() {
-    logger = LogManager.getLogger();
+    logger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
     consoleAppender = loggerContextRule.getAppender(APPENDER_NAME, ConsoleAppender.class);
 

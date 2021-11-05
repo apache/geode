@@ -20,6 +20,8 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
@@ -59,16 +61,10 @@ dependencies {
   upgradeTestImplementation(project(':geode-junit'))
   upgradeTestImplementation(project(':geode-dunit'))
 
-  upgradeTestImplementation('org.awaitility:awaitility')
-  upgradeTestImplementation('org.assertj:assertj-core')
-  upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('xml-apis:xml-apis')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 
   implementation('net.sf.jopt-simple:jopt-simple')
-
-  //Log4j is used everywhere
-  implementation('org.apache.logging.log4j:log4j-api')
 
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {

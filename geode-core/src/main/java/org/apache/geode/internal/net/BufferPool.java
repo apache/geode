@@ -261,37 +261,37 @@ public class BufferPool {
   }
 
   ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
-    switch (type) {
-      case UNTRACKED:
+    switch (type.toString()) {
+      case "UNTRACKED":
         return ByteBuffer.allocate(capacity);
-      case TRACKED_SENDER:
+      case "TRACKED_SENDER":
         return acquireDirectSenderBuffer(capacity);
-      case TRACKED_RECEIVER:
+      case "TRACKED_RECEIVER":
         return acquireDirectReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
   ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
-    switch (type) {
-      case UNTRACKED:
+    switch (type.toString()) {
+      case "UNTRACKED":
         return ByteBuffer.allocate(capacity);
-      case TRACKED_SENDER:
+      case "TRACKED_SENDER":
         return acquireNonDirectSenderBuffer(capacity);
-      case TRACKED_RECEIVER:
+      case "TRACKED_RECEIVER":
         return acquireNonDirectReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
   void releaseBuffer(BufferPool.BufferType type, @NotNull ByteBuffer buffer) {
-    switch (type) {
-      case UNTRACKED:
+    switch (type.toString()) {
+      case "UNTRACKED":
         return;
-      case TRACKED_SENDER:
+      case "TRACKED_SENDER":
         releaseSenderBuffer(buffer);
         return;
-      case TRACKED_RECEIVER:
+      case "TRACKED_RECEIVER":
         releaseReceiveBuffer(buffer);
         return;
     }

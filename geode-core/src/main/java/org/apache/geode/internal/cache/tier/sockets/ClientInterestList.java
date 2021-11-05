@@ -52,6 +52,10 @@ class ClientInterestList {
    */
   private final Object interestListLock = new Object();
 
+  public Set<String> getRegions() {
+    return Collections.unmodifiableSet(regions);
+  }
+
   /**
    * Regions that this client is interested in
    */

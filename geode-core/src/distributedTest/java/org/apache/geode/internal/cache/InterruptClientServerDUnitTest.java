@@ -78,11 +78,13 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testClientPutWithInterrupt() throws Throwable {
-    IgnoredException.addIgnoredException("InterruptedException");
+
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final VM vm2 = host.getVM(2);
+    final VM vm2 = host.getVM(2).initializeAsClientVM();
+    IgnoredException.addIgnoredException("InterruptedException", vm2);
+
 
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     createRegionAndServer(vm0, port);
@@ -151,23 +153,6 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     });
-
-    // vm0.invoke(new SerializableCallable() {
-    //
-    // @Override
-    // public Object call() throws Exception {
-    // long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(MAX_WAIT);
-    // while(puttingThread == null) {
-    // Thread.sleep(50);
-    // if(System.nanoTime() > end) {
-    // fail("Putting thread not set in 60 seconds");
-    // }
-    // }
-    //
-    // puttingThread.interrupt();
-    // return null;
-    // }
-    // });
 
     async0.getResult();
 

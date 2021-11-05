@@ -19,11 +19,12 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  api(project(':geode-core'))
+  implementation(project(':geode-core'))
   api('org.apache.lucene:lucene-core')
 
   implementation(project(':geode-gfsh'))
@@ -42,7 +43,6 @@ dependencies {
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 
-
   testImplementation(project(':geode-junit'))
   testImplementation(project(':geode-lucene:geode-lucene-test'))
   testImplementation('org.apache.lucene:lucene-test-framework')
@@ -51,24 +51,20 @@ dependencies {
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('com.carrotsearch.randomizedtesting:randomizedtesting-runner')
 
-
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(project(':geode-lucene:geode-lucene-test'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('org.hamcrest:hamcrest')
 
-
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-lucene:geode-lucene-test'))
   integrationTestImplementation('org.apache.lucene:lucene-analyzers-phonetic')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
-
 
   performanceTestImplementation(project(':geode-junit'))
   performanceTestImplementation(project(':geode-lucene:geode-lucene-test'))

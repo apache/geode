@@ -64,7 +64,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
     VM locator = host.getVM(0);
     VM server1 = host.getVM(1);
     VM server2 = host.getVM(2);
-    VM client = host.getVM(3);
+    VM client = host.getVM(3).initializeAsClientVM();
 
     final String locatorHost = NetworkUtils.getServerHostName();
 

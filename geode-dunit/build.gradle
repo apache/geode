@@ -16,13 +16,14 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+apply plugin: 'geode.jboss-modules-plugin'
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  implementation(project(':geode-logging'))
+
+  api(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
@@ -38,8 +39,6 @@ dependencies {
   }
 
   implementation('com.jayway.jsonpath:json-path')
-  implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.apache.logging.log4j:log4j-core')
   implementation('commons-io:commons-io')
   implementation('org.apache.commons:commons-lang3')
   implementation('org.springframework.shell:spring-shell') {
@@ -57,12 +56,10 @@ dependencies {
     exclude module: 'junit-dep'
   }
 
-  implementation('org.assertj:assertj-core')
-  implementation('org.mockito:mockito-core')
-  implementation('org.awaitility:awaitility')
+  api('org.assertj:assertj-core')
   implementation('pl.pragmatists:JUnitParams')
 
-  implementation('junit:junit') {
+  api('junit:junit') {
     exclude module: 'hamcrest'
   }
 

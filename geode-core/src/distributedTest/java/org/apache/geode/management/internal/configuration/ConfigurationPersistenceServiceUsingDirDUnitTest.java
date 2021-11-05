@@ -32,26 +32,33 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.version.VersionManager;
 
-public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
+public class ConfigurationPersistenceServiceUsingDirDUnitTest implements Serializable {
 
-  @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(4);
+
+  @After
+  public final void tearDown() throws Exception {
     for (int i = 0; i < 2; i++) {
       VM vm = getHost(0).getVM(i);
       vm.invoke("Removing shared configuration", () -> {
@@ -72,12 +79,11 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
   @Test
   public void basicClusterConfigDirWithOneLocator() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(1);
-    final int locatorCount = ports.length;
 
-    for (int i = 0; i < locatorCount; i++) {
+    for (int i = 0; i < ports.length; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -86,7 +92,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        await().until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> CacheFactory.getAnyInstance().getRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -94,12 +100,11 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
   @Test
   public void basicClusterConfigDirWithTwoLocators() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
-    final int locatorCount = ports.length;
 
-    for (int i = 0; i < locatorCount; i++) {
+    for (int i = 0; i < ports.length; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -108,7 +113,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        await().until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> CacheFactory.getAnyInstance().getRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -116,12 +121,11 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
   @Test
   public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
     final int[] ports = getRandomAvailableTCPPorts(2);
-    final int locatorCount = ports.length;
 
-    for (int i = 0; i < locatorCount; i++) {
+    for (int i = 0; i < ports.length; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -130,7 +134,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
-        Region r = getRootRegion("newReplicatedRegion");
+        Region r = CacheFactory.getAnyInstance().getRegion("newReplicatedRegion");
         assertNull("Region does exist", r);
       });
     }
@@ -138,21 +142,21 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
     // Shut down the locators in reverse order to how we will start them up in the next step.
     // Unless we start them asynchronously, the older one will want to wait for a new diskstore
     // to become available and will time out.
-    for (int i = locatorCount; i > 0; i--) {
+    for (int i = ports.length; i > 0; i--) {
       VM vm = getHost(0).getVM(i - 1);
       stopLocator(vm);
     }
 
-    for (int i = 0; i < locatorCount; i++) {
+    for (int i = 0; i < ports.length; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
     for (int i = 2; i < 4; i++) {
       VM vm = getHost(0).getVM(i);
-      vm.invoke(JUnit4DistributedTestCase::disconnectFromDS);
+      vm.invoke(Disconnect::disconnectFromDS);
     }
 
     for (int i = 2; i < 4; i++) {
@@ -160,7 +164,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        await().until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> CacheFactory.getAnyInstance().getRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -173,7 +177,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
     for (int i = 0; i < locatorCount; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -182,7 +186,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
-        Region r = getRootRegion("newReplicatedRegion");
+        Region r = CacheFactory.getAnyInstance().getRegion("newReplicatedRegion");
         assertNull("Region does exist", r);
       });
     }
@@ -198,7 +202,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
     for (int i = 0; i < locatorCount; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-region.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -207,7 +211,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        await().until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> CacheFactory.getAnyInstance().getRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -221,7 +225,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
     for (int i = 0; i < locatorCount; i++) {
       VM vm = getHost(0).getVM(i);
       copyClusterXml(vm, "cluster-empty.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -230,7 +234,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region absence", () -> {
-        Region r = getRootRegion("newReplicatedRegion");
+        Region r = CacheFactory.getAnyInstance().getRegion("newReplicatedRegion");
         assertNull("Region does exist", r);
       });
     }
@@ -240,7 +244,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       VM vm = getHost(0).getVM(i);
       stopLocator(vm);
       copyClusterXml(vm, "cluster-region.xml");
-      startLocator(vm, i, ports);
+      startLocator(i, ports);
       waitForSharedConfiguration(vm);
     }
 
@@ -250,7 +254,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       restartCache(vm, i, ports);
 
       vm.invoke("Checking for region presence", () -> {
-        await().until(() -> getRootRegion("newReplicatedRegion") != null);
+        await().until(() -> CacheFactory.getAnyInstance().getRegion("newReplicatedRegion") != null);
       });
     }
   }
@@ -268,23 +272,24 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
     });
   }
 
-  private void startLocator(final VM vm, final int i, final int[] locatorPorts) {
-    vm.invoke("Creating locator on " + vm, () -> {
-      final String locatorName = "locator" + i;
-      final File logFile = new File("locator-" + i + ".log");
-      final Properties props = new Properties();
-      props.setProperty(NAME, locatorName);
-      props.setProperty(MCAST_PORT, "0");
-      props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-      props.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
+  private void startLocator(final int i, final int[] locatorPorts) {
+    final String locatorName = "locator" + i;
+    final File logFile = new File("locator-" + i + ".log");
+    final Properties props = new Properties();
+    props.setProperty(NAME, locatorName);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    props.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
+    props.setProperty(LOG_FILE, logFile.getAbsolutePath());
 
-      if (locatorPorts.length > 1) {
-        int otherLocatorPort = locatorPorts[(i + 1) % locatorPorts.length];
-        props.setProperty(LOCATORS, "localhost[" + otherLocatorPort + "]");
-      }
+    if (locatorPorts.length > 1) {
+      int otherLocatorPort = locatorPorts[(i + 1) % locatorPorts.length];
+      props.setProperty(LOCATORS, "localhost[" + otherLocatorPort + "]");
+    }
 
-      Locator.startLocatorAndDS(locatorPorts[i], logFile, props);
-    });
+    clusterStartupRule.startLocatorVM(i, locatorPorts[i],
+        VersionManager.CURRENT_VERSION,
+        locatorStarterRule -> locatorStarterRule.withProperties(props));
   }
 
   private void waitForSharedConfiguration(final VM vm) {
@@ -299,25 +304,21 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
       InternalLocator locator = InternalLocator.getLocator();
       assertNotNull("No locator found", locator);
       locator.stop();
-      disconnectAllFromDS();
+      Disconnect.disconnectAllFromDS();
     });
   }
 
   private void restartCache(final VM vm, final int i, final int[] locatorPorts) {
-    vm.invoke("Creating cache on VM " + i, () -> {
-      disconnectFromDS();
+    vm.invoke("Creating cache on VM " + i, Disconnect::disconnectFromDS);
+    final Properties props = new Properties();
+    props.setProperty(NAME, "member" + i);
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, getLocatorStr(locatorPorts));
+    props.setProperty(LOG_FILE, "server-" + i + ".log");
+    props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
+    props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
 
-      final Properties props = new Properties();
-      props.setProperty(NAME, "member" + i);
-      props.setProperty(MCAST_PORT, "0");
-      props.setProperty(LOCATORS, getLocatorStr(locatorPorts));
-      props.setProperty(LOG_FILE, "server-" + i + ".log");
-      props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
-      props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-
-      getSystem(props);
-      getCache();
-    });
+    clusterStartupRule.startServerVM(i, props);
   }
 
   private String getLocatorStr(final int[] locatorPorts) {

@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Properties;
@@ -82,8 +81,10 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -93,13 +94,16 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+
   private static volatile boolean regionDestroyedInvoked;
   private static volatile Cache myCache;
   private static volatile boolean alertReceived;
 
   private transient ExecutorService executorService;
 
-  private VM locatorvm;
+  private MemberVM locatorvm;
   private VM vm1;
   private VM vm2;
 
@@ -115,17 +119,18 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   public void setUp() {
     executorService = Executors.newSingleThreadExecutor();
 
-    locatorvm = VM.getVM(0);
     vm1 = VM.getVM(1);
     vm2 = VM.getVM(2);
     Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
-    final int port = locatorvm.invoke(() -> {
-      System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
-      return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
-    });
-    vm1.invoke(() -> locatorPort = port);
-    vm2.invoke(() -> locatorPort = port);
-    locatorPort = port;
+
+    locatorvm = clusterStartupRule.startLocatorVM(0,
+        locatorStarterRule -> locatorStarterRule
+            .withSystemProperty(BYPASS_DISCOVERY_PROPERTY, "true")
+            .withSystemProperty("p2p.joinTimeout", "120000"));
+
+    vm1.invoke(() -> locatorPort = locatorvm.getPort());
+    vm2.invoke(() -> locatorPort = locatorvm.getPort());
+    locatorPort = locatorvm.getPort();
   }
 
   @Override

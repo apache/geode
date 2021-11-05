@@ -27,6 +27,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_NUM_RECONNECT_TRIES;
@@ -180,6 +182,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   public Properties getDistributedSystemProperties() {
     if (dsProperties == null) {
       dsProperties = new Properties();
+      dsProperties.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+      dsProperties.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
       dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
       dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
       dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
@@ -556,6 +560,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       props.put(MAX_WAIT_TIME_RECONNECT, "1000");
       props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + locPort + "]");
       props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+      props.put(JMX_MANAGER_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
+      props.put(HTTP_SERVICE_PORT, "" + AvailablePortHelper.getRandomAvailableTCPPort());
       try {
         InternalLocator locator =
             (InternalLocator) Locator.startLocatorAndDS(secondLocPort, null, props);

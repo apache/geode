@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -34,7 +33,7 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
 
   //Log4j is used everywhere
-  implementation('org.apache.logging.log4j:log4j-api')
+  implementation(project(':geode-logging'))
 
   compileOnly(platform(project(':boms:geode-all-bom')))
   compileOnly('org.jetbrains:annotations')
@@ -46,10 +45,6 @@ dependencies {
 
   testImplementation('com.tngtech.archunit:archunit-junit4')
   testImplementation('org.apache.bcel:bcel')
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'

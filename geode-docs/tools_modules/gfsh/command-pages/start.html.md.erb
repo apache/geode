@@ -361,9 +361,9 @@ Start a <%=vars.product_name%> cache server process.
 ``` pre
 start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--cache-xml-file=value] [--classpath=value] [--disable-default-server(=value)]
-    [--disable-exit-when-out-of-memory(=value)] [--enable-time-statistics(=value)]
-    [--force(=value)] [--include-system-classpath(=value)] [--properties-file=value]
-    [--security-properties-file=value] [--groups=value(,value)*]
+    [--disable-exit-when-out-of-memory(=value)] [--enable-classloader-isolation(=value)]
+    [--enable-time-statistics(=value)] [--force(=value)] [--include-system-classpath(=value)]
+    [--properties-file=value] [--security-properties-file=value] [--groups=value(,value)*]
     [--locators=value] [--locator-wait-time=value] [--log-level=value]
     [--mcast-address=value] [--mcast-port=value] [--memcached-port=value]
     [--memcached-protocol=value] [--rebalance(=value)] [--server-bind-address=value]
@@ -392,6 +392,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 | \\-\\-include-system-classpath        | When true, include the System CLASSPATH on the Server's CLASSPATH, as the System CLASSPATH is not included by default. If specified without a value, the value is set to true. | false |
 | \\-\\-disable-default-server          | Whether the cache server will be started by default. If the parameter is specified without a value, the value is set to true. If set to true, the cache server acts as a peer. | false |
 | \\-\\-disable-exit-when-out-of-memory | Prevents the JVM from exiting when an OutOfMemoryError occurs. | false |
+| \\-\\-enable-classloader-isolation    | Causes the server to be started with classloader isolation enabled. Deployed jars will be loaded into their own isolated classloaders. | false |
 | \\-\\-enable-time-statistics          | Causes additional time-based statistics to be gathered for <%=vars.product_name%> operations. | true |
 | \\-\\-properties-file                 | The `gemfire.properties` file for configuring the server's cluster. The file's path can be absolute or relative to the gfsh working directory. | |
 | \\-\\-security-properties-file        | The `gfsecurity.properties` file for configuring the server's security configuration in the cluster. The file's path can be absolute or relative to gfsh directory. | |

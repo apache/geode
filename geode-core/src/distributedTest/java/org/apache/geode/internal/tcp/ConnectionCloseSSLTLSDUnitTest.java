@@ -17,6 +17,8 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
@@ -57,6 +59,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -232,6 +235,8 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
     properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(HTTP_SERVICE_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     return properties;
   }
 

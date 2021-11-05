@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -28,8 +29,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -54,6 +55,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    assumeThat(System.getenv("CLASSLOADER_ISOLATED")).isEqualTo("false");
     stagedDir = stagingTempDir.getRoot();
     JarBuilder jarBuilder = new JarBuilder();
     semanticJarVersion0 = new File(stagedDir, "def-1.0.jar");

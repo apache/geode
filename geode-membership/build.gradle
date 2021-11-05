@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
@@ -34,7 +33,6 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
 
-  implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.jgroups:jgroups')
   implementation('org.apache.commons:commons-lang3')
   implementation('it.unimi.dsi:fastutil')
@@ -49,25 +47,17 @@ dependencies {
   testImplementation(project(':geode-junit'))
   testImplementation(project(':geode-concurrency-test'))
 
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
   testImplementation('com.tngtech.archunit:archunit-junit4')
-
-
 
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-core')
-
+  integrationTestRuntimeOnly(project(':geode-log4j'))
 
   distributedTestImplementation(project(':geode-junit'))
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-
-
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'classpathsOutput'))
 }

@@ -402,7 +402,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     }
     updateEvent.setNewValue(value);
     updateEvent.setGenerateCallbacks(true);
-    updateEvent.distributedMember = region.getSystem().getDistributedMember();
+    updateEvent.setDistributedMember(region.getSystem().getDistributedMember());
     updateEvent.setNewEventId(region.getSystem());
     return updateEvent;
   }

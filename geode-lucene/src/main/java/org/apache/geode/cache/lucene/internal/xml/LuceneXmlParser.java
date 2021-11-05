@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
@@ -149,8 +149,8 @@ public class LuceneXmlParser extends AbstractXmlParser {
   private Analyzer createAnalyzer(String className) {
     Object obj;
     try {
-      Class c = InternalDataSerializer.getCachedClass(className);
-      obj = c.newInstance();
+      Class clazz = ClassPathLoader.getLatest().forName(LuceneXmlParser.class, className);
+      obj = clazz.newInstance();
     } catch (Exception ex) {
       throw new CacheXmlException(
           String.format("While instantiating a %s", className), ex);
