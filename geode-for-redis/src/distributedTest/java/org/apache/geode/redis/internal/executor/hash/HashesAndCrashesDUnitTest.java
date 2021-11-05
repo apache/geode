@@ -189,7 +189,8 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
+        if (!ex.getMessage().contains("Connection reset by peer")
+            && !ex.getMessage().contains("Connection refused")) {
           throw ex;
         }
       }
@@ -215,7 +216,8 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
+        if (!ex.getMessage().contains("Connection reset by peer")
+            && !ex.getMessage().contains("Connection refused")) {
           throw ex;
         }
       }
@@ -243,7 +245,8 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
+        if (!ex.getMessage().contains("Connection reset by peer")
+            && !ex.getMessage().contains("Connection refused")) {
           throw ex;
         }
       }
