@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_BULK;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_MULTIBULK;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
@@ -31,6 +32,7 @@ import io.netty.channel.ChannelId;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.RedisProperties;
 import org.apache.geode.redis.internal.services.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
@@ -49,18 +51,12 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  * proper Redis client.
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
-
-  public static final String UNAUTHENTICATED_MAX_ARRAY_SIZE_PARAM =
-      "gemfire.geode-for-redis-unauthenticated-max-array-size";
-  public static final String UNAUTHENTICATED_MAX_BULK_STRING_LENGTH_PARAM =
-      "gemfire.geode-for-redis-unauthenticated-max-bulk-string-length";
-
   private static final int MAX_BULK_STRING_LENGTH = 512 * 1024 * 1024; // 512 MB
   // These 2 defaults are taken from native Redis
   public static final int UNAUTHENTICATED_MAX_ARRAY_SIZE =
-      Integer.getInteger(UNAUTHENTICATED_MAX_ARRAY_SIZE_PARAM, 10);
+      getIntegerSystemProperty(RedisProperties.UNAUTHENTICATED_MAX_ARRAY_SIZE, 10, 1);
   public static final int UNAUTHENTICATED_MAX_BULK_STRING_LENGTH =
-      Integer.getInteger(UNAUTHENTICATED_MAX_BULK_STRING_LENGTH_PARAM, 16384);
+      getIntegerSystemProperty(RedisProperties.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH, 16384, 1);
 
   private final RedisStats redisStats;
   private final RedisSecurityService securityService;
