@@ -36,6 +36,7 @@ public class KeysExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    logger.error("KEYS, args are:" + commandElems);
     byte[] glob = commandElems.get(1);
     Set<RedisKey> allKeys = context.getRegion().keySet();
     List<byte[]> matchingKeys = new ArrayList<>();

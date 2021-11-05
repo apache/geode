@@ -16,16 +16,20 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class RenameExecutor extends AbstractRenameExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   protected boolean executeRenameCommand(RedisKey key, RedisKey newKey,
       ExecutionHandlerContext context) {
+    logger.error("RENAME, args are:" + key + " " + newKey);
     return rename(context, key, newKey, false);
   }
 
