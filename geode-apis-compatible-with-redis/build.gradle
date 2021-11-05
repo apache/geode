@@ -35,7 +35,7 @@ dependencies {
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
   implementation('com.github.davidmoten:geo')
-  implementation('io.netty:netty-all')
+  implementation('io.netty:netty-handler')
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('commons-codec:commons-codec')
   implementation('org.apache.commons:commons-lang3')
@@ -44,6 +44,7 @@ dependencies {
   testImplementation('org.mockito:mockito-core')
   testImplementation('redis.clients:jedis')
 
+  commonTestImplementation('io.netty:netty-codec-redis')
   commonTestImplementation(project(':geode-junit'))
   commonTestImplementation(project(':geode-dunit'))
   commonTestImplementation('org.testcontainers:testcontainers')
@@ -66,6 +67,7 @@ dependencies {
   acceptanceTestImplementation(project(':geode-junit'))
   acceptanceTestImplementation('redis.clients:jedis')
   acceptanceTestImplementation('org.testcontainers:testcontainers')
+  acceptanceTestRuntime('io.netty:netty-codec-redis')
   acceptanceTestRuntime(project(':geode-log4j'))
   acceptanceTestImplementation('org.springframework.boot:spring-boot-starter-web') {
     exclude module: 'spring-boot-starter-tomcat'
@@ -76,6 +78,7 @@ dependencies {
   // This only exists for debugging PubSubNativeRedisAcceptanceTest
   acceptanceTestImplementation('org.buildobjects:jproc:2.4.0')
 
+  distributedTestImplementation('io.netty:netty-codec-redis')
   distributedTestImplementation('org.apache.logging.log4j:log4j-core')
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation(sourceSets.commonTest.output)

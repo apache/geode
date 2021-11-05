@@ -76,7 +76,12 @@ micrometer-core
 mx4j
 mx4j-remote
 mx4j-tools
-netty-all
+netty-buffer
+netty-codec
+netty-common
+netty-handler
+netty-resolver
+netty-transport
 nimbus-jose-jwt
 oauth2-oidc-sdk
 protobuf-java

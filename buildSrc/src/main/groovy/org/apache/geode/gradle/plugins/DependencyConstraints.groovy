@@ -117,7 +117,6 @@ class DependencyConstraints implements Plugin<Project> {
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.52')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.59.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
@@ -228,6 +227,11 @@ class DependencyConstraints implements Plugin<Project> {
       entry('powermock-api-mockito2')
       entry('powermock-core')
       entry('powermock-module-junit4')
+    }
+
+    dependencySet(group: 'io.netty', version: '4.1.70.Final') {
+      entry('netty-codec-redis')
+      entry('netty-handler')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {
