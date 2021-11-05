@@ -54,6 +54,7 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
 
         dbContainer = new DockerComposeContainer<>("db", new File(composeFile))
             .withExposedService(serviceName, port);
+        dbContainer.withLocalCompose(true);
         dbContainer.start();
 
         try {

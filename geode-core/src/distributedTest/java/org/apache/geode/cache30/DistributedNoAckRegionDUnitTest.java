@@ -48,7 +48,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    * Returns region attributes for a <code>GLOBAL</code> region
    */
   @Override
-  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+  public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setDataPolicy(DataPolicy.PRELOADED);

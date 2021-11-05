@@ -185,6 +185,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -240,7 +241,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -1412,9 +1412,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeRegionShortcuts(this);
     }
 
-    // set ClassPathLoader and then deploy cluster config jars
-    ClassPathLoader.setLatestToDefault(system.getConfig().getDeployWorkingDir());
-
     try {
       clusterConfigurationLoader.deployJarsReceivedFromClusterConfiguration(configurationResponse);
     } catch (IOException | ClassNotFoundException e) {
@@ -2468,7 +2465,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         isClosedLatch.countDown();
       } finally {
         CLOSING_THREAD.remove();
-        ClassPathLoader.setLatestToDefault(null);
+        ClassPathLoader.close();
       }
       return true;
     }

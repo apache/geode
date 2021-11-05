@@ -34,15 +34,14 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.services.result.ServiceResult;
@@ -137,19 +136,17 @@ public class ClusterConfig implements Serializable {
 
   public void verifyServer(MemberVM serverVM) {
     // verify files exist in filesystem
-    Set<String> expectedJarNames = getJarNames().stream().collect(toSet());
-
-    String[] actualJarFiles =
-        serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
-    Set<String> actualJarNames = Stream.of(actualJarFiles)
-        .map(jar -> jar.replaceAll("\\.v\\d+\\.jar", ".jar")).collect(toSet());
-
-    // We will end up with extra jars on disk if they are deployed and then undeployed
-    assertThat(expectedJarNames).isSubsetOf(actualJarNames);
+    Set<String> expectedJarNames = new HashSet<>(this.getJarNames());
 
     // verify config exists in memory
     serverVM.invoke(() -> {
       Cache cache = GemFireCacheImpl.getInstance();
+      List<String> actualJarNames =
+          ClassPathLoader.getLatest().getJarDeploymentService().listDeployed().stream()
+              .map(Deployment::getFileName).collect(Collectors.toList());
+
+      // We will end up with extra jars on disk if they are deployed and then undeployed
+      assertThat(actualJarNames).containsExactlyInAnyOrderElementsOf(expectedJarNames);
 
       // TODO: set compare to fail if there are extra regions
       for (String region : getRegions()) {
@@ -183,8 +180,6 @@ public class ClusterConfig implements Serializable {
       }
     });
   }
-
-
 
   private static Set<String> toSetIgnoringHiddenFiles(String[] array) {
     if (array == null) {

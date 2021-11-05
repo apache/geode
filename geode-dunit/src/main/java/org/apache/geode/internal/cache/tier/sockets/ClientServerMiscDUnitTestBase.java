@@ -1096,14 +1096,17 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(bs);
       assertNotNull(bs.getAcceptor());
       assertNotNull(bs.getAcceptor().getCacheClientNotifier());
-      for (CacheClientProxy ccp : bs.getAcceptor().getCacheClientNotifier().getClientProxies()) {
+      for (CacheClientProxy cacheClientProxy : bs.getAcceptor().getCacheClientNotifier()
+          .getClientProxies()) {
         // CCP should not contain region1
-        Set<String> akr = ccp.cils[RegisterInterestTracker.interestListIndex].regions;
-        assertNotNull(akr);
-        assertTrue(!akr.contains(SEPARATOR + REGION_NAME1));
+        Set<String> regions =
+            cacheClientProxy.getClientInterestList().get(RegisterInterestTracker.interestListIndex)
+                .getRegions();
+        assertNotNull(regions);
+        assertTrue(!regions.contains(SEPARATOR + REGION_NAME1));
         // CCP should contain region2
-        assertTrue(akr.contains(SEPARATOR + REGION_NAME2));
-        assertEquals(1, akr.size());
+        assertTrue(regions.contains(SEPARATOR + REGION_NAME2));
+        assertEquals(1, regions.size());
       }
     } catch (Exception ex) {
       ex.printStackTrace();

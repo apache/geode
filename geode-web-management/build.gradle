@@ -22,6 +22,7 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 jar.enabled = false
 
+apply plugin: 'geode.jboss-modules-plugin'
 apply plugin: 'nebula.facet'
 facets {
   commonTest {
@@ -106,7 +107,6 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
   }
-  compileOnly('org.apache.logging.log4j:log4j-api')
 
   commonTestImplementation(project(':geode-core'))
   commonTestImplementation(project(':geode-junit')) {

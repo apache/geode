@@ -104,8 +104,8 @@ public class DeploymentManagementDUnitTest {
     resultAssert.hasRuntimeInfos()
         .extracting(DeploymentInfo::getJarLocation).extracting(
             FilenameUtils::getName)
-        .containsExactlyInAnyOrder("group1.v1.jar", "group2.v1.jar", "cluster.v1.jar",
-            "cluster.v1.jar");
+        .containsExactlyInAnyOrder("group1.jar", "group2.jar", "cluster.jar",
+            "cluster.jar");
   }
 
   @Test
@@ -120,7 +120,7 @@ public class DeploymentManagementDUnitTest {
     resultAssert.hasRuntimeInfos()
         .extracting(DeploymentInfo::getJarLocation).extracting(
             FilenameUtils::getName)
-        .containsExactlyInAnyOrder("group1.v1.jar");
+        .containsExactlyInAnyOrder("group1.jar");
   }
 
   @Test
@@ -143,7 +143,7 @@ public class DeploymentManagementDUnitTest {
     assertThat(runtimeResult)
         .extracting(DeploymentInfo::getJarLocation)
         .extracting(FilenameUtils::getName)
-        .containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+        .containsExactlyInAnyOrder("cluster.jar", "cluster.jar");
     assertThat(runtimeResult.get(0).getLastModified()).isNotNull();
   }
 
@@ -159,6 +159,6 @@ public class DeploymentManagementDUnitTest {
     resultAssert.hasRuntimeInfos()
         .extracting(DeploymentInfo::getJarLocation).extracting(
             FilenameUtils::getName)
-        .containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+        .containsExactlyInAnyOrder("cluster.jar", "cluster.jar");
   }
 }

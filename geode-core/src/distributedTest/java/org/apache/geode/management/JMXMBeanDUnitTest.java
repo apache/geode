@@ -15,7 +15,6 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
@@ -61,6 +60,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 
@@ -138,13 +138,13 @@ public class JMXMBeanDUnitTest implements Serializable {
   public void before() {
     jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     locatorProperties = new Properties();
-    locatorProperties.put(JMX_MANAGER_PORT, jmxPort + "");
     locatorProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
   }
 
   @Test
   public void testJMXOverNonSSL() throws Exception {
-    clusterStartupRule.startLocatorVM(0, locatorProperties);
+    MemberVM memberVM = clusterStartupRule.startLocatorVM(0, locatorProperties);
+    jmxPort = memberVM.getJmxPort();
     mBeanServerConnectionRule.connect(jmxPort);
     validateJmxConnection(mBeanServerConnectionRule);
   }
@@ -162,14 +162,16 @@ public class JMXMBeanDUnitTest implements Serializable {
   public void testJMXOverSSL() {
     locatorProperties.putAll(Maps.fromProperties(sslProperties));
 
-    clusterStartupRule.startLocatorVM(0, locatorProperties);
+    MemberVM memberVM = clusterStartupRule.startLocatorVM(0, locatorProperties);
+    jmxPort = memberVM.getJmxPort();
     remotelyValidateJmxConnection(false);
   }
 
   @Test
   public void testJMXOverSSLWithMultiKey() {
     locatorProperties.putAll(Maps.fromProperties(sslPropertiesWithMultiKey));
-    clusterStartupRule.startLocatorVM(0, locatorProperties);
+    MemberVM memberVM = clusterStartupRule.startLocatorVM(0, locatorProperties);
+    jmxPort = memberVM.getJmxPort();
 
     remotelyValidateJmxConnection(true);
   }
@@ -177,7 +179,8 @@ public class JMXMBeanDUnitTest implements Serializable {
   @Test
   public void testJMXOverLegacySSL() {
     locatorProperties.putAll(Maps.fromProperties(legacySSLProperties));
-    clusterStartupRule.startLocatorVM(0, locatorProperties);
+    MemberVM memberVM = clusterStartupRule.startLocatorVM(0, locatorProperties);
+    jmxPort = memberVM.getJmxPort();
 
     remotelyValidateJmxConnection(false);
   }

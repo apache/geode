@@ -21,17 +21,17 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implements {@link CollectingServiceLoader} by returning a {@link List} of all currently loadable
  * implementations of the given service interface.
  */
 public class ListCollectingServiceLoader<S> implements CollectingServiceLoader<S> {
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private final ServiceLoaderWrapper<S> serviceLoaderWrapper;
 

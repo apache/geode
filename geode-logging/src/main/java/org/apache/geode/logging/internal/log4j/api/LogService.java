@@ -16,7 +16,6 @@ package org.apache.geode.logging.internal.log4j.api;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.StackLocator;
 
 import org.apache.geode.logging.internal.log4j.api.message.GemFireParameterizedMessageFactory;
 
@@ -35,7 +34,7 @@ public class LogService {
    * @return The Logger for the calling class.
    */
   public static Logger getLogger() {
-    String name = StackLocator.getInstance().getCallerClass(2).getName();
+    String name = new Throwable().getStackTrace()[1].getClassName();
     return getLogger(name);
   }
 
@@ -43,7 +42,7 @@ public class LogService {
     return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
   }
 
-  public static Logger getLogger(Class<?> clazz) {
-    return new FastLogger(LogManager.getLogger(clazz, GemFireParameterizedMessageFactory.INSTANCE));
+  public static Logger getRootLogger() {
+    return LogManager.getRootLogger();
   }
 }

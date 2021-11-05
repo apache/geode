@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,9 +57,7 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
-/**
- * Integration tests for {@link ClassPathLoader}.
- */
+/** Integration tests for {@link org.apache.geode.classloader.internal.ClassPathLoader}. */
 public class ClassPathLoaderIntegrationTest {
 
   private static final int TEMP_FILE_BYTES_COUNT = 256;
@@ -97,6 +95,7 @@ public class ClassPathLoaderIntegrationTest {
 
   @After
   public void teardown() {
+    ClassPathLoader.getLatest().getJarDeploymentService().close();
     ClassPathLoader.setLatestToDefault(null);
   }
 
@@ -169,7 +168,7 @@ public class ClassPathLoaderIntegrationTest {
     assertThatResourceCannotBeLoaded(classAResource);
 
     // Now undeploy JAR and make sure it gets cleaned up
-    ClassPathLoader.getLatest().getJarDeploymentService().undeployByFileName(jarName);
+    ClassPathLoader.getLatest().getJarDeploymentService().undeploy(jarName);
     assertThatClassCannotBeLoaded(classBName);
     assertThatClassCannotBeLoaded(classAName);
 
@@ -238,9 +237,9 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(is).isNull();
   }
 
-
   /**
-   * Verifies that <tt>getResource</tt> works with TCCL from {@link ClassPathLoader}.
+   * Verifies that <tt>getResource</tt> works with TCCL from {@link
+   * org.apache.geode.classloader.internal.ClassPathLoader}.
    */
   @Test
   public void testGetResourceWithTCCL() throws Exception {
@@ -277,7 +276,8 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResources</tt> works with TCCL from {@link ClassPathLoader}.
+   * Verifies that <tt>getResources</tt> works with TCCL from {@link
+   * org.apache.geode.classloader.internal.ClassPathLoader}.
    */
   @Test
   public void testGetResourcesWithTCCL() throws Exception {
@@ -317,7 +317,8 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   /**
-   * Verifies that <tt>getResourceAsStream</tt> works with TCCL from {@link ClassPathLoader}.
+   * Verifies that <tt>getResourceAsStream</tt> works with TCCL from {@link
+   * org.apache.geode.classloader.internal.ClassPathLoader}.
    */
   @Test
   public void testGetResourceAsStreamWithTCCL() throws Exception {

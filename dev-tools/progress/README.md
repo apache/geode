@@ -71,7 +71,7 @@ The `-s` flag applies a regular expression to each test's status:
 
 The `-c` flag applies a regular expression to each test's fully qualified class name.
 
-    progress -c 'org.apache.geode.deployment.internal.modular.ModularJarDeploymentServiceTest'
+    progress -c 'org.apache.geode.deployment.internal.modules.ModularJarDeploymentServiceTest'
     progress -c 'org.apache.geode.deployment.internal'
     progress -c ModularJarDeploymentServiceTest
 

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,11 +29,8 @@ import org.junit.rules.TestName;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
-/**
- * Integration tests for {@link ClassPathLoader}.
- */
+/** Integration tests for {@link org.apache.geode.classloader.internal.ClassPathLoader}. */
 public class ClassPathLoaderJUnitTest {
-
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -70,9 +67,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classAInstance).isInstanceOf(anotherClassAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
   }
 
   @Test
@@ -107,9 +104,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classAName).isEqualTo(classAInstance.getClass().getSimpleName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
   }
 
   @Test
@@ -150,9 +147,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classBInstance.getClass()).isAssignableFrom(classAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
   }
 
   @Test
@@ -198,9 +195,9 @@ public class ClassPathLoaderJUnitTest {
     assertThat(classB2Instance).isInstanceOf(classBInstance.getClass());
     assertThat(classBInstance.getClass()).isAssignableFrom(classAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
   }
 
   @Test
@@ -259,9 +256,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classA2Instance).isNotInstanceOf(classA);
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
   }
 
   @Test
@@ -318,9 +315,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarBV2.getName());
+        .undeploy(jarBV2.getName());
   }
 
   @Test
@@ -378,9 +375,9 @@ public class ClassPathLoaderJUnitTest {
 
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarB.getName());
+        .undeploy(jarB.getName());
   }
 
   @Test
@@ -432,7 +429,7 @@ public class ClassPathLoaderJUnitTest {
       // Expected
     } finally {
       ClassPathLoader.getLatest().getJarDeploymentService()
-          .undeployByFileName(jarB.getName());
+          .undeploy(jarB.getName());
     }
   }
 
@@ -472,11 +469,11 @@ public class ClassPathLoaderJUnitTest {
     Object classAInstance = classA.newInstance();
 
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(testName + "JarB.jar");
+        .undeploy(testName + "JarB.jar");
     Object classA2Instance = classA.newInstance();
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(jarA.getName());
+        .undeploy(jarA.getName());
   }
 
   @Test
@@ -522,7 +519,7 @@ public class ClassPathLoaderJUnitTest {
     Object classAInstance = classA.newInstance();
 
     ClassPathLoader.getLatest().getJarDeploymentService()
-        .undeployByFileName(testName + "JarB.jar");
+        .undeploy(testName + "JarB.jar");
     try {
       classB =
           ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
@@ -531,7 +528,7 @@ public class ClassPathLoaderJUnitTest {
       // expected
     } finally {
       ClassPathLoader.getLatest().getJarDeploymentService()
-          .undeployByFileName(jarA.getName());
+          .undeploy(jarA.getName());
     }
 
   }

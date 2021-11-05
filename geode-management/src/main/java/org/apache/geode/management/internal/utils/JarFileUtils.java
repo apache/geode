@@ -16,9 +16,13 @@
  */
 package org.apache.geode.management.internal.utils;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +43,65 @@ public class JarFileUtils {
       Pattern.compile("(?<baseName>..*)\\.v(?<version>\\d++).jar$");
   private static final Pattern USER_VERSION_PATTERN =
       Pattern.compile("(?<artifact>.*?)[-.]\\d+.*.*?\\.jar$");
+
+  /**
+   * Uses MD5 hashes to determine if the original byte content of this DeployedJar is the same as
+   * that past in.
+   *
+   * @param jar1 File to compare the content of
+   * @param jar2 other File to compare the content with
+   * @return True if the MD5 hash is the same
+   */
+  public static boolean hasSameContent(File jar1, File jar2) {
+    byte[] jar1Hash;
+    byte[] jar2Hash;
+    try {
+      jar1Hash = fileDigest(jar1);
+      jar2Hash = fileDigest(jar2);
+    } catch (IOException ex) {
+      return false;
+    }
+
+    if (jar1Hash == null || jar2Hash == null) {
+      return false;
+    }
+
+    return Arrays.equals(jar1Hash, jar2Hash);
+  }
+
+  /**
+   * Returns a byte array representing the MD5 hash of the file.
+   *
+   * @param file the {@link File} to hash the content of.
+   * @return a byte array representing the MD5 hash of the file. Or null, if a {@link MessageDigest}
+   *         cannot be created.
+   */
+  public static byte[] fileDigest(File file) throws IOException {
+    MessageDigest messageDigest = getMessageDigest();
+
+    if (messageDigest == null) {
+      return null;
+    }
+
+    try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file))) {
+      byte[] data = new byte[8192];
+      int read;
+      while ((read = fis.read(data)) > 0) {
+        messageDigest.update(data, 0, read);
+      }
+    }
+
+    return messageDigest.digest();
+  }
+
+  private static MessageDigest getMessageDigest() {
+    try {
+      return MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException ignored) {
+      // Failure just means we can't do a simple compare for content equality
+    }
+    return null;
+  }
 
   /**
    * get the artifact id from the files deployed by the user. This will recognize files with

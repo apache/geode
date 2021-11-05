@@ -37,7 +37,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
@@ -64,6 +64,7 @@ public class JarDeployerDeadlockTest {
       FunctionService.unregisterFunction(functionName);
     }
 
+    ClassPathLoader.getLatest().getJarDeploymentService().close();
     ClassPathLoader.setLatestToDefault(null);
   }
 

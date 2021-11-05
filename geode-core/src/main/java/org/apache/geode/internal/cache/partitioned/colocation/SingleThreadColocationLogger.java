@@ -43,7 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * own thread and waits for child regions to be created before logging them as missing.
  */
 public class SingleThreadColocationLogger implements ColocationLogger {
-  private static final Logger LOGGER = LogService.getLogger(ColocationLogger.class);
+  private static final Logger LOGGER = LogService.getLogger(ColocationLogger.class.getName());
 
   private final List<String> missingChildren = new ArrayList<>();
   private final AtomicReference<Future<?>> completed = new AtomicReference<>();

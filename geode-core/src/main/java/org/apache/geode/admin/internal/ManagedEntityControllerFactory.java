@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.ManagedEntity;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 

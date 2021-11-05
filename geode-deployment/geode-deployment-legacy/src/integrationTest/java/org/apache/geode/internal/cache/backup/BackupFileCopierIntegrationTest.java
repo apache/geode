@@ -45,6 +45,8 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.classloader.internal.ClassPathLoader;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.deployment.internal.legacy.LegacyJarDeploymentService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.DirectoryHolder;
@@ -52,8 +54,6 @@ import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
 
@@ -166,7 +166,7 @@ public class BackupFileCopierIntegrationTest {
     assertThat(expectedJar).exists();
     assertThat(fileCopier.getBackupDefinition().getDeployedJars().keySet())
         .containsExactly(expectedJar);
-    jarDeploymentService.undeployByFileName("myJar.jar");
+    jarDeploymentService.undeploy("myJar.jar");
   }
 
   @Test

@@ -291,6 +291,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   public ClientVM startClientVM(int index, String clientVersion,
       SerializableConsumerIF<ClientCacheRule> clientCacheRuleSetUp) throws Exception {
     VM client = getVM(index, clientVersion);
+    client.initializeAsClientVM();
     Exception error = client.invoke(() -> {
       clientCacheRule = new ClientCacheRule();
       try {
@@ -357,7 +358,10 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   public void stop(int index, boolean cleanWorkingDir) {
     closeAndCheckForSuspects(index);
-    occupiedVMs.get(index).stop(cleanWorkingDir);
+    VMProvider vmProvider = occupiedVMs.get(index);
+    if (vmProvider != null) {
+      vmProvider.stop(cleanWorkingDir);
+    }
   }
 
   /**

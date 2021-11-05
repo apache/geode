@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +41,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Generates the stat archive file that is committed under src/test/resources for
@@ -54,7 +54,7 @@ import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
  */
 public class StatArchiveWithConsecutiveResourceInstGenerator {
 
-  private static final Logger logger = LogManager.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   protected static final String STATS_TYPE_NAME = "TestStats";
   protected static final String STATS_SPEC_STRING = ":" + STATS_TYPE_NAME;

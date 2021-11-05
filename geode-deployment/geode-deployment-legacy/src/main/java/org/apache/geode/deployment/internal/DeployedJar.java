@@ -14,19 +14,14 @@
  */
 package org.apache.geode.deployment.internal;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.utils.JarFileUtils;
+
 
 /**
  * ClassLoader for a single JAR file.
@@ -35,7 +30,6 @@ import org.apache.geode.management.internal.utils.JarFileUtils;
  */
 public class DeployedJar {
 
-  private static final Logger logger = LogService.getLogger();
   @MakeNotStatic("This object gets updated in the production code")
   private static final MessageDigest messageDigest = getMessageDigest();
 
@@ -77,50 +71,12 @@ public class DeployedJar {
     byte[] digest = null;
     try {
       if (messageDigest != null) {
-        digest = fileDigest(file);
+        digest = JarFileUtils.fileDigest(file);
       }
     } catch (IOException e) {
       // Ignored
     }
     md5hash = digest;
-  }
-
-  /**
-   * Uses MD5 hashes to determine if the original byte content of this DeployedJar is the same as
-   * that past in.
-   *
-   * @param stagedFile File to compare the original content to
-   * @return True of the MD5 hash is the same o
-   */
-  boolean hasSameContentAs(final File stagedFile) {
-    // If the MD5 hash can't be calculated then silently return no match
-    if (messageDigest == null || md5hash == null) {
-      return false;
-    }
-
-    byte[] compareToMd5;
-    try {
-      compareToMd5 = fileDigest(stagedFile);
-    } catch (IOException ex) {
-      return false;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", file.getAbsolutePath(),
-          new String(md5hash), new String(compareToMd5));
-    }
-    return Arrays.equals(md5hash, compareToMd5);
-  }
-
-  private byte[] fileDigest(File file) throws IOException {
-    try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file))) {
-      byte[] data = new byte[8192];
-      int read;
-      while ((read = fis.read(data)) > 0) {
-        messageDigest.update(data, 0, read);
-      }
-    }
-
-    return messageDigest.digest();
   }
 
   /**

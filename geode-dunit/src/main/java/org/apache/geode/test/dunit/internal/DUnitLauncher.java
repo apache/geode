@@ -128,6 +128,10 @@ public class DUnitLauncher {
 
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
+  private static final boolean RUN_VM_CLASSLOADER_ISOLATED =
+      System.getenv("CLASSLOADER_ISOLATED") != null
+          && Boolean.parseBoolean(System.getenv("CLASSLOADER_ISOLATED"));
+
   private static Master master;
 
   private DUnitLauncher() {}
@@ -152,7 +156,7 @@ public class DUnitLauncher {
     launchIfNeeded(true);
   }
 
-  public static void launchIfNeeded(boolean launchLocator) {
+  public static void launchIfNeeded(boolean launchLocator, boolean classloaderIsolated) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
@@ -160,7 +164,7 @@ public class DUnitLauncher {
 
     if (!isHydra() && !isLaunched()) {
       try {
-        launch(launchLocator);
+        launch(launchLocator, classloaderIsolated);
       } catch (Exception e) {
         throw new RuntimeException("Unable to launch dunit VMs", e);
       }
@@ -169,12 +173,26 @@ public class DUnitLauncher {
     Host.setAllVMsToCurrentVersion();
   }
 
+  public static void launchIfNeeded(boolean launchLocator) {
+    launchIfNeeded(launchLocator, runClassloaderIsolated());
+  }
+
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded(int vmCount) {
+    launchIfNeeded(vmCount, true, runClassloaderIsolated());
+  }
+
+  private static boolean runClassloaderIsolated() {
+    return Boolean.parseBoolean(System.getProperty("CLASSLOADER_ISOLATED", "true"))
+        && RUN_VM_CLASSLOADER_ISOLATED;
+  }
+
+  public static void launchIfNeeded(int vmCount, boolean launchLocator,
+      boolean classloaderIsolated) {
     NUM_VMS = vmCount;
-    launchIfNeeded();
+    launchIfNeeded(launchLocator, classloaderIsolated);
   }
 
   /**
@@ -185,7 +203,7 @@ public class DUnitLauncher {
    */
   public static void launchIfNeeded(int vmCount, boolean launchLocator) {
     NUM_VMS = vmCount;
-    launchIfNeeded(launchLocator);
+    launchIfNeeded(launchLocator, runClassloaderIsolated());
   }
 
   /**
@@ -199,7 +217,8 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
+  private static void launch(boolean launchLocator, boolean classloaderIsolated)
+      throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
 
     deleteDunitSuspectFiles();
@@ -225,7 +244,7 @@ public class DUnitLauncher {
 
     if (launchLocator) {
       // Create a VM for the locator
-      processManager.launchVM(LOCATOR_VM_NUM);
+      processManager.launchVM(LOCATOR_VM_NUM, classloaderIsolated);
 
       // wait for the VM to start up
       if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
@@ -239,7 +258,7 @@ public class DUnitLauncher {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i);
+      processManager.launchVM(i, classloaderIsolated);
     }
 
     // wait for the VMS to start up
@@ -250,7 +269,7 @@ public class DUnitLauncher {
     // populate the Host class with our stubs. The tests use this host class
     DUnitHost host =
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
-            vmEventNotifier);
+            vmEventNotifier, classloaderIsolated);
     host.init(NUM_VMS, launchLocator);
   }
 
@@ -309,24 +328,25 @@ public class DUnitLauncher {
     MethodInvokerResult result = remote.executeMethodOnObject(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
-        Properties p = getDistributedSystemProperties();
+        Properties properties = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager
         // since it is part of the unit test framework
-        p.setProperty(JMX_MANAGER, "false");
-        p.setProperty(ENABLE_MANAGEMENT_REST_SERVICE, "false");
+        properties.setProperty(JMX_MANAGER, "false");
+        properties.setProperty(ENABLE_MANAGEMENT_REST_SERVICE, "false");
         // Disable the shared configuration on this locator.
         // Shared configuration tests create their own locator
-        p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+        properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
         // Tell the locator it's the first in the system for
         // faster boot-up
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         // disable auto-reconnect - tests fly by so fast that it will never be
         // able to do so successfully anyway
-        p.setProperty(DISABLE_AUTO_RECONNECT, "true");
+        properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
 
         try {
-          Locator.startLocatorAndDS(port, locatorLogFile, p);
-          locatorPort = port;
+          Locator.startLocatorAndDS(0, locatorLogFile, properties);
+          InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
+          locatorPort = internalLocator.getPort();
         } finally {
           System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }

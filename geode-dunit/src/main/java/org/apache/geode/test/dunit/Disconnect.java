@@ -36,19 +36,20 @@ public class Disconnect {
     GemFireCacheImpl.testCacheXml = null;
 
     for (;;) {
-      DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-      if (ds == null) {
+      DistributedSystem distributedSystem = InternalDistributedSystem.getConnectedInstance();
+      if (distributedSystem == null) {
         break;
       }
       try {
-        ds.disconnect();
+        distributedSystem.disconnect();
       } catch (Exception ignore) {
       }
     }
 
-    AdminDistributedSystemImpl ads = AdminDistributedSystemImpl.getConnectedInstance();
-    if (ads != null) {
-      ads.disconnect();
+    AdminDistributedSystemImpl adminDistributedSystem =
+        AdminDistributedSystemImpl.getConnectedInstance();
+    if (adminDistributedSystem != null) {
+      adminDistributedSystem.disconnect();
     }
     if (Locator.hasLocator()) {
       Locator.getLocator().stop();

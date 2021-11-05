@@ -16,7 +16,6 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
@@ -32,11 +31,6 @@ dependencies {
     exclude module: 'geode-logging'
   }
   testImplementation(project(':geode-concurrency-test'))
-
-  testImplementation('org.mockito:mockito-core')
-  testImplementation('junit:junit')
-  testImplementation('org.assertj:assertj-core')
-
 
   integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-logging'

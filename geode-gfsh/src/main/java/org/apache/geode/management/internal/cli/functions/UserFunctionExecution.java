@@ -38,10 +38,10 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
@@ -223,12 +223,10 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
       if (results != null) {
         for (Object resultObj : results) {
           if (resultObj != null) {
-            if (resultObj instanceof Exception) {
-              resultMessage.add(((Exception) resultObj).getMessage());
+            if (resultObj instanceof Throwable) {
               functionSuccess = false;
-            } else {
-              resultMessage.add(resultObj.toString());
             }
+            resultMessage.add(resultObj.toString());
           }
         }
       }

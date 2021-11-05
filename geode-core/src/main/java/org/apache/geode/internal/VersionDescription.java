@@ -26,8 +26,6 @@ import java.util.TreeMap;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
-
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";
 
@@ -81,9 +79,8 @@ public class VersionDescription {
    */
   private final Optional<String> error;
 
-  public VersionDescription(String name) {
-    InputStream is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), name);
-    if (is == null) {
+  public VersionDescription(InputStream resource, String name) {
+    if (resource == null) {
       error = Optional
           .of(String.format("<Could not find resource org/apache/geode/internal/%s>",
               name));
@@ -93,7 +90,7 @@ public class VersionDescription {
 
     description = new Properties();
     try {
-      description.load(is);
+      description.load(resource);
     } catch (Exception ex) {
       error = Optional
           .of(String.format(

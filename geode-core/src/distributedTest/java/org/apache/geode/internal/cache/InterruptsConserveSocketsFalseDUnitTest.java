@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCK
 
 import java.util.Properties;
 
+import org.apache.geode.test.dunit.VM;
 
 
 public class InterruptsConserveSocketsFalseDUnitTest extends InterruptsDUnitTest {
@@ -27,9 +28,12 @@ public class InterruptsConserveSocketsFalseDUnitTest extends InterruptsDUnitTest
   }
 
   @Override
-  public Properties getDistributedSystemProperties() {
-    Properties props = super.getDistributedSystemProperties();
-    props.setProperty(CONSERVE_SOCKETS, "false");
-    return props;
+  protected void createCache(VM vm) {
+    vm.invoke(() -> {
+      Properties props = new Properties();
+      props.setProperty(CONSERVE_SOCKETS, "false");
+      cacheRule.createCache(props);
+      return null;
+    });
   }
 }
