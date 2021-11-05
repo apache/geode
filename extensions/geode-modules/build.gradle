@@ -69,7 +69,3 @@ dependencies {
 sonarqube {
   skipProject = true
 }
-
-distributedTest {
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeModulesExtensions.properties"
-}

@@ -267,7 +267,6 @@ distributedTest {
   environment 'GEODE_DISTRIBUTED_TEST_MODULE_NAME', project.getName()
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
   environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/install/apache-geode-distributed-testing"
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project(':geode-deployment:geode-deployment-jboss-modules').buildDir}/resources/distributedTest/distributedTestGeodeExtensions.properties"
   environment 'CLASSLOADER_ISOLATED' , 'true'
 }
 

@@ -128,10 +128,6 @@ repeatUpgradeTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
 }
 
-distributedTest {
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "distributedTestGeodeCoreExtensions.properties"
-}
-
 task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output

@@ -41,10 +41,6 @@ task downloadJdbcJars(type:Copy) {
   into jdbcJarsDir
 }
 
-distributedTest {
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeConnectorExtensions.properties"
-}
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))

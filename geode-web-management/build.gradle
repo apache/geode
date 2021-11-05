@@ -180,7 +180,3 @@ war {
 artifacts {
   war tasks.war
 }
-
-distributedTest {
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeWebManagementExtensions.properties"
-}

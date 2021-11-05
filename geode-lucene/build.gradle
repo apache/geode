@@ -20,10 +20,6 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 apply plugin: 'geode.jboss-modules-plugin'
 
-distributedTest {
-  environment 'GEODE_DISTRIBUTED_TEST_EXTENSIONS_PATH', "${project.buildDir}/resources/distributedTest/distributedTestGeodeLuceneExtensions.properties"
-}
-
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
