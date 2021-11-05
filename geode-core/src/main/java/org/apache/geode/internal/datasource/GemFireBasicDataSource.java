@@ -30,7 +30,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * connections. fromthe databse without any pooling.
  *
  */
-public class GemFireBasicDataSource extends AbstractDataSource implements SimpleDataSource {
+public class GemFireBasicDataSource extends AbstractDataSource {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = -4010116024816908360L;
@@ -61,10 +61,13 @@ public class GemFireBasicDataSource extends AbstractDataSource implements Simple
     return iface;
   }
 
-
-  @Override
-  public void initialize(ConfiguredDataSourceProperties config) throws SQLException {
-    super.init(config);
+  /**
+   * Creates a new instance of GemFireBasicDataSource
+   *
+   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
+   */
+  public GemFireBasicDataSource(ConfiguredDataSourceProperties configs) throws SQLException {
+    super(configs);
     driverObject = loadDriver();
   }
 

@@ -76,7 +76,7 @@ public class DataSourceFactory {
           "DataSourceFactory::getSimpleDataSource:URL String to Database is null");
     }
     try {
-      return lookupSimpleDataSource(configs);
+      return new GemFireBasicDataSource(configs);
     } catch (Exception ex) {
       logger.error(String.format(
           "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
@@ -88,16 +88,6 @@ public class DataSourceFactory {
               ex.getLocalizedMessage()),
           ex);
     }
-  }
-
-  private DataSource lookupSimpleDataSource(ConfiguredDataSourceProperties configs)
-      throws SQLException {
-    ServiceLoader<SimpleDataSource> simpleDataSources = ServiceLoader.load(SimpleDataSource.class);
-    for (SimpleDataSource simpleDataSource : simpleDataSources) {
-      simpleDataSource.initialize(configs);
-      return simpleDataSource;
-    }
-    throw new RuntimeException("No implementation found for: " + SimpleDataSource.class.getName());
   }
 
   /**

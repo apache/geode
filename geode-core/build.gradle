@@ -231,7 +231,6 @@ dependencies {
   //jaxb is used by cluster configuration
   implementation('com.sun.xml.bind:jaxb-impl')
 
-
   //istack appears to be used only by jaxb, not in our code. jaxb doesn't
   //declare this as required dependency though. It's unclear if this is needed
   //Runtime
@@ -287,6 +286,9 @@ dependencies {
   //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
   implementation('net.sf.jopt-simple:jopt-simple')
 
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
+
   implementation('io.swagger:swagger-annotations') {
     ext.optional = true
   }
@@ -313,7 +315,7 @@ dependencies {
 
   //Geode-common has annotations and other pieces used geode-core
   api(project(':geode-common'))
-  api(project(':geode-logging'))
+  implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-unsafe'))
   implementation(project(':geode-serialization'))
@@ -333,6 +335,8 @@ dependencies {
   }
   testImplementation(project(':geode-concurrency-test'))
   testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
@@ -354,6 +358,7 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j'))
   integrationTestImplementation(project(':geode-concurrency-test'))
   integrationTestImplementation('org.apache.bcel:bcel')
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
@@ -361,12 +366,6 @@ dependencies {
   integrationTestRuntimeOnly('xerces:xercesImpl')
   integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
-  distributedTestImplementation('com.sun.istack:istack-commons-runtime') {
-    exclude group: '*'
-  }
-  distributedTestImplementation(project(':geode-http-service')) {
-    ext.optional = true
-  }
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -380,9 +379,6 @@ dependencies {
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
   distributedTestImplementation('net.openhft:compiler')
-  //This is required to make distributed tests in geode-assembly pass, as geode-core needs access
-  // to classes defined in geode-assembly-test
-  distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   distributedTestRuntimeOnly('org.apache.derby:derby')
 

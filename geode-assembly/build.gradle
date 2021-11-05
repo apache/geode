@@ -166,7 +166,6 @@ task downloadWebServers(type: Copy) {
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  compileOnly(platform(project(':boms:geode-all-bom')))
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   jbossDependency('org.jboss.modules:jboss-modules:' + DependencyConstraints.get('jboss-modules.version'))
@@ -210,7 +209,6 @@ dependencies {
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
-
   integrationTestImplementation('org.apache.httpcomponents:httpclient')
   integrationTestImplementation('org.springframework:spring-beans')
   integrationTestImplementation('org.springframework:spring-context')
@@ -242,16 +240,14 @@ dependencies {
   distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  distributedTestImplementation(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
   distributedTestImplementation(project(':extensions:session-testing-war'))
   distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
   distributedTestImplementation('org.apache.httpcomponents:httpclient')
   distributedTestImplementation('org.springframework:spring-web')
   distributedTestImplementation(project(':geode-management'))
-  distributedTestImplementation(project(path: ':geode-web-management', configuration: 'war'))
+  distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
 
   distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
@@ -377,7 +373,8 @@ def cp = {
   // then add all the dependencies of the dependent jars
   def depJars = configurations.geodeArchives.dependencies.collect {
     it.dependencyProject.findAll {
-      !(it.name.contains('geode-web') || it.name.contains('geode-pulse'))
+      !(it.name.contains('geode-web') ||
+          it.name.contains('geode-pulse'))
     }.collect {
       it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         !(
@@ -403,8 +400,7 @@ def cp = {
             it.contains('spring-context') ||
             it.contains('spring-expression') ||
             it.contains('spring-web')
-            )
-      }
+            )}
     }
   }.flatten()
 

@@ -16,6 +16,7 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 compileJava {
@@ -26,13 +27,13 @@ compileJava {
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-common'))
-  implementation(project(':geode-core'))
-  implementation(project(':geode-membership'))
-  implementation(project(':geode-serialization'))
-  implementation(project(':geode-unsafe'))
-  implementation(project(':geode-gfsh'))
-  implementation(project(':geode-logging'))
+  testImplementation(project(':geode-common'))
+  compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-membership'))
+  compileOnly(project(':geode-logging'))
+  compileOnly(project(':geode-serialization'))
+  compileOnly(project(':geode-unsafe'))
+  compileOnly(project(':geode-gfsh'))
 
   api('junit:junit') {
     exclude module: 'hamcrest'
@@ -53,6 +54,7 @@ dependencies {
   api('commons-io:commons-io')
 
   api('org.apache.commons:commons-lang3')
+  api('org.apache.logging.log4j:log4j-api')
 
   api('org.awaitility:awaitility')
   api('org.hamcrest:hamcrest')

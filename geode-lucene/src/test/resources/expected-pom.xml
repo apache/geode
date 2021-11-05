@@ -98,6 +98,11 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-phonetic</artifactId>
       <scope>runtime</scope>
