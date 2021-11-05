@@ -484,8 +484,22 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       boolean isAccessor = (userPR.getLocalMaxMemory() == 0);
 
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
-      prQ = (PartitionedRegion) cache.getRegion(prQName);
 
+      prQ = (PartitionedRegion) cache.getRegion(prQName, true);
+      if (prQ != null && prQ.isDestroyed()) {
+        PartitionedRegion oldPrQ = prQ;
+        while (oldPrQ == prQ) {
+          try {
+            Thread.sleep(50);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          if (logger.isDebugEnabled()) {
+            logger.debug("wait for destroy to finish");
+          }
+          prQ = (PartitionedRegion) cache.getRegion(prQName, true);
+        }
+      }
       if ((prQ != null) && (this.index == 0) && this.cleanQueues) {
         cleanOverflowStats(cache);
         prQ.destroyRegion(null);

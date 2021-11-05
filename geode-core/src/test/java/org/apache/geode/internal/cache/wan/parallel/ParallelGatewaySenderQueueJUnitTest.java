@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -47,11 +48,14 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -62,6 +66,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue.MetaRegionFactory;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue.ParallelGatewaySenderQueueMetaRegion;
+import org.apache.geode.management.internal.BaseManagementService;
 
 public class ParallelGatewaySenderQueueJUnitTest {
 
@@ -162,9 +167,11 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(pa.getColocatedWith()).thenReturn(null);
     when(userPR.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(userPR.getFullPath()).thenReturn(regionPath);
-    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE")).thenReturn(prQ);
+    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true)).thenReturn(prQ);
     when(cache.getRegion(regionPath, true)).thenReturn(userPR);
     when(prQ.getColocatedWithRegion()).thenReturn(userPR);
+    when(prQ.isDestroyed()).thenReturn(false);
+
     RegionAdvisor ra = mock(RegionAdvisor.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     when(userPR.getRegionAdvisor()).thenReturn(ra);
@@ -501,6 +508,72 @@ public class ParallelGatewaySenderQueueJUnitTest {
     assertEquals(2L, ParallelGatewaySenderQueue.calculateTimeToSleep(40));
   }
 
+  @Test
+  public void testCleanQueueExecuteShadowPRWaitForRegionDestroyingToFinish() {
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    String regionPath = "/testRegion";
+    when(region.getFullPath()).thenReturn(regionPath);
+    PartitionAttributes<?, ?> pa = mock(PartitionAttributes.class);
+    when(region.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getColocatedWith()).thenReturn(null);
+    long recoveryDelay = 0;
+
+    when(pa.getStartupRecoveryDelay()).thenReturn(recoveryDelay);
+    when(pa.getRecoveryDelay()).thenReturn(recoveryDelay);
+
+    when(region.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
+
+    when(region.getTotalNumberOfBuckets()).thenReturn(11);
+    when(region.getRedundantCopies()).thenReturn(1);
+    when(region.getLocalSize()).thenReturn(1);
+    when(region.getLocalMaxMemory()).thenReturn(100);
+
+    when(sender.getDiskStoreName()).thenReturn("disk");
+    when(sender.isDiskSynchronous()).thenReturn(false);
+    when(sender.isPersistenceEnabled()).thenReturn(true);
+    when(sender.isBatchConflationEnabled()).thenReturn(true);
+
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+
+    PartitionedRegion prQ = mock(PartitionedRegion.class);
+
+    when(cache.getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true)).thenReturn(prQ, prQ, null);
+    when(prQ.isDestroyed()).thenReturn(true);
+
+    InternalDistributedSystem mocksystem = mock(InternalDistributedSystem.class);
+
+    InternalCacheForClientAccess internalCache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(internalCache);
+
+    when(internalCache.getInternalDistributedSystem()).thenReturn(mocksystem);
+    when(mocksystem.isConnected()).thenReturn(true);
+
+    DistributionConfig config = mock(DistributionConfig.class);
+    when(mocksystem.getConfig()).thenReturn(config);
+
+    when(config.getJmxManager()).thenReturn(false);
+
+    BaseManagementService managementService = mock(BaseManagementService.class);
+    BaseManagementService.setManagementService(internalCache, managementService);
+
+    Set<Region> targetRs = new HashSet<>();
+    targetRs.add(region);
+
+    PartitionedRegion shadowRegion = mock(PartitionedRegion.class);
+
+    when(regionFactory.create(any())).thenReturn(shadowRegion);
+
+    when(shadowRegion.getFullPath()).thenReturn("_PARALLEL_GATEWAY_SENDER_QUEUE");
+
+    mockGatewaySenderStats();
+
+    ParallelGatewaySenderQueue queue1 =
+        new ParallelGatewaySenderQueue(sender, targetRs, 0, 1, metaRegionFactory,
+            true);
+
+    verify(cache, times(3)).getRegion("_PARALLEL_GATEWAY_SENDER_QUEUE", true);
+  }
 
   private GatewaySenderEventImpl createGatewaySenderEventImpl(int transactionId,
       boolean isLastEventInTransaction) {
