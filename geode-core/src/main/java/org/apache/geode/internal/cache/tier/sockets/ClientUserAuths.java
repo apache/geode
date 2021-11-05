@@ -100,7 +100,7 @@ public class ClientUserAuths {
   }
 
   public void removeSubject(final Long userId) {
-    logger.info("Jinmei: Subject of {} removed.", userId);
+    logger.info("Jinmei: Subject of {} removed.", userId, new RuntimeException());
     removeSubject(uniqueIdVsSubject.remove(userId));
   }
 
