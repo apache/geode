@@ -120,6 +120,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.4.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
+        api(group: 'io.netty', name: 'netty-all', version: '4.1.67.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
@@ -236,11 +237,6 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
       entry('junit-vintage-engine')
-    }
-
-    dependencySet(group: 'io.netty', version: '4.1.70.Final') {
-      entry('netty-codec-redis')
-      entry('netty-handler')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

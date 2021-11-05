@@ -22,9 +22,9 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
-fastutil
 fastutil-core
 fastutil-extra
+fastutil
 findbugs-annotations
 geo
 gfsh-dependencies.jar
@@ -78,12 +78,7 @@ micrometer-core
 mx4j
 mx4j-remote
 mx4j-tools
-netty-buffer
-netty-codec
-netty-common
-netty-handler
-netty-resolver
-netty-transport
+netty-all
 nimbus-jose-jwt
 oauth2-oidc-sdk
 ra.jar

@@ -83,7 +83,7 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
+      <artifactId>netty-all</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>

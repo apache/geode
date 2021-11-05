@@ -198,6 +198,11 @@
         <version>1.7.3</version>
       </dependency>
       <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.1.67.Final</version>
+      </dependency>
+      <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
         <version>1.6.2</version>
@@ -606,16 +611,6 @@
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>5.7.2</version>
-      </dependency>
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-codec-redis</artifactId>
-        <version>4.1.70.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>io.netty</groupId>
-        <artifactId>netty-handler</artifactId>
-        <version>4.1.70.Final</version>
       </dependency>
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
