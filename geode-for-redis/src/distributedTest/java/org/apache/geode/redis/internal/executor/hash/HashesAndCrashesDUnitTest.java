@@ -31,10 +31,8 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -47,27 +45,26 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Ignore("tracked by GEODE-9692")
 public class HashesAndCrashesDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
 
-  @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
+  @Rule
+  public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
 
-  private static RedisAdvancedClusterCommands<String, String> commands;
-  private static RedisClusterClient clusterClient;
+  private RedisAdvancedClusterCommands<String, String> commands;
+  private RedisClusterClient clusterClient;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  @BeforeClass
-  public static void classSetup() throws Exception {
+  @Before
+  public void setup() throws Exception {
     locator = clusterStartUp.startLocatorVM(0);
 
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
@@ -90,8 +87,8 @@ public class HashesAndCrashesDUnitTest {
     commands = clusterClient.connect().sync();
   }
 
-  @AfterClass
-  public static void cleanup() {
+  @After
+  public void cleanup() {
     try {
       clusterClient.shutdown();
     } catch (Exception ignored) {
@@ -233,7 +230,7 @@ public class HashesAndCrashesDUnitTest {
     }
     assertThat(missingMembers).isEmpty();
 
-    logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
+    logger.info("--->>> SADD test ran {} iterations", iterationCount);
   }
 
   private void setPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
