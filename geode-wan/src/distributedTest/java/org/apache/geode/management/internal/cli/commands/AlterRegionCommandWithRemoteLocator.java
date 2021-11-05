@@ -205,19 +205,19 @@ public class AlterRegionCommandWithRemoteLocator {
   @Test
   public void alterInitializedRegionWithGwSenderOnManyServersDoesNotTakeTooLong() {
     gfsh.executeAndAssertThat("create disk-store --name=data --max-oplog-size=10 --dir=.")
-            .statusIsSuccess();
+        .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-                    "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=1103")
-            .statusIsSuccess();
+        "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=1103")
+        .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-                    "query --query=\"select key,value from /Positions.entries\"")
-            .statusIsSuccess();
+        "query --query=\"select key,value from /Positions.entries\"")
+        .statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-                    "create gateway-sender --id=parallelPositions --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=data --parallel=true")
-            .statusIsSuccess();
+        "create gateway-sender --id=parallelPositions --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=data --parallel=true")
+        .statusIsSuccess();
 
     GeodeAwaitility.await().until(() -> {
       gfsh.execute("alter region --name=Positions --gateway-sender-id=parallelPositions");

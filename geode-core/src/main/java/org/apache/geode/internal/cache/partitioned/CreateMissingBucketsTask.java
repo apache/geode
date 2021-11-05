@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RecoveryLock;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.logging.log4j.Logger;
 
 /**
  * A task for creating buckets in a child colocated region that are present in the leader region.
@@ -53,7 +54,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
     }
 
     if (redundancyProvider.getPartitionedRegion().isLocallyDestroyed
-            || redundancyProvider.getPartitionedRegion().isClosed)
+        || redundancyProvider.getPartitionedRegion().isClosed)
       return;
 
     PartitionedRegion leaderRegion =
@@ -96,7 +97,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
     int sleepInterval = PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION;
 
     while (!ColocationHelper.isColocationComplete(partitionedRegion)
-            && (retryCount < MAX_NUMBER_INTERVALS)) {
+        && (retryCount < MAX_NUMBER_INTERVALS)) {
 
       // Didn't time out. Sleep a bit and then continue
       boolean interrupted = Thread.interrupted();
