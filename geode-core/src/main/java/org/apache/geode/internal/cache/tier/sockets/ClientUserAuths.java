@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.cache.client.internal.AuthenticateUserOp.NOT_A_USER_ID;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +32,6 @@ import org.apache.shiro.subject.Subject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -43,6 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class ClientUserAuths {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   private final ConcurrentMap<Long, UserAuthAttributes> uniqueIdVsUserAuth =
       new ConcurrentHashMap<>();
@@ -83,11 +84,11 @@ public class ClientUserAuths {
     synchronized (this) {
       List<Subject> subjects;
       if (!uniqueIdVsSubjects.containsKey(newId)) {
-        logger.debug("Subject of {} added.", newId);
+        secureLogger.debug("Subject of {} added.", newId);
         subjects = new ArrayList<>();
         uniqueIdVsSubjects.put(newId, subjects);
       } else {
-        logger.debug("Subject of {} replaced.", newId);
+        secureLogger.debug("Subject of {} replaced.", newId);
         subjects = uniqueIdVsSubjects.get(newId);
       }
       // always add the latest subject to the top of the list;
@@ -119,7 +120,6 @@ public class ClientUserAuths {
     return uniqueIdVsUserAuth.get(userId);
   }
 
-  @VisibleForTesting
   @TestOnly
   protected synchronized Collection<Subject> getAllSubjects() {
     List<Subject> all = uniqueIdVsSubjects.values().stream()
@@ -141,7 +141,7 @@ public class ClientUserAuths {
     if (subjects == null) {
       return;
     }
-    logger.debug("{} Subjects of {} removed.", subjects.size(), userId);
+    secureLogger.debug("{} Subjects of {} removed.", subjects.size(), userId);
     subjects.forEach(Subject::logout);
   }
 

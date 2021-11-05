@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -94,6 +96,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("synthetic-access")
 public class CacheClientProxy implements ClientSession {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   @Immutable
   @VisibleForTesting
@@ -781,12 +784,13 @@ public class CacheClientProxy implements ClientSession {
         // single user case -- integrated security
         // connection is closed, so we can log out this subject
         else if (subject != null) {
-          logger.debug("CacheClientProxy.close, logging out: " + subject.getPrincipal());
+          secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
           subject.logout();
           subject = null;
         }
         // for multiUser case, in non-durable case, we are closing the connection
         else if (clientUserAuths != null) {
+          secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
@@ -979,8 +983,8 @@ public class CacheClientProxy implements ClientSession {
 
     // Logout the subject
     if (subject != null) {
-      logger.info(
-          "CacheClientProxy.closeOtherTransientFields, logging out: " + subject.getPrincipal());
+      secureLogger.debug(
+          "CacheClientProxy.closeOtherTransientFields, logging out {}. ", subject.getPrincipal());
       subject.logout();
     }
   }
