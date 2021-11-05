@@ -731,19 +731,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   /**
-   * Set GroupTransactionEvents for this GatewaySender.
-   *
-   * Care must be taken to set this consistently across all gateway senders in the cluster and only
-   * when safe to do so.
-   *
-   * @since Geode 1.15
-   *
-   */
-  public void setGroupTransactionEvents(boolean groupTransactionEvents) {
-    // TODO jbarrett remove this
-  }
-
-  /**
    * Set GatewayEventFilters for this GatewaySender.
    *
    * Care must be taken to set this consistently across all gateway senders in the cluster and only

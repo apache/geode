@@ -95,12 +95,6 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
       ((AbstractGatewaySender) gateway).setBatchTimeInterval(batchTimeInterval);
     }
 
-    Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();
-    if (groupTransactionEvents != null) {
-      ((AbstractGatewaySender) gateway)
-          .setGroupTransactionEvents(groupTransactionEvents);
-    }
-
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();
     if (gatewayEventFilters != null) {
       List<GatewayEventFilter> filters = new ArrayList<>();
