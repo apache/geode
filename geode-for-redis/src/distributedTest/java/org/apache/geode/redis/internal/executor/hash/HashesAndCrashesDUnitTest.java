@@ -189,10 +189,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -205,10 +202,7 @@ public class HashesAndCrashesDUnitTest {
         assertThat(commands.hget(key, field)).isEqualTo(value);
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -228,10 +222,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -246,10 +237,7 @@ public class HashesAndCrashesDUnitTest {
         }
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -269,10 +257,7 @@ public class HashesAndCrashesDUnitTest {
         iterationCount += 1;
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -285,10 +270,7 @@ public class HashesAndCrashesDUnitTest {
         assertThat(value).isEqualTo(key);
       } catch (RedisCommandExecutionException ignore) {
       } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")
-            && !ex.getMessage().contains("Connection refused")
-            && !ex.getMessage().contains("Unable to connect")
-            && !ex.getMessage().contains("Command timed out")) {
+        if (throwException(ex)) {
           throw ex;
         }
       }
@@ -296,6 +278,14 @@ public class HashesAndCrashesDUnitTest {
     }
 
     logger.info("--->>> SET test ran {} iterations", iterationCount);
+  }
+
+  private static boolean throwException(RedisException ex) {
+    return !ex.getMessage().contains("Connection reset by peer")
+        && !ex.getMessage().contains("Connection refused")
+        && !ex.getMessage().contains("Unable to connect")
+        && !ex.getMessage().contains("Command timed out")
+        && !ex.getMessage().contains("Connection closed");
   }
 
   private static void rebalanceAllRegions(MemberVM vm) {
