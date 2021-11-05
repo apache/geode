@@ -905,7 +905,7 @@ public class ServerConnection implements Runnable {
     if (subject == null) {
       logger.warn(
           "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
-          uniqueId, messageType, getName());
+          uniqueId, messageType, getName(), new RuntimeException());
       throw new AuthenticationRequiredException("Failed to find the authenticated user.");
     }
 
@@ -1319,7 +1319,11 @@ public class ServerConnection implements Runnable {
             Breadcrumbs.clearBreadcrumb();
           }
         }
-      } finally {
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+      }
+      finally {
+        logger.info("Jinmei: processMessages {}, crHelper shutdown {}", processMessages, crHelper.isShutdown());
         threadMonitoring.unregister(threadMonitorExecutor);
         try {
           unsetRequestSpecificTimeout();
