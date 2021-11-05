@@ -61,6 +61,7 @@ public class ClientUserAuths {
     }
 
     Subject oldSubject = uniqueIdVsSubject.put(newId, subject);
+    logger.info("Jinmei: Subject of {} replaced.", newId);
     removeSubject(oldSubject);
     logger.debug("Subject of {} added.", newId);
     return newId;
@@ -99,7 +100,7 @@ public class ClientUserAuths {
   }
 
   public void removeSubject(final Long userId) {
-    logger.debug("Subject of {} removed.", userId);
+    logger.info("Jinmei: Subject of {} removed.", userId);
     removeSubject(uniqueIdVsSubject.remove(userId));
   }
 
