@@ -47,13 +47,13 @@ public class RedisProperties {
   public static String getStringSystemProperty(String propName, String defaultValue) {
     validatePropertyName(propName);
 
-    String geodeValue = System.getProperty(propName, defaultValue);
-    if (StringUtils.isNotEmpty(geodeValue) && !geodeValue.equals(defaultValue)) {
+    String geodeValue = System.getProperty(propName);
+    if (StringUtils.isNotEmpty(geodeValue)) {
       return geodeValue;
     }
 
-    String gemfireValue = System.getProperty(convertToGemfire(propName), defaultValue);
-    if (StringUtils.isNotEmpty(gemfireValue) && !gemfireValue.equals(defaultValue)) {
+    String gemfireValue = System.getProperty(convertToGemfire(propName));
+    if (StringUtils.isNotEmpty(gemfireValue)) {
       return gemfireValue;
     }
 

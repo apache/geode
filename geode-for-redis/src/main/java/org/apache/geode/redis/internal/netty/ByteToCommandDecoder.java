@@ -51,18 +51,12 @@ import org.apache.geode.redis.internal.statistics.RedisStats;
  * proper Redis client.
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
-
-  public static final String UNAUTHENTICATED_MAX_ARRAY_SIZE_PARAM =
-      RedisProperties.UNAUTHENTICATED_MAX_ARRAY_SIZE;
-  public static final String UNAUTHENTICATED_MAX_BULK_STRING_LENGTH_PARAM =
-      RedisProperties.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH;
-
   private static final int MAX_BULK_STRING_LENGTH = 512 * 1024 * 1024; // 512 MB
   // These 2 defaults are taken from native Redis
   public static final int UNAUTHENTICATED_MAX_ARRAY_SIZE =
-      getIntegerSystemProperty(UNAUTHENTICATED_MAX_ARRAY_SIZE_PARAM, 10, 1);
+      getIntegerSystemProperty(RedisProperties.UNAUTHENTICATED_MAX_ARRAY_SIZE, 10, 1);
   public static final int UNAUTHENTICATED_MAX_BULK_STRING_LENGTH =
-      getIntegerSystemProperty(UNAUTHENTICATED_MAX_BULK_STRING_LENGTH_PARAM, 16384, 1);
+      getIntegerSystemProperty(RedisProperties.UNAUTHENTICATED_MAX_BULK_STRING_LENGTH, 16384, 1);
 
   private final RedisStats redisStats;
   private final RedisSecurityService securityService;
