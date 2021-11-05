@@ -35,9 +35,7 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
   implementation('com.healthmarketscience.rmiio:rmiio')
   implementation('com.fasterxml.jackson.core:jackson-databind')
-  implementation('io.swagger:swagger-annotations'){
-    ext.embed = true
-  }
+  implementation('io.swagger:swagger-annotations')
 
   //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
   testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
@@ -49,6 +47,7 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.derby:derby')
 
   distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-connectors'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntimeOnly('org.apache.derby:derby')
 

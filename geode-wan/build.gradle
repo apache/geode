@@ -23,8 +23,6 @@ apply plugin: 'geode.jboss-modules-plugin'
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  compileOnly(platform(project(':boms:geode-all-bom')))
-
 
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))

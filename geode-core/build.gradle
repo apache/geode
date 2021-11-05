@@ -291,6 +291,10 @@ dependencies {
     ext.optional = true
   }
 
+  runtimeOnly(project(':geode-http-service')) {
+    ext.optional = true
+  }
+
   //Snappy is used for compressing values, if enabled
   implementation('org.iq80.snappy:snappy') {
     ext.optional = true

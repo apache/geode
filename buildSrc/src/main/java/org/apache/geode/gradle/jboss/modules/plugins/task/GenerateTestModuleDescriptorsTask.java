@@ -19,7 +19,6 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.plugins.ide.eclipse.model.Link;
 
 import org.apache.geode.gradle.jboss.modules.plugins.generator.xml.JBossModuleDescriptorGenerator;
 
@@ -34,7 +33,6 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
     if (getProject().getPluginManager().hasPlugin("java-library")) {
       addDependencies("compile" + StringUtils.capitalize("distributedTest") + "Java");
       addDependencies("process" + StringUtils.capitalize("distributedTest") + "Resources");
-      addDependencies("jar");
     }
   }
 
@@ -66,6 +64,10 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
         .map(resolvedArtifact -> LIB_PATH_PREFIX + resolvedArtifact.getFile().getName())
         .collect(Collectors.toSet());
 
+    resources.addAll(getProject().getConfigurations()
+            .getByName("distributedTestRuntimeClasspath").getAllArtifacts().stream()
+            .map(resolvedArtifact -> LIB_PATH_PREFIX + resolvedArtifact.getFile().getName())
+            .collect(Collectors.toSet()));
     resources.addAll(generateResourceRoots(getProject()));
 
     List<ModuleDependency> modules = new LinkedList<>();
@@ -82,7 +84,7 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
   private Set<String> generateResourceRoots(Project project) {
 
     Set<String> resourceRoots = new TreeSet<>();
-    String[] facets = new String[] {"commonTest", "distributedTest", "main"};
+    String[] facets = new String[] {"commonTest", "distributedTest"};
 
     for (String facet : facets) {
       validateAndAddResourceRoot(resourceRoots,
