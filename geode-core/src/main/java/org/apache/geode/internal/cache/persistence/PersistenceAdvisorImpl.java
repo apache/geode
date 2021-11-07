@@ -1155,6 +1155,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     isClosed = true;
     persistentMemberManager.removeRevocationListener(profileChangeListener);
     cacheDistributionAdvisor.removeProfileChangeListener(profileChangeListener);
+    persistentStateListeners = Collections.emptySet();
     releaseTieLock();
   }
 

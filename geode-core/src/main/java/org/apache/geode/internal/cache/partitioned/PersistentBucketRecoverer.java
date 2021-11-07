@@ -246,8 +246,12 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
 
     public void removeListeners() {
+      BucketPersistenceAdvisor tempBPA;
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
-        proxyBucket.getPersistenceAdvisor().removeListener(PersistentBucketRecoverer.this);
+        tempBPA = proxyBucket.getPersistenceAdvisor();
+        if (!tempBPA.isClosed()) {
+          tempBPA.removeListener(PersistentBucketRecoverer.this);
+        }
       }
     }
 
@@ -312,13 +316,17 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       Map<PersistentMemberID, Set<Integer>> waitingForMembers =
           new HashMap<PersistentMemberID, Set<Integer>>();
 
-
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
         Integer bucketId = proxyBucket.getBucketId();
 
         // Get the set of missing members from the persistence advisor
         Set<PersistentMemberID> missingMembers;
         BucketPersistenceAdvisor persistenceAdvisor = proxyBucket.getPersistenceAdvisor();
+
+        if (persistenceAdvisor.isClosed()) {
+          continue;
+        }
+
         if (offlineOnly) {
           missingMembers = persistenceAdvisor.getMissingMembers();
         } else {
