@@ -50,6 +50,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -197,17 +198,16 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
   }
 
   private void createServer(String serverName, File serverDir, int locatorPort) {
-    ServerLauncher.Builder builder = new ServerLauncher.Builder();
-    builder.setMemberName(serverName);
-    builder.setWorkingDirectory(serverDir.getAbsolutePath());
-    builder.setServerPort(0);
-    builder.set(LOCATORS, "localHost[" + locatorPort + "]");
-    builder.set(DISABLE_AUTO_RECONNECT, "false");
-    builder.set(ENABLE_CLUSTER_CONFIGURATION, "false");
-    builder.set(MAX_WAIT_TIME_RECONNECT, "1000");
-    builder.set(MEMBER_TIMEOUT, "2000");
+    serverLauncher = new ServerLauncher.Builder().setMemberName(serverName)
+        .setWorkingDirectory(serverDir.getAbsolutePath())
+        .setServerPort(AvailablePortHelper.getRandomAvailableTCPPort())
+        .set(LOCATORS, "localHost[" + locatorPort + "]")
+        .set(DISABLE_AUTO_RECONNECT, "false")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .build();
 
-    serverLauncher = builder.build();
     serverLauncher.start();
 
     system = (InternalDistributedSystem) serverLauncher.getCache().getDistributedSystem();
