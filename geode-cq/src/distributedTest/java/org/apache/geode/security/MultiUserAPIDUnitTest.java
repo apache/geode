@@ -28,8 +28,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.RegionShortcut;
@@ -58,6 +56,9 @@ public class MultiUserAPIDUnitTest {
 
   @Rule
   public ClientCacheRule client = new ClientCacheRule();
+
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -234,9 +235,6 @@ public class MultiUserAPIDUnitTest {
     assertThat(CountableUserPasswordAuthInit.count.get()).isEqualTo(1);
   }
 
-  @Rule
-  public ExecutorServiceRule executor = new ExecutorServiceRule();
-
   @Test
   public void multiUser_OneUserShouldOnlyAuthenticateOnceByDifferentThread() throws Exception {
     ClientCache cache = client.withServerConnection(server.getPort())
@@ -285,30 +283,7 @@ public class MultiUserAPIDUnitTest {
   }
 
   @Test
-  public void transactionTest() throws Exception {
-    ClientCache cache = client.withServerConnection(server.getPort())
-        .withCredential("data", "data")
-        .createCache();
-    Region<Object, Object> region = client.createProxyRegion("region");
-    CacheTransactionManager txManager =
-        cache.getCacheTransactionManager();
-
-    try {
-      txManager.begin();
-      region.put("key1", "value1");
-      region.put("key2", "value2");
-      txManager.commit();
-    } catch (CommitConflictException conflict) {
-      // ... do necessary work for a transaction that failed on commit
-    } finally {
-      if (txManager.exists()) {
-        txManager.rollback();
-      }
-    }
-  }
-
-  @Test
-  public void multiUserWithClientSubscription() throws Exception {
+  public void multiUserWithCQ_Should_Authentiate() throws Exception {
     ClientCache cache = client.withServerConnection(server.getPort())
         .withPoolSubscription(true)
         .withProperty(SECURITY_CLIENT_AUTH_INIT, CountableUserPasswordAuthInit.class.getName())
@@ -320,9 +295,6 @@ public class MultiUserAPIDUnitTest {
     RegionService regionService = cache.createAuthenticatedView(properties);
 
     cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
-    Region region = regionService.getRegion(SEPARATOR + "region");
-    assertThatThrownBy(() -> region.registerInterestForAllKeys())
-        .isInstanceOf(UnsupportedOperationException.class);
     CqQuery cqQuery =
         regionService.getQueryService()
             .newCq("select * from /region", new CqAttributesFactory().create());
