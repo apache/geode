@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.partitioned;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
 import org.apache.geode.internal.cache.ColocationHelper;
@@ -100,7 +100,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       }
     }
 
-    regions = Collections.unmodifiableList(allRegions);
+    regions = allRegions;
     allBucketsRecoveredFromDisk = new CountDownLatch(proxyBuckets);
     membershipChanged = true;
     addListeners();
@@ -174,6 +174,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   @Override
   public void run2() {
     try {
+      List<RegionStatus> destroyedRegions = new ArrayList<>();
       boolean warningLogged = false;
       while (getLatchCount() > 0) {
         int sleepMillis = SLEEP_PERIOD;
@@ -182,12 +183,23 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         if (!warningLogged) {
           sleepMillis = SLEEP_PERIOD / 2;
         }
+        if (regions.isEmpty()) {
+          break;
+        }
         Thread.sleep(sleepMillis);
 
         if (membershipChanged) {
           membershipChanged = false;
           for (RegionStatus region : regions) {
-            region.logWaitingForMembers();
+            try {
+              region.logWaitingForMembers();
+            } catch (RegionDestroyedException e) {
+              destroyedRegions.add(region);
+            }
+          }
+          if (!destroyedRegions.isEmpty()) {
+            regions.removeAll(destroyedRegions);
+            destroyedRegions.clear();
           }
           warningLogged = true;
         }
@@ -197,17 +209,23 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       // Log and bail
       logger.error(e.getMessage(), e);
     } finally {
-      /*
-       * Our job is done. Stop listening to the bucket advisors.
-       */
-      removeListeners();
-      /*
-       * Make sure the recovery completion message was printed to the log.
-       */
-      for (RegionStatus region : regions) {
-        if (!region.loggedDoneMessage) {
-          region.logDoneMessage();
+      if (!regions.isEmpty()) {
+
+        /*
+         * Our job is done. Stop listening to the bucket advisors.
+         */
+        removeListeners();
+        /*
+         * Make sure the recovery completion message was printed to the log.
+         */
+
+        for (RegionStatus region : regions) {
+          if (!region.loggedDoneMessage) {
+            region.logDoneMessage();
+          }
         }
+
+        regions.clear();
       }
     }
   }
@@ -312,10 +330,12 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      *        returned, false to return all members that this member is waiting for, including
      *        members which are running but not fully initialized.
      */
-    private Map<PersistentMemberID, Set<Integer>> getMembersToWaitFor(boolean offlineOnly) {
+    private Map<PersistentMemberID, Set<Integer>> getMembersToWaitFor(boolean offlineOnly)
+        throws RegionDestroyedException {
       Map<PersistentMemberID, Set<Integer>> waitingForMembers =
           new HashMap<PersistentMemberID, Set<Integer>>();
 
+      boolean allBucketsClosed = true;
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
         Integer bucketId = proxyBucket.getBucketId();
 
@@ -327,6 +347,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
           continue;
         }
 
+        allBucketsClosed = false;
         if (offlineOnly) {
           missingMembers = persistenceAdvisor.getMissingMembers();
         } else {
@@ -343,6 +364,9 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
             buckets.add(bucketId);
           }
         }
+      }
+      if (allBucketsClosed) {
+        throw new RegionDestroyedException("The Region has been closed or destroyed", region);
       }
 
       return waitingForMembers;
@@ -363,7 +387,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     /**
      * Logs a consolidated log entry for all ProxyBucketRegions waiting for persistent members.
      */
-    private void logWaitingForMembers() {
+    private void logWaitingForMembers() throws RegionDestroyedException {
       Map<PersistentMemberID, Set<Integer>> offlineMembers = getMembersToWaitFor(true);
       Map<PersistentMemberID, Set<Integer>> allMembersToWaitFor = getMembersToWaitFor(false);
 
