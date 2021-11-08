@@ -437,7 +437,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
     AtomicBoolean running = new AtomicBoolean(true);
 
     Future<Void> future1 =
-        executor.submit(() -> runSubscribeAndPublish(1, 10000, running));
+        executor.submit(() -> runSubscribeAndPublish(1, 3, running));
 
     running.set(false);
     future1.get();
@@ -477,6 +477,10 @@ public abstract class AbstractPubSubIntegrationTest implements RedisPortSupplier
 
       mockSubscriber.psubscribe(pChannel);
       mockSubscriber.awaitPSubscribe(pChannel);
+
+      // Workaround for GEODE-9050 - wait for the subscription to finish on the server
+      // and complete the call to changeChannelEventLoopGroup
+      Thread.sleep(10_000);
 
       localPublisher.publish(channel, "hello-" + index + "-" + iteration);
 
