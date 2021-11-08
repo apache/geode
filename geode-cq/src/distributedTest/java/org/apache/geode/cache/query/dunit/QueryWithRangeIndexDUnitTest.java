@@ -133,6 +133,41 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
     assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
   }
 
+  @Test
+  public void testLimitIsAppliedOnlyOnQueryResults() {
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
+        .statusIsSuccess();
+
+    server.invoke(() -> {
+      Cache cache = CacheFactory.getAnyInstance();
+      QueryService cacheQS = cache.getQueryService();
+      cacheQS.createIndex("IdIndex", "value.positions['SUN']",
+          SEPARATOR + regionName + ".entrySet");
+      Region<Integer, Portfolio> region =
+          cache.getRegion(regionName);
+
+      for (int i = 1; i < 10001; i++) {
+        Portfolio p1 = new Portfolio(i, i);
+        p1.positions = new HashMap<>();
+        p1.positions.put("IBM", "something");
+        if (i % 2 == 0) {
+          p1.positions.put("SUN", "something");
+        } else {
+          p1.positions.put("SUN", "some");
+        }
+        region.put(i, p1);
+      }
+    });
+
+    String query = "query --query=\"<trace> select e.key, e.value from " +
+        SEPARATOR + regionName
+        + ".entrySet e where e.value.positions['SUN'] like 'somethin%' limit 5\"";
+
+    String cmdResult = String.valueOf(gfsh.executeAndAssertThat(query).getResultModel());
+    assertThat(cmdResult).contains("\"Rows\":\"5\"");
+    assertThat(cmdResult).contains("indexesUsed(1):IdIndex(Results: 10000)");
+  }
+
   private static void startLocator(File workingDirectory, int locatorPort,
       int jmxPort) {
     LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
