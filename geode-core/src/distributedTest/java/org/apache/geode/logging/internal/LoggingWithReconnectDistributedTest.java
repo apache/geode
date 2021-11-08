@@ -48,6 +48,7 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -63,6 +64,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  */
 @Category(LoggingTest.class)
 public class LoggingWithReconnectDistributedTest implements Serializable {
+  private static final long serialVersionUID = -6614122576140476739L;
 
   private static final long TIMEOUT = getTimeout().toMillis();
 
@@ -106,7 +108,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
     server1Dir = temporaryFolder.newFolder(server1Name);
     server2Dir = temporaryFolder.newFolder(server2Name);
 
-    int locatorPort = locatorVM.invoke(() -> createLocator());
+    int locatorPort = locatorVM.invoke(this::createLocator);
 
     server1VM.invoke(() -> createServer(server1Name, server1Dir, locatorPort));
     server2VM.invoke(() -> createServer(server2Name, server2Dir, locatorPort));
@@ -141,7 +143,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
 
     server2VM.invoke(() -> {
       Distribution membershipManager = getDistribution(system);
-      ((GMSMembership) membershipManager.getMembership())
+      ((GMSMembership<InternalDistributedMember>) membershipManager.getMembership())
           .forceDisconnect("Forcing disconnect in " + testName.getMethodName());
 
       await().until(() -> system.isReconnecting());
@@ -180,16 +182,16 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
   }
 
   private int createLocator() {
-    LocatorLauncher.Builder builder = new LocatorLauncher.Builder();
-    builder.setMemberName(locatorName);
-    builder.setWorkingDirectory(locatorDir.getAbsolutePath());
-    builder.setPort(0);
-    builder.set(DISABLE_AUTO_RECONNECT, "false");
-    builder.set(ENABLE_CLUSTER_CONFIGURATION, "false");
-    builder.set(MAX_WAIT_TIME_RECONNECT, "1000");
-    builder.set(MEMBER_TIMEOUT, "2000");
+    locatorLauncher = new LocatorLauncher.Builder()
+        .setMemberName(locatorName)
+        .setWorkingDirectory(locatorDir.getAbsolutePath())
+        .setPort(AvailablePortHelper.getRandomAvailableTCPPort())
+        .set(DISABLE_AUTO_RECONNECT, "false")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
+        .set(MAX_WAIT_TIME_RECONNECT, "1000")
+        .set(MEMBER_TIMEOUT, "2000")
+        .build();
 
-    locatorLauncher = builder.build();
     locatorLauncher.start();
 
     system = (InternalDistributedSystem) locatorLauncher.getCache().getDistributedSystem();
@@ -200,7 +202,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
   private void createServer(String serverName, File serverDir, int locatorPort) {
     serverLauncher = new ServerLauncher.Builder().setMemberName(serverName)
         .setWorkingDirectory(serverDir.getAbsolutePath())
-        .setServerPort(AvailablePortHelper.getRandomAvailableTCPPort())
+        .setDisableDefaultServer(true)
         .set(LOCATORS, "localHost[" + locatorPort + "]")
         .set(DISABLE_AUTO_RECONNECT, "false")
         .set(ENABLE_CLUSTER_CONFIGURATION, "false")
