@@ -70,10 +70,8 @@ fi
 set -e
 set -x
 
-if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
-  CONCOURSE_SCHEME=https
-fi
-CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
+CONCOURSE_SCHEME=https
+CONCOURSE_URL=${CONCOURSE_SCHEME}://${CONCOURSE_HOST}
 FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
@@ -133,7 +131,7 @@ YML
   FLY=${FLY:-$(which fly)}
 
   set -e
-  if [[ ${UPSTREAM_FORK} != "apache" ]]; then
+  if [[ "${UPSTREAM_FORK}" != "apache" ]]; then
     ${FLY} -t ${FLY_TARGET} status || \
     ${FLY} -t ${FLY_TARGET} login \
            --team-name ${CONCOURSE_TEAM} \
