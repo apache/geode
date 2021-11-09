@@ -44,16 +44,6 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
-MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
-MY_ZONE=${MY_ZONE##*/}
-NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
-GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
-GCP_NETWORK=${GCP_NETWORK##*/}
-GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
-GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
-ENV_ID=$(echo ${GCP_NETWORK} | awk -F- '{ print $1}')
-
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
 
   cat > repository.yml <<YML
