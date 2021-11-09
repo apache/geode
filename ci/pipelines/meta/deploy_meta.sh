@@ -70,10 +70,8 @@ fi
 set -e
 set -x
 
-if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
-  CONCOURSE_SCHEME=https
-fi
-CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
+CONCOURSE_SCHEME=https
+CONCOURSE_URL=${CONCOURSE_SCHEME}://${CONCOURSE_HOST}
 FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
@@ -132,15 +130,15 @@ YML
 
 
   set -e
-  if [[ ${UPSTREAM_FORK} != "apache" ]]; then
-    fly -t ${FLY_TARGET} status || \
-    fly -t ${FLY_TARGET} login \
+  if [[ "${UPSTREAM_FORK}" != "apache" ]]; then
+    ${FLY} -t ${FLY_TARGET} status || \
+    ${FLY} -t ${FLY_TARGET} login \
            --team-name ${CONCOURSE_TEAM} \
            --concourse-url=${CONCOURSE_URL}
   fi
 
-  fly -t ${FLY_TARGET} sync
-  fly -t ${FLY_TARGET} set-pipeline \
+  ${FLY} -t ${FLY_TARGET} sync
+  ${FLY} -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
@@ -168,19 +166,19 @@ popd 2>&1 > /dev/null
 function jobStatus {
   PIPELINE=$1
   JOB=$2
-  fly jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
+  ${FLY} jobs -t ${FLY_TARGET} -p ${PIPELINE}|awk "/${JOB}/"'{if($2=="yes")print "paused";else if($4!="n/a")print $4; else print $3}'
 }
 
 function triggerJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly trigger-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} trigger-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function pauseJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly pause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} pause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function pauseJobs {
@@ -203,7 +201,7 @@ function pauseNewJobs {
 function unpauseJob {
   PIPELINE=$1
   JOB=$2
-  (set -x ; fly unpause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
+  (set -x ; ${FLY} unpause-job -t ${FLY_TARGET} -j ${PIPELINE}/${JOB})
 }
 
 function unpauseJobs {
@@ -216,12 +214,12 @@ function unpauseJobs {
 
 function unpausePipeline {
   PIPELINE=$1
-  (set -x ; fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE})
+  (set -x ; ${FLY} -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE})
 }
 
 function exposePipeline {
   PIPELINE=$1
-  (set -x ; fly -t ${FLY_TARGET} expose-pipeline -p ${PIPELINE})
+  (set -x ; ${FLY} -t ${FLY_TARGET} expose-pipeline -p ${PIPELINE})
 }
 
 function exposePipelines {
