@@ -42,13 +42,16 @@ public class KeysExecutor implements CommandExecutor {
     List<byte[]> matchingKeys = new ArrayList<>();
 
     GlobPattern pattern = new GlobPattern(glob);
+    logger.error("KEYS, glob is:" + pattern);
 
     for (RedisKey key : allKeys) {
+      logger.error("KEYS, cur key is:" + key);
       byte[] keyBytes = key.toBytes();
       if (pattern.matches(keyBytes)) {
         matchingKeys.add(keyBytes);
       }
     }
+    logger.error("KEYS, matchingKeys length:" + matchingKeys.size());
 
     return RedisResponse.array(matchingKeys, true);
   }

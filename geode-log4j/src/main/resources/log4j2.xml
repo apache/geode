@@ -32,7 +32,10 @@
   </Appenders>
   <Loggers>
     <Logger name="com.gemstone" level="INFO" additivity="true"/>
-    <Logger name="org.apache.geode" level="INFO" additivity="true">
+    <Logger name="io.netty" level="DEBUG" additivity="true"/>
+    <Logger name="redis.clients.jedis" level="DEBUG" additivity="true"/>
+    <Logger name="org.springframework" level="DEBUG" additivity="true"/>
+    <Logger name="org.apache.geode" level="DEBUG" additivity="true">
     <filters>
       <MarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
     </filters>
