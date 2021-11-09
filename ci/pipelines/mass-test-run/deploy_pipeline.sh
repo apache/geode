@@ -40,16 +40,6 @@ fi
 echo "Sanitized Geode Fork = ${SANITIZED_GEODE_FORK}"
 echo "Sanitized Geode Branch = ${SANITIZED_GEODE_BRANCH}"
 
-MY_NAME=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/name" -H "Metadata-Flavor: Google")
-MY_ZONE=$(curl -s "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google")
-MY_ZONE=${MY_ZONE##*/}
-NETWORK_INTERFACE_INFO="$(gcloud compute instances describe ${MY_NAME} --zone ${MY_ZONE} --format="json(networkInterfaces)")"
-GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].network')
-GCP_NETWORK=${GCP_NETWORK##*/}
-GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
-GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
-ENV_ID=$(echo ${GCP_NETWORK} | awk -F- '{ print $1}')
-
 #echo "DEBUG INFO *****************************"
 #echo "Pipeline prefix = ${PIPELINE_PREFIX}"
 #echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
