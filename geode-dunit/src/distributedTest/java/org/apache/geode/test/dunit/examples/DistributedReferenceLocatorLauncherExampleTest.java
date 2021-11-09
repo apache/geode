@@ -35,6 +35,7 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedReference;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -61,6 +62,7 @@ public class DistributedReferenceLocatorLauncherExampleTest implements Serializa
         .append(hostName).append('[').append(randomPorts[3]).append(']').append(',')
         .append(hostName).append('[').append(randomPorts[4]).append(']');
 
+    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
     int index = 0;
     for (VM vm : asList(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
       int whichPort = index++;

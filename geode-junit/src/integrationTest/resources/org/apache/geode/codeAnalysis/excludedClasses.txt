@@ -1,3 +1,4 @@
 org/apache/geode/cache/query/data/PortfolioNoDS
 org/apache/geode/cache/query/data/PortfolioPdx
 org/apache/geode/cache/query/data/PortfolioPdx$Day
+org/apache/geode/codeAnalysis/SanctionedSerializablesServiceIntegrationTestBase$ServiceResourceExpectation

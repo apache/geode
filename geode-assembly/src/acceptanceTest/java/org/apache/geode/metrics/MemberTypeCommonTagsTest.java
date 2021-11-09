@@ -138,7 +138,8 @@ public class MemberTypeCommonTagsTest {
         "--port=" + locatorPort,
         "--classpath=" + serviceJarPath + pathSeparator + functionJarPath,
         "--http-service-port=0",
-        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
+        "--J=-Dgemfire.serializable-object-filter=*");
 
     gfshRule.execute(startLocatorCommand);
 
