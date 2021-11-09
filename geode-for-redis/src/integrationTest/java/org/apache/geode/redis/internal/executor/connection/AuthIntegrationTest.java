@@ -111,7 +111,6 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
      * setting this value.
      */
     System.setProperty("io.netty.eventLoopThreads", "1");
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
     CacheFactory cf = new CacheFactory();
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
@@ -123,6 +122,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
       cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     }
     cache = cf.create();
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     server.getRegionProvider().getSlotAdvisor().getBucketSlots();
     this.jedis = new Jedis("localhost", port, 100000);
@@ -274,8 +274,6 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
   private void createRadishServerWithLogFileAndSecurityManager(File logFile, String logLevel,
       Class<?> securityManager) {
-    System.setProperty("io.netty.eventLoopThreads", "1");
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
     cache = new CacheFactory()
         .set(LOG_FILE, logFile.getAbsolutePath())
         .set(LOG_LEVEL, logLevel)
@@ -283,6 +281,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
         .set(LOCATORS, "")
         .set(ConfigurationProperties.SECURITY_MANAGER, securityManager.getName())
         .create();
+    port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
     jedis = new Jedis("localhost", port, 100000);
   }
