@@ -48,7 +48,6 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Command;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 
 public class ClusterExecutor implements CommandExecutor {
@@ -61,7 +60,7 @@ public class ClusterExecutor implements CommandExecutor {
 
     List<byte[]> args = command.getProcessedCommand();
     byte[] subcommand = args.get(1);
-    logger.error("CLUSTER, arg is:" +  bytesToString(args));
+    logger.error("CLUSTER, arg is:" + bytesToString(subcommand));
 
     if (equalsIgnoreCaseBytes(subcommand, bINFO)) {
       checkNumArgs(command, subcommand, 2);
