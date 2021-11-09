@@ -43,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.wan.GatewaySenderStartupAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -130,7 +131,7 @@ public class StopGatewaySenderCommandTest {
 
     // check that cluster configuration is updated
     CacheConfig.GatewaySender config = (CacheConfig.GatewaySender) result.getConfigObject();
-    assertThat(config.getState()).isEqualTo("stopped");
+    assertThat(config.getStartupAction()).isEqualTo(GatewaySenderStartupAction.STOP.name().toLowerCase());
 
     ArgumentCaptor<Collection> callablesCaptor =
         ArgumentCaptor.forClass(Collection.class);

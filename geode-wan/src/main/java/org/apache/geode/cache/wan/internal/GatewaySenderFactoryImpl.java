@@ -290,7 +290,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if (cache instanceof GemFireCacheImpl) {
         sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
-        bringGatewaySenderToConfiguredState(sender);
+        executeConfiguredStartupActionOnGatewaySender(sender);
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
@@ -314,7 +314,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if (cache instanceof GemFireCacheImpl) {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
-        bringGatewaySenderToConfiguredState(sender);
+        executeConfiguredStartupActionOnGatewaySender(sender);
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(cache, attrs);
         cache.addGatewaySender(sender);
@@ -324,33 +324,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   /**
-   * This method returns startup action of gateway-sender. The startup action is calculated
-   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
-   * manual-start parameters. If set, then startup-action parameter has advantage over
-   * the manual-start parameter.
+   * This method executes configured startup-action at startup of gateway-sender.
    *
    * @see GatewaySenderStartupAction
    */
-  private GatewaySenderStartupAction getGatewaySenderDesiredState() {
-    // If startup-action parameter is not available, then use manual-start parameter
-    // to determine initial state of gateway-sender
-    if (this.attrs.getStartupAction() == GatewaySenderStartupAction.NONE) {
-      if (!this.attrs.isManualStart()) {
-        return GatewaySenderStartupAction.START;
-      }
-      return GatewaySenderStartupAction.STOP;
-    }
-    return this.attrs.getStartupAction();
-  }
-
-  /**
-   * This method brings geode sender to desi.
-   *
-   * @see GatewaySenderStartupAction
-   */
-  private void bringGatewaySenderToConfiguredState(GatewaySender sender) {
+  private void executeConfiguredStartupActionOnGatewaySender(GatewaySender sender) {
     InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
-    GatewaySenderStartupAction startupAction = getGatewaySenderDesiredState();
+    GatewaySenderStartupAction startupAction =
+        internalGatewaySender.calculateStartupActionForGatewaySender();
 
     switch (startupAction) {
       case START:

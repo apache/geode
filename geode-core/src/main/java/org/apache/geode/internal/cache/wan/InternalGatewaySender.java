@@ -61,11 +61,23 @@ public interface InternalGatewaySender extends GatewaySender {
    * Returns the startup-action of the <code>GatewaySender</code>. This action parameter is set
    * after start, stop, pause and resume gateway-sender gfsh commands.
    *
-   * @return startup action
+   * @return startup action parameter value
    *
    * @see GatewaySenderStartupAction
    */
   GatewaySenderStartupAction getStartupAction();
+
+  /**
+   * This method returns startup action of gateway-sender. The startup action is calculated
+   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
+   * manual-start parameters. If set, then startup-action parameter has advantage over
+   * the manual-start parameter.
+   *
+   * @return startup action
+   *
+   * @see GatewaySenderStartupAction
+   */
+  GatewaySenderStartupAction calculateStartupActionForGatewaySender();
 
   int getEventQueueSize();
 }

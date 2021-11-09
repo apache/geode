@@ -668,9 +668,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String startupAction = atts.getValue(STARTUP_ACTION);
     if (startupAction == null) {
       internalGatewaySenderFactory.setStartupAction(GatewaySenderStartupAction.NONE);
-    } else if (Objects.equals(startupAction, GatewaySenderStartupAction.START.getAction()) ||
-        Objects.equals(startupAction, GatewaySenderStartupAction.STOP.getAction()) ||
-        Objects.equals(startupAction, GatewaySenderStartupAction.PAUSE.getAction())) {
+    } else if (Objects.equals(startupAction, GatewaySenderStartupAction.START.name().toLowerCase())
+        ||
+        Objects.equals(startupAction, GatewaySenderStartupAction.STOP.name().toLowerCase()) ||
+        Objects.equals(startupAction, GatewaySenderStartupAction.PAUSE.name().toLowerCase())) {
       internalGatewaySenderFactory
           .setStartupAction(GatewaySenderStartupAction.valueOf(startupAction.toUpperCase()));
     } else {

@@ -433,6 +433,26 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return startupAction;
   }
 
+  /**
+   * This method returns startup action of gateway-sender. The startup action is calculated
+   * based on the startup-action (please check <code>{@link GatewaySenderStartupAction}</code>) and
+   * manual-start parameters. If set, then startup-action parameter has advantage over
+   * the manual-start parameter.
+   *
+   * @see GatewaySenderStartupAction
+   */
+  public GatewaySenderStartupAction calculateStartupActionForGatewaySender() {
+    // If startup-action parameter is not available, then use manual-start parameter
+    // to determine initial state of gateway-sender
+    if (this.getStartupAction() == GatewaySenderStartupAction.NONE) {
+      if (!this.isManualStart()) {
+        return GatewaySenderStartupAction.START;
+      }
+      return GatewaySenderStartupAction.STOP;
+    }
+    return this.getStartupAction();
+  }
+
   @Override
   public boolean isBatchConflationEnabled() {
     return isConflation;

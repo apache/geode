@@ -25,21 +25,22 @@ public enum GatewaySenderStartupAction {
    * This action ("start") is persisted in cluster configuration after
    * start or resume gateway-sender command is successfully executed.
    * At startup member will start gateway sender. When set then
-   * this state has advantage over manual-start parameter.
+   * this parameter has advantage over manual-start parameter.
    */
   START("start"),
   /*
    * This action ("stop") is persisted in cluster configuration after
    * stop gateway-sender command is successfully executed. At startup
-   * member will not start gateway-sender. When set then
-   * this state has advantage over manual-start parameter.
+   * member will not start gateway-sender, but only recover
+   * gateway queues from persistent storage if needed. When set then
+   * this parameter has advantage over manual-start parameter.
    */
   STOP("stop"),
   /*
    * This action ("pause") is persisted in cluster configuration after
    * pause gateway-sender command is successfully executed. At startup
    * member will start gateway-sender in paused state. When set then
-   * this state has advantage over manual-start parameter.
+   * this parameter has advantage over manual-start parameter.
    */
   PAUSE("pause"),
   /*
@@ -51,10 +52,6 @@ public enum GatewaySenderStartupAction {
 
   GatewaySenderStartupAction(String action) {
     this.action = action;
-  }
-
-  public String getAction() {
-    return action;
   }
 
   @Override

@@ -33,7 +33,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -70,9 +69,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
         return;
       }
 
-      Set<Region> targetRs = new HashSet<>();
+      Set<Region<?, ?>> targetRs = new HashSet<>();
       for (InternalRegion pr : this.getCache().getApplicationRegions()) {
-        if (((LocalRegion) pr).getAllGatewaySenderIds().contains(this.getId())) {
+        if (pr.getAllGatewaySenderIds().contains(this.getId())) {
           targetRs.add(pr);
         }
       }

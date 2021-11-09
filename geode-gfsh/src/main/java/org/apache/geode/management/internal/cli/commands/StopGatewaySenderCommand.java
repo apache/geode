@@ -140,10 +140,11 @@ public class StopGatewaySenderCommand extends SingleGfshCommand implements
                 id, ite.getMessage()));
       }
     }
-    // Persist new state to Cluster Configuration
+
+    // Persist new action to Cluster Configuration
     if (isGatewaySenderStopped && onMember == null) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.STOP.getAction());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.STOP.name().toLowerCase());
       gatewaySenderConfig.setId(id);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

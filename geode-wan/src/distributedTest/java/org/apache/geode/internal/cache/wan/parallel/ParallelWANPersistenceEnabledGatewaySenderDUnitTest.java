@@ -895,7 +895,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * if the remote site receives all the events.
    */
   @Test
-  public void testPersistentPRWithPersistentGatewaySender_Restart_DoOps() {
+  public void testPersistentPRWithPersistentGatewaySender_Restart_DoOps()
+      throws InterruptedException {
     // create locator on local site
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
@@ -981,25 +982,20 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
         null, diskStore4, true));
 
     LogWriterUtils.getLogWriter().info("Created the senders back from the disk store.");
+    // create PR on local site
+    AsyncInvocation<Void> createPersistentPartitionRegion1 = vm4.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation<Void> createPersistentPartitionRegion2 = vm5.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation<Void> createPersistentPartitionRegion3 = vm6.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+    AsyncInvocation<Void> createPersistentPartitionRegion4 = vm7.invokeAsync(() -> WANTestBase
+        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
 
-    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase
-        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv2 = vm5.invokeAsync(() -> WANTestBase
-        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv3 = vm6.invokeAsync(() -> WANTestBase
-        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
-    AsyncInvocation inv4 = vm7.invokeAsync(() -> WANTestBase
-        .createPersistentPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
-
-    try {
-      inv1.join();
-      inv2.join();
-      inv3.join();
-      inv4.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    createPersistentPartitionRegion1.await();
+    createPersistentPartitionRegion2.await();
+    createPersistentPartitionRegion3.await();
+    createPersistentPartitionRegion4.await();
 
     LogWriterUtils.getLogWriter().info("Created back the partitioned regions");
 
