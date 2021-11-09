@@ -46,14 +46,16 @@ resources:
     branch: ((geode-build-branch))
     paths:
     - ci/pipelines/reaper/*
+    - ci/pipelines/render.py
 - name: geode-mass-test-run-pipeline
   type: git
   source:
     {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
-      - ci/pipelines/mass-test-run/*
-      - ci/pipelines/shared/*
+    - ci/pipelines/mass-test-run/*
+    - ci/pipelines/shared/*
+    - ci/pipelines/render.py
 - name: meta-mini-dockerfile
   type: git
   source:
