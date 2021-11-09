@@ -96,10 +96,8 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
     this.queue = queue;
 
-    if (!recoverQueuesOnly) {
-      if (queue.localSize() > 0) {
-        queue.notifyEventProcessorIfRequired();
-      }
+    if (!recoverQueuesOnly && queue.localSize() > 0) {
+      queue.notifyEventProcessorIfRequired();
     }
   }
 

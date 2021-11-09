@@ -110,10 +110,10 @@ public class PauseGatewaySenderCommand extends SingleGfshCommand implements
       }
     }
 
-    // Persist new state to Cluster Configuration
+    // Persist new action to Cluster Configuration
     if (isGatewaySenderPaused && onMember == null) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.PAUSE.getAction());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.PAUSE.name().toLowerCase());
       gatewaySenderConfig.setId(senderId);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

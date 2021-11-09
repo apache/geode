@@ -1440,7 +1440,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     InternalGatewaySender internalGatewaySender = (InternalGatewaySender) sender;
     if (internalGatewaySender.getStartupAction() != GatewaySenderStartupAction.NONE) {
       atts.addAttribute("", "", STARTUP_ACTION, "",
-          internalGatewaySender.getStartupAction().getAction());
+          internalGatewaySender.getStartupAction().name());
     }
 
     // dispatcher-threads

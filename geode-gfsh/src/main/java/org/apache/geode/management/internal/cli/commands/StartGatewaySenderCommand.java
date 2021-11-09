@@ -163,10 +163,10 @@ public class StartGatewaySenderCommand extends SingleGfshCommand implements
     }
     execService.shutdown();
 
-    // Persist new state to Cluster Configuration
+    // Persist new action to Cluster Configuration
     if (onMember == null && isGatewaySenderStarted) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.START.getAction());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.START.name().toLowerCase());
       gatewaySenderConfig.setId(senderId);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

@@ -108,10 +108,10 @@ public class ResumeGatewaySenderCommand extends SingleGfshCommand implements
       }
     }
 
-    // Persist new state to Cluster Configuration
+    // Persist new action to Cluster Configuration
     if (isGatewaySenderResumed && onMember == null) {
       CacheConfig.GatewaySender gatewaySenderConfig = new CacheConfig.GatewaySender();
-      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.START.getAction());
+      gatewaySenderConfig.setStartupAction(GatewaySenderStartupAction.START.name().toLowerCase());
       gatewaySenderConfig.setId(senderId);
       resultModel.setConfigObject(gatewaySenderConfig);
     }

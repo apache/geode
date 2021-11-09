@@ -1198,11 +1198,9 @@ public class PartitionedRegion extends LocalRegion
           if (sender.isRunning()) {
             ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues()
                 .toArray(new RegionQueue[1])[0]).addShadowPartitionedRegionForUserPR(this);
-          } else if (senderImpl.getEventProcessor() == null) {
-            if (senderImpl.getStartupAction() == GatewaySenderStartupAction.STOP
-                || sender.isManualStart()) {
-              senderImpl.recoverInStoppedState();
-            }
+          } else if (GatewaySenderStartupAction.STOP == senderImpl
+              .calculateStartupActionForGatewaySender()) {
+            senderImpl.recoverInStoppedState();
           }
         }
       }
