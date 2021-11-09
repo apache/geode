@@ -42,7 +42,7 @@ public class InfoExecutor implements CommandExecutor {
 
   private static final Long ONE_MEGABYTE = 1024 * 1024L;
 
-  private DecimalFormat decimalFormat = new DecimalFormat("0.00");
+  private final DecimalFormat decimalFormat = new DecimalFormat("0.00");
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -93,19 +93,18 @@ public class InfoExecutor implements CommandExecutor {
         decimalFormat.format(redisStats
             .getNetworkKiloBytesReadOverLastSecond());
 
-    final String STATS_STRING =
-        "# Stats\r\n" +
-            "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
-            "instantaneous_ops_per_sec:" + redisStats.getOpsPerformedOverLastSecond() + "\r\n" +
-            "total_net_input_bytes:" + redisStats.getTotalNetworkBytesRead() + "\r\n" +
-            "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
-            "total_connections_received:" + redisStats.getTotalConnectionsReceived() + "\r\n" +
-            "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
-            "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
-            "evicted_keys:0\r\n" +
-            "rejected_connections:0\r\n";
-
-    return STATS_STRING;
+    return "# Stats\r\n" +
+        "total_commands_processed:" + redisStats.getCommandsProcessed() + "\r\n" +
+        "instantaneous_ops_per_sec:" + redisStats.getOpsPerformedOverLastSecond() + "\r\n" +
+        "total_net_input_bytes:" + redisStats.getTotalNetworkBytesRead() + "\r\n" +
+        "instantaneous_input_kbps:" + instantaneous_input_kbps + "\r\n" +
+        "total_connections_received:" + redisStats.getTotalConnectionsReceived() + "\r\n" +
+        "keyspace_hits:" + redisStats.getKeyspaceHits() + "\r\n" +
+        "keyspace_misses:" + redisStats.getKeyspaceMisses() + "\r\n" +
+        "evicted_keys:0\r\n" +
+        "rejected_connections:0\r\n" +
+        "pubsub_channels:" + redisStats.getUniqueChannelSubscriptions() + "\r\n" +
+        "pubsub_patterns:" + redisStats.getUniquePatternSubscriptions() + "\r\n";
   }
 
   private String getServerSection(ExecutionHandlerContext context) {
@@ -113,34 +112,28 @@ public class InfoExecutor implements CommandExecutor {
     // @todo test in info command integration test?
     final int TCP_PORT = context.getServerPort();
     final RedisStats redisStats = context.getRedisStats();
-    final String SERVER_STRING =
-        "# Server\r\n" +
-            "redis_version:" + CURRENT_REDIS_VERSION + "\r\n" +
-            "redis_mode:standalone\r\n" +
-            "tcp_port:" + TCP_PORT + "\r\n" +
-            "uptime_in_seconds:" + redisStats.getUptimeInSeconds() + "\r\n" +
-            "uptime_in_days:" + redisStats.getUptimeInDays() + "\r\n";
-    return SERVER_STRING;
+    return "# Server\r\n" +
+        "redis_version:" + CURRENT_REDIS_VERSION + "\r\n" +
+        "redis_mode:standalone\r\n" +
+        "tcp_port:" + TCP_PORT + "\r\n" +
+        "uptime_in_seconds:" + redisStats.getUptimeInSeconds() + "\r\n" +
+        "uptime_in_days:" + redisStats.getUptimeInDays() + "\r\n";
   }
 
   private String getClientsSection(ExecutionHandlerContext context) {
     final RedisStats redisStats = context.getRedisStats();
-    final String CLIENTS_STRING =
-        "# Clients\r\n" +
-            "connected_clients:" + redisStats.getConnectedClients() + "\r\n" +
-            "blocked_clients:0\r\n";
-    return CLIENTS_STRING;
+    return "# Clients\r\n" +
+        "connected_clients:" + redisStats.getConnectedClients() + "\r\n" +
+        "blocked_clients:0\r\n";
   }
 
   private String getMemorySection(ExecutionHandlerContext context) {
     PartitionedRegion pr = (PartitionedRegion) context.getRegionProvider().getDataRegion();
     long usedMemory = pr.getDataStore().currentAllocatedMemory();
-    final String MEMORY_STRING =
-        "# Memory\r\n" +
-            "maxmemory:" + pr.getLocalMaxMemory() * ONE_MEGABYTE + "\r\n" +
-            "used_memory:" + usedMemory + "\r\n" +
-            "mem_fragmentation_ratio:1.00\r\n";
-    return MEMORY_STRING;
+    return "# Memory\r\n" +
+        "maxmemory:" + pr.getLocalMaxMemory() * ONE_MEGABYTE + "\r\n" +
+        "used_memory:" + usedMemory + "\r\n" +
+        "mem_fragmentation_ratio:1.00\r\n";
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {
@@ -158,12 +151,10 @@ public class InfoExecutor implements CommandExecutor {
   }
 
   private String getPersistenceSection() {
-    final String PERSISTENCE_STRING =
-        "# Persistence\r\n" +
-            "loading:0\r\n" +
-            "rdb_changes_since_last_save:0\r\n" +
-            "rdb_last_save_time:0\r\n";
-    return PERSISTENCE_STRING;
+    return "# Persistence\r\n" +
+        "loading:0\r\n" +
+        "rdb_changes_since_last_save:0\r\n" +
+        "rdb_last_save_time:0\r\n";
   }
 
   private String getClusterSection() {

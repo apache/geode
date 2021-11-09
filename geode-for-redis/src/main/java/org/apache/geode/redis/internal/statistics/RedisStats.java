@@ -35,6 +35,8 @@ public class RedisStats {
   private final AtomicLong expirations = new AtomicLong();
   private final AtomicLong keyspaceHits = new AtomicLong();
   private final AtomicLong keyspaceMisses = new AtomicLong();
+  private final AtomicLong uniqueChannelSubscriptions = new AtomicLong();
+  private final AtomicLong uniquePatternSubscriptions = new AtomicLong();
   private final ScheduledExecutorService perSecondExecutor;
   private volatile double networkKiloBytesReadOverLastSecond;
   private volatile long opsPerformedLastTick;
@@ -172,11 +174,21 @@ public class RedisStats {
     geodeRedisStats.changeSubscribers(delta);
   }
 
+  public long getUniqueChannelSubscriptions() {
+    return uniqueChannelSubscriptions.get();
+  }
+
+  public long getUniquePatternSubscriptions() {
+    return uniquePatternSubscriptions.get();
+  }
+
   public void changeUniqueChannelSubscriptions(long delta) {
+    uniqueChannelSubscriptions.addAndGet(delta);
     geodeRedisStats.changeUniqueChannelSubscriptions(delta);
   }
 
   public void changeUniquePatternSubscriptions(long delta) {
+    uniquePatternSubscriptions.addAndGet(delta);
     geodeRedisStats.changeUniquePatternSubscriptions(delta);
   }
 

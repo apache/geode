@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.apache.geode.redis.internal.executor.pubsub.AbstractSubscriptionsIntegrationTest.REDIS_CLIENT_TIMEOUT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -108,6 +109,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+    checkInfoChannelCount(1);
 
     mockSubscriber.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
@@ -119,9 +121,33 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    checkInfoChannelCount(0);
 
     GeodeAwaitility.await().untilAsserted(
         () -> assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages));
+  }
+
+  private void checkInfoChannelCount(int expectedCount) {
+    checkInfoStatValue(expectedCount, "pubsub_channels:");
+  }
+
+  private void checkInfoPatternCount(int expectedCount) {
+    checkInfoStatValue(expectedCount, "pubsub_patterns:");
+  }
+
+  private void checkInfoStatValue(int expectedValue, String statName) {
+    String infoResult = publisher.info("stats");
+    int startIndex = infoResult.indexOf(statName);
+    if (startIndex == -1) {
+      fail("info did not contain " + statName + " " + infoResult);
+    }
+    startIndex += statName.length();
+    int endIndex = startIndex;
+    while (Character.isDigit(infoResult.charAt(endIndex))) {
+      endIndex++;
+    }
+    int channelCount = Integer.parseInt(infoResult.substring(startIndex, endIndex));
+    assertThat(channelCount).isEqualTo(expectedValue);
   }
 
   @Test
@@ -355,6 +381,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     subscriberThread.start();
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+    checkInfoChannelCount(2);
 
     mockSubscriber.prepareMessagesReceivedLatch(2);
     Long result = publisher.publish("salutations", "hello");
@@ -423,10 +450,14 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     subscriberThread.start();
 
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+    checkInfoChannelCount(0);
+    checkInfoPatternCount(2);
 
     mockSubscriber.punsubscribe("yul*", "sal*");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
+    checkInfoPatternCount(0);
+
     assertThat(mockSubscriber.punsubscribeInfos).containsExactly(
         new MockSubscriber.UnsubscribeInfo("yul*", 1),
         new MockSubscriber.UnsubscribeInfo("sal*", 0));
@@ -550,6 +581,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
 
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 1);
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
+    checkInfoChannelCount(1);
 
     mockSubscriber1.prepareMessagesReceivedLatch(1);
     Long result = publisher.publish("salutations", "hello");
@@ -685,6 +717,7 @@ public abstract class AbstractPubSubIntegrationTest implements RedisIntegrationT
     GeodeAwaitility.await()
         .during(5, TimeUnit.SECONDS)
         .until(() -> mockSubscriber.getSubscribedChannels() == 1);
+    checkInfoPatternCount(1);
 
     String message = "hello-" + System.currentTimeMillis();
 

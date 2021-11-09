@@ -100,7 +100,9 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
           "keyspace_hits:",
           "keyspace_misses:",
           "evicted_keys:",
-          "rejected_connections:");
+          "rejected_connections:",
+          "pubsub_channels:",
+          "pubsub_patterns:");
 
 
   final List<String> ALL_PROPERTIES =
