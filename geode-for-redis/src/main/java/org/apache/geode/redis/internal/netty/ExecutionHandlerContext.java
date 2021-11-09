@@ -314,8 +314,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Get the default username. This is the username that will be passed to the
-   * {@link SecurityManager} in response to
-   * an {@code AUTH password} command.
+   * {@link SecurityManager} in response to an {@code AUTH password} command.
    */
   public String getRedisUsername() {
     return redisUsername;
