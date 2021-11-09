@@ -32,15 +32,17 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 @Category({OQLIndexTest.class})
-public class ListIndexCommandDUnitTestBase {
+@SuppressWarnings({"ConstantConditions"})
+public class ListIndexCommandDistributedTestBase {
 
   private static final String REGION_1 = "REGION1";
   private static final String INDEX_REGION_NAME = SEPARATOR + "REGION1";
   private static final String INDEX_1 = "INDEX1";
 
-  private MemberVM locator, server;
+  private MemberVM server;
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -50,13 +52,14 @@ public class ListIndexCommandDUnitTestBase {
 
   @Before
   public void before() throws Exception {
-    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = lsRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      Region region = factory.create(REGION_1);
+      RegionFactory<Object, Object> factory =
+          cache.createRegionFactory(RegionShortcut.REPLICATE);
+      Region<Object, Object> region = factory.create(REGION_1);
 
       cache.getQueryService().createIndex(INDEX_1, "key", INDEX_REGION_NAME);
       region.put(1, new Stock("SUNW", 10));
@@ -71,17 +74,17 @@ public class ListIndexCommandDUnitTestBase {
   }
 
   @Test
-  public void testListIndexes() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName());
+  public void testListIndexes() {
+    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess().hasTableSection()
+        .hasColumn("Member Name").containsExactlyInAnyOrder(server.getName());
   }
 
   @Test
-  public void testListIndexesWithStats() throws Exception {
+  public void testListIndexesWithStats() {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Keys", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Values", "1");
+        .hasTableSection().hasColumn("Member Name").containsExactlyInAnyOrder(server.getName())
+        .hasColumn("Updates").containsExactlyInAnyOrder("1")
+        .hasColumn("Keys").containsExactlyInAnyOrder("1")
+        .hasColumn("Values").containsExactlyInAnyOrder("1");
   }
 }
