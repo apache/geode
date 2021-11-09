@@ -18,9 +18,10 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,7 +64,7 @@ public class OpExecutorImplUnitTest {
   @Test
   public void authenticateIfRequired_noOp_WhenNotRequireCredential() {
     when(server.getRequiresCredentials()).thenReturn(false);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
@@ -71,7 +72,7 @@ public class OpExecutorImplUnitTest {
   public void authenticateIfRequired_noOp_WhenOpNeedsNoUserId() {
     when(server.getRequiresCredentials()).thenReturn(true);
     when(op.needsUserId()).thenReturn(false);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
@@ -81,7 +82,7 @@ public class OpExecutorImplUnitTest {
     when(op.needsUserId()).thenReturn(true);
     when(pool.getMultiuserAuthentication()).thenReturn(false);
     when(server.getUserId()).thenReturn(123L);
-    executor.authenticateIfRequired(connection, op);
+    executor.authenticateIfMultiUser(connection, op);
     verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
 
   }
@@ -94,9 +95,57 @@ public class OpExecutorImplUnitTest {
     when(server.getUserId()).thenReturn(-1L);
     when(pool.executeOn(any(Connection.class), any(Op.class))).thenReturn(123L);
     when(connection.getWrappedConnection()).thenReturn(connection);
-    executor.authenticateIfRequired(connection, op);
-    verify(pool).executeOn(any(Connection.class), any(Op.class));
-    verify(server).setUserId(eq(123L));
+    executor.authenticateIfMultiUser(connection, op);
+    verify(pool, never()).executeOn(any(Connection.class), any(Op.class));
   }
 
+  @Test
+  public void execute_calls_authenticateIfMultiUser() throws Exception {
+    when(connection.execute(any())).thenReturn(123L);
+    when(connectionManager.borrowConnection(5)).thenReturn(connection);
+    OpExecutorImpl spy = spy(executor);
+
+    spy.execute(op, 1);
+    verify(spy).authenticateIfMultiUser(any(), any());
+  }
+
+  @Test
+  public void authenticateIfMultiUser_calls_authenticateMultiUser() {
+    OpExecutorImpl spy = spy(executor);
+    when(connection.getServer()).thenReturn(server);
+    when(pool.executeOn(any(ServerLocation.class), any())).thenReturn(123L);
+    UserAttributes userAttributes = new UserAttributes(null, null);
+
+    when(server.getRequiresCredentials()).thenReturn(false);
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy, never()).authenticateMultiuser(any(), any(), any());
+
+    when(server.getRequiresCredentials()).thenReturn(true);
+    when(op.needsUserId()).thenReturn(false);
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy, never()).authenticateMultiuser(any(), any(), any());
+
+    when(server.getRequiresCredentials()).thenReturn(true);
+    when(op.needsUserId()).thenReturn(true);
+    when(pool.getMultiuserAuthentication()).thenReturn(false);
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy, never()).authenticateMultiuser(any(), any(), any());
+
+    when(server.getRequiresCredentials()).thenReturn(true);
+    when(op.needsUserId()).thenReturn(true);
+    when(pool.getMultiuserAuthentication()).thenReturn(true);
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy, never()).authenticateMultiuser(any(), any(), any());
+
+    when(server.getRequiresCredentials()).thenReturn(true);
+    when(op.needsUserId()).thenReturn(true);
+    when(pool.getMultiuserAuthentication()).thenReturn(true);
+    doReturn(userAttributes).when(spy).getUserAttributesFromThreadLocal();
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy).authenticateMultiuser(pool, connection, userAttributes);
+
+    // calling it again wont' increase the invocation time
+    spy.authenticateIfMultiUser(connection, op);
+    verify(spy).authenticateMultiuser(pool, connection, userAttributes);
+  }
 }

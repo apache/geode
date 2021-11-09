@@ -22,17 +22,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.LogWriter;
 import org.apache.geode.security.AuthenticationFailedException;
 
-public class TrackableUserPasswordAuthInit extends UserPasswordAuthInit {
-  public static AtomicInteger timeInitialized = new AtomicInteger(0);
+public class CountableUserPasswordAuthInit extends UserPasswordAuthInit {
+  public static AtomicInteger count = new AtomicInteger(0);
 
   public static void reset() {
-    timeInitialized.set(0);
+    count.set(0);
   }
 
   @Override
   public void init(final LogWriter systemLogWriter, final LogWriter securityLogWriter)
       throws AuthenticationFailedException {
     super.init(systemLogWriter, securityLogWriter);
-    timeInitialized.incrementAndGet();
+    count.incrementAndGet();
   }
 }
