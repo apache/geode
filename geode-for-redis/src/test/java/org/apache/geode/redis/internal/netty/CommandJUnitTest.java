@@ -21,17 +21,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.RedisCommandType;
 
-
 /**
  * Test case for the command
- *
- *
  */
 public class CommandJUnitTest {
 
@@ -44,12 +42,12 @@ public class CommandJUnitTest {
     assertThatThrownBy(() -> new Command(list1))
         .hasMessageContaining("List of command elements cannot be empty");
 
-    List<byte[]> list2 = new ArrayList<byte[]>();
+    List<byte[]> list2 = new ArrayList<>();
 
     assertThatThrownBy(() -> new Command(list2))
         .hasMessageContaining("List of command elements cannot be empty");
 
-    List<byte[]> list3 = new ArrayList<byte[]>();
+    List<byte[]> list3 = new ArrayList<>();
     list3.add(stringToBytes("Garbage"));
 
     Command cmd = new Command(list3);
@@ -72,7 +70,7 @@ public class CommandJUnitTest {
 
   @Test
   public void verifyGetCommandArguments() {
-    Command cmd = new Command(Arrays.asList(stringToBytes("cmd")));
+    Command cmd = new Command(Collections.singletonList(stringToBytes("cmd")));
     assertThat(cmd.getCommandArguments()).isEmpty();
 
     cmd = new Command(Arrays.asList(stringToBytes("cmd"), stringToBytes("arg1")));
@@ -83,5 +81,33 @@ public class CommandJUnitTest {
     assertThat(cmd.getCommandArguments()).containsExactly(stringToBytes("arg1"),
         stringToBytes("arg2"));
 
+  }
+
+  @Test
+  public void toStringForAUTHCommandDoesNotReturnArguments() {
+    String password = "password";
+    byte[] authBytes = stringToBytes(RedisCommandType.AUTH.name());
+    byte[] passwordBytes = stringToBytes(password);
+
+    Command authCommandWithOneArgument = new Command(Arrays.asList(authBytes, passwordBytes));
+    assertThat(authCommandWithOneArgument.toString()).doesNotContain(password);
+
+    Command authCommandWithTwoArguments =
+        new Command(Arrays.asList(authBytes, passwordBytes, passwordBytes));
+    assertThat(authCommandWithTwoArguments.toString()).doesNotContain(password);
+  }
+
+  @Test
+  public void toStringForAUTHCommandReturnsNumberOfArguments() {
+    String password = "password";
+    byte[] authBytes = stringToBytes(RedisCommandType.AUTH.name());
+    byte[] passwordBytes = stringToBytes(password);
+
+    Command authCommandWithOneArgument = new Command(Arrays.asList(authBytes, passwordBytes));
+    assertThat(authCommandWithOneArgument.toString()).contains("AUTH command with 1 argument(s)");
+
+    Command authCommandWithTwoArguments =
+        new Command(Arrays.asList(authBytes, passwordBytes, passwordBytes));
+    assertThat(authCommandWithTwoArguments.toString()).contains("AUTH command with 2 argument(s)");
   }
 }
