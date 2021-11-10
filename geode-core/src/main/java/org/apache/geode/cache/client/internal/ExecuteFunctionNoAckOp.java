@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.execute.Function;
@@ -180,7 +181,7 @@ public class ExecuteFunctionNoAckOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return null;
@@ -220,7 +221,7 @@ public class ExecuteFunctionNoAckOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new Message(1, KnownVersion.CURRENT);
     }
   }

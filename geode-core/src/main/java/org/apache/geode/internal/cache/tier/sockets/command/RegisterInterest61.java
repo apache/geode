@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
- * Command for {@link RegisterInterestOp}
+ * Command for {@link RegisterInterestOp}.
  */
 public class RegisterInterest61 extends BaseCommand {
 

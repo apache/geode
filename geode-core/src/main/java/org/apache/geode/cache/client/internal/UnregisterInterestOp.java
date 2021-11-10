@@ -70,7 +70,7 @@ public class UnregisterInterestOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       processAck(msg, "unregisterInterest");
       return null;
     }

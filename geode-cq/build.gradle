@@ -34,7 +34,6 @@ dependencies {
 
   testImplementation(project(':geode-junit'))
 
-
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation(project(':geode-junit'))
   integrationTestImplementation('junit:junit')

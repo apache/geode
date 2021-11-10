@@ -17,6 +17,8 @@ package org.apache.geode.cache.query.cq.internal.ops;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
@@ -79,12 +81,12 @@ public class GetDurableCQsOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new ChunkedMessage(1, KnownVersion.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
 
       ChunkedMessage getDurableCQsResponseMsg = (ChunkedMessage) msg;
       final List<String> result = new LinkedList<>();

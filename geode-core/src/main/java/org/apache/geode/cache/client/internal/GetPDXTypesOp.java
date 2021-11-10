@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -46,7 +48,7 @@ public class GetPDXTypesOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       Part part = msg.getPart(0);
       int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {

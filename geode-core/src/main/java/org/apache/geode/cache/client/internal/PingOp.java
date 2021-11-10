@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -75,7 +77,7 @@ public class PingOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       processAck(msg, "ping");
       return null;
     }

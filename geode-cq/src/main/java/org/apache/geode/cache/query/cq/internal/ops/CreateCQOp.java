@@ -101,12 +101,12 @@ public class CreateCQOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new ChunkedMessage(1, KnownVersion.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message m) throws Exception {
+    protected Object processResponse(final @NotNull Message m) throws Exception {
       ChunkedMessage msg = (ChunkedMessage) m;
       msg.readHeader();
       int msgType = msg.getMessageType();

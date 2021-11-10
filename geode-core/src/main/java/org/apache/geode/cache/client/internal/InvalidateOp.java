@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Operation;
@@ -113,13 +114,14 @@ public class InvalidateOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       throw new UnsupportedOperationException();
     }
 
 
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(final @NotNull Message msg, final @NotNull Connection con)
+        throws Exception {
       processAck(msg, "invalidate");
       boolean isReply = (msg.getMessageType() == MessageType.REPLY);
       int partIdx = 0;
