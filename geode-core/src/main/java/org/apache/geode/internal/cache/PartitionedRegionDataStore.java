@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
@@ -91,6 +92,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHold
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage.RemoveBucketResponse;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -2118,7 +2120,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    *         are present
    * @throws PRLocallyDestroyedException if the PartitionRegion is locally destroyed
    */
-  public Set handleRemoteGetKeys(Integer bucketId, int interestType, Object interestArg,
+  public Set handleRemoteGetKeys(Integer bucketId, final @NotNull InterestType interestType,
+      Object interestArg,
       boolean allowTombstones) throws PRLocallyDestroyedException, ForceReattemptException {
     if (logger.isDebugEnabled()) {
       logger.debug("handleRemoteGetKeys: bucketId: {}{}{} with tombstones {}",

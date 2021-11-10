@@ -19,6 +19,8 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import java.io.IOException;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -57,7 +59,7 @@ public class RegisterInterestList66 extends BaseCommand {
   RegisterInterestList66() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+  public void cmdExecute(Message clientMessage, final @NotNull ServerConnection serverConnection,
       SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart;
     String regionName;

@@ -48,6 +48,7 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
@@ -99,6 +100,7 @@ import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1068,7 +1070,8 @@ public class CacheClientNotifier {
    * @param regionDataPolicy (0=empty)
    */
   public void registerClientInterest(String regionName, Object keyOfInterest,
-      ClientProxyMembershipID membershipID, int interestType, boolean isDurable,
+      ClientProxyMembershipID membershipID, final @NotNull InterestType interestType,
+      boolean isDurable,
       boolean sendUpdatesAsInvalidates, boolean manageEmptyRegions, int regionDataPolicy,
       boolean flushState) throws IOException, RegionDestroyedException {
 
@@ -1129,7 +1132,8 @@ public class CacheClientNotifier {
    * @param membershipID The {@code ClientProxyMembershipID} of the client no longer interested
    *        in this {@code Region} and key
    */
-  public void unregisterClientInterest(String regionName, Object keyOfInterest, int interestType,
+  public void unregisterClientInterest(String regionName, Object keyOfInterest,
+      final @NotNull InterestType interestType,
       boolean isClosing, ClientProxyMembershipID membershipID, boolean keepalive) {
     if (logger.isDebugEnabled()) {
       logger.debug(

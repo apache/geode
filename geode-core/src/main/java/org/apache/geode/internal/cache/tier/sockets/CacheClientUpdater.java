@@ -74,6 +74,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -1344,7 +1345,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
-      int interestType = (Integer) interestTypePart.getObject();
+      InterestType interestType = InterestType.valueOf((int) interestTypePart.getObject());
       byte interestResultPolicy = (Byte) interestResultPolicyPart.getObject();
       boolean isDurable = (Boolean) isDurablePart.getObject();
       boolean receiveUpdatesAsInvalidates = (Boolean) receiveUpdatesAsInvalidatesPart.getObject();
@@ -1402,7 +1403,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
-      int interestType = (Integer) interestTypePart.getObject();
+      InterestType interestType = InterestType.valueOf((int) interestTypePart.getObject());
       boolean isDurable = (Boolean) isDurablePart.getObject();
       boolean receiveUpdatesAsInvalidates = (Boolean) receiveUpdatesAsInvalidatesPart.getObject();
 

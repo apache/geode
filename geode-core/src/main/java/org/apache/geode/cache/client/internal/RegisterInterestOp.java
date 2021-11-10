@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -50,12 +54,14 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List execute(ExecutablePool pool, String region, Object key, int interestType,
-      InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
+  public static <K> List<List<K>> execute(final @NotNull ExecutablePool pool,
+      final @NotNull String region, final @NotNull K key, final @NotNull InterestType interestType,
+      final @NotNull InterestResultPolicy policy, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates,
       byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOnQueuesAndReturnPrimaryResult(op);
+    return uncheckedCast(pool.executeOnQueuesAndReturnPrimaryResult(op));
   }
 
   /**
@@ -72,12 +78,12 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(ServerLocation sl, ExecutablePool pool, String region, Object key,
-      int interestType, InterestResultPolicy policy, boolean isDurable,
+  public static <K> List<K> executeOn(ServerLocation sl, ExecutablePool pool, String region, K key,
+      final @NotNull InterestType interestType, InterestResultPolicy policy, boolean isDurable,
       boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOn(sl, op);
+    return uncheckedCast(pool.executeOn(sl, op));
   }
 
 
@@ -95,12 +101,13 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(Connection conn, ExecutablePool pool, String region, Object key,
-      int interestType, InterestResultPolicy policy, boolean isDurable,
+  public static <K> List<K> executeOn(Connection conn, ExecutablePool pool, String region,
+      final @NotNull K key,
+      final @NotNull InterestType interestType, InterestResultPolicy policy, boolean isDurable,
       boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOn(conn, op);
+    return uncheckedCast(pool.executeOn(conn, op));
   }
 
 
@@ -114,13 +121,14 @@ public class RegisterInterestOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public RegisterInterestOpImpl(String region, Object key, int interestType,
+    public RegisterInterestOpImpl(String region, Object key,
+        final @NotNull InterestType interestType,
         InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
         byte regionDataPolicy) {
       super(MessageType.REGISTER_INTEREST, 7);
       this.region = region;
       getMessage().addStringPart(region, true);
-      getMessage().addIntPart(interestType);
+      getMessage().addIntPart(interestType.ordinal());
       getMessage().addObjPart(policy);
       {
         byte durableByte = (byte) (isDurable ? 0x01 : 0x00);
@@ -158,7 +166,7 @@ public class RegisterInterestOp {
     }
 
     @Override
-    protected Object processResponse(Message m, Connection con) throws Exception {
+    protected List<List<Object>> processResponse(Message m, Connection con) throws Exception {
       ChunkedMessage chunkedMessage = (ChunkedMessage) m;
       chunkedMessage.readHeader();
       switch (chunkedMessage.getMessageType()) {
@@ -166,16 +174,16 @@ public class RegisterInterestOp {
           LocalRegion localRegion = null;
 
           try {
-            localRegion = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(this.region);
+            localRegion = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(region);
           } catch (Exception ignore) {
           }
 
-          ArrayList list = new ArrayList();
-          ArrayList listOfList = new ArrayList();
+          final List<Object> list = new ArrayList<>();
+          final List<List<Object>> listOfList = new ArrayList<>();
           listOfList.add(list);
 
           // Process the chunks
-          List serverKeys = new ArrayList();
+          final List<List<Object>> serverKeys = new ArrayList<>();
           VersionedObjectList serverEntries = null;
           do {
             // Read the chunk
@@ -203,12 +211,12 @@ public class RegisterInterestOp {
                   try {
                     localRegion.refreshEntriesFromServerKeys(con, listOfList,
                         InterestResultPolicy.KEYS_VALUES);
-                  } catch (Exception ex) {
+                  } catch (Exception ignore) {
                   }
                 }
               } else {
                 // Add the result to the list of results
-                serverKeys.add((List) partObj);
+                serverKeys.add(uncheckedCast(partObj));
               }
             }
 

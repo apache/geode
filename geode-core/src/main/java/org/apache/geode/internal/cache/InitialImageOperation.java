@@ -40,6 +40,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
@@ -3854,7 +3855,8 @@ public class InitialImageOperation {
      */
     private void registerInterestKeys(Map<String, ?> regionKeys, boolean allKey, LocalRegion region,
         CacheClientNotifier ccn, CacheClientProxy proxy, boolean isDurable,
-        boolean updatesAsInvalidates, int interestType, Set<String> regionsWithInterest)
+        boolean updatesAsInvalidates, final @NotNull InterestType interestType,
+        Set<String> regionsWithInterest)
         throws IOException {
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -3883,7 +3885,7 @@ public class InitialImageOperation {
             } else {
               ccn.registerClientInterest(regionName, new ArrayList<>(asSet(e.getValue())),
                   proxy.getProxyID(), isDurable, updatesAsInvalidates, manageEmptyRegions,
-                  interestType, false);
+                  /* TODO BUG!! interestType */ 0, false);
             }
           }
         }

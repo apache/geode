@@ -15,9 +15,8 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,6 +34,7 @@ import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
@@ -99,8 +99,9 @@ public class UnregisterInterestTest {
     this.unregisterInterest = new UnregisterInterest();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY), eq(0)))
-        .thenReturn(this.unregisterInterestOperationContext);
+    when(this.authzRequest.unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+        eq(InterestType.KEY)))
+            .thenReturn(this.unregisterInterestOperationContext);
 
     when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -183,7 +184,8 @@ public class UnregisterInterestTest {
     this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
         0);
 
-    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt());
+    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+        any(InterestType.class));
     verify(this.replyMessage).send(this.serverConnection);
   }
 
@@ -197,7 +199,8 @@ public class UnregisterInterestTest {
     this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
         0);
 
-    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt());
+    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+        any(InterestType.class));
     verify(this.replyMessage).send(eq(this.serverConnection));
   }
 

@@ -47,20 +47,16 @@ public class UnregisterInterest extends BaseCommand {
   public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
       SecurityService securityService, long start)
       throws ClassNotFoundException, IOException {
-    Part regionNamePart, keyPart;
-    String regionName;
-    Object key;
-    int interestType;
-    String errMessage = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
-    regionNamePart = clientMessage.getPart(0);
-    interestType = clientMessage.getPart(1).getInt();
-    keyPart = clientMessage.getPart(2);
-    Part isClosingPart = clientMessage.getPart(3);
-    byte[] isClosingPartBytes = (byte[]) isClosingPart.getObject();
-    boolean isClosing = isClosingPartBytes[0] == 0x01;
-    regionName = regionNamePart.getCachedString();
+    final Part regionNamePart = clientMessage.getPart(0);
+    final InterestType interestType = InterestType.valueOf(clientMessage.getPart(1).getInt());
+    final Part keyPart = clientMessage.getPart(2);
+    final Part isClosingPart = clientMessage.getPart(3);
+    final byte[] isClosingPartBytes = (byte[]) isClosingPart.getObject();
+    final boolean isClosing = isClosingPartBytes[0] == 0x01;
+    final String regionName = regionNamePart.getCachedString();
+    Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -68,10 +64,10 @@ public class UnregisterInterest extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    boolean keepAlive;
+    final boolean keepAlive;
     try {
-      Part keepAlivePart = clientMessage.getPart(4);
-      byte[] keepAliveBytes = (byte[]) keepAlivePart.getObject();
+      final Part keepAlivePart = clientMessage.getPart(4);
+      final byte[] keepAliveBytes = (byte[]) keepAlivePart.getObject();
       keepAlive = keepAliveBytes[0] != 0x00;
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
@@ -86,6 +82,7 @@ public class UnregisterInterest extends BaseCommand {
     }
 
     // Process the unregister interest request
+    String errMessage = null;
     if ((key == null) && (regionName == null)) {
       errMessage = "The input region name and key for the unregister interest request are null.";
     } else if (key == null) {

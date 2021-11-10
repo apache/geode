@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.lang.Math.min;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.EOFException;
@@ -32,8 +33,9 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CopyException;
 import org.apache.geode.InternalGemFireError;
@@ -158,7 +160,7 @@ public abstract class BaseCommand implements Command {
   }
 
   @Override
-  public void execute(Message clientMessage, ServerConnection serverConnection,
+  public void execute(Message clientMessage, final @NotNull ServerConnection serverConnection,
       SecurityService securityService) {
     // Read the request and update the statistics
     long start = DistributionStats.getStatTime();
@@ -840,17 +842,14 @@ public abstract class BaseCommand implements Command {
     return requestMsg;
   }
 
-  protected static void fillAndSendRegisterInterestResponseChunks(LocalRegion region, Object riKey,
-      int interestType, InterestResultPolicy policy, ServerConnection servConn) throws IOException {
-    fillAndSendRegisterInterestResponseChunks(region, riKey, interestType, false, policy, servConn);
-  }
-
   /**
    * serializeValues is unused for clients < GFE_80
    */
-  protected static void fillAndSendRegisterInterestResponseChunks(LocalRegion region, Object riKey,
-      int interestType, boolean serializeValues, InterestResultPolicy policy,
-      ServerConnection servConn) throws IOException {
+  protected static void fillAndSendRegisterInterestResponseChunks(final @NotNull LocalRegion region,
+      final @NotNull Object riKey,
+      final @NotNull InterestType interestType, final boolean serializeValues,
+      final @NotNull InterestResultPolicy policy,
+      final @NotNull ServerConnection servConn) throws IOException {
     // Client is not interested.
     if (policy.isNone()) {
       sendRegisterInterestResponseChunk(region, riKey, new ArrayList<>(), true, servConn);
@@ -870,16 +869,16 @@ public abstract class BaseCommand implements Command {
     }
 
     switch (interestType) {
-      case InterestType.OQL_QUERY:
+      case OQL_QUERY:
         // Not supported yet
         throw new InternalGemFireError(
             "not yet supported");
 
-      case InterestType.FILTER_CLASS:
+      case FILTER_CLASS:
         throw new InternalGemFireError(
             "not yet supported");
 
-      case InterestType.REGULAR_EXPRESSION:
+      case REGULAR_EXPRESSION:
         String regEx = (String) riKey;
         if (regEx.equals(".*")) {
           handleAllKeys(region, policy, servConn);
@@ -888,7 +887,7 @@ public abstract class BaseCommand implements Command {
         }
         break;
 
-      case InterestType.KEY:
+      case KEY:
         if (riKey.equals("ALL_KEYS")) {
           handleAllKeys(region, policy, servConn);
         } else {
@@ -902,8 +901,9 @@ public abstract class BaseCommand implements Command {
     }
   }
 
-  private static void handleKeysValuesPolicy(LocalRegion region, Object riKey, int interestType,
-      boolean serializeValues, ServerConnection servConn) throws IOException {
+  private static void handleKeysValuesPolicy(LocalRegion region, Object riKey,
+      final @NotNull InterestType interestType,
+      boolean serializeValues, final @NotNull ServerConnection servConn) throws IOException {
     if (riKey instanceof List) {
       handleKVList(region, (List<?>) riKey, serializeValues, servConn);
       return;
@@ -914,15 +914,15 @@ public abstract class BaseCommand implements Command {
     }
 
     switch (interestType) {
-      case InterestType.OQL_QUERY:
+      case OQL_QUERY:
         throw new InternalGemFireError(
             "not yet supported");
 
-      case InterestType.FILTER_CLASS:
+      case FILTER_CLASS:
         throw new InternalGemFireError(
             "not yet supported");
 
-      case InterestType.REGULAR_EXPRESSION:
+      case REGULAR_EXPRESSION:
         String regEx = (String) riKey;
         if (regEx.equals(".*")) {
           handleKVAllKeys(region, null, serializeValues, servConn);
@@ -931,7 +931,7 @@ public abstract class BaseCommand implements Command {
         }
         break;
 
-      case InterestType.KEY:
+      case KEY:
         if (riKey.equals("ALL_KEYS")) {
           handleKVAllKeys(region, null, serializeValues, servConn);
         } else {
@@ -971,8 +971,7 @@ public abstract class BaseCommand implements Command {
    *
    * @return true if tombstones should be sent to the client
    */
-  private static boolean sendTombstonesInRIResults(ServerConnection servConn,
-      InterestResultPolicy policy) {
+  private static boolean sendTombstonesInRIResults(final @NotNull InterestResultPolicy policy) {
     return policy == InterestResultPolicy.KEYS_VALUES;
   }
 
@@ -995,7 +994,7 @@ public abstract class BaseCommand implements Command {
     if (region != null) {
       for (Object entryKey : keyList) {
         if (region.containsKey(entryKey)
-            || sendTombstonesInRIResults(servConn, policy) && region.containsTombstone(entryKey)) {
+            || sendTombstonesInRIResults(policy) && region.containsTombstone(entryKey)) {
 
           appendInterestResponseKey(region, keyList, entryKey, newKeyList, servConn);
         }
@@ -1009,17 +1008,15 @@ public abstract class BaseCommand implements Command {
   /**
    * Handles both RR and PR cases
    */
-  @SuppressWarnings(value = "NP_NULL_PARAM_DEREF",
-      justification = "Null value handled in sendNewRegisterInterestResponseChunk()")
   private static void handleKVSingleton(LocalRegion region, Object entryKey,
-      boolean serializeValues, ServerConnection servConn) throws IOException {
+      boolean serializeValues, final @NotNull ServerConnection servConn) throws IOException {
     VersionedObjectList values = new VersionedObjectList(MAXIMUM_CHUNK_SIZE, true,
         region == null || region.getAttributes().getConcurrencyChecksEnabled(), serializeValues);
 
     if (region != null) {
       if (region.containsKey(entryKey) || region.containsTombstone(entryKey)) {
         VersionTagHolder versionHolder = createVersionTagHolder();
-        ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
+        ClientProxyMembershipID id = servConn.getProxyID();
         // From Get70.getValueAndIsObject()
         Object data = region.get(entryKey, null, true, true, true, id, versionHolder, true);
         VersionTag<?> vt = versionHolder.getVersionTag();
@@ -1049,7 +1046,7 @@ public abstract class BaseCommand implements Command {
     }
     if (region != null) {
       if (region.containsKey(entryKey)
-          || sendTombstonesInRIResults(servConn, policy) && region.containsTombstone(entryKey)) {
+          || sendTombstonesInRIResults(policy) && region.containsTombstone(entryKey)) {
         appendInterestResponseKey(region, entryKey, entryKey, keyList, servConn);
       }
     }
@@ -1068,7 +1065,7 @@ public abstract class BaseCommand implements Command {
       ServerConnection servConn) throws IOException {
     List<Object> keyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
     if (region != null) {
-      for (Object entryKey : region.keySet(sendTombstonesInRIResults(servConn, policy))) {
+      for (Object entryKey : region.keySet(sendTombstonesInRIResults(policy))) {
         appendInterestResponseKey(region, "ALL_KEYS", entryKey, keyList, servConn);
       }
     }
@@ -1077,8 +1074,9 @@ public abstract class BaseCommand implements Command {
     sendRegisterInterestResponseChunk(region, "ALL_KEYS", keyList, true, servConn);
   }
 
-  private static void handleKVAllKeys(LocalRegion region, String regex, boolean serializeValues,
-      ServerConnection servConn) throws IOException {
+  private static void handleKVAllKeys(final @Nullable LocalRegion region,
+      final @Nullable String regex, final boolean serializeValues,
+      final @NotNull ServerConnection servConn) throws IOException {
 
     if (region instanceof PartitionedRegion) {
       handleKVKeysPR((PartitionedRegion) region, regex, serializeValues, servConn);
@@ -1109,7 +1107,7 @@ public abstract class BaseCommand implements Command {
           }
         }
 
-        ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
+        ClientProxyMembershipID id = servConn.getProxyID();
         Object data = region.get(key, null, true, true, true, id, versionHolder, true);
         VersionTag<?> versionTag = versionHolder.getVersionTag();
         updateValues(values, key, data, versionTag);
@@ -1213,7 +1211,7 @@ public abstract class BaseCommand implements Command {
             false, servConn);
         values.clear();
       }
-    } // for
+    }
   }
 
   public static void appendNewRegisterInterestResponseChunk(LocalRegion region,
@@ -1253,11 +1251,12 @@ public abstract class BaseCommand implements Command {
             false, servConn);
         values.clear();
       }
-    } // for
+    }
   }
 
   public static void sendNewRegisterInterestResponseChunk(LocalRegion region, Object riKey,
-      VersionedObjectList list, boolean lastChunk, ServerConnection servConn) throws IOException {
+      VersionedObjectList list, boolean lastChunk, final @NotNull ServerConnection servConn)
+      throws IOException {
     ChunkedMessage chunkedResponseMsg = servConn.getRegisterInterestResponseMessage();
     chunkedResponseMsg.setNumberOfParts(1);
     chunkedResponseMsg.setLastChunk(lastChunk);
@@ -1285,7 +1284,7 @@ public abstract class BaseCommand implements Command {
     // Handle the regex pattern
     if (region != null) {
       Pattern keyPattern = Pattern.compile(regex);
-      for (Object entryKey : region.keySet(sendTombstonesInRIResults(servConn, policy))) {
+      for (Object entryKey : region.keySet(sendTombstonesInRIResults(policy))) {
         if (!(entryKey instanceof String)) {
           // key is not a String, cannot apply regex to this entry
           continue;
@@ -1309,7 +1308,7 @@ public abstract class BaseCommand implements Command {
   private static void handleRegExPR(final PartitionedRegion region, final String regex,
       final InterestResultPolicy policy, final ServerConnection servConn) throws IOException {
     final List<Object> keyList = new ArrayList<>(MAXIMUM_CHUNK_SIZE);
-    region.getKeysWithRegEx(regex, sendTombstonesInRIResults(servConn, policy),
+    region.getKeysWithRegEx(regex, sendTombstonesInRIResults(policy),
         theSet -> appendInterestResponseKeys(region, regex, uncheckedCast(theSet), keyList,
             servConn));
     // Send the last chunk (the only chunk for individual and list keys)
@@ -1322,9 +1321,9 @@ public abstract class BaseCommand implements Command {
    */
   private static void handleListPR(final PartitionedRegion region, final List<?> keyList,
       final InterestResultPolicy policy, final ServerConnection servConn) throws IOException {
-    int chunkSize = keyList.size() < MAXIMUM_CHUNK_SIZE ? keyList.size() : MAXIMUM_CHUNK_SIZE;
+    int chunkSize = min(keyList.size(), MAXIMUM_CHUNK_SIZE);
     final List<Object> newKeyList = new ArrayList<>(chunkSize);
-    region.getKeysWithList(keyList, sendTombstonesInRIResults(servConn, policy),
+    region.getKeysWithList(keyList, sendTombstonesInRIResults(policy),
         theSet -> appendInterestResponseKeys(region, keyList, uncheckedCast(theSet), newKeyList,
             servConn));
     // Send the last chunk (the only chunk for individual and list keys)
@@ -1332,8 +1331,9 @@ public abstract class BaseCommand implements Command {
     sendRegisterInterestResponseChunk(region, keyList, newKeyList, true, servConn);
   }
 
-  private static void handleKVList(final LocalRegion region, final List<?> keyList,
-      boolean serializeValues, final ServerConnection servConn) throws IOException {
+  private static void handleKVList(final @Nullable LocalRegion region,
+      @NotNull final List<?> keyList,
+      final boolean serializeValues, final @NotNull ServerConnection servConn) throws IOException {
 
     if (region instanceof PartitionedRegion) {
       handleKVKeysPR((PartitionedRegion) region, keyList, serializeValues, servConn);
@@ -1349,7 +1349,7 @@ public abstract class BaseCommand implements Command {
         if (region.containsKey(key) || region.containsTombstone(key)) {
           VersionTagHolder versionHolder = createVersionTagHolder();
 
-          ClientProxyMembershipID id = servConn == null ? null : servConn.getProxyID();
+          ClientProxyMembershipID id = servConn.getProxyID();
           Object data = region.get(key, null, true, true, true, id, versionHolder, true);
           VersionTag<?> versionTag = versionHolder.getVersionTag();
           updateValues(values, key, data, versionTag);

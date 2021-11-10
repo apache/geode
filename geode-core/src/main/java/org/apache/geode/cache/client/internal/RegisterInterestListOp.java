@@ -14,7 +14,11 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
@@ -39,12 +43,13 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List execute(ExecutablePool pool, String region, List keys,
+  @SuppressWarnings("unchecked")
+  public static <K> List<K> execute(ExecutablePool pool, String region, List<K> keys,
       InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
       byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOnQueuesAndReturnPrimaryResult(op);
+    return (List<K>) pool.executeOnQueuesAndReturnPrimaryResult(op);
   }
 
   private RegisterInterestListOp() {
@@ -64,12 +69,13 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(ServerLocation sl, ExecutablePool pool, String region, List keys,
+  public static <K> List<K> executeOn(ServerLocation sl, ExecutablePool pool, String region,
+      List<K> keys,
       InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
       byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOn(sl, op);
+    return uncheckedCast(pool.executeOn(sl, op));
   }
 
 
@@ -86,20 +92,22 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static List executeOn(Connection conn, ExecutablePool pool, String region, List keys,
+  public static <K> List<K> executeOn(Connection conn, ExecutablePool pool, String region,
+      final @NotNull List<K> keys,
       InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
       byte regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List) pool.executeOn(conn, op);
+    return uncheckedCast(pool.executeOn(conn, op));
   }
 
   private static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public RegisterInterestListOpImpl(String region, List keys, InterestResultPolicy policy,
-        boolean isDurable, boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
+    public RegisterInterestListOpImpl(final @NotNull String region, final @NotNull List<?> keys,
+        final @NotNull InterestResultPolicy policy,
+        final boolean isDurable, final boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
       super(region, MessageType.REGISTER_INTEREST_LIST, 6);
       getMessage().addStringPart(region, true);
       getMessage().addObjPart(policy);

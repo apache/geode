@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -59,7 +61,7 @@ public class RegisterInterest61 extends BaseCommand {
   RegisterInterest61() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
+  public void cmdExecute(Message clientMessage, final @NotNull ServerConnection serverConnection,
       SecurityService securityService, long start) throws IOException, InterruptedException {
     Part regionNamePart, keyPart;
     String regionName;
@@ -71,7 +73,7 @@ public class RegisterInterest61 extends BaseCommand {
     regionNamePart = clientMessage.getPart(0);
     InterestResultPolicy policy;
     // Retrieve the interest type
-    int interestType = clientMessage.getPart(1).getInt();
+    InterestType interestType = InterestType.valueOf(clientMessage.getPart(1).getInt());
 
     // Retrieve the InterestResultPolicy
     try {

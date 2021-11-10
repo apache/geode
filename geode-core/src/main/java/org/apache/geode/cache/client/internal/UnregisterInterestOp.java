@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -35,7 +37,8 @@ public class UnregisterInterestOp {
    * @param isClosing true if this unregister is done by a close
    * @param keepAlive true if this unregister should not undo a durable registration
    */
-  public static void execute(ExecutablePool pool, String region, Object key, int interestType,
+  public static void execute(ExecutablePool pool, String region, Object key,
+      final @NotNull InterestType interestType,
       boolean isClosing, boolean keepAlive) {
     AbstractOp op = new UnregisterInterestOpImpl(region, key, interestType, isClosing, keepAlive);
     pool.executeOnAllQueueServers(op);
@@ -49,11 +52,12 @@ public class UnregisterInterestOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public UnregisterInterestOpImpl(String region, Object key, int interestType, boolean isClosing,
+    public UnregisterInterestOpImpl(String region, Object key,
+        final @NotNull InterestType interestType, boolean isClosing,
         boolean keepAlive) {
       super(MessageType.UNREGISTER_INTEREST, 5);
       getMessage().addStringPart(region, true);
-      getMessage().addIntPart(interestType);
+      getMessage().addIntPart(interestType.ordinal());
       getMessage().addStringOrObjPart(key);
       {
         byte closingByte = (byte) (isClosing ? 0x01 : 0x00);
