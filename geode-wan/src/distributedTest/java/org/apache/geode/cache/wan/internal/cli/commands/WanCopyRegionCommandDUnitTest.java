@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.google.common.collect.ImmutableList;
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.assertj.core.api.Condition;
 import org.junit.BeforeClass;
@@ -76,8 +75,9 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 @Category({WanTest.class})
 public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
@@ -705,7 +705,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         senderIdInA, senderIdInB);
 
     int wanCopyRegionBatchSize = 20;
-    int entries = 1000;
+    int entries = 10000;
     Set<Long> keySet = LongStream.range(0L, entries).boxed().collect(Collectors.toSet());
     String regionName = getRegionName(isPartitionedRegion);
     // Put entries
