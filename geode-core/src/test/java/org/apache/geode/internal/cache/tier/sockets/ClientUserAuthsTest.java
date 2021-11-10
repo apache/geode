@@ -18,9 +18,11 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,37 +47,78 @@ public class ClientUserAuthsTest {
   }
 
   @Test
-  public void putSubjectWithNegativeOneWillProduceNewId() throws Exception {
+  public void putSubjectWithNegativeOneWillProduceNewId() {
     Long uniqueId = auth.putSubject(subject1, -1);
-    verify(auth).removeSubject((Subject) null);
+    verify(auth, never()).removeSubject(anyLong());
     assertThat(uniqueId).isEqualTo(123L);
   }
 
   @Test
-  public void putSubjectWithZeroWillProduceNewId() throws Exception {
+  public void putSubjectWithZeroWillProduceNewId() {
     Long uniqueId = auth.putSubject(subject1, 0);
-    verify(auth).removeSubject((Subject) null);
+    verify(auth, never()).removeSubject(anyLong());
     assertThat(uniqueId).isEqualTo(123L);
+    verify(subject1, never()).logout();
   }
 
   @Test
-  public void putSubjectWithExistingId() throws Exception {
+  public void putSubjectWithExistingId() {
     Long uniqueId = auth.putSubject(subject1, 456L);
-    verify(auth).removeSubject((Subject) null);
+    verify(auth, never()).removeSubject(anyLong());
     assertThat(uniqueId).isEqualTo(456L);
+    verify(subject1, never()).logout();
   }
 
   @Test
-  public void replacedSubjectShouldLogout() throws Exception {
+  public void replacedSubjectShouldNotLogout() {
     Long id1 = auth.putSubject(subject1, -1);
     Long id2 = auth.putSubject(subject2, id1);
     assertThat(id1).isEqualTo(id2);
-    verify(auth).removeSubject(eq(subject1));
-    verify(subject1).logout();
+    verify(auth, never()).removeSubject(anyLong());
+    verify(subject1, never()).logout();
+
   }
 
   @Test
-  public void cqSubjectIsTracked() throws Exception {
+  public void getSubjectReturnsTheLatestOne() {
+    Long id1 = auth.putSubject(subject1, -1);
+    assertThat(auth.getSubject(id1)).isSameAs(subject1);
+    auth.putSubject(subject2, id1);
+    assertThat(auth.getSubject(id1)).isSameAs(subject2);
+  }
+
+  @Test
+  public void getSubjectOfNonExistentId() {
+    assertThat(auth.getSubject(5678L)).isNull();
+  }
+
+  @Test
+  public void removeSubjectOfNonExistentId() {
+    assertThatNoException().isThrownBy(() -> auth.removeSubject(5678L));
+  }
+
+  @Test
+  public void getSubjectWithCq() {
+    long id = auth.putSubject(subject1, -1);
+    auth.setUserAuthAttributesForCq("cq", id, true);
+    assertThat(auth.getSubject("cq")).isSameAs(subject1);
+
+    auth.removeSubject(id);
+    assertThat(auth.getSubject("cq")).isNull();
+  }
+
+  @Test
+  public void removeSubject() {
+    Long id1 = auth.putSubject(subject1, -1);
+    auth.putSubject(subject2, id1);
+    auth.removeSubject(id1);
+    assertThat(auth.getSubject(id1)).isNull();
+    verify(subject1).logout();
+    verify(subject2).logout();
+  }
+
+  @Test
+  public void cqSubjectIsTracked() {
     Long id1 = auth.putSubject(subject1, -1);
     auth.setUserAuthAttributesForCq("cq1", id1, true);
     Subject subject = auth.getSubject("cq1");

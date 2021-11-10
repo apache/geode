@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
+import org.apache.shiro.subject.Subject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,6 +56,14 @@ public class SecurityWithExpirationIntegrationTest {
     getSecurityManager().addExpiredUser("data");
     assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
         .isInstanceOf(AuthenticationExpiredException.class);
+  }
+
+  @Test
+  public void logoutMultipleTimeOnTheSameSubjectShouldNotThrowException() {
+    this.securityService.login(loginCredentials("data", "data"));
+    Subject subject = securityService.getSubject();
+    subject.logout();
+    subject.logout();
   }
 
   private Properties loginCredentials(String username, String password) {
