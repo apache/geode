@@ -155,27 +155,6 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   }
 
   /**
-   * Demonstrate that a new UDP port is used when an attempt is made to reconnect using a shunned
-   * port
-   */
-  @Test
-  public void testConnectAfterBeingShunned() {
-    InternalDistributedSystem system = getSystem();
-    Distribution membership = MembershipManagerHelper.getDistribution(system);
-    InternalDistributedMember memberBefore = membership.getLocalMember();
-
-    // TODO GMS needs to have a system property allowing the bind-port to be set
-    System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getMembershipPort());
-    system.disconnect();
-    system = getSystem();
-    membership = MembershipManagerHelper.getDistribution(system);
-    system.disconnect();
-    InternalDistributedMember memberAfter = membership.getLocalMember();
-
-    assertThat(memberAfter.getMembershipPort()).isEqualTo(memberBefore.getMembershipPort());
-  }
-
-  /**
    * Test the handling of "surprise members" in the membership manager. Create a DistributedSystem
    * in this VM and then add a fake member to its surpriseMember set. Then ensure that it stays in
    * the set when a new membership view arrives that doesn't contain it. Then wait until the member
