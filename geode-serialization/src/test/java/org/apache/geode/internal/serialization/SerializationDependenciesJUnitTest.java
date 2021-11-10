@@ -43,7 +43,6 @@ public class SerializationDependenciesJUnitTest {
           resideInAPackage("org.apache.geode.internal.serialization..")
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))
-              .or(resideInAPackage("org.apache.geode.annotations.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api..")));
+              .or(resideInAPackage("org.apache.geode.annotations..")));
 
 }

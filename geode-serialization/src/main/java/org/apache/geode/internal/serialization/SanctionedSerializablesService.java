@@ -12,16 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.internal;
+package org.apache.geode.internal.serialization;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+@FunctionalInterface
+public interface SanctionedSerializablesService {
 
-public class JUnitSanctionedSerializablesService implements SanctionedSerializablesService {
+  URL getSanctionedSerializablesURL();
 
-  @Override
-  public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-junit-serializables.txt");
+  default Class<?> getInterface() {
+    return getClass();
+  }
+
+  default Collection<String> getSerializationAcceptlist() throws IOException {
+    return SanctionedSerializables.loadClassNames(getSanctionedSerializablesURL());
   }
 }

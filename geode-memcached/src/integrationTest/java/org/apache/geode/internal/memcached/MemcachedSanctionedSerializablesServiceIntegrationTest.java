@@ -14,27 +14,36 @@
  */
 package org.apache.geode.internal.memcached;
 
-import org.junit.experimental.categories.Category;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
-import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
-import org.apache.geode.test.junit.categories.SerializationTest;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collection;
 
-@Category({SerializationTest.class, SanctionedSerializablesTest.class})
-public class MemcachedSanctionedSerializablesServiceIntegrationTest
-    extends SanctionedSerializablesServiceIntegrationTestBase {
+import org.junit.Test;
 
-  private final SanctionedSerializablesService service =
-      new MemcachedSanctionedSerializablesService();
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 
-  @Override
-  protected SanctionedSerializablesService getService() {
-    return service;
+public class MemcachedSanctionedSerializablesServiceIntegrationTest {
+
+  @Test
+  public void sanctionedSerializablesResourceExists() {
+    SanctionedSerializablesService service = new MemcachedSanctionedSerializablesService();
+
+    URL url = service.getSanctionedSerializablesURL();
+
+    assertThat(url)
+        .isNotNull();
   }
 
-  @Override
-  protected ServiceResourceExpectation getServiceResourceExpectation() {
-    return ServiceResourceExpectation.NON_EMPTY;
+  @Test
+  public void loadsSanctionedSerializablesResource() throws IOException {
+    SanctionedSerializablesService service = new MemcachedSanctionedSerializablesService();
+
+    Collection<String> serializables = service.getSerializationAcceptlist();
+
+    assertThat(serializables)
+        .isNotNull()
+        .isNotEmpty();
   }
 }

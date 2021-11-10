@@ -16,7 +16,7 @@ package org.apache.geode.redis.internal;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 
 public class RedisSanctionedSerializablesService implements SanctionedSerializablesService {
 

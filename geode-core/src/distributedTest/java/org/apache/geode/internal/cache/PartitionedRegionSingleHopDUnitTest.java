@@ -90,7 +90,6 @@ import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -144,8 +143,6 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     vm1 = getVM(1);
     vm2 = getVM(2);
     vm3 = getVM(3);
-
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     for (VM vm : asList(getController(), vm0, vm1, vm2, vm3)) {
       vm.invoke(() -> {

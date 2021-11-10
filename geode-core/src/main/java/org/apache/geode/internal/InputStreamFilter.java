@@ -12,16 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.internal;
+package org.apache.geode.internal;
 
-import java.net.URL;
+import java.io.ObjectInputStream;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+public interface InputStreamFilter {
 
-public class JUnitSanctionedSerializablesService implements SanctionedSerializablesService {
+  /** establish a serialization filter on the given stream */
+  void setFilterOn(ObjectInputStream ois);
 
-  @Override
-  public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-junit-serializables.txt");
-  }
 }

@@ -47,7 +47,6 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -78,8 +77,6 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     String serverHostName = NetworkUtils.getServerHostName(host);
 
     Properties properties = configureCommonProperties(new Properties());
-
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     locator.invoke("Start Locator",
         () -> configureAndStartLocator(locatorPort, serverHostName, properties));
