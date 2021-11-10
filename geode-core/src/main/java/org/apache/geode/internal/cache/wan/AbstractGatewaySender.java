@@ -147,7 +147,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected LocatorDiscoveryCallback locatorDiscoveryCallback;
 
-  private final ReentrantReadWriteLock lifeCycleLock = new ReentrantReadWriteLock();
+  private final ReentrantReadWriteLock lifeCycleLock = new ReentrantReadWriteLock(true);
 
   protected GatewaySenderAdvisor senderAdvisor;
 
