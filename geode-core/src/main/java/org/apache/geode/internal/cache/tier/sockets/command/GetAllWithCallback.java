@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
@@ -57,8 +58,10 @@ public class GetAllWithCallback extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, keysPart = null, callbackPart = null;
     String regionName = null;
     Object[] keys = null;

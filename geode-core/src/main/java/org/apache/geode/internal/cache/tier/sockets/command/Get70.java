@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.GetOp;
@@ -58,8 +60,9 @@ public class Get70 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long startparam) throws IOException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long startparam) throws IOException {
     long start = startparam;
     final CacheServerStats stats = serverConnection.getCacheServerStats();
 
@@ -350,7 +353,8 @@ public class Get70 extends BaseCommand {
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
+  protected void writeReply(@NotNull Message origMsg, @NotNull ServerConnection serverConnection)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 

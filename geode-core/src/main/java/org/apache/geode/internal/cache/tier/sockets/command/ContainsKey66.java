@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.ContainsKeyOp;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -53,8 +55,9 @@ public class ContainsKey66 extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null, keyPart = null;
     String regionName = null;
     Object key = null;

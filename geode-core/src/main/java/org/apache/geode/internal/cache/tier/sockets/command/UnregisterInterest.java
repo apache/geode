@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
@@ -44,8 +46,9 @@ public class UnregisterInterest extends BaseCommand {
   UnregisterInterest() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
-      SecurityService securityService, long start)
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
       throws ClassNotFoundException, IOException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 

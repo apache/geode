@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionException;
@@ -50,8 +52,10 @@ public class KeySet extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null;
     String regionName = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
