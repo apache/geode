@@ -331,9 +331,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @return list of keys
    */
   public <K> List<List<K>> registerInterest(@NotNull final K key,
-      final @NotNull InterestType interestType,
-      final @NotNull InterestResultPolicy policy, final boolean isDurable,
-      final byte regionDataPolicy) {
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     return registerInterest(key, interestType, policy, isDurable, false, regionDataPolicy);
   }
 
@@ -349,9 +348,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @return list of keys
    */
   public <K> List<List<K>> registerInterest(final @NotNull K key,
-      final @NotNull InterestType interestType,
-      final @NotNull InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
       logger.warn(
           "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
@@ -450,9 +449,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @return list of keys
    */
   public <K> List<K> registerInterestOn(final @NotNull ServerLocation sl, final @NotNull K key,
-      final @NotNull InterestType interestType,
-      final @NotNull InterestResultPolicy policy, final boolean isDurable,
-      final byte regionDataPolicy) {
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     return registerInterestOn(sl, key, interestType, policy, isDurable, false, regionDataPolicy);
   }
 
@@ -470,10 +468,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  private <K> List<K> registerInterestOn(ServerLocation sl, final @NotNull K key,
-      final @NotNull InterestType interestType,
-      final InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  private <K> List<K> registerInterestOn(final @NotNull ServerLocation sl, final @NotNull K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates, final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
       return RegisterInterestListOp.executeOn(sl, pool, regionName, uncheckedCast(key), policy,
           isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
@@ -497,11 +495,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  <K> List<K> registerInterestOn(Connection conn, final @NotNull K key,
-      final @NotNull InterestType interestType,
-      final InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates,
-      final byte regionDataPolicy) {
+  <K> List<K> registerInterestOn(final @NotNull Connection conn, final @NotNull K key,
+      final @NotNull InterestType interestType, final InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
       return RegisterInterestListOp.executeOn(conn, pool, regionName, uncheckedCast(key), policy,
           isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
@@ -522,9 +519,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public <K> List<K> registerInterestList(List<K> keys, InterestResultPolicy policy,
-      boolean isDurable,
-      boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  public <K> List<K> registerInterestList(final @NotNull List<K> keys,
+      final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     final RegisterInterestTracker rit = pool.getRITracker();
     List<K> result;
     boolean finished = false;

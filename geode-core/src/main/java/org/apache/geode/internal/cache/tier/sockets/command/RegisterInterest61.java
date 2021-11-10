@@ -19,8 +19,10 @@ import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.client.internal.RegisterInterestOp;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -42,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
- * @since GemFire 6.1
+ * Command for {@link RegisterInterestOp}
  */
 public class RegisterInterest61 extends BaseCommand {
 
@@ -94,12 +96,13 @@ public class RegisterInterest61 extends BaseCommand {
       return;
     }
     // region data policy
-    byte[] regionDataPolicyPartBytes;
+    final DataPolicy regionDataPolicy;
     final boolean serializeValues;
     try {
-      Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
-      regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
+      final Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
+      final byte[] regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
       // The second byte here is serializeValues
+      regionDataPolicy = DataPolicy.fromOrdinal(regionDataPolicyPartBytes[0]);
       serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
@@ -187,7 +190,7 @@ public class RegisterInterest61 extends BaseCommand {
       }
       serverConnection.getAcceptor().getCacheClientNotifier().registerClientInterest(regionName,
           key, serverConnection.getProxyID(), interestType, isDurable, sendUpdatesAsInvalidates,
-          true, regionDataPolicyPartBytes[0], true);
+          true, regionDataPolicy, true);
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
       checkForInterrupt(serverConnection, e);

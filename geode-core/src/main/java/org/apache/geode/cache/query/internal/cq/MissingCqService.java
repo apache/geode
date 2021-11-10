@@ -20,7 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.QueueManager;
@@ -60,19 +64,19 @@ public class MissingCqService implements CqService {
 
   @Override
   public Collection<? extends InternalCqQuery> getAllCqs() {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
   }
 
   @Override
   public Collection<? extends InternalCqQuery> getAllCqs(String regionName) throws CqException {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
   }
 
   @Override
-  public void executeAllClientCqs() throws CqException {}
+  public void executeAllClientCqs() {}
 
   @Override
-  public void executeAllRegionCqs(String regionName) throws CqException {}
+  public void executeAllRegionCqs(String regionName) {}
 
   @Override
   public void executeCqs(Collection<? extends InternalCqQuery> cqs) throws CqException {
@@ -80,10 +84,10 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void stopAllClientCqs() throws CqException {}
+  public void stopAllClientCqs() {}
 
   @Override
-  public void stopAllRegionCqs(String regionName) throws CqException {}
+  public void stopAllRegionCqs(String regionName) {}
 
   @Override
   public void stopCqs(Collection<? extends InternalCqQuery> cqs) throws CqException {
@@ -119,23 +123,23 @@ public class MissingCqService implements CqService {
 
   @Override
   public List<ServerCQ> getAllClientCqs(ClientProxyMembershipID clientProxyId) {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
   }
 
   @Override
-  public List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId)
-      throws CqException {
-    return Collections.EMPTY_LIST;
+  public List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId) {
+    return Collections.emptyList();
   }
 
   @Override
-  public void dispatchCqListeners(HashMap cqs, int messageType, Object key, Object value,
+  public void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key,
+      Object value,
       byte[] delta, QueueManager qManager, EventID eventId) {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
+  public void processEvents(CacheEvent<?, ?> event, Profile localProfile, Profile[] profiles,
       FilterRoutingInfo frInfo) throws CqException {
     throw new IllegalStateException("CqService is not available.");
   }
@@ -175,9 +179,13 @@ public class MissingCqService implements CqService {
   public void cqsConnected(Pool pool) {}
 
   @Override
-  public ServerCQ executeCq(String cqName, String queryString, int cqState,
-      ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+  public ServerCQ executeCq(@NotNull String cqName, @NotNull String queryString,
+      int cqState,
+      @NotNull ClientProxyMembershipID clientProxyId,
+      @Nullable CacheClientNotifier ccn, boolean isDurable,
+      boolean manageEmptyRegions,
+      @Nullable DataPolicy regionDataPolicy,
+      @NotNull Map<String, Integer> emptyRegionsMap)
       throws CqException, RegionNotFoundException, CqClosedException {
     throw new IllegalStateException("CqService is not available.");
   }

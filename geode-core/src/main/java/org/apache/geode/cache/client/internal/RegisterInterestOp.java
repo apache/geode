@@ -22,6 +22,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -57,8 +58,7 @@ public class RegisterInterestOp {
   public static <K> List<List<K>> execute(final @NotNull ExecutablePool pool,
       final @NotNull String region, final @NotNull K key, final @NotNull InterestType interestType,
       final @NotNull InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates,
-      byte regionDataPolicy) {
+      final boolean receiveUpdatesAsInvalidates, final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
     return uncheckedCast(pool.executeOnQueuesAndReturnPrimaryResult(op));
@@ -78,9 +78,11 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static <K> List<K> executeOn(ServerLocation sl, ExecutablePool pool, String region, K key,
-      final @NotNull InterestType interestType, InterestResultPolicy policy, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
+  public static <K> List<K> executeOn(final @NotNull ServerLocation sl,
+      final @NotNull ExecutablePool pool, final @NotNull String region, final @NotNull K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
     return uncheckedCast(pool.executeOn(sl, op));
@@ -101,10 +103,11 @@ public class RegisterInterestOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static <K> List<K> executeOn(Connection conn, ExecutablePool pool, String region,
-      final @NotNull K key,
-      final @NotNull InterestType interestType, InterestResultPolicy policy, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
+  public static <K> List<K> executeOn(final @NotNull Connection conn,
+      final @NotNull ExecutablePool pool, final @NotNull String region,
+      final @NotNull K key, final @NotNull InterestType interestType,
+      final @NotNull InterestResultPolicy policy, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates, final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestOpImpl(region, key, interestType, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
     return uncheckedCast(pool.executeOn(conn, op));
@@ -121,10 +124,12 @@ public class RegisterInterestOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public RegisterInterestOpImpl(String region, Object key,
+    public RegisterInterestOpImpl(final @NotNull String region, final @NotNull Object key,
         final @NotNull InterestType interestType,
-        InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
-        byte regionDataPolicy) {
+        final @NotNull InterestResultPolicy policy,
+        final boolean isDurable,
+        final boolean receiveUpdatesAsInvalidates,
+        final @NotNull DataPolicy regionDataPolicy) {
       super(MessageType.REGISTER_INTEREST, 7);
       this.region = region;
       getMessage().addStringPart(region, true);
@@ -142,7 +147,7 @@ public class RegisterInterestOp {
       // Java clients always expect serializeValues to be true in VersionObjectList unlike Native
       // clients.
       // This was being sent as part of GetAllOp prior to fixing #43684.
-      getMessage().addBytesPart(new byte[] {regionDataPolicy, (byte) 0x01});
+      getMessage().addBytesPart(new byte[] {(byte) regionDataPolicy.ordinal(), (byte) 0x01});
     }
 
     /**

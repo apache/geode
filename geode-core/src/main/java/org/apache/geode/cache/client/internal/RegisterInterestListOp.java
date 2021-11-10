@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.internal.RegisterInterestOp.RegisterInterestOpImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -43,13 +44,14 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  @SuppressWarnings("unchecked")
-  public static <K> List<K> execute(ExecutablePool pool, String region, List<K> keys,
-      InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
-      byte regionDataPolicy) {
+  public static <K> List<K> execute(final @NotNull ExecutablePool pool,
+      final @NotNull String region, final @NotNull List<K> keys,
+      final @NotNull InterestResultPolicy policy, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
-    return (List<K>) pool.executeOnQueuesAndReturnPrimaryResult(op);
+    return uncheckedCast(pool.executeOnQueuesAndReturnPrimaryResult(op));
   }
 
   private RegisterInterestListOp() {
@@ -69,10 +71,11 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static <K> List<K> executeOn(ServerLocation sl, ExecutablePool pool, String region,
-      List<K> keys,
-      InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
-      byte regionDataPolicy) {
+  public static <K> List<K> executeOn(final @NotNull ServerLocation sl,
+      final @NotNull ExecutablePool pool, final @NotNull String region,
+      final @NotNull List<K> keys, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
     return uncheckedCast(pool.executeOn(sl, op));
@@ -92,10 +95,11 @@ public class RegisterInterestListOp {
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public static <K> List<K> executeOn(Connection conn, ExecutablePool pool, String region,
-      final @NotNull List<K> keys,
-      InterestResultPolicy policy, boolean isDurable, boolean receiveUpdatesAsInvalidates,
-      byte regionDataPolicy) {
+  public static <K> List<K> executeOn(final @NotNull Connection conn,
+      final @NotNull ExecutablePool pool, final @NotNull String region,
+      final @NotNull List<K> keys, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new RegisterInterestListOpImpl(region, keys, policy, isDurable,
         receiveUpdatesAsInvalidates, regionDataPolicy);
     return uncheckedCast(pool.executeOn(conn, op));
@@ -106,8 +110,9 @@ public class RegisterInterestListOp {
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     public RegisterInterestListOpImpl(final @NotNull String region, final @NotNull List<?> keys,
-        final @NotNull InterestResultPolicy policy,
-        final boolean isDurable, final boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
+        final @NotNull InterestResultPolicy policy, final boolean isDurable,
+        final boolean receiveUpdatesAsInvalidates,
+        final @NotNull DataPolicy regionDataPolicy) {
       super(region, MessageType.REGISTER_INTEREST_LIST, 6);
       getMessage().addStringPart(region, true);
       getMessage().addObjPart(policy);
@@ -125,8 +130,7 @@ public class RegisterInterestListOp {
       // The second byte '1' below tells server to serialize values in VersionObjectList.
       // Java clients always expect serializeValues to be true in VersionObjectList unlike Native
       // clients.
-      // This was being sent as part of GetAllOp prior to fixing #43684.
-      getMessage().addBytesPart(new byte[] {regionDataPolicy, (byte) 0x01});
+      getMessage().addBytesPart(new byte[] {(byte) regionDataPolicy.ordinal(), (byte) 0x01});
     }
 
     @Override

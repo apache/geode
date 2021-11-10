@@ -22,6 +22,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
@@ -64,7 +65,6 @@ public class RegisterInterestList66 extends BaseCommand {
     Part regionNamePart;
     String regionName;
     Object key = null;
-    InterestResultPolicy policy;
     List<Object> keys;
     int numberOfKeys, partNumber;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -75,6 +75,7 @@ public class RegisterInterestList66 extends BaseCommand {
     regionName = regionNamePart.getCachedString();
 
     // Retrieve the InterestResultPolicy
+    final InterestResultPolicy policy;
     try {
       policy = (InterestResultPolicy) clientMessage.getPart(1).getObject();
     } catch (Exception e) {
@@ -82,6 +83,7 @@ public class RegisterInterestList66 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
+
     boolean isDurable;
     try {
       Part durablePart = clientMessage.getPart(2);
@@ -92,13 +94,13 @@ public class RegisterInterestList66 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    // region data policy
-    byte[] regionDataPolicyPartBytes;
+
+    final DataPolicy regionDataPolicy;
     final boolean serializeValues;
     try {
-      Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
-      regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
-      // The second byte here is serializeValues
+      final Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
+      final byte[] regionDataPolicyPartBytes = (byte[]) regionDataPolicyPart.getObject();
+      regionDataPolicy = DataPolicy.fromOrdinal(regionDataPolicyPartBytes[0]);
       serializeValues = regionDataPolicyPartBytes[1] == (byte) 0x01;
     } catch (Exception e) {
       writeChunkedException(clientMessage, e, serverConnection);
@@ -173,7 +175,7 @@ public class RegisterInterestList66 extends BaseCommand {
       // Register interest
       serverConnection.getAcceptor().getCacheClientNotifier().registerClientInterest(regionName,
           keys, serverConnection.getProxyID(), isDurable, sendUpdatesAsInvalidates, true,
-          regionDataPolicyPartBytes[0], true);
+          regionDataPolicy, true);
     } catch (Exception ex) {
       // If an interrupted exception is thrown , rethrow it
       checkForInterrupt(serverConnection, ex);

@@ -3775,7 +3775,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         bo.beforeInterestRegistration();
       } // Test Code Ends
 
-      final byte regionDataPolicy = getAttributes().getDataPolicy().ordinal;
+      final DataPolicy regionDataPolicy = getAttributes().getDataPolicy();
       List<List<Object>> serverKeys;
 
       switch (interestType) {

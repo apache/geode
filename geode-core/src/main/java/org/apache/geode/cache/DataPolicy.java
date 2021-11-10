@@ -16,6 +16,8 @@
 
 package org.apache.geode.cache;
 
+import static java.lang.String.format;
+
 import java.io.ObjectStreamException;
 
 import org.apache.geode.annotations.Immutable;
@@ -57,6 +59,9 @@ public class DataPolicy implements java.io.Serializable {
 
   @Immutable
   private static final DataPolicy[] VALUES = new DataPolicy[11];
+
+  @Immutable
+  private static final String[] NAMES = new String[VALUES.length];
 
   /**
    * Data is never stored in local memory. The region will always be empty locally. It can be used
@@ -126,7 +131,12 @@ public class DataPolicy implements java.io.Serializable {
   /** The name of this mirror type. */
   private final transient String name;
 
-  /** used as ordinal to represent this DataPolicy */
+  /**
+   * Used as ordinal to represent this DataPolicy
+   *
+   * @deprecated use {@link #ordinal()}
+   */
+  @Deprecated
   public final byte ordinal;
 
   private Object readResolve() throws ObjectStreamException {
@@ -135,20 +145,49 @@ public class DataPolicy implements java.io.Serializable {
 
 
   /** Creates a new instance of DataPolicy. */
-  private DataPolicy(int ordinal, String name) {
+  private DataPolicy(final int ordinal, final String name) {
     if (ordinal >= VALUES.length) {
       throw new IllegalArgumentException(
-          String.format("Only %s DataPolicies may be defined",
-              Integer.valueOf(VALUES.length + 1)));
+          format("Only %s DataPolicies may be defined", VALUES.length + 1));
     }
     if (VALUES[ordinal] != null) {
       throw new IllegalArgumentException(
-          String.format("Ordinal %s is already defined by %s",
-              new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
+          format("Ordinal %s is already defined by %s", ordinal, VALUES[ordinal]));
     }
     this.name = name;
     this.ordinal = (byte) (ordinal & 0xff);
     VALUES[this.ordinal] = this;
+    NAMES[this.ordinal] = name;
+  }
+
+  /**
+   * @return ordinal value.
+   */
+  public int ordinal() {
+    return ordinal;
+  }
+
+  /**
+   * Get enum value by name.
+   *
+   * @param name of enum value.
+   * @return enum by name.
+   * @throws IllegalArgumentException if the specified enum type has no constant with the specified
+   *         name.
+   * @throws NullPointerException if name is null.
+   */
+  public static DataPolicy valueOf(final String name) throws IllegalArgumentException {
+    if (null == name) {
+      throw new NullPointerException();
+    }
+
+    for (int i = 0; i < NAMES.length; i++) {
+      if (NAMES[i].equals(name)) {
+        return VALUES[i];
+      }
+    }
+
+    throw new IllegalArgumentException(name);
   }
 
   /** Return the DataPolicy represented by specified ordinal */
@@ -299,25 +338,18 @@ public class DataPolicy implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
-  public static DataPolicy fromString(String s) {
-    String[] allowedValues =
-        new String[] {"EMPTY", "NORMAL", "REPLICATE", "PERSISTENT_REPLICATE", "PARTITION",
-            "PRELOADED", "PERSISTENT_PARTITION"};
-    int valueIndex = -1;
-    for (int i = 0; i < allowedValues.length; i++) {
-      if (allowedValues[i].equals(s)) {
-        valueIndex = i;
-        break;
-      }
+  /**
+   * @deprecated use {@link #valueOf(String)}
+   */
+  @Deprecated
+  public static DataPolicy fromString(final String s) {
+    try {
+      return valueOf(s);
+    } catch (NullPointerException | IllegalArgumentException e) {
+      return null;
     }
-
-    if (valueIndex != -1) {
-      return VALUES[valueIndex];
-    }
-
-    return null;
   }
 }
