@@ -45,8 +45,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.DeltaInfo;
+import org.apache.geode.redis.internal.data.delta.HAddsDeltaInfo;
 import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
@@ -115,43 +114,36 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @Override
-  protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof AddsDeltaInfo) {
-      AddsDeltaInfo addsDeltaInfo = (AddsDeltaInfo) deltaInfo;
-      Iterator<byte[]> iterator = addsDeltaInfo.getAdds().iterator();
-      while (iterator.hasNext()) {
-        byte[] field = iterator.next();
-        byte[] value = iterator.next();
-        hashPut(field, value);
-      }
-    } else {
-      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      for (byte[] field : remsDeltaInfo.getRemoves()) {
-        hashRemove(field);
-      }
-    }
+  protected void applyHaddDelta(byte[] keyBytes, byte[] valueBytes) {
+    hashPut(keyBytes, valueBytes);
+  }
+
+  @Override
+  protected void applyRemoveDelta(byte[] bytes) {
+    hashRemove(bytes);
   }
 
   public int hset(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
-    AddsDeltaInfo deltaInfo = null;
+    HAddsDeltaInfo deltaInfo = null;
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       byte[] field = iterator.next();
       byte[] value = iterator.next();
-      boolean added = true;
       boolean newField;
+      boolean addedOrUpdated;
       if (nx) {
         newField = hashPutIfAbsent(field, value) == null;
-        added = newField;
+        addedOrUpdated = newField;
       } else {
         newField = hashPut(field, value) == null;
+        addedOrUpdated = true;
       }
 
-      if (added) {
+      if (addedOrUpdated) {
         if (deltaInfo == null) {
-          deltaInfo = new AddsDeltaInfo(fieldsToSet.size());
+          deltaInfo = new HAddsDeltaInfo(fieldsToSet.size());
         }
         deltaInfo.add(field);
         deltaInfo.add(value);
@@ -270,10 +262,7 @@ public class RedisHash extends AbstractRedisData {
     if (oldValue == null) {
       byte[] newValue = Coder.longToBytes(increment);
       hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-      deltaInfo.add(field);
-      deltaInfo.add(newValue);
-      storeChanges(region, key, deltaInfo);
+      storeChanges(region, key, new HAddsDeltaInfo(field, newValue));
       return newValue;
     }
 
@@ -292,10 +281,7 @@ public class RedisHash extends AbstractRedisData {
 
     byte[] modifiedValue = Coder.longToBytes(value);
     hashPut(field, modifiedValue);
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-    deltaInfo.add(field);
-    deltaInfo.add(modifiedValue);
-    storeChanges(region, key, deltaInfo);
+    storeChanges(region, key, new HAddsDeltaInfo(field, modifiedValue));
     return modifiedValue;
   }
 
@@ -305,10 +291,7 @@ public class RedisHash extends AbstractRedisData {
     if (oldValue == null) {
       byte[] newValue = Coder.bigDecimalToBytes(increment);
       hashPut(field, newValue);
-      AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-      deltaInfo.add(field);
-      deltaInfo.add(newValue);
-      storeChanges(region, key, deltaInfo);
+      storeChanges(region, key, new HAddsDeltaInfo(field, newValue));
       return increment.stripTrailingZeros();
     }
 
@@ -328,10 +311,7 @@ public class RedisHash extends AbstractRedisData {
 
     byte[] modifiedValue = Coder.bigDecimalToBytes(value);
     hashPut(field, modifiedValue);
-    AddsDeltaInfo deltaInfo = new AddsDeltaInfo(2);
-    deltaInfo.add(field);
-    deltaInfo.add(modifiedValue);
-    storeChanges(region, key, deltaInfo);
+    storeChanges(region, key, new HAddsDeltaInfo(field, modifiedValue));
     return value.stripTrailingZeros();
   }
 

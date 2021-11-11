@@ -18,8 +18,13 @@ package org.apache.geode.redis.internal.data.delta;
 
 public enum DeltaType {
   ADDS,
-  REMS,
+  REMOVES,
   TIMESTAMP,
   APPEND,
-  ZADDS
+  HADDS,
+  ZADDS,
+  REPLACE_BYTES,
+  REPLACE_BYTES_AND_TIMESTAMP,
+  SET_RANGE,
+  SET_BIT
 }

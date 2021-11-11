@@ -45,7 +45,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -216,16 +215,13 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @Override
-  protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof AddsDeltaInfo) {
-      for (byte[] deltaMember : ((AddsDeltaInfo) deltaInfo).getAdds()) {
-        membersAdd(deltaMember);
-      }
-    } else {
-      for (byte[] deltaMember : ((RemsDeltaInfo) deltaInfo).getRemoves()) {
-        membersRemove(deltaMember);
-      }
-    }
+  protected void applyAddDelta(byte[] bytes) {
+    membersAdd(bytes);
+  }
+
+  @Override
+  protected void applyRemoveDelta(byte[] bytes) {
+    membersRemove(bytes);
   }
 
   /**

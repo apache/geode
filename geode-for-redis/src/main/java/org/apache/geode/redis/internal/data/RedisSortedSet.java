@@ -56,7 +56,6 @@ import org.apache.geode.redis.internal.commands.executor.sortedset.ZAggregator;
 import org.apache.geode.redis.internal.commands.executor.sortedset.ZKeyWeight;
 import org.apache.geode.redis.internal.data.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.data.delta.ZAddsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -96,14 +95,13 @@ public class RedisSortedSet extends AbstractRedisData {
   public RedisSortedSet() {}
 
   @Override
-  protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof ZAddsDeltaInfo) {
-      ZAddsDeltaInfo zaddsDeltaInfo = (ZAddsDeltaInfo) deltaInfo;
-      membersAddAll(zaddsDeltaInfo);
-    } else {
-      RemsDeltaInfo remsDeltaInfo = (RemsDeltaInfo) deltaInfo;
-      membersRemoveAll(remsDeltaInfo);
-    }
+  protected void applyRemoveDelta(byte[] bytes) {
+    memberRemove(bytes);
+  }
+
+  @Override
+  protected void applyZaddDelta(byte[] bytes, double score) {
+    memberAdd(bytes, score);
   }
 
   /**
@@ -190,20 +188,6 @@ public class RedisSortedSet extends AbstractRedisData {
     return false;
   }
 
-  private synchronized void membersAddAll(ZAddsDeltaInfo zaddsDeltaInfo) {
-    List<byte[]> members = zaddsDeltaInfo.getZAddMembers();
-    double[] scores = zaddsDeltaInfo.getZAddScores();
-    for (int i = 0; i < members.size(); i++) {
-      memberAdd(members.get(i), scores[i]);
-    }
-  }
-
-  private synchronized void membersRemoveAll(RemsDeltaInfo remsDeltaInfo) {
-    for (byte[] member : remsDeltaInfo.getRemoves()) {
-      memberRemove(member);
-    }
-  }
-
   /**
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
@@ -239,10 +223,8 @@ public class RedisSortedSet extends AbstractRedisData {
       if (!addResult.equals(MemberAddResult.NO_OP)) {
         if (deltaInfo == null) {
           deltaInfo = new ZAddsDeltaInfo(membersToAdd.size());
-          deltaInfo.add(member, score);
-        } else {
-          deltaInfo.add(member, score);
         }
+        deltaInfo.add(member, score);
       }
     }
 
@@ -800,9 +782,8 @@ public class RedisSortedSet extends AbstractRedisData {
       return ORDERED_SET_ENTRY_OVERHEAD;
     }
 
-    public double updateScore(double newScore) {
+    public void updateScore(double newScore) {
       score = newScore;
-      return newScore;
     }
   }
 

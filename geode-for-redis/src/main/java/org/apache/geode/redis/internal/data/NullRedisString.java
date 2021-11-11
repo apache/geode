@@ -48,11 +48,6 @@ public class NullRedisString extends RedisString {
   }
 
   @Override
-  protected void valueSet(byte[] bytes) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public byte[] get() {
     return null;
   }

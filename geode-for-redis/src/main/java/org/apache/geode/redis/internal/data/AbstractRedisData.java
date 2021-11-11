@@ -16,6 +16,13 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.DataSerializer.readEnum;
+import static org.apache.geode.DataSerializer.readPrimitiveByte;
+import static org.apache.geode.DataSerializer.readPrimitiveDouble;
+import static org.apache.geode.DataSerializer.readPrimitiveInt;
+import static org.apache.geode.DataSerializer.readPrimitiveLong;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 
@@ -24,7 +31,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
@@ -39,13 +45,9 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.AppendDeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.data.delta.TimestampDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.ZAddsDeltaInfo;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class AbstractRedisData implements RedisData {
@@ -197,32 +199,129 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    DeltaType deltaType = DataSerializer.readEnum(DeltaType.class, in);
+    DeltaType deltaType = readEnum(DeltaType.class, in);
     switch (deltaType) {
       case TIMESTAMP:
-        expirationTimestamp = DataSerializer.readLong(in);
+        expirationTimestamp = readPrimitiveLong(in);
         break;
       case ADDS:
-        applyDelta(new AddsDeltaInfo(readArrayList(in)));
+        fromAddsDelta(in);
         break;
-      case REMS:
-        applyDelta(new RemsDeltaInfo(readArrayList(in)));
+      case REMOVES:
+        fromRemovesDelta(in);
         break;
       case APPEND:
-        int sequence = DataSerializer.readPrimitiveInt(in);
-        byte[] byteArray = DataSerializer.readByteArray(in);
-        applyDelta(new AppendDeltaInfo(byteArray, sequence));
+        fromAppendDelta(in);
+        break;
+      case HADDS:
+        fromHaddsDelta(in);
         break;
       case ZADDS:
-        int numMembers = DataSerializer.readPrimitiveInt(in);
-        ZAddsDeltaInfo delta = new ZAddsDeltaInfo(numMembers);
-        for (int i = 0; i < numMembers; i++) {
-          byte[] member = DataSerializer.readByteArray(in);
-          double score = DataSerializer.readPrimitiveDouble(in);
-          delta.add(member, score);
-        }
-        applyDelta(delta);
+        fromZaddsDelta(in);
+        break;
+      case REPLACE_BYTES:
+        applyReplaceBytesDelta(readByteArray(in));
+        break;
+      case REPLACE_BYTES_AND_TIMESTAMP:
+        fromReplaceBytesAndTimestampDelta(in);
+        break;
+      case SET_RANGE:
+        fromSetRangeDelta(in);
+        break;
+      case SET_BIT:
+        applySetBitDelta(readArrayLength(in), readPrimitiveByte(in));
+        break;
     }
+  }
+
+  private void fromSetRangeDelta(DataInput in) throws IOException {
+    int offset = readArrayLength(in);
+    byte[] bytes = readByteArray(in);
+    applySetRangeDelta(offset, bytes);
+  }
+
+  private void fromReplaceBytesAndTimestampDelta(DataInput in) throws IOException {
+    byte[] bytes = readByteArray(in);
+    long timestamp = readPrimitiveLong(in);
+    applyReplaceBytesAndTimestampDelta(bytes, timestamp);
+  }
+
+  private synchronized void fromZaddsDelta(DataInput in) throws IOException {
+    int size = readArrayLength(in);
+    while (size > 0) {
+      byte[] member = readByteArray(in);
+      double score = readPrimitiveDouble(in);
+      applyZaddDelta(member, score);
+      size--;
+    }
+  }
+
+  private synchronized void fromHaddsDelta(DataInput in) throws IOException {
+    int size = readArrayLength(in);
+    while (size > 0) {
+      byte[] key = readByteArray(in);
+      byte[] value = readByteArray(in);
+      applyHaddDelta(key, value);
+      size -= 2;
+    }
+  }
+
+  private void fromAppendDelta(DataInput in) throws IOException {
+    int sequence = readPrimitiveInt(in);
+    byte[] byteArray = readByteArray(in);
+    applyAppendDelta(sequence, byteArray);
+  }
+
+  private synchronized void fromRemovesDelta(DataInput in) throws IOException {
+    int size = readArrayLength(in);
+    while (size > 0) {
+      applyRemoveDelta(readByteArray(in));
+      size--;
+    }
+  }
+
+  private synchronized void fromAddsDelta(DataInput in) throws IOException {
+    int size = readArrayLength(in);
+    while (size > 0) {
+      applyAddDelta(readByteArray(in));
+      size--;
+    }
+  }
+
+  protected void applyAddDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected ADDS DeltaInfo");
+  }
+
+  protected void applyRemoveDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected REMOVES DeltaInfo");
+  }
+
+  protected void applyZaddDelta(byte[] bytes, double score) {
+    throw new IllegalStateException("unexpected ZADDS DeltaInfo");
+  }
+
+  protected void applyHaddDelta(byte[] keyBytes, byte[] valueBytes) {
+    throw new IllegalStateException("unexpected HADDS DeltaInfo");
+  }
+
+  protected void applyReplaceBytesDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected REPLACE_BYTES DeltaInfo");
+  }
+
+  protected void applyReplaceBytesAndTimestampDelta(byte[] bytes, long timestamp) {
+    throw new IllegalStateException("unexpected REPLACE_BYTES_AND_TIMESTAMP DeltaInfo");
+  }
+
+  protected void applyAppendDelta(int sequence, byte[] bytes) {
+    throw new IllegalStateException("unexpected APPEND DeltaInfo");
+  }
+
+  protected void applySetRangeDelta(int offset, byte[] bytes) {
+    throw new IllegalStateException("unexpected SET_RANGE DeltaInfo");
+  }
+
+  protected void applySetBitDelta(int offset, byte bits) {
+    throw new IllegalStateException("unexpected SET_BIT DeltaInfo");
   }
 
   @Override
@@ -245,14 +344,6 @@ public abstract class AbstractRedisData implements RedisData {
     return restore(data);
   }
 
-  private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {
-    try {
-      return DataSerializer.readArrayList(in);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   protected void storeChanges(Region<RedisKey, RedisData> region, RedisKey key,
       DeltaInfo deltaInfo) {
     if (deltaInfo != null) {
@@ -268,8 +359,6 @@ public abstract class AbstractRedisData implements RedisData {
       }
     }
   }
-
-  protected abstract void applyDelta(DeltaInfo deltaInfo);
 
   protected abstract boolean removeFromRegion();
 

@@ -196,8 +196,7 @@ public class SetExecutor implements CommandExecutor {
       }
     }
 
-    RedisString redisString = setRedisString(regionProvider, key, value);
-    redisString.handleSetExpiration(options);
+    setRedisString(regionProvider, key, value, options);
     return true;
   }
 
@@ -212,17 +211,18 @@ public class SetExecutor implements CommandExecutor {
     return true;
   }
 
-  static RedisString setRedisString(RegionProvider regionProvider, RedisKey key, byte[] value) {
-    RedisString result;
+  static void setRedisString(RegionProvider regionProvider, RedisKey key, byte[] value,
+      SetOptions options) {
+    RedisString redisString;
     RedisData redisData = regionProvider.getRedisData(key);
 
     if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
-      result = new RedisString(value);
+      redisString = new RedisString(value);
+      redisString.handleSetExpiration(options);
+      regionProvider.getDataRegion().put(key, redisString);
     } else {
-      result = (RedisString) redisData;
-      result.set(value);
+      redisString = (RedisString) redisData;
+      redisString.set(regionProvider.getDataRegion(), key, value, options);
     }
-    regionProvider.getDataRegion().put(key, result);
-    return result;
   }
 }

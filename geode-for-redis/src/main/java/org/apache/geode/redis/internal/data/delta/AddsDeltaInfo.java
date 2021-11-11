@@ -24,13 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
 
 public class AddsDeltaInfo implements DeltaInfo {
   private final ArrayList<byte[]> deltas;
-
-  public AddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>(size);
-  }
 
   public AddsDeltaInfo(List<byte[]> deltas) {
     this.deltas = new ArrayList<>(deltas);
@@ -42,10 +39,9 @@ public class AddsDeltaInfo implements DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(ADDS, out);
-    DataSerializer.writeArrayList(deltas, out);
-  }
-
-  public List<byte[]> getAdds() {
-    return deltas;
+    InternalDataSerializer.writeArrayLength(deltas.size(), out);
+    for (byte[] bytes : deltas) {
+      DataSerializer.writeByteArray(bytes, out);
+    }
   }
 }

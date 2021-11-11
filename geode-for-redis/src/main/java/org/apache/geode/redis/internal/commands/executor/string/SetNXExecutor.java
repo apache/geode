@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.commands.executor.string.SetExecut
 
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -28,6 +29,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class SetNXExecutor implements CommandExecutor {
 
   private static final int VALUE_INDEX = 2;
+  @Immutable
+  private static final SetOptions setnxOptions = new SetOptions(NX, 0L, false);
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
@@ -35,10 +38,9 @@ public class SetNXExecutor implements CommandExecutor {
     RedisKey key = command.getKey();
     byte[] value = commandElems.get(VALUE_INDEX);
 
-    SetOptions setOptions = new SetOptions(NX, 0L, false);
-
     boolean result =
-        context.lockedExecute(key, () -> set(context.getRegionProvider(), key, value, setOptions));
+        context.lockedExecute(key,
+            () -> set(context.getRegionProvider(), key, value, setnxOptions));
 
     return RedisResponse.integer(result);
   }

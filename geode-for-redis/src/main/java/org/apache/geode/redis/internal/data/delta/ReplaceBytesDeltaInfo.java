@@ -11,47 +11,28 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVES;
-
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.InternalDataSerializer;
 
-public class RemsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+/**
+ * This delta info simply replaces a RedisData's current
+ * byte array with another one.
+ */
+public class ReplaceBytesDeltaInfo implements DeltaInfo {
+  private final byte[] replaceBytes;
 
-  public RemsDeltaInfo() {
-    this.deltas = new ArrayList<>();
-  }
-
-  public RemsDeltaInfo(List<byte[]> deltas) {
-    this.deltas = new ArrayList<>(deltas);
-  }
-
-  public void add(byte[] delta) {
-    deltas.add(delta);
+  public ReplaceBytesDeltaInfo(byte[] value) {
+    replaceBytes = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMOVES, out);
-    InternalDataSerializer.writeArrayLength(deltas.size(), out);
-    for (byte[] bytes : deltas) {
-      DataSerializer.writeByteArray(bytes, out);
-    }
-  }
-
-  @VisibleForTesting
-  public List<byte[]> getRemoves() {
-    return deltas;
+    DataSerializer.writeEnum(DeltaType.REPLACE_BYTES, out);
+    DataSerializer.writeByteArray(replaceBytes, out);
   }
 }

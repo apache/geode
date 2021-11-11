@@ -30,14 +30,6 @@ public class AppendDeltaInfo implements DeltaInfo {
     this.sequence = sequence;
   }
 
-  public byte[] getBytes() {
-    return appendBytes;
-  }
-
-  public int getSequence() {
-    return sequence;
-  }
-
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(DeltaType.APPEND, out);
     DataSerializer.writePrimitiveInt(sequence, out);

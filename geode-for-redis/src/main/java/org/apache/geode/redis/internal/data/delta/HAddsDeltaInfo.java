@@ -11,31 +11,30 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVES;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.HADDS;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 
-public class RemsDeltaInfo implements DeltaInfo {
+public class HAddsDeltaInfo implements DeltaInfo {
   private final ArrayList<byte[]> deltas;
 
-  public RemsDeltaInfo() {
-    this.deltas = new ArrayList<>();
+  public HAddsDeltaInfo(int size) {
+    this.deltas = new ArrayList<>(size);
   }
 
-  public RemsDeltaInfo(List<byte[]> deltas) {
-    this.deltas = new ArrayList<>(deltas);
+  public HAddsDeltaInfo(byte[] fieldName, byte[] fieldValue) {
+    this(2);
+    add(fieldName);
+    add(fieldValue);
   }
 
   public void add(byte[] delta) {
@@ -43,15 +42,10 @@ public class RemsDeltaInfo implements DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMOVES, out);
+    DataSerializer.writeEnum(HADDS, out);
     InternalDataSerializer.writeArrayLength(deltas.size(), out);
     for (byte[] bytes : deltas) {
       DataSerializer.writeByteArray(bytes, out);
     }
-  }
-
-  @VisibleForTesting
-  public List<byte[]> getRemoves() {
-    return deltas;
   }
 }
