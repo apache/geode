@@ -42,7 +42,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -96,7 +95,7 @@ public class ShutdownCommandDUnitTest implements
     locatorHttpPort = ports[2];
 
     locatorString = "localhost[" + locatorPort + "]";
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
+
     locator.invoke(
         () -> startLocator(locatorDir, locatorPort, locatorJmxPort, locatorHttpPort));
     server1.invoke(() -> startServer(SERVER1_NAME, server1Dir, locatorString));

@@ -49,7 +49,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -82,8 +81,6 @@ public class MeterSubregistryReconnectDistributedTest implements Serializable {
   public void setUp() throws Exception {
     locatorVM = getVM(0);
     otherServer = getVM(1);
-
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     locatorDir = temporaryFolder.newFolder(LOCATOR_NAME);
     locatorPort = locatorVM.invoke(this::createLocator);

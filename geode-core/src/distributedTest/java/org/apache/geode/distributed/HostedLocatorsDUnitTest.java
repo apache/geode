@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.support.util.FileUtils;
@@ -44,7 +43,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -62,11 +60,6 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
   protected transient volatile int locatorPort;
   protected transient volatile LocatorLauncher launcher;
-
-  @Before
-  public void setup() {
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -224,6 +217,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
           final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
               .set(LOCATORS, dunitLocator)
               .setRedirectOutput(true).setWorkingDirectory(name);
+
           launcher = builder.build();
           assertEquals(Status.ONLINE, launcher.start().getStatus());
           waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);

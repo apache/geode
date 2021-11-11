@@ -42,7 +42,6 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.cluster.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -84,8 +83,6 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     int[] ports = getRandomAvailableTCPPorts(2);
     httpPort = ports[0];
     jmxManagerPort = ports[1];
-
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     locatorPort = locatorVM.invoke(this::startLocator);
     serverVM.invoke(this::startServer);

@@ -59,7 +59,6 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedReference;
@@ -118,8 +117,6 @@ public class JmxLocatorReconnectDistributedTest implements Serializable {
 
     File locatorDir = temporaryFolder.newFolder(LOCATOR_NAME);
     File serverDir = temporaryFolder.newFolder(SERVER_NAME);
-
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
 
     for (VM vm : asList(locatorVM, serverVM)) {
       vm.invoke(() -> System.setProperty(GEMFIRE_PREFIX + "standard-output-always-on", "true"));

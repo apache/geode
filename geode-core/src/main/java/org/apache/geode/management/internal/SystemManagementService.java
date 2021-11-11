@@ -45,9 +45,6 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.serialization.filter.FilterConfiguration;
-import org.apache.geode.internal.serialization.filter.Java9SystemPropertyConfigurationFactory;
-import org.apache.geode.internal.serialization.filter.OpenMBeanFilterPattern;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -182,12 +179,8 @@ public class SystemManagementService extends BaseManagementService {
     notificationHub = notificationHubFactory.apply(repo);
 
     if (system.getConfig().getJmxManager()) {
-      String filterPattern = new OpenMBeanFilterPattern().pattern();
-
-      FilterConfiguration filterConfiguration = new Java9SystemPropertyConfigurationFactory()
-          .create("jmx.remote.rmi.server.serial.filter.pattern", filterPattern);
-
-      agent = managementAgentFactory.create(system.getConfig(), cache, filterConfiguration);
+      agent = managementAgentFactory.create(system.getConfig(), cache,
+          new JmxRmiOpenTypesSerialFilter());
     } else {
       agent = null;
     }
