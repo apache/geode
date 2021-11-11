@@ -324,7 +324,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
-    assertThat(status).containsExactlyInAnyOrder("Error", "OK", "OK");
+    assertThat(status).containsExactlyInAnyOrder("ERROR", "OK", "OK");
 
     locatorSite1.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
