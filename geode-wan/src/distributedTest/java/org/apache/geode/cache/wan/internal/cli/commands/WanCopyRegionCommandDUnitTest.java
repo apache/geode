@@ -68,7 +68,6 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
@@ -101,7 +100,6 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   @BeforeClass
   public static void beforeClassWanCopyRegionCommandDUnitTest() {
-    Invoke.invokeInEveryVM(() -> System.setProperty("jdk.serialFilter", "*"));
     vm8 = VM.getVM(8);
   }
 
