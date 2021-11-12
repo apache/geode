@@ -610,6 +610,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       gatewaySenderFactory.setSocketReadTimeout(Integer.parseInt(socketReadTimeout));
     }
 
+    // socket-connect-timeout
+    String socketConnectTimeout = atts.getValue(SOCKET_CONNECT_TIMEOUT);
+    if (socketConnectTimeout == null) {
+      gatewaySenderFactory.setSocketConnectTimeout(GatewaySender.DEFAULT_SOCKET_CONNECT_TIMEOUT);
+    } else {
+      gatewaySenderFactory.setSocketConnectTimeout(Integer.parseInt(socketConnectTimeout));
+    }
+
     // batch-conflation
     String batchConflation = atts.getValue(ENABLE_BATCH_CONFLATION);
     if (batchConflation == null) {

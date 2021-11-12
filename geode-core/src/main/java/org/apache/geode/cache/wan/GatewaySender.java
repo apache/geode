@@ -55,6 +55,16 @@ public interface GatewaySender {
       .intValue();
 
   /**
+   * The default amount of time in milliseconds that a socket connect between a sending
+   * <code>Gateway</code> and its receiving <code>Gateway</code> will block.
+   */
+  int DEFAULT_SOCKET_CONNECT_TIMEOUT = Integer
+      .getInteger(
+          GeodeGlossary.GEMFIRE_PREFIX + "cache.gatewaySender.default-socket-connect-timeout",
+          59000)
+      .intValue();
+
+  /**
    * The default minimum socket read timeout.
    */
   int MINIMUM_SOCKET_READ_TIMEOUT = 30000;
@@ -323,6 +333,17 @@ public interface GatewaySender {
    *         and its receiving <code>GatewayReceiver</code> will block
    */
   int getSocketReadTimeout();
+
+  /**
+   * Returns the amount of time in milliseconds that a socket connect between a sending
+   * GatewaySender and its receiving <code>GatewayReceiver</code> will block.
+   * The default value is 59000.
+   *
+   * @return the amount of time in milliseconds that a socket connect between a sending
+   *         GatewaySender
+   *         and its receiving <code>GatewayReceiver</code> will block
+   */
+  int getSocketConnectTimeout();
 
   /**
    * Gets the disk store name for overflow or persistence.

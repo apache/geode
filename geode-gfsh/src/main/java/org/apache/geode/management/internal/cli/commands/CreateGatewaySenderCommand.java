@@ -98,6 +98,9 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
           help = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP) Integer socketReadTimeout,
 
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETCONNECTTIMEOUT,
+          help = CliStrings.CREATE_GATEWAYSENDER__SOCKETCONNECTTIMEOUT__HELP) Integer socketConnectTimeout,
+
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -147,7 +150,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
     CacheConfig.GatewaySender configuration =
         buildConfiguration(id, remoteDistributedSystemId, parallel, manualStart,
-            socketBufferSize, socketReadTimeout, enableBatchConflation, batchSize,
+            socketBufferSize, socketReadTimeout, socketConnectTimeout, enableBatchConflation,
+            batchSize,
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
             gatewayEventFilters, gatewayTransportFilter, groupTransactionEvents,
@@ -223,6 +227,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       Boolean manualStart,
       Integer socketBufferSize,
       Integer socketReadTimeout,
+      Integer socketConnectTimeout,
       Boolean enableBatchConflation,
       Integer batchSize,
       Integer batchTimeInterval,
@@ -244,6 +249,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     sender.setManualStart(manualStart);
     sender.setSocketBufferSize(int2string(socketBufferSize));
     sender.setSocketReadTimeout(int2string(socketReadTimeout));
+    sender.setSocketConnectTimeout(int2string(socketConnectTimeout));
     sender.setEnableBatchConflation(enableBatchConflation);
     sender.setBatchSize(int2string(batchSize));
     sender.setBatchTimeInterval(int2string(batchTimeInterval));

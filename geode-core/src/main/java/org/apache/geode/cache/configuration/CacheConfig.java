@@ -1994,6 +1994,8 @@ public class CacheConfig {
       protected String socketBufferSize;
       @XmlAttribute(name = "socket-read-timeout")
       protected String socketReadTimeout;
+      @XmlAttribute(name = "socket-connect-timeout")
+      protected String socketConnectTimeout;
       @XmlAttribute(name = "concurrency-level")
       protected String concurrencyLevel;
       @XmlAttribute(name = "order-policy")
@@ -2167,6 +2169,28 @@ public class CacheConfig {
        */
       public void setSocketReadTimeout(String value) {
         this.socketReadTimeout = value;
+      }
+
+      /**
+       * Gets the value of the socketConnectTimeout property.
+       *
+       * possible object is
+       * {@link String }
+       *
+       */
+      public String getSocketConnectTimeout() {
+        return socketConnectTimeout;
+      }
+
+      /**
+       * Sets the value of the socketConnectTimeout property.
+       *
+       * allowed object is
+       * {@link String }
+       *
+       */
+      public void setSocketConnectTimeout(String value) {
+        this.socketConnectTimeout = value;
       }
 
       /**
@@ -2634,6 +2658,8 @@ public class CacheConfig {
     protected String socketBufferSize;
     @XmlAttribute(name = "socket-read-timeout")
     protected String socketReadTimeout;
+    @XmlAttribute(name = "socket-connect-timeout")
+    protected String socketConnectTimeout;
     @XmlAttribute(name = "enable-batch-conflation")
     protected Boolean enableBatchConflation;
     @XmlAttribute(name = "batch-size")
@@ -2884,6 +2910,28 @@ public class CacheConfig {
      */
     public void setSocketReadTimeout(String value) {
       this.socketReadTimeout = value;
+    }
+
+    /**
+     * Gets the value of the socketConnectTimeout property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+    public String getSocketConnectTimeout() {
+      return socketConnectTimeout;
+    }
+
+    /**
+     * Sets the value of the socketConnectTimeout property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setSocketConnectTimeout(String value) {
+      this.socketConnectTimeout = value;
     }
 
     /**

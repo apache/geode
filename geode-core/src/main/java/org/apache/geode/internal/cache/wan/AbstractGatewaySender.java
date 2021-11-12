@@ -107,6 +107,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected int socketReadTimeout;
 
+  protected int socketConnectTimeout;
+
   protected int queueMemory;
 
   protected int maxMemoryPerDispatcherQueue;
@@ -249,6 +251,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     id = attrs.getId();
     socketBufferSize = attrs.getSocketBufferSize();
     socketReadTimeout = attrs.getSocketReadTimeout();
+    socketConnectTimeout = attrs.getSocketConnectTimeout();
     queueMemory = attrs.getMaximumQueueMemory();
     batchSize = attrs.getBatchSize();
     batchTimeInterval = attrs.getBatchTimeInterval();
@@ -409,6 +412,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public int getSocketReadTimeout() {
     return socketReadTimeout;
+  }
+
+  @Override
+  public int getSocketConnectTimeout() {
+    return socketConnectTimeout;
   }
 
   @Override

@@ -35,6 +35,8 @@ public class GatewaySenderAttributes {
 
   private int socketReadTimeout = GatewaySender.DEFAULT_SOCKET_READ_TIMEOUT;
 
+  private int socketConnectTimeout = GatewaySender.DEFAULT_SOCKET_CONNECT_TIMEOUT;
+
   private int maximumQueueMemory = GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY;
 
   private int batchSize = GatewaySender.DEFAULT_BATCH_SIZE;
@@ -97,6 +99,10 @@ public class GatewaySenderAttributes {
 
   public void setSocketReadTimeout(int readTimeout) {
     socketReadTimeout = readTimeout;
+  }
+
+  public void setSocketConnectTimeout(int connectTimeout) {
+    socketConnectTimeout = connectTimeout;
   }
 
   public void setMaximumQueueMemory(int maxQueueMemory) {
@@ -205,6 +211,10 @@ public class GatewaySenderAttributes {
 
   public int getSocketReadTimeout() {
     return this.socketReadTimeout;
+  }
+
+  public int getSocketConnectTimeout() {
+    return this.socketConnectTimeout;
   }
 
   public String getDiskStoreName() {

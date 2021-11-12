@@ -2278,6 +2278,9 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT = "socket-read-timeout";
   public static final String CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP =
       "The amount of time in milliseconds that a socket read between a sending GatewaySender and its receiving GatewayReceiver will block.";
+  public static final String CREATE_GATEWAYSENDER__SOCKETCONNECTTIMEOUT = "socket-connect-timeout";
+  public static final String CREATE_GATEWAYSENDER__SOCKETCONNECTTIMEOUT__HELP =
+      "The amount of time in milliseconds that a socket connect between a sending GatewaySender and its receiving GatewayReceiver will block.";
   public static final String CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION =
       "enable-batch-conflation";
   public static final String CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION__HELP =

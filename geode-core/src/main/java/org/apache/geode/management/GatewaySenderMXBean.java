@@ -53,6 +53,13 @@ public interface GatewaySenderMXBean {
   long getSocketReadTimeout();
 
   /**
+   * Returns the amount of time (in milliseconds) for a socket connect between a sending
+   * GatewaySender
+   * and its receiving <code>GatewayReceiver</code> is allowed to block.
+   */
+  long getSocketConnectTimeout();
+
+  /**
    * Returns the name of the disk store that is used for persistence.
    */
   String getOverflowDiskStoreName();

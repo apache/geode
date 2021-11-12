@@ -34,6 +34,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
   private final Boolean manualStart;
   private final Integer socketBufferSize;
   private final Integer socketReadTimeout;
+  private final Integer socketConnectTimeout;
   private final Boolean enableBatchConflation;
   private final Integer batchSize;
   private final Integer batchTimeInterval;
@@ -57,6 +58,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
     this.manualStart = sender.isManualStart();
     this.socketBufferSize = string2int(sender.getSocketBufferSize());
     this.socketReadTimeout = string2int(sender.getSocketReadTimeout());
+    this.socketConnectTimeout = string2int(sender.getSocketConnectTimeout());
     this.enableBatchConflation = sender.isEnableBatchConflation();
     this.batchSize = string2int(sender.getBatchSize());
     this.batchTimeInterval = string2int(sender.getBatchTimeInterval());
@@ -117,6 +119,10 @@ public class GatewaySenderFunctionArgs implements Serializable {
 
   public Integer getSocketReadTimeout() {
     return this.socketReadTimeout;
+  }
+
+  public Integer getSocketConnectTimeout() {
+    return this.socketConnectTimeout;
   }
 
   public Boolean isBatchConflationEnabled() {
