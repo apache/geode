@@ -1,0 +1,192 @@
+---
+title:  wan-copy region
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Copy the entries of a region in a WAN site onto the same region in another WAN site, using a gateway sender.
+
+This command copies region entries from a WAN site to another by putting them in batches of configurable
+size that are sent to the remote site by the selected gateway sender. Batch size is specified as number of entries per batch.
+
+The command allows you to specify a maximum copy rate in order not to stress excessively the sending or receiving WAN sites.
+This rate is configured in entries per second.
+
+Callbacks (cache listeners, replication to other WAN sites) will not be executed in the remote WAN site for the entries copied.
+
+The main uses of this command are:
+
+-   Recovery of a WAN site after a disaster in which the failed site needs to be put into service again with
+    the data from another WAN site.
+
+-   Adding a new WAN site to a <%=vars.product_name%> system in which the data in the new WAN site needs to be initially loaded from
+    an existing WAN site.
+
+The execution of a currently running instance of this command may be stopped by using
+this same command with the `--cancel` option.
+
+**Requirements:**
+
+The `wan-copy region` command requires that
+
+- a gateway sender is configured and running on the source WAN site
+- a gateway receiver is configured and running on the remote WAN site
+- the region onto which the data will be copied has already been created on the remote WAN site
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+wan-copy region --region=value --sender-id=value [--max-rate=value] [--batch-size=value]
+  [--cancel]
+```
+
+<a id="wan_copy_region_command_params"></a>
+<style>
+table th:first-of-type {
+    width: 20%;
+}
+table th:nth-of-type(2) {
+    width: 60%;
+}
+table th:nth-of-type(3) {
+    width: 20%;
+}
+</style>
+
+| Name | Description | Default Value |
+|------|-------------|---------------|
+| &#8209;&#8209;region| <em>Required</em>. The region for which the data is to be copied. | |
+| &#8209;&#8209;sender-id| <em>Required</em>. The gateway sender to be used to copy the region entries. | |
+| &#8209;&#8209;max-rate| The maximum copy rate in entries per second. If the sender is parallel, the maximum rate limit is applied to each server hosting buckets for the region to be copied. | 0 (unlimited) |
+| &#8209;&#8209;batch-size| The size of the batches, in number of entries, to be used to copy the region entries. | 1000 |
+| &#8209;&#8209;cancel| Cancel a running `wan-copy region` command for the specified sender and region. If the `sender-id` and `region` passed are both "*", then all running `wan-copy region` commands will be canceled. |  |
+
+<span class="tablecap">Table 1. Copy Region Parameters</span>
+
+
+**Example Commands:**
+
+``` pre
+wan-copy region --region=myRegion--sender-id=mySender --max-rate=1000 --batch-size=100
+```
+
+``` pre
+wan-copy region --region=/overload --sender-id=sender1 --cancel
+```
+
+``` pre
+wan-copy region --region=* --sender-id=* --cancel
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>wan-copy region --region=/overload --sender-id=myParallelSender --max-rate=100 --batch-size=100
+        Member     | Status | Message
+    -------------- | ------ | -----------------------
+    server-sender  | OK     | Entries copied: 333
+    server-sender3 | OK     | Entries copied: 334
+    server-sender2 | OK     | Entries copied: 333
+
+```
+
+``` pre
+gfsh>wan-copy region --region=/overload --sender-id=mySerialSender --max-rate=100 --batch-size=100
+        Member     | Status | Message
+    -------------- | ------ | ----------------------------------------------------------------------
+    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
+    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
+    server-sender  | OK     | Entries copied: 1000
+```
+
+
+``` pre
+gfsh>wan-copy region --region=/overload --sender-id=sender1 --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------
+    server-sender2 | OK     | Execution canceled
+    server-sender  | OK     | Execution canceled
+    server-sender3 | OK     | Execution canceled
+```
+
+``` pre
+gfsh>wan-copy region --region=myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=10
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------
+    server-sender2 | OK     | Operation canceled after having copied 10 entries
+    server-sender  | OK     | Operation canceled after having copied 10 entries
+    server-sender3 | OK     | Operation canceled after having copied 10 entries
+```
+
+``` pre
+gfsh>wan-copy region --region=myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=10
+        Member     | Status | Message
+    -------------- | ------ | ----------------------------------------------------------------------
+    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
+    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
+    server-sender  | OK     | Operation canceled after having copied 4 entries
+```
+
+**Error Messages:**
+
+Example of `wan-copy region` with an invalid region:
+
+``` pre
+gfsh> wan-copy region --region=/regionX --sender-id=sender1
+        Member     | Status | Message
+    -------------- | ------ | -------------------------
+    server-sender  | ERROR  | Region /regionX not found
+    server-sender2 | ERROR  | Region /regionX not found
+    server-sender3 | ERROR  | Region /regionX not found
+```
+
+Example of `wan-copy region` with a stopped gateway sender:
+
+``` pre
+gfsh> wan-copy region --region=/region1 --sender-id=sender1
+        Member     | Status | Message
+    -------------- | ------ | -----------------------------
+    server-sender  | ERROR  | Sender sender1 is not running
+    server-sender2 | ERROR  | Sender sender1 is not running
+    server-sender3 | ERROR  | Sender sender1 is not running
+```
+
+Example of cancel of `wan-copy region` when no command is running:
+
+``` pre
+gfsh> wan-copy region --region=/region1 --sender-id=sender1 --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------------------------------------
+    server-sender2 | ERROR  | No running command to be canceled for region /region1 and sender sender1
+    server-sender  | ERROR  | No running command to be canceled for region /region1 and sender sender1
+    server-sender3 | ERROR  | No running command to be canceled for region /region1 and sender sender1
+```
+
+Example of cancel of all running `wan-copy region` commands:
+
+``` pre
+gfsh> wan-copy region --region=* --sender-id=* --cancel
+        Member     | Status | Message
+    -------------- | ------ | ------------------------------------------------------------------------------------
+    server-sender2 | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
+    server-sender  | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
+    server-sender3 | OK     | Executions canceled: [(myRegion,mySender1), (myRegion,mySender)]
+```
+
