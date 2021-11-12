@@ -190,7 +190,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
 
     Region r1 = this.createRegion("portfolio1", Portfolio.class);
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 200; i++) {
       r1.put(i + "", new Portfolio(i));
     }
 
