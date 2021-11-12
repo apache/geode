@@ -3027,10 +3027,14 @@ public class CliStrings {
       "GatewayReceiver is not running on member {0}";
   public static final String GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER =
       "GatewaySenders or GatewayReceivers are not available in cluster";
-  public static final String GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1 =
+  public static final String GATEWAY_SENDER_START_0_COULD_NOT_BE_INVOKED_DUE_TO_1 =
       "Could not invoke start gateway sender {0} operation on members due to {1}";
   public static final String GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1 =
       "Could not start gateway sender {0} on member due to {1}";
+  public static final String GATEWAY_SENDER_STOP_0_COULD_NOT_BE_INVOKED_DUE_TO_1 =
+      "Could not invoke stop gateway sender {0} operation on members due to {1}";
+  public static final String GATEWAY_SENDER_0_COULD_NOT_BE_STOPPED_ON_MEMBER_DUE_TO_1 =
+      "Could not stop gateway sender {0} on member due to {1}";
   public static final String GATEWAY_SENDER_0_IS_UPDATED_ON_MEMBER_1 =
       "GatewaySender {0} is updated on member {1}";
   /* end gateway command messages */
