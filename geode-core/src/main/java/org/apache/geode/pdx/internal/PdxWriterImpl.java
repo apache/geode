@@ -865,8 +865,13 @@ public class PdxWriterImpl implements PdxWriter {
 
   private HeapDataOutputStream.LongUpdater lu;
 
+  public static volatile boolean breakIt = false;
   private void writeHeader() {
-    this.os.write(DSCODE.PDX.toByte());
+    if (breakIt) {
+      this.os.write((byte) 0);
+    } else {
+      this.os.write(DSCODE.PDX.toByte());
+    }
     this.lu = this.os.reserveLong(); // dummy length and type id
   }
 
