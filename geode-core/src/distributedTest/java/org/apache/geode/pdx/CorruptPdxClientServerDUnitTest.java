@@ -14,6 +14,8 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,16 +23,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.ExportLocalDataFunction;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -53,8 +59,13 @@ public class CorruptPdxClientServerDUnitTest {
   public void testSimplePut() throws Exception {
     final MemberVM locator = cluster.startLocatorVM(0);
     final int locatorPort = locator.getPort();
-    final MemberVM server1 = cluster.startServerVM(1, locatorPort);
-    final MemberVM server2 = cluster.startServerVM(2, locatorPort);
+
+    Properties properties = new Properties();
+    properties.put(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.**");
+    properties.put(LOCATORS, String.format("localhost[%d]", locatorPort));
+
+    final MemberVM server1 = cluster.startServerVM(1, properties);
+    final MemberVM server2 = cluster.startServerVM(2, properties);
     final ClientVM client = cluster.startClientVM(3,
         cf -> cf.withLocatorConnection(locatorPort));
 
@@ -93,8 +104,11 @@ public class CorruptPdxClientServerDUnitTest {
 
     client.invoke(() -> {
       final Region<Object, Object> region = getClientCache().getRegion(REGION_NAME);
-      region.remove(3);
-      region.destroy(4);
+      ResultCollector resultCollector = FunctionService.onRegion(region).execute(new ExportLocalDataFunction());
+      resultCollector.getResult();
+
+//      region.remove(3);
+//      region.destroy(4);
     });
 
   }
