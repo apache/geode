@@ -104,7 +104,9 @@ public class CorruptPdxClientServerDUnitTest {
 
     client.invoke(() -> {
       final Region<Object, Object> region = getClientCache().getRegion(REGION_NAME);
-      ResultCollector resultCollector = FunctionService.onRegion(region).execute(new ExportLocalDataFunction());
+      ResultCollector resultCollector = FunctionService.onRegion(region)
+          .setArguments("/dev/null")
+          .execute(new ExportLocalDataFunction());
       resultCollector.getResult();
 
 //      region.remove(3);

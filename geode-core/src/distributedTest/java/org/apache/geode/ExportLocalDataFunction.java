@@ -44,20 +44,22 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ExportLocalDataFunction implements Function<String>, Declarable {
 
+  private static final long serialVersionUID = 4380042210718815441L;
   private static final Logger logger = LogService.getLogger();
-  private static final byte DSCODE_DATA_SERIALIZABLE = 45;
-  private static final byte DSCODE_SERIALIZABLE = 44;
-  private static final byte DSCODE_PDX = 93;
 
   public ExportLocalDataFunction() {
   }
 
   public void execute(final FunctionContext<String> context) {
-    // Get directory name
-
     logger.info("DEBUG: Executing ExportLocalDataFunction on {}", context.getMemberName());
 
-    final String directoryName = context.getArguments();
+    // Get file name parameter
+    final String fileName = context.getArguments();
+
+    if (fileName == null) {
+      throw new IllegalArgumentException(getId() + " requires an export filename as parameter");
+    }
+
     final Cache cache = context.getCache();
     final String memberName = cache.getName();
     final LogWriter logger = cache.getLogger();
@@ -67,9 +69,7 @@ public class ExportLocalDataFunction implements Function<String>, Declarable {
     final Region<Object, Object> localData = PartitionRegionHelper.getLocalDataForContext(rfc);
 
     // Create the file
-    final String fileName =
-        "server_" + memberName + "_region_" + localData.getName() + "_snapshot.gfd";
-    final File file = new File(directoryName, fileName);
+    final File file = new File(fileName);
 
     // Export local data set
     final RegionSnapshotService<Object, Object> service = localData.getSnapshotService();
@@ -79,7 +79,6 @@ public class ExportLocalDataFunction implements Function<String>, Declarable {
               + localData.getName() + " to file " + file.getAbsolutePath() + " started");
       final SnapshotOptions<Object, Object> options = service.createOptions();
       options.setFilter(getRejectingFilter(localData, logger));
-      //      options.setFilter(getReserializingFilter(localData, logger));
       service.save(file, SnapshotFormat.GEMFIRE, options);
       logger.warning(
           currentThread().getName() + ": Exporting " + localData.size() + " entries in region "
@@ -107,67 +106,6 @@ public class ExportLocalDataFunction implements Function<String>, Declarable {
         accept = false;
       }
       return accept;
-    };
-  }
-
-  private <K, V> SnapshotFilter<K, V> getReserializingFilter(final Region<K, V> localData,
-                                                             final LogWriter logger) {
-    return new SnapshotFilter<K, V>() {
-      public boolean accept(Map.Entry<K, V> entry) {
-        boolean accept = true;
-        try {
-          //noinspection ResultOfMethodCallIgnored
-          entry.getValue();
-        } catch (Exception e) {
-          final byte[] valueBytes = getValueBytes(entry);
-          logger.warning("Caught the following exception attempting to deserialize value region="
-              + localData.getName() + "; key=" + entry.getKey() + "; valueLength="
-              + valueBytes.length
-              + "; value=" + Arrays.toString(valueBytes) + ":", e);
-          logger.warning(
-              "Attempting to deserialize as DataSerializable value region=" + localData.getName()
-                  + "; key=" + entry.getKey());
-          accept =
-              attemptToDeserialize(entry, valueBytes, logger, "DataSerializable",
-                  DSCODE_DATA_SERIALIZABLE);
-          if (!accept) {
-            logger.warning(
-                "Attempting to deserialize as Serializable value region=" + localData.getName()
-                    + "; key="
-                    + entry.getKey());
-            accept =
-                attemptToDeserialize(entry, valueBytes, logger, "Serializable",
-                    DSCODE_SERIALIZABLE);
-            if (!accept) {
-              logger.warning(
-                  "Attempting to deserialize as PDX value region=" + localData.getName()
-                      + "; key="
-                      + entry.getKey());
-              accept = attemptToDeserialize(entry, valueBytes, logger, "PDX", DSCODE_PDX);
-            }
-          }
-        }
-        return accept;
-      }
-
-      private boolean attemptToDeserialize(final Map.Entry<K, V> entry, final byte[] valueBytes,
-                                           final LogWriter logger,
-                                           final String type, final byte b) {
-        boolean accept = true;
-        valueBytes[0] = b;
-        try {
-          Object value = entry.getValue();
-          logger.warning("Accepting entry since the value was successfully deserialized as " + type
-              + " region=" + localData.getName() + "; key=" + entry.getKey() + "; value="
-              + value);
-        } catch (Throwable e2) {
-          logger.warning(
-              "Rejecting entry since the value failed to deserialize as " + type + " region="
-                  + localData.getName() + "; key=" + entry.getKey());
-          accept = false;
-        }
-        return accept;
-      }
     };
   }
 
