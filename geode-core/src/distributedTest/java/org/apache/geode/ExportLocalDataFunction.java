@@ -22,11 +22,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -40,49 +36,48 @@ import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class ExportLocalDataFunction implements Function<String>, Declarable {
+public class ExportLocalDataFunction implements Function<Object[]>, Declarable {
 
   private static final long serialVersionUID = 4380042210718815441L;
-  private static final Logger logger = LogService.getLogger();
 
-  public ExportLocalDataFunction() {
-  }
+  public ExportLocalDataFunction() {}
 
-  public void execute(final FunctionContext<String> context) {
-    logger.info("DEBUG: Executing ExportLocalDataFunction on {}", context.getMemberName());
+  public void execute(final FunctionContext<Object[]> context) {
+    final Cache cache = context.getCache();
+    final LogWriter logger = cache.getLogger();
 
-    // Get file name parameter
-    final String fileName = context.getArguments();
+    logger.info("EXPORT: Executing ExportLocalDataFunction on " + cache.getName());
 
-    if (fileName == null) {
-      throw new IllegalArgumentException(getId() + " requires an export filename as parameter");
+    Object[] arguments = context.getArguments();
+    String directoryName = null;
+    if (arguments != null && arguments.length > 0) {
+      directoryName = (String) arguments[0];
     }
 
-    final Cache cache = context.getCache();
-    final String memberName = cache.getName();
-    final LogWriter logger = cache.getLogger();
+    final String memberName = context.getMemberName();
 
     // Get local data set
     final RegionFunctionContext rfc = (RegionFunctionContext) context;
     final Region<Object, Object> localData = PartitionRegionHelper.getLocalDataForContext(rfc);
 
     // Create the file
-    final File file = new File(fileName);
+    final String fileName =
+        "server_" + memberName + "_region_" + localData.getName() + "_snapshot.gfd";
+    final File file = new File(directoryName, fileName);
 
     // Export local data set
     final RegionSnapshotService<Object, Object> service = localData.getSnapshotService();
     try {
-      logger.warning(
+      logger.warning("EXPORT: " +
           currentThread().getName() + ": Exporting " + localData.size() + " entries in region "
-              + localData.getName() + " to file " + file.getAbsolutePath() + " started");
+          + localData.getName() + " to file " + file.getAbsolutePath() + " started");
       final SnapshotOptions<Object, Object> options = service.createOptions();
       options.setFilter(getRejectingFilter(localData, logger));
       service.save(file, SnapshotFormat.GEMFIRE, options);
-      logger.warning(
+      logger.warning("EXPORT: " +
           currentThread().getName() + ": Exporting " + localData.size() + " entries in region "
-              + localData.getName() + " to file " + file.getAbsolutePath() + " completed");
+          + localData.getName() + " to file " + file.getAbsolutePath() + " completed");
     } catch (Exception e) {
       context.getResultSender().sendException(e);
       return;
@@ -91,11 +86,12 @@ public class ExportLocalDataFunction implements Function<String>, Declarable {
     context.getResultSender().lastResult(true);
   }
 
-  private <K, V> SnapshotFilter<K, V> getRejectingFilter(final Region<K, V> localData, final LogWriter logger) {
+  private <K, V> SnapshotFilter<K, V> getRejectingFilter(final Region<K, V> localData,
+      final LogWriter logger) {
     return entry -> {
       boolean accept = true;
       try {
-        //noinspection ResultOfMethodCallIgnored
+        // noinspection ResultOfMethodCallIgnored
         entry.getValue();
       } catch (Exception e) {
         final byte[] valueBytes = getValueBytes(entry);
@@ -141,6 +137,5 @@ public class ExportLocalDataFunction implements Function<String>, Declarable {
     return false;
   }
 
-  public void init(Properties properties) {
-  }
+  public void init(Properties properties) {}
 }

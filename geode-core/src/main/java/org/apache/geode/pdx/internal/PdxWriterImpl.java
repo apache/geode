@@ -866,6 +866,7 @@ public class PdxWriterImpl implements PdxWriter {
   private HeapDataOutputStream.LongUpdater lu;
 
   public static volatile boolean breakIt = false;
+
   private void writeHeader() {
     if (breakIt) {
       this.os.write((byte) 0);
