@@ -73,8 +73,6 @@ org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource
 org/apache/geode/security/ResourcePermission$Target
-org/apache/geode/internal/cache/event/EventSequenceNumberHolder$1
-org/apache/geode/internal/cache/event/EventSequenceNumberHolder$2
 org/apache/geode/internal/cache/PartitionedRegion$6
 org/apache/geode/internal/cache/TXFarSideCMTracker$2
 org/apache/geode/internal/cache/TXManagerImpl$1
