@@ -874,7 +874,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         useAsyncEventListeners,
         typeRegistry,
         JNDIInvoker::mapTransactions,
-        SecurityServiceFactory::create,
+        GemFireCacheImpl::getSecurityServiceFactory,
         () -> PoolManager.getAll().isEmpty(),
         ManagementListener::new,
         CqServiceProvider::create,
@@ -914,7 +914,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       boolean useAsyncEventListeners,
       TypeRegistry typeRegistry,
       Consumer<DistributedSystem> jndiTransactionMapper,
-      InternalSecurityServiceFactory securityServiceFactory,
+      Supplier<SecurityServiceFactory> securityServiceFactory,
       Supplier<Boolean> isPoolManagerEmpty,
       Function<InternalDistributedSystem, ManagementListener> managementListenerFactory,
       Function<InternalCache, CqService> cqServiceFactory,
@@ -974,11 +974,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             system.getConfig());
 
         securityService =
-            securityServiceFactory.create(system.getConfig().getSecurityProps(), cacheConfig);
+            securityServiceFactory.get().create(system.getConfig().getSecurityProps(), cacheConfig);
         system.setSecurityService(securityService);
       } else {
         // create a no-op security service for client
-        securityService = SecurityServiceFactory.create();
+        securityService = securityServiceFactory.get().create();
       }
 
       DistributionConfig systemConfig = internalDistributedSystem.getConfig();
@@ -1097,6 +1097,30 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void lockDiskStore(String diskStoreName) {
     doLockDiskStore(diskStoreName);
+  }
+
+  /**
+   * Having this method to return a SecurityServiceFactory allows users to replace the factory
+   * for testing purposes.
+   *
+   * In a test set the system property "org.apache.geode.internal.security.SecurityServiceFactory"
+   * to the class of choice ie. [Classname].class.getName() and in this class either implement
+   * SecurityServiceFactory or override the default implementation to create the desired behavior.
+   *
+   */
+  private static SecurityServiceFactory getSecurityServiceFactory() {
+    String securityServiceFactoryClassName =
+        System.getProperty("org.apache.geode.internal.security.SecurityServiceFactory",
+            "org.apache.geode.internal.security.DefaultSecurityServiceFactory");
+    SecurityServiceFactory securityServiceFactory = null;
+    try {
+      Class<? extends SecurityServiceFactory> securityServiceFactoryClass =
+          uncheckedCast(ClassPathLoader.getLatest().forName(securityServiceFactoryClassName));
+      securityServiceFactory = securityServiceFactoryClass.newInstance();
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      logger.error(e.toString());
+    }
+    return securityServiceFactory;
   }
 
   /**
@@ -5274,12 +5298,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   interface TXManagerImplFactory {
     TXManagerImpl create(CachePerfStats cachePerfStats, InternalCache cache,
         StatisticsClock statisticsClock);
-  }
-
-  @FunctionalInterface
-  @VisibleForTesting
-  interface InternalSecurityServiceFactory {
-    SecurityService create(Properties properties, CacheConfig cacheConfig);
   }
 
   @FunctionalInterface

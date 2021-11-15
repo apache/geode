@@ -177,7 +177,7 @@ public class RemoveAll extends BaseCommand {
       } // for
 
       if (clientMessage.getNumberOfParts() == (5 + numberOfKeys + 1)) {// it means optional timeout
-                                                                       // has been
+        // has been
         // added
         int timeout = clientMessage.getPart(5 + numberOfKeys).getInt();
         serverConnection.setRequestSpecificTimeout(timeout);

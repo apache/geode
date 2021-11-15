@@ -166,6 +166,7 @@ import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -1247,7 +1248,8 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public SecurityService getSecurityService() {
-    return SecurityServiceFactory.create();
+    SecurityServiceFactory securityServiceFactory = new DefaultSecurityServiceFactory();
+    return securityServiceFactory.create();
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {

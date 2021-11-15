@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIR
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -40,6 +40,7 @@ public class SecurityServiceWithCustomRealmIntegrationTest
         "org/apache/geode/management/internal/security/shiro-ini.json");
     this.props.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
     this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props);
+    this.securityServiceFactory = new DefaultSecurityServiceFactory();
+    this.securityService = securityServiceFactory.create(this.props);
   }
 }

@@ -38,7 +38,7 @@ public class LegacySecurityService implements SecurityService {
     this.hasPeerAuthenticator = false;
   }
 
-  LegacySecurityService(final String clientAuthenticator, final String peerAuthenticator) {
+  public LegacySecurityService(final String clientAuthenticator, final String peerAuthenticator) {
     this.hasClientAuthenticator = StringUtils.isNotBlank(clientAuthenticator);
     this.hasPeerAuthenticator = StringUtils.isNotBlank(peerAuthenticator);
   }

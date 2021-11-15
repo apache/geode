@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -71,6 +72,7 @@ public class GemFireCacheImplCloseTest {
   private PoolFactory poolFactory;
   private ReplyProcessor21Factory replyProcessor21Factory;
   private TypeRegistry typeRegistry;
+  private SecurityServiceFactory securityServiceFactory;
 
   private GemFireCacheImpl gemFireCacheImpl;
 
@@ -86,6 +88,7 @@ public class GemFireCacheImplCloseTest {
     poolFactory = mock(PoolFactory.class);
     replyProcessor21Factory = mock(ReplyProcessor21Factory.class);
     typeRegistry = mock(TypeRegistry.class);
+    securityServiceFactory = mock(SecurityServiceFactory.class);
 
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
@@ -103,6 +106,8 @@ public class GemFireCacheImplCloseTest {
         .thenReturn(21);
     when(replyProcessor21Factory.create(any(), any()))
         .thenReturn(replyProcessor21);
+    when(securityServiceFactory.create(any(Properties.class), any(CacheConfig.class)))
+        .thenReturn(mock(SecurityService.class));
   }
 
   @After
@@ -230,7 +235,7 @@ public class GemFireCacheImplCloseTest {
         useAsyncEventListeners,
         typeRegistry,
         mock(Consumer.class),
-        (properties, cacheConfigArg) -> mock(SecurityService.class),
+        () -> securityServiceFactory,
         () -> true,
         mock(Function.class),
         mock(Function.class),

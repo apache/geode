@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.AuthenticationExpiredException;
@@ -36,11 +37,13 @@ public class SecurityWithExpirationIntegrationTest {
   protected Properties props = new Properties();
 
   protected SecurityService securityService;
+  protected SecurityServiceFactory securityServiceFactory;
 
   @Before
   public void before() throws Exception {
     props.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
-    securityService = SecurityServiceFactory.create(this.props);
+    securityServiceFactory = new DefaultSecurityServiceFactory();
+    securityService = securityServiceFactory.create(this.props);
   }
 
   @Test

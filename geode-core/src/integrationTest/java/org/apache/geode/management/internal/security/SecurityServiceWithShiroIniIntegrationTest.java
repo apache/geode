@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
@@ -39,11 +40,13 @@ public class SecurityServiceWithShiroIniIntegrationTest {
   protected Properties props = new Properties();
 
   protected SecurityService securityService;
+  protected SecurityServiceFactory securityServiceFactory;
 
   @Before
   public void before() throws Exception {
     this.props.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    this.securityService = SecurityServiceFactory.create(this.props);
+    this.securityServiceFactory = new DefaultSecurityServiceFactory();
+    this.securityService = securityServiceFactory.create(this.props);
   }
 
   @After

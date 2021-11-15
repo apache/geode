@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
@@ -36,6 +37,8 @@ import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
@@ -72,7 +75,8 @@ public class IntegratedSecurityService implements SecurityService {
    * @param provider this provides shiro security manager
    * @param postProcessor this can be null
    */
-  IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
+  @VisibleForTesting
+  public IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
     // provider must provide a shiro security manager, otherwise, this is not integrated security
     // service at all.
     assert provider.getShiroSecurityManager() != null;
@@ -117,8 +121,12 @@ public class IntegratedSecurityService implements SecurityService {
       }
     }
 
-    // in other cases like rest call, client operations, we get it from the current thread
-    currentUser = SecurityUtils.getSubject();
+    try {
+      // in other cases like rest call, client operations, we get it from the current thread
+      currentUser = SecurityUtils.getSubject();
+    } catch (UnavailableSecurityManagerException e) {
+      throw new CacheClosedException("likely cache shutdown in progress", e);
+    }
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
       throw new AuthenticationRequiredException("Failed to find the authenticated user.");
