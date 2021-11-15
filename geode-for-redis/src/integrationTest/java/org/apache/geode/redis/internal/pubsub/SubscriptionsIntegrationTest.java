@@ -34,12 +34,13 @@ import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class SubscriptionsIntegrationTest {
 
   private static final int ITERATIONS = 1000;
 
-  private final Subscriptions subscriptions = new Subscriptions();
+  private final Subscriptions subscriptions = new Subscriptions(mock(RedisStats.class));
 
   private final AtomicInteger channelCount = new AtomicInteger();
 
@@ -97,7 +98,7 @@ public class SubscriptionsIntegrationTest {
 
   @Test
   public void removeByClient_doesNotThrowException_whenListIsConcurrentlyModified() {
-    final Subscriptions subscriptions = new Subscriptions();
+    final Subscriptions subscriptions = new Subscriptions(mock(RedisStats.class));
 
     List<Client> clients = new LinkedList<>();
     for (int i = 0; i < ITERATIONS; i++) {

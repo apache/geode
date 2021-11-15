@@ -804,9 +804,10 @@ public class ProxyJUnitTest {
         public void close() {}
       };
       r.getAttributesMutator().setCacheLoader(cl);
-      assertEquals("loadedValue", r.get("key", cbArg));
+      r.get("key", cbArg);
       gets++;
       assertEquals(gets, getStats().getGets());
+      misses++;
       assertEquals(misses, getStats().getMisses());
       expee.op = Operation.LOCAL_LOAD_CREATE;
       expee.newValue = "loadedValue";

@@ -690,14 +690,13 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short REDIS_STRING_ID = 2187;
   short REDIS_HASH_ID = 2188;
   short REDIS_NULL_DATA_ID = 2189;
-  short REDIS_SET_OPTIONS_ID = 2190;
+  // 2190 unused
   short REDIS_MEMBER_INFO_ID = 2191;
   short REDIS_SORTED_SET_ID = 2192;
-  short REDIS_SORTED_SET_OPTIONS_ID = 2193;
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
   /**
-   * This special code is a way for an implementor if this interface to say that it does not have a
+   * This special code is a way for an implementer of this interface to say that it does not have a
    * fixed id. In that case its class name is serialized. Currently only test classes just return
    * this code and it is only available for use in geode-core and its downstream modules.
    */

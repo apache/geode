@@ -169,12 +169,16 @@ public class Command {
 
   @Override
   public String toString() {
-    StringBuilder b = new StringBuilder();
-    for (byte[] rawCommand : this.commandElems) {
-      b.append(getHexEncodedString(rawCommand));
-      b.append(' ');
+    if (commandType.equals(RedisCommandType.AUTH)) {
+      return "AUTH command with " + (commandElems.size() - 1) + " argument(s)";
+    } else {
+      StringBuilder b = new StringBuilder();
+      for (byte[] rawCommand : this.commandElems) {
+        b.append(getHexEncodedString(rawCommand));
+        b.append(' ');
+      }
+      return b.toString();
     }
-    return b.toString();
   }
 
   public static String getHexEncodedString(byte[] data) {

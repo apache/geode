@@ -63,7 +63,8 @@ public class PassiveExpirationManager {
           PartitionRegionHelper.getLocalPrimaryData(regionProvider.getLocalDataRegion());
       for (Map.Entry<RedisKey, RedisData> entry : localPrimaryData.entrySet()) {
         try {
-          if (entry.getValue().hasExpired(now)) {
+          RedisData value = entry.getValue();
+          if (value != null && value.hasExpired(now)) {
             // pttl will do its own check using active expiration and expire the key if needed
 
             if (-2 == internalPttl(regionProvider, entry.getKey())) {

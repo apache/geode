@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.collections;
 import java.util.Random;
 
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -26,15 +25,8 @@ public class OrderedStatisticTreeBenchmark {
 
   private static final int DATA_SIZE = 100_000;
 
-  public enum SetType {
-    TREESET,
-    ORDER_STATISTICS_TREE
-  }
-
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    @Param({"TREESET", "ORDER_STATISTICS_TREE"})
-    private SetType setType;
 
     private final long[] values = new long[DATA_SIZE];
     private int current = 0;
@@ -43,22 +35,13 @@ public class OrderedStatisticTreeBenchmark {
     @Setup
     public void generateData() {
       Random random = new Random(0);
-      createSet();
+      set = new OrderStatisticsTree<>();
       for (int i = 0; i < DATA_SIZE; i++) {
         values[i] = random.nextLong();
         set.add(values[i]);
       }
     }
 
-    private void createSet() {
-      switch (setType) {
-        case TREESET:
-          set = new IndexibleTreeSet<>();
-          break;
-        case ORDER_STATISTICS_TREE:
-          set = new OrderStatisticsTree<>();
-      }
-    }
   }
 
   @Benchmark
@@ -79,7 +62,7 @@ public class OrderedStatisticTreeBenchmark {
   public boolean insert(BenchmarkState state) {
     state.current = state.current % DATA_SIZE;
     if (state.current == 0) {
-      state.createSet();
+      state.set = new OrderStatisticsTree<>();
     }
     final boolean result = state.set.add(state.values[state.current]);
     state.current++;

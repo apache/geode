@@ -66,6 +66,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -941,7 +942,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     Region<Object, Object> partitionedRegion = getRegion(PARTITIONED_REGION_NAME);
 
     await().until(() -> {
-      clientMetadataService.getClientPRMetadata((InternalRegion) partitionedRegion);
+      try {
+        clientMetadataService.getClientPRMetadata((InternalRegion) partitionedRegion);
+      } catch (AllConnectionsInUseException ignore) {
+      }
 
       Map<ServerLocation, Set<Integer>> serverBucketMap =
           clientMetadataService.groupByServerToAllBuckets(partitionedRegion, true);
@@ -972,7 +976,10 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
     createServerOnVM0.await();
 
     await().untilAsserted(() -> {
-      clientMetadataService.getClientPRMetadata((InternalRegion) partitionedRegion);
+      try {
+        clientMetadataService.getClientPRMetadata((InternalRegion) partitionedRegion);
+      } catch (AllConnectionsInUseException ignore) {
+      }
       Map<ServerLocation, Set<Integer>> serverBucketMap =
           clientMetadataService.groupByServerToAllBuckets(partitionedRegion, true);
 

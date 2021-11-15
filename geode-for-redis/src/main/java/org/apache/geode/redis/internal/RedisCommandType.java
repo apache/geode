@@ -86,7 +86,6 @@ import org.apache.geode.redis.internal.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.executor.server.InfoExecutor;
 import org.apache.geode.redis.internal.executor.server.LolWutExecutor;
-import org.apache.geode.redis.internal.executor.server.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.server.SlowlogExecutor;
 import org.apache.geode.redis.internal.executor.server.TimeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
@@ -368,9 +367,6 @@ public enum RedisCommandType {
       new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
   FLUSHDB(new FlushAllExecutor(), UNSUPPORTED,
       new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
-  SHUTDOWN(new ShutDownExecutor(), UNSUPPORTED,
-      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(ADMIN, NOSCRIPT, LOADING,
-          STALE)),
   TIME(new TimeExecutor(), UNSUPPORTED,
       new Parameter().exact(1).firstKey(0).flags(RANDOM, LOADING, STALE, FAST)),
 
@@ -470,6 +466,10 @@ public enum RedisCommandType {
       default:
         return false;
     }
+  }
+
+  public boolean getRequiresWritePermission() {
+    return parameterRequirements.getFlags().contains(WRITE) || (this == PUBLISH);
   }
 
   public void checkDeferredParameters(Command command,

@@ -108,6 +108,24 @@ public class TransactionCommitOnFarSideDistributedTest implements Serializable {
   }
 
   @Test
+  public void ensureBucketSizeDoesNotGoNegative_whenTxWithDeltaAndSizeable() {
+    server1.invoke(() -> createServerRegion(1, false, 0));
+
+    server1.invoke(() -> {
+      Region region = cacheRule.getCache().getRegion(regionName);
+      CacheTransactionManager txManager = cacheRule.getCache().getCacheTransactionManager();
+      txManager.begin();
+      region.put("key1", new TestDeltaSerializableSizeableObject("small value"));
+      txManager.commit();
+      TestDeltaSerializableSizeableObject testClass =
+          (TestDeltaSerializableSizeableObject) region.get("key1");
+      testClass.value = "some value that is much larger than the initial value";
+      region.put("key1", testClass);
+      region.destroy("key1");
+    });
+  }
+
+  @Test
   public void farSideFailoverMapSavesTransactionsInitiatedFromClient() {
     VM client = server4;
     port1 = server1.invoke(() -> createServerRegion(1, false, 2));

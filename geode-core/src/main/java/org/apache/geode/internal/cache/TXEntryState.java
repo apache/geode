@@ -310,7 +310,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  private byte[] getSerializedPendingValue() {
+  public byte[] getSerializedPendingValue() {
     return serializedPendingValue;
   }
 

@@ -102,14 +102,14 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   public void shouldError_givenNumKeysOfZero() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "0", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED);
+            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
   }
 
   @Test
   public void shouldError_givenNegativeNumKeys() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "-2", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED);
+            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
   }
 
   @Test

@@ -12,19 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.cache.wan.internal;
 
-package org.apache.geode.management.internal.cli.commands;
+import java.io.Serializable;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-
-@Category({GfshTest.class})
-public class ListIndexCommandOverHttpDUnitTest extends ListIndexCommandDUnitTestBase {
-  @Override
-  public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getHttpPort(), GfshCommandRule.PortType.http);
+public class WanCopyRegionFunctionServiceAlreadyRunningException extends Exception
+    implements Serializable {
+  public WanCopyRegionFunctionServiceAlreadyRunningException(String message) {
+    super(message);
   }
 }

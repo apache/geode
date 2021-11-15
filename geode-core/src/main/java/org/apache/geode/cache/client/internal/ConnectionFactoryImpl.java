@@ -153,12 +153,20 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     }
 
     ServerLocation server = conn.getServer();
-    if (!server.getRequiresCredentials() || server.getUserId() != -1) {
+    if (!server.getRequiresCredentials()) {
       return;
     }
 
-    Long uniqueID = AuthenticateUserOp.executeOn(conn, pool);
-    server.setUserId(uniqueID);
+    // make this block synchronized so that when a AuthenticateUserOp is already in progress,
+    // another thread won't try to authenticate again.
+    synchronized (server) {
+      if (server.getUserId() != -1) {
+        return;
+      }
+      Long uniqueID = AuthenticateUserOp.executeOn(conn, pool);
+      server.setUserId(uniqueID);
+    }
+
     if (logger.isDebugEnabled()) {
       logger.debug("CFI.authenticateIfRequired() Completed authentication on {}", conn);
     }

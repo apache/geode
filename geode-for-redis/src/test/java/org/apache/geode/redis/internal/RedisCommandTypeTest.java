@@ -15,22 +15,22 @@
 
 package org.apache.geode.redis.internal;
 
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class RegionProviderJUnitTest {
+public class RedisCommandTypeTest {
 
   @Test
-  public void testBucket_whenPowerOfTwo() {
-    assertThatNoException().isThrownBy(() -> RegionProvider.validateBucketCount(128));
-  }
+  public void testRequiresWritePermission() {
+    assertThat(RedisCommandType.SET.getRequiresWritePermission()).isTrue();
+    assertThat(RedisCommandType.PUBLISH.getRequiresWritePermission()).isTrue();
 
-  @Test
-  public void testException_whenGreaterThanSlots() {
-    assertThatThrownBy(() -> RegionProvider.validateBucketCount(32768))
-        .hasMessageContaining("System property 'redis.region.buckets' must be <= 16384");
+    assertThat(RedisCommandType.GET.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.SUBSCRIBE.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.UNSUBSCRIBE.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.PUBSUB.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.CLUSTER.getRequiresWritePermission()).isFalse();
+    assertThat(RedisCommandType.PING.getRequiresWritePermission()).isFalse();
   }
-
 }

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.redis.internal;
 
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
+import static org.apache.geode.redis.internal.RedisProperties.REGION_BUCKETS;
+import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_DATA;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
@@ -30,6 +34,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -38,7 +43,6 @@ import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
@@ -55,14 +59,14 @@ public class RegionProvider {
   /**
    * The name of the region that holds data stored in redis.
    */
-  public static final String REDIS_DATA_REGION = "REDIS_DATA";
-  public static final String REDIS_REGION_BUCKETS_PARAM = "redis.region.buckets";
+  public static final String DEFAULT_REDIS_REGION_NAME = "GEODE_FOR_REDIS";
+  public static final String REDIS_REGION_BUCKETS_PARAM = REGION_BUCKETS;
+
+  public static final int REDIS_SLOTS = 16384;
 
   // Ideally the bucket count should be a power of 2, but technically it is not required.
   public static final int REDIS_REGION_BUCKETS =
-      Integer.getInteger(REDIS_REGION_BUCKETS_PARAM, 128);
-
-  public static final int REDIS_SLOTS = 16384;
+      getIntegerSystemProperty(REDIS_REGION_BUCKETS_PARAM, 128, 1, REDIS_SLOTS);
 
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
@@ -72,11 +76,10 @@ public class RegionProvider {
   private final StripedCoordinator stripedCoordinator;
   private final RedisStats redisStats;
   private final CacheTransactionManager txManager;
+  private final String redisRegionName;
 
   public RegionProvider(InternalCache cache, StripedCoordinator stripedCoordinator,
       RedisStats redisStats) {
-    validateBucketCount(REDIS_REGION_BUCKETS);
-
     this.stripedCoordinator = stripedCoordinator;
     this.redisStats = redisStats;
 
@@ -85,11 +88,17 @@ public class RegionProvider {
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
+    DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+    attributesFactory.setRedundantCopies(config.getRedisRedundantCopies());
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     redisDataRegionFactory.setPartitionAttributes(attributesFactory.create());
 
-    dataRegion = redisDataRegionFactory.create(REDIS_DATA_REGION);
+    redisRegionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
+
+    dataRegion = redisDataRegionFactory.create(redisRegionName);
+
     partitionedRegion = (PartitionedRegion) dataRegion;
 
     txManager = cache.getCacheTransactionManager();
@@ -111,6 +120,10 @@ public class RegionProvider {
 
   public RedisStats getRedisStats() {
     return redisStats;
+  }
+
+  public String getRedisRegionName() {
+    return redisRegionName;
   }
 
   public <T> T lockedExecute(RedisKey key, Callable<T> callable) {
@@ -261,19 +274,6 @@ public class RegionProvider {
   public RedisString getRedisStringIgnoringType(RedisKey key, boolean updateStats) {
     RedisData redisData = getRedisData(key, NULL_REDIS_STRING, updateStats);
     return checkStringTypeIgnoringMismatch(redisData);
-  }
-
-  /**
-   * Validates that the value passed in is not greater than {@link #REDIS_SLOTS}.
-   *
-   * @throws ManagementException if there is a problem with the value
-   */
-  protected static void validateBucketCount(int buckets) {
-    if (buckets > REDIS_SLOTS) {
-      throw new ManagementException(String.format(
-          "Could not start server compatible with Redis - System property '%s' must be <= %d",
-          REDIS_REGION_BUCKETS_PARAM, REDIS_SLOTS));
-    }
   }
 
   @SuppressWarnings("unchecked")

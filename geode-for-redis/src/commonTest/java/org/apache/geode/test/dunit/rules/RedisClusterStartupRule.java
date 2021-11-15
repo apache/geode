@@ -16,9 +16,9 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 
 import java.util.Properties;
 import java.util.Set;
@@ -83,17 +83,17 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule) {
-    return rule.withProperty(REDIS_BIND_ADDRESS, BIND_ADDRESS)
-        .withProperty(REDIS_PORT, "0")
-        .withProperty(REDIS_ENABLED, "true")
+    return rule.withProperty(GEODE_FOR_REDIS_BIND_ADDRESS, BIND_ADDRESS)
+        .withProperty(GEODE_FOR_REDIS_PORT, "0")
+        .withProperty(GEODE_FOR_REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
             "true");
   }
 
   private ServerStarterRule withRedis(ServerStarterRule rule, String redisPort) {
-    return rule.withProperty(REDIS_BIND_ADDRESS, BIND_ADDRESS)
-        .withProperty(REDIS_PORT, redisPort)
-        .withProperty(REDIS_ENABLED, "true")
+    return rule.withProperty(GEODE_FOR_REDIS_BIND_ADDRESS, BIND_ADDRESS)
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort)
+        .withProperty(GEODE_FOR_REDIS_ENABLED, "true")
         .withSystemProperty(GeodeRedisServer.ENABLE_UNSUPPORTED_COMMANDS_PARAM,
             "true");
   }
@@ -177,7 +177,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
     return getMember(1).invoke("moveBucketForKey: " + key + " -> " + targetServerName,
         () -> {
           Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-              .getRegion(RegionProvider.REDIS_DATA_REGION);
+              .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
           RedisKey redisKey = new RedisKey(key.getBytes());
           DistributedMember primaryMember =
@@ -222,7 +222,7 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   public String getKeyOnServer(String keyPrefix, int vmId) {
     return getMember(1).invoke("getKeyOnServer", () -> {
       Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
-          .getRegion(RegionProvider.REDIS_DATA_REGION);
+          .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
 
       String server = "server-" + vmId;
       String key;

@@ -16,6 +16,10 @@
 package org.apache.geode.redis.internal.netty;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_PUBSUB_WRONG_COMMAND;
+import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
+import static org.apache.geode.redis.internal.RedisProperties.getStringSystemProperty;
+import static org.apache.geode.redis.internal.RegionProvider.DEFAULT_REDIS_REGION_NAME;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -35,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
@@ -76,14 +81,21 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final ResourcePermission RESOURCE_PERMISSION;
+  private static final ResourcePermission WRITE_RESOURCE_PERMISSION;
+  private static final ResourcePermission READ_RESOURCE_PERMISSION;
+
+  static {
+    String regionName =
+        getStringSystemProperty(REDIS_REGION_NAME_PROPERTY, DEFAULT_REDIS_REGION_NAME);
+    WRITE_RESOURCE_PERMISSION = new ResourcePermission("DATA", "WRITE", regionName);
+    READ_RESOURCE_PERMISSION = new ResourcePermission("DATA", "READ", regionName);
+  }
 
   private final Client client;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
   private final String redisUsername;
   private final Supplier<Boolean> allowUnsupportedSupplier;
-  private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
@@ -96,17 +108,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private Subject subject;
 
-  static {
-    String resourcePermission = System.getProperty("redis.resource-permission",
-        "DATA:WRITE:" + RegionProvider.REDIS_DATA_REGION);
-    String[] parts = resourcePermission.split(":");
-    if (parts.length != 3) {
-      parts = new String[] {"DATA", "WRITE", RegionProvider.REDIS_DATA_REGION};
-    }
-
-    RESOURCE_PERMISSION = new ResourcePermission(parts[0], parts[1], parts[2]);
-  }
-
   /**
    * Default constructor for execution contexts.
    */
@@ -114,7 +115,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       RegionProvider regionProvider,
       PubSub pubsub,
       Supplier<Boolean> allowUnsupportedSupplier,
-      Runnable shutdownInvoker,
       RedisStats redisStats,
       String username,
       int serverPort,
@@ -123,7 +123,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
-    this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.redisUsername = username;
     this.client = new Client(channel, pubsub);
@@ -246,7 +245,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         return;
       }
 
-      if (!isAuthorized()) {
+      if (!isAuthorized(command.getCommandType())) {
         writeToChannel(RedisResponse.error(ERROR_NOT_AUTHORIZED));
         return;
       }
@@ -259,7 +258,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       if (getClient().hasSubscriptions()) {
         if (!command.getCommandType().isAllowedWhileSubscribed()) {
           writeToChannel(RedisResponse
-              .error("only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT allowed in this context"));
+              .error(String.format(ERROR_PUBSUB_WRONG_COMMAND,
+                  command.getCommandType().name().toLowerCase())));
         }
       }
 
@@ -314,8 +314,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Get the default username. This is the username that will be passed to the
-   * {@link SecurityManager} in response to
-   * an {@code AUTH password} command.
+   * {@link SecurityManager} in response to an {@code AUTH password} command.
    */
   public String getRedisUsername() {
     return redisUsername;
@@ -330,13 +329,16 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return (!securityService.isEnabled()) || subject != null;
   }
 
-  public boolean isAuthorized() {
-    if (subject == null) {
+  public boolean isAuthorized(RedisCommandType commandType) {
+    if (!securityService.isEnabled()) {
       return true;
     }
 
+    ResourcePermission permission =
+        commandType.getRequiresWritePermission() ? WRITE_RESOURCE_PERMISSION
+            : READ_RESOURCE_PERMISSION;
     try {
-      securityService.authorize(RESOURCE_PERMISSION, subject);
+      securityService.authorize(permission, subject);
     } catch (NotAuthorizedException nex) {
       return false;
     }
@@ -347,7 +349,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * Sets an authenticated principal in the context. This implies that the connection has been
    * successfully authenticated.
    */
-  public void setSubject(Subject subject) {
+  @VisibleForTesting
+  void setSubject(Subject subject) {
     this.subject = subject;
   }
 
@@ -357,10 +360,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public Client getClient() {
     return client;
-  }
-
-  public void shutdown() {
-    shutdownInvoker.run();
   }
 
   public PubSub getPubSub() {

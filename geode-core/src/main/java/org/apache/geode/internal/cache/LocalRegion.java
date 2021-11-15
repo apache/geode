@@ -1381,7 +1381,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (!returnTombstones && value == Token.TOMBSTONE) {
             value = null;
           }
-          isMiss = value == null;
         } else {
           // local scope with no loader, still might need to update stats
           if (isCreate) {
@@ -2802,9 +2801,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       holder = new VersionTagHolder();
       value = mySRP.get(key, aCallbackArgument, holder);
       fromServer = value != null;
-      if (fromServer) {
-        getCachePerfStats().incMisses();
-      }
     }
 
     /*
@@ -5183,8 +5179,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes, boolean isObject,
-      Object callbackArg, ClientProxyMembershipID memberId, boolean fromClient,
-      EntryEventImpl clientEvent) throws TimeoutException, CacheWriterException {
+      Object callbackArg, ClientProxyMembershipID memberId,
+      EntryEventImpl clientEvent, boolean generateCallbacks)
+      throws TimeoutException, CacheWriterException {
 
     EventID eventID = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
@@ -5193,7 +5190,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     @Released
     final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
         null, theCallbackArg, false,
-        memberId.getDistributedMember(), true, eventID);
+        memberId.getDistributedMember(), generateCallbacks, eventID);
 
     try {
       event.setContext(memberId);

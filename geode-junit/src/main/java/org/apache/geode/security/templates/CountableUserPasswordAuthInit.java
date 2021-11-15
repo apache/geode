@@ -1,4 +1,5 @@
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -11,22 +12,27 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.redis.internal.executor.server;
+package org.apache.geode.security.templates;
 
-import org.junit.ClassRule;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.NativeRedisTestRule;
+import org.apache.geode.LogWriter;
+import org.apache.geode.security.AuthenticationFailedException;
 
-public class ShutDownNativeRedisAcceptanceTest extends AbstractShutDownIntegrationTest {
+public class CountableUserPasswordAuthInit extends UserPasswordAuthInit {
+  public static AtomicInteger count = new AtomicInteger(0);
 
-  @ClassRule
-  public static NativeRedisTestRule redis = new NativeRedisTestRule();
-
-  @Override
-  public int getPort() {
-    return redis.getPort();
+  public static void reset() {
+    count.set(0);
   }
 
+  @Override
+  public void init(final LogWriter systemLogWriter, final LogWriter securityLogWriter)
+      throws AuthenticationFailedException {
+    super.init(systemLogWriter, securityLogWriter);
+    count.incrementAndGet();
+  }
 }

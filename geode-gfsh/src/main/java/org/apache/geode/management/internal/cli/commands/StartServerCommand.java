@@ -175,7 +175,9 @@ public class StartServerCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS,
           unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP) final String httpServiceBindAddress,
-      @CliOption(key = CliStrings.START_SERVER__USERNAME, unspecifiedDefaultValue = "",
+      @CliOption(
+          key = {CliStrings.START_SERVER__USERNAME, CliStrings.START_SERVER__USERNAME_LONGFORM},
+          unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,
       @CliOption(key = CliStrings.START_SERVER__PASSWORD, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
@@ -286,11 +288,13 @@ public class StartServerCommand extends OfflineGfshCommand {
         ConfigurationProperties.MEMCACHED_PROTOCOL, memcachedProtocol);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.MEMCACHED_BIND_ADDRESS, memcachedBindAddress);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_PORT,
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.GEODE_FOR_REDIS_PORT,
         redisPort);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
-        ConfigurationProperties.REDIS_BIND_ADDRESS, redisBindAddress);
-    StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.REDIS_USERNAME,
+        ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS, redisBindAddress);
+    StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
+        ConfigurationProperties.GEODE_FOR_REDIS_USERNAME,
         redisUsername);
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties,
         ConfigurationProperties.STATISTIC_ARCHIVE_FILE, statisticsArchivePathname);
@@ -315,7 +319,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     if (StringUtils.isNotBlank(stringRedisPort) || StringUtils.isNotBlank(redisUsername)
         || StringUtils.isNotBlank(redisBindAddress)) {
-      gemfireProperties.setProperty(ConfigurationProperties.REDIS_ENABLED, "true");
+      gemfireProperties.setProperty(ConfigurationProperties.GEODE_FOR_REDIS_ENABLED, "true");
     }
 
     // if username is specified in the command line, it will overwrite what's set in the

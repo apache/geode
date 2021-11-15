@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.pubsub;
 
-import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -57,14 +56,13 @@ public class ClientSubscriptionManagerImplTest {
     boolean removeResult = manager.remove(client);
     boolean addResult = manager.add(client, subscription);
 
-    assertThat(removeResult).isFalse();
+    assertThat(removeResult).isTrue();
     assertThat(addResult).isFalse();
     assertThat(manager.getSubscriptionCount()).isZero();
   }
 
   @Test
   public void secondAddReturnsTrue() {
-    byte[] channel = stringToBytes("channel");
     Client client = mock(Client.class);
     Subscription subscription = mock(Subscription.class);
     ClientSubscriptionManager manager = createManager(client, subscription);

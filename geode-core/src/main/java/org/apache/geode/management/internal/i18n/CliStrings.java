@@ -600,6 +600,7 @@ public class CliStrings {
   public static final String CONNECT__USE_HTTP__HELP =
       "[Deprecated: inferred by the presence of --url]. Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API. You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
   public static final String CONNECT__USERNAME = "user";
+  public static final String CONNECT__USERNAME_LONGFORM = "username";
   public static final String CONNECT__USERNAME__HELP =
       "User name to securely connect to the jmx-manager. If the --password parameter is not specified then it will be prompted for.";
   public static final String CONNECT__PASSWORD = "password";
@@ -2626,15 +2627,17 @@ public class CliStrings {
   public static final String START_SERVER__PROPERTIES__HELP =
       "The gemfire.properties file for configuring the Cache Server's distributed system. The file's path can be absolute or relative to the gfsh working directory.";
   public static final String START_SERVER__REDIS_BIND_ADDRESS =
-      ConfigurationProperties.REDIS_BIND_ADDRESS;
+      ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
   public static final String START_SERVER__REDIS_BIND_ADDRESS__HELP =
       "Specifies the address on which the Redis API for Geode is listening. "
           + "If set to the empty string or this property is not specified, the server listens on all local addresses.";
-  public static final String START_SERVER__REDIS_USERNAME = ConfigurationProperties.REDIS_USERNAME;
+  public static final String START_SERVER__REDIS_USERNAME =
+      ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
   public static final String START_SERVER__REDIS_USERNAME__HELP =
       "Specifies the username that the server uses when a client attempts to authenticate using only a password."
           + " This option also requires a SecurityManager to be configured.";
-  public static final String START_SERVER__REDIS_PORT = ConfigurationProperties.REDIS_PORT;
+  public static final String START_SERVER__REDIS_PORT =
+      ConfigurationProperties.GEODE_FOR_REDIS_PORT;
   public static final String START_SERVER__REDIS_PORT__HELP =
       "Specifies the port on which the server listens for Redis API for Geode connections. A value of 0 selects a random port.  Default is 6379.";
   public static final String START_SERVER__SECURITY_PROPERTIES = "security-properties-file";
@@ -3253,6 +3256,7 @@ public class CliStrings {
   public static final String START_SERVER__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
   public static final String START_SERVER__USERNAME = "user";
+  public static final String START_SERVER__USERNAME_LONGFORM = "username";
   public static final String START_SERVER__USERNAME__HELP =
       "User name to securely connect to the cluster. If the --password parameter is not specified then it will be prompted for.";
   public static final String START_SERVER__PASSWORD = "password";

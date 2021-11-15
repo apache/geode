@@ -72,7 +72,7 @@ public class MemoryOverheadIntegrationTest extends AbstractMemoryOverheadIntegra
   public void printHistogramOfOneRedisKey() throws IllegalAccessException {
     final PartitionedRegion dataRegion =
         (PartitionedRegion) CacheFactory.getAnyInstance()
-            .getRegion(RegionProvider.REDIS_DATA_REGION);
+            .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
     final Object redisKey = dataRegion.keys().iterator().next();
     BucketRegion bucket = dataRegion.getBucketRegion(redisKey);
     RegionEntry entry = bucket.entries.getEntry(redisKey);

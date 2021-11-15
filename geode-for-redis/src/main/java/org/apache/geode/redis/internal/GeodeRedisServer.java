@@ -82,7 +82,7 @@ public class GeodeRedisServer {
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
-    pubSub = new PubSubImpl(new Subscriptions(), regionProvider);
+    pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
     passiveExpirationManager = new PassiveExpirationManager(regionProvider);
 
@@ -91,7 +91,7 @@ public class GeodeRedisServer {
 
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
-        this::allowUnsupportedCommands, this::shutdown, port, bindAddress, redisStats,
+        this::allowUnsupportedCommands, port, bindAddress, redisStats,
         member, securityService);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());

@@ -11,20 +11,9 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.executor.server;
 
-import org.apache.geode.redis.internal.executor.CommandExecutor;
-import org.apache.geode.redis.internal.executor.RedisResponse;
-import org.apache.geode.redis.internal.netty.Command;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+package org.apache.geode.management.internal.cli.commands;
 
-public class ShutDownExecutor implements CommandExecutor {
-
-  @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    context.shutdown();
-    return RedisResponse.nil();
-  }
+public class ListIndexCommandDistributedTest extends ListIndexCommandDistributedTestBase {
 }

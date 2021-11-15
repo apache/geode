@@ -18,6 +18,8 @@ import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
@@ -29,13 +31,13 @@ import org.apache.geode.redis.internal.netty.Client;
 public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase {
 
   @Override
-  protected AbstractSubscriptionManager createManager() {
-    return new ChannelSubscriptionManager();
+  protected ChannelSubscriptionManager createManager() {
+    return new ChannelSubscriptionManager(redisStats);
   }
 
   @Test
   public void emptyManagerReturnsEmptyChannelSubscriptions() {
-    ChannelSubscriptionManager manager = new ChannelSubscriptionManager();
+    ChannelSubscriptionManager manager = createManager();
     byte[] channel = stringToBytes("channel");
 
     Collection<Subscription> subscriptions = manager.getChannelSubscriptions(channel);
@@ -49,13 +51,15 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
     byte[] otherChannel = stringToBytes("otherChannel");
     Client client = mock(Client.class);
     when(client.addChannelSubscription(eq(channel))).thenReturn(true);
-    ChannelSubscriptionManager manager = new ChannelSubscriptionManager();
+    ChannelSubscriptionManager manager = createManager();
     Subscription addedSubscription = manager.add(channel, client);
 
     Collection<Subscription> subscriptions = manager.getChannelSubscriptions(channel);
 
     assertThat(subscriptions).containsExactly(addedSubscription);
     assertThat(manager.getChannelSubscriptions(otherChannel)).isEmpty();
+    verify(redisStats, times(1)).changeSubscribers(1L);
+    verify(redisStats, times(1)).changeUniqueChannelSubscriptions(1L);
   }
 
   @Test
@@ -66,7 +70,7 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
     when(client.addChannelSubscription(eq(channel))).thenReturn(true);
     Client client2 = mock(Client.class);
     when(client2.addChannelSubscription(eq(channel))).thenReturn(true);
-    ChannelSubscriptionManager manager = new ChannelSubscriptionManager();
+    ChannelSubscriptionManager manager = createManager();
     Subscription addedSubscription = manager.add(channel, client);
     Subscription addedSubscription2 = manager.add(channel, client2);
 
@@ -74,6 +78,8 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
     assertThat(subscriptions).containsExactlyInAnyOrder(addedSubscription, addedSubscription2);
     assertThat(manager.getChannelSubscriptions(otherChannel)).isEmpty();
+    verify(redisStats, times(2)).changeSubscribers(1L);
+    verify(redisStats, times(1)).changeUniqueChannelSubscriptions(1L);
   }
 
   @Test
@@ -83,7 +89,7 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
     Client client = mock(Client.class);
     when(client.addChannelSubscription(eq(channel))).thenReturn(true);
     when(client.addChannelSubscription(eq(channel2))).thenReturn(true);
-    ChannelSubscriptionManager manager = new ChannelSubscriptionManager();
+    ChannelSubscriptionManager manager = createManager();
     Subscription addedSubscription = manager.add(channel, client);
     Subscription addedSubscription2 = manager.add(channel2, client);
 
@@ -92,5 +98,7 @@ public class ChannelSubscriptionManagerTest extends SubscriptionManagerTestBase 
 
     assertThat(subscriptions).containsExactly(addedSubscription);
     assertThat(subscriptions2).containsExactly(addedSubscription2);
+    verify(redisStats, times(2)).changeSubscribers(1L);
+    verify(redisStats, times(2)).changeUniqueChannelSubscriptions(1L);
   }
 }

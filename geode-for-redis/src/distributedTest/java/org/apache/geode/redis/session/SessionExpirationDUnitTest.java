@@ -135,7 +135,7 @@ public class SessionExpirationDUnitTest extends SessionDUnitTest {
     cluster.getVM(1).invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       PartitionedRegion region =
-          (PartitionedRegion) cache.getRegion(RegionProvider.REDIS_DATA_REGION);
+          (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
       for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
         List<BucketDump> buckets = region.getAllBucketEntries(j);
         if (buckets.isEmpty()) {

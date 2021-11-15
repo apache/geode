@@ -18,16 +18,23 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class ConnectionFactoryImplTest {
   private ConnectionFactoryImpl factory;
@@ -99,5 +106,33 @@ public class ConnectionFactoryImplTest {
     verify(connection).getServer();
     verify(pool).executeOn(any(Connection.class), any(Op.class));
     verify(server).setUserId(123L);
+  }
+
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
+
+  @Test
+  public void getSetServerIdShouldBeSynchronizedToAvoidExtraLoginRequest() throws Exception {
+    when(pool.isUsedByGateway()).thenReturn(false);
+    when(pool.getMultiuserAuthentication()).thenReturn(false);
+    when(pool.executeOn(any(Connection.class), any())).thenReturn(123L);
+    when(server.getRequiresCredentials()).thenReturn(true);
+    when(connection.getServer()).thenReturn(server);
+
+    doCallRealMethod().when(server).setUserId(anyLong());
+    doCallRealMethod().when(server).getUserId();
+    // set up the initial userId to be -1
+    server.setUserId(-1);
+
+    CompletableFuture<Void> future1 =
+        executor.runAsync(() -> factory.authenticateIfRequired(connection));
+    CompletableFuture<Void> future2 =
+        executor.runAsync(() -> factory.authenticateIfRequired(connection));
+    future1.get();
+    future2.get();
+
+    // setUserId should only be called once by this two threads. The other time
+    // is called by the test setup.
+    verify(server, times(2)).setUserId(anyLong());
   }
 }

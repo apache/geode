@@ -313,6 +313,9 @@ jobs:
         GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
+        GCP_NETWORK: ((gcp-network))
+        GCP_SUBNETWORK: ((gcp-subnet))
+        INTERNAL: "true"
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
       run:
@@ -348,6 +351,9 @@ jobs:
         GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
+        GCP_NETWORK: ((gcp-network))
+        GCP_SUBNETWORK: ((gcp-subnet))
+        INTERNAL: "true"
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
       run:

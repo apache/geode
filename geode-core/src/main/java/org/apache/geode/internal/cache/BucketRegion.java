@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,11 +33,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
 import org.apache.geode.DeltaSerializationException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
@@ -50,6 +53,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -109,6 +113,13 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class BucketRegion extends DistributedRegion implements Bucket {
   private static final Logger logger = LogService.getLogger();
+
+  /**
+   * Allows enabling older, buggy behavior where Tx operations might not create
+   * VMCachedDeserializable entries.
+   */
+  private static final boolean TX_PREFERS_NO_SERIALIZED_ENTRIES =
+      Boolean.getBoolean("gemfire.tx-prefers-no-serialized-entries");
 
   @Immutable
   private static final RawValue NULLVALUE = new RawValue(null);
@@ -294,16 +305,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
-  @Override
-  protected long startGet() {
-    return 0;
-  }
-
-  @Override
-  protected void endGet(long start, boolean isMiss) {
-    // get stats are recorded by the PartitionedRegion
-    // so nothing is needed on the BucketRegion.
-  }
 
   @Override
   void initialized() {
@@ -2497,4 +2498,53 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   void checkSameSenderIdsAvailableOnAllNodes() {
     // nothing needed on a bucket region
   }
+
+  @Override
+  public void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
+      TransactionId transactionId, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
+
+    Object wrappedNewValue;
+    if (TX_PREFERS_NO_SERIALIZED_ENTRIES) {
+      wrappedNewValue = newValue;
+    } else {
+      if (newValue instanceof CachedDeserializable || newValue instanceof byte[]
+          || Token.isInvalidOrRemoved(newValue)) {
+        wrappedNewValue = newValue;
+      } else if (newValue instanceof Delta) {
+        int vSize = CachedDeserializableFactory.calcMemSize(newValue,
+            getPartitionedRegion().getObjectSizer(), false);
+        wrappedNewValue = CachedDeserializableFactory.create(newValue, vSize, cache);
+      } else {
+        byte[] serializedBytes = null;
+        if (txEntryState != null) {
+          serializedBytes = txEntryState.getSerializedPendingValue();
+        }
+
+        if (serializedBytes == null) {
+          serializedBytes = EntryEventImpl.serialize(newValue);
+        }
+
+        wrappedNewValue = CachedDeserializableFactory.create(serializedBytes, cache);
+      }
+    }
+
+    superTxApplyPut(putOp, key, wrappedNewValue, didDestroy, transactionId, event, eventId,
+        aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
+        versionTag, tailKey);
+  }
+
+  @VisibleForTesting
+  void superTxApplyPut(Operation putOp, Object key, Object wrappedNewValue, boolean didDestroy,
+      TransactionId transactionId, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
+    super.txApplyPut(putOp, key, wrappedNewValue, didDestroy, transactionId, event, eventId,
+        aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
+        versionTag, tailKey);
+  }
+
 }

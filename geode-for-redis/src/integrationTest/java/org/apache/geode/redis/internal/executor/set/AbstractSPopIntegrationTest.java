@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_VALUE_MUST_BE_POSITIVE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -67,7 +67,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   @Test
   public void givenCountIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SPOP, "key", "NaN"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test

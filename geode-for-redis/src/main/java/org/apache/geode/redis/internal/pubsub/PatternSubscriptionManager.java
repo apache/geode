@@ -28,6 +28,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 class PatternSubscriptionManager
     extends AbstractSubscriptionManager {
@@ -43,6 +44,10 @@ class PatternSubscriptionManager
    */
   private final Map<SubscriptionId, List<PatternSubscriptions>> patternSubscriptionCache =
       new ConcurrentHashMap<>();
+
+  public PatternSubscriptionManager(RedisStats redisStats) {
+    super(redisStats);
+  }
 
   @Override
   public int getSubscriptionCount(byte[] channel) {
@@ -112,11 +117,13 @@ class PatternSubscriptionManager
   @Override
   protected void subscriptionAdded(SubscriptionId id) {
     clearPatternSubscriptionCache();
+    redisStats.changeUniquePatternSubscriptions(1);
   }
 
   @Override
   protected void subscriptionRemoved(SubscriptionId id) {
     clearPatternSubscriptionCache();
+    redisStats.changeUniquePatternSubscriptions(-1);
   }
 
   @VisibleForTesting

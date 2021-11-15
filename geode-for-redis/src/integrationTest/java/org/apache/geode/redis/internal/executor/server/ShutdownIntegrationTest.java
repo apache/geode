@@ -18,12 +18,30 @@ package org.apache.geode.redis.internal.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
+import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-public class ShutdownIntegrationTest extends AbstractShutDownIntegrationTest {
+public class ShutdownIntegrationTest implements RedisIntegrationTest {
+  protected Jedis jedis;
+  private static final int REDIS_CLIENT_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+
+  @Before
+  public void setUp() {
+    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+  }
+
+  @After
+  public void classLevelTearDown() {
+    jedis.close();
+  }
 
   @Rule
   public GeodeRedisServerRule server = new GeodeRedisServerRule();
@@ -35,8 +53,6 @@ public class ShutdownIntegrationTest extends AbstractShutDownIntegrationTest {
 
   @Test
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
-    server.getServer().setAllowUnsupportedCommands(false);
-
     // Unfortunately Jedis' shutdown() doesn't seem to throw a JedisDataException when the command
     // returns an error.
     jedis.shutdown();

@@ -1681,8 +1681,9 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   private boolean thrownByDiskRecoveryDueToConflictingPersistentDataException(
       Throwable expectedException) {
-    return expectedException instanceof CacheClosedException
-        && expectedException.getCause() instanceof ConflictingPersistentDataException;
+    return expectedException instanceof DistributedSystemDisconnectedException
+        || (expectedException instanceof CacheClosedException
+            && expectedException.getCause() instanceof ConflictingPersistentDataException);
   }
 
   private boolean thrownByAsyncFlusherThreadDueToConflictingPersistentDataException(

@@ -107,7 +107,7 @@ public class RedisStats {
     return totalNetworkBytesRead.get();
   }
 
-  private long getCurrentTimeNanos() {
+  public long getCurrentTimeNanos() {
     return clock.getTime();
   }
 
@@ -159,6 +159,27 @@ public class RedisStats {
     expirations.incrementAndGet();
   }
 
+
+  public long startPublish() {
+    return geodeRedisStats.startPublish();
+  }
+
+  public void endPublish(long publishCount, long time) {
+    geodeRedisStats.endPublish(publishCount, time);
+  }
+
+  public void changeSubscribers(long delta) {
+    geodeRedisStats.changeSubscribers(delta);
+  }
+
+  public void changeUniqueChannelSubscriptions(long delta) {
+    geodeRedisStats.changeUniqueChannelSubscriptions(delta);
+  }
+
+  public void changeUniquePatternSubscriptions(long delta) {
+    geodeRedisStats.changeUniquePatternSubscriptions(delta);
+  }
+
   public void close() {
     geodeRedisStats.close();
     stopPerSecondUpdater();
@@ -171,7 +192,7 @@ public class RedisStats {
         newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
 
     perSecondExecutor.scheduleWithFixedDelay(
-        () -> doPerSecondUpdates(),
+        this::doPerSecondUpdates,
         INTERVAL,
         INTERVAL,
         SECONDS);
@@ -189,15 +210,15 @@ public class RedisStats {
   }
 
   private void updateNetworkKilobytesReadLastSecond() {
-    long totalNetworkBytesRead = getTotalNetworkBytesRead();
+    final long totalNetworkBytesRead = getTotalNetworkBytesRead();
     long deltaNetworkBytesRead = totalNetworkBytesRead - previousNetworkBytesRead;
-    networkKiloBytesReadOverLastSecond = deltaNetworkBytesRead / 1000;
-    previousNetworkBytesRead = getTotalNetworkBytesRead();
+    networkKiloBytesReadOverLastSecond = deltaNetworkBytesRead / 1024.0;
+    previousNetworkBytesRead = totalNetworkBytesRead;
   }
 
   private void updateOpsPerformedOverLastSecond() {
-    long totalOpsPerformed = getCommandsProcessed();
+    final long totalOpsPerformed = getCommandsProcessed();
     opsPerformedOverLastSecond = totalOpsPerformed - opsPerformedLastTick;
-    opsPerformedLastTick = getCommandsProcessed();
+    opsPerformedLastTick = totalOpsPerformed;
   }
 }

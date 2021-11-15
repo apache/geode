@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
@@ -94,6 +96,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("synthetic-access")
 public class CacheClientProxy implements ClientSession {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   @Immutable
   @VisibleForTesting
@@ -223,7 +226,7 @@ public class CacheClientProxy implements ClientSession {
   private Subject subject;
 
   /**
-   * used for cq name to subject/auth mapping, always initialized in single/multi user casees
+   * used for cq name to subject/auth mapping, always initialized in single/multi user cases
    */
   private ClientUserAuths clientUserAuths;
 
@@ -310,7 +313,7 @@ public class CacheClientProxy implements ClientSession {
         acceptorId, notifyBySubscription, securityService, subject, statisticsClock,
         ccn.getCache().getInternalDistributedSystem().getStatisticsManager(),
         DEFAULT_CACHECLIENTPROXYSTATSFACTORY,
-        DEFAULT_MESSAGEDISPATCHERFACTORY);
+        DEFAULT_MESSAGEDISPATCHERFACTORY, ServerConnection.getClientUserAuths(proxyID));
   }
 
   @VisibleForTesting
@@ -320,7 +323,7 @@ public class CacheClientProxy implements ClientSession {
       SecurityService securityService, Subject subject, StatisticsClock statisticsClock,
       StatisticsFactory statisticsFactory,
       CacheClientProxyStatsFactory cacheClientProxyStatsFactory,
-      MessageDispatcherFactory messageDispatcherFactory)
+      MessageDispatcherFactory messageDispatcherFactory, ClientUserAuths clientUserAuths)
       throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     _cacheClientNotifier = ccn;
@@ -345,11 +348,7 @@ public class CacheClientProxy implements ClientSession {
     _cacheClientNotifier.getAcceptorStats().incCurrentQueueConnections();
     creationDate = new Date();
     this.messageDispatcherFactory = messageDispatcherFactory;
-    initializeClientAuths();
-  }
-
-  void initializeClientAuths() {
-    clientUserAuths = ServerConnection.getClientUserAuths(proxyID);
+    this.clientUserAuths = clientUserAuths;
   }
 
   private void reinitializeClientAuths() {
@@ -774,14 +773,24 @@ public class CacheClientProxy implements ClientSession {
 
     connected = false;
 
-    // Close the Authorization callback (if any)
+    // Close the Authorization callback or subject if we are not keeping the proxy
     try {
       if (!pauseDurable) {
-        if (postAuthzCallback != null) {// for single user
+        // single user case -- old security
+        if (postAuthzCallback != null) {
           postAuthzCallback.close();
           postAuthzCallback = null;
         }
-        if (clientUserAuths != null) {// for multiple users
+        // single user case -- integrated security
+        // connection is closed, so we can log out this subject
+        else if (subject != null) {
+          secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
+          subject.logout();
+          subject = null;
+        }
+        // for multiUser case, in non-durable case, we are closing the connection
+        else if (clientUserAuths != null) {
+          secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
           clientUserAuths.cleanup(true);
           clientUserAuths = null;
         }
@@ -941,7 +950,8 @@ public class CacheClientProxy implements ClientSession {
     return false;
   }
 
-  private void closeTransientFields() {
+  @VisibleForTesting
+  protected void closeTransientFields() {
     if (!closeSocket()) {
       // The thread who closed the socket will be responsible to
       // releaseResourcesForAddress and clearClientInterestList
@@ -973,6 +983,8 @@ public class CacheClientProxy implements ClientSession {
 
     // Logout the subject
     if (subject != null) {
+      secureLogger.debug(
+          "CacheClientProxy.closeOtherTransientFields, logging out {}. ", subject.getPrincipal());
       subject.logout();
     }
   }

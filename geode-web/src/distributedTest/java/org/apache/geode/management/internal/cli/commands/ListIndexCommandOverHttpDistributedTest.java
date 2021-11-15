@@ -15,5 +15,16 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-public class ListIndexCommandDUnitTest extends ListIndexCommandDUnitTestBase {
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+
+@Category({GfshTest.class})
+public class ListIndexCommandOverHttpDistributedTest extends ListIndexCommandDistributedTestBase {
+  @Override
+  public void connectGfsh(MemberVM vm) throws Exception {
+    gfsh.connectAndVerify(vm.getHttpPort(), GfshCommandRule.PortType.http);
+  }
 }

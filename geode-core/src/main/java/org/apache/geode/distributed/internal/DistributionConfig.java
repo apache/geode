@@ -58,6 +58,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -111,10 +116,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_POR
 import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
@@ -3474,82 +3475,93 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_BIND_ADDRESS} property
    * <p>
    * Returns the value of the
-   * {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
+   * {@link ConfigurationProperties#GEODE_FOR_REDIS_BIND_ADDRESS} property
    *
    * @return the bind address for GeodeRedisServer
    *
    * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_BIND_ADDRESS)
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_BIND_ADDRESS)
   String getRedisBindAddress();
 
-  @ConfigAttributeSetter(name = REDIS_BIND_ADDRESS)
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_BIND_ADDRESS)
   void setRedisBindAddress(String bindAddress);
 
   @ConfigAttribute(type = String.class)
-  String REDIS_BIND_ADDRESS_NAME = REDIS_BIND_ADDRESS;
+  String REDIS_BIND_ADDRESS_NAME = GEODE_FOR_REDIS_BIND_ADDRESS;
   String DEFAULT_REDIS_BIND_ADDRESS = "";
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_ENABLED} property
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_ENABLED} property
    * <p>
    * Returns the value of the
-   * {@link ConfigurationProperties#REDIS_ENABLED} property
+   * {@link ConfigurationProperties#GEODE_FOR_REDIS_ENABLED} property
    *
    * @return boolean value indicating whether or not a Redis API for Geode Server should be started
-   *
-   * @since GemFire 14.0
    */
-  @ConfigAttributeGetter(name = REDIS_ENABLED)
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_ENABLED)
   boolean getRedisEnabled();
 
-  @ConfigAttributeSetter(name = REDIS_ENABLED)
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_ENABLED)
   void setRedisEnabled(boolean redisEnabled);
 
 
   @ConfigAttribute(type = Boolean.class)
-  String REDIS_ENABLED_NAME = REDIS_ENABLED;
+  String REDIS_ENABLED_NAME = GEODE_FOR_REDIS_ENABLED;
   boolean DEFAULT_REDIS_ENABLED = false;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_USERNAME} property
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_USERNAME} property
    * <p>
    * Returns the value of the
-   * {@link ConfigurationProperties#REDIS_USERNAME} property
+   * {@link ConfigurationProperties#GEODE_FOR_REDIS_USERNAME} property
    *
    * @return the authentication username for GeodeRedisServer
-   *
-   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_USERNAME)
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_USERNAME)
   String getRedisUsername();
 
-  @ConfigAttributeSetter(name = REDIS_USERNAME)
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_USERNAME)
   void setRedisUsername(String username);
 
   @ConfigAttribute(type = String.class)
-  String REDIS_USERNAME_NAME = REDIS_USERNAME;
+  String REDIS_USERNAME_NAME = GEODE_FOR_REDIS_USERNAME;
   String DEFAULT_REDIS_USERNAME = "default";
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#REDIS_PORT} property
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_PORT} property
    *
    * @return the port on which GeodeRedisServer should be started
-   *
-   * @since GemFire 8.0
    */
-  @ConfigAttributeGetter(name = REDIS_PORT)
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_PORT)
   int getRedisPort();
 
-  @ConfigAttributeSetter(name = REDIS_PORT)
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_PORT)
   void setRedisPort(int value);
 
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String REDIS_PORT_NAME = REDIS_PORT;
+  String REDIS_PORT_NAME = GEODE_FOR_REDIS_PORT;
   int DEFAULT_REDIS_PORT = 6379;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_REDUNDANT_COPIES}
+   * property
+   *
+   * @return the Geode for Redis redundant copies
+   *
+   */
+  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
+  int getRedisRedundantCopies();
+
+  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
+  void setRedisRedundantCopies(int value);
+
+  @ConfigAttribute(type = Integer.class, min = 0, max = 3)
+  String REDIS_REDUNDANT_COPIES_NAME = GEODE_FOR_REDIS_REDUNDANT_COPIES;
+  int DEFAULT_REDIS_REDUNDANT_COPIES = 1;
 
   // Added for the HTTP service
 

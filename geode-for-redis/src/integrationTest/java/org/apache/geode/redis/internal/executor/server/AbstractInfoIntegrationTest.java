@@ -40,7 +40,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTest {
 
   private static final String KEYSPACE_START = "db0";
-  private Jedis jedis;
+  protected Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -119,15 +119,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
-  }
-
-  @Test
-  public void shouldReturnRedisVersion() {
-    String expectedResult = "redis_version:5.0.6";
-
-    String actualResult = jedis.info();
-
-    assertThat(actualResult).contains(expectedResult);
   }
 
   @Test

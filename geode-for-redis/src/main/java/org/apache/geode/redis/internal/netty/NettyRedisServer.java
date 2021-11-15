@@ -17,7 +17,6 @@
 package org.apache.geode.redis.internal.netty;
 
 
-
 import static org.apache.geode.redis.internal.RedisProperties.WRITE_TIMEOUT_SECONDS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 
@@ -80,7 +79,6 @@ public class NettyRedisServer {
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
   private final Supplier<Boolean> allowUnsupportedSupplier;
-  private final Runnable shutdownInvoker;
   private final RedisStats redisStats;
   private final EventLoopGroup selectorGroup;
   private final EventLoopGroup workerGroup;
@@ -93,13 +91,12 @@ public class NettyRedisServer {
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
-      Runnable shutdownInvoker, int port, String requestedAddress, RedisStats redisStats,
+      int port, String requestedAddress, RedisStats redisStats,
       DistributedMember member, RedisSecurityService securityService) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
-    this.shutdownInvoker = shutdownInvoker;
     this.redisStats = redisStats;
     this.member = member;
     this.securityService = securityService;
@@ -172,7 +169,7 @@ public class NettyRedisServer {
         pipeline.addLast(new WriteTimeoutHandler(writeTimeoutSeconds));
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
-                allowUnsupportedSupplier, shutdownInvoker, redisStats, redisUsername,
+                allowUnsupportedSupplier, redisStats, redisUsername,
                 getPort(), member, securityService));
       }
     };

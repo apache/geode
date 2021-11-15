@@ -16,7 +16,9 @@
 package org.apache.geode.redis.internal.cluster;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
@@ -48,7 +50,7 @@ public class RedisMemberInfoRetrievalFunction implements AllowExecutionInLowMemo
     if (address == null || address.isEmpty() || address.equals("0.0.0.0")) {
       InetAddress localhost = null;
       try {
-        localhost = LocalHostUtil.getLocalHost();
+        localhost = getLocalHost();
       } catch (Exception ignored) {
       }
       hostAddress = localhost == null ? "127.0.0.1" : localhost.getHostAddress();
@@ -72,5 +74,15 @@ public class RedisMemberInfoRetrievalFunction implements AllowExecutionInLowMemo
   @Override
   public boolean optimizeForWrite() {
     return true;
+  }
+
+  @VisibleForTesting
+  InetAddress getLocalHost() throws UnknownHostException {
+    return LocalHostUtil.getLocalHost();
+  }
+
+  @VisibleForTesting
+  RedisMemberInfo getMemberInfo() {
+    return myself;
   }
 }

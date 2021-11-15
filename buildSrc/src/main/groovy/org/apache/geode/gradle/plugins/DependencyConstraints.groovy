@@ -120,7 +120,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
         api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.4.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.netty', name: 'netty-all', version: '4.1.67.Final')
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
@@ -161,7 +160,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.jboss.modules', name: 'jboss-modules', version: get('jboss-modules.version'))
         api(group: 'org.jctools', name: 'jctools-core', version: '3.3.0')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
-        api(group: 'org.mockito', name: 'mockito-core', version: '3.12.4')
+        api(group: 'org.mockito', name: 'mockito-core', version: '4.0.0')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.32')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.8')
@@ -237,6 +236,11 @@ class DependencyConstraints implements Plugin<Project> {
 
     dependencySet(group: 'org.junit.vintage', version: get('junit-jupiter.version')) {
       entry('junit-vintage-engine')
+    }
+
+    dependencySet(group: 'io.netty', version: '4.1.70.Final') {
+      entry('netty-codec-redis')
+      entry('netty-handler')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

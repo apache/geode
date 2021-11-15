@@ -18,9 +18,14 @@ package org.apache.geode.redis.internal.pubsub;
 import java.util.Collection;
 
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.statistics.RedisStats;
 
 class ChannelSubscriptionManager
     extends AbstractSubscriptionManager {
+
+  public ChannelSubscriptionManager(RedisStats redisStats) {
+    super(redisStats);
+  }
 
   @Override
   public int getSubscriptionCount(byte[] channel) {
@@ -41,4 +46,15 @@ class ChannelSubscriptionManager
   public Collection<Subscription> getChannelSubscriptions(byte[] channel) {
     return getClientManager(channel).getSubscriptions();
   }
+
+  @Override
+  protected void subscriptionAdded(SubscriptionId id) {
+    redisStats.changeUniqueChannelSubscriptions(1);
+  }
+
+  @Override
+  protected void subscriptionRemoved(SubscriptionId id) {
+    redisStats.changeUniqueChannelSubscriptions(-1);
+  }
+
 }

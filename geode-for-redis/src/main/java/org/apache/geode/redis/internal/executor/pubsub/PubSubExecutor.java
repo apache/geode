@@ -54,7 +54,7 @@ public class PubSubExecutor implements CommandExecutor {
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
       }
-      long numPatResponse = context.getPubSub().findNumberOfSubscribedPatterns();
+      long numPatResponse = context.getPubSub().findNumberOfUniqueSubscribedPatterns();
       return RedisResponse.integer(numPatResponse);
     }
 
