@@ -122,6 +122,11 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
       gateway.setSocketReadTimeout(socketReadTimeout);
     }
 
+    Integer socketConnectTimeout = gatewaySenderCreateArgs.getSocketConnectTimeout();
+    if (socketConnectTimeout != null) {
+      gateway.setSocketConnectTimeout(socketConnectTimeout);
+    }
+
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
     if (alertThreshold != null) {
       gateway.setAlertThreshold(alertThreshold);

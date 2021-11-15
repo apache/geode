@@ -452,6 +452,7 @@ public class WANClusterConfigurationDUnitTest {
         String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000);
     final String socketReadTimeout =
         String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 200);
+    final String socketConnectTimeout = "3000";
 
     dataMember = clusterStartupRule.startServerVM(1, locator.getPort());
 
@@ -487,6 +488,8 @@ public class WANClusterConfigurationDUnitTest {
         socketBufferSize);
     csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT,
         socketReadTimeout);
+    csb.addOptionWithValueCheck(CliStrings.CREATE_GATEWAYSENDER__SOCKETCONNECTTIMEOUT,
+        socketConnectTimeout);
 
     gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
@@ -527,6 +530,7 @@ public class WANClusterConfigurationDUnitTest {
       assertTrue(rmDsId.equals(Integer.toString(gs.getRemoteDSId())));
       assertTrue(socketBufferSize.equals(Integer.toString(gs.getSocketBufferSize())));
       assertTrue(socketReadTimeout.equals(Integer.toString(gs.getSocketReadTimeout())));
+      assertTrue(socketConnectTimeout.equals(Integer.toString(gs.getSocketConnectTimeout())));
     });
   }
 }
