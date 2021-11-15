@@ -426,6 +426,9 @@ public class ProxyBucketRegion implements Bucket {
       logger.debug("{} coming to recover from disk. wasHosting {}", getFullPath(),
           persistenceAdvisor.wasHosting());
     }
+    if (!persistenceAdvisor.isRecovering()) {
+      return;
+    }
     try {
       if (persistenceAdvisor.wasHosting()) {
         if (isDebugEnabled) {
