@@ -106,6 +106,9 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
         .add("sun.security.provider.certpath.SunCertPathBuilderException")
 
         // geode-modules
-        .add("org.apache.geode.modules.util.SessionCustomExpiry");
+        .add("org.apache.geode.modules.util.SessionCustomExpiry")
+
+        // hydra
+        .add("hydra.**");
   }
 }
