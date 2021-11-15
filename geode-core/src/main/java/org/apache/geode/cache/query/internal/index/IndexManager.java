@@ -87,6 +87,8 @@ public class IndexManager {
   public static final int RECREATE_INDEX = 4;
   private final InternalCache cache;
   protected final Region region;
+  String indexThresholdSize =
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE");
 
   private final boolean isOverFlowToDisk;
   private final boolean offHeap;

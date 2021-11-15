@@ -35,15 +35,11 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
   /** left operand */
   final CompiledValue[] _operands;
-  private static final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
-  public static final String INDX_THRESHOLD_PROP_STR =
-      GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   private static final int indexThresholdSize =
       Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
   private int _operator = 0;

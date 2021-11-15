@@ -425,7 +425,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
     Region r1 = createRegion("portfolio1", Portfolio.class);
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 200; i++) {
       r1.put(i + "", new Portfolio(i));
     }
 
