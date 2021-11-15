@@ -23,10 +23,11 @@
 #-----------------------------------------------------------------
 # Serialization
 #-----------------------------------------------------------------
-geode-serialization/**                                            @echobravopapa @Bill @kirklund @kamilla1201
+geode-serialization/**                                            @echobravopapa @Bill @kirklund @kamilla1201 @jchen21
 geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade
 geode-core/**/org/apache/geode/codeAnalysis/**                    @upthewaterspout @dschneider-pivotal @agingade @kirklund
 geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/META-INF/**/*SanctionedSerializablesService         @kirklund @jchen21
 
 #-----------------------------------------------------------------
 # Membership
