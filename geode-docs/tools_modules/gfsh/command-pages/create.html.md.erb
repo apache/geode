@@ -509,12 +509,11 @@ The gateway sender configuration for a specific sender `id` must be identical on
 create gateway-sender --id=value --remote-distributed-system-id=value 
    [--groups=value(,value)*] [--members=value(,value)*] [--parallel(=value)?]
    [--manual-start=value] [--socket-buffer-size=value] [--socket-read-timeout=value] 
-   [--enable-batch-conflation=value] [--batch-size=value] [--batch-time-interval=value]
-   [--enable-persistence=value] [--disk-store-name=value] [--disk-synchronous=value] 
-   [--maximum-queue-memory=value] [--alert-threshold=value] [--dispatcher-threads=value] 
-   [--order-policy=value][--gateway-event-filter=value(,value)*]
-   [--gateway-transport-filter=value(,value)*]
-   [--group-transaction-events(=value)?]
+   [--socket-connect-timeout=value] [--enable-batch-conflation=value] [--batch-size=value]
+   [--batch-time-interval=value] [--enable-persistence=value] [--disk-store-name=value]
+   [--disk-synchronous=value] [--maximum-queue-memory=value] [--alert-threshold=value]
+   [--dispatcher-threads=value] [--order-policy=value][--gateway-event-filter=value(,value)*]
+   [--gateway-transport-filter=value(,value)*] [--group-transaction-events(=value)?]
 ```
 
 **Parameters, create gateway-sender:**
@@ -577,6 +576,11 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <td><span class="keyword parmname">\-\-socket-read-timeout</span></td>
 <td>Amount of time in milliseconds that the gateway sender will wait to receive an acknowledgment from a remote site. By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value to the default of 0.</td>
 <td>0</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-socket-connect-timeout</span></td>
+<td>Amount of time in milliseconds that the gateway sender will wait to connect to a remote site. By default this is set to 59000 milliseconds. Setting it to 0 means there is no timeout.</td>
+<td>59000</td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-batch-size</span></td>
