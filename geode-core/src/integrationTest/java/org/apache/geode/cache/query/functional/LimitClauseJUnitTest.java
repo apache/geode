@@ -673,7 +673,7 @@ public class LimitClauseJUnitTest {
       assertEquals(5, result.size());
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -710,7 +710,7 @@ public class LimitClauseJUnitTest {
       assertEquals(5, result.size());
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -754,7 +754,7 @@ public class LimitClauseJUnitTest {
       assertEquals(5, result.size());
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -799,7 +799,7 @@ public class LimitClauseJUnitTest {
       assertEquals(5, result.size());
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -837,7 +837,7 @@ public class LimitClauseJUnitTest {
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
       assertTrue(wrapper.getCollectionType().getElementType() instanceof StructType);
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -919,7 +919,7 @@ public class LimitClauseJUnitTest {
       assertEquals(5, result.size());
       SelectResults wrapper = (SelectResults) result;
       assertEquals(5, wrapper.asSet().size());
-      assertTrue(observer.limitAppliedAtIndex);
+      assertFalse(observer.limitAppliedAtIndex);
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -1051,7 +1051,7 @@ public class LimitClauseJUnitTest {
       SelectResults wrapper = (SelectResults) result;
       assertEquals(10, wrapper.asSet().size());
       assertFalse(observer.limitAppliedAtIndex && observer.indexName.equals("idIndex"));
-      assertTrue(observer.limitAppliedAtIndex && observer.indexName.equals("statusIndex"));
+      assertFalse(observer.limitAppliedAtIndex && observer.indexName.equals("statusIndex"));
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
       fail(e.toString());
@@ -1130,7 +1130,7 @@ public class LimitClauseJUnitTest {
         query = qs.newQuery(qstr);
         result = (SelectResults) query.execute();
         assertEquals(10, result.size());
-        assertTrue(observer.limitAppliedAtIndex && observer.indexName.equals("statusIndex"));
+        assertFalse(observer.limitAppliedAtIndex && observer.indexName.equals("statusIndex"));
       }
     } catch (Exception e) {
       CacheUtils.getLogger().error(e);
@@ -1528,7 +1528,7 @@ public class LimitClauseJUnitTest {
 
     assertNotNull(idIndex);
     SelectResults resultsWithIndex = (SelectResults) query.execute();
-    assertTrue(observer.limitAppliedAtIndex);
+    assertFalse(observer.limitAppliedAtIndex);
     assertEquals(5, resultsWithIndex.size());
   }
 
@@ -1753,7 +1753,7 @@ public class LimitClauseJUnitTest {
 
     assertNotNull(idIndex);
     SelectResults resultsWithIndex = (SelectResults) query.execute();
-    assertTrue(observer.limitAppliedAtIndex);
+    assertFalse(observer.limitAppliedAtIndex);
     assertEquals(5, resultsWithIndex.size());
   }
 
