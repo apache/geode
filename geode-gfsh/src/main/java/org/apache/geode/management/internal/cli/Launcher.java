@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.internal.util.ProductVersionUtil.getDistributionVersion;
+
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
@@ -26,8 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.ExitShellRequest;
 
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.internal.version.DistributionVersion;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -263,8 +265,9 @@ public class Launcher {
 
   private void printUsage(final Gfsh gfsh, final PrintStream stream) {
     int terminalWidth = gfsh.getTerminalWidth();
-    stream.print(GemFireVersion.getProductName() + " v");
-    stream.print(GemFireVersion.getGemFireVersion());
+    final DistributionVersion distributionVersion = getDistributionVersion();
+    stream.print(distributionVersion.getName() + " v");
+    stream.print(distributionVersion.getVersion());
     stream.println(" Command Line Shell" + GfshParser.LINE_SEPARATOR);
     stream.println("USAGE");
     stream.println(

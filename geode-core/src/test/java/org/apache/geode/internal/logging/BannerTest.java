@@ -18,10 +18,10 @@ package org.apache.geode.internal.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.logging.internal.ConfigurationInfo;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -31,12 +31,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class BannerTest {
 
-  private String banner;
-
-  @Before
-  public void setUp() {
-    banner = new Banner().getString();
-  }
+  private final String banner = new Banner(ConfigurationInfo.getConfigurationInfo()).getString();
 
   @Test
   public void moreThanZeroBannerHeaderValues() {
