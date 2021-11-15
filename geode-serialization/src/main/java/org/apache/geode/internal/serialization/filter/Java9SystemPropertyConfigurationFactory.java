@@ -17,15 +17,24 @@ package org.apache.geode.internal.serialization.filter;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 public class Java9SystemPropertyConfigurationFactory implements SystemPropertyConfigurationFactory {
+
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public FilterConfiguration create(String propertyName, String filterPattern) {
     if (isJavaVersionAtLeast(JAVA_9)) {
+      logger.info("Creating SystemPropertyConfiguration with propertyName " + propertyName
+          + " and filterPattern {" + filterPattern + "}.");
       return new SystemPropertyConfiguration(propertyName, filterPattern);
     }
     return () -> {
       // nothing
+      logger.info("Creating empty FilterConfiguration.");
       return false;
     };
   }
