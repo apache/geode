@@ -132,7 +132,9 @@ public class AuthenticateUserOp {
 
       try (HeapDataOutputStream hdos = new HeapDataOutputStream(16, KnownVersion.CURRENT)) {
         hdos.writeLong(connection.getConnectionID());
-        hdos.writeLong(getUserId(connection));
+        long userId = getUserId(connection);
+        secureLogger.debug("AuthenticateUserOp with uniqueId {}", userId);
+        hdos.writeLong(userId);
         getMessage().setSecurePart(((ConnectionImpl) connection).encryptBytes(hdos.toByteArray()));
       }
       getMessage().send(false);
