@@ -1711,14 +1711,16 @@ public class PRHARedundancyProvider {
     return null;
   }
 
-  void scheduleCreateMissingBuckets() {
+  boolean scheduleCreateMissingBuckets() {
     if (partitionedRegion.getColocatedWith() != null
         && ColocationHelper.isColocationComplete(partitionedRegion)) {
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
           partitionedRegion.getGemFireCache().getInternalResourceManager();
       resourceManager.getExecutor().execute(task);
+      return true;
     }
+    return false;
   }
 
   public void shutdown() {

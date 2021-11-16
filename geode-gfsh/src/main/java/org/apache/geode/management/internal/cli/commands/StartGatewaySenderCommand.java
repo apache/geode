@@ -16,34 +16,27 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
-import javax.management.ObjectName;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.functions.StartGatewaySenderFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class StartGatewaySenderCommand extends GfshCommand {
+  private final StartGatewaySenderFunction startGatewaySenderFunction =
+      new StartGatewaySenderFunction();
 
   @CliCommand(value = CliStrings.START_GATEWAYSENDER, help = CliStrings.START_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -66,92 +59,27 @@ public class StartGatewaySenderCommand extends GfshCommand {
           specifiedDefaultValue = "true",
           help = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE__HELP) final Boolean cleanQueues) {
 
-    final String id = senderId.trim();
-
-    final Cache cache = getCache();
-    final SystemManagementService service = getManagementService();
-
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ExecutorService execService =
-        LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
+    List<Object> args = new ArrayList<>(2);
+    args.add(senderId);
+    args.add(cleanQueues);
 
-    List<Callable<List<String>>> callables = new ArrayList<>();
-
-    for (final DistributedMember member : dsMembers) {
-
-      callables.add(() -> {
-
-        GatewaySenderMXBean bean;
-        ArrayList<String> statusList = new ArrayList<>();
-        if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-          bean = service.getLocalGatewaySenderMXBean(id);
-        } else {
-          ObjectName objectName = service.getGatewaySenderMBeanName(member, id);
-          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
-        }
-        if (bean != null) {
-          if (bean.isRunning()) {
-            statusList.add(member.getId());
-            statusList.add(CliStrings.GATEWAY_ERROR);
-            statusList.add(CliStrings.format(
-                CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id, member.getId()));
-          } else {
-            if (cleanQueues) {
-              bean.startWithCleanQueue();
-            } else {
-              bean.start();
-            }
-            statusList.add(member.getId());
-            statusList.add(CliStrings.GATEWAY_OK);
-            statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1, id,
-                member.getId()));
-          }
-        } else {
-          statusList.add(member.getId());
-          statusList.add(CliStrings.GATEWAY_ERROR);
-          statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_NOT_AVAILABLE_ON_MEMBER_1,
-              id, member.getId()));
-        }
-        return statusList;
-
-      });
-    }
-
-    Iterator<DistributedMember> memberIterator = dsMembers.iterator();
-    List<Future<List<String>>> futures;
-
-    try {
-      futures = execService.invokeAll(callables);
-    } catch (InterruptedException ite) {
-      return ResultModel.createError(
-          CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
-              ite.getMessage()));
-    } finally {
-      execService.shutdown();
-    }
+    List<CliFunctionResult> gatewaySenderStartResults =
+        executeAndGetFunctionResult(startGatewaySenderFunction, args,
+            dsMembers);
 
     ResultModel resultModel = new ResultModel();
     TabularResultModel resultData = resultModel.addTable(CliStrings.START_GATEWAYSENDER);
-    for (Future<List<String>> future : futures) {
-      DistributedMember member = memberIterator.next();
-      List<String> memberStatus;
-      try {
-        memberStatus = future.get();
-        resultData.addMemberStatusResultRow(memberStatus.get(0),
-            memberStatus.get(1), memberStatus.get(2));
-      } catch (InterruptedException | ExecutionException ite) {
-        resultData.addMemberStatusResultRow(member.getId(),
-            CliStrings.GATEWAY_ERROR,
-            CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_STARTED_ON_MEMBER_DUE_TO_1,
-                id, ite.getMessage()));
-      }
+
+    for (CliFunctionResult result : gatewaySenderStartResults) {
+      resultData.addMemberStatusResultRow(result.getMemberIdOrName(), result.getStatus(),
+          result.getStatusMessage());
     }
-    execService.shutdown();
 
     return resultModel;
   }

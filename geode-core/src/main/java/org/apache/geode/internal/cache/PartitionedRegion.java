@@ -1123,8 +1123,9 @@ public class PartitionedRegion extends LocalRegion
 
     try {
       if (storesData) {
-        this.redundancyProvider.scheduleCreateMissingBuckets();
-        this.redundancyProvider.startRedundancyRecovery();
+        if (this.redundancyProvider.scheduleCreateMissingBuckets()) {
+          this.redundancyProvider.startRedundancyRecovery();
+        }
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
@@ -10026,7 +10027,7 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void shadowPRWaitForBucketRecovery() {
+  public void shadowPRWaitForBucketRecovery(long maxWaitTime) {
     assert this.isShadowPR();
     PartitionedRegion userPR = ColocationHelper.getLeaderRegion(this);
     boolean isAccessor = (userPR.getLocalMaxMemory() == 0);
@@ -10040,6 +10041,7 @@ public class PartitionedRegion extends LocalRegion
     // This is required in case of persistent PR and sender.
     Set<Integer> allBuckets = userPR.getDataStore().getAllLocalBucketIds();
     Set<Integer> allBucketsClone = new HashSet<Integer>(allBuckets);
+    int cycles = 0;
     while (allBucketsClone.size() != 0) {
       logger.debug(
           "Need to wait until partitionedRegionQueue <<{}>> is loaded with all the buckets",
@@ -10054,11 +10056,19 @@ public class PartitionedRegion extends LocalRegion
       // after the iteration is over, sleep for sometime before trying
       // again
       try {
+        if (maxWaitTime > 0 && (cycles++
+            * ParallelGatewaySenderQueue.WAIT_CYCLE_SHADOW_BUCKET_LOAD) > maxWaitTime) {
+          throw new RuntimeException("Time to wait for region to be created exceeded");
+        }
         Thread.sleep(ParallelGatewaySenderQueue.WAIT_CYCLE_SHADOW_BUCKET_LOAD);
       } catch (InterruptedException e) {
         logger.error(e.getMessage(), e);
       }
     }
+  }
+
+  public void shadowPRWaitForBucketRecovery() {
+    shadowPRWaitForBucketRecovery(0);
   }
 
   @Override

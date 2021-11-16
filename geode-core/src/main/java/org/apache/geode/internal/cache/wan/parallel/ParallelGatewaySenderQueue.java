@@ -568,6 +568,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         // Wait for buckets to be recovered.
         prQ.shadowPRWaitForBucketRecovery();
+        // toberal We could have a timeout in a parameter for this
+        // prQ.shadowPRWaitForBucketRecovery(60000);
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);

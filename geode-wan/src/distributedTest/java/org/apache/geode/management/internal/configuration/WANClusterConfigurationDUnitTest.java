@@ -54,7 +54,7 @@ public class WANClusterConfigurationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = clusterStartupRule.startLocatorVM(3);
+    locator = clusterStartupRule.startLocatorVM(20);
   }
 
   @Test
@@ -529,4 +529,267 @@ public class WANClusterConfigurationDUnitTest {
       assertTrue(socketReadTimeout.equals(Integer.toString(gs.getSocketReadTimeout())));
     });
   }
+
+  // toberal
+  // @Test
+  // public void
+  // whenAlteringOnePartitionedPersistentReplicatedRegionWithParallelSenderWithAHighNumberOfServersCommandDoesNotHang()
+  // throws Exception {
+  // // toberal.
+  // // With 24 servers I get errors due to lack of resources (lost heartbeats). Not able to run
+  // // With 16 servers. It hangs (eventually finishes)
+  // // with 3 sleeps of 10 it finished after 6 minutes and a half showing the "having elapsed"
+  // // log.
+  // // with 3 sleeps of 30 it finished after 15 minutes and a half, 9 and a half second time,
+  // // showing the "having elapsed" log. Time taken by the alter command: 272 seconds
+  // // Without sleeps it finished in 6 minutes. Max stuck of 153 seconds. Time taken for the
+  // // command: 153 seconds
+  // // With 20 servers. It hangs (eventually finishes).
+  // // stuck for 660 seconds
+  // // time taken by command: 694 seconds
+  // // With 8 servers it does not hang. (I do not see 15 secs have elapsed waiting for a primary
+  // for
+  // // bucket messages) or thread stuck messages
+  // // If I do not create first the gateway sender and what I do is:
+  // // - create region
+  // // - allocate buckets
+  // // - create gateway sender
+  // // - alter region with gateway sender
+  // // it does not hang.
+  // // With 1013 bucketes the problem does not appear. Probably because recover buckets launches
+  // // more threads and allows more time to iscolocated to be true
+  // addIgnoredException("could not get remote locator");
+  // addIgnoredException("cannot have the same parallel gateway sender id");
+  //
+  // MemberVM locator = clusterStartupRule.startLocatorVM(0);
+  //
+  // int serversNo = 16;
+  // MemberVM serversArray[] = new MemberVM[serversNo];
+  //
+  // // setup servers in Site #1
+  // int initialIndex = 1;
+  // Properties properties = new Properties();
+  // for (int index = 0; index < serversArray.length; index++) {
+  // serversArray[index] =
+  // clusterStartupRule.startServerVM(initialIndex + index, properties, locator.getPort());
+  // }
+  //
+  // // Connect Gfsh to locator.
+  // gfsh.connectAndVerify(locator);
+  //
+  // // Create disk-store
+  // CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+  // csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore");
+  // csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Create disk-store1
+  // // csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+  // // csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore1");
+  // // csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+  // // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Create region
+  // csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+  // csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+  // csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_PERSISTENT");
+  // csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
+  // csb.addOption(CliStrings.CREATE_REGION__TOTALNUMBUCKETS, "" + 1031);
+  // // With this delay, test cases pass even tiwh 16 and 20 servers
+  // // csb.addOption(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY, "1000");
+  // // The region must have a disk store (the same or another) to see the hang. If it is different,
+  // // the hanging lasts longer
+  // csb.addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Allocate buckets
+  // String queryString = "\"select * from /test1\"";
+  // csb = new CommandStringBuilder(CliStrings.QUERY);
+  // csb.addOption(QUERY, queryString).getCommandString();
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // System.out.println("toberal before create gateway sender again");
+  //
+  // // Create gateway sender
+  // csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore");
+  // // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore1");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE, "true");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Thread.sleep(30000);
+  // System.out.println("toberal before altering region to add gateway sender");
+  //
+  // long currentMillis = System.currentTimeMillis();
+  // // Add gateway sender to region
+  // csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+  // csb.addOption(CliStrings.ALTER_REGION__REGION, "test1");
+  // csb.addOption(CliStrings.ALTER_REGION__GATEWAYSENDERID, "ny");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // long timeTaken = (System.currentTimeMillis() - currentMillis) / 1000;
+  //
+  // int entries = 10;
+  // for (int i = 0; i < entries; i++) {
+  // csb = new CommandStringBuilder(CliStrings.PUT);
+  // csb.addOption(CliStrings.PUT__REGIONNAME, "test1");
+  // csb.addOption(CliStrings.PUT__KEY, "" + i);
+  // csb.addOption(CliStrings.PUT__VALUE, "" + i);
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  // }
+  //
+  // int queuedEvents = 0;
+  // for (MemberVM server : serversArray) {
+  // queuedEvents += server.getVM().invoke(() -> getSenderStats("ny", -1)).get(2);
+  // }
+  //
+  // System.out.println("toberal queuedEvents: " + queuedEvents);
+  //
+  // System.out.println("toberal time taken by alter region: "
+  // + (System.currentTimeMillis() - currentMillis) / 1000 + " seconds");
+  // assertThat(timeTaken).isLessThan(15);
+  // }
+  //
+  // @Test
+  // public void whenStartGatewaySenderWithCleanQueuesAndAHighNumberOfServersCommandDoesNotHang()
+  //
+  // throws Exception {
+  // addIgnoredException("could not get remote locator");
+  // addIgnoredException("cannot have the same parallel gateway sender id");
+  //
+  // MemberVM locator = clusterStartupRule.startLocatorVM(0);
+  //
+  // int serversNo = 16;
+  // MemberVM serversArray[] = new MemberVM[serversNo];
+  //
+  // // setup servers in Site #1
+  // int initialIndex = 1;
+  // Properties properties = new Properties();
+  // for (int index = 0; index < serversArray.length; index++) {
+  // serversArray[index] =
+  // clusterStartupRule.startServerVM(initialIndex + index, properties, locator.getPort());
+  // }
+  //
+  // // Connect Gfsh to locator.
+  // gfsh.connectAndVerify(locator);
+  //
+  // // Create disk-store
+  // CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+  // csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore");
+  // csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Create disk-store1
+  // // csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE);
+  // // csb.addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore1");
+  // // csb.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
+  // // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // System.out.println("toberal before create gateway sender");
+  //
+  // // Create gateway sender
+  // csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER);
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ny");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "2");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore");
+  // // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME, "diskStore1");
+  // csb.addOption(CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE, "true");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  //
+  // // Create region
+  // csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
+  // csb.addOption(CliStrings.CREATE_REGION__REGION, "test1");
+  // csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION_PERSISTENT");
+  // csb.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
+  // csb.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ny");
+  // csb.addOption(CliStrings.CREATE_REGION__TOTALNUMBUCKETS, "" + serversNo * 8);
+  // // With this delay, test cases pass even tiwh 16 and 20 servers
+  // // csb.addOption(CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY, "1000");
+  // // The region must have a disk store (the same or another) to see the hang. If it is different,
+  // // the hanging lasts longer
+  // csb.addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Allocate buckets
+  // String queryString = "\"select * from /test1\"";
+  // csb = new CommandStringBuilder(CliStrings.QUERY);
+  // csb.addOption(QUERY, queryString).getCommandString();
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  //
+  // System.out.println("toberal before stopping gateway sender");
+  //
+  // csb = new CommandStringBuilder(CliStrings.STOP_GATEWAYSENDER);
+  // csb.addOption(CliStrings.STOP_GATEWAYSENDER__ID, "ny");
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // // Wait for 2 seconds because beans are updated every 2 secs and it might
+  // // be that some server thinks that the sender is still running and
+  // // not start it and then we could have a hang.
+  // // toberal: Remove temporarily to see it fail
+  // // Thread.sleep(2000);
+  //
+  // System.out.println("toberal before starting gateway sender with clean queues");
+  //
+  // long currentMillis = System.currentTimeMillis();
+  // // Add gateway sender to region
+  // csb = new CommandStringBuilder(CliStrings.START_GATEWAYSENDER);
+  // csb.addOption(CliStrings.START_GATEWAYSENDER__ID, "ny");
+  // csb.addOption(CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE);
+  // gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  //
+  // long timeTaken = (System.currentTimeMillis() - currentMillis) / 1000;
+  //
+  // System.out.println(
+  // "toberal time taken by alter region assuming that cleanQueues is waiting for buckets to be
+  // created: "
+  // + (System.currentTimeMillis() - currentMillis) / 1000 + " seconds");
+  // assertThat(timeTaken).isLessThan(15);
+  //
+  // // Thread.sleep(300000);
+  // //
+  // // System.out.println("toberal after sleep: "
+  // // + (System.currentTimeMillis() - currentMillis) / 1000 + " seconds");
+  //
+  // }
+  //
+  //
+  // public static List<Integer> getSenderStats(String senderId, int expectedQueueSize) {
+  // Cache cache = InternalDistributedSystem.getAnyInstance().getCache();
+  // AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+  // GatewaySenderStats statistics = sender.getStatistics();
+  // if (expectedQueueSize != -1) {
+  // final RegionQueue regionQueue;
+  // regionQueue = sender.getQueues().toArray(new RegionQueue[1])[0];
+  // if (sender.isParallel()) {
+  // ConcurrentParallelGatewaySenderQueue parallelGatewaySenderQueue =
+  // (ConcurrentParallelGatewaySenderQueue) regionQueue;
+  // PartitionedRegion pr =
+  // parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
+  // }
+  // await()
+  // .untilAsserted(() -> assertThat(regionQueue.size()).isEqualTo(expectedQueueSize));
+  // }
+  // ArrayList<Integer> stats = new ArrayList<Integer>();
+  // stats.add(statistics.getEventQueueSize());
+  // stats.add(statistics.getEventsReceived());
+  // stats.add(statistics.getEventsQueued());
+  // stats.add(statistics.getEventsDistributed());
+  // stats.add(statistics.getBatchesDistributed());
+  // stats.add(statistics.getBatchesRedistributed());
+  // stats.add(statistics.getEventsFiltered());
+  // stats.add(statistics.getEventsNotQueuedConflated());
+  // stats.add(statistics.getEventsConflatedFromBatches());
+  // stats.add(statistics.getConflationIndexesMapSize());
+  // stats.add(statistics.getSecondaryEventQueueSize());
+  // stats.add(statistics.getEventsProcessedByPQRM());
+  // stats.add(statistics.getEventsExceedingAlertThreshold());
+  // stats.add((int) statistics.getBatchesWithIncompleteTransactions());
+  // return stats;
+  // }
 }
