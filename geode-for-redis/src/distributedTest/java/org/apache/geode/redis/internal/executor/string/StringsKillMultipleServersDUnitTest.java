@@ -54,8 +54,6 @@ public class StringsKillMultipleServersDUnitTest {
     cluster.startRedisVM(3, locator.getPort());
     cluster.startRedisVM(4, locator.getPort());
 
-    cluster.enableDebugLogging(1);
-
     int redisServerPort1 = cluster.getRedisPort(1);
     jedisCluster =
         new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 10_000);
@@ -76,33 +74,36 @@ public class StringsKillMultipleServersDUnitTest {
     AtomicBoolean running = new AtomicBoolean(true);
     AtomicInteger counter = new AtomicInteger(0);
 
-    Future<Void> future = executor.submit(() -> doOps(running, counter));
+    Future<Void> future1 = executor.submit(() -> doSetOps(running, counter));
+    Future<Void> future2 = executor.submit(() -> doGetOps(running, counter));
     await().until(() -> counter.get() > 100);
 
     cluster.crashVM(3);
     cluster.crashVM(4);
     int afterCrashCount = counter.get();
 
-    long start = System.currentTimeMillis();
     await().alias("ensure that operations are continuing after multiple server failures")
         .until(() -> counter.get() > afterCrashCount + 10_000);
-
-    long runTime = System.currentTimeMillis() - start;
 
     running.set(false);
 
     // Any exception here would fail the test.
-    future.get();
-
-    System.err.println("await runtime = " + runTime);
+    future1.get();
+    future2.get();
   }
 
-  private Void doOps(AtomicBoolean running, AtomicInteger counter) {
-    Random random = new Random();
+  private Void doSetOps(AtomicBoolean running, AtomicInteger counter) {
     while (running.get()) {
       int i = counter.getAndIncrement();
       jedisCluster.set("key-" + i, "value-" + i);
-      jedisCluster.get("key-" + random.nextInt(i + 1));
+    }
+    return null;
+  }
+
+  private Void doGetOps(AtomicBoolean running, AtomicInteger counter) {
+    Random random = new Random();
+    while (running.get()) {
+      jedisCluster.get("key-" + random.nextInt(counter.get() + 1));
     }
     return null;
   }
