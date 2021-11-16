@@ -264,12 +264,8 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
 
     public void removeListeners() {
-      BucketPersistenceAdvisor tempBPA;
       for (ProxyBucketRegion proxyBucket : bucketRegions) {
-        tempBPA = proxyBucket.getPersistenceAdvisor();
-        if (!tempBPA.isClosed()) {
-          proxyBucket.getPersistenceAdvisor().removeListener(PersistentBucketRecoverer.this);
-        }
+        proxyBucket.getPersistenceAdvisor().removeListener(PersistentBucketRecoverer.this);
       }
     }
 

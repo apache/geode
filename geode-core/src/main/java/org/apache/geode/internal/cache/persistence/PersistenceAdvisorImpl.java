@@ -721,6 +721,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public void removeListener(PersistentStateListener listener) {
     synchronized (this) {
+      if (persistentStateListeners.isEmpty()) {
+        return;
+      }
       Set<PersistentStateListener> tmpListeners = new HashSet<>(persistentStateListeners);
       tmpListeners.remove(listener);
       persistentStateListeners = Collections.unmodifiableSet(tmpListeners);
