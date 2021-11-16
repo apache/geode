@@ -102,6 +102,14 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
       return "";
     }
     int length = Math.min(buf.length, MAX_PAYLOAD_LENGTH);
+
+    for (int i = 0; i < length; i++) {
+      if (buf[i] != '\n' && buf[i] != '\r' &&
+          (buf[i] < ' ' || buf[i] > '~')) {
+        buf[i] = '?';
+      }
+    }
+
     try {
       return new String(buf, 0, length, encoding);
     } catch (UnsupportedEncodingException ex) {
