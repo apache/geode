@@ -16,16 +16,16 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bALL;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLIENTS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCLUSTER;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bDEFAULT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSPACE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMEMORY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPERSISTENCE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLICATION;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSERVER;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSTATS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ALL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CLIENTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CLUSTER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.DEFAULT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.KEYSPACE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MEMORY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PERSISTENCE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.REPLICATION;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SERVER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.STATS;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -64,23 +64,23 @@ public class InfoExecutor implements CommandExecutor {
 
   private String getSpecifiedSection(ExecutionHandlerContext context, List<byte[]> commands) {
     byte[] bytes = toUpperCaseBytes(commands.get(1));
-    if (Arrays.equals(bytes, bSERVER)) {
+    if (Arrays.equals(bytes, SERVER)) {
       return getServerSection(context);
-    } else if (Arrays.equals(bytes, bCLUSTER)) {
+    } else if (Arrays.equals(bytes, CLUSTER)) {
       return getClusterSection();
-    } else if (Arrays.equals(bytes, bPERSISTENCE)) {
+    } else if (Arrays.equals(bytes, PERSISTENCE)) {
       return getPersistenceSection();
-    } else if (Arrays.equals(bytes, bREPLICATION)) {
+    } else if (Arrays.equals(bytes, REPLICATION)) {
       return getReplicationSection();
-    } else if (Arrays.equals(bytes, bSTATS)) {
+    } else if (Arrays.equals(bytes, STATS)) {
       return getStatsSection(context);
-    } else if (Arrays.equals(bytes, bCLIENTS)) {
+    } else if (Arrays.equals(bytes, CLIENTS)) {
       return getClientsSection(context);
-    } else if (Arrays.equals(bytes, bMEMORY)) {
+    } else if (Arrays.equals(bytes, MEMORY)) {
       return getMemorySection(context);
-    } else if (Arrays.equals(bytes, bKEYSPACE)) {
+    } else if (Arrays.equals(bytes, KEYSPACE)) {
       return getKeyspaceSection(context);
-    } else if (Arrays.equals(bytes, bDEFAULT) || Arrays.equals(bytes, bALL)) {
+    } else if (Arrays.equals(bytes, DEFAULT) || Arrays.equals(bytes, ALL)) {
       return getAllSections(context);
     } else {
       return "";

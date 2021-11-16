@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor.server;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bVERSION;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.VERSION;
 
 import java.util.List;
 import java.util.Random;
@@ -52,7 +52,7 @@ public class LolWutExecutor implements CommandExecutor {
     List<byte[]> commands = command.getProcessedCommand();
     if (commands.size() > 1) {
       for (int i = 1; i < commands.size(); i++) {
-        if (equalsIgnoreCaseBytes(commands.get(i), bVERSION)) {
+        if (equalsIgnoreCaseBytes(commands.get(i), VERSION)) {
           i += 1; // skip next arg, we only have one version for now
         } else {
           try {

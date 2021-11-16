@@ -20,8 +20,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.UNSUBSCRIBE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -204,7 +204,7 @@ public class SubscriptionsJUnitTest {
 
     Collection<Collection<?>> result = subscriptions.punsubscribe(singletonList(pattern), client);
 
-    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern, 2L));
+    assertThat(result).containsExactly(asList(PUNSUBSCRIBE, pattern, 2L));
     assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
   }
 
@@ -218,7 +218,7 @@ public class SubscriptionsJUnitTest {
 
     Collection<Collection<?>> result = subscriptions.punsubscribe(singletonList(pattern), client);
 
-    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern, 2L));
+    assertThat(result).containsExactly(asList(PUNSUBSCRIBE, pattern, 2L));
     assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
   }
 
@@ -234,8 +234,8 @@ public class SubscriptionsJUnitTest {
     Collection<Collection<?>> result =
         subscriptions.punsubscribe(asList(pattern1, pattern2), client);
 
-    assertThat(result).containsExactly(asList(bPUNSUBSCRIBE, pattern1, 2L),
-        asList(bPUNSUBSCRIBE, pattern2, 1L));
+    assertThat(result).containsExactly(asList(PUNSUBSCRIBE, pattern1, 2L),
+        asList(PUNSUBSCRIBE, pattern2, 1L));
     assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
   }
 
@@ -251,7 +251,7 @@ public class SubscriptionsJUnitTest {
     assertThat(result).hasSize(1);
     @SuppressWarnings("unchecked")
     Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
-    assertThat(firstItem).containsExactly(bPUNSUBSCRIBE, pattern, 1L);
+    assertThat(firstItem).containsExactly(PUNSUBSCRIBE, pattern, 1L);
     assertThat(subscriptions.getPatternSubscriptionCount()).isZero();
   }
 
@@ -264,7 +264,7 @@ public class SubscriptionsJUnitTest {
     assertThat(result).hasSize(1);
     @SuppressWarnings("unchecked")
     Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
-    assertThat(firstItem).containsExactly(bUNSUBSCRIBE, null, 0L);
+    assertThat(firstItem).containsExactly(UNSUBSCRIBE, null, 0L);
   }
 
   @Test
@@ -276,7 +276,7 @@ public class SubscriptionsJUnitTest {
     assertThat(result).hasSize(1);
     @SuppressWarnings("unchecked")
     Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
-    assertThat(firstItem).containsExactly(bPUNSUBSCRIBE, null, 0L);
+    assertThat(firstItem).containsExactly(PUNSUBSCRIBE, null, 0L);
   }
 
   @Test
@@ -289,7 +289,7 @@ public class SubscriptionsJUnitTest {
 
     Collection<Collection<?>> result = subscriptions.unsubscribe(singletonList(channel), client);
 
-    assertThat(result).containsExactly(asList(bUNSUBSCRIBE, channel, 2L));
+    assertThat(result).containsExactly(asList(UNSUBSCRIBE, channel, 2L));
     assertThat(subscriptions.findChannelNames())
         .containsExactlyInAnyOrder(
             stringToBytes("subscriptions"));
@@ -307,8 +307,8 @@ public class SubscriptionsJUnitTest {
     Collection<Collection<?>> result =
         subscriptions.unsubscribe(asList(channel1, channel2), client);
 
-    assertThat(result).containsExactly(asList(bUNSUBSCRIBE, channel1, 2L),
-        asList(bUNSUBSCRIBE, channel2, 1L));
+    assertThat(result).containsExactly(asList(UNSUBSCRIBE, channel1, 2L),
+        asList(UNSUBSCRIBE, channel2, 1L));
     assertThat(subscriptions.findChannelNames()).isEmpty();
   }
 
@@ -324,7 +324,7 @@ public class SubscriptionsJUnitTest {
     assertThat(result).hasSize(1);
     @SuppressWarnings("unchecked")
     Collection<Object> firstItem = (Collection<Object>) result.iterator().next();
-    assertThat(firstItem).containsExactly(bUNSUBSCRIBE, channel, 1L);
+    assertThat(firstItem).containsExactly(UNSUBSCRIBE, channel, 1L);
     assertThat(subscriptions.findChannelNames()).isEmpty();
   }
 

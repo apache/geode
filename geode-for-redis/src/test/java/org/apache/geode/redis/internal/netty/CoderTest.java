@@ -25,7 +25,7 @@ import static org.apache.geode.redis.internal.netty.Coder.isPositiveInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NaN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertArrayEquals;
@@ -86,7 +86,7 @@ public class CoderTest {
 
   @Test
   public void bytesToDouble_errorsWhenGivenNaNAsBytes() {
-    assertThatThrownBy(() -> Coder.bytesToDouble(bNaN)).isInstanceOf(NumberFormatException.class);
+    assertThatThrownBy(() -> Coder.bytesToDouble(NaN)).isInstanceOf(NumberFormatException.class);
   }
 
   @Test

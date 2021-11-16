@@ -20,33 +20,33 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BUSYKEY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CRLF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CROSSSLOT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.EMPTY_ARRAY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.EMPTY_STRING;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MOVED;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NIL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NOAUTH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF_STRING;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NaN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.OK;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ONE_INT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.OOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INFINITY;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF_STRING;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bBUSYKEY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCROSSSLOT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_ARRAY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEMPTY_STRING;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bERR;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFINITY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMOVED;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNIL;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNOAUTH;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bN_INFINITY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNaN;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOK;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bONE_INT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bOOM;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bP_INFINITY;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGPASS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWRONGTYPE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bZERO_INT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WRONGPASS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WRONGTYPE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ZERO_INT;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -86,7 +86,7 @@ public class Coder {
     byte[] toWrite;
 
     if (v == null) {
-      buffer.writeBytes(bNIL);
+      buffer.writeBytes(NIL);
     } else if (v instanceof byte[]) {
       toWrite = (byte[]) v;
       writeStringResponse(buffer, toWrite, useBulkStrings);
@@ -115,12 +115,12 @@ public class Coder {
     if (useBulkStrings) {
       buffer.writeByte(BULK_STRING_ID);
       appendAsciiDigitsToByteBuf(toWrite.length, buffer);
-      buffer.writeBytes(bCRLF);
+      buffer.writeBytes(CRLF);
     } else {
       buffer.writeByte(SIMPLE_STRING_ID);
     }
     buffer.writeBytes(toWrite);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
   }
 
   public static ByteBuf getFlattenedArrayResponse(ByteBuf buffer, Collection<Collection<?>> items)
@@ -136,7 +136,7 @@ public class Coder {
       boolean useBulkStrings) throws CoderException {
     buffer.writeByte(ARRAY_ID);
     appendAsciiDigitsToByteBuf(items.size(), buffer);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
     for (Object next : items) {
       writeCollectionOrString(buffer, next, useBulkStrings);
     }
@@ -157,12 +157,12 @@ public class Coder {
   public static ByteBuf getScanResponse(ByteBuf buffer, int cursor, List<?> scanResult) {
     buffer.writeByte(ARRAY_ID);
     buffer.writeByte(digitToAscii(2));
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
     byte[] cursorBytes = intToBytes(cursor);
     writeStringResponse(buffer, cursorBytes, true);
     buffer.writeByte(ARRAY_ID);
     appendAsciiDigitsToByteBuf(scanResult.size(), buffer);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
 
     for (Object nextObject : scanResult) {
       if (nextObject instanceof String) {
@@ -178,22 +178,22 @@ public class Coder {
   }
 
   public static ByteBuf getZeroIntResponse(ByteBuf buffer) {
-    buffer.writeBytes(bZERO_INT);
+    buffer.writeBytes(ZERO_INT);
     return buffer;
   }
 
   public static ByteBuf getOneIntResponse(ByteBuf buffer) {
-    buffer.writeBytes(bONE_INT);
+    buffer.writeBytes(ONE_INT);
     return buffer;
   }
 
   public static ByteBuf getEmptyArrayResponse(ByteBuf buffer) {
-    buffer.writeBytes(bEMPTY_ARRAY);
+    buffer.writeBytes(EMPTY_ARRAY);
     return buffer;
   }
 
   public static ByteBuf getEmptyStringResponse(ByteBuf buffer) {
-    buffer.writeBytes(bEMPTY_STRING);
+    buffer.writeBytes(EMPTY_STRING);
     return buffer;
   }
 
@@ -205,7 +205,7 @@ public class Coder {
   public static ByteBuf getSimpleStringResponse(ByteBuf buffer, byte[] byteArray) {
     buffer.writeByte(SIMPLE_STRING_ID);
     buffer.writeBytes(byteArray);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
     return buffer;
   }
 
@@ -214,7 +214,7 @@ public class Coder {
     buffer.writeByte(ERROR_ID);
     buffer.writeBytes(type);
     buffer.writeBytes(errorAr);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
     return buffer;
   }
 
@@ -223,35 +223,35 @@ public class Coder {
   }
 
   public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bERR, error);
+    return getErrorResponse0(buffer, ERR, error);
   }
 
   public static ByteBuf getMovedResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bMOVED, error);
+    return getErrorResponse0(buffer, MOVED, error);
   }
 
   public static ByteBuf getOOMResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bOOM, error);
+    return getErrorResponse0(buffer, OOM, error);
   }
 
   public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bWRONGTYPE, error);
+    return getErrorResponse0(buffer, WRONGTYPE, error);
   }
 
   public static ByteBuf getCrossSlotResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bCROSSSLOT, error);
+    return getErrorResponse0(buffer, CROSSSLOT, error);
   }
 
   public static ByteBuf getWrongpassResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bWRONGPASS, error);
+    return getErrorResponse0(buffer, WRONGPASS, error);
   }
 
   public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bBUSYKEY, error);
+    return getErrorResponse0(buffer, BUSYKEY, error);
   }
 
   public static ByteBuf getNoAuthResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, bNOAUTH, error);
+    return getErrorResponse0(buffer, NOAUTH, error);
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {
@@ -265,7 +265,7 @@ public class Coder {
   public static ByteBuf getIntegerResponse(ByteBuf buffer, byte[] integer) {
     buffer.writeByte(INTEGER_ID);
     buffer.writeBytes(integer);
-    buffer.writeBytes(bCRLF);
+    buffer.writeBytes(CRLF);
     return buffer;
   }
 
@@ -275,12 +275,12 @@ public class Coder {
   }
 
   public static ByteBuf getOKResponse(ByteBuf buffer) {
-    buffer.writeBytes(bOK);
+    buffer.writeBytes(OK);
     return buffer;
   }
 
   public static ByteBuf getNilResponse(ByteBuf buffer) {
-    buffer.writeBytes(bNIL);
+    buffer.writeBytes(NIL);
     return buffer;
   }
 
@@ -333,13 +333,13 @@ public class Coder {
 
   public static byte[] doubleToBytes(double d) {
     if (d == Double.POSITIVE_INFINITY) {
-      return bINF;
+      return INF;
     }
     if (d == Double.NEGATIVE_INFINITY) {
-      return bN_INF;
+      return N_INF;
     }
     if (Double.isNaN(d)) {
-      return bNaN;
+      return NaN;
     }
 
     String stringValue = String.valueOf(d);
@@ -432,9 +432,9 @@ public class Coder {
 
     try {
       String d = bytesToString(bytes);
-      if (d.equalsIgnoreCase(P_INF)) {
+      if (d.equalsIgnoreCase(P_INF_STRING)) {
         return Double.POSITIVE_INFINITY;
-      } else if (d.equalsIgnoreCase(N_INF)) {
+      } else if (d.equalsIgnoreCase(N_INF_STRING)) {
         return Double.NEGATIVE_INFINITY;
       } else {
         return Double.parseDouble(d);
@@ -504,23 +504,23 @@ public class Coder {
 
   // Checks if the given byte array is equivalent to the String "NaN", ignoring case.
   public static boolean isNaN(byte[] bytes) {
-    return equalsIgnoreCaseBytes(bytes, bNaN);
+    return equalsIgnoreCaseBytes(bytes, NaN);
   }
 
   // Checks if the given byte array is equivalent to the Strings "INF", "INFINITY", "+INF" or
   // "+INFINITY", ignoring case.
   public static boolean isPositiveInfinity(byte[] bytes) {
-    return equalsIgnoreCaseBytes(bytes, bINF)
-        || equalsIgnoreCaseBytes(bytes, bP_INF)
-        || equalsIgnoreCaseBytes(bytes, bINFINITY)
-        || equalsIgnoreCaseBytes(bytes, bP_INFINITY);
+    return equalsIgnoreCaseBytes(bytes, INF)
+        || equalsIgnoreCaseBytes(bytes, P_INF)
+        || equalsIgnoreCaseBytes(bytes, INFINITY)
+        || equalsIgnoreCaseBytes(bytes, P_INFINITY);
   }
 
   // Checks if the given byte array is equivalent to the Strings "-INF" or "-INFINITY", ignoring
   // case.
   public static boolean isNegativeInfinity(byte[] bytes) {
-    return equalsIgnoreCaseBytes(bytes, bN_INF)
-        || equalsIgnoreCaseBytes(bytes, bN_INFINITY);
+    return equalsIgnoreCaseBytes(bytes, N_INF)
+        || equalsIgnoreCaseBytes(bytes, N_INFINITY);
   }
 
   // Takes a long value and converts it to an int. Values outside the range Integer.MIN_VALUE and

@@ -20,9 +20,9 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_SLOWL
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RESET;
 
 import java.util.function.Consumer;
 
@@ -49,9 +49,9 @@ public class SlowlogParameterRequirements {
 
   private static void confirmKnownSubcommands(Command command) {
     byte[] bytes = command.getBytesKey();
-    if (!equalsIgnoreCaseBytes(bytes, bRESET) &&
-        !equalsIgnoreCaseBytes(bytes, bLEN) &&
-        !equalsIgnoreCaseBytes(bytes, bGET)) {
+    if (!equalsIgnoreCaseBytes(bytes, RESET) &&
+        !equalsIgnoreCaseBytes(bytes, LEN) &&
+        !equalsIgnoreCaseBytes(bytes, GET)) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, bytesToString(bytes)));
     }
@@ -59,7 +59,7 @@ public class SlowlogParameterRequirements {
 
   private static void confirmArgumentsToGetSubcommand(Command command) {
     byte[] bytes = command.getBytesKey();
-    if (!equalsIgnoreCaseBytes(bytes, bGET)) {
+    if (!equalsIgnoreCaseBytes(bytes, GET)) {
       throw new RedisParametersMismatchException(
           String.format(ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND, bytesToString(bytes)));
     }

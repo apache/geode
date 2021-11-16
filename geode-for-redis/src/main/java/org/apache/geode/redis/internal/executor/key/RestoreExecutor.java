@@ -19,8 +19,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_TTL;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bABSTTL;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bREPLACE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ABSTTL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.REPLACE;
 
 import java.util.List;
 
@@ -75,9 +75,9 @@ public class RestoreExecutor implements CommandExecutor {
   private RestoreOptions parseOptions(List<byte[]> options) {
     RestoreOptions restoreOptions = new RestoreOptions();
     for (byte[] optionBytes : options) {
-      if (Coder.equalsIgnoreCaseBytes(optionBytes, bREPLACE)) {
+      if (Coder.equalsIgnoreCaseBytes(optionBytes, REPLACE)) {
         restoreOptions.setReplace(true);
-      } else if (Coder.equalsIgnoreCaseBytes(optionBytes, bABSTTL)) {
+      } else if (Coder.equalsIgnoreCaseBytes(optionBytes, ABSTTL)) {
         restoreOptions.setAbsttl(true);
       } else {
         throw new RedisException(ERROR_SYNTAX);

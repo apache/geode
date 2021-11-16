@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -82,14 +82,14 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
   default RedisData restore(byte[] data) throws Exception {
     Object obj;
-    byte[] header = new byte[bRADISH_DUMP_HEADER.length];
+    byte[] header = new byte[RADISH_DUMP_HEADER.length];
 
     try {
       ByteArrayInputStream bais = new ByteArrayInputStream(data);
       bais.read(header);
 
       // Don't handle Redis dump formats yet
-      if (!Arrays.equals(header, bRADISH_DUMP_HEADER)) {
+      if (!Arrays.equals(header, RADISH_DUMP_HEADER)) {
         throw new RedisException(ERROR_RESTORE_INVALID_PAYLOAD);
       }
 

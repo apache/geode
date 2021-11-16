@@ -20,10 +20,10 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR;
 import static org.apache.geode.redis.internal.netty.Coder.isInfinity;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCH;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINCR;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNX;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bXX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CH;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INCR;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.XX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,16 +94,16 @@ public class ZAddExecutor implements CommandExecutor {
 
     while (commandIterator.hasNext() && !scoreFound) {
       byte[] subCommand = toUpperCaseBytes(commandIterator.next());
-      if (Arrays.equals(subCommand, bNX)) {
+      if (Arrays.equals(subCommand, NX)) {
         executorState.nxFound = true;
         optionsFoundCount++;
-      } else if (Arrays.equals(subCommand, bXX)) {
+      } else if (Arrays.equals(subCommand, XX)) {
         executorState.xxFound = true;
         optionsFoundCount++;
-      } else if (Arrays.equals(subCommand, bCH)) {
+      } else if (Arrays.equals(subCommand, CH)) {
         executorState.chFound = true;
         optionsFoundCount++;
-      } else if (Arrays.equals(subCommand, bINCR)) {
+      } else if (Arrays.equals(subCommand, INCR)) {
         executorState.incrFound = true;
         optionsFoundCount++;
       } else if (isInfinity(subCommand)) {

@@ -24,8 +24,8 @@ import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCOUNT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMATCH;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.COUNT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MATCH;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -84,11 +84,11 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     for (int i = 3; i < commandElems.size(); i = i + 2) {
       byte[] commandElemBytes = commandElems.get(i);
-      if (equalsIgnoreCaseBytes(commandElemBytes, bMATCH)) {
+      if (equalsIgnoreCaseBytes(commandElemBytes, MATCH)) {
         commandElemBytes = commandElems.get(i + 1);
         globPattern = commandElemBytes;
 
-      } else if (equalsIgnoreCaseBytes(commandElemBytes, bCOUNT)) {
+      } else if (equalsIgnoreCaseBytes(commandElemBytes, COUNT)) {
         commandElemBytes = commandElems.get(i + 1);
         try {
           count = narrowLongToInt(bytesToLong(commandElemBytes));

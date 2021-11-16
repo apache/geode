@@ -20,8 +20,8 @@ import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbse
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.getInternalErrorResponse;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bMESSAGE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPMESSAGE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MESSAGE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PMESSAGE;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -206,7 +206,7 @@ public class Publisher {
     }
     ByteBuf writeBuf = channelSubscriptions.iterator().next().getChannelWriteBuffer();
     for (byte[] message : request.getMessages()) {
-      writeArrayResponse(writeBuf, bMESSAGE, request.getChannel(), message);
+      writeArrayResponse(writeBuf, MESSAGE, request.getChannel(), message);
     }
     if (channelSubscriptions.size() == 1) {
       Subscription singleSubscription = channelSubscriptions.iterator().next();
@@ -233,7 +233,7 @@ public class Publisher {
       PatternSubscriptions patternSubscriptions) {
     ByteBuf writeBuf = patternSubscriptions.getFirst().getChannelWriteBuffer();
     for (byte[] message : request.getMessages()) {
-      writeArrayResponse(writeBuf, bPMESSAGE, patternSubscriptions.getPattern(),
+      writeArrayResponse(writeBuf, PMESSAGE, patternSubscriptions.getPattern(),
           request.getChannel(), message);
     }
     if (patternSubscriptions.size() == 1) {

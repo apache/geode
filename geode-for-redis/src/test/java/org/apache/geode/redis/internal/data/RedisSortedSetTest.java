@@ -20,8 +20,8 @@ import static java.util.Collections.singletonList;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.ORDERED_SET_ENTRY_OVERHEAD;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.REDIS_SORTED_SET_OVERHEAD;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GREATEST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEAST_MEMBER_NAME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -463,17 +463,17 @@ public class RedisSortedSetTest {
     RedisSortedSet.AbstractOrderedSetEntry greatest =
         new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, true);
     RedisSortedSet.AbstractOrderedSetEntry greatestEquivalent =
-        new RedisSortedSet.OrderedSetEntry(bGREATEST_MEMBER_NAME.clone(), score);
+        new RedisSortedSet.OrderedSetEntry(GREATEST_MEMBER_NAME.clone(), score);
 
     RedisSortedSet.AbstractOrderedSetEntry least =
         new RedisSortedSet.ScoreDummyOrderedSetEntry(score, true, false);
     RedisSortedSet.AbstractOrderedSetEntry leastEquivalent =
-        new RedisSortedSet.OrderedSetEntry(bLEAST_MEMBER_NAME.clone(), score);
+        new RedisSortedSet.OrderedSetEntry(LEAST_MEMBER_NAME.clone(), score);
 
-    // bGREATEST_MEMBER_NAME > an array with contents equal to bGREATEST_MEMBER_NAME
+    // GREATEST_MEMBER_NAME > an array with contents equal to GREATEST_MEMBER_NAME
     assertThat(greatest.compareTo(greatestEquivalent)).isEqualTo(1);
 
-    // bLEAST_MEMBER_NAME < an array with contents equal to bLEAST_MEMBER_NAME
+    // LEAST_MEMBER_NAME < an array with contents equal to LEAST_MEMBER_NAME
     assertThat(least.compareTo(leastEquivalent)).isEqualTo(-1);
   }
 
@@ -481,24 +481,24 @@ public class RedisSortedSetTest {
   public void scoreDummyOrderedSetEntryConstructor_setsAppropriateMemberName() {
     RedisSortedSet.AbstractOrderedSetEntry entry =
         new RedisSortedSet.ScoreDummyOrderedSetEntry(1, false, false);
-    assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
+    assertThat(entry.getMember()).isSameAs(GREATEST_MEMBER_NAME);
 
     entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, true, false);
-    assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
+    assertThat(entry.getMember()).isSameAs(LEAST_MEMBER_NAME);
 
     entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, false, true);
-    assertThat(entry.getMember()).isSameAs(bLEAST_MEMBER_NAME);
+    assertThat(entry.getMember()).isSameAs(LEAST_MEMBER_NAME);
 
     entry = new RedisSortedSet.ScoreDummyOrderedSetEntry(1, true, true);
-    assertThat(entry.getMember()).isSameAs(bGREATEST_MEMBER_NAME);
+    assertThat(entry.getMember()).isSameAs(GREATEST_MEMBER_NAME);
   }
 
   @Test
   public void memberDummyOrderedSetEntryCompareTo_handlesDummyMemberNames() {
     RedisSortedSet.AbstractOrderedSetEntry greatest =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(bGREATEST_MEMBER_NAME, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(GREATEST_MEMBER_NAME, false, false);
     RedisSortedSet.AbstractOrderedSetEntry least =
-        new RedisSortedSet.MemberDummyOrderedSetEntry(bLEAST_MEMBER_NAME, false, false);
+        new RedisSortedSet.MemberDummyOrderedSetEntry(LEAST_MEMBER_NAME, false, false);
     RedisSortedSet.AbstractOrderedSetEntry middle =
         new RedisSortedSet.MemberDummyOrderedSetEntry(stringToBytes("middle"), false, false);
 

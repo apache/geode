@@ -20,7 +20,7 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICAT
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCRLF;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CRLF;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -219,9 +219,9 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
       return false;
     }
     byte[] bytes = {buffer.readByte(), buffer.readByte()};
-    if (!Arrays.equals(bytes, bCRLF)) {
+    if (!Arrays.equals(bytes, CRLF)) {
       throw new RedisCommandParserException(
-          "expected \'\\r\\n\' as byte[] of " + Arrays.toString(bCRLF) + ", got byte[] of "
+          "expected \'\\r\\n\' as byte[] of " + Arrays.toString(CRLF) + ", got byte[] of "
               + Arrays.toString(bytes));
     }
     return true;

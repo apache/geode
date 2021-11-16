@@ -21,10 +21,10 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_STRING;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bEX;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNX;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPX;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bXX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.EX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PX;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.XX;
 
 import java.util.List;
 
@@ -67,9 +67,9 @@ public class SetExecutor implements CommandExecutor {
 
     // Iterate the list in reverse order to allow similar error reporting behaviour to native redis
     for (int index = optionalParameters.size() - 1; index >= 0; --index) {
-      if (equalsIgnoreCaseBytes(optionalParameters.get(index), bXX)) {
+      if (equalsIgnoreCaseBytes(optionalParameters.get(index), XX)) {
         handleXX(executorState);
-      } else if (equalsIgnoreCaseBytes(optionalParameters.get(index), bNX)) {
+      } else if (equalsIgnoreCaseBytes(optionalParameters.get(index), NX)) {
         handleNX(executorState);
       } else {
         // Yhe only valid possibility now is that the parameter is a number preceded by either EX or
@@ -119,7 +119,7 @@ public class SetExecutor implements CommandExecutor {
       throw new IllegalArgumentException(ERROR_NOT_INTEGER);
     }
 
-    if (equalsIgnoreCaseBytes(previousParameter, bEX)) {
+    if (equalsIgnoreCaseBytes(previousParameter, EX)) {
       handleEX(executorState, expiration);
     } else {
       handlePX(executorState, expiration);
@@ -140,8 +140,8 @@ public class SetExecutor implements CommandExecutor {
 
   private void throwIfNotExpirationParameter(byte[] previousParameter) {
     // Numbers must be preceded by either EX or PX
-    if (!equalsIgnoreCaseBytes(previousParameter, bEX)
-        && !equalsIgnoreCaseBytes(previousParameter, bPX)) {
+    if (!equalsIgnoreCaseBytes(previousParameter, EX)
+        && !equalsIgnoreCaseBytes(previousParameter, PX)) {
       throw new IllegalArgumentException(ERROR_SYNTAX);
     }
   }

@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.key;
 
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
@@ -54,9 +54,9 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
 
   @Test
   public void restoreWithUnknownVersion_isNotSupported() throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(bRADISH_DUMP_HEADER.length + 2);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(RADISH_DUMP_HEADER.length + 2);
     DataOutputStream output = new DataOutputStream(baos);
-    output.write(bRADISH_DUMP_HEADER);
+    output.write(RADISH_DUMP_HEADER);
     output.writeShort(0);
 
     assertThatThrownBy(
