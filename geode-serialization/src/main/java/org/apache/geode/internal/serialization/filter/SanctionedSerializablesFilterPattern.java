@@ -65,10 +65,7 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
 
         // accept all open MBean data types
         .add("java.**")
-        .add("javax.management.**")
-
-        // used for some old enums
-        .add("javax.print.attribute.EnumSyntax")
+        .add("javax.**")
 
         // query AST objects
         .add("antlr.**")
@@ -99,9 +96,6 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
         // jar deployment
         .add("com.sun.proxy.$Proxy*")
         .add("com.healthmarketscience.rmiio.RemoteInputStream")
-        .add("javax.rmi.ssl.SslRMIClientSocketFactory")
-        .add("javax.net.ssl.SSLHandshakeException")
-        .add("javax.net.ssl.SSLException")
         .add("sun.security.validator.ValidatorException")
         .add("sun.security.provider.certpath.SunCertPathBuilderException")
 
