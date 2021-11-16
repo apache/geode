@@ -29,6 +29,7 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -61,20 +62,27 @@ public class StopGatewaySenderCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    final String id = senderId.trim();
-
-    final Cache cache = getCache();
-    final SystemManagementService service = getManagementService();
-
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
-
     if (dsMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ExecutorService execService =
-        LoggingExecutors.newCachedThreadPool("Stop Sender Command Thread ", true);
+    final String id = senderId.trim();
+    final Cache cache = getCache();
+    final SystemManagementService managementService = getManagementService();
+    final ExecutorService executorService = getExecutorService();
 
+    try {
+      return executeParallelStopGatewaySender(id, cache, dsMembers, executorService,
+          managementService);
+    } finally {
+      executorService.shutdown();
+    }
+  }
+
+  private ResultModel executeParallelStopGatewaySender(String id, Cache cache,
+      Set<DistributedMember> dsMembers, ExecutorService executorService,
+      SystemManagementService managementService) {
     List<Callable<List<String>>> callables = new ArrayList<>();
 
     for (final DistributedMember member : dsMembers) {
@@ -84,10 +92,10 @@ public class StopGatewaySenderCommand extends GfshCommand {
         GatewaySenderMXBean bean;
         ArrayList<String> statusList = new ArrayList<>();
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
-          bean = service.getLocalGatewaySenderMXBean(id);
+          bean = managementService.getLocalGatewaySenderMXBean(id);
         } else {
-          ObjectName objectName = service.getGatewaySenderMBeanName(member, id);
-          bean = service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
+          ObjectName objectName = managementService.getGatewaySenderMBeanName(member, id);
+          bean = managementService.getMBeanProxy(objectName, GatewaySenderMXBean.class);
         }
         if (bean != null) {
           if (!bean.isRunning()) {
@@ -117,13 +125,12 @@ public class StopGatewaySenderCommand extends GfshCommand {
     List<Future<List<String>>> futures;
 
     try {
-      futures = execService.invokeAll(callables);
+      futures = executorService.invokeAll(callables);
     } catch (InterruptedException ite) {
+      Thread.currentThread().interrupt();
       return ResultModel.createError(
           CliStrings.format(CliStrings.GATEWAY_SENDER_STOP_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
               ite.getMessage()));
-    } finally {
-      execService.shutdown();
     }
 
     ResultModel resultModel = new ResultModel();
@@ -142,8 +149,12 @@ public class StopGatewaySenderCommand extends GfshCommand {
                 id, ite.getMessage()));
       }
     }
-    execService.shutdown();
-
     return resultModel;
+  }
+
+  // Added method to be overridden by tests
+  @VisibleForTesting
+  ExecutorService getExecutorService() {
+    return LoggingExecutors.newCachedThreadPool("Stop Sender Command Thread ", true);
   }
 }
