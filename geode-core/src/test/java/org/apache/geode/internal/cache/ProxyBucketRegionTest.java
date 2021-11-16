@@ -20,8 +20,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -48,7 +46,7 @@ public class ProxyBucketRegionTest {
   }
 
   @Test
-  public void testRecoverFromDisk() throws Exception {
+  public void testTwoTimesCallToRecoverFromDiskWillExecuteOneRecovery() {
     PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
     InternalRegionArguments internalRegionArguments = mock(InternalRegionArguments.class);
     RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
@@ -71,6 +69,7 @@ public class ProxyBucketRegionTest {
     when(partitionedRegion.getCache()).thenReturn(cache);
     when(partitionedRegion.getGemFireCache()).thenReturn(cache);
     when(cache.getInternalDistributedSystem()).thenReturn(ids);
+
     when(ids.getDistributionManager()).thenReturn(dm);
     when(partitionedRegion.getDataPolicy()).thenReturn(dp);
     when(dp.withPersistence()).thenReturn(true);
@@ -92,8 +91,7 @@ public class ProxyBucketRegionTest {
 
     proxyBucketRegion.recoverFromDisk();
     proxyBucketRegion.recoverFromDisk();
-    verify(regionAdvisor, times(1))
-        .isInitialized();
+    assertThat(proxyBucketRegion.getRecoverFromDiskCnt()).isEqualTo(1);
   }
 
 }
