@@ -17,7 +17,9 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -283,6 +285,54 @@ public class PRHARedundancyProviderTest {
 
     verify(providerStartupTask, never()).complete(any());
     verify(providerStartupTask).completeExceptionally(exception);
+  }
+
+  @Test
+  public void reportsStartupTaskToResourceManagerForColocatedRegionsAndColocationCompleted() {
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+    when(partitionedRegion.getColocatedWith()).thenReturn("region2");
+    InternalCache cache = mock(InternalCache.class);
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    DistributedRegion prRoot = mock(DistributedRegion.class);
+    when(cache.getRegion(anyString(), anyBoolean())).thenReturn(prRoot);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    when(partitionRegionConfig.isColocationComplete()).thenReturn(true);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager).addStartupTask(same(providerStartupTask));
+  }
+
+  @Test
+  public void doNotNotReportStartupTaskForColocatedRegionsAndColocationNotCompleted() {
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+    when(partitionedRegion.getColocatedWith()).thenReturn("region2");
+    InternalCache cache = mock(InternalCache.class);
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    DistributedRegion prRoot = mock(DistributedRegion.class);
+    when(cache.getRegion(anyString(), anyBoolean())).thenReturn(prRoot);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(prRoot.get(any())).thenReturn(partitionRegionConfig);
+    when(partitionRegionConfig.isColocationComplete()).thenReturn(false);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager, never()).addStartupTask(any());
   }
 
   private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
