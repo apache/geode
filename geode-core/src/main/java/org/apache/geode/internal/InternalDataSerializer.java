@@ -368,7 +368,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
           .pattern();
       serializationFilter = new DelegatingObjectInputFilterFactory()
           .create(filterPattern, loadSanctionedClassNames(services));
+      logger.info("InternalDataSerializer initialize serializationFilter with filterPattern {"
+          + filterPattern + "}");
     } else {
+      logger.info("InternalDataSerializer clearSerializationFilter().");
       clearSerializationFilter();
     }
   }
