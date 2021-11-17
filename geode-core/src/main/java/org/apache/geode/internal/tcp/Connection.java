@@ -95,6 +95,7 @@ import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.internal.serialization.VersioningIO;
 import org.apache.geode.internal.tcp.MsgReader.Header;
@@ -1793,11 +1794,11 @@ public class Connection implements Runnable {
     }
   }
 
-  private SSLEngine createSslEngine(InetSocketAddress remoteAddress) {
+  private SSLEngine createSslEngine(final InetSocketAddress remoteAddress) {
     final String hostName;
     final boolean isSender = remoteMember != null;
     if (isSender) {
-      hostName = convertToFqdnIfNeeded(remoteMember.getHostName());
+      hostName = convertToFqdnIfNeeded(remoteMember.getHostName(), remoteMember.getVersion());
     } else {
       hostName = SocketCreator.getHostName(remoteAddress.getAddress());
     }
@@ -1807,8 +1808,7 @@ public class Connection implements Runnable {
 
   /**
    * In older versions of Geode {@link InternalDistributedMember#getHostName()} can return an IP
-   * address
-   * if network partition detection is enabled. If SSL endpoint identification is enabled,
+   * address if network partition detection is enabled. If SSL endpoint identification is enabled,
    * those product versions supply the result of a reverse lookup to the TLS handshake API.
    * Endpoint identification will fail if e.g. the lookup returned a fully-qualified name but
    * the certificate had just a (non-fully-qualified) hostname in a Subject Alternate Name field.
@@ -1817,13 +1817,14 @@ public class Connection implements Runnable {
    * that exact string will be carried as the host name. That gives the administrator better control
    * over endpoint identification. When connecting to earlier versions we convert any IP numbers
    * to hostnames via reverse lookup here.
+   *
+   * This method should be removed once pre-1.15.0 versions get out of support (i.e. along with
+   * the removal of fromDataPre_GEODE_1_15_0_0 and toDataPre_GEODE_1_15_0_0 methods)
    */
-  protected String convertToFqdnIfNeeded(final String hostNameOrIP) {
-    if (remoteMember.getVersion().isOlderThan(KnownVersion.GEODE_1_15_0)
+  protected String convertToFqdnIfNeeded(final String hostNameOrIP, final Version version) {
+    if (version.isOlderThan(KnownVersion.GEODE_1_15_0)
         && owner.getDM().getConfig().getSSLEndPointIdentificationEnabled()
         && InetAddressValidator.getInstance().isValid(hostNameOrIP)) {
-      // If the host string is a valid IP address, return the fully qualified
-      // domain name for this IP address.
       try {
         return InetAddress.getByName(hostNameOrIP).getCanonicalHostName();
       } catch (UnknownHostException e) {
