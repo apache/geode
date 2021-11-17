@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -1798,7 +1800,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    *
    */
   @Test
-  public void testSimulaneousChildRegionCreation() throws Throwable {
+  public void testSimultaneousChildRegionCreation() throws Throwable {
     createCacheInAllVms();
 
     // add a listener for region recovery
@@ -1864,25 +1866,35 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     }
 
     Wait.pause(5000);
+
+    await().untilAsserted(() -> assertTrue(
+        dataStore1.invoke(() -> isPartitionedRegionRecovered(OrderPartitionedRegionName))
+            ||
+            dataStore2.invoke(() -> isPartitionedRegionRecovered(OrderPartitionedRegionName))));
+
     SerializableRunnable checkForBuckets_ForOrder = new SerializableRunnable("check for buckets") {
       @Override
       public void run() {
         PartitionedRegion region =
             (PartitionedRegion) basicGetCache().getRegion(OrderPartitionedRegionName);
-        MyResourceObserver observer =
-            (MyResourceObserver) InternalResourceManager.getResourceObserver();
-        try {
-          observer.waitForRegion(region, 60 * 1000);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-        assertEquals(50, region.getDataStore().getAllLocalBucketIds().size());
-        assertEquals(25, region.getDataStore().getAllLocalPrimaryBucketIds().size());
+        await().untilAsserted(
+            () -> assertThat(region.getDataStore().getAllLocalBucketIds().size()).isEqualTo(50));
+        await().untilAsserted(
+            () -> assertThat(region.getDataStore().getAllLocalPrimaryBucketIds().size())
+                .isEqualTo(25));
       }
     };
 
     dataStore1.invoke(checkForBuckets_ForOrder);
     dataStore2.invoke(checkForBuckets_ForOrder);
+  }
+
+  private boolean isPartitionedRegionRecovered(String regionName) {
+    PartitionedRegion region =
+        (PartitionedRegion) basicGetCache().getRegion(regionName);
+    MyResourceObserver observer =
+        (MyResourceObserver) InternalResourceManager.getResourceObserver();
+    return observer.isRegionRecovered(region);
   }
 
   public static void putData_KeyBasedPartitionResolver() {
@@ -2598,6 +2610,12 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     public void rebalancingOrRecoveryFinished(Region region) {
       synchronized (this) {
         recoveredRegions.add(region);
+      }
+    }
+
+    public boolean isRegionRecovered(Region region) {
+      synchronized (this) {
+        return recoveredRegions.contains(region);
       }
     }
 

@@ -783,10 +783,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       });
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createChildPR(regionName, childRegionName1,
           DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
     }
+    vm2.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+        DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
 
     vm0.invoke(() -> {
       createData(regionName, "a");
@@ -824,10 +827,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
     awaitAllAsync();
 
-    for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createChildPR(regionName, childRegionName1,
           DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
     }
+    vm2.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+        DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
@@ -875,10 +881,12 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       });
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createChildPR(regionName, childRegionName1,
           DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
     }
+    vm2.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+        DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
 
     vm0.invoke(() -> {
       createData(regionName, "a");
@@ -931,10 +939,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
     awaitAllAsync();
 
-    for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
-          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
-    }
+
+    vm0.invoke(() -> createChildPR(regionName, childRegionName1,
+        DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
+    vm1.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
+        DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
 
     for (VM vm : toArray(vm0, vm1)) {
       Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
@@ -1212,10 +1223,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       });
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createChildPR_withPersistence(regionName, childRegionName1,
           diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
     }
+    vm2.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+        diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
 
     // Create some buckets.
     vm0.invoke(() -> {
@@ -1252,10 +1266,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     // Recreate the child region.
-    for (VM vm : toArray(vm2, vm1, vm0)) {
+    for (VM vm : toArray(vm2, vm1)) {
       addAsync(vm.invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName,
           childRegionName1, diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    vm0.invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName,
+        childRegionName1, diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
     awaitAllAsync();
 
     vm0.invoke(() -> {
@@ -1299,10 +1316,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       });
     }
 
-    for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createChildPR_withPersistence(regionName, childRegionName1,
           diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
     }
+    vm2.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+        diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
 
     // Create some buckets.
     vm0.invoke(() -> {
@@ -1340,9 +1360,12 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Recreate the child region.
     for (VM vm : toArray(vm2, vm1, vm0)) {
-      addAsync(vm.invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName,
+      addAsync(vm.invokeAsync(() -> createChildPR_withPersistence(regionName,
           childRegionName1, diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    vm0.invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName,
+        childRegionName1, diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+
     awaitAllAsync();
 
     // Validate the data
