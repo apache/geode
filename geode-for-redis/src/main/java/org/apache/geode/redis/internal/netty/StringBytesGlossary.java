@@ -108,6 +108,12 @@ public class StringBytesGlossary {
 
   // ********** Redis Command constants **********
 
+  // ClientExecutor
+  @MakeImmutable
+  public static final byte[] SETNAME = stringToBytes("SETNAME");
+  @MakeImmutable
+  public static final byte[] GETNAME = stringToBytes("GETNAME");
+
   // ClusterExecutor
   @MakeImmutable
   public static final byte[] bINFO = stringToBytes("INFO");
