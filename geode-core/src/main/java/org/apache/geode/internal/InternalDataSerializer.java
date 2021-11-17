@@ -363,9 +363,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
         throw new GemFireConfigException(
             "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available");
       }
-      String filterPattern = new SanctionedSerializablesFilterPattern()
-          .append(distributionConfig.getSerializableObjectFilter())
-          .pattern();
+      String filterPattern;
+      if (distributionConfig.getSerializableObjectFilter().equals("!*")) {
+        filterPattern = new SanctionedSerializablesFilterPattern().pattern();
+      } else {
+        filterPattern = new SanctionedSerializablesFilterPattern()
+            .append(distributionConfig.getSerializableObjectFilter())
+            .pattern();
+      }
       serializationFilter = new DelegatingObjectInputFilterFactory()
           .create(filterPattern, loadSanctionedClassNames(services));
       logger.info("InternalDataSerializer initialize serializationFilter with filterPattern {"
