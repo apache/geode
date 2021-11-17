@@ -207,8 +207,34 @@ public class AlterRegionCommandWithRemoteLocator {
           "alter region --name=SecurityCrossReferences --gateway-sender-id=serialSender1,serialSender2");
       return true;
     });
-
-
   }
 
+  /**
+   * Test execution of alter region command, when adding gw sender to already initialized region is
+   * not taking too much time.
+   * Verify that execution of command will not be halted, due to PRShadowRegion not available
+   * immediately in all servers.
+   */
+  @Test
+  public void alterInitializedRegionWithGwSenderOnManyServersDoesNotTakeTooLong() {
+    gfsh.executeAndAssertThat("create disk-store --name=data --max-oplog-size=10 --dir=.")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=Positions --type=PARTITION_REDUNDANT_PERSISTENT --disk-store=data --total-num-buckets=1103")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "query --query=\"select key,value from " + SEPARATOR + "Positions.entries\"")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create gateway-sender --id=parallelPositions --remote-distributed-system-id=1 --enable-persistence=true --disk-store-name=data --parallel=true")
+        .statusIsSuccess();
+
+    GeodeAwaitility.await().until(() -> {
+      gfsh.execute("alter region --name=Positions --gateway-sender-id=parallelPositions");
+      return true;
+    });
+  }
 }

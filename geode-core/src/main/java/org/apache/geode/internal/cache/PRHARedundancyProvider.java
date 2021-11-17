@@ -1371,6 +1371,10 @@ public class PRHARedundancyProvider {
    * redundancy of existing buckets
    */
   void startRedundancyRecovery() {
+    if (partitionedRegion.getColocatedWith() != null
+        && !ColocationHelper.isColocationComplete(partitionedRegion)) {
+      return;
+    }
     partitionedRegion.getRegionAdvisor().addMembershipListener(new PRMembershipListener());
     scheduleRedundancyRecovery(null);
   }
