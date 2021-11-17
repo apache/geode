@@ -49,13 +49,19 @@ public class ClassAnalysisRule implements TestRule {
       new AtomicReference<>(new HashMap<>());
 
   private final String moduleName;
+  private final String sourceSet;
   private final Map<String, CompiledClass> classes = new HashMap<>();
 
   /**
    * @param moduleName The name of the gradle module in which your test resides
    */
   public ClassAnalysisRule(String moduleName) {
+    this(moduleName, "main");
+  }
+
+  public ClassAnalysisRule(String moduleName, String sourceSet) {
     this.moduleName = moduleName;
+    this.sourceSet = sourceSet;
   }
 
   public Map<String, CompiledClass> getClasses() {
@@ -95,19 +101,26 @@ public class ClassAnalysisRule implements TestRule {
             .map(x -> new File(x))
             .collect(Collectors.toList());
 
+    // check for <module>/build/classes/java/**
     String gradleBuildDirName =
-        Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
-    // System.out.println("gradleBuildDirName is " + gradleBuildDirName);
+        Paths.get(getModuleName(), "build", "classes", "java", sourceSet).toString();
+
+    // check for <module>/build/classes/test/**
+    String alternateBuildDirName =
+        Paths.get(getModuleName(), "build", "classes", sourceSet).toString();
+
+    // check for <module>/out/production/classes/**
     String ideaBuildDirName =
         Paths.get(getModuleName(), "out", "production", "classes").toString();
-    // System.out.println("ideaBuildDirName is " + ideaBuildDirName);
+
+    // check for <module>/out/production/geode.<module>.<sourceSet>/**
     String ideaFQCNBuildDirName =
-        Paths.get("out", "production", "geode." + getModuleName() + ".main").toString();
-    // System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
+        Paths.get("out", "production", "geode." + getModuleName() + "." + sourceSet).toString();
 
     String buildDir = null;
     for (File entry : entries) {
       if (entry.toString().endsWith(gradleBuildDirName)
+          || entry.toString().endsWith(alternateBuildDirName)
           || entry.toString().endsWith(ideaBuildDirName)
           || entry.toString().endsWith(ideaFQCNBuildDirName)) {
         buildDir = entry.toString();

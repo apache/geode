@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  */
 @Category({MembershipTest.class, SerializationTest.class})
 public class AnalyzeMembershipSerializablesIntegrationTest
-    extends AnalyzeDataSerializablesJUnitTestBase {
+    extends AnalyzeDataSerializablesWithClassAnalysisRuleTestBase {
 
   private final DSFIDSerializer dsfidSerializer =
       new DSFIDSerializerFactory().create();

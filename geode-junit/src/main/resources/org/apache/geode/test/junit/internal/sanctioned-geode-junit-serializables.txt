@@ -36,6 +36,7 @@ org/apache/geode/cache/snapshot/RegionGenerator$SerializationType,false
 org/apache/geode/cache/ssl/CertificateMaterial,false,certificate:java/security/cert/X509Certificate,issuer:java/security/cert/X509Certificate,keyPair:java/security/KeyPair
 org/apache/geode/cache30/MyGatewayTransportFilter1,false
 org/apache/geode/cache30/MyGatewayTransportFilter2,false
+org/apache/geode/codeAnalysis/SanctionedSerializablesServiceIntegrationTestBase$ServiceResourceExpectation,false
 org/apache/geode/internal/cache/SerializableObject,false,i:int,str:java/lang/String
 org/apache/geode/internal/cache/UnitTestValueHolder,false,value:java/lang/Object
 org/apache/geode/internal/cache/execute/MyFunctionExecutionException,false

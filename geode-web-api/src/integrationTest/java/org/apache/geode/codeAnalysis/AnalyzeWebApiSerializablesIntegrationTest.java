@@ -23,7 +23,8 @@ import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({RestAPITest.class, SerializationTest.class})
-public class AnalyzeWebApiSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeWebApiSerializablesIntegrationTest
+    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
 
   @Override
   protected String getModuleName() {

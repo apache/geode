@@ -22,7 +22,8 @@ import org.apache.geode.gfsh.internal.management.GfshSanctionedSerializablesServ
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeGfshSerializablesIntegrationTest
+    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
 
   @Override
   protected String getModuleName() {

@@ -14,24 +14,30 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import java.util.Optional;
+import java.util.Map;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.serialization.SerializationSanctionedSerializablesService;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
 @Category(SerializationTest.class)
-public class AnalyzeSerializationSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public abstract class AnalyzeSerializablesWithClassAnalysisRuleTestBase
+    extends AnalyzeSerializablesTestBase {
 
-  @Override
-  protected String getModuleName() {
-    return "geode-serialization";
+  @Rule
+  public ClassAnalysisRule classProvider = new ClassAnalysisRule(getModuleName());
+
+  @AfterClass
+  public static void afterClass() {
+    ClassAnalysisRule.clearCache();
   }
 
   @Override
-  protected Optional<Class<?>> getModuleClass() {
-    return Optional.of(SerializationSanctionedSerializablesService.class);
+  protected Map<String, CompiledClass> loadClasses() {
+    return classProvider.getClasses();
   }
 }

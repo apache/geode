@@ -22,7 +22,8 @@ import org.apache.geode.internal.CoreSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzeCoreSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeCoreSerializablesIntegrationTest
+    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
 
   @Override
   protected String getModuleName() {
