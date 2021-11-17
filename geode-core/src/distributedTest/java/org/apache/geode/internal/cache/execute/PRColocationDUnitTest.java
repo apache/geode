@@ -2593,6 +2593,14 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   private static class MyResourceObserver extends ResourceObserverAdapter {
     Set<Region> recoveredRegions = new HashSet<Region>();
+    Set<Region> recoveryStartedOnRegions = new HashSet<Region>();
+
+    @Override
+    public void rebalancingOrRecoveryStarted(Region region) {
+      synchronized (this) {
+        recoveryStartedOnRegions.add(region);
+      }
+    }
 
     @Override
     public void rebalancingOrRecoveryFinished(Region region) {
@@ -2604,6 +2612,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     public void waitForRegion(Region region, long timeout) throws InterruptedException {
       long start = System.currentTimeMillis();
       synchronized (this) {
+        long waitStart = (timeout / 10) - (System.currentTimeMillis() - start);
+        this.wait(waitStart);
+        if (!recoveryStartedOnRegions.contains(region)) {
+          return;
+        }
         while (!recoveredRegions.contains(region)) {
           long remaining = timeout - (System.currentTimeMillis() - start);
           assertTrue("Timeout waiting for region recovery", remaining > 0);

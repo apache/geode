@@ -59,6 +59,7 @@ import java.util.function.Function;
 
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -122,6 +123,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
   private static volatile InternalCache cache;
   private static volatile CountDownLatch latch;
+  private static volatile boolean recoveryExecuted;
 
   private final transient List<AsyncInvocation<Void>> asyncInvocations = new ArrayList<>();
 
@@ -784,9 +786,11 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
-          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm.invokeAsync(() -> createChildPR_withRecovery(regionName, childRegionName1,
+          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     vm0.invoke(() -> {
       createData(regionName, "a");
@@ -825,9 +829,11 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     awaitAllAsync();
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
-          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm.invokeAsync(() -> createChildPR_withRecovery(regionName, childRegionName1,
+          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
       Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
@@ -876,9 +882,11 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
-          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm.invokeAsync(() -> createChildPR_withRecovery(regionName, childRegionName1,
+          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     vm0.invoke(() -> {
       createData(regionName, "a");
@@ -932,9 +940,11 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     awaitAllAsync();
 
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> createChildPR_withRecovery(regionName, childRegionName1,
-          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm.invokeAsync(() -> createChildPR_withRecovery(regionName, childRegionName1,
+          DEFAULT_RECOVERY_DELAY, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     for (VM vm : toArray(vm0, vm1)) {
       Set<Integer> bucketIds = bucketIdsInVM.get(vm.getId());
@@ -1213,9 +1223,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
-          diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm
+          .invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+              diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
+
 
     // Create some buckets.
     vm0.invoke(() -> {
@@ -1257,6 +1271,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
           childRegionName1, diskStoreName1, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
     awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     vm0.invoke(() -> {
       // Validate the data
@@ -1300,9 +1315,12 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
-          diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY));
+      addAsync(vm
+          .invokeAsync(() -> createChildPR_withPersistence_andRecovery(regionName, childRegionName1,
+              diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
+    awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     // Create some buckets.
     vm0.invoke(() -> {
@@ -1344,6 +1362,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
           childRegionName1, diskStoreName2, 0, 1, DEFAULT_STARTUP_RECOVERY_DELAY)));
     }
     awaitAllAsync();
+    checkIfRecoveryExecuted();
 
     // Validate the data
     vm0.invoke(() -> {
@@ -1749,32 +1768,59 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   private void createChildPR_withPersistence_andRecovery(String parentRegionName,
       String childRegionName, String diskStoreName, long recoveryDelay, int redundantCopies,
       long startupRecoveryDelay) throws InterruptedException {
-    CountDownLatch recoveryDone = prepareRecovery(1, childRegionName1);
+    recoveryExecuted = false;
+    Pair<CountDownLatch, CountDownLatch> recoveryPair = prepareRecovery(1, childRegionName1);
+    CountDownLatch recoveryStarted = recoveryPair.getLeft();
+    CountDownLatch recoveryDone = recoveryPair.getRight();
 
     createChildPR_withPersistence(parentRegionName, childRegionName, diskStoreName, recoveryDelay,
         redundantCopies, startupRecoveryDelay);
-
-    assertThat(recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS)).isTrue();
+    if (recoveryStarted.await(TIMEOUT_MILLIS / 10, MILLISECONDS)) {
+      recoveryExecuted = true;
+      assertThat(recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS)).isTrue();
+    }
   }
 
   private void createChildPR_withRecovery(String parentRegionName, String childRegionName,
       long recoveryDelay, int redundantCopies, long startupRecoveryDelay)
       throws InterruptedException {
-    CountDownLatch recoveryDone = prepareRecovery(1, childRegionName1);
+    recoveryExecuted = false;
+    Pair<CountDownLatch, CountDownLatch> recoveryPair = prepareRecovery(1, childRegionName1);
+    CountDownLatch recoveryStarted = recoveryPair.getLeft();
+    CountDownLatch recoveryDone = recoveryPair.getRight();
 
     createChildPR(parentRegionName, childRegionName, recoveryDelay, redundantCopies,
         startupRecoveryDelay);
 
-    assertThat(recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS)).isTrue();
+    if (recoveryStarted.await(TIMEOUT_MILLIS / 10, MILLISECONDS)) {
+      recoveryExecuted = true;
+      assertThat(recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS)).isTrue();
+    }
   }
 
   private CountDownLatch prepareRecovery(int count) {
-    return prepareRecovery(count, null);
-  }
-
-  private CountDownLatch prepareRecovery(int count, String regionName) {
     CountDownLatch recoveryDone = new CountDownLatch(count);
     ResourceObserver observer = new InternalResourceManager.ResourceObserverAdapter() {
+      @Override
+      public void recoveryFinished(Region region) {
+        recoveryDone.countDown();
+      }
+    };
+    InternalResourceManager.setResourceObserver(observer);
+    return recoveryDone;
+  }
+
+  private Pair<CountDownLatch, CountDownLatch> prepareRecovery(int count, String regionName) {
+    CountDownLatch recoveryStarted = new CountDownLatch(count);
+    CountDownLatch recoveryDone = new CountDownLatch(count);
+    ResourceObserver observer = new InternalResourceManager.ResourceObserverAdapter() {
+      @Override
+      public void recoveryStarted(Region region) {
+        if (regionName == null || region.getName().contains(regionName)) {
+          recoveryStarted.countDown();
+        }
+      }
+
       @Override
       public void recoveryFinished(Region region) {
         if (regionName == null || region.getName().contains(regionName)) {
@@ -1783,7 +1829,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       }
     };
     InternalResourceManager.setResourceObserver(observer);
-    return recoveryDone;
+    return Pair.of(recoveryStarted, recoveryDone);
   }
 
   private void validateColocationLogger_withMissingChildRegion(int expectedLogMessagesCount) {
@@ -1969,6 +2015,18 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
   }
 
+  private void checkIfRecoveryExecuted() {
+    boolean recovery = false;
+    for (VM vm : toArray(vm0, vm1, vm2)) {
+      if (vm.invoke(() -> getRecoveryStatus())) {
+        recovery = true;
+        break;
+      }
+    }
+    assertThat(recovery).isTrue();
+  }
+
+
   /**
    * The colocation tree has the regions started in a specific order so that the logging is
    * predictable. For each entry in the list, the array values are:
@@ -2115,6 +2173,10 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       }
       PartitionedRegionObserverHolder.setInstance(new PartitionedRegionObserverAdapter());
     }
+  }
+
+  private boolean getRecoveryStatus() {
+    return recoveryExecuted;
   }
 
   private static class PRObserver extends PartitionedRegionObserverAdapter {
