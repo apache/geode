@@ -303,6 +303,8 @@ Geode for Redis implements a subset of the full Redis command set.
     - evicted_keys (always returns 0)
 
     - rejected_connections (always returns 0)
+    - pubsub_channels
+    - pubsub_patterns
 
 <br/>  
 <sup>3</sup>  SLOWLOG is implemented as a NoOp.
