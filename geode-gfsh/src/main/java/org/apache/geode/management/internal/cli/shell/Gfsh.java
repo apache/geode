@@ -690,8 +690,6 @@ public class Gfsh extends JLineShell {
     try {
       return ProductVersionUtil.appendFullVersion(new StringBuilder())
           .append(lineSeparator())
-          .append(SystemDescription.RUNNING_ON)
-          .append(": ")
           .append(SystemDescription.getRunningOnInfo())
           .append(lineSeparator()).toString();
     } catch (IOException e) {
