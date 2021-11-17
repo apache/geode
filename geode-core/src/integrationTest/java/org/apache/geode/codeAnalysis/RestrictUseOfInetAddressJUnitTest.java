@@ -202,8 +202,8 @@ public class RestrictUseOfInetAddressJUnitTest {
         // server-side locator parsing
         "org/apache/geode/internal/admin/remote/DistributionLocatorId",
         // sanctioned comms class used by every communications component
-        "org/apache/geode/internal/net/SocketCreator",
         "org/apache/geode/internal/net/SCAdvancedSocketCreator",
+        "org/apache/geode/internal/tcp/Connection",
         // new management API
         "org/apache/geode/management/internal/JmxManagerLocatorResponse",
         "org/apache/geode/management/internal/ManagementAgent"));
