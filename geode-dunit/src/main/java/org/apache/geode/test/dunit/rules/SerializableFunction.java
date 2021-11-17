@@ -15,7 +15,14 @@
 package org.apache.geode.test.dunit.rules;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public interface SerializableFunction<T> extends UnaryOperator<T>, Serializable {
+
+  default SerializableFunction<T> compose(SerializableFunction<T> before) {
+    Objects.requireNonNull(before);
+    return (T t) -> apply(before.apply(t));
+  }
+
 }
