@@ -52,8 +52,8 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  * Subclasses must provide serialization/deserialization methods.
  *
  * <p>
- * Most tests should subclass {@link AnalyzeSerializablesTestBase} instead of this
- * class because it ties into geode-core serialization and saves a lot of work.
+ * Most tests should subclass {@link AnalyzeSerializablesWithClassAnalysisRuleTestBase} instead of
+ * this class because it ties into geode-core serialization and saves a lot of work.
  */
 @Category({SerializationTest.class})
 public abstract class AnalyzeDataSerializablesTestBase {
@@ -204,7 +204,6 @@ public abstract class AnalyzeDataSerializablesTestBase {
         } catch (InstantiationException | IllegalAccessException | NullPointerException e) {
           // okay - it's in the excludedClasses.txt file after all
           // IllegalAccessException means that the constructor is private.
-          // throw new AssertionError("Unable to instantiate " + excludedClass.getName(), e);
           continue;
         }
         serializeAndDeserializeObject(excludedInstance);
@@ -339,28 +338,13 @@ public abstract class AnalyzeDataSerializablesTestBase {
   }
 
   File createEmptyFile(String fileName) throws IOException {
-    final String workingDir = System.getProperty("user.dir");
-    final String filePath;
-    // if (isIntelliJDir(workingDir)) {
-    // String buildDir = workingDir.replace(getModuleName(), "");
-    // buildDir =
-    // Paths.get(buildDir, "out", "production", "geode." + getModuleName() + ".integrationTest")
-    // .toString();
-    // filePath = buildDir + File.separator + fileName;
-    // } else {
-    filePath = fileName;
-    // }
-    File file = new File(filePath);
+    File file = new File(fileName);
     if (file.exists()) {
       assertThat(file.delete()).isTrue();
     }
     assertThat(file.createNewFile()).isTrue();
     assertThat(file).exists().canWrite();
     return file;
-  }
-
-  private boolean isIntelliJDir(final String workingDir) {
-    return !workingDir.contains("build");
   }
 
   /**

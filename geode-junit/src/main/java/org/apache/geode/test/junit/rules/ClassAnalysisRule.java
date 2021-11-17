@@ -109,20 +109,10 @@ public class ClassAnalysisRule implements TestRule {
     String alternateBuildDirName =
         Paths.get(getModuleName(), "build", "classes", sourceSet).toString();
 
-    // check for <module>/out/production/classes/**
-    String ideaBuildDirName =
-        Paths.get(getModuleName(), "out", "production", "classes").toString();
-
-    // check for <module>/out/production/geode.<module>.<sourceSet>/**
-    String ideaFQCNBuildDirName =
-        Paths.get("out", "production", "geode." + getModuleName() + "." + sourceSet).toString();
-
     String buildDir = null;
     for (File entry : entries) {
       if (entry.toString().endsWith(gradleBuildDirName)
-          || entry.toString().endsWith(alternateBuildDirName)
-          || entry.toString().endsWith(ideaBuildDirName)
-          || entry.toString().endsWith(ideaFQCNBuildDirName)) {
+          || entry.toString().endsWith(alternateBuildDirName)) {
         buildDir = entry.toString();
         break;
       }
