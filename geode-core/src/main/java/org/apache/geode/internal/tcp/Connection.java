@@ -195,7 +195,7 @@ public class Connection implements Runnable {
    */
   private final String conduitIdStr;
 
-  private InternalDistributedMember remoteAddr;
+  private InternalDistributedMember remoteMember;
 
   /**
    * Identifies the version of the member on the other side of the connection.
@@ -772,13 +772,13 @@ public class Connection implements Runnable {
             if (!handshakeRead && !handshakeCancelled) {
               reason = "handshake timed out";
               String peerName;
-              if (remoteAddr != null) {
-                peerName = remoteAddr.toString();
+              if (remoteMember != null) {
+                peerName = remoteMember.toString();
                 // late in the life of jdk 1.7 we started seeing connections accepted
                 // when accept() was not even being called. This started causing timeouts
                 // to occur in the handshake threads instead of causing failures in
                 // connection-formation. So, we need to initiate suspect processing here
-                owner.getDM().getDistribution().suspectMember(remoteAddr,
+                owner.getDM().getDistribution().suspectMember(remoteMember,
                     format(
                         "Connection handshake with %s timed out after waiting %s milliseconds.",
                         peerName, HANDSHAKE_TIMEOUT_MS));
@@ -802,7 +802,7 @@ public class Connection implements Runnable {
             if (success) {
               if (isReceiver) {
                 needToClose =
-                    !owner.getConduit().getMembership().addSurpriseMember(remoteAddr);
+                    !owner.getConduit().getMembership().addSurpriseMember(remoteMember);
                 if (needToClose) {
                   reason = "this member is shunned";
                 }
@@ -875,7 +875,7 @@ public class Connection implements Runnable {
         Socket s = socket;
         if (s != null && !s.isClosed()) {
           prepareForAsyncClose();
-          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteAddr),
+          owner.getSocketCloser().asyncClose(s, String.valueOf(remoteMember),
               () -> ioFilter.close(s.getChannel()));
         }
       }
@@ -1148,8 +1148,8 @@ public class Connection implements Runnable {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
-  private void setRemoteAddr(InternalDistributedMember m) {
-    remoteAddr = owner.getDM().getCanonicalId(m);
+  private void setRemoteMember(InternalDistributedMember m) {
+    remoteMember = owner.getDM().getCanonicalId(m);
     Membership<InternalDistributedMember> mgr = conduit.getMembership();
     mgr.addSurpriseMember(m);
   }
@@ -1169,7 +1169,7 @@ public class Connection implements Runnable {
     owner = t;
     this.sharedResource = sharedResource;
     this.preserveOrder = preserveOrder;
-    setRemoteAddr(remoteID);
+    setRemoteMember(remoteID);
     conduitIdStr = owner.getConduit().getSocketId().toString();
     handshakeRead = false;
     handshakeCancelled = false;
@@ -1206,7 +1206,7 @@ public class Connection implements Runnable {
 
         channel.socket().connect(addr, connectTime);
 
-        createIoFilter(channel, true);
+        createIoFilter(channel);
 
       } catch (NullPointerException e) {
         // jdk 1.7 sometimes throws an NPE here
@@ -1436,23 +1436,23 @@ public class Connection implements Runnable {
               // Only remove endpoint if sender.
               if (finishedConnecting) {
                 // only remove endpoint if our constructor finished
-                owner.removeEndpoint(remoteAddr, reason);
+                owner.removeEndpoint(remoteMember, reason);
               }
             }
           } else {
             // noinspection ConstantConditions
-            owner.removeSharedConnection(reason, remoteAddr, preserveOrder, this);
+            owner.removeSharedConnection(reason, remoteMember, preserveOrder, this);
           }
         } else if (!isReceiver) {
-          owner.removeThreadConnection(remoteAddr, this);
+          owner.removeThreadConnection(remoteMember, this);
         }
       } else {
         // This code is ok to do even if the ConnectionTable has never added this Connection to its
         // maps since the calls in this block use our identity to do the removes.
         if (sharedResource) {
-          owner.removeSharedConnection(reason, remoteAddr, preserveOrder, this);
+          owner.removeSharedConnection(reason, remoteMember, preserveOrder, this);
         } else if (!isReceiver) {
-          owner.removeThreadConnection(remoteAddr, this);
+          owner.removeThreadConnection(remoteMember, this);
         }
       }
     }
@@ -1500,7 +1500,7 @@ public class Connection implements Runnable {
     } finally {
       // do the socket close within a finally block
       if (logger.isDebugEnabled()) {
-        logger.debug("Stopping {} for {}", p2pReaderName(), remoteAddr);
+        logger.debug("Stopping {} for {}", p2pReaderName(), remoteMember);
       }
       if (isReceiver) {
         try {
@@ -1559,7 +1559,7 @@ public class Connection implements Runnable {
       socket.setSoTimeout(0);
       socket.setTcpNoDelay(true);
       if (ioFilter == null) {
-        createIoFilter(channel, false);
+        createIoFilter(channel);
       }
       channel.configureBlocking(true);
     } catch (ClosedChannelException e) {
@@ -1740,18 +1740,15 @@ public class Connection implements Runnable {
       }
       if (logger.isDebugEnabled()) {
         logger.debug("readMessages terminated id={} from {} isHandshakeReader={}", conduitIdStr,
-            remoteAddr, handshakeHasBeenRead);
+            remoteMember, handshakeHasBeenRead);
       }
     }
   }
 
-  private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
+  private void createIoFilter(SocketChannel channel) throws IOException {
     if (getConduit().useSSL() && channel != null) {
-      InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
-      String hostName = determineHostName(address);
-      SSLEngine engine =
-          getConduit().getSocketCreator().createSSLEngine(hostName,
-              address.getPort(), clientSocket);
+      final InetSocketAddress remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
+      final SSLEngine engine = createSslEngine(remoteAddress);
 
       final int packetBufferSize = engine.getSession().getPacketBufferSize();
 
@@ -1796,52 +1793,44 @@ public class Connection implements Runnable {
     }
   }
 
-  private String determineHostName(InetSocketAddress address) {
+  private SSLEngine createSslEngine(InetSocketAddress remoteAddress) {
     final String hostName;
-    if (remoteAddr != null) {
-      if (remoteAddr.getVersion().isOlderThan(KnownVersion.GEODE_1_15_0)) {
-        // preserve old behavior for backward compatibility
-        hostName = determineHostnameForOlderMember(address);
-      } else {
-        hostName = remoteAddr.getHostName();
-      }
+    final boolean isSender = remoteMember != null;
+    if (isSender) {
+      hostName = convertToFqdnIfNeeded(remoteMember.getHostName());
     } else {
-      hostName = SocketCreator.getHostName(address.getAddress());
+      hostName = SocketCreator.getHostName(remoteAddress.getAddress());
     }
-    return hostName;
+    return getConduit().getSocketCreator().createSSLEngine(hostName, remoteAddress.getPort(),
+        isSender);
   }
 
   /**
-   * In older versions of Geode {@link InetSocketAddress#getHostString()} can return an IP address
-   * if
-   * network partition detection is enabled. If SSL endpoint identification is enabled,
+   * In older versions of Geode {@link InternalDistributedMember#getHostName()} can return an IP
+   * address
+   * if network partition detection is enabled. If SSL endpoint identification is enabled,
    * those product versions supply the result of a reverse lookup to the TLS handshake API.
    * Endpoint identification will fail if e.g. the lookup returned a fully-qualified name but
    * the certificate had just a (non-fully-qualified) hostname in a Subject Alternate Name field.
    *
    * In version 1.15.0 member identifiers were changed so that if a bind address is specified,
    * that exact string will be carried as the host name. That gives the administrator better control
-   * over endpoint identification. When upgrading from earlier versions we convert any IP numbers
+   * over endpoint identification. When connecting to earlier versions we convert any IP numbers
    * to hostnames via reverse lookup here.
    */
-  private String determineHostnameForOlderMember(InetSocketAddress address) {
-    final String hostString = address.getHostString();
-    if (owner.getDM().getConfig().getSSLEndPointIdentificationEnabled()) {
-      return convertIpToHostnameIfNeeded(hostString);
-    }
-    return hostString;
-  }
-
-  private String convertIpToHostnameIfNeeded(String hostString) {
-    if (InetAddressValidator.getInstance().isValid(hostString)) {
-      // attempt to get a hostname instead of the proffered numeric address
+  protected String convertToFqdnIfNeeded(final String hostNameOrIP) {
+    if (remoteMember.getVersion().isOlderThan(KnownVersion.GEODE_1_15_0)
+        && owner.getDM().getConfig().getSSLEndPointIdentificationEnabled()
+        && InetAddressValidator.getInstance().isValid(hostNameOrIP)) {
+      // If the host string is a valid IP address, return the fully qualified
+      // domain name for this IP address.
       try {
-        return InetAddress.getByName(hostString).getCanonicalHostName();
+        return InetAddress.getByName(hostNameOrIP).getCanonicalHostName();
       } catch (UnknownHostException e) {
-        // ignore - we'll see what happens with endpoint validation using a numeric address
+        // ignore
       }
     }
-    return hostString;
+    return hostNameOrIP;
   }
 
   /**
@@ -1956,7 +1945,7 @@ public class Connection implements Runnable {
   void sendPreserialized(ByteBuffer buffer, boolean cacheContentChanges,
       DistributionMessage msg) throws IOException, ConnectionException {
     if (!connected) {
-      throw new ConnectionException(format("Not connected to %s", remoteAddr));
+      throw new ConnectionException(format("Not connected to %s", remoteMember));
     }
     if (batchFlusher != null) {
       batchSend(buffer);
@@ -2150,7 +2139,7 @@ public class Connection implements Runnable {
         if (disconnectRequested) {
           buffer.position(origBufferPos);
           // we have given up so just drop this message.
-          throw new ConnectionException(format("Forced disconnect sent to %s", remoteAddr));
+          throw new ConnectionException(format("Forced disconnect sent to %s", remoteMember));
         }
         if (!force && !asyncQueuingInProgress) {
           // reset buffer since we will be sending it
@@ -2216,7 +2205,7 @@ public class Connection implements Runnable {
         long newQueueSize = newBytes + queuedBytes;
         if (newQueueSize > asyncMaxQueueSize) {
           logger.warn("Queued bytes {} exceeds max of {}, asking slow receiver {} to disconnect.",
-              newQueueSize, asyncMaxQueueSize, remoteAddr);
+              newQueueSize, asyncMaxQueueSize, remoteMember);
           stats.incAsyncQueueSizeExceeded(1);
           disconnectSlowReceiver();
           // reset buffer since we will be sending it
@@ -2271,7 +2260,8 @@ public class Connection implements Runnable {
         }
       }
       asyncQueuingInProgress = true;
-      pusherThread = new LoggingThread("P2P async pusher to " + remoteAddr, this::runMessagePusher);
+      pusherThread =
+          new LoggingThread("P2P async pusher to " + remoteMember, this::runMessagePusher);
     }
     pusherThread.start();
   }
@@ -2339,15 +2329,15 @@ public class Connection implements Runnable {
     }
     DistributionManager dm = owner.getDM();
     if (dm == null) {
-      owner.removeEndpoint(remoteAddr, "no distribution manager");
+      owner.removeEndpoint(remoteMember, "no distribution manager");
       return;
     }
-    dm.getDistribution().requestMemberRemoval(remoteAddr,
+    dm.getDistribution().requestMemberRemoval(remoteMember,
         "Disconnected as a slow-receiver");
     // Ok, we sent the message, the coordinator should kick the member out
     // immediately and inform this process with a new view.
     // Let's wait for that to happen and if it doesn't in X seconds then remove the endpoint.
-    while (dm.getOtherDistributionManagerIds().contains(remoteAddr)) {
+    while (dm.getOtherDistributionManagerIds().contains(remoteMember)) {
       try {
         Thread.sleep(50);
       } catch (InterruptedException ie) {
@@ -2356,9 +2346,9 @@ public class Connection implements Runnable {
         return;
       }
     }
-    owner.removeEndpoint(remoteAddr,
+    owner.removeEndpoint(remoteMember,
         "Force disconnect timed out");
-    if (dm.getOtherDistributionManagerIds().contains(remoteAddr)) {
+    if (dm.getOtherDistributionManagerIds().contains(remoteMember)) {
       if (logger.isDebugEnabled()) {
         final int FORCE_TIMEOUT = 3000;
         logger.debug("Force disconnect timed out after waiting {} seconds", FORCE_TIMEOUT / 1000);
@@ -2404,7 +2394,7 @@ public class Connection implements Runnable {
               if (curQueuedBytes > asyncMaxQueueSize) {
                 logger.warn(
                     "Queued bytes {} exceeds max of {}, asking slow receiver {} to disconnect.",
-                    curQueuedBytes, asyncMaxQueueSize, remoteAddr);
+                    curQueuedBytes, asyncMaxQueueSize, remoteMember);
                 stats.incAsyncQueueSizeExceeded(1);
                 disconnectSlowReceiver();
                 return;
@@ -2465,8 +2455,8 @@ public class Connection implements Runnable {
         stats.incAsyncThreads(-1);
         stats.incAsyncQueues(-1);
         if (logger.isDebugEnabled()) {
-          logger.debug("runMessagePusher terminated id={} from {}/{}", conduitIdStr, remoteAddr,
-              remoteAddr);
+          logger.debug("runMessagePusher terminated id={} from {}/{}", conduitIdStr, remoteMember,
+              remoteMember);
         }
       }
     } finally {
@@ -2585,7 +2575,7 @@ public class Connection implements Runnable {
                   if (curQueuedBytes > asyncMaxQueueSize) {
                     logger.warn(
                         "Queued bytes {} exceeds max of {}, asking slow receiver {} to disconnect.",
-                        curQueuedBytes, asyncMaxQueueSize, remoteAddr);
+                        curQueuedBytes, asyncMaxQueueSize, remoteMember);
                     stats.incAsyncQueueSizeExceeded(1);
                     disconnectNeeded = true;
                   }
@@ -2596,7 +2586,7 @@ public class Connection implements Runnable {
                     logger.warn(
                         "Blocked for {}ms which is longer than the max of {}ms, asking slow receiver {} to disconnect.",
                         blockedMs,
-                        asyncQueueTimeout, remoteAddr);
+                        asyncQueueTimeout, remoteMember);
                     stats.incAsyncQueueTimeouts(1);
                     disconnectNeeded = true;
                   }
@@ -2762,7 +2752,7 @@ public class Connection implements Runnable {
       // the member is already in our view, etc.
       DistributionManager dm = owner.getDM();
       msg.setBytesRead(len);
-      msg.setSender(remoteAddr);
+      msg.setSender(remoteMember);
       stats.incReceivedMessages(1L);
       stats.incReceivedBytes(msg.getBytesRead());
       stats.incMessageChannelTime(msg.resetTimestamp());
@@ -2915,7 +2905,7 @@ public class Connection implements Runnable {
     try {
       checkHandshakeInitialByte(dis);
       checkHandshakeVersion(dis);
-      remoteAddr = DSFIDFactory.readInternalDistributedMember(dis);
+      remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
       sharedResource = dis.readBoolean();
       preserveOrder = dis.readBoolean();
       uniqueId = dis.readLong();
@@ -2953,7 +2943,7 @@ public class Connection implements Runnable {
       return true;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("P2P handshake remoteAddr is {}{}", remoteAddr,
+      logger.debug("P2P handshake remoteAddr is {}{}", remoteMember,
           remoteVersion != null ? " (" + remoteVersion + ')' : "");
     }
     try {
@@ -2961,7 +2951,7 @@ public class Connection implements Runnable {
       final boolean isSecure = authInit != null && !authInit.isEmpty();
 
       if (isSecure) {
-        if (owner.getConduit().waitForMembershipCheck(remoteAddr)) {
+        if (owner.getConduit().waitForMembershipCheck(remoteMember)) {
           sendOKHandshakeReply();
           notifyHandshakeWaiter(true);
         } else {
@@ -3316,7 +3306,7 @@ public class Connection implements Runnable {
   }
 
   private void setThreadName(int dominoNumber) {
-    Thread.currentThread().setName(THREAD_KIND_IDENTIFIER + " for " + remoteAddr + " "
+    Thread.currentThread().setName(THREAD_KIND_IDENTIFIER + " for " + remoteMember + " "
         + (sharedResource ? "" : "un") + "shared" + " " + (preserveOrder ? "" : "un")
         + "ordered sender uid=" + uniqueId + (dominoNumber > 0 ? " dom #" + dominoNumber : "")
         + " local port=" + socket.getLocalPort() + " remote port=" + socket.getPort());
@@ -3375,7 +3365,7 @@ public class Connection implements Runnable {
    * return the DM id of the member on the other side of this connection.
    */
   public InternalDistributedMember getRemoteAddress() {
-    return remoteAddr;
+    return remoteMember;
   }
 
   /**
@@ -3387,7 +3377,7 @@ public class Connection implements Runnable {
 
   @Override
   public String toString() {
-    return remoteAddr + "(uid=" + uniqueId + ")"
+    return remoteMember + "(uid=" + uniqueId + ")"
         + (remoteVersion != null && remoteVersion != KnownVersion.CURRENT
             ? "(v" + remoteVersion + ')' : "");
   }

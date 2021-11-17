@@ -373,14 +373,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     engine.setUseClientMode(clientSocket);
-    if (!clientSocket) {
-      engine.setNeedClientAuth(sslConfig.isRequireAuth());
-    }
-
     if (clientSocket) {
       if (checkAndEnableHostnameValidation(parameters)) {
         updateEngineWithParameters = true;
       }
+    } else {
+      engine.setNeedClientAuth(sslConfig.isRequireAuth());
     }
 
     String[] protocols = this.sslConfig.getProtocolsAsStringArray();
