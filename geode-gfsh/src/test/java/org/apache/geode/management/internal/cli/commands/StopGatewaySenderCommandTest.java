@@ -20,26 +20,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -48,25 +43,22 @@ public class StopGatewaySenderCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private StopGatewaySenderCommand command;
-  private List<CliFunctionResult> functionResults;
-  private final ExecutorService executorService = mock(ExecutorService.class);
 
   @Before
   public void before() {
     command = spy(StopGatewaySenderCommand.class);
-    functionResults = new ArrayList<>();
+    List<CliFunctionResult> functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(), any());
-    doReturn(executorService).when(command).getExecutorService();
   }
 
   @Test
-  public void whenMissingSenderIdCommandOutputsInvalidCommandError() {
+  public void whenMissingSenderIdCommandReturnsInvalidCommandError() {
     gfsh.executeAndAssertThat(command, "stop gateway-sender")
         .statusIsError().containsOutput("Invalid command");
   }
 
   @Test
-  public void whenNoMembersCommandOutputsNoMembersError() {
+  public void whenNoMembersCommandReturnsNoMembersError() {
     // arrange
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
 
@@ -75,34 +67,25 @@ public class StopGatewaySenderCommandTest {
         .statusIsError().containsOutput("No Members Found");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void stopGatewaySenderStartsOneThreadPerMember() throws InterruptedException {
+  public void whenParamsPassedOkCommandReturnsResultFromDelegate() {
     // arrange
-    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
-    doReturn(mock(ManagementService.class)).when(command).getManagementService();
-
-    int membersSize = 3;
     Set<DistributedMember> members =
-        Stream.generate(() -> mock(DistributedMember.class)).limit(membersSize)
+        Stream.generate(() -> mock(DistributedMember.class)).limit(3)
             .collect(Collectors.toSet());
-
     doReturn(members).when(command).findMembers(any(), any());
     doReturn(mock(SystemManagementService.class)).when(command).getManagementService();
-    CliFunctionResult cliFunctionResult = new CliFunctionResult("member",
-        CliFunctionResult.StatusState.OK, "cliFunctionResult");
-    functionResults.add(cliFunctionResult);
+    StopGatewaySenderCommandDelegate commandDelegate = mock(StopGatewaySenderCommandDelegate.class);
+    ResultModel result = mock(ResultModel.class);
+    doReturn(result).when(commandDelegate).executeStopGatewaySender(any(), any(), any());
+    doReturn(commandDelegate).when(command).getCommandDelegate();
 
     // act
-    gfsh.executeAndAssertThat(command,
-        "stop gateway-sender --id=sender2")
-        .statusIsSuccess();
+    ResultModel commandResult =
+        gfsh.executeAndAssertThat(command, "stop gateway-sender --id=sender1").getCommandResult()
+            .getResultData();
 
     // assert
-    ArgumentCaptor<Collection> callablesCaptor =
-        ArgumentCaptor.forClass(Collection.class);
-    verify(executorService, times(1)).invokeAll((callablesCaptor.capture()));
-    assertThat(callablesCaptor.getValue().size()).isEqualTo(members.size());
-    verify(executorService, times(1)).shutdown();
+    assertThat(commandResult).isEqualTo(result);
   }
 }

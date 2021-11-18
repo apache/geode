@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 
+import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +37,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -46,7 +46,6 @@ import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
-@SuppressWarnings("serial")
 public class StopGatewaySenderCommandDUnitTest implements Serializable {
 
   @Rule
@@ -78,7 +77,7 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testStopGatewaySender_ErrorConditions() throws Exception {
+  public void testStopGatewaySender_ErrorConditions() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
@@ -95,7 +94,7 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testStopGatewaySender() throws Exception {
+  public void testStopGatewaySender() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
@@ -149,7 +148,7 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testStopGatewaySender_onMember() throws Exception {
+  public void testStopGatewaySender_onMember() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
@@ -170,7 +169,7 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
 
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.STOP_GATEWAYSENDER);
     List<String> messages = resultData.getValuesInColumn("Message");
     assertThat(messages.get(0)).contains("is stopped on member");
@@ -185,8 +184,8 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testStopGatewaySender_Group() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testStopGatewaySender_Group() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -240,8 +239,8 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
    * to multiple groups
    */
   @Test
-  public void testStopGatewaySender_MultipleGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testStopGatewaySender_MultipleGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -308,13 +307,124 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     server5.invoke(() -> verifySenderState("ln", true, false));
   }
 
-  private CommandResult executeCommandWithIgnoredExceptions(String command) throws Exception {
+  @Test
+  public void testStopGatewaySender_OneSenderNotRunning() {
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> startSender("ln"));
+    server2.invoke(() -> startSender("ln"));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    String command =
+        CliStrings.STOP_GATEWAYSENDER + " --" + CliStrings.STOP_GATEWAYSENDER__ID + "=ln";
+    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    assertThat(cmdResult).isNotNull();
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+
+    TabularResultModel resultData = cmdResult.getResultData()
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "Error");
+
+    List<String> message = resultData.getValuesInColumn("Message");
+    Condition<String> okMsg =
+        new Condition<>(s -> s.startsWith("GatewaySender ln is stopped on member "), "ok");
+    Condition<String> errorMsg =
+        new Condition<>(s -> s.startsWith("GatewaySender ln is not running on member "), "ok");
+
+    assertThat(message).haveExactly(2, okMsg);
+    assertThat(message).haveExactly(1, errorMsg);
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server3.getVM()), "ln", false, false));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+  }
+
+  @Test
+  public void testStopGatewaySender_OneSenderNotAvailable() {
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> startSender("ln"));
+    server2.invoke(() -> startSender("ln"));
+
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", true, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", true, false));
+
+    String command =
+        CliStrings.STOP_GATEWAYSENDER + " --" + CliStrings.STOP_GATEWAYSENDER__ID + "=ln";
+    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
+    assertThat(cmdResult).isNotNull();
+    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+
+    TabularResultModel resultData = cmdResult.getResultData()
+        .getTableSection(CliStrings.STOP_GATEWAYSENDER);
+    List<String> status = resultData.getValuesInColumn("Result");
+    assertThat(status).containsExactlyInAnyOrder("OK", "OK", "Error");
+
+    List<String> message = resultData.getValuesInColumn("Message");
+    Condition<String> okMsg =
+        new Condition<>(s -> s.startsWith("GatewaySender ln is stopped on member "), "ok");
+    Condition<String> errorMsg =
+        new Condition<>(s -> s.startsWith("GatewaySender ln is not available on member "), "ok");
+
+    assertThat(message).haveExactly(2, okMsg);
+    assertThat(message).haveExactly(1, errorMsg);
+
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()), "ln", false, false));
+    locatorSite1.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()), "ln", false, false));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+  }
+
+  private CommandResult executeCommandWithIgnoredExceptions(String command) {
     try (IgnoredException ie = IgnoredException.addIgnoredException("Could not connect")) {
       return gfsh.executeCommand(command);
     }
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);
