@@ -16,9 +16,9 @@
 package org.apache.geode.redis.internal.executor.server;
 
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGET;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEN;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRESET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GET;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEN;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RESET;
 
 import java.util.Arrays;
 
@@ -33,11 +33,11 @@ public class SlowlogExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     byte[] subCommand = toUpperCaseBytes(command.getBytesKey());
-    if (Arrays.equals(subCommand, bGET)) {
+    if (Arrays.equals(subCommand, GET)) {
       return RedisResponse.emptyArray();
-    } else if (Arrays.equals(subCommand, bLEN)) {
+    } else if (Arrays.equals(subCommand, LEN)) {
       return RedisResponse.integer(0);
-    } else if (Arrays.equals(subCommand, bRESET)) {
+    } else if (Arrays.equals(subCommand, RESET)) {
       return RedisResponse.ok();
     } else {
       return null;

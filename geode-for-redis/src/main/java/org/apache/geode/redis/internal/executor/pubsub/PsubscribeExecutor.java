@@ -17,7 +17,7 @@
 package org.apache.geode.redis.internal.executor.pubsub;
 
 import static org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor.createSubscribeResponse;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PSUBSCRIBE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,6 +40,6 @@ public class PsubscribeExecutor implements CommandExecutor {
       results.add(result);
     }
 
-    return createSubscribeResponse(results, bPSUBSCRIBE);
+    return createSubscribeResponse(results, PSUBSCRIBE);
   }
 }

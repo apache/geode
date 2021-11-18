@@ -17,7 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bRADISH_DUMP_HEADER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -228,7 +228,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public byte[] dump() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    baos.write(bRADISH_DUMP_HEADER);
+    baos.write(RADISH_DUMP_HEADER);
     DataOutputStream outputStream = new DataOutputStream(baos);
     outputStream.writeShort(KnownVersion.CURRENT.ordinal());
 

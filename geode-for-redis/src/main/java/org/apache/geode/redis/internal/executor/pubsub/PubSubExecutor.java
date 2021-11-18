@@ -20,9 +20,9 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_PUBSUB_SUBCOMMAND;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bCHANNELS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNUMPAT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNUMSUB;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CHANNELS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMPAT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NUMSUB;
 
 import java.util.List;
 
@@ -38,18 +38,18 @@ public class PubSubExecutor implements CommandExecutor {
     List<byte[]> args = command.getCommandArguments();
     byte[] subCommand = args.get(0);
 
-    if (equalsIgnoreCaseBytes(subCommand, bCHANNELS)) {
+    if (equalsIgnoreCaseBytes(subCommand, CHANNELS)) {
       if (args.size() > 2) {
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));
       }
       List<byte[]> channelsResponse = doChannels(args, context);
       return RedisResponse.array(channelsResponse, true);
-    } else if (equalsIgnoreCaseBytes(subCommand, bNUMSUB)) {
+    } else if (equalsIgnoreCaseBytes(subCommand, NUMSUB)) {
       List<Object> numSubresponse = context.getPubSub()
           .findNumberOfSubscribersPerChannel(args.subList(1, args.size()));
       return RedisResponse.array(numSubresponse, true);
-    } else if (equalsIgnoreCaseBytes(subCommand, bNUMPAT)) {
+    } else if (equalsIgnoreCaseBytes(subCommand, NUMPAT)) {
       if (args.size() > 1) {
         return RedisResponse
             .error(String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, new String(subCommand)));

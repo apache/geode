@@ -19,9 +19,9 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLIMIT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNEGATIVE_ZERO;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWITHSCORES;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LIMIT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NEGATIVE_ZERO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WITHSCORES;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,10 +54,10 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     // start or end of the range
     for (int index = 4; index < commandElements.size(); ++index) {
       byte[] option = commandElements.get(index);
-      if (equalsIgnoreCaseBytes(option, bLIMIT)) {
+      if (equalsIgnoreCaseBytes(option, LIMIT)) {
         handleLimitArguments(commandElements, index);
         index += 2;
-      } else if (equalsIgnoreCaseBytes(option, bWITHSCORES)) {
+      } else if (equalsIgnoreCaseBytes(option, WITHSCORES)) {
         handleWithScoresArgument();
       } else {
         throw new RedisException(ERROR_SYNTAX);
@@ -66,7 +66,7 @@ public abstract class AbstractSortedSetRangeOptions<T> {
   }
 
   void handleLimitArguments(List<byte[]> commandElements, int commandIndex) {
-    if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex), bLIMIT)) {
+    if (!equalsIgnoreCaseBytes(commandElements.get(commandIndex), LIMIT)) {
       throw new RedisException(ERROR_SYNTAX);
     }
 
@@ -76,7 +76,7 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     }
 
     byte[] offsetBytes = commandElements.get(commandIndex + 1);
-    if (Arrays.equals(offsetBytes, bNEGATIVE_ZERO)) {
+    if (Arrays.equals(offsetBytes, NEGATIVE_ZERO)) {
       throw new RedisException(ERROR_NOT_INTEGER);
     }
 

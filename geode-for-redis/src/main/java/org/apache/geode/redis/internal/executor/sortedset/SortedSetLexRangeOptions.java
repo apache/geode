@@ -18,8 +18,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_MIN_MAX_NOT_A
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.checkDummyMemberNames;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.javaImplementationOfAnsiCMemCmp;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GREATEST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEAST_MEMBER_NAME;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,10 +48,10 @@ public class SortedSetLexRangeOptions extends AbstractSortedSetRangeOptions<byte
     if (bytes.length == 1) {
       if (bytes[0] == '+') {
         isExclusive = false;
-        value = bGREATEST_MEMBER_NAME;
+        value = GREATEST_MEMBER_NAME;
       } else if (bytes[0] == '-') {
         isExclusive = false;
-        value = bLEAST_MEMBER_NAME;
+        value = LEAST_MEMBER_NAME;
       } else if (bytes[0] == '(') {
         isExclusive = true;
         value = new byte[0];

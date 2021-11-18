@@ -21,8 +21,8 @@ import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bGREATEST_MEMBER_NAME;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bLEAST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GREATEST_MEMBER_NAME;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEAST_MEMBER_NAME;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -703,22 +703,22 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  // Comparison to allow the use of bLEAST_MEMBER_NAME and bGREATEST_MEMBER_NAME to always be less
+  // Comparison to allow the use of LEAST_MEMBER_NAME and GREATEST_MEMBER_NAME to always be less
   // than or greater than respectively any other byte array representing a member name. The use of
   // "==" is important as it allows us to differentiate between the constant byte arrays defined
   // in StringBytesGlossary and user-supplied member names which may be equal in content but have
   // a different memory address.
   public static int checkDummyMemberNames(byte[] array1, byte[] array2) {
-    if (array2 == bLEAST_MEMBER_NAME || array1 == bGREATEST_MEMBER_NAME) {
-      if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
+    if (array2 == LEAST_MEMBER_NAME || array1 == GREATEST_MEMBER_NAME) {
+      if (array1 == LEAST_MEMBER_NAME || array2 == GREATEST_MEMBER_NAME) {
         throw new IllegalStateException(
             "Arrays cannot both be least member name or greatest member name");
       }
       return 1; // array2 < array1
-    } else if (array1 == bLEAST_MEMBER_NAME || array2 == bGREATEST_MEMBER_NAME) {
+    } else if (array1 == LEAST_MEMBER_NAME || array2 == GREATEST_MEMBER_NAME) {
       return -1; // array1 < array2
     } else {
-      // Neither of the input arrays are using bLEAST_MEMBER_NAME or bGREATEST_MEMBER_NAME, so real
+      // Neither of the input arrays are using LEAST_MEMBER_NAME or GREATEST_MEMBER_NAME, so real
       // lexicographical comparison is needed
       return 0;
     }
@@ -813,7 +813,7 @@ public class RedisSortedSet extends AbstractRedisData {
     public ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
       // this entry should act as if it is greater than the entry it's being compared to
-      this.member = isExclusive ^ isMinimum ? bLEAST_MEMBER_NAME : bGREATEST_MEMBER_NAME;
+      this.member = isExclusive ^ isMinimum ? LEAST_MEMBER_NAME : GREATEST_MEMBER_NAME;
       this.score = score;
     }
 

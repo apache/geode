@@ -17,8 +17,8 @@
 package org.apache.geode.redis.internal.pubsub;
 
 import static java.util.Collections.singletonList;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bPUNSUBSCRIBE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PUNSUBSCRIBE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.UNSUBSCRIBE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,7 +258,7 @@ public class Subscriptions {
 
   private static List<Object> createUnsubscribeItem(boolean channel, byte[] channelOrPattern,
       long subscriptionCount) {
-    return Arrays.asList(channel ? bUNSUBSCRIBE : bPUNSUBSCRIBE, channelOrPattern,
+    return Arrays.asList(channel ? UNSUBSCRIBE : PUNSUBSCRIBE, channelOrPattern,
         subscriptionCount);
   }
 

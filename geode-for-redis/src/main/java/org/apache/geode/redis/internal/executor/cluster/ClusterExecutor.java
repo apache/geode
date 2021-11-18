@@ -20,10 +20,10 @@ import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
 import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bINFO;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bKEYSLOT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bNODES;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bSLOTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INFO;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.KEYSLOT;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NODES;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SLOTS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,16 +55,16 @@ public class ClusterExecutor implements CommandExecutor {
     List<byte[]> args = command.getProcessedCommand();
     byte[] subcommand = args.get(1);
 
-    if (equalsIgnoreCaseBytes(subcommand, bINFO)) {
+    if (equalsIgnoreCaseBytes(subcommand, INFO)) {
       checkNumArgs(command, subcommand, 2);
       return getInfo(context);
-    } else if (equalsIgnoreCaseBytes(subcommand, bNODES)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, NODES)) {
       checkNumArgs(command, subcommand, 2);
       return getNodes(context);
-    } else if (equalsIgnoreCaseBytes(subcommand, bSLOTS)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, SLOTS)) {
       checkNumArgs(command, subcommand, 2);
       return getSlots(context);
-    } else if (equalsIgnoreCaseBytes(subcommand, bKEYSLOT)) {
+    } else if (equalsIgnoreCaseBytes(subcommand, KEYSLOT)) {
       checkNumArgs(command, subcommand, 3);
       return RedisResponse.integer(KeyHashUtil.slotForKey(args.get(2)));
     } else {

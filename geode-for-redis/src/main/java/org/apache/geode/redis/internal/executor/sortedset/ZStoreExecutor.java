@@ -20,8 +20,8 @@ import static org.apache.geode.redis.internal.RedisConstants.ERROR_WEIGHT_NOT_A_
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bAGGREGATE;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.bWEIGHTS;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.AGGREGATE;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WEIGHTS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +77,7 @@ public abstract class ZStoreExecutor implements CommandExecutor {
     while (argIterator.hasNext()) {
       argument = argIterator.next();
       // found AGGREGATE keyword; parse aggregate
-      if (Arrays.equals(toUpperCaseBytes(argument), bAGGREGATE)) {
+      if (Arrays.equals(toUpperCaseBytes(argument), AGGREGATE)) {
         if (!argIterator.hasNext()) {
           return syntaxErrorResponse;
         }
@@ -88,7 +88,7 @@ public abstract class ZStoreExecutor implements CommandExecutor {
           return syntaxErrorResponse;
         }
         // found WEIGHTS keyword; parse weights
-      } else if (Arrays.equals(toUpperCaseBytes(argument), bWEIGHTS)) {
+      } else if (Arrays.equals(toUpperCaseBytes(argument), WEIGHTS)) {
         for (int i = 0; i < numKeys; i++) {
           if (!argIterator.hasNext()) {
             return syntaxErrorResponse;
