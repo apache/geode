@@ -127,13 +127,34 @@ public class InfoExecutor implements CommandExecutor {
         "blocked_clients:0\r\n";
   }
 
+  /**
+   * Redis' fragmentation ratio is calculated from process_rss / used_memory. Essentially this is
+   * the ratio of physical memory being used vs. the amount of virtual memory the process
+   * requires. So, effectively an indication of memory pressure. If this number goes below 1.0 it
+   * would indicate that the process has started to swap memory which is bad.
+   * <p/>
+   * In a similar sense, the calculation for fragmentation here is a ratio of the amount of memory
+   * available to the partitioned region (Java heap) vs. the amount of memory consumed by data in
+   * the region. This ratio can only approach 1.0 and cannot go lower. However, the closer to 1.0
+   * the greater the likelihood of incurring GC pauses will be. This is analogous to swapping and
+   * will have a very similar effect.
+   */
   private String getMemorySection(ExecutionHandlerContext context) {
     PartitionedRegion pr = (PartitionedRegion) context.getRegionProvider().getDataRegion();
     long usedMemory = pr.getDataStore().currentAllocatedMemory();
+
+    String fragmentationRatio;
+    if (usedMemory != 0) {
+      fragmentationRatio =
+          String.format("%.2f", (pr.getLocalMaxMemory() * ONE_MEGABYTE) / (float) usedMemory);
+    } else {
+      fragmentationRatio = "1.0";
+    }
+
     return "# Memory\r\n" +
         "maxmemory:" + pr.getLocalMaxMemory() * ONE_MEGABYTE + "\r\n" +
         "used_memory:" + usedMemory + "\r\n" +
-        "mem_fragmentation_ratio:1.00\r\n";
+        "mem_fragmentation_ratio:" + fragmentationRatio + "\r\n";
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {
