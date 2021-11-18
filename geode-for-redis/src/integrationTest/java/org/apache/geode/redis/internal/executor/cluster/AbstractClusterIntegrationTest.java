@@ -35,7 +35,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
   private static final int NUM_KEYS_TO_TEST = 1000;
   private static final int MAX_KEY_LENGTH = 255;
 
-  private JedisCluster jedis;
+  JedisCluster jedis;
 
   @Before
   public void setup() {
@@ -54,25 +54,25 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
         .hasMessage("ERR wrong number of arguments for 'cluster' command");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "1", "2"))
-            .hasMessage(
-                "ERR Unknown subcommand or wrong number of arguments for '1'. Try CLUSTER HELP.");
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for '1'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "SLOTS", "1"))
-            .hasMessage(
-                "ERR Unknown subcommand or wrong number of arguments for 'SLOTS'. Try CLUSTER HELP.");
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'SLOTS'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "NOTACOMMAND"))
-            .hasMessage(
-                "ERR Unknown subcommand or wrong number of arguments for 'NOTACOMMAND'. Try CLUSTER HELP.");
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'NOTACOMMAND'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT"))
-            .hasMessage(
-                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT",
             "blah", "fo"))
-                .hasMessage(
-                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'. Try CLUSTER HELP.");
+                .hasMessageContaining(
+                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
   }
 
   @Test

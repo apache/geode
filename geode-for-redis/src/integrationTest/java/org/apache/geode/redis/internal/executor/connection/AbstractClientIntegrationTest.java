@@ -28,7 +28,7 @@ import redis.clients.jedis.Protocol;
 import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractClientIntegrationTest implements RedisIntegrationTest {
-  private Jedis jedis;
+  Jedis jedis;
 
   @Before
   public void setUp() {
@@ -45,7 +45,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
     String invalidSubcommand = "subcommand";
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT, invalidSubcommand))
         .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
-            + invalidSubcommand + "'. Try CLIENT HELP.");
+            + invalidSubcommand);
   }
 
   @Test
@@ -59,7 +59,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
     String subcommand = "SeTnAmE";
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT, subcommand))
         .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
-            + subcommand + "'. Try CLIENT HELP.");
+            + subcommand);
   }
 
   @Test
@@ -68,7 +68,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.CLIENT, subcommand, "AAAA", "BBBBBB"))
             .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
-                + subcommand + "'. Try CLIENT HELP.");
+                + subcommand);
   }
 
   @Test
@@ -97,7 +97,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
     String subcommand = "GeTNaMe";
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT, subcommand, "AAAA"))
         .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '"
-            + subcommand + "'. Try CLIENT HELP.");
+            + subcommand);
   }
 
   @Test

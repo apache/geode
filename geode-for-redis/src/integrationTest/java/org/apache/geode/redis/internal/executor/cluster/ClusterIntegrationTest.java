@@ -15,7 +15,12 @@
 
 package org.apache.geode.redis.internal.executor.cluster;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -27,6 +32,15 @@ public class ClusterIntegrationTest extends AbstractClusterIntegrationTest {
   @Override
   public int getPort() {
     return server.getPort();
+  }
+
+  @Test
+  public void errorMessageContainsListOfSupportedSubcommands() {
+    final Jedis connection = jedis.getConnectionFromSlot(0);
+
+    String invalidSubcommand = "subcommand";
+    assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER, invalidSubcommand))
+        .hasMessageContainingAll(ClusterExecutor.getSupportedSubcommands().toArray(new String[0]));
   }
 
 }

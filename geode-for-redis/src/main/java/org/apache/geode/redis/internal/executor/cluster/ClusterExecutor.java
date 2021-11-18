@@ -27,6 +27,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SLOTS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
 public class ClusterExecutor implements CommandExecutor {
+  private static final List<String> supportedSubcommands =
+      Collections.unmodifiableList(Arrays.asList("INFO", "NODES", "SLOTS", "KEYSLOT"));
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context)
@@ -185,4 +188,7 @@ public class ClusterExecutor implements CommandExecutor {
     return info.getPartitionMemberInfo();
   }
 
+  public static List<String> getSupportedSubcommands() {
+    return supportedSubcommands;
+  }
 }
