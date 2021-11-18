@@ -1520,7 +1520,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
       newView.correctWrongVersionIn(localAddress);
 
-      if (isJoined && isNetworkPartition(newView, true)) {
+      if (isJoined && isMajorityLost(newView)) {
         if (quorumRequired) {
           Set<ID> crashes = newView.getActualCrashedMembers(currentView);
           forceDisconnect(String.format(
@@ -1644,21 +1644,21 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   /**
-   * check to see if the new view shows a drop of 51% or more
+   * check to see if the new view shows a drop of 50% or more
    */
-  private boolean isNetworkPartition(GMSMembershipView<ID> newView, boolean logWeights) {
+  private boolean isMajorityLost(GMSMembershipView<ID> newView) {
     if (currentView == null) {
       return false;
     }
     int oldWeight = currentView.memberWeight();
     int failedWeight = newView.getCrashedMemberWeight(currentView);
-    if (failedWeight > 0 && logWeights) {
+    if (failedWeight > 0) {
       if (logger.isInfoEnabled() && newView.getCreator().equals(localAddress)) { // view-creator
                                                                                  // logs this
         newView.logCrashedMemberWeights(currentView, logger);
       }
-      int failurePoint = (int) (Math.round(51.0 * oldWeight) / 100.0);
-      if (failedWeight > failurePoint && quorumLostView != newView) {
+      int failurePoint = (int) (Math.round(50.0 * oldWeight) / 100.0);
+      if (failedWeight >= failurePoint && quorumLostView != newView) {
         quorumLostView = newView;
         logger.warn("total weight lost in this view change is {} of {}.  Quorum has been lost!",
             failedWeight, oldWeight);
@@ -2580,7 +2580,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           return;
         }
 
-        if (quorumRequired && isNetworkPartition(newView, true)) {
+        if (quorumRequired && isMajorityLost(newView)) {
           sendNetworkPartitionMessage(newView);
           Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
 
