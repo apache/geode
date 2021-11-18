@@ -32,7 +32,6 @@
   </Appenders>
   <Loggers>
     <Logger name="com.gemstone" level="INFO" additivity="true"/>
-    <Logger name="org.testcontainers" level="DEBUG" additivity="true"/>
     <Logger name="org.apache.geode" level="INFO" additivity="true">
     <filters>
       <MarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/>
