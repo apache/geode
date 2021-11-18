@@ -468,6 +468,33 @@ public class PartitionedRegionLoadModel {
     return bestMove;
   }
 
+  String getRedundancyZone(InternalDistributedMember memberID) {
+    return partitionedRegion.getDistributionManager().getRedundancyZone(memberID);
+  }
+
+  /**
+   *
+   * Look for a zone that has more than one member represented.
+   * That is where we want to try to delete first.
+   * @param members
+   * @return
+   */
+  String getPreferredDeletionZone(Set<Member> members) {
+
+    Map<String, Integer> distributionMap = new HashMap<>();
+    for (Member member : members) {
+      String zoneName = getRedundancyZone(member.getMemberId());
+      Integer count = distributionMap.get(zoneName);
+      if (count == null) {
+        distributionMap.put(zoneName, 1);
+      } else {
+        return zoneName;
+      }
+    }
+    return null;
+
+  }
+
   /**
    * Find the best member to remove a bucket from
    *
@@ -476,14 +503,15 @@ public class PartitionedRegionLoadModel {
   public Move findBestRemove(Bucket bucket) {
     float mostLoaded = Float.MIN_VALUE;
     Move bestMove = null;
+    Set<Member> members = bucket.getMembersHosting();
+    String zone = getPreferredDeletionZone(members);
 
-    for (Member member : bucket.getMembersHosting()) {
+    // Prefer deleting copies in the same redundancy zone
+    if (zone != null) {
+      members.removeIf(member -> !getRedundancyZone(member.getMemberId()).equals(zone));
+    }
 
-      // If we can't delete it continue (last member of zone)
-      if (!member.canDelete(bucket, partitionedRegion.getDistributionManager()).willAccept()) {
-        continue;
-      }
-
+    for (Member member : members) {
       // if this load is lower than then highest load, we prefer the deleting from high
       // load servers so move on. If this member is the bucket primary, we prefer not to move
       // primaries, so move on.
