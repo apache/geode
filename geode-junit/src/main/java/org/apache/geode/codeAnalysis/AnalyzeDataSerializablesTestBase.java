@@ -16,6 +16,7 @@ package org.apache.geode.codeAnalysis;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 
@@ -201,9 +202,11 @@ public abstract class AnalyzeDataSerializablesTestBase {
         final Object excludedInstance;
         try {
           excludedInstance = excludedClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException | NullPointerException e) {
+        } catch (IllegalAccessException | InstantiationException | NullPointerException e) {
           // okay - it's in the excludedClasses.txt file after all
-          // IllegalAccessException means that the constructor is private.
+          // IllegalAccessException: thrown when non-private constructor does not exist
+          // InstantiationException: thrown when no-arg constructor does not exist
+          // NullPointerException: thrown by constructors that fetch RMI dependencies
           continue;
         }
         serializeAndDeserializeObject(excludedInstance);
@@ -228,19 +231,27 @@ public abstract class AnalyzeDataSerializablesTestBase {
       System.out.println("Not Serializable: " + object.getClass().getName());
       return;
     } catch (Exception e) {
-      // please don't hate me... geode-membership cannot load CacheClosedException
+      /*
+       * NOTE:
+       * this block catches Exception instead of CacheClosedException so that modules without
+       * dependency on geode-core can be tested with Analyze Serializables.
+       *
+       * ex: geode-membership does not depend on geode-core, so it cannot load CacheClosedException
+       */
       if ("org.apache.geode.cache.CacheClosedException".equals(e.getClass().getName())) {
-        System.out.println("Not Serializable: " + object.getClass().getName());
+        System.out
+            .println("I was unable to serialize " + object.getClass().getName() + " due to " + e);
+        e.printStackTrace();
         return;
       }
       throw e;
     }
-    try {
-      deserializeObject(outputStream);
-      fail("I was able to deserialize " + object.getClass().getName());
-    } catch (InvalidClassException e) {
-      // expected
-    }
+
+    Throwable thrown = catchThrowable(() -> deserializeObject(outputStream));
+
+    assertThat(thrown)
+        .withFailMessage("I was able to deserialize " + object.getClass().getName())
+        .isInstanceOf(InvalidClassException.class);
   }
 
   private String toBuildPathString(File file) {

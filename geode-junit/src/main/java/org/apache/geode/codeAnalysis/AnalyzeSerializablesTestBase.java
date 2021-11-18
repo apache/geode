@@ -358,7 +358,7 @@ public abstract class AnalyzeSerializablesTestBase
       // java.rmi.server.RemoteObject which is not supported by AnalyzeSerializables
     } catch (Exception e) {
       errorCollector.addError(
-          new AssertionError("Not Serializable: " + object.getClass().getName(), e));
+          new AssertionError("I was unable to serialize " + object.getClass().getName(), e));
     }
 
     try {
