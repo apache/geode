@@ -43,6 +43,8 @@ public class Client {
 
   private final Channel channel;
   private final ByteBufAllocator byteBufAllocator;
+
+  private byte[] name;
   /**
    * The subscription sets do not need to be thread safe
    * because they are only used by a single thread as it
@@ -189,4 +191,15 @@ public class Client {
     }
   }
 
+  public void setName(byte[] name) {
+    if (name.length == 0) {
+      this.name = null;
+    } else {
+      this.name = name;
+    }
+  }
+
+  public byte[] getName() {
+    return name;
+  }
 }

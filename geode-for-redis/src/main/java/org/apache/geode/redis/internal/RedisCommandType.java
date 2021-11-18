@@ -40,6 +40,7 @@ import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.AuthExecutor;
+import org.apache.geode.redis.internal.executor.connection.ClientExecutor;
 import org.apache.geode.redis.internal.executor.connection.EchoExecutor;
 import org.apache.geode.redis.internal.executor.connection.PingExecutor;
 import org.apache.geode.redis.internal.executor.connection.QuitExecutor;
@@ -167,6 +168,8 @@ public enum RedisCommandType {
   /*************** Connection ****************/
   AUTH(new AuthExecutor(), SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)
       .flags(NOSCRIPT, LOADING, STALE, FAST, NO_AUTH)),
+  CLIENT(new ClientExecutor(), SUPPORTED,
+      new Parameter().min(2).firstKey(0).flags(ADMIN, NOSCRIPT, RANDOM, LOADING, STALE)),
   ECHO(new EchoExecutor(), SUPPORTED, new Parameter().exact(2).firstKey(0).flags(FAST)),
   PING(new PingExecutor(), SUPPORTED, new Parameter().min(1).max(2).firstKey(0).flags(STALE, FAST)),
   QUIT(new QuitExecutor(), SUPPORTED, new Parameter().firstKey(0)),

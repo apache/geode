@@ -50,6 +50,10 @@ public class RedisConstants {
       "command not allowed when used memory > 'maxmemory'";
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
+  public static final String ERROR_UNKNOWN_CLIENT_SUBCOMMAND =
+      "Unknown subcommand or wrong number of arguments for '%s'. Try CLIENT HELP.";
+  public static final String ERROR_INVALID_CLIENT_NAME =
+      "Client names cannot contain spaces, newlines or special characters.";
   public static final String ERROR_UNKNOWN_CLUSTER_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try CLUSTER HELP.";
   public static final String ERROR_INVALID_ZADD_OPTION_NX_XX =
