@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode.ServerConnectionExecutor;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -92,6 +93,7 @@ import org.apache.geode.security.NotAuthorizedException;
 public class ServerConnection implements Runnable {
 
   protected static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   /**
    * This is a buffer that we add to client readTimeout value before we cleanup the connection. This
@@ -1196,6 +1198,8 @@ public class ServerConnection implements Runnable {
         getAcceptor().getCacheClientNotifier().getClientProxy(getProxyID());
     // update the subject (in single user mode) in clientProxy if exists
     if (clientProxy != null && clientProxy.getSubject() != null) {
+      secureLogger.debug("update subject on client proxy {} with uniqueId {}", clientProxy,
+          uniqueId);
       clientProxy.setSubject(subject);
     }
     return uniqueId;

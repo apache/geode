@@ -984,8 +984,10 @@ public class CacheClientProxy implements ClientSession {
     // Logout the subject
     if (subject != null) {
       secureLogger.debug(
-          "CacheClientProxy.closeOtherTransientFields, logging out {}. ", subject.getPrincipal());
+          "CacheClientProxy.closeOtherTransientFields, logging out {}, {}. ",
+          subject.getPrincipal(), subject);
       subject.logout();
+      subject = null;
     }
   }
 

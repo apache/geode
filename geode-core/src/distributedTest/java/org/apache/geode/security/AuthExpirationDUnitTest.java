@@ -20,6 +20,7 @@ package org.apache.geode.security;
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExecuteCQ;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,6 +60,7 @@ public class AuthExpirationDUnitTest {
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
       .withSecurityManager(ExpirableSecurityManager.class)
+      .withProperty(SECURITY_LOG_LEVEL, "debug")
       .withRegion(RegionShortcut.REPLICATE, "region");
 
 
@@ -122,6 +124,7 @@ public class AuthExpirationDUnitTest {
     clientVM = cluster.startClientVM(0,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withPoolSubscription(true)
+            .withProperty(SECURITY_LOG_LEVEL, "debug")
             .withServerConnection(serverPort));
 
     ClientVM client2 = cluster.startClientVM(1,
@@ -134,11 +137,11 @@ public class AuthExpirationDUnitTest {
       Region<Object, Object> region = ClusterStartupRule.getClientCache()
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
-      // this test will succeed because when clients re-connects, it will re-register inteest
+      // this test will succeed because when clients re-connects, it will re-register interest
       // a new queue will be created with all the data. Old queue is destroyed.
       region.registerInterestForAllKeys();
       UpdatableUserAuthInitialize.setUser("user11");
-      // wait for time longer than server's max time to wait to ree-authenticate
+      // wait for time longer than server's max time to wait to re-authenticate
       UpdatableUserAuthInitialize.setWaitTime(6000);
     });
 

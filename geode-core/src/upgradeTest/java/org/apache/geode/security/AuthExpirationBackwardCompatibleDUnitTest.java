@@ -60,7 +60,7 @@ import org.apache.geode.test.version.VersionManager;
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class AuthExpirationDUnitTest {
+public class AuthExpirationBackwardCompatibleDUnitTest {
   private static String test_start_version = "1.14.0";
   private static RegionService user0Service;
   private static RegionService user1Service;

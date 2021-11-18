@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
@@ -42,8 +44,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 5.7
  */
 public abstract class AbstractOp implements Op {
-
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
+  protected static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   private final Message msg;
 
@@ -126,6 +128,8 @@ public abstract class AbstractOp implements Op {
         }
         userId = id;
       }
+      secureLogger.debug("{} Using userId {}: ",
+          MessageType.getString(this.getMessage().getMessageType()), userId);
       try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
