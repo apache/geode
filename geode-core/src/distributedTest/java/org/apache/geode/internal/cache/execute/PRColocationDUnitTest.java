@@ -2612,10 +2612,12 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     public void waitForRegion(Region region, long timeout) throws InterruptedException {
       long start = System.currentTimeMillis();
       synchronized (this) {
-        long waitStart = (timeout / 10) - (System.currentTimeMillis() - start);
-        this.wait(waitStart);
-        if (!recoveryStartedOnRegions.contains(region)) {
-          return;
+        while (!recoveryStartedOnRegions.contains(region)) {
+          long waitStart = (timeout / 10) - (System.currentTimeMillis() - start);
+          if (waitStart <= 0) {
+            return;
+          }
+          this.wait(waitStart);
         }
         while (!recoveredRegions.contains(region)) {
           long remaining = timeout - (System.currentTimeMillis() - start);
