@@ -14,22 +14,31 @@
  */
 package org.apache.geode.test.compiler;
 
-public class CompiledSourceCode {
+import java.util.ArrayList;
+import java.util.List;
 
-  /**
-   * Fully qualified classname in a format suitable for Class.forName
-   */
-  public String className;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 
-  public byte[] compiledBytecode;
+public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManager> {
+  List<InMemoryClassFile> compiledClassFiles = new ArrayList<>();
 
-  public CompiledSourceCode(String className, byte[] aBytes) {
-    this.className = className.replace('/', '.');
-    this.compiledBytecode = aBytes;
+  public InMemoryFileManager(JavaFileManager fileManager) {
+    super(fileManager);
+  }
+
+  public List<InMemoryClassFile> compiledClasses() {
+    return compiledClassFiles;
   }
 
   @Override
-  public String toString() {
-    return className;
+  public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind,
+      FileObject sibling) {
+    InMemoryClassFile file = new InMemoryClassFile(className);
+    compiledClassFiles.add(file);
+    return file;
   }
 }

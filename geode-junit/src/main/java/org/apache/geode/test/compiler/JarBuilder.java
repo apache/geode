@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.compiler;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
 
+
 /**
  * This class accepts java source code in the format of .java source files or strings containing the
  * contents of .java source files, and compiles the given source code into a jar file specified by
@@ -34,7 +36,7 @@ import java.util.jar.JarOutputStream;
  * Example of usage:
  *
  * <pre>
-`` *
+ * `` *
  * &#064;Test
  * public void buildJarUsingStrings() {
  *   JarBuilder jarBuilder = new JarBuilder();
@@ -59,10 +61,10 @@ import java.util.jar.JarOutputStream;
  * </pre>
  **/
 public class JarBuilder {
-  private final JavaCompiler javaCompiler;
+  private final InMemoryJavaCompiler javaCompiler;
 
   public JarBuilder() throws IOException {
-    javaCompiler = new JavaCompiler();
+    javaCompiler = new InMemoryJavaCompiler();
   }
 
   /**
@@ -77,35 +79,36 @@ public class JarBuilder {
    * Builds a jar file containing empty classes with the given classNames.
    */
   public void buildJarFromClassNames(File outputJarFile, String... classNames) throws IOException {
-    UncompiledSourceCode[] uncompiledSourceCodes = Arrays.stream(classNames)
-        .map(UncompiledSourceCode::fromClassName).toArray(UncompiledSourceCode[]::new);
+    List<InMemorySourceFile> sourceFiles = Arrays.stream(classNames)
+        .map(InMemorySourceFile::fromClassName)
+        .collect(toList());
 
-    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(uncompiledSourceCodes);
+    List<InMemoryClassFile> compiledSourceCodes = javaCompiler.compile(sourceFiles);
 
     buildJar(outputJarFile, compiledSourceCodes);
   }
 
   public void buildJar(File outputJarFile, String... sourceFileContents) throws IOException {
-    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(sourceFileContents);
+    List<InMemoryClassFile> compiledSourceCodes = javaCompiler.compile(sourceFileContents);
 
     buildJar(outputJarFile, compiledSourceCodes);
   }
 
   public void buildJar(File outputJarFile, File... sourceFiles) throws IOException {
-    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(sourceFiles);
+    List<InMemoryClassFile> compiledSourceCodes = javaCompiler.compile(sourceFiles);
 
     buildJar(outputJarFile, compiledSourceCodes);
   }
 
-  private void buildJar(File outputJarFile, List<CompiledSourceCode> compiledSourceCodes)
+  private void buildJar(File outputJarFile, List<InMemoryClassFile> compiledSourceCodes)
       throws IOException {
     assertThat(outputJarFile).doesNotExist();
 
     try (FileOutputStream outputStream = new FileOutputStream(outputJarFile)) {
       JarOutputStream jarOutputStream = new JarOutputStream(outputStream);
-      for (CompiledSourceCode compiledSource : compiledSourceCodes) {
+      for (InMemoryClassFile compiledSource : compiledSourceCodes) {
 
-        String formattedName = compiledSource.className.replace(".", "/");
+        String formattedName = compiledSource.getName().replace(".", "/");
         if (!formattedName.endsWith(".class")) {
           formattedName = formattedName.concat(".class");
         }
@@ -113,7 +116,7 @@ public class JarBuilder {
         JarEntry entry = new JarEntry(formattedName);
         entry.setTime(System.currentTimeMillis());
         jarOutputStream.putNextEntry(entry);
-        jarOutputStream.write(compiledSource.compiledBytecode);
+        jarOutputStream.write(compiledSource.getByteContent());
         jarOutputStream.closeEntry();
       }
 
