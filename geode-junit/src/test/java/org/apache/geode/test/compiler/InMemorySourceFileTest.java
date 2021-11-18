@@ -19,21 +19,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class UncompiledSourceCodeTest {
+public class InMemorySourceFileTest {
 
   @Test
   public void fromClassNameWithNoPackage() {
-    UncompiledSourceCode uncompiledSourceCode = UncompiledSourceCode.fromClassName("NoPackage");
-    assertThat(uncompiledSourceCode.getSimpleClassName()).isEqualTo("NoPackage");
-    assertThat(uncompiledSourceCode.getSourceCode()).isEqualTo("public class NoPackage {}");
+    InMemorySourceFile sourceFile = InMemorySourceFile.fromClassName("NoPackage");
+    assertThat(sourceFile.getName())
+        .as("name")
+        .isEqualTo("NoPackage");
+    assertThat(sourceFile.getCharContent(true))
+        .as("content")
+        .isEqualTo("public class NoPackage {}");
   }
 
   @Test
   public void fromClassNameWithPackage() {
-    UncompiledSourceCode uncompiledSourceCode =
-        UncompiledSourceCode.fromClassName("foo.bar.ClassName");
-    assertThat(uncompiledSourceCode.getSimpleClassName()).isEqualTo("ClassName");
-    assertThat(uncompiledSourceCode.getSourceCode())
+    InMemorySourceFile sourceFile = InMemorySourceFile.fromClassName("foo.bar.ClassName");
+    assertThat(sourceFile.getName())
+        .as("name")
+        .isEqualTo("foo.bar.ClassName");
+    assertThat(sourceFile.getCharContent(true))
+        .as("content")
         .isEqualTo("package foo.bar;" + lineSeparator() + "public class ClassName {}");
   }
 }
