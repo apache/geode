@@ -22,7 +22,8 @@ import org.apache.geode.redis.internal.RedisSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeRedisSerializablesIntegrationTest
+    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
 
   @Override
   protected String getModuleName() {

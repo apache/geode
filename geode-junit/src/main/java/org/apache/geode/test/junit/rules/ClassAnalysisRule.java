@@ -49,13 +49,19 @@ public class ClassAnalysisRule implements TestRule {
       new AtomicReference<>(new HashMap<>());
 
   private final String moduleName;
+  private final String sourceSet;
   private final Map<String, CompiledClass> classes = new HashMap<>();
 
   /**
    * @param moduleName The name of the gradle module in which your test resides
    */
   public ClassAnalysisRule(String moduleName) {
+    this(moduleName, "main");
+  }
+
+  public ClassAnalysisRule(String moduleName, String sourceSet) {
     this.moduleName = moduleName;
+    this.sourceSet = sourceSet;
   }
 
   public Map<String, CompiledClass> getClasses() {
@@ -95,21 +101,18 @@ public class ClassAnalysisRule implements TestRule {
             .map(x -> new File(x))
             .collect(Collectors.toList());
 
+    // check for <module>/build/classes/java/**
     String gradleBuildDirName =
-        Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
-    // System.out.println("gradleBuildDirName is " + gradleBuildDirName);
-    String ideaBuildDirName =
-        Paths.get(getModuleName(), "out", "production", "classes").toString();
-    // System.out.println("ideaBuildDirName is " + ideaBuildDirName);
-    String ideaFQCNBuildDirName =
-        Paths.get("out", "production", "geode." + getModuleName() + ".main").toString();
-    // System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
+        Paths.get(getModuleName(), "build", "classes", "java", sourceSet).toString();
+
+    // check for <module>/build/classes/test/**
+    String alternateBuildDirName =
+        Paths.get(getModuleName(), "build", "classes", sourceSet).toString();
 
     String buildDir = null;
     for (File entry : entries) {
       if (entry.toString().endsWith(gradleBuildDirName)
-          || entry.toString().endsWith(ideaBuildDirName)
-          || entry.toString().endsWith(ideaFQCNBuildDirName)) {
+          || entry.toString().endsWith(alternateBuildDirName)) {
         buildDir = entry.toString();
         break;
       }
