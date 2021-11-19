@@ -65,7 +65,7 @@ public class HashesAndCrashesDUnitTest {
   private static final int MAX_RETRIES = 10;
 
   @BeforeClass
-  public void setup() {
+  public static void setup() {
     locator = clusterStartUp.startLocatorVM(0);
 
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
