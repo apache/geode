@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
@@ -50,6 +49,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -66,7 +66,7 @@ import org.apache.geode.test.version.VersionManager;
  *
  */
 @Category({MembershipTest.class})
-@RunWith(JUnitParamsRunner.class)
+@RunWith(GeodeParamsRunner.class)
 public class P2PMessagingConcurrencyDUnitTest {
 
   // how many messages will each sender generate?
