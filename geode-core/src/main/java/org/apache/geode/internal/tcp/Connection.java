@@ -2846,15 +2846,12 @@ public class Connection implements Runnable {
                       "Allocating larger network read buffer, new size is {} old size was {}.",
                       allocSize, oldBufferSize);
                   inputBuffer = inputSharing.expandReadBufferIfNeeded(allocSize);
-                  // we're returning to the caller (done == true) so make buffer writable
-                  inputBuffer.position(inputBuffer.limit());
-                  inputBuffer.limit(inputBuffer.capacity());
+                  makeReadableBufferWriteable(inputBuffer);
                 } else {
                   if (inputBuffer.position() != 0) {
                     inputBuffer.compact();
                   } else {
-                    inputBuffer.position(inputBuffer.limit());
-                    inputBuffer.limit(inputBuffer.capacity());
+                    makeReadableBufferWriteable(inputBuffer);
                   }
                 }
               }
@@ -2866,6 +2863,11 @@ public class Connection implements Runnable {
         }
       }
     }
+  }
+
+  private void makeReadableBufferWriteable(final ByteBuffer inputBuffer) {
+    inputBuffer.position(inputBuffer.limit());
+    inputBuffer.limit(inputBuffer.capacity());
   }
 
   private boolean readHandshakeForReceiver(final DataInput dis) {

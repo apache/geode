@@ -128,7 +128,8 @@ public class P2PMessagingConcurrencyDUnitTest {
       "false, true, 32768, 32768",
       "false, true, 65536, 32768",
       "false, false, 32768, 32768",
-      "false, false, 65536, 32768"})
+      "false, false, 65536, 32768"
+  })
   public void testP2PMessaging(
       final boolean conserveSockets,
       final boolean useTLS,
