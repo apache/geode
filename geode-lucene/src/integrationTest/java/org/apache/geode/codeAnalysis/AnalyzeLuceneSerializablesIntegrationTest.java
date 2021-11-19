@@ -23,7 +23,8 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({LuceneTest.class, SerializationTest.class})
-public class AnalyzeLuceneSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeLuceneSerializablesIntegrationTest
+    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
 
   @Override
   protected String getModuleName() {
