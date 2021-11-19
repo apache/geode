@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommandDelegateParallelImpl.StopGatewaySenderOnMember;
+
 import java.util.ArrayList;
 
 import javax.management.ObjectName;

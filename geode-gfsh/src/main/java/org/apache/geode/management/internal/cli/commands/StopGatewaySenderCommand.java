@@ -16,11 +16,13 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -31,6 +33,23 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class StopGatewaySenderCommand extends GfshCommand {
+  private Supplier<StopGatewaySenderCommandDelegate> commandDelegateSupplier;
+  private BiFunction<String[], String[], Set<DistributedMember>> findMembers;
+
+  @SuppressWarnings("unused") // invoked by spring shell
+  public StopGatewaySenderCommand() {
+    this(null, null);
+    findMembers = this::findMembers;
+    commandDelegateSupplier = this::getCommandDelegate;
+  }
+
+  StopGatewaySenderCommand(Supplier<StopGatewaySenderCommandDelegate> commandDelegateSupplier,
+      BiFunction<String[], String[], Set<DistributedMember>> findMembers) {
+    this.commandDelegateSupplier = commandDelegateSupplier;
+    this.findMembers = findMembers;
+  }
+
+  @SuppressWarnings("unused") // invoked by spring shell
   @CliCommand(value = CliStrings.STOP_GATEWAYSENDER, help = CliStrings.STOP_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -47,17 +66,23 @@ public class StopGatewaySenderCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
 
-    Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
+    Set<DistributedMember> dsMembers = findMembers.apply(onGroup, onMember);
+
     if (dsMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    return getCommandDelegate().executeStopGatewaySender(senderId.trim(), getCache(), dsMembers);
+    return commandDelegateSupplier.get().executeStopGatewaySender(senderId.trim(), getCache(),
+        dsMembers);
   }
 
-  // Method available to be used by tests to mock it
-  @VisibleForTesting
-  StopGatewaySenderCommandDelegate getCommandDelegate() {
+  private StopGatewaySenderCommandDelegate getCommandDelegate() {
     return new StopGatewaySenderCommandDelegateParallelImpl(getManagementService());
   }
+
+  @FunctionalInterface
+  interface StopGatewaySenderCommandDelegate {
+    ResultModel executeStopGatewaySender(String id, Cache cache, Set<DistributedMember> dsMembers);
+  }
+
 }

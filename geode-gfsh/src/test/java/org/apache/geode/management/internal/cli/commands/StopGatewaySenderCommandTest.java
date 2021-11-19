@@ -15,44 +15,34 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommand.StopGatewaySenderCommandDelegate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class StopGatewaySenderCommandTest {
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private StopGatewaySenderCommand command;
-
-  @Before
-  public void before() {
-    command = spy(StopGatewaySenderCommand.class);
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(), any());
-  }
-
   @Test
   public void whenMissingSenderIdCommandReturnsInvalidCommandError() {
+    StopGatewaySenderCommand command = new StopGatewaySenderCommand();
     gfsh.executeAndAssertThat(command, "stop gateway-sender")
         .statusIsError().containsOutput("Invalid command");
   }
@@ -60,25 +50,34 @@ public class StopGatewaySenderCommandTest {
   @Test
   public void whenNoMembersCommandReturnsNoMembersError() {
     // arrange
-    doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
+    @SuppressWarnings("unchecked")
+    BiFunction<String[], String[], Set<DistributedMember>> findMembers = mock(BiFunction.class);
+    Set<DistributedMember> emptySet = new HashSet<>();
+    when(findMembers.apply(any(), any())).thenReturn(emptySet);
+    StopGatewaySenderCommand command = new StopGatewaySenderCommand(null, findMembers);
 
     // act and assert
     gfsh.executeAndAssertThat(command, "stop gateway-sender --id=sender1")
         .statusIsError().containsOutput("No Members Found");
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void whenParamsPassedOkCommandReturnsResultFromDelegate() {
     // arrange
     Set<DistributedMember> members =
         Stream.generate(() -> mock(DistributedMember.class)).limit(3)
             .collect(Collectors.toSet());
-    doReturn(members).when(command).findMembers(any(), any());
-    doReturn(mock(SystemManagementService.class)).when(command).getManagementService();
+    BiFunction<String[], String[], Set<DistributedMember>> findMembers = mock(BiFunction.class);
+    when(findMembers.apply(any(), any())).thenReturn(members);
     StopGatewaySenderCommandDelegate commandDelegate = mock(StopGatewaySenderCommandDelegate.class);
-    ResultModel result = mock(ResultModel.class);
-    doReturn(result).when(commandDelegate).executeStopGatewaySender(any(), any(), any());
-    doReturn(commandDelegate).when(command).getCommandDelegate();
+    Supplier<StopGatewaySenderCommandDelegate> commandDelegateSupplier = mock(Supplier.class);
+    when(commandDelegateSupplier.get()).thenReturn(commandDelegate);
+    ResultModel expectedResult = mock(ResultModel.class);
+    doReturn(expectedResult).when(commandDelegate).executeStopGatewaySender(any(), any(), any());
+
+    StopGatewaySenderCommand command =
+        new StopGatewaySenderCommand(commandDelegateSupplier, findMembers);
 
     // act
     ResultModel commandResult =
@@ -86,6 +85,6 @@ public class StopGatewaySenderCommandTest {
             .getResultData();
 
     // assert
-    assertThat(commandResult).isEqualTo(result);
+    assertThat(commandResult).isEqualTo(expectedResult);
   }
 }

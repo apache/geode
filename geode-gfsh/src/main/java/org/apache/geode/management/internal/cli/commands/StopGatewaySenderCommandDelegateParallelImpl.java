@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,12 +25,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommand.StopGatewaySenderCommandDelegate;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -38,29 +40,30 @@ class StopGatewaySenderCommandDelegateParallelImpl
 
   private final ExecutorService executorService;
   private final SystemManagementService managementService;
-  private final StopGatewaySenderOnMemberFactory stopperOnMemberFactory;
+  private final Supplier<StopGatewaySenderOnMember> stopperOnMemberFactory;
 
-  @VisibleForTesting
-  public StopGatewaySenderCommandDelegateParallelImpl(ExecutorService executorService,
-      SystemManagementService managementService,
-      StopGatewaySenderOnMemberFactory stopperOnMemberFactory) {
-    this.executorService = executorService;
-    this.managementService = managementService;
-    this.stopperOnMemberFactory = stopperOnMemberFactory;
+  StopGatewaySenderCommandDelegateParallelImpl(SystemManagementService managementService) {
+    this(managementService,
+        newCachedThreadPool("Stop Sender Command Thread ", true),
+        StopGatewaySenderOnMemberWithBeanImpl::new);
   }
 
-  public StopGatewaySenderCommandDelegateParallelImpl(SystemManagementService managementService) {
-    executorService = LoggingExecutors.newCachedThreadPool("Stop Sender Command Thread ", true);;
-    stopperOnMemberFactory = new StopGatewaySenderOnMemberFactoryWithBeanImpl();
+  StopGatewaySenderCommandDelegateParallelImpl(SystemManagementService managementService,
+      ExecutorService executorService,
+      Supplier<StopGatewaySenderOnMember> stopperOnMemberFactory) {
     this.managementService = managementService;
+    this.executorService = executorService;
+    this.stopperOnMemberFactory = stopperOnMemberFactory;
   }
 
   public ResultModel executeStopGatewaySender(String id, Cache cache,
       Set<DistributedMember> dsMembers) {
+    List<DistributedMember> dsMembersList = new ArrayList<>(dsMembers);
     List<Callable<List<String>>> callables = new ArrayList<>();
-    for (final DistributedMember member : dsMembers) {
-      callables.add(() -> stopperOnMemberFactory.create().executeStopGatewaySenderOnMember(id,
-          cache, managementService, member));
+    for (final DistributedMember member : dsMembersList) {
+      callables.add(() -> stopperOnMemberFactory.get()
+          .executeStopGatewaySenderOnMember(id,
+              cache, managementService, member));
     }
 
     List<Future<List<String>>> futures;
@@ -75,11 +78,11 @@ class StopGatewaySenderCommandDelegateParallelImpl
       executorService.shutdown();
     }
 
-    return buildResultModelFromMembersResponses(id, dsMembers, futures);
+    return buildResultModelFromMembersResponses(id, dsMembersList, futures);
   }
 
   private ResultModel buildResultModelFromMembersResponses(String id,
-      Set<DistributedMember> dsMembers, List<Future<List<String>>> futures) {
+      List<DistributedMember> dsMembers, List<Future<List<String>>> futures) {
     ResultModel resultModel = new ResultModel();
     TabularResultModel resultData = resultModel.addTable(CliStrings.STOP_GATEWAYSENDER);
     Iterator<DistributedMember> memberIterator = dsMembers.iterator();
@@ -100,12 +103,10 @@ class StopGatewaySenderCommandDelegateParallelImpl
     return resultModel;
   }
 
-  static class StopGatewaySenderOnMemberFactoryWithBeanImpl
-      implements StopGatewaySenderOnMemberFactory {
-    @Override
-    public StopGatewaySenderOnMember create() {
-      return new StopGatewaySenderOnMemberWithBeanImpl();
-    }
-  }
+  @FunctionalInterface
+  interface StopGatewaySenderOnMember {
+    List<String> executeStopGatewaySenderOnMember(String id, Cache cache,
+        SystemManagementService managementService, DistributedMember member);
 
+  }
 }

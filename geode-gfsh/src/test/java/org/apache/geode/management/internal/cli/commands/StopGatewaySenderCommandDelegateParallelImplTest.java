@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommandDelegateParallelImpl.StopGatewaySenderOnMember;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -31,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,11 +50,12 @@ import org.apache.geode.management.internal.i18n.CliStrings;
 public class StopGatewaySenderCommandDelegateParallelImplTest {
   private final String senderId = "sender1";
   private Cache cache;
-  Set<DistributedMember> members;
-  ExecutorService executorService;
-  SystemManagementService managementService;
-  StopGatewaySenderOnMemberFactory stopperOnMemberFactory;
+  private Set<DistributedMember> members;
+  private ExecutorService executorService;
+  private SystemManagementService managementService;
+  private Supplier<StopGatewaySenderOnMember> stopperOnMemberFactory;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     cache = mock(Cache.class);
@@ -62,8 +65,8 @@ public class StopGatewaySenderCommandDelegateParallelImplTest {
 
     executorService = mock(ExecutorService.class);
     managementService = mock(SystemManagementService.class);
-    stopperOnMemberFactory = mock(StopGatewaySenderOnMemberFactory.class);
-    doReturn(mock(StopGatewaySenderOnMember.class)).when(stopperOnMemberFactory).create();
+    stopperOnMemberFactory = mock(Supplier.class);
+    doReturn(mock(StopGatewaySenderOnMember.class)).when(stopperOnMemberFactory).get();
   }
 
   @SuppressWarnings("unchecked")
@@ -72,16 +75,16 @@ public class StopGatewaySenderCommandDelegateParallelImplTest {
       throws InterruptedException, ExecutionException {
     // arrange
     String gatewaySenderIsStoppedMsg = "GatewaySender ln is stopped on member";
-    List<Future> futures = new ArrayList<>();
+    List<Future<List<String>>> futures = new ArrayList<>();
     for (int memberIndex = 0; memberIndex < members.size(); memberIndex++) {
-      Future future = mock(Future.class);
+      Future<List<String>> future = mock(Future.class);
       List<String> list = Arrays.asList("member" + memberIndex, "OK", gatewaySenderIsStoppedMsg);
       doReturn(list).when(future).get();
       futures.add(future);
     }
     doReturn(futures).when(executorService).invokeAll(any());
     StopGatewaySenderCommandDelegateParallelImpl command =
-        new StopGatewaySenderCommandDelegateParallelImpl(executorService, managementService,
+        new StopGatewaySenderCommandDelegateParallelImpl(managementService, executorService,
             stopperOnMemberFactory);
 
     // act
@@ -112,7 +115,7 @@ public class StopGatewaySenderCommandDelegateParallelImplTest {
     InterruptedException exception = new InterruptedException("interruption2");
     doThrow(exception).when(executorService).invokeAll(any());
     StopGatewaySenderCommandDelegateParallelImpl command =
-        new StopGatewaySenderCommandDelegateParallelImpl(executorService, managementService,
+        new StopGatewaySenderCommandDelegateParallelImpl(managementService, executorService,
             stopperOnMemberFactory);
 
     // act
