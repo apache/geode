@@ -177,6 +177,7 @@ public class AvailablePortHelperIntegrationTest {
       int[] ports = getRandomAvailableTCPPorts(3);
 
       assertThat(ports)
+          .as("for jvmIndex " + i)
           .isEqualTo(previousPorts);
     }
   }
