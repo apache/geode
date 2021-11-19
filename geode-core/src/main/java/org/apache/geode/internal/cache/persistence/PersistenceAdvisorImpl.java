@@ -730,6 +730,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     }
   }
 
+  Set<PersistentStateListener> getPersistentStateListenerSet() {
+    return persistentStateListeners;
+  }
+
   private void notifyListenersMemberOnline(InternalDistributedMember member,
       PersistentMemberID persistentID) {
     for (PersistentStateListener listener : persistentStateListeners) {

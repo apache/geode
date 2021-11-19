@@ -165,6 +165,9 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
   }
 
+  List<RegionStatus> getRegions() {
+    return regions;
+  }
 
 
   /**
