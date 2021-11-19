@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.server;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,11 @@ import java.util.Map;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.codec.RedisCodec;
+import io.lettuce.core.codec.StringCodec;
+import io.lettuce.core.output.NestedMultiOutput;
+import io.lettuce.core.protocol.CommandArgs;
+import io.lettuce.core.protocol.CommandType;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -79,6 +85,32 @@ public class CommandIntegrationTest {
           .doesNotThrowAnyException();
     }
     softly.assertAll();
+  }
+
+  @Test
+  public void commandWithInvalidSubcommand_returnError() {
+    String invalidSubcommand = "fakeSubcommand";
+    RedisCodec<String, String> codec = StringCodec.UTF8;
+
+    CommandArgs<String, String> args =
+        new CommandArgs<>(codec).add(CommandType.COMMAND).add(invalidSubcommand);
+    assertThatThrownBy(
+        () -> radishClient.dispatch(CommandType.COMMAND, new NestedMultiOutput<>(codec), args))
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'COMMAND'");
+  }
+
+  @Test
+  public void commandWithInvalidSubcommand_returnErrorContainsListOfSubcommands() {
+    String invalidSubcommand = "fakeSubcommand";
+    RedisCodec<String, String> codec = StringCodec.UTF8;
+
+    CommandArgs<String, String> args =
+        new CommandArgs<>(codec).add(CommandType.COMMAND).add(invalidSubcommand);
+    assertThatThrownBy(
+        () -> radishClient.dispatch(CommandType.COMMAND, new NestedMultiOutput<>(codec), args))
+            .hasMessageContainingAll(
+                COMMANDCommandExecutor.getSupportedSubcommands().toArray(new String[0]));
   }
 
   @Test

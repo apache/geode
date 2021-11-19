@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal;
 
 
+import org.apache.geode.redis.internal.executor.server.COMMANDCommandExecutor;
+
 public class RedisConstants {
 
   /*
@@ -56,6 +58,9 @@ public class RedisConstants {
       "Client names cannot contain spaces, newlines or special characters.";
   public static final String ERROR_UNKNOWN_CLUSTER_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try CLUSTER HELP.";
+  public static final String ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND =
+      "Unknown subcommand or wrong number of arguments for '%s'. Supported subcommands are: "
+          + COMMANDCommandExecutor.getSupportedSubcommands();
   public static final String ERROR_INVALID_ZADD_OPTION_NX_XX =
       "XX and NX options at the same time are not compatible";
   public static final String ERROR_UNKNOWN_PUBSUB_SUBCOMMAND =
