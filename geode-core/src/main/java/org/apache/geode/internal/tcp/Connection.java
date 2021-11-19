@@ -2846,6 +2846,9 @@ public class Connection implements Runnable {
                       "Allocating larger network read buffer, new size is {} old size was {}.",
                       allocSize, oldBufferSize);
                   inputBuffer = inputSharing.expandReadBufferIfNeeded(allocSize);
+                  // we're returning to the caller (done == true) so make buffer writable
+                  inputBuffer.position(inputBuffer.limit());
+                  inputBuffer.limit(inputBuffer.capacity());
                 } else {
                   if (inputBuffer.position() != 0) {
                     inputBuffer.compact();

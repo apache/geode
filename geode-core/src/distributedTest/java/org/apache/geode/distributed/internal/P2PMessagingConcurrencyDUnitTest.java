@@ -29,12 +29,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.ssl.CertStores;
@@ -51,12 +53,20 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.version.VersionManager;
 
 /**
- * Tests one-way P2P messaging between two peers. A shared,
- * ordered connection is used and many concurrent tasks
- * compete on the sending side. Tests with TLS enabled
- * to exercise ByteBufferSharing and friends.
+ * Tests one-way P2P messaging between two peers.
+ * Many concurrent tasks compete on the sending side.
+ * The main purpose of the test is to exercise
+ * ByteBufferSharing and friends.
+ *
+ * Tests combinations of: conserve-sockets true/false,
+ * TLS on/off, and socket-buffer-size for sender
+ * and receiver both set to the default (and equal)
+ * and set to the sender's buffer twice as big as the
+ * receiver's buffer.
+ *
  */
 @Category({MembershipTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class P2PMessagingConcurrencyDUnitTest {
 
   // how many messages will each sender generate?
@@ -70,6 +80,8 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   // random seed
   private static final int RANDOM_SEED = 1234;
+
+  private static Properties securityProperties;
 
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
@@ -87,21 +99,43 @@ public class P2PMessagingConcurrencyDUnitTest {
    */
   private static LongAdder bytesTransferredAdder;
 
-  @Before
-  public void before() throws GeneralSecurityException, IOException {
-    final Properties configuration = gemFireConfiguration();
+  private void configure(
+      final boolean conserveSockets,
+      final boolean useTLS,
+      final int sendSocketBufferSize,
+      final int receiveSocketBufferSize) throws GeneralSecurityException, IOException {
+
+    final Properties senderConfiguration =
+        gemFireConfiguration(conserveSockets, useTLS, sendSocketBufferSize);
+    final Properties receiverConfiguration =
+        gemFireConfiguration(conserveSockets, useTLS, receiveSocketBufferSize);
 
     final MemberVM locator =
         clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
-            x -> x.withProperties(configuration).withConnectionToLocator()
+            x -> x.withProperties(senderConfiguration).withConnectionToLocator()
                 .withoutClusterConfigurationService().withoutManagementRestService());
 
-    sender = clusterStartupRule.startServerVM(1, configuration, locator.getPort());
-    receiver = clusterStartupRule.startServerVM(2, configuration, locator.getPort());
+    sender = clusterStartupRule.startServerVM(1, senderConfiguration, locator.getPort());
+    receiver = clusterStartupRule.startServerVM(2, receiverConfiguration, locator.getPort());
   }
 
   @Test
-  public void testP2PMessagingWithTLS() {
+  @Parameters({
+      "true, true, 32768, 32768",
+      "true, true, 65536, 32768",
+      "true, false, 32768, 32768",
+      "true, false, 65536, 32768",
+      "false, true, 32768, 32768",
+      "false, true, 65536, 32768",
+      "false, false, 32768, 32768",
+      "false, false, 65536, 32768"})
+  public void testP2PMessaging(
+      final boolean conserveSockets,
+      final boolean useTLS,
+      final int sendSocketBufferSize,
+      final int receiveSocketBufferSize) throws GeneralSecurityException, IOException {
+
+    configure(conserveSockets, useTLS, sendSocketBufferSize, receiveSocketBufferSize);
 
     final InternalDistributedMember receiverMember =
         receiver.invoke(() -> {
@@ -245,7 +279,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         throws IOException, ClassNotFoundException {
       super.fromData(in, context);
 
-      final int messageId = in.readInt();
+      messageId = in.readInt();
 
       final int length = in.readInt();
 
@@ -263,10 +297,19 @@ public class P2PMessagingConcurrencyDUnitTest {
   }
 
   @NotNull
-  private static Properties gemFireConfiguration()
+  private static Properties gemFireConfiguration(
+      final boolean conserveSockets, final boolean useTLS,
+      final int socketBufferSize)
       throws GeneralSecurityException, IOException {
 
-    final Properties props = securityProperties();
+    final Properties props;
+    if (useTLS) {
+      props = tlsProperties();
+    } else {
+      props = new Properties();
+    }
+
+    props.setProperty("socket-buffer-size", String.valueOf(socketBufferSize));
 
     /*
      * This is something we intend to test!
@@ -276,29 +319,32 @@ public class P2PMessagingConcurrencyDUnitTest {
      *
      * careful: if you set a boolean it doesn't take hold! setting a String
      */
-    props.setProperty("conserve-sockets", "true");
+    props.setProperty("conserve-sockets", String.valueOf(conserveSockets));
 
     return props;
   }
 
   @NotNull
-  private static Properties securityProperties() throws GeneralSecurityException, IOException {
-    final CertificateMaterial ca = new CertificateBuilder()
-        .commonName("Test CA")
-        .isCA()
-        .generate();
+  private static Properties tlsProperties() throws GeneralSecurityException, IOException {
+    // subsequent calls must return the same value so members agree on credentials
+    if (securityProperties == null) {
+      final CertificateMaterial ca = new CertificateBuilder()
+          .commonName("Test CA")
+          .isCA()
+          .generate();
 
-    final CertificateMaterial serverCertificate = new CertificateBuilder()
-        .commonName("member")
-        .issuedBy(ca)
-        .generate();
+      final CertificateMaterial serverCertificate = new CertificateBuilder()
+          .commonName("member")
+          .issuedBy(ca)
+          .generate();
 
-    final CertStores memberStore = new CertStores("member");
-    memberStore.withCertificate("member", serverCertificate);
-    memberStore.trust("ca", ca);
-    // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
-    final Properties props = memberStore.propertiesWith("all", false, false);
-    return props;
+      final CertStores memberStore = new CertStores("member");
+      memberStore.withCertificate("member", serverCertificate);
+      memberStore.trust("ca", ca);
+      // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
+      securityProperties = memberStore.propertiesWith("all", false, false);
+    }
+    return securityProperties;
   }
 
 }
