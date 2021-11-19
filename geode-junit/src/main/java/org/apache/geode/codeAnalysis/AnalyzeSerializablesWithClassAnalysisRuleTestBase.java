@@ -14,25 +14,30 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import java.util.Optional;
+import java.util.Map;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.WANSanctionedSerializablesService;
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
-@Category({WanTest.class, SerializationTest.class})
-public class AnalyzeWANSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+@Category(SerializationTest.class)
+public abstract class AnalyzeSerializablesWithClassAnalysisRuleTestBase
+    extends AnalyzeSerializablesTestBase {
 
-  @Override
-  protected String getModuleName() {
-    return "geode-wan";
+  @Rule
+  public ClassAnalysisRule classProvider = new ClassAnalysisRule(getModuleName());
+
+  @AfterClass
+  public static void afterClass() {
+    ClassAnalysisRule.clearCache();
   }
 
   @Override
-  protected Optional<Class<?>> getModuleClass() {
-    return Optional.of(WANSanctionedSerializablesService.class);
+  protected Map<String, CompiledClass> loadClasses() {
+    return classProvider.getClasses();
   }
 }
