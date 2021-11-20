@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
@@ -71,6 +72,7 @@ public class ProxyBucketRegion implements Bucket {
   private final Set<DistributedMember> sickHosts = new HashSet<>();
   private final DiskRegion diskRegion;
   private final BucketLock bucketLock;
+  private int recoverFromDiskCnt;
 
   /**
    * Note that LocalRegion has a version of this name spelled "NO_PARTITITON". So if code is written
@@ -95,6 +97,7 @@ public class ProxyBucketRegion implements Bucket {
         BucketAdvisor.createBucketAdvisor(this, internalRegionArgs.getPartitionedRegionAdvisor());
 
     this.bucketLock = this.partitionedRegion.getBucketLock(this.bid);
+    this.recoverFromDiskCnt = 0;
 
     if (this.partitionedRegion.getDataPolicy().withPersistence()) {
 
@@ -427,6 +430,11 @@ public class ProxyBucketRegion implements Bucket {
       logger.debug("{} coming to recover from disk. wasHosting {}", getFullPath(),
           persistenceAdvisor.wasHosting());
     }
+    if (!persistenceAdvisor.isRecovering()) {
+      return;
+    }
+    recoverFromDiskCnt++;
+
     try {
       if (persistenceAdvisor.wasHosting()) {
         if (isDebugEnabled) {
@@ -499,6 +507,11 @@ public class ProxyBucketRegion implements Bucket {
     } finally {
       persistenceAdvisor.recoveryDone(exception);
     }
+  }
+
+  @VisibleForTesting
+  public int getRecoverFromDiskCnt() {
+    return recoverFromDiskCnt;
   }
 
   boolean hasPersistentChildRegion() {
