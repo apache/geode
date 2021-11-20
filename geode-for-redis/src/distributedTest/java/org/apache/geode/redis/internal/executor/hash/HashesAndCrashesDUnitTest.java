@@ -31,8 +31,8 @@ import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -64,8 +64,8 @@ public class HashesAndCrashesDUnitTest {
 
   private static final int MAX_RETRIES = 10;
 
-  @BeforeClass
-  public static void setup() {
+  @Before
+  public void setup() {
     locator = clusterStartUp.startLocatorVM(0);
 
     server1 = clusterStartUp.startRedisVM(1, locator.getPort());
@@ -89,8 +89,8 @@ public class HashesAndCrashesDUnitTest {
     commands = clusterClient.connect().sync();
   }
 
-  @AfterClass
-  public static void cleanup() {
+  @After
+  public void cleanup() {
     try {
       clusterClient.shutdown();
       clusterStartUp.stop(0);
