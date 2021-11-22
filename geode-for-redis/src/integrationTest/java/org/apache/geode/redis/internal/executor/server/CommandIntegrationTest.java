@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -88,7 +89,7 @@ public class CommandIntegrationTest {
   }
 
   @Test
-  public void commandWithInvalidSubcommand_returnError() {
+  public void commandWithInvalidSubcommand_returnCommandError() {
     String invalidSubcommand = "fakeSubcommand";
     RedisCodec<String, String> codec = StringCodec.UTF8;
 
@@ -97,20 +98,7 @@ public class CommandIntegrationTest {
     assertThatThrownBy(
         () -> radishClient.dispatch(CommandType.COMMAND, new NestedMultiOutput<>(codec), args))
             .hasMessageContaining(
-                "ERR Unknown subcommand or wrong number of arguments for 'COMMAND'");
-  }
-
-  @Test
-  public void commandWithInvalidSubcommand_returnErrorContainsListOfSubcommands() {
-    String invalidSubcommand = "fakeSubcommand";
-    RedisCodec<String, String> codec = StringCodec.UTF8;
-
-    CommandArgs<String, String> args =
-        new CommandArgs<>(codec).add(CommandType.COMMAND).add(invalidSubcommand);
-    assertThatThrownBy(
-        () -> radishClient.dispatch(CommandType.COMMAND, new NestedMultiOutput<>(codec), args))
-            .hasMessageContainingAll(
-                COMMANDCommandExecutor.getSupportedSubcommands().toArray(new String[0]));
+                String.format(ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND, CommandType.COMMAND));
   }
 
   @Test
