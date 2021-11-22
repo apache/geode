@@ -142,7 +142,8 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s for key " + newKey
+                + " failed. The index is corrupted and marked as invalid.",
             indexName));
   }
 
@@ -169,7 +170,8 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s for key " + existingKey
+                + " failed. The index is corrupted and marked as invalid.",
             indexName));
   }
 
@@ -211,7 +213,8 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s for key " + existingKey
+                + " failed. The index is corrupted and marked as invalid.",
             indexName));
   }
 

@@ -1160,7 +1160,8 @@ public class IndexManager {
       index.markValid(false);
       setPRIndexAsInvalid((AbstractIndex) index);
       logger.warn(String.format(
-          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          "Updating the Index %s for key " + entry.getKey()
+              + " failed. The index is corrupted and marked as invalid.",
           ((AbstractIndex) index).indexName), exception);
     }
   }
@@ -1172,7 +1173,8 @@ public class IndexManager {
       index.markValid(false);
       setPRIndexAsInvalid((AbstractIndex) index);
       logger.warn(String.format(
-          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          "Updating the Index %s for key " + entry.getKey()
+              + " failed. The index is corrupted and marked as invalid.",
           ((AbstractIndex) index).indexName), exception);
     }
   }
