@@ -74,7 +74,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -259,8 +258,7 @@ public class MembershipJUnitTest {
     final MessageListener<InternalDistributedMember> messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
-    final SecurityServiceFactory securityServiceFactory = new DefaultSecurityServiceFactory();
-    final SecurityService securityService = securityServiceFactory.create();
+    final SecurityService securityService = SecurityServiceFactory.create();
     DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     final MemberIdentifierFactory memberFactory = mock(MemberIdentifierFactory.class);
     when(memberFactory.create(isA(MemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {

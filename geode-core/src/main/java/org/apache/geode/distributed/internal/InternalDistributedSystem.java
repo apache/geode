@@ -97,7 +97,6 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
-import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
@@ -669,8 +668,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
     config = new RuntimeDistributionConfigImpl(this);
 
-    SecurityServiceFactory securityServiceFactory = new DefaultSecurityServiceFactory();
-    securityService = securityServiceFactory.create(
+    securityService = SecurityServiceFactory.create(
         config.getSecurityProps(),
         securityManager, postProcessor);
 

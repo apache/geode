@@ -37,13 +37,11 @@ public class SecurityServiceTest {
 
   private Properties properties;
   private SecurityService securityService;
-  private SecurityServiceFactory securityServiceFactory;
 
   @Before
   public void before() {
     this.properties = new Properties();
-    this.securityServiceFactory = new DefaultSecurityServiceFactory();
-    this.securityService = securityServiceFactory.create();
+    this.securityService = SecurityServiceFactory.create();
   }
 
   @After
@@ -65,7 +63,7 @@ public class SecurityServiceTest {
     this.properties.setProperty(TestSecurityManager.SECURITY_JSON,
         "org/apache/geode/security/templates/security.json");
 
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -75,7 +73,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithClientAuthenticator() {
     this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -85,7 +83,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithPeerAuthenticator() {
     this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isFalse();
@@ -97,7 +95,7 @@ public class SecurityServiceTest {
     this.properties.setProperty(SECURITY_CLIENT_AUTHENTICATOR, "org.abc.test");
     this.properties.setProperty(SECURITY_PEER_AUTHENTICATOR, "org.abc.test");
 
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isFalse();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -108,7 +106,7 @@ public class SecurityServiceTest {
   public void testInitWithShiroAuthenticator() {
     this.properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
 
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
     assertThat(this.securityService.isClientSecurityRequired()).isTrue();
@@ -123,7 +121,7 @@ public class SecurityServiceTest {
   @Test
   public void testInitWithOutsideShiroSecurityManager() {
     SecurityUtils.setSecurityManager(new DefaultSecurityManager());
-    this.securityService = securityServiceFactory.create(properties);
+    this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();
   }

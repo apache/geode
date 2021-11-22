@@ -31,7 +31,6 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.NotAuthorizedException;
@@ -270,9 +269,8 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
       // Create the SecurityService using the distributed system properties.
       Objects.requireNonNull(cache.getDistributedSystem(),
           "Distributed system properties should be provided to configure the authorizer.");
-      SecurityServiceFactory securityServiceFactory = new DefaultSecurityServiceFactory();
       this.securityService =
-          securityServiceFactory.create(cache.getDistributedSystem().getSecurityProperties());
+          SecurityServiceFactory.create(cache.getDistributedSystem().getSecurityProperties());
     }
 
     this.forbiddenMethods = FORBIDDEN_METHODS;

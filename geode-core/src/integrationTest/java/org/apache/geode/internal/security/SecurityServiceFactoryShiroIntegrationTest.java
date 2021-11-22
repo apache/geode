@@ -34,14 +34,12 @@ public class SecurityServiceFactoryShiroIntegrationTest {
   private String shiroIniInClasspath;
 
   private SecurityService service;
-  private SecurityServiceFactory securityServiceFactory;
 
 
   @Before
   public void before() throws Exception {
     assertThat(getClass().getResource(SHIRO_INI_FILE)).isNotNull();
     this.shiroIniInClasspath = getResourcePackage(getClass()) + SHIRO_INI_FILE;
-    this.securityServiceFactory = new DefaultSecurityServiceFactory();
   }
 
   @After
@@ -61,8 +59,7 @@ public class SecurityServiceFactoryShiroIntegrationTest {
   public void create_shiro_createsCustomSecurityService() throws Exception {
     Properties securityConfig = new Properties();
     securityConfig.setProperty(SECURITY_SHIRO_INIT, this.shiroIniInClasspath);
-
-    service = securityServiceFactory.create(securityConfig);
+    service = SecurityServiceFactory.create(securityConfig);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
   }
 

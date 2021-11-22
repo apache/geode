@@ -38,7 +38,6 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.apache.geode.internal.security.DefaultSecurityServiceFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
@@ -107,8 +106,7 @@ public class Server {
       securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
       securityProperties.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
 
-      SecurityServiceFactory securityServiceFactory = new DefaultSecurityServiceFactory();
-      SecurityService securityService = securityServiceFactory.create(securityProperties);
+      SecurityService securityService = SecurityServiceFactory.create(securityProperties);
 
       // register the AccessControl bean
       mbs.registerMBean(new AccessControlMBean(securityService),

@@ -76,7 +76,8 @@ public class IntegratedSecurityService implements SecurityService {
    * @param postProcessor this can be null
    */
   @VisibleForTesting
-  public IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
+  protected IntegratedSecurityService(SecurityManagerProvider provider,
+      PostProcessor postProcessor) {
     // provider must provide a shiro security manager, otherwise, this is not integrated security
     // service at all.
     assert provider.getShiroSecurityManager() != null;
@@ -123,9 +124,9 @@ public class IntegratedSecurityService implements SecurityService {
 
     try {
       // in other cases like rest call, client operations, we get it from the current thread
-      currentUser = SecurityUtils.getSubject();
+      currentUser = getCurrentUser();
     } catch (UnavailableSecurityManagerException e) {
-      throw new CacheClosedException("likely cache shutdown in progress", e);
+      throw new CacheClosedException("Cache is closed.", e);
     }
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
@@ -133,6 +134,11 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     return currentUser;
+  }
+
+  @VisibleForTesting
+  protected Subject getCurrentUser() {
+    return SecurityUtils.getSubject();
   }
 
   /**
@@ -161,7 +167,7 @@ public class IntegratedSecurityService implements SecurityService {
     // this makes sure it starts with a clean user object
     ThreadContext.remove();
 
-    Subject currentUser = SecurityUtils.getSubject();
+    Subject currentUser = getCurrentUser();
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
     try {
       logger.debug("Logging in " + token.getPrincipal());
