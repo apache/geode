@@ -283,6 +283,36 @@ public class PersistenceAdvisorImplTest {
             + "Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.");
   }
 
+  @Test
+  public void verifyPersistentStateListenerSetIsCleanedAfterClosing() {
+    DistributedLockService distributedLockService = mock(DistributedLockService.class);
+    String regionPath = "/region";
+    DiskRegionStats diskRegionStats = mock(DiskRegionStats.class);
+    PersistentMemberManager persistentMemberManager = mock(PersistentMemberManager.class);
+    StartupStatus startupStatus = mock(StartupStatus.class);
+    PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory =
+        mock(PersistentStateQueryMessageSenderFactory.class);
+
+    String transformedMissingPersistentId = "myId";
+
+    PersistenceAdvisorImpl persistenceAdvisor = new PersistenceAdvisorImpl(cacheDistributionAdvisor,
+        distributedLockService, persistentMemberView, regionPath, diskRegionStats,
+        persistentMemberManager, startupStatus, id -> transformedMissingPersistentId,
+        mock(CollectionTransformer.class), persistentStateQueryMessageSenderFactory);
+
+    PersistentStateListener listener1 = mock(PersistentStateListener.class);
+    PersistentStateListener listener2 = mock(PersistentStateListener.class);
+
+    persistenceAdvisor.addListener(listener1);
+    persistenceAdvisor.addListener(listener2);
+
+    assertThat(persistenceAdvisor.getPersistentStateListenerSet().size()).isEqualTo(2);
+
+    persistenceAdvisor.close();
+    assertThat(persistenceAdvisor.isClosed()).isTrue();
+    assertThat(persistenceAdvisor.getPersistentStateListenerSet().isEmpty()).isTrue();
+  }
+
   private void getMembersToWaitForRemovesAllMembers(DiskStoreID diskStoreID,
       Set<PersistentMemberID> previouslyOnlineMembers) {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
