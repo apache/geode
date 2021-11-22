@@ -71,7 +71,8 @@ public class IndexManagerIntegrationTest {
     TestQueryObject.throwException = false;
 
     logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
-    serverStarterRule.withProperty("log-file", logFile.getAbsolutePath()).startServer();
+    serverStarterRule.withProperty("log-file", logFile.getAbsolutePath())
+        .withProperty("log-level", "debug").startServer();
     internalCache = serverStarterRule.getCache();
   }
 
@@ -142,9 +143,9 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s for key " + newKey
-                + " failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + newKey);
   }
 
   @Test
@@ -170,9 +171,9 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s for key " + existingKey
-                + " failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + existingKey);
   }
 
   @Test
@@ -213,9 +214,9 @@ public class IndexManagerIntegrationTest {
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
         .contains(String.format(
-            "Updating the Index %s for key " + existingKey
-                + " failed. The index is corrupted and marked as invalid.",
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + existingKey);
   }
 
   private static class TestQueryObject implements Serializable {
