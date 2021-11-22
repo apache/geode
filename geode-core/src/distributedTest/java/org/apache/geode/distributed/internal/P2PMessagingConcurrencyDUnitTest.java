@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -121,14 +122,26 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @Test
   @Parameters({
+      /*
+       * all combinations of flags with buffer sizes:
+       * (equal), larger/smaller, smaller/larger, minimal
+       */
       "true, true, 32768, 32768",
       "true, true, 65536, 32768",
+      "true, true, 32768, 65536",
+      "true, true, 1024, 1024",
       "true, false, 32768, 32768",
       "true, false, 65536, 32768",
+      "true, false, 32768, 65536",
+      "true, false, 1024, 1024",
       "false, true, 32768, 32768",
       "false, true, 65536, 32768",
+      "false, true, 32768, 65536",
+      "false, true, 1024, 1024",
       "false, false, 32768, 32768",
-      "false, false, 65536, 32768"
+      "false, false, 65536, 32768",
+      "false, false, 32768, 65536",
+      "false, false, 1024, 1024",
   })
   public void testP2PMessaging(
       final boolean conserveSockets,
@@ -207,10 +220,16 @@ public class P2PMessagingConcurrencyDUnitTest {
 
     });
 
-    final long bytesSent = sender.invoke(() -> bytesTransferredAdder.sum());
-    final long bytesReceived = receiver.invoke(() -> bytesTransferredAdder.sum());
+    final long bytesSent = getByteCount(sender);
 
-    assertThat(bytesReceived).as("bytes received != bytes sent").isEqualTo(bytesSent);
+    await().untilAsserted(
+        () -> assertThat(getByteCount(receiver))
+            .as("bytes received != bytes sent")
+            .isEqualTo(bytesSent));
+  }
+
+  private long getByteCount(final MemberVM member) {
+    return member.invoke(() -> bytesTransferredAdder.sum());
   }
 
   private static ClusterDistributionManager getCDM() {
@@ -305,7 +324,7 @@ public class P2PMessagingConcurrencyDUnitTest {
 
     final Properties props;
     if (useTLS) {
-      props = tlsProperties();
+      props = securityProperties();
     } else {
       props = new Properties();
     }
@@ -326,7 +345,7 @@ public class P2PMessagingConcurrencyDUnitTest {
   }
 
   @NotNull
-  private static Properties tlsProperties() throws GeneralSecurityException, IOException {
+  private static Properties securityProperties() throws GeneralSecurityException, IOException {
     // subsequent calls must return the same value so members agree on credentials
     if (securityProperties == null) {
       final CertificateMaterial ca = new CertificateBuilder()
