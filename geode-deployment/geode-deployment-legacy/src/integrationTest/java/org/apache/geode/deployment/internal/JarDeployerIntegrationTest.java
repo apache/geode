@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.deployment;
+package org.apache.geode.deployment.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,9 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.deployment.internal.DeployedJar;
-import org.apache.geode.deployment.internal.JarDeployer;
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;

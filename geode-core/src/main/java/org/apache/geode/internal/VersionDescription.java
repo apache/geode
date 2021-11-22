@@ -26,7 +26,7 @@ import java.util.TreeMap;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.classloader.internal.ClassPathLoader;
 
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +22,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
-import org.apache.geode.internal.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.DeploymentServiceFactory;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 
 /**
  * This interface replaces the guts of {@link ClassPathLoader} to allow differences in classloading

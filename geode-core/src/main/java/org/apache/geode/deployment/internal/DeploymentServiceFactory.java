@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.deployment;
+package org.apache.geode.deployment.internal;
 
 import java.util.ServiceLoader;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.classloader.internal.ClasspathService;
 import org.apache.geode.deployment.internal.exception.ServiceLoadingFailureException;
-import org.apache.geode.internal.classloader.ClasspathService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**

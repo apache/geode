@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,12 +41,12 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 
 /**
- * Unit tests for {@link ClassPathLoader}.
+ * Unit tests for {@link org.apache.geode.classloader.internal.ClassPathLoader}.
  *
  * @since GemFire 6.5.1.4
  */
@@ -66,8 +66,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} is always initialized and returns a
-   * <tt>ClassPathLoader</tt> instance.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} is
+   * always initialized and returns a <tt>ClassPathLoader</tt> instance.
    */
   @Test
   public void testLatestExists() throws Exception {
@@ -113,8 +113,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} throws <tt>ClassNotFoundException</tt> when
-   * class does not exist.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} throws
+   * <tt>ClassNotFoundException</tt> when class does not exist.
    */
   @Test
   public void testForNameThrowsClassNotFoundException() {
@@ -127,8 +127,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} finds and loads class via
-   * <tt>Class.forName(String, boolean, ClassLoader)</tt> when class does exist.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} finds
+   * and loads class via <tt>Class.forName(String, boolean, ClassLoader)</tt> when class does exist.
    */
   @Test
   public void testForName() throws Exception {
@@ -140,8 +140,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResource</tt> when it
-   * exists.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} can
+   * actually <tt>getResource</tt> when it exists.
    */
   @Test
   public void testGetResource() throws Exception {
@@ -170,8 +170,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResources</tt> when it
-   * exists.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} can
+   * actually <tt>getResources</tt> when it exists.
    */
   @Test
   public void testGetResources() throws Exception {
@@ -202,8 +202,8 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link ClassPathLoader#getLatest()} can actually <tt>getResourceAsStream</tt>
-   * when it exists.
+   * Verifies that {@link org.apache.geode.classloader.internal.ClassPathLoader#getLatest()} can
+   * actually <tt>getResourceAsStream</tt> when it exists.
    */
   @Test
   public void testGetResourceAsStream() throws Exception {
@@ -260,9 +260,10 @@ public class ClassPathLoaderTest {
   }
 
   /**
-   * Verifies that {@link Class#forName(String, boolean, ClassLoader)} used with
-   * {@link ClassPathLoader} works as expected with named object arrays, while
-   * {@link ClassLoader#loadClass(String)} throws ClassNotFoundException for named object arrays.
+   * Verifies that {@link Class#forName(String, boolean, ClassLoader)} used with {@link
+   * org.apache.geode.classloader.internal.ClassPathLoader} works as expected with named object
+   * arrays, while {@link ClassLoader#loadClass(String)} throws ClassNotFoundException for named
+   * object arrays.
    */
   @Test
   public void testForNameWithObjectArray() throws Exception {
@@ -278,7 +279,7 @@ public class ClassPathLoaderTest {
 
   /**
    * Verifies that TCCL finds the class when {@link Class#forName(String, boolean, ClassLoader)}
-   * uses {@link ClassPathLoader}.
+   * uses {@link org.apache.geode.classloader.internal.ClassPathLoader}.
    */
   @Test
   public void testForNameWithTCCL() throws Exception {
@@ -385,9 +386,9 @@ public class ClassPathLoaderTest {
 
   /**
    * Verifies that the {@link BrokenClassLoader} is broken and always throws errors even when used
-   * as a TCCL from {@link ClassPathLoader}. This is primarily a control which ensures that tests
-   * depending on <tt>BrokenClassLoader</tt> are valid, but it also verifies that TCCL is included
-   * by default by <tt>ClassPathLoader</tt>.
+   * as a TCCL from {@link org.apache.geode.classloader.internal.ClassPathLoader}. This is primarily
+   * a control which ensures that tests depending on <tt>BrokenClassLoader</tt> are valid, but it
+   * also verifies that TCCL is included by default by <tt>ClassPathLoader</tt>.
    */
   @Test
   public void testBrokenTCCLThrowsErrors() throws Exception {

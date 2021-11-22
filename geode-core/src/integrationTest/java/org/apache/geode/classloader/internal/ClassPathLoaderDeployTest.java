@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -38,9 +38,7 @@ import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-/**
- * Integration tests for {@link ClassPathLoader}.
- */
+/** Integration tests for {@link org.apache.geode.classloader.internal.ClassPathLoader}. */
 public class ClassPathLoaderDeployTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

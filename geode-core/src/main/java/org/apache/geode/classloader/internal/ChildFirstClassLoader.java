@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 
 import java.net.URL;

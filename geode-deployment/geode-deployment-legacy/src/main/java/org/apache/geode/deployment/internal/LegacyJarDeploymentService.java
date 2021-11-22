@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.deployment.internal.legacy;
+package org.apache.geode.deployment.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,10 +32,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
-import org.apache.geode.deployment.internal.DeployedJar;
-import org.apache.geode.deployment.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.deployment.JarDeploymentService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -45,8 +42,9 @@ import org.apache.geode.services.result.impl.Failure;
 import org.apache.geode.services.result.impl.Success;
 
 /**
- * Implementation of {@link JarDeploymentService} that encapsulates the standard method of deploying
- * jars by delegating to the {@link JarDeployer}.
+ * Implementation of {@link org.apache.geode.deployment.internal.JarDeploymentService} that
+ * encapsulates the standard method of deploying jars by delegating to the {@link
+ * org.apache.geode.deployment.internal.JarDeployer}.
  *
  * @since Geode 1.15
  */

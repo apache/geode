@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.classloader;
+package org.apache.geode.classloader.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +22,8 @@ import java.util.Enumeration;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
-import org.apache.geode.internal.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.DeploymentServiceFactory;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**

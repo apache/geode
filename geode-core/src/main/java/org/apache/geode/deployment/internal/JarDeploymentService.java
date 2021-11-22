@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.deployment;
+package org.apache.geode.deployment.internal;
 
 import java.io.File;
 import java.util.List;

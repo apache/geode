@@ -34,11 +34,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.classloader.ClassPathLoader;
-import org.apache.geode.internal.classloader.ClasspathService;
-import org.apache.geode.internal.classloader.DeployJarChildFirstClassLoader;
-import org.apache.geode.internal.deployment.DeploymentServiceFactory;
-import org.apache.geode.internal.deployment.JarDeploymentService;
+import org.apache.geode.deployment.internal.DeploymentServiceFactory;
+import org.apache.geode.deployment.internal.JarDeploymentService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
