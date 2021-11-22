@@ -45,6 +45,9 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.KeysCacheListener;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -385,6 +388,72 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
               .containsExactly("1", "2", "3"));
 
     });
+  }
+
+  @Test
+  public void createCQWillReAuth() throws Exception {
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      Region<Object, Object> proxyRegion =
+          ClusterStartupRule.clientCacheRule.createProxyRegion("region");
+      proxyRegion.put("key1", "value1");
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user2");
+      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
+      CqQuery cq =
+          queryService.newCq("CQ1", "select * from /region", new CqAttributesFactory().create());
+      cq.execute();
+    });
+
+    Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();
+    Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
+    assertThat(unAuthorizedOps.keySet()).containsExactly("user1");
+    assertThat(unAuthorizedOps.get("user1")).containsExactly("DATA:READ:region");
+    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2");
+    assertThat(authorizedOps.get("user2")).containsExactly("DATA:READ:region");
+  }
+
+  @Test
+  public void stopCQ() throws Exception {
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
+      CqQuery cq =
+          queryService.newCq("CQ1", "select * from /region", new CqAttributesFactory().create());
+      cq.execute();
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user2");
+      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
+      CqQuery cq = queryService.getCq("CQ1");
+      cq.stop();
+    });
+
+    Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();
+    Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
+    assertThat(unAuthorizedOps.keySet()).containsExactly("user1");
+    assertThat(unAuthorizedOps.get("user1")).containsExactly("CLUSTER:MANAGE:QUERY");
+    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2");
+    assertThat(authorizedOps.get("user2")).containsExactly("CLUSTER:MANAGE:QUERY");
   }
 
   @Test
