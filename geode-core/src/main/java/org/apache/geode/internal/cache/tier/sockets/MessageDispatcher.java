@@ -113,6 +113,8 @@ public class MessageDispatcher extends LoggingThread {
    */
   private volatile boolean _isStopped = true;
 
+  private volatile long wait_for_re_auth_start_time = -1;
+
   /**
    * A lock object used to control pausing this dispatcher
    */
@@ -186,6 +188,10 @@ public class MessageDispatcher extends LoggingThread {
     if (proxy.hasRegisteredInterested()) {
       _messageQueue.setHasRegisteredInterest(true);
     }
+  }
+
+  public boolean isWaitingForReAuthentication() {
+    return wait_for_re_auth_start_time > 0;
   }
 
   private CacheClientProxy getProxy() {
@@ -360,7 +366,7 @@ public class MessageDispatcher extends LoggingThread {
         getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
 
     ClientMessage clientMessage = null;
-    long wait_for_re_auth_start_time = -1;
+
     while (!isStopped()) {
       // SystemFailure.checkFailure(); DM's stopper does this
       if (getCache().getCancelCriterion().isCancelInProgress()) {

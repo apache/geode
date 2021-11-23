@@ -905,14 +905,14 @@ public class ServerConnection implements Runnable {
 
     Subject subject = clientUserAuths.getSubject(uniqueId);
     if (subject == null) {
-      logger.warn(
+      secureLogger.warn(
           "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
           uniqueId, messageType, getName());
       throw new AuthenticationRequiredException("Failed to find the authenticated user.");
     }
 
     ThreadState threadState = securityService.bindSubject(subject);
-    logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+    secureLogger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
         uniqueId, messageType, getName());
 
     return threadState;
@@ -1027,7 +1027,8 @@ public class ServerConnection implements Runnable {
       }
     }
     if (unregisterClient) {
-      // last serverconnection call all close on auth objects
+      // last server connection call all close on auth objects
+      secureLogger.debug("ServerConnection.handleTermination clean client auths");
       cleanClientAuths();
     }
     clientUserAuths = null;
@@ -1197,7 +1198,8 @@ public class ServerConnection implements Runnable {
     CacheClientProxy clientProxy =
         getAcceptor().getCacheClientNotifier().getClientProxy(getProxyID());
     // update the subject (in single user mode) in clientProxy if exists
-    if (clientProxy != null && clientProxy.getSubject() != null) {
+    if (clientProxy != null && clientProxy.getSubject() != null
+        && clientProxy.isWaitingForReAuthentication()) {
       secureLogger.debug("update subject on client proxy {} with uniqueId {}", clientProxy,
           uniqueId);
       clientProxy.setSubject(subject);
