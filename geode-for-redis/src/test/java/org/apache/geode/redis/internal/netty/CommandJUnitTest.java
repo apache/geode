@@ -26,7 +26,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.commands.Command;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 /**
  * Test case for the command
@@ -34,7 +35,7 @@ import org.apache.geode.redis.internal.RedisCommandType;
 public class CommandJUnitTest {
 
   /**
-   * Test method for {@link org.apache.geode.redis.internal.netty.Command#Command(java.util.List)}.
+   * Test method for {@link Command#Command(java.util.List)}.
    */
   @Test
   public void testCommand() {

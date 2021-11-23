@@ -27,7 +27,7 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 public class GeodeRedisStats {
   @Immutable

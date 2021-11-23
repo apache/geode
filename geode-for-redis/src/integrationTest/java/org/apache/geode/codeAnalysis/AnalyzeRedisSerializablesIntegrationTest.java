@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.redis.internal.RedisSanctionedSerializablesService;
+import org.apache.geode.redis.internal.services.RedisSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)

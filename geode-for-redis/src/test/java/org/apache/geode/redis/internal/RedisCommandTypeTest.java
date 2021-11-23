@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.commands.RedisCommandType;
+
 public class RedisCommandTypeTest {
 
   @Test

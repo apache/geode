@@ -35,6 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.redis.internal.services.locking.StripedCallable;
+import org.apache.geode.redis.internal.services.locking.StripedExecutorService;
+import org.apache.geode.redis.internal.services.locking.StripedRunnable;
+
 
 /**
  * @author Heinz Kabutz

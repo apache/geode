@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.security.ResourcePermission;
 
 public class RedisSecurityServiceTest {

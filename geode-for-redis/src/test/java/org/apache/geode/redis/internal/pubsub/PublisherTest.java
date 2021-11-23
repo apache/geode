@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class PublisherTest {

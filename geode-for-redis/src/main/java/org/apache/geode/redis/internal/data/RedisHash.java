@@ -43,11 +43,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.delta.DeltaInfo;
-import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.commands.executor.GlobPattern;
+import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
+import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.DeltaInfo;
+import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {

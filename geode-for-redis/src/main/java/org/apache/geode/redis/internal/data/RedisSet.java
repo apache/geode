@@ -42,11 +42,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.collections.SizeableObjectOpenCustomHashSet;
-import org.apache.geode.redis.internal.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.delta.DeltaInfo;
-import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.commands.executor.GlobPattern;
+import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
+import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.DeltaInfo;
+import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);

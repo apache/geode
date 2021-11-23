@@ -25,7 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 /**
  * Implements behaviour for when no instance of RedisData exists.

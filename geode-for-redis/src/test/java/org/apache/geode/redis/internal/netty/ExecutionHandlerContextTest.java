@@ -29,9 +29,9 @@ import org.apache.shiro.subject.Subject;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.redis.internal.RedisCommandType;
-import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.services.RedisSecurityService;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
+import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
