@@ -2766,6 +2766,9 @@ public class Connection implements Runnable {
   /**
    * processes the current NIO buffer. If there are complete messages in the buffer, they are
    * deserialized and passed to TCPConduit for further processing
+   *
+   * pre-condition: inputBuffer (from inputSharing.getBuffer()) is in WRITABLE mode
+   * post-condition: inputBuffer is in WRITABLE mode
    */
   private void processInputBuffer(AbstractExecutor threadMonitorExecutor)
       throws ConnectionException, IOException {
@@ -2842,12 +2845,12 @@ public class Connection implements Runnable {
                       "Allocating larger network read buffer, new size is {} old size was {}.",
                       allocSize, oldBufferSize);
                   inputBuffer = inputSharing.expandReadBufferIfNeeded(allocSize);
+                  makeReadableBufferWriteable(inputBuffer);
                 } else {
                   if (inputBuffer.position() != 0) {
                     inputBuffer.compact();
                   } else {
-                    inputBuffer.position(inputBuffer.limit());
-                    inputBuffer.limit(inputBuffer.capacity());
+                    makeReadableBufferWriteable(inputBuffer);
                   }
                 }
               }
@@ -2859,6 +2862,11 @@ public class Connection implements Runnable {
         }
       }
     }
+  }
+
+  private void makeReadableBufferWriteable(final ByteBuffer inputBuffer) {
+    inputBuffer.position(inputBuffer.limit());
+    inputBuffer.limit(inputBuffer.capacity());
   }
 
   private boolean readHandshakeForReceiver(DataInput dis) {
