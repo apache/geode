@@ -151,6 +151,7 @@ import org.apache.geode.lang.Identifiable;
  *                 &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *                 &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="socket-connect-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *                 &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -2615,6 +2616,7 @@ public class CacheConfig {
    *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+   *       &lt;attribute name="socket-connect-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="enable-batch-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *       &lt;attribute name="batch-size" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="batch-time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />

@@ -1393,10 +1393,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           String.valueOf(sender.getSocketReadTimeout()));
     }
     // socket-connect-timeout
-    if (generateDefaults()
-        || sender.getSocketConnectTimeout() != GatewaySender.DEFAULT_SOCKET_CONNECT_TIMEOUT) {
-      atts.addAttribute("", "", SOCKET_CONNECT_TIMEOUT, "",
-          String.valueOf(sender.getSocketConnectTimeout()));
+    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (generateDefaults()
+          || sender.getSocketConnectTimeout() != GatewaySender.DEFAULT_SOCKET_CONNECT_TIMEOUT) {
+        atts.addAttribute("", "", SOCKET_CONNECT_TIMEOUT, "",
+            String.valueOf(sender.getSocketConnectTimeout()));
+      }
     }
     // enable-batch-conflation
     if (generateDefaults()
