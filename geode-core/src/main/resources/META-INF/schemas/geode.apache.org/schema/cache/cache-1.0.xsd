@@ -192,6 +192,7 @@ declarative caching XML file elements unless indicated otherwise.
             </xsd:attribute>
             <xsd:attribute name="socket-buffer-size" type="xsd:string" use="optional" />
             <xsd:attribute name="socket-read-timeout" type="xsd:string" use="optional" />
+            <xsd:attribute name="socket-connect-timeout" type="xsd:string" use="optional" />
             <xsd:attribute name="enable-batch-conflation" type="xsd:boolean" use="optional" />
             <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
             <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional" />
