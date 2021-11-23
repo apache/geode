@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.string;
 
-import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 
@@ -51,22 +50,17 @@ public class StringsKillMultipleServersDUnitTest {
   public static void classSetup() {
     MemberVM locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    cluster.startRedisVM(1, x -> x
-        .withConnectionToLocator(locatorPort)
-        .withProperty(REDUNDANCY_ZONE, "A"));
-    cluster.startRedisVM(2, x -> x
-        .withConnectionToLocator(locatorPort)
-        .withProperty(REDUNDANCY_ZONE, "B"));
-    cluster.startRedisVM(3, x -> x
-        .withConnectionToLocator(locatorPort)
-        .withProperty(REDUNDANCY_ZONE, "A"));
-    cluster.startRedisVM(4, x -> x
-        .withConnectionToLocator(locatorPort)
-        .withProperty(REDUNDANCY_ZONE, "B"));
+    cluster.startRedisVM(1, locatorPort);
+    cluster.startRedisVM(2, locatorPort);
+    cluster.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = cluster.getRedisPort(1);
     jedisCluster =
         new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 10_000);
+
+    // This sequence ensures that servers 1, 2 and 3 are hosting all the buckets and server 4
+    // has no buckets.
+    cluster.startRedisVM(4, locatorPort);
   }
 
   @After
@@ -88,10 +82,10 @@ public class StringsKillMultipleServersDUnitTest {
     Future<Void> future2 = executor.submit(() -> doGetOps(running, counter));
     await().until(() -> counter.get() > 1000);
 
+    cluster.crashVM(2);
     cluster.crashVM(3);
-    cluster.crashVM(4);
-    int afterCrashCount = counter.get();
 
+    int afterCrashCount = counter.get();
     await().alias("ensure that operations are continuing after multiple server failures")
         .until(() -> counter.get() > afterCrashCount + 10_000);
 
