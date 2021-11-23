@@ -234,8 +234,14 @@ public class ServerConnectionTest {
     assertThat(userId).isEqualTo(123L);
     verify(proxy, never()).setSubject(any());
 
-    // if proxy has existing subject, then that subject will be updated
+    // if proxy has existing subject, but the proxy is not waitingForReAuth, subject won't be
+    // updated
     when(proxy.getSubject()).thenReturn(subject);
+    connection.putSubject(subject, 123L);
+    verify(proxy, never()).setSubject(any());
+
+    // if proxy has existing subject, and the proxy is waitingForReAuth, then subject is updated
+    when(proxy.isWaitingForReAuthentication()).thenReturn(true);
     connection.putSubject(subject, 123L);
     verify(proxy).setSubject(any());
   }

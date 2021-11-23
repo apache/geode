@@ -113,6 +113,8 @@ public class MessageDispatcher extends LoggingThread {
    */
   private volatile boolean _isStopped = true;
 
+  private volatile long waitForReAuthenticationStartTime = -1;
+
   /**
    * A lock object used to control pausing this dispatcher
    */
@@ -186,6 +188,10 @@ public class MessageDispatcher extends LoggingThread {
     if (proxy.hasRegisteredInterested()) {
       _messageQueue.setHasRegisteredInterest(true);
     }
+  }
+
+  public boolean isWaitingForReAuthentication() {
+    return waitForReAuthenticationStartTime > 0;
   }
 
   private CacheClientProxy getProxy() {
@@ -360,7 +366,7 @@ public class MessageDispatcher extends LoggingThread {
         getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
 
     ClientMessage clientMessage = null;
-    long wait_for_re_auth_start_time = -1;
+
     while (!isStopped()) {
       // SystemFailure.checkFailure(); DM's stopper does this
       if (getCache().getCancelCriterion().isCancelInProgress()) {
@@ -391,7 +397,7 @@ public class MessageDispatcher extends LoggingThread {
         // if message is not delivered due to authentication expiation, continue to try to
         // deliver the same message. Always retrieve a new message from the queue if we are not
         // waiting for the re-auth to happen.
-        if (wait_for_re_auth_start_time == -1) {
+        if (waitForReAuthenticationStartTime == -1) {
           try {
             clientMessage = (ClientMessage) _messageQueue.peek();
           } catch (RegionDestroyedException skipped) {
@@ -420,15 +426,15 @@ public class MessageDispatcher extends LoggingThread {
             }
           }
           clientMessage = null;
-          wait_for_re_auth_start_time = -1;
+          waitForReAuthenticationStartTime = -1;
         } catch (NotAuthorizedException notAuthorized) {
           // behave as if the message is dispatched, remove from the queue
           logger.warn("skip delivering message: " + clientMessage, notAuthorized);
           _messageQueue.remove();
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
-          if (wait_for_re_auth_start_time == -1) {
-            wait_for_re_auth_start_time = System.currentTimeMillis();
+          if (waitForReAuthenticationStartTime == -1) {
+            waitForReAuthenticationStartTime = System.currentTimeMillis();
             // only send the message to clients who can handle the message
             if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
               EventID eventId = createEventId();
@@ -439,7 +445,7 @@ public class MessageDispatcher extends LoggingThread {
             // trigger credential refresh on its own.
             Thread.sleep(200);
           } else {
-            long elapsedTime = System.currentTimeMillis() - wait_for_re_auth_start_time;
+            long elapsedTime = System.currentTimeMillis() - waitForReAuthenticationStartTime;
             if (elapsedTime > reAuthenticateWaitTime) {
               synchronized (_stopDispatchingLock) {
                 logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
