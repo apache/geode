@@ -71,7 +71,8 @@ public class IndexManagerIntegrationTest {
     TestQueryObject.throwException = false;
 
     logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
-    serverStarterRule.withProperty("log-file", logFile.getAbsolutePath()).startServer();
+    serverStarterRule.withProperty("log-file", logFile.getAbsolutePath())
+        .withProperty("log-level", "debug").startServer();
     internalCache = serverStarterRule.getCache();
   }
 
@@ -144,6 +145,7 @@ public class IndexManagerIntegrationTest {
         .contains(String.format(
             "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + newKey);
   }
 
   @Test
@@ -171,6 +173,7 @@ public class IndexManagerIntegrationTest {
         .contains(String.format(
             "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + existingKey);
   }
 
   @Test
@@ -213,6 +216,7 @@ public class IndexManagerIntegrationTest {
         .contains(String.format(
             "Updating the Index %s failed. The index is corrupted and marked as invalid.",
             indexName));
+    LogFileAssert.assertThat(logFile).contains("Corrupted key is " + existingKey);
   }
 
   private static class TestQueryObject implements Serializable {

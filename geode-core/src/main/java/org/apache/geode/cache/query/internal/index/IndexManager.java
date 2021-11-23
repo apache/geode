@@ -1162,6 +1162,7 @@ public class IndexManager {
       logger.warn(String.format(
           "Updating the Index %s failed. The index is corrupted and marked as invalid.",
           ((AbstractIndex) index).indexName), exception);
+      logger.debug("Corrupted key is " + entry.getKey());
     }
   }
 
@@ -1174,6 +1175,7 @@ public class IndexManager {
       logger.warn(String.format(
           "Updating the Index %s failed. The index is corrupted and marked as invalid.",
           ((AbstractIndex) index).indexName), exception);
+      logger.debug("Corrupted key is " + entry.getKey());
     }
   }
 
