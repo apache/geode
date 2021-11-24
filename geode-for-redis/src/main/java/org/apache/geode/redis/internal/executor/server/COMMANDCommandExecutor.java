@@ -15,10 +15,16 @@
 
 package org.apache.geode.redis.internal.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.RedisCommandType;
 import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
@@ -34,9 +40,25 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
  * CommandExecutor refers to the interface being implemented.
  */
 public class COMMANDCommandExecutor implements CommandExecutor {
+  @Immutable
+  private static final List<String> supportedSubcommands =
+      Collections.unmodifiableList(Arrays.asList("(no subcommand)"));
+
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    List<byte[]> args = command.getProcessedCommand();
 
+    if (args.size() == 1) {
+      return executeNoSubcommand(context);
+    }
+
+    // No subcommands are set for command so defaults to error response
+    byte[] subcommand = args.get(1);
+    return RedisResponse.error(
+        String.format(ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND, bytesToString(subcommand)));
+  }
+
+  private RedisResponse executeNoSubcommand(ExecutionHandlerContext context) {
     List<Object> response = new ArrayList<>();
 
     for (RedisCommandType type : RedisCommandType.values()) {
@@ -60,5 +82,9 @@ public class COMMANDCommandExecutor implements CommandExecutor {
     }
 
     return RedisResponse.array(response, false);
+  }
+
+  public static List<String> getSupportedSubcommands() {
+    return supportedSubcommands;
   }
 }
