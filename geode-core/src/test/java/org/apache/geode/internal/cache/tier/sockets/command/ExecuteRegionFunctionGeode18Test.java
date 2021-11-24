@@ -15,12 +15,11 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -142,7 +141,7 @@ public class ExecuteRegionFunctionGeode18Test {
     when(clientMessage.getPart(7)).thenReturn(part1);
     when(clientMessage.getPart(8)).thenReturn(part2);
     when(clientMessage.getPart(9)).thenReturn(part3);
-    Set<String> nodes = this.executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
+    Set<String> nodes = executeRegionFunctionGeode18.populateRemovedNodes(clientMessage, 3, 6);
     assertThat(nodes).containsExactlyInAnyOrder(node1, node2, node3);
   }
 
