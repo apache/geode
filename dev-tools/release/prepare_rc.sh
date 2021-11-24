@@ -347,9 +347,10 @@ echo "============================================================"
 echo "Publishing artifacts to nexus staging manager..."
 echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  Pay attention as the prompts look very similar."
 echo "============================================================"
+publishcmd="./gradlew publish --no-parallel -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}"
 set -x
 cd ${GEODE}
-./gradlew publish --no-parallel -Pversion=${VERSION} -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+sh -c "$publishcmd"
 set +x
 
 
@@ -360,6 +361,7 @@ echo "============================================================"
 cd ${GEODE}/../..
 echo "1. Go to https://repository.apache.org, login as ${APACHE_USERNAME}, and click on Staging Repositories"
 echo "2. If there is a prior ${VERSION} RC, select it and click Drop."
+echo "2b.If publication got split between two staging repos, drop one of them then run: pushd ${GEODE}; $publishcmd; popd"
 echo '3. Make a note of the 4-digit ID of the current ("implicitly created") staging repo.'
 echo '4. Select the current staging repo and click Close.'
 echo '5. Wait ~10 seconds and then refresh the page to confirm that status has become "Closed"'
