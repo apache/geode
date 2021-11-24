@@ -15,9 +15,9 @@
 package org.apache.geode.redis.internal;
 
 
-import org.apache.geode.redis.internal.executor.server.COMMANDCommandExecutor;
 import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.executor.connection.ClientExecutor;
+import org.apache.geode.redis.internal.executor.server.COMMANDCommandExecutor;
 
 public class RedisConstants {
 
