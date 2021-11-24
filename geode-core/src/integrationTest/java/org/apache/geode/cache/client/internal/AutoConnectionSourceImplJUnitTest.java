@@ -54,6 +54,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -258,7 +259,8 @@ public class AutoConnectionSourceImplJUnitTest {
   public void testNoServers() throws Exception {
     startFakeLocator();
     handler.nextConnectionResponse = new ClientConnectionResponse(null);
-    assertThat(source.findServer(null)).isNull();
+    assertThatThrownBy(() -> source.findServer(null))
+        .isInstanceOf(NoAvailableServersException.class);
   }
 
   @Test
@@ -294,7 +296,7 @@ public class AutoConnectionSourceImplJUnitTest {
       ArrayList<ServerLocation> locators = new ArrayList<>();
       locators.add(new ServerLocation(InetAddress.getLocalHost().getHostName(), secondPort));
       handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
-      Thread.sleep(500);
+      Thread.sleep(1500);
       try {
         issueStopRequest(port);
       } catch (ConnectException ignore) {
@@ -364,7 +366,6 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
-
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
         "Tcp Server", new ProtocolCheckerImpl(),
         DistributionStats::getStatTime,

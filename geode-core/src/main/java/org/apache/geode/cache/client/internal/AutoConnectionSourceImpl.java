@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -160,6 +161,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       throw new NoAvailableLocatorsException(
           "Unable to connect to any locators in the list " + locators);
     }
+    if (!response.hasResult()) {
+      throw new NoAvailableServersException("No servers found");
+    }
     return response.getServer();
   }
 
@@ -173,6 +177,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (response == null) {
       throw new NoAvailableLocatorsException(
           "Unable to connect to any locators in the list " + locators);
+    }
+    if (!response.hasResult()) {
+      throw new NoAvailableServersException("No servers found");
     }
     return response.getServer();
   }
@@ -189,6 +196,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (response == null) {
       throw new NoAvailableLocatorsException(
           "Unable to connect to any locators in the list " + locators);
+    }
+    if (!response.hasResult()) {
+      throw new NoAvailableServersException("No servers found");
     }
     return response.getServers();
   }
@@ -242,20 +252,26 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   private ServerLocationResponse queryLocators(ServerLocationRequest request) {
-    Iterator controllerItr = locators.get().iterator();
-    ServerLocationResponse response;
+    Iterator<HostAndPort> controllerItr = locators.get().iterator();
+    ServerLocationResponse response = null;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     do {
-      HostAndPort hostAddress = (HostAndPort) controllerItr.next();
+      HostAndPort hostAddress = controllerItr.next();
       if (isDebugEnabled) {
         logger.debug("Sending query to locator {}: {}", hostAddress, request);
       }
-      response = queryOneLocator(hostAddress, request);
+      ServerLocationResponse tempResponse = queryOneLocator(hostAddress, request);
       if (isDebugEnabled) {
-        logger.debug("Received query response from locator {}: {}", hostAddress, response);
+        logger.debug("Received query response from locator {}: {}", hostAddress, tempResponse);
       }
-    } while (controllerItr.hasNext() && (response == null || !response.hasResult()));
+      if (tempResponse != null) {
+        response = tempResponse;
+        if (response.hasResult()) {
+          break;
+        }
+      }
+    } while (controllerItr.hasNext());
 
     return response;
   }
