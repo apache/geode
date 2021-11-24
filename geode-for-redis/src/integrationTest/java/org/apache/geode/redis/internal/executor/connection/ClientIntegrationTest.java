@@ -14,7 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.connection;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.ClassRule;
+import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -27,4 +31,10 @@ public class ClientIntegrationTest extends AbstractClientIntegrationTest {
     return server.getPort();
   }
 
+  @Test
+  public void errorMessageContainsListOfSupportedSubcommands() {
+    String invalidSubcommand = "subcommand";
+    assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT, invalidSubcommand))
+        .hasMessageContainingAll(ClientExecutor.getSupportedSubcommands().toArray(new String[0]));
+  }
 }

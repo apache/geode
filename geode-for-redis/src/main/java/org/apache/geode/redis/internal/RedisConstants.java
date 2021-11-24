@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal;
 
 
+import org.apache.geode.redis.internal.executor.cluster.ClusterExecutor;
+import org.apache.geode.redis.internal.executor.connection.ClientExecutor;
 import org.apache.geode.redis.internal.executor.server.COMMANDCommandExecutor;
 
 public class RedisConstants {
@@ -53,11 +55,13 @@ public class RedisConstants {
   public static final String ERROR_UNKNOWN_SLOWLOG_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Try SLOWLOG HELP.";
   public static final String ERROR_UNKNOWN_CLIENT_SUBCOMMAND =
-      "Unknown subcommand or wrong number of arguments for '%s'. Try CLIENT HELP.";
+      "Unknown subcommand or wrong number of arguments for '%s'. Supported subcommands are: "
+          + ClientExecutor.getSupportedSubcommands();
   public static final String ERROR_INVALID_CLIENT_NAME =
       "Client names cannot contain spaces, newlines or special characters.";
   public static final String ERROR_UNKNOWN_CLUSTER_SUBCOMMAND =
-      "Unknown subcommand or wrong number of arguments for '%s'. Try CLUSTER HELP.";
+      "Unknown subcommand or wrong number of arguments for '%s'. Supported subcommands are: "
+          + ClusterExecutor.getSupportedSubcommands();
   public static final String ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Supported subcommands are: "
           + COMMANDCommandExecutor.getSupportedSubcommands();
