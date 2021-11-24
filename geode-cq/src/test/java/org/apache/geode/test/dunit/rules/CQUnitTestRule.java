@@ -72,6 +72,7 @@ public class CQUnitTestRule extends ExternalResource {
     when(message.getPart(anyInt())).thenReturn(part);
     when(part.getString()).thenReturn("CQ");
     when(part.getInt()).thenReturn(10);
+    when(part.getSerializedForm()).thenReturn(new byte[] {0, 0});
     when(crHelper.getCache()).thenReturn(cache);
     when(cache.getCqService()).thenReturn(cqService);
     when(cache.getLocalQueryService()).thenReturn(queryService);
