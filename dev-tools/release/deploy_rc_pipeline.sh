@@ -498,11 +498,11 @@ jobs:
                 tar xzf $file "${tld}/LICENSE"
                 head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src 10000000 30000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION} 100000000 150000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src 50000 2000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src 2000000 4000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src 50000 500000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src          16000000  20000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}             120000000 135000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src   840000    900000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src    2400000   3200000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src  85000    115000
               curl -L -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
