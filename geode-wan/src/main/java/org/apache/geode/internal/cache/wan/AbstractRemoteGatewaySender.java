@@ -65,7 +65,6 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       pf.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
     }
     pf.setReadTimeout(this.socketReadTimeout);
-    pf.setSocketConnectTimeout(this.socketConnectTimeout);
     pf.setIdleTimeout(connectionIdleTimeOut);
     pf.setSocketBufferSize(socketBufferSize);
     pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);

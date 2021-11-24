@@ -182,10 +182,6 @@ public class GatewaySenderMBeanBridge {
     return sender.getSocketReadTimeout();
   }
 
-  public long getSocketConnectTimeout() {
-    return sender.getSocketConnectTimeout();
-  }
-
   public boolean isBatchConflationEnabled() {
     return sender.isBatchConflationEnabled();
   }

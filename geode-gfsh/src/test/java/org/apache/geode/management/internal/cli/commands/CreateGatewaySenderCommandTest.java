@@ -260,7 +260,6 @@ public class CreateGatewaySenderCommandTest {
     assertThat(argsArgumentCaptor.getValue().isManualStart()).isFalse();
     assertThat(argsArgumentCaptor.getValue().getSocketBufferSize()).isNull();
     assertThat(argsArgumentCaptor.getValue().getSocketReadTimeout()).isNull();
-    assertThat(argsArgumentCaptor.getValue().getSocketConnectTimeout()).isNull();
     assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
     assertThat(argsArgumentCaptor.getValue().getBatchSize()).isNull();
     assertThat(argsArgumentCaptor.getValue().getBatchTimeInterval()).isNull();

@@ -124,11 +124,6 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public long getSocketConnectTimeout() {
-    return bridge.getSocketConnectTimeout();
-  }
-
-  @Override
   public int getTotalBatchesDistributed() {
     return bridge.getTotalBatchesDistributed();
   }

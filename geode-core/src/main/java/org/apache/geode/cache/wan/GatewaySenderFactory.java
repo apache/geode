@@ -90,16 +90,6 @@ public interface GatewaySenderFactory {
   GatewaySenderFactory setSocketReadTimeout(int timeout);
 
   /**
-   * Sets the number of milliseconds to wait to connect to a <code>GatewayReceiver</code>
-   * before timing out (if any are
-   * available). Default is 59000.
-   *
-   * @param timeout number of milliseconds to wait for a response from a GatewayReceiver
-   * @throws IllegalArgumentException if <code>timeout</code> is less than <code>0</code>.
-   */
-  GatewaySenderFactory setSocketConnectTimeout(int timeout);
-
-  /**
    * Sets the disk store name for overflow or persistence
    *
    */
