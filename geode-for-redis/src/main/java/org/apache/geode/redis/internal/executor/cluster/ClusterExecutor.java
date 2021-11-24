@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -48,6 +49,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
 public class ClusterExecutor implements CommandExecutor {
+  @Immutable
   private static final List<String> supportedSubcommands =
       Collections.unmodifiableList(Arrays.asList("INFO", "NODES", "SLOTS", "KEYSLOT"));
 

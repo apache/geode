@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.CommandExecutor;
 import org.apache.geode.redis.internal.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.Client;
@@ -33,6 +34,7 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.parameters.RedisParametersMismatchException;
 
 public class ClientExecutor implements CommandExecutor {
+  @Immutable
   private static final List<String> supportedSubcommands =
       Collections.unmodifiableList(Arrays.asList("SETNAME", "GETNAME"));
 
