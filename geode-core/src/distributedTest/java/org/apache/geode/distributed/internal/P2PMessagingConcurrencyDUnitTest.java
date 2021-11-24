@@ -89,7 +89,7 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @ClassRule
   public static final DistributedExecutorServiceRule senderExecutorServiceRule =
-      new DistributedExecutorServiceRule(SENDER_COUNT, 3);
+      new DistributedExecutorServiceRule(SENDER_COUNT);
 
   private MemberVM sender;
   private MemberVM receiver;
