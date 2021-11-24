@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.Test;
 
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.locking.LockingStripedCoordinator;
+import org.apache.geode.redis.internal.services.locking.StripedCoordinator;
 
 public class LockingStripedCoordinatorTest {
 

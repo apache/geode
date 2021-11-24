@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.redis.internal.RegionProvider.REDIS_SLOTS;
+import static org.apache.geode.redis.internal.services.RegionProvider.REDIS_SLOTS;
 
-import org.apache.geode.redis.internal.executor.cluster.CRC16;
+import org.apache.geode.redis.internal.commands.executor.cluster.CRC16;
 
 /**
  * Utility for parsing the hashtags in a redis key and computing the redis slot of the key.

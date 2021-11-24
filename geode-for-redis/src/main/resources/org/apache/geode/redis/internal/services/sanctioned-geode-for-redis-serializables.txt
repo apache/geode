@@ -1,0 +1,8 @@
+org/apache/geode/redis/internal/commands/RedisCommandSupportLevel,false
+org/apache/geode/redis/internal/commands/executor/BaseSetOptions$Exists,false
+org/apache/geode/redis/internal/commands/parameters/RedisParametersMismatchException,true,-643700717871858072
+org/apache/geode/redis/internal/data/RedisDataType,false,nullType:org/apache/geode/redis/internal/data/RedisData,toStringValue:java/lang/String
+org/apache/geode/redis/internal/data/RedisSortedSet$MemberAddResult,false
+org/apache/geode/redis/internal/data/delta/DeltaType,false
+org/apache/geode/redis/internal/netty/CoderException,true,4707944288714910949
+org/apache/geode/redis/internal/netty/RedisCommandParserException,true,4707944288714910949

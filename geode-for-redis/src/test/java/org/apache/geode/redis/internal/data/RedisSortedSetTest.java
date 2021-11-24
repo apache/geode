@@ -59,11 +59,11 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
-import org.apache.geode.redis.internal.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.executor.GlobPattern;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.commands.executor.GlobPattern;
+import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetRankRangeOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 

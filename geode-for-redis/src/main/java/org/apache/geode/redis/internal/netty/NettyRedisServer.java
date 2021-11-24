@@ -63,9 +63,9 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.pubsub.PubSub;
-import org.apache.geode.redis.internal.services.RedisSecurityService;
+import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 public class NettyRedisServer {

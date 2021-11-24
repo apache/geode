@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.redis.internal.executor.GlobPattern;
+import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.pubsub.Subscriptions.PatternSubscriptions;
 import org.apache.geode.redis.internal.statistics.RedisStats;

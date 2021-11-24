@@ -37,10 +37,10 @@ import org.apache.geode.redis.ClusterNode;
 import org.apache.geode.redis.ClusterNodes;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
-import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 

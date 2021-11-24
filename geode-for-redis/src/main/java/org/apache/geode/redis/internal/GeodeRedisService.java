@@ -28,7 +28,6 @@ import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant
 import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
-import org.apache.geode.redis.internal.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.data.NullRedisData;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -36,6 +35,7 @@ import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.pubsub.Publisher;
+import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener,
     DataSerializableFixedIdRegistrant {

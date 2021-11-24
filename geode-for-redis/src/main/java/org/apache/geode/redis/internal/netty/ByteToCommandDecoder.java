@@ -33,7 +33,8 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RedisProperties;
-import org.apache.geode.redis.internal.services.RedisSecurityService;
+import org.apache.geode.redis.internal.commands.Command;
+import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.redis.internal.RedisCommandType;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 public class RedisStats {
   private final AtomicLong commandsProcessed = new AtomicLong();

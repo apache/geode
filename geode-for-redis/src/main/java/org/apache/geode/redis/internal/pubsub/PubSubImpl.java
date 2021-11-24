@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.netty.Client;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.statistics.RedisStats;
 
 /**

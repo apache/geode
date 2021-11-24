@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.locking.LockingStripedCoordinator;
+import org.apache.geode.redis.internal.services.locking.StripedCoordinator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class LockingStripedCoordinatorIntegrationTest {

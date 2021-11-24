@@ -32,9 +32,9 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.delta.AppendDeltaInfo;
-import org.apache.geode.redis.internal.delta.DeltaInfo;
-import org.apache.geode.redis.internal.executor.string.SetOptions;
+import org.apache.geode.redis.internal.commands.executor.string.SetOptions;
+import org.apache.geode.redis.internal.data.delta.AppendDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {

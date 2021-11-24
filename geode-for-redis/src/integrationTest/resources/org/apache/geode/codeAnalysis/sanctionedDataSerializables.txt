@@ -1,7 +1,3 @@
-org/apache/geode/redis/internal/cluster/RedisMemberInfo,2
-fromData,28
-toData,27
-
 org/apache/geode/redis/internal/data/AbstractRedisData,2
 fromData,11
 toData,11
@@ -33,3 +29,7 @@ fromData,23
 org/apache/geode/redis/internal/pubsub/Publisher$PublishRequest,2
 fromData,55
 toData,61
+
+org/apache/geode/redis/internal/services/cluster/RedisMemberInfo,2
+fromData,28
+toData,27

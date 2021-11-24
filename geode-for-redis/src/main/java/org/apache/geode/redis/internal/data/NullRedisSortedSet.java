@@ -22,10 +22,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetLexRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetRankRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.SortedSetScoreRangeOptions;
-import org.apache.geode.redis.internal.executor.sortedset.ZAddOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetLexRangeOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetRankRangeOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetScoreRangeOptions;
+import org.apache.geode.redis.internal.commands.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.netty.Coder;
 
 class NullRedisSortedSet extends RedisSortedSet {

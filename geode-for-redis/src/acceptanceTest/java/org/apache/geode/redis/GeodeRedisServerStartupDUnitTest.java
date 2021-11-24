@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.GeodeRedisServer;
 import org.apache.geode.redis.internal.GeodeRedisService;
-import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
