@@ -16,6 +16,8 @@ package org.apache.geode.internal.lang;
 
 import java.util.Optional;
 
+import org.apache.geode.internal.cache.PoolFactoryImpl;
+
 
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
@@ -87,6 +89,14 @@ public class SystemPropertyHelper {
    */
   public static final String GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
       "get-transaction-events-from-queue-wait-time-ms";
+
+  /**
+   * Amount of time in milliseconds that a socket connect between a sending
+   * GatewaySender and its receiving <code>GatewayReceiver</code> will block.
+   * The default value is the default value of the {@link PoolFactoryImpl} class.
+   */
+  public static final String GATEWAY_SENDER_DEFAULT_SOCKET_CONNECT_TIMEOUT =
+      "cache.gatewaySender.default-socket-connect-timeout";
 
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It

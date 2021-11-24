@@ -34,12 +34,22 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
+  /**
+   * The default amount of time in milliseconds that a socket connect between a sending
+   * <code>Gateway</code> and its receiving <code>Gateway</code> will block.
+   */
+  private static final int DEFAULT_SOCKET_CONNECT_TIMEOUT =
+      SystemPropertyHelper.getProductIntegerProperty(
+          SystemPropertyHelper.GATEWAY_SENDER_DEFAULT_SOCKET_CONNECT_TIMEOUT).orElse(-1);
+
+
   private static final Logger logger = LogService.getLogger();
 
   /** used to reduce warning logs in case remote locator is down (#47634) */
@@ -65,6 +75,9 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       pf.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
     }
     pf.setReadTimeout(this.socketReadTimeout);
+    if (DEFAULT_SOCKET_CONNECT_TIMEOUT >= 0) {
+      pf.setSocketConnectTimeout(DEFAULT_SOCKET_CONNECT_TIMEOUT);
+    }
     pf.setIdleTimeout(connectionIdleTimeOut);
     pf.setSocketBufferSize(socketBufferSize);
     pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);
