@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -96,112 +96,112 @@ public class UnregisterInterestTest {
 
   @Before
   public void setUp() throws Exception {
-    this.unregisterInterest = new UnregisterInterest();
-    MockitoAnnotations.initMocks(this);
+    unregisterInterest = new UnregisterInterest();
+    MockitoAnnotations.openMocks(this);
 
-    when(this.authzRequest.unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+    when(authzRequest.unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
         eq(InterestType.KEY)))
-            .thenReturn(this.unregisterInterestOperationContext);
+            .thenReturn(unregisterInterestOperationContext);
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getRegion(any(String.class))).thenReturn(uncheckedCast(region));
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.interestTypePart.getInt()).thenReturn(0);
+    when(interestTypePart.getInt()).thenReturn(0);
 
-    when(this.isClosingPart.getObject()).thenReturn(BYTE_ARRAY);
+    when(isClosingPart.getObject()).thenReturn(BYTE_ARRAY);
 
-    when(this.keyPart.getStringOrObject()).thenReturn(KEY);
+    when(keyPart.getStringOrObject()).thenReturn(KEY);
 
-    when(this.keepAlivePart.getObject()).thenReturn(BYTE_ARRAY);
+    when(keepAlivePart.getObject()).thenReturn(BYTE_ARRAY);
 
-    when(this.message.getNumberOfParts()).thenReturn(5);
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(this.interestTypePart);
-    when(this.message.getPart(eq(2))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(3))).thenReturn(this.isClosingPart);
-    when(this.message.getPart(eq(4))).thenReturn(this.keepAlivePart);
+    when(message.getNumberOfParts()).thenReturn(5);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
+    when(message.getPart(eq(1))).thenReturn(interestTypePart);
+    when(message.getPart(eq(2))).thenReturn(keyPart);
+    when(message.getPart(eq(3))).thenReturn(isClosingPart);
+    when(message.getPart(eq(4))).thenReturn(keepAlivePart);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
-    when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(cacheServerStats);
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getReplyMessage()).thenReturn(replyMessage);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
+    when(serverConnection.getAcceptor()).thenReturn(acceptor);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
 
-    when(this.valuePart.getObject()).thenReturn(CALLBACK_ARG);
+    when(valuePart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(this.unregisterInterestOperationContext.getKey()).thenReturn(KEY);
+    when(unregisterInterestOperationContext.getKey()).thenReturn(KEY);
 
     CacheClientNotifier ccn = mock(CacheClientNotifier.class);
 
-    when(this.acceptor.getCacheClientNotifier()).thenReturn(ccn);
+    when(acceptor.getCacheClientNotifier()).thenReturn(ccn);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
+    unregisterInterest.cmdExecute(message, serverConnection, securityService,
         0);
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
+    unregisterInterest.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.READ, REGION_NAME, KEY);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
+    unregisterInterest.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(this.errorResponseMessage).send(eq(this.serverConnection));
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(errorResponseMessage).send(eq(serverConnection));
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
+    unregisterInterest.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+    verify(authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
         any(InterestType.class));
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest).getAuthorize(eq(REGION_NAME),
         eq(KEY), any());
 
-    this.unregisterInterest.cmdExecute(this.message, this.serverConnection, this.securityService,
+    unregisterInterest.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(this.authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
+    verify(authzRequest).unregisterInterestAuthorize(eq(REGION_NAME), eq(KEY),
         any(InterestType.class));
-    verify(this.replyMessage).send(eq(this.serverConnection));
+    verify(replyMessage).send(eq(serverConnection));
   }
 
 }
