@@ -55,12 +55,59 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void sdiffstoreErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SDIFFSTORE, 2);
+  public void sdiffWithFilledSet_returnsAllValuesInSet() {
+    String[] filledSet = createFilledSet();
+    assertThat(jedis.sdiff("{user1}filledSet")).containsExactlyInAnyOrder(filledSet);
   }
 
   @Test
-  public void testSDiff() {
+  public void sdiffWithOneNonExistentSet_returnsEmptySet() {
+    assertThat(jedis.sdiff("{user1}nonExistentSet")).isEmpty();
+  }
+
+  @Test
+  public void sdiffWithEmptySet_returnsEmptySet() {
+    createEmptySet();
+    assertThat(jedis.sdiff("{user1}emptySet")).isEmpty();
+  }
+
+  @Test
+  public void sdiffWithFilledAndEmptySet_returnsAllValuesInFilledSet() {
+    String[] filledSet = createFilledSet();
+    createEmptySet();
+    assertThat(jedis.sdiff("{user1}filledSet", "{user1}emptySet"))
+        .containsExactlyInAnyOrder(filledSet);
+  }
+
+  @Test
+  public void sdiffWithFilledAndNonExistentSet_returnsAllValuesInFilledSet() {
+    String[] filledSet = createFilledSet();
+    assertThat(jedis.sdiff("{user1}filledSet", "{user1}nonExistentSet"))
+        .containsExactlyInAnyOrder(filledSet);
+  }
+
+  @Test
+  public void sdiffWithMultipleEmptySet_returnsEmptySet() {
+    createEmptySet();
+    jedis.sadd("{user1}emptySet2", "pear");
+    jedis.srem("{user1}emptySet2", "pear");
+    assertThat(jedis.sdiff("{user1}emptySet", "{user1}emptySet2")).isEmpty();
+  }
+
+  @Test
+  public void sdiffWithMultipleNonExistentSet_returnsEmptySet() {
+    assertThat(jedis.sdiff("{user1}nonExistentSet1", "{user1}nonExistentSet2")).isEmpty();
+
+  }
+
+  @Test
+  public void sdiffWithEmptyAndNonExistentSet_returnsEmptySet() {
+    createEmptySet();
+    assertThat(jedis.sdiff("{user1}emptySet", "{user1}nonExistentSet")).isEmpty();
+  }
+
+  @Test
+  public void sdiffWithMultipleFilledSets() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
     String[] secondSet = new String[] {"apple", "microsoft", "linux"};
     String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
@@ -82,6 +129,11 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
     Set<String> copySet = jedis.sdiff("{user1}set1");
     assertThat(copySet).containsExactlyInAnyOrder(firstSet);
+  }
+
+  @Test
+  public void sdiffstoreErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SDIFFSTORE, 2);
   }
 
   @Test
@@ -206,5 +258,16 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
     assertThat(jedis.smembers("{user1}master").toArray())
         .containsExactlyInAnyOrder(masterSet.toArray());
+  }
+
+  private String[] createFilledSet() {
+    String[] filledSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
+    jedis.sadd("{user1}filledSet", filledSet);
+    return filledSet;
+  }
+
+  private void createEmptySet() {
+    jedis.sadd("{user1}emptySet", "pear");
+    jedis.srem("{user1}emptySet", "pear");
   }
 }
