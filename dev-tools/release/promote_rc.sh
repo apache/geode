@@ -474,6 +474,31 @@ git push
 set +x
 
 
+if [ -z "$LATER" ] ; then
+  for branch in develop support/$VERSION_MM ; do
+    echo ""
+    echo "============================================================"
+    echo "Updating default benchmark baseline on $branch"
+    echo "============================================================"
+    set -x
+    cd ${GEODE_BENCHMARKS}
+    git checkout $branch
+    git pull
+    set +x
+    #DEFAULT_BASELINE_VERSION=1.14.0
+    sed -e "s/^DEFAULT_BASELINE_VERSION=.*/DEFAULT_BASELINE_VERSION=${VERSION}/" \
+      -i.bak infrastructure/scripts/aws/run_against_baseline.sh
+    rm infrastructure/scripts/aws/run_against_baseline.sh.bak
+    set -x
+    git add settings.gradle
+    git diff --staged --color | cat
+    git commit -m "update default benchmark baseline on $branch"
+    git push
+    set +x
+  done
+fi
+
+
 echo ""
 echo "============================================================"
 echo "Removing old versions from mirrors"
@@ -526,7 +551,7 @@ PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. If 3rd-party dependencies haven't been bumped in awhile, ask on the dev list for a volunteer (details in dev-tools/dependencies/README.md)"
 [ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
-[ -n "$LATER" ] || andnative=" and geode-native"
+[ -n "$LATER" ] || andnative=", geode-benchmarks, and geode-native"
 echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bump from develop to those branches of geode${andnative}."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
