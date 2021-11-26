@@ -121,7 +121,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
 
     region = serverRegionFunctionExecutor.region;
     filter.clear();
-    filter.addAll(bucketsAsFilter);
+    bucketsAsFilter.stream().map(BucketId::intValue).forEach(filter::add);
     this.executeOnBucketSet = executeOnBucketSet;
   }
 

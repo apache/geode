@@ -29,12 +29,12 @@ import org.jetbrains.annotations.Nullable;
  * {@link Integer} cache is -128 to +127. This class is optimized for positive bucket indexes only.
  */
 public final class BucketId implements Comparable<BucketId> {
-  static final int max = 256;
+  static final int MAX = 256;
   private static final BucketId[] values;
 
   static {
-    values = new BucketId[max];
-    for (int i = 0; i < max; i++) {
+    values = new BucketId[MAX];
+    for (int i = 0; i < MAX; i++) {
       values[i] = new BucketId(i);
     }
   }
@@ -61,11 +61,10 @@ public final class BucketId implements Comparable<BucketId> {
    * Returns the {@link BucketId} for given {@code int} value.
    *
    * @param bucketId {@code int} value to get {@link BucketId} for.
-   * @return BucketId or throws {@link IndexOutOfBoundsException}.
-   * @throws IndexOutOfBoundsException if bucketId is out of range.
+   * @return {@link BucketId} or {@link #UNKNOWN_BUCKET} if out of range.
    */
   public static BucketId valueOf(final int bucketId) {
-    if (-1 == bucketId) {
+    if (bucketId < 0 || bucketId > MAX) {
       return UNKNOWN_BUCKET;
     }
     return values[bucketId];
