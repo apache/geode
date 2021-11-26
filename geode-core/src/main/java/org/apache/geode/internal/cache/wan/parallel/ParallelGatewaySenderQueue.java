@@ -1194,7 +1194,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
     addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
     Set<InternalDistributedMember> recipients =
-        removalThread.getAllRecipients(sender.getCache(), temp);
+        removalThread.getAllRecipientsForEvent(sender.getCache(), prQ.getFullPath(), bucketId);
+
     if (!recipients.isEmpty()) {
       ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
       pqrm.setRecipients(recipients);
@@ -1965,6 +1966,35 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
       return recipients;
     }
+
+
+    private Set<InternalDistributedMember> getAllRecipientsForEvent(InternalCache cache,
+        String partitionedRegionName, int bucketId) {
+      Set recipients = new ObjectOpenHashSet();
+      PartitionedRegion partitionedRegion =
+          (PartitionedRegion) cache.getRegion(partitionedRegionName);
+      if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {
+        final String bucketFullPath =
+            SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
+                + partitionedRegion.getBucketName(bucketId);
+        AbstractBucketRegionQueue brq =
+            (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
+        if (brq != null && brq.getBucketAdvisor() != null) {
+          Set<InternalDistributedMember> bucketMembers = brq.getBucketAdvisor().getAllMembers();
+          if (!bucketMembers.isEmpty()) {
+            recipients.addAll(bucketMembers);
+          } else {
+            recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+          }
+        } else {
+          recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+        }
+      }
+
+      return recipients;
+    }
+
+
 
     /**
      * shutdown this thread and the caller thread will join this thread
