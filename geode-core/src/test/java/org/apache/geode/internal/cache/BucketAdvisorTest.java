@@ -228,4 +228,53 @@ public class BucketAdvisorTest {
     // Unknown Shadow Bucket
     assertThat(bucketAdvisor.isShadowBucketDestroyed(SEPARATOR + "b5")).isFalse();
   }
+
+  @Test
+  public void testGetAllMembersReturnsNoMember() throws Exception {
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
+
+    Bucket bucket = mock(Bucket.class);
+    when(bucket.isHosting()).thenReturn(true);
+    when(bucket.isPrimary()).thenReturn(false);
+    when(bucket.getDistributionManager()).thenReturn(distributionManager);
+
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(partitionedRegion.getRedundantCopies()).thenReturn(0);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
+
+    BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
+    assertThat(bucketAdvisor.getAllMembers().isEmpty()).isTrue();
+  }
+
+  @Test
+  public void testGetAllMembersReturnsOneMember() throws Exception {
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
+
+    when(distributionManager.getId()).thenReturn(memberId);
+
+    Bucket bucket = mock(Bucket.class);
+    when(bucket.isHosting()).thenReturn(true);
+    when(bucket.isPrimary()).thenReturn(false);
+    when(bucket.getDistributionManager()).thenReturn(distributionManager);
+
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(partitionedRegion.getRedundantCopies()).thenReturn(0);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
+    when(partitionedRegion.getRedundancyTracker())
+        .thenReturn(mock(PartitionedRegionRedundancyTracker.class));
+
+    RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
+    when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
+
+    BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
+
+    BucketAdvisor.BucketProfile bp = new BucketAdvisor.BucketProfile(memberId, 0, bucket);
+
+    bucketAdvisor.putProfile(bp, true);
+    assertThat(bucketAdvisor.getAllMembers().size()).isEqualTo(1);
+  }
 }
