@@ -243,9 +243,9 @@ public class WANTestBase extends DistributedTestCase {
   public void setUpWANTestBase() throws Exception {
     shuffleNumDispatcherThreads();
     Invoke.invokeInEveryVM(() -> setNumDispatcherThreadsForTheRun(dispatcherThreads.get(0)));
-    IgnoredException.addIgnoredException("Connection refused");
-    IgnoredException.addIgnoredException("Software caused connection abort");
-    IgnoredException.addIgnoredException("Connection reset");
+    addIgnoredException("Connection refused");
+    addIgnoredException("Software caused connection abort");
+    addIgnoredException("Connection reset");
     postSetUpWANTestBase();
   }
 
@@ -417,11 +417,11 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createReplicatedRegion(String regionName, String senderIds, Boolean offHeap) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE);
       if (senderIds != null) {
@@ -444,11 +444,11 @@ public class WANTestBase extends DistributedTestCase {
   public static void createReplicatedProxyRegion(String regionName, String senderIds,
       Boolean offHeap) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
       if (senderIds != null) {
@@ -499,7 +499,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void createReplicatedRegionWithAsyncEventQueue(String regionName,
       String asyncQueueIds, Boolean offHeap) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE);
       if (asyncQueueIds != null) {
@@ -520,7 +520,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void createReplicatedRegionWithSenderAndAsyncEventQueue(String regionName,
       String senderIds, String asyncChannelId, Boolean offHeap) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE);
       if (senderIds != null) {
@@ -609,9 +609,9 @@ public class WANTestBase extends DistributedTestCase {
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap, RegionShortcut shortcut,
       boolean statisticsEnabled, boolean concurrencyChecksEnabled) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
+        addIgnoredException(PartitionOfflineException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(shortcut);
       if (senderIds != null) {
@@ -640,9 +640,9 @@ public class WANTestBase extends DistributedTestCase {
   public static void createPartitionedRegionWithPersistence(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
+        addIgnoredException(PartitionOfflineException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
       if (senderIds != null) {
@@ -667,9 +667,9 @@ public class WANTestBase extends DistributedTestCase {
   public static void createColocatedPartitionedRegion(String regionName, String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, String colocatedWith) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
+        addIgnoredException(PartitionOfflineException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION);
       if (senderIds != null) {
@@ -750,9 +750,9 @@ public class WANTestBase extends DistributedTestCase {
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap) {
 
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(PartitionOfflineException.class.getName());
+        addIgnoredException(PartitionOfflineException.class.getName());
     try {
 
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
@@ -778,7 +778,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void createCustomerOrderShipmentPartitionedRegion(String senderIds,
       Integer redundantCopies, Integer totalNumBuckets, Boolean offHeap) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION);
       if (senderIds != null) {
@@ -1100,12 +1100,12 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void startSender(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
 
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       sender.start();
@@ -1118,12 +1118,12 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void startSenderwithCleanQueues(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
 
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       sender.startWithCleanQueue();
@@ -1431,7 +1431,7 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void waitForSenderRunningState(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     try {
       Set<GatewaySender> senders = cache.getGatewaySenders();
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
@@ -1641,9 +1641,9 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void pauseSender(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       sender.pause();
@@ -1656,9 +1656,9 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void resumeSender(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       sender.resume();
@@ -1683,9 +1683,9 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void stopSender(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       AbstractGatewaySenderEventProcessor eventProcessor = null;
@@ -1767,7 +1767,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void createSender(String dsName, int remoteDsId, boolean isParallel,
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
       GatewayEventFilter filter, boolean isManualStart, boolean groupTransactionEvents) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     try {
       File persistentDirectory =
           new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -1803,7 +1803,7 @@ public class WANTestBase extends DistributedTestCase {
       boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
       boolean isPersistent, GatewayEventFilter filter, boolean isManualStart, int numDispatchers,
       OrderPolicy orderPolicy, int socketBufferSize) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     try {
       File persistentDirectory =
           new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -1870,7 +1870,7 @@ public class WANTestBase extends DistributedTestCase {
       List<GatewayEventFilter> eventFilters, List<GatewayTransportFilter> transportFilters,
       boolean isManualStart, boolean isDiskSync) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(RegionDestroyedException.class.getName());
+        addIgnoredException(RegionDestroyedException.class.getName());
     try {
       File persistentDirectory =
           new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
@@ -2286,9 +2286,9 @@ public class WANTestBase extends DistributedTestCase {
     txMgr.setDistributed(true);
 
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 1; i <= numPuts; i++) {
@@ -2305,9 +2305,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doPuts(String regionName, int numPuts, Object value) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 0; i < numPuts; i++) {
@@ -2321,9 +2321,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doPuts(String regionName, int numPuts) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 0; i < numPuts; i++) {
@@ -2337,9 +2337,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doTxPuts(String regionName, int numPuts) {
     try (
-        IgnoredException ignored = IgnoredException.addIgnoredException(InterruptedException.class);
+        IgnoredException ignored = addIgnoredException(InterruptedException.class);
         IgnoredException ignored1 =
-            IgnoredException.addIgnoredException(GatewaySenderException.class)) {
+            addIgnoredException(GatewaySenderException.class)) {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 0; i < numPuts; i++) {
         cache.getCacheTransactionManager().begin();
@@ -2351,9 +2351,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doPutsSameKey(String regionName, int numPuts, String key) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = 0; i < numPuts; i++) {
@@ -2473,7 +2473,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void localDestroyRegion(String regionName) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(PRLocallyDestroyedException.class.getName());
+        addIgnoredException(PRLocallyDestroyedException.class.getName());
     try {
       Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
       r.localDestroyRegion();
@@ -2774,7 +2774,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void doNextPuts(String regionName, int start, int numPuts) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(CacheClosedException.class.getName());
+        addIgnoredException(CacheClosedException.class.getName());
     try {
       Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
       for (long i = start; i < numPuts; i++) {
@@ -2900,9 +2900,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void validateRegionSize(String regionName, final int regionSize) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(CacheClosedException.class.getName());
+        addIgnoredException(CacheClosedException.class.getName());
     try {
       final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
       if (regionSize != r.keySet().size()) {
@@ -3169,11 +3169,11 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static Boolean killSender(String senderId) {
-    final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
+    final IgnoredException exln = addIgnoredException("Could not connect");
     IgnoredException exp =
-        IgnoredException.addIgnoredException(CacheClosedException.class.getName());
+        addIgnoredException(CacheClosedException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
       if (sender.isPrimary()) {
@@ -3278,9 +3278,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void validateQueueContents(final String senderId, final int regionSize) {
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(InterruptedException.class.getName());
+        addIgnoredException(InterruptedException.class.getName());
     IgnoredException exp2 =
-        IgnoredException.addIgnoredException(GatewaySenderException.class.getName());
+        addIgnoredException(GatewaySenderException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
 
@@ -3430,9 +3430,9 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void validateParallelSenderQueueAllBucketsDrained(final String senderId) {
     IgnoredException exp =
-        IgnoredException.addIgnoredException(RegionDestroyedException.class.getName());
+        addIgnoredException(RegionDestroyedException.class.getName());
     IgnoredException exp1 =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+        addIgnoredException(ForceReattemptException.class.getName());
     try {
       GatewaySender sender = getGatewaySender(senderId);
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
