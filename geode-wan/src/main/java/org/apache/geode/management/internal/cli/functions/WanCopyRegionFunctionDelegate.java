@@ -382,6 +382,9 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
 
     private EntryEventImpl createEvent(InternalCache cache, InternalRegion region,
         Region.Entry<?, ?> entry, long newestTimestampAllowed) {
+      if (entry instanceof DestroyedEntry) {
+        return null;
+      }
       EntryEventImpl event;
       try {
         if (mustDiscardEntry(entry, newestTimestampAllowed, region)) {
