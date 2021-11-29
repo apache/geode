@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.junit.After;
@@ -59,7 +60,8 @@ public abstract class AbstractAppendMemoryIntegrationTest implements RedisIntegr
     info = RedisTestHelper.getInfo(jedis);
     Long finalMemValue = Long.valueOf(info.get("used_memory"));
 
-    assertThat(finalMemValue).isGreaterThan(previousMemValue);
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
+        .untilAsserted(() -> assertThat(finalMemValue).isGreaterThan(previousMemValue));
   }
 
 }
