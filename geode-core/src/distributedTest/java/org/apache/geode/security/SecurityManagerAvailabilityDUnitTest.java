@@ -41,7 +41,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.SerializableFunction;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category({SecurityTest.class})
@@ -61,20 +63,16 @@ public class SecurityManagerAvailabilityDUnitTest {
                 .withProperty(SECURITY_LOG_LEVEL, "debug"));
     int locatorPort = locatorVM.getPort();
 
-    server1 = clusterStartupRule.startServerVM(1,
-        s -> s.withSecurityManager(ExpirableSecurityManager.class)
-            .withProperty(SECURITY_LOG_LEVEL, "debug")
-            .withCredential("test", "test")
-            .withConnectionToLocator(locatorPort)
-            .withSystemProperty(SECURITY_SERVICE_SYSTEM_PROPERTY,
-                TestIntegratedSecurityService.class.getName()));
-    server2 = clusterStartupRule.startServerVM(2,
-        s -> s.withSecurityManager(ExpirableSecurityManager.class)
-            .withProperty(SECURITY_LOG_LEVEL, "debug")
-            .withCredential("test", "test")
-            .withConnectionToLocator(locatorPort)
-            .withSystemProperty(SECURITY_SERVICE_SYSTEM_PROPERTY,
-                TestIntegratedSecurityService.class.getName()));
+    SerializableFunction<ServerStarterRule> serverStarterRuleSerializableFunction = s -> s
+        .withSecurityManager(ExpirableSecurityManager.class)
+        .withProperty(SECURITY_LOG_LEVEL, "debug")
+        .withCredential("test", "test")
+        .withConnectionToLocator(locatorPort)
+        .withSystemProperty(SECURITY_SERVICE_SYSTEM_PROPERTY,
+            TestIntegratedSecurityService.class.getName());
+
+    server1 = clusterStartupRule.startServerVM(1, serverStarterRuleSerializableFunction);
+    server2 = clusterStartupRule.startServerVM(2, serverStarterRuleSerializableFunction);
 
     VMProvider.invokeInEveryMember(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
