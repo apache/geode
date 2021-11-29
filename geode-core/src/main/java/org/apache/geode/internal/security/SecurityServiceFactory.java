@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIR
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
@@ -28,8 +29,9 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 
 public class SecurityServiceFactory {
-  public static final String SECURITY_SERVICE_SYSTEM_PROPERTY =
-      "org.apache.geode.internal.security.SecurityService";
+  @TestOnly
+  public static final String TEST_SECURITY_SERVICE_SYSTEM_PROPERTY =
+      "test.org.apache.geode.internal.security.SecurityService";
 
   private SecurityServiceFactory() {
     // do not instantiate
@@ -51,11 +53,19 @@ public class SecurityServiceFactory {
     return create(securityProps, cacheConfig.getSecurityManager(), cacheConfig.getPostProcessor());
   }
 
+  private static SecurityService getTestSecurityService() {
+    String securityServiceClassName = System.getProperty(TEST_SECURITY_SERVICE_SYSTEM_PROPERTY);
+    if (securityServiceClassName == null) {
+      return null;
+    }
+    return CallbackInstantiator.getObjectOfType(securityServiceClassName, SecurityService.class);
+  }
+
   public static SecurityService create(Properties securityProps,
       SecurityManager preferredSecurityManager, PostProcessor preferredPostProcessor) {
-    String securityServiceClassName = System.getProperty(SECURITY_SERVICE_SYSTEM_PROPERTY);
-    if (securityServiceClassName != null) {
-      return CallbackInstantiator.getObjectOfType(securityServiceClassName, SecurityService.class);
+    SecurityService testSecurityService = getTestSecurityService();
+    if (testSecurityService != null) {
+      return testSecurityService;
     }
 
     if (securityProps == null) {

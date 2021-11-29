@@ -18,8 +18,6 @@
 package org.apache.geode.security;
 
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -41,7 +39,8 @@ public class TestIntegratedSecurityService extends IntegratedSecurityService {
   public static final String CALL_COUNT = "call_count";
   public static final String FAIL_TIMES = "fail_times";
 
-  private final AtomicInteger getSubjectFailInterval = new AtomicInteger(0);
+  // set the fail interval default to 50
+  private Integer getSubjectFailInterval = 50;
   private final AtomicInteger getSubjectCallCount = new AtomicInteger(0);
   private final AtomicInteger getSubjectTimesFailed = new AtomicInteger(0);
 
@@ -52,32 +51,27 @@ public class TestIntegratedSecurityService extends IntegratedSecurityService {
   @Override
   protected Subject getCurrentUser() {
     Subject subject = super.getCurrentUser();
-    if (getSubjectCallCount.get() > getSubjectFailInterval.get()) {
+    int callCount = getSubjectCallCount.incrementAndGet();
+    if (callCount > getSubjectFailInterval) {
       getSubjectTimesFailed.incrementAndGet();
-      logger.info("about to throw induced exception on call count: {}", getSubjectCallCount.get());
+      logger.info("about to throw induced exception on call count: {}", callCount);
       getSubjectCallCount.set(0);
       throw new UnavailableSecurityManagerException("SecurityManager unavailable");
     }
-
-    getSubjectCallCount.incrementAndGet();
     return subject;
   }
 
   public void reset() {
+    getSubjectFailInterval = 50;
     getSubjectCallCount.set(0);
-    getSubjectFailInterval.set(0);
     getSubjectTimesFailed.set(0);
   }
 
   public void setFailInterval(int failInterval) {
-    getSubjectFailInterval.set(failInterval);
+    getSubjectFailInterval = failInterval;
   }
 
-  public Map<String, Object> getGetSubjectFailInformation() {
-    Map<String, Object> infoMap = new HashMap<>();
-    infoMap.put(CALL_COUNT, getSubjectCallCount.get());
-    infoMap.put(FAIL_INTERVAL, getSubjectFailInterval.get());
-    infoMap.put(FAIL_TIMES, getSubjectTimesFailed.get());
-    return infoMap;
+  public Integer getTimesFailed() {
+    return getSubjectTimesFailed.get();
   }
 }
