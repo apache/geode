@@ -31,7 +31,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
