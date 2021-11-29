@@ -16,25 +16,40 @@ package org.apache.geode.test.compiler;
 
 import static java.lang.System.lineSeparator;
 
+import java.net.URI;
+
+import javax.tools.SimpleJavaFileObject;
+
 import org.apache.commons.lang3.StringUtils;
 
-public class UncompiledSourceCode {
-
-  private final String simpleClassName;
+public class InMemorySourceFile extends SimpleJavaFileObject {
+  private final String name;
   private final String sourceCode;
 
-  private UncompiledSourceCode(String simpleClassName, String sourceCode) {
-    this.simpleClassName = simpleClassName;
+  public InMemorySourceFile(String name, String sourceCode) {
+    super(URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
+    this.name = name;
     this.sourceCode = sourceCode;
   }
 
-  static UncompiledSourceCode fromSourceCode(String sourceCode) {
-    String simpleClassName = new ClassNameExtractor().extractFromSourceCode(sourceCode);
-    return new UncompiledSourceCode(simpleClassName, sourceCode);
+  @Override
+  public String getName() {
+    return name;
   }
 
-  static UncompiledSourceCode fromClassName(String fullyQualifiedClassName) {
-    ClassNameWithPackage classNameWithPackage = ClassNameWithPackage.of(fullyQualifiedClassName);
+  @Override
+  public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+    return sourceCode;
+  }
+
+  static InMemorySourceFile fromSourceCode(String sourceCode) {
+    String className = new ClassNameExtractor().extractFromSourceCode(sourceCode);
+    System.out.println("DHE: extracted class name: " + className);
+    return new InMemorySourceFile(className, sourceCode);
+  }
+
+  static InMemorySourceFile fromClassName(String className) {
+    ClassNameWithPackage classNameWithPackage = ClassNameWithPackage.of(className);
     boolean isPackageSpecified = StringUtils.isNotBlank(classNameWithPackage.packageName);
 
     StringBuilder sourceCode = new StringBuilder();
@@ -45,19 +60,10 @@ public class UncompiledSourceCode {
 
     sourceCode.append(String.format("public class %s {}", classNameWithPackage.simpleClassName));
 
-    return new UncompiledSourceCode(classNameWithPackage.simpleClassName, sourceCode.toString());
-  }
-
-  public String getSimpleClassName() {
-    return simpleClassName;
-  }
-
-  public String getSourceCode() {
-    return sourceCode;
+    return new InMemorySourceFile(className, sourceCode.toString());
   }
 
   private static class ClassNameWithPackage {
-
     private final String packageName;
     private final String simpleClassName;
 

@@ -68,9 +68,9 @@ import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.compiler.CompiledSourceCode;
+import org.apache.geode.test.compiler.InMemoryClassFile;
+import org.apache.geode.test.compiler.InMemoryJavaCompiler;
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.compiler.JavaCompiler;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -585,15 +585,15 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private File createClassFile() throws IOException {
-    final JavaCompiler javaCompiler = new JavaCompiler();
+    final InMemoryJavaCompiler javaCompiler = new InMemoryJavaCompiler();
     File source =
         loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
-    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(source);
-    String className = compiledSourceCodes.get(0).className;
+    List<InMemoryClassFile> compiledSourceCodes = javaCompiler.compile(source);
+    String className = compiledSourceCodes.get(0).getName();
     String fileName = className.substring(className.lastIndexOf(".") + 1) + ".class";
     File file = new File(temporaryFolder.getRoot(), fileName);
     FileOutputStream fileOutputStream = new FileOutputStream(file);
-    fileOutputStream.write(compiledSourceCodes.get(0).compiledBytecode);
+    fileOutputStream.write(compiledSourceCodes.get(0).getByteContent());
     fileOutputStream.close();
     return file;
   }
