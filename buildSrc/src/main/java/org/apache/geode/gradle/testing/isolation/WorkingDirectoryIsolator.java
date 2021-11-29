@@ -29,8 +29,12 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import org.gradle.api.UncheckedIOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
+  private final Logger log = LoggerFactory.getLogger(this.getClass());
+
   private static final AtomicInteger WORKER_ID = new AtomicInteger();
   private static final Pattern GRADLE_WORKER_CLASSPATH_FILE_PATTERN =
       Pattern.compile("^@.*gradle-worker-classpath.*txt$");
@@ -65,6 +69,21 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
     List<String> command = processBuilder.command();
     findGradleWorkerClasspathArg(command)
         .ifPresent(i -> updateGradleWorkerClasspathFile(command, i, newWorkingDirectory));
+
+    upgradeRelativePaths(command);
+    log.warn("WorkingDirectoryIsolator updated command. New Working directory: {}, Command: {}", newWorkingDirectory, command);
+  }
+
+  /**
+   * Replace all occurrences of "../" that are not proceeded by a / in the command with "../../"
+   * to match the new working directory of the process. This fixes issues with java agent commands
+   * like jacoco that pass relative paths, eg "-agentlib:../tmp/jacocoXXX=../jacoco/test.txt
+   * @param command the commmand line to upgrade. It will be modified in place.
+   */
+  private void upgradeRelativePaths(List<String> command) {
+    for(int i =0 ; i < command.size(); i++) {
+      command.set(i, command.get(i).replaceAll( "(?<!/)\\.\\./", "../../"));
+    }
   }
 
   private void updateGradleWorkerClasspathFile(List<String> command, int argIndex, Path directory) {

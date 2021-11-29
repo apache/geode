@@ -58,12 +58,6 @@ if (project.hasProperty("staticAnalysis")) {
 if (project.hasProperty("codeCoverage")) {
   apply plugin: 'jacoco'
 
-  configurations.jacocoAnt {
-    dependencies.all { dep ->
-      dep.transitive = true
-    }
-  }
-
   task mergeIntegrationTestCoverage(type: JacocoMerge) {
     description 'Merges Distributed and Integration test coverage results'
 
@@ -75,20 +69,12 @@ if (project.hasProperty("codeCoverage")) {
 
   }
 
-  jacocoTestReport {
-    reports {
-      csv.enabled false
-      sourceSets project.sourceSets.main
-      html.destination "${buildDir}/jacocoTestHtml"
-    }
-  }
-
   task jacocoIntegrationTestReport(type: JacocoReport) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
-      html.destination "${buildDir}/jacocoIntegrationTestHtml"
-      executionData = fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
+      html.outputLocation  = project.file("${buildDir}/reports/jacoco/integrationTest")
+      executionData fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
     }
   }
 
@@ -96,8 +82,8 @@ if (project.hasProperty("codeCoverage")) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
-      html.destination "${buildDir}/jacocoDistributedTestHtml"
-      executionData = fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
+      html.outputLocation = project.file("${buildDir}/reports/jacoco/distributedTest")
+      executionData fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
     }
   }
 
@@ -105,8 +91,8 @@ if (project.hasProperty("codeCoverage")) {
     reports {
       csv.enabled false
       sourceSets project.sourceSets.main
-      html.destination "${buildDir}/jacocoOverallTestHtml"
-      executionData = fileTree(dir: 'build/jacoco', include: '**/*.exec')
+      html.outputLocation = project.file("${buildDir}/reports/jacoco/all")
+      executionData fileTree(dir: 'build/jacoco', include: '**/*.exec')
     }
   }
 }
