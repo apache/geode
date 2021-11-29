@@ -46,22 +46,23 @@ public abstract class AbstractAppendMemoryIntegrationTest implements RedisIntegr
 
   @Test
   public void testAppend_actuallyIncreasesBucketSize() {
-    int listSize = 1000;
+    int listSize = 100_000;
     String key = "key";
 
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
-    Long previousMemValue = Long.valueOf(info.get("used_memory"));
+    Long startingMemValue = getUsedMemory(jedis);
 
     jedis.set(key, "initial");
     for (int i = 0; i < listSize; i++) {
       jedis.append(key, "morestuff");
     }
 
-    info = RedisTestHelper.getInfo(jedis);
-    Long finalMemValue = Long.valueOf(info.get("used_memory"));
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(20)).pollInterval(Duration.ofSeconds(1))
+        .untilAsserted(() -> assertThat(getUsedMemory(jedis)).isGreaterThan(startingMemValue));
+  }
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(20))
-        .untilAsserted(() -> assertThat(finalMemValue).isGreaterThan(previousMemValue));
+  private Long getUsedMemory(Jedis jedis) {
+    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    return Long.valueOf(info.get("used_memory"));
   }
 
 }

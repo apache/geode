@@ -76,7 +76,7 @@ public class InfoExecutor implements CommandExecutor {
     } else if (Arrays.equals(bytes, CLIENTS)) {
       return getClientsSection(context);
     } else if (Arrays.equals(bytes, MEMORY)) {
-      return getMemorySection(context);
+      return getMemorySection();
     } else if (Arrays.equals(bytes, KEYSPACE)) {
       return getKeyspaceSection(context);
     } else if (Arrays.equals(bytes, DEFAULT) || Arrays.equals(bytes, ALL)) {
@@ -141,7 +141,7 @@ public class InfoExecutor implements CommandExecutor {
    * Used memory is derived from {@link Runtime} memory and is calculated as
    * {@code totalMemory() - freeMemory()}.
    */
-  private String getMemorySection(ExecutionHandlerContext context) {
+  private String getMemorySection() {
     long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
     String fragmentationRatio;
@@ -191,7 +191,7 @@ public class InfoExecutor implements CommandExecutor {
     final String SECTION_SEPARATOR = "\r\n";
     return getServerSection(context) + SECTION_SEPARATOR +
         getClientsSection(context) + SECTION_SEPARATOR +
-        getMemorySection(context) + SECTION_SEPARATOR +
+        getMemorySection() + SECTION_SEPARATOR +
         getPersistenceSection() + SECTION_SEPARATOR +
         getStatsSection(context) + SECTION_SEPARATOR +
         getKeyspaceSection(context) + SECTION_SEPARATOR +
