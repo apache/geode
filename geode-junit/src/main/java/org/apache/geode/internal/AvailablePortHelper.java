@@ -24,8 +24,8 @@ import static org.apache.geode.internal.membership.utils.AvailablePort.isPortAva
 import static org.apache.geode.internal.membership.utils.AvailablePort.isPortKeepable;
 
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -36,17 +36,12 @@ import org.apache.geode.internal.membership.utils.AvailablePort.Keeper;
  * allocate ports in a round-robin fashion.
  */
 public class AvailablePortHelper {
-  private final AtomicInteger nextAvailablePort;
+  // A test JVM will start at AVAILABLE_PORTS_LOWER_BOUND. Each child VM will call
+  // initializeUniquePortRange() initialize nextCandidatePort to a unique value.
+  private static final AtomicInteger nextCandidatePort =
+      new AtomicInteger(AVAILABLE_PORTS_LOWER_BOUND);
 
-  // Singleton object is only used to track the current ports
-  private static final AvailablePortHelper singleton = new AvailablePortHelper();
-
-  private AvailablePortHelper() {
-    Random rand = rand();
-    int initialValue = rand.nextInt(AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND)
-        + AVAILABLE_PORTS_LOWER_BOUND;
-    nextAvailablePort = new AtomicInteger(initialValue);
-  }
+  private AvailablePortHelper() {}
 
   /**
    * Returns an available tcp port.
@@ -72,18 +67,15 @@ public class AvailablePortHelper {
   }
 
   /**
-   * Returns the requested number of consecutive available tcp ports from the specified range.
+   * Returns the requested number of consecutive available tcp ports.
    */
   public static int[] getRandomAvailableTCPPortRange(final int count) {
-    AtomicInteger targetRange = singleton.nextAvailablePort;
-
     int[] ports = new int[count];
     boolean needMorePorts = true;
 
     while (needMorePorts) {
-      int base = targetRange.getAndAdd(count);
+      int base = nextCandidatePort.getAndUpdate(skipCandidatePorts(count));
       if (base + count > AVAILABLE_PORTS_UPPER_BOUND) {
-        targetRange.set(AVAILABLE_PORTS_LOWER_BOUND);
         continue;
       }
 
@@ -111,44 +103,40 @@ public class AvailablePortHelper {
   }
 
   /**
-   * Assign this JVM's next available membership and non-membership ports based on the given
-   * index. If each JVM on the machine calls this function with a small, distinct number, the
-   * algorithm:
+   * Assign this JVM's next candidate port based on the given index. If each JVM in the same test
+   * calls this function with a small, distinct number, the algorithm:
    * <ul>
-   * <li>Separates the JVMs' next available ports reasonably well</li>
+   * <li>Separates the JVMs' next candidate ports reasonably well</li>
    * <li>Allows adding JVMs without needing to know the total number of JVMs ahead of time</li>
    * </ul>
    *
-   * @param jvmIndex a small number different from that of any other JVM running on this machine
+   * @param jvmIndex a small number different from that of any other JVM running in this test
    */
   public static void initializeUniquePortRange(int jvmIndex) {
     if (jvmIndex < 0) {
       throw new RuntimeException("Range number cannot be negative.");
     }
 
-    // Generate starting points such that JVM 0 starts at the lower bound of the total port
-    // range, JVM 1 starts halfway through, JVM 2 starts 1/4 of the way through, then further
-    // ranges are 3/4, 1/8, 3/8, 5/8, 7/8, 1/16, etc.
-
-    singleton.nextAvailablePort.set(AVAILABLE_PORTS_LOWER_BOUND);
     if (jvmIndex == 0) {
+      nextCandidatePort.set(AVAILABLE_PORTS_LOWER_BOUND);
       return;
     }
 
+    // Generate starting points such that JVM 0 starts at the lower bound of the total port
+    // range, JVM 1 starts halfway through, JVM 2 starts 1/4 of the way through, then further
+    // ranges are 3/4, 1/8, 3/8, 5/8, 7/8, 1/16, etc.
     int availableRange = AVAILABLE_PORTS_UPPER_BOUND - AVAILABLE_PORTS_LOWER_BOUND;
     int numChunks = Integer.highestOneBit(jvmIndex) << 1;
     int chunkNumber = 2 * (jvmIndex - Integer.highestOneBit(jvmIndex)) + 1;
+    int firstCandidatePort = AVAILABLE_PORTS_LOWER_BOUND + chunkNumber * availableRange / numChunks;
 
-    singleton.nextAvailablePort.addAndGet(chunkNumber * availableRange / numChunks);
+    nextCandidatePort.set(firstCandidatePort);
   }
 
   private static int availablePort(int protocol) {
-    AtomicInteger targetRange = singleton.nextAvailablePort;
-
     while (true) {
-      int port = targetRange.getAndIncrement();
+      int port = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
       if (port > AVAILABLE_PORTS_UPPER_BOUND) {
-        targetRange.set(AVAILABLE_PORTS_LOWER_BOUND);
         continue;
       }
 
@@ -160,12 +148,9 @@ public class AvailablePortHelper {
 
   private static Keeper availableKeeper() {
     int count = 1;
-    AtomicInteger targetRange = singleton.nextAvailablePort;
-
     while (true) {
-      int uniquePort = targetRange.getAndIncrement();
+      int uniquePort = nextCandidatePort.getAndUpdate(skipCandidatePorts(1));
       if (uniquePort + count > AVAILABLE_PORTS_UPPER_BOUND) {
-        targetRange.set(AVAILABLE_PORTS_LOWER_BOUND);
         continue;
       }
       Keeper keeper = isPortKeepable(uniquePort, SOCKET, getAddress(SOCKET));
@@ -175,8 +160,13 @@ public class AvailablePortHelper {
     }
   }
 
-  private static Random rand() {
-    boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
-    return fast ? new Random() : new java.security.SecureRandom();
+  private static IntUnaryOperator skipCandidatePorts(int n) {
+    return port -> {
+      int nextPort = port + n;
+      if (nextPort <= AVAILABLE_PORTS_UPPER_BOUND) {
+        return nextPort;
+      }
+      return AVAILABLE_PORTS_LOWER_BOUND;
+    };
   }
 }
