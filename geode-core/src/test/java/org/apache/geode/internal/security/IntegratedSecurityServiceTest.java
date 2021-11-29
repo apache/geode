@@ -19,11 +19,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
@@ -34,6 +36,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.security.AuthenticationExpiredException;
@@ -218,5 +221,14 @@ public class IntegratedSecurityServiceTest {
         .isInstanceOf(AuthenticationFailedException.class)
         .hasCauseInstanceOf(RuntimeException.class)
         .hasMessageContaining("Authentication error. Please check your credentials.");
+  }
+
+  @Test
+  public void getSubjectShouldThrowCacheClosedExceptionIfSecurityManagerUnavailable() {
+    IntegratedSecurityService spy = spy(securityService);
+    doThrow(new UnavailableSecurityManagerException("test")).when(spy).getCurrentUser();
+    assertThatThrownBy(() -> spy.getSubject())
+        .isInstanceOf(CacheClosedException.class)
+        .hasMessageContaining("Cache is closed");
   }
 }
