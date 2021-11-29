@@ -755,7 +755,13 @@ public class CompactRangeIndex extends AbstractIndex {
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer;
+    if (context != null) {
+      observer = context.getObserver();
+    } else {
+      observer = QueryObserverHolder.getInstance();
+    }
+
     boolean limitApplied = false;
     if (entriesIter == null || (limitApplied = verifyLimit(result, limit))) {
       if (limitApplied) {
@@ -808,13 +814,7 @@ public class CompactRangeIndex extends AbstractIndex {
             value = iterator.next();
             if (value != null) {
               boolean ok = true;
-
-              if (runtimeItr != null) {
-                runtimeItr.setCurrent(value);
-              }
-              if (ok && runtimeItr != null && iterOps != null) {
-                ok = QueryUtils.applyCondition(iterOps, context);
-              }
+              ok = applyCondition(iterOps, runtimeItr, context, observer, value, ok);
               if (ok) {
                 applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
                     isIntersection, indexEntry.getDeserializedRegionKey());
@@ -843,12 +843,7 @@ public class CompactRangeIndex extends AbstractIndex {
 
               ok = evaluateEntry((IndexInfo) indexInfo, context, null);
             }
-            if (runtimeItr != null) {
-              runtimeItr.setCurrent(value);
-            }
-            if (ok && runtimeItr != null && iterOps != null) {
-              ok = QueryUtils.applyCondition(iterOps, context);
-            }
+            ok = applyCondition(iterOps, runtimeItr, context, observer, value, ok);
             if (ok) {
               if (context != null && context.isCqQueryContext()) {
                 result.add(new CqEntry(indexEntry.getDeserializedRegionKey(), value));
@@ -870,6 +865,24 @@ public class CompactRangeIndex extends AbstractIndex {
         // ignore it
       }
     }
+  }
+
+  private boolean applyCondition(CompiledValue iterOps, RuntimeIterator runtimeItr,
+      ExecutionContext context, QueryObserver observer, Object value, boolean ok)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+    if (runtimeItr != null) {
+      runtimeItr.setCurrent(value);
+    }
+    try {
+      if (ok && runtimeItr != null) {
+        observer.beforeIterationEvaluation(iterOps, value);
+        ok = QueryUtils.applyCondition(iterOps, context);
+      }
+    } finally {
+      observer.afterIterationEvaluation(ok);
+    }
+    return ok;
   }
 
   public List expandValue(ExecutionContext context, Object lowerBoundKey, Object upperBoundKey,

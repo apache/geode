@@ -18,6 +18,7 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Employee;
 import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -85,6 +87,7 @@ public class QueryObserverCallbacksTest {
   @After
   public void tearDown() {
     QueryObserverHolder.reset();
+    IndexManager.TEST_RANGEINDEX_ONLY = false;
   }
 
   @SuppressWarnings("unchecked")
@@ -241,6 +244,59 @@ public class QueryObserverCallbacksTest {
     }
 
     verify(myQueryObserver, times(queries.size())).beforeAggregationsAndGroupBy(any());
+  }
+
+  @Test
+  public void testBeforeAndAfterIterationEvaluateNoWhere() throws Exception {
+    Query query = queryService.newQuery(
+        "select count(*) from " + SEPARATOR + "portfolio p");
+
+    query.execute();
+    verify(myQueryObserver, never()).beforeIterationEvaluation(any(), any());
+    verify(myQueryObserver, never()).afterIterationEvaluation(any());
+  }
+
+  @Test
+  public void testBeforeAndAfterIterationEvaluateWithoutIndex() throws Exception {
+    Query query = queryService.newQuery(
+        "select count(*) from " + SEPARATOR + "portfolio p where p.isActive = true ");
+
+    query.execute();
+    verify(myQueryObserver, times(4)).beforeIterationEvaluation(any(), any());
+    verify(myQueryObserver, times(4)).afterIterationEvaluation(any());
+  }
+
+  @Test
+  public void testBeforeAndAfterIterationEvaluateWithCompactRangeIndex() throws Exception {
+    Query query = queryService.newQuery(
+        "select count(*) from " + SEPARATOR + "portfolio p where p.isActive = true ");
+    queryService.createIndex("isActiveIndex", "isActive", SEPARATOR + "portfolio");
+
+    query.execute();
+    verify(myQueryObserver, times(2)).beforeIterationEvaluation(any(), any());
+    verify(myQueryObserver, times(2)).afterIterationEvaluation(any());
+    assertThat(myQueryObserver.dbIndx[2] == myQueryObserver.usedIndx)
+        .as("Validate callback of Indexes").isTrue();
+    assertThat(myQueryObserver.unusedIndx == myQueryObserver.dbIndx[0]
+        || myQueryObserver.unusedIndx == myQueryObserver.dbIndx[1])
+            .as("Validate callback of Indexes").isTrue();
+  }
+
+  @Test
+  public void testBeforeAndAfterIterationEvaluateWithRangeIndex() throws Exception {
+    IndexManager.TEST_RANGEINDEX_ONLY = true;
+    Query query = queryService.newQuery(
+        "select count(*) from " + SEPARATOR + "portfolio p where p.description = 'XXXX' ");
+    queryService.createIndex("descriptionIndex", "description", SEPARATOR + "portfolio");
+
+    query.execute();
+    verify(myQueryObserver, times(2)).beforeIterationEvaluation(any(), any());
+    verify(myQueryObserver, times(2)).afterIterationEvaluation(any());
+    assertThat(myQueryObserver.dbIndx[2] == myQueryObserver.usedIndx)
+        .as("Validate callback of Indexes").isTrue();
+    assertThat(myQueryObserver.unusedIndx == myQueryObserver.dbIndx[0]
+        || myQueryObserver.unusedIndx == myQueryObserver.dbIndx[1])
+            .as("Validate callback of Indexes").isTrue();
   }
 
   private static class MyQueryObserverImpl extends QueryObserverAdapter {

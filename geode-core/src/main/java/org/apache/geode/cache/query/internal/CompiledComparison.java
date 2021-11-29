@@ -373,7 +373,7 @@ public class CompiledComparison extends AbstractCompiledValue
     // before the index lookup
     int op = reflectOnOperator(indexInfo._key());
     // actual index lookup
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     List projAttrib = null;
     /*
      * Asif : First obtain the match level of index resultset. If the match level happens to be zero
@@ -535,7 +535,7 @@ public class CompiledComparison extends AbstractCompiledValue
     // each of the
     // one dimensional array can be either genuine result object or StructImpl
     // object.
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     context.cachePut(CompiledValue.INDEX_INFO, indxInfo);
     /*
      * Asif : If the independent Group of iterators passed is not null or the independent Group of

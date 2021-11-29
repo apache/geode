@@ -379,7 +379,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
       resultSet = QueryUtils.createResultCollection(context, elementType);
     }
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     try {
       observer.startIteration(intermediateResults, operand);
       Iterator iResultsIter = intermediateResults.iterator();

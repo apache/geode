@@ -56,7 +56,6 @@ import org.apache.geode.cache.query.internal.IndexInfo;
 import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
-import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.cache.query.internal.RuntimeIterator;
 import org.apache.geode.cache.query.internal.Support;
@@ -602,7 +601,7 @@ public class HashIndex extends AbstractIndex {
       SelectResults intermediateResults, boolean isIntersection, int limit, Set keysToRemove,
       boolean applyOrderBy, boolean asc, long iteratorCreationTime) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (result == null || limit != -1 && result.size() == limit) {
       return;
     }

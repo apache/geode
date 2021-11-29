@@ -45,6 +45,7 @@ public class CompiledInJUnitTest {
     context = mock(ExecutionContext.class);
     elm = mock(CompiledValue.class);
     colln = mock(CompiledValue.class);
+    when(context.getObserver()).thenReturn(new QueryObserverAdapter());
   }
 
   @Test

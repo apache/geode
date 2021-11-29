@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -339,7 +341,9 @@ public class QueryServiceRegressionTest {
     SelectResults rs1 = (SelectResults) q1.execute();
     SelectResults rs2 = (SelectResults) q2.execute();
 
-    assertThatCode(() -> QueryUtils.union(rs1, rs2, null)).doesNotThrowAnyException();
+    ExecutionContext context = mock(ExecutionContext.class);
+    when(context.getObserver()).thenReturn(new QueryObserverAdapter());
+    assertThatCode(() -> QueryUtils.union(rs1, rs2, context)).doesNotThrowAnyException();
   }
 
   /**

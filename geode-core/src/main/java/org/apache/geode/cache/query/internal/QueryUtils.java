@@ -65,8 +65,9 @@ public class QueryUtils {
    * c1 or c2.
    */
   public static SelectResults intersection(SelectResults c1, SelectResults c2,
-      ExecutionContext contextOrNull) {
-    QueryObserverHolder.getInstance().invokedQueryUtilsIntersection(c1, c2);
+      ExecutionContext context) {
+    QueryObserver observer = context.getObserver();
+    observer.invokedQueryUtilsIntersection(c1, c2);
     assertCompatible(c1, c2);
     if (c1.isEmpty()) {
       return c1;
@@ -76,9 +77,9 @@ public class QueryUtils {
     }
     // iterate on the smallest one
     if (c1.size() < c2.size()) {
-      return sizeSortedIntersection(c1, c2, contextOrNull);
+      return sizeSortedIntersection(c1, c2, context);
     } else {
-      return sizeSortedIntersection(c2, c1, contextOrNull);
+      return sizeSortedIntersection(c2, c1, context);
     }
   }
 
@@ -87,14 +88,15 @@ public class QueryUtils {
    * c2.
    */
   public static SelectResults union(SelectResults c1, SelectResults c2,
-      ExecutionContext contextOrNull) {
-    QueryObserverHolder.getInstance().invokedQueryUtilsUnion(c1, c2);
+      ExecutionContext context) {
+    QueryObserver observer = context.getObserver();
+    observer.invokedQueryUtilsUnion(c1, c2);
     assertCompatible(c1, c2);
     // iterate on the smallest one
     if (c1.size() < c2.size()) {
-      return sizeSortedUnion(c1, c2, contextOrNull);
+      return sizeSortedUnion(c1, c2, context);
     } else {
-      return sizeSortedUnion(c2, c1, contextOrNull);
+      return sizeSortedUnion(c2, c1, context);
     }
   }
 
@@ -183,7 +185,7 @@ public class QueryUtils {
   // the number of occurrences in the intersection equal to the
   // minimum number between the two bags
   private static SelectResults sizeSortedIntersection(SelectResults small, SelectResults large,
-      ExecutionContext contextOrNull) {
+      ExecutionContext context) {
     // if one is a set and one is a bag, then treat the set like a bag (and return a bag)
     boolean smallModifiable = small.isModifiable() && (isBag(small) || !isBag(large));
     boolean largeModifiable = large.isModifiable() && (isBag(large) || !isBag(small));
@@ -224,13 +226,8 @@ public class QueryUtils {
       }
     }
 
-    SelectResults rs;
-    if (contextOrNull != null) {
-      rs = contextOrNull.isDistinct() ? new ResultsSet(small)
-          : new ResultsBag(small, contextOrNull.getCachePerfStats());
-    } else {
-      rs = new ResultsBag(small, null);
-    }
+    SelectResults rs = context.isDistinct() ? new ResultsSet(small)
+        : new ResultsBag(small, context.getCachePerfStats());
 
     for (Iterator itr = rs.iterator(); itr.hasNext();) {
       Object element = itr.next();
@@ -248,7 +245,7 @@ public class QueryUtils {
   // Is this Ok? There may be tuples which are actually common to both set so
   // union in such cases should not increase count. right.?
   private static SelectResults sizeSortedUnion(SelectResults small, SelectResults large,
-      ExecutionContext contextOrNull) {
+      ExecutionContext context) {
     // if one is a set and one is a bag, then treat the set like a bag (and return a bag)
     boolean smallModifiable = small.isModifiable() && (isBag(small) || !isBag(large));
     boolean largeModifiable = large.isModifiable() && (isBag(large) || !isBag(small));
@@ -278,13 +275,8 @@ public class QueryUtils {
         // didn't succeed because small is actually unmodifiable
       }
     }
-    SelectResults rs;
-    if (contextOrNull != null) {
-      rs = contextOrNull.isDistinct() ? new ResultsSet(large)
-          : new ResultsBag(large, contextOrNull.getCachePerfStats());
-    } else {
-      rs = new ResultsBag(large, null);
-    }
+    SelectResults rs = context.isDistinct() ? new ResultsSet(large)
+        : new ResultsBag(large, context.getCachePerfStats());
 
     for (Iterator itr = small.iterator(); itr.hasNext();) {
       Object element = itr.next();
@@ -1038,7 +1030,7 @@ public class QueryUtils {
       }
       newExpList.addAll(ich.expansionList);
       ich.expansionList = newExpList;
-      QueryObserver observer = QueryObserverHolder.getInstance();
+      QueryObserver observer = context.getObserver();
       try {
         observer.beforeCutDownAndExpansionOfSingleIndexResult(indexInfo._index, indexResults);
         indexResults =
@@ -1051,7 +1043,7 @@ public class QueryUtils {
       IndexConditioningHelper ich = new IndexConditioningHelper(indexInfo, context, indexFieldsSize,
           completeExpansion, iterOperands, grpIndpndntItr != null ? grpIndpndntItr[0] : null);
       if (ich.shufflingNeeded) {
-        QueryObserver observer = QueryObserverHolder.getInstance();
+        QueryObserver observer = context.getObserver();
         try {
           observer.beforeCutDownAndExpansionOfSingleIndexResult(indexInfo._index, indexResults);
           indexResults = QueryUtils.cutDownAndExpandIndexResults(indexResults,
@@ -1186,7 +1178,7 @@ public class QueryUtils {
         singleUsableICH = null;
       }
     }
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     if (noOfIndexesToUse == 2) {
       List data = null;
       try {
@@ -1254,7 +1246,7 @@ public class QueryUtils {
           new IndexCutDownExpansionHelper(ich2.checkList, context)};
       ListIterator expansionListIterator = totalExpList.listIterator();
       if (dataItr.hasNext()) {
-        observer = QueryObserverHolder.getInstance();
+        observer = context.getObserver();
         try {
           observer.beforeMergeJoinOfDoubleIndexResults(indxInfo[0]._index, indxInfo[1]._index,
               data);
@@ -1338,7 +1330,7 @@ public class QueryUtils {
       }
       // iterate over the intermediate structset
       Iterator intrmdtRsItr = intermediateResults.iterator();
-      observer = QueryObserverHolder.getInstance();
+      observer = context.getObserver();
       try {
         observer.beforeIndexLookup(singleUsblIndex, OQLLexerTokenTypes.TOK_EQ, null);
         observer.beforeIterJoinOfSingleIndexResults(singleUsblIndex, nonUsableICH.indxInfo._index);
@@ -1506,7 +1498,7 @@ public class QueryUtils {
             new IndexCutDownExpansionHelper(ich2.checkList, context)};
     ListIterator expansionListIterator = totalExpList.listIterator();
     if (dataItr.hasNext()) {
-      QueryObserver observer = QueryObserverHolder.getInstance();
+      QueryObserver observer = context.getObserver();
       try {
         observer.beforeMergeJoinOfDoubleIndexResults(ich1.indxInfo._index, ich2.indxInfo._index,
             data);

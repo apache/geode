@@ -368,7 +368,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     }
 
 
-    QueryObserver observer = QueryObserverHolder.getInstance();
+    QueryObserver observer = context.getObserver();
     try {
       observer.startIteration(intermediateResults, operand);
       Iterator iResultsIter = intermediateResults.iterator();

@@ -112,9 +112,7 @@ public class OrderByComparator implements Comparator {
       if (((result = evaluateSortCriteria(obj1, obj2)) != 0) && (orderByAttrs != null)) {
         return result;
       }
-      if (QueryObserverHolder.getInstance() != null) {
-        QueryObserverHolder.getInstance().orderByColumnsEqual();
-      }
+      context.getObserver().orderByColumnsEqual();
       // Comparable fields are equal - check if overall keys are equal
       if (this.objType.isStructType()) {
         int i = 0;

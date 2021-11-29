@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
@@ -49,31 +51,30 @@ public class QueryObserverHolder {
    * The current observer which will be notified of all query events.
    */
   @MakeNotStatic
-  private static QueryObserver _instance = NO_OBSERVER;
+  private static final AtomicReference<QueryObserver> _instance =
+      new AtomicReference<>(NO_OBSERVER);
 
   /**
    * Set the given observer to be notified of query events. Returns the current observer.
    */
   public static QueryObserver setInstance(QueryObserver observer) {
     Support.assertArg(observer != null, "setInstance expects a non-null argument!");
-    QueryObserver oldObserver = _instance;
-    _instance = observer;
-    return oldObserver;
+    return _instance.getAndSet(observer);
   }
 
   public static boolean hasObserver() {
-    return _instance != NO_OBSERVER;
+    return _instance.get() != NO_OBSERVER;
   }
 
   /** Return the current QueryObserver instance */
   public static QueryObserver getInstance() {
-    return _instance;
+    return _instance.get();
   }
 
   /**
    * Only for test purposes.
    */
   public static void reset() {
-    _instance = NO_OBSERVER;
+    _instance.set(NO_OBSERVER);
   }
 }

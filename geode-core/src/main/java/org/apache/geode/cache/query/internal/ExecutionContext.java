@@ -112,6 +112,8 @@ public class ExecutionContext {
   private MethodInvocationAuthorizer methodInvocationAuthorizer;
   private final QueryConfigurationService queryConfigurationService;
 
+  private QueryObserver observer = QueryObserverHolder.getInstance();
+
   /**
    * Returns the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
    * execution of the query associated with this context.
@@ -711,5 +713,13 @@ public class ExecutionContext {
       throw new QueryExecutionCanceledException(
           "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
     }
+  }
+
+  public void setObserver(QueryObserver observer) {
+    this.observer = observer;
+  }
+
+  public QueryObserver getObserver() {
+    return observer;
   }
 }
