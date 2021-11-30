@@ -35,6 +35,7 @@ import redis.clients.jedis.JedisCluster;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.dunit.rules.SerializableFunction;
@@ -90,13 +91,16 @@ public class AuthWhileServersRestartDUnitTest {
   @Test
   public void testReconnectionWithAuthAndServerRestarts() throws Exception {
     AtomicBoolean running = new AtomicBoolean(true);
+    AtomicInteger loopCounter = new AtomicInteger(0);
 
     Future<?> future = executor.submit(() -> {
       try {
         for (int i = 0; i < 20 && running.get(); i++) {
           clusterStartUp.moveBucketForKey(KEY, "server-3");
-          // Sleep for a bit so that commands can execute
-          Thread.sleep(2000);
+          // Wait for a bit so that commands can execute
+          int start = loopCounter.get();
+          GeodeAwaitility.await().until(() -> loopCounter.get() - start > 1000);
+
           clusterStartUp.crashVM(3);
           clusterStartUp.startRedisVM(3, operatorForVM3);
         }
@@ -105,7 +109,6 @@ public class AuthWhileServersRestartDUnitTest {
       }
     });
 
-    AtomicInteger loopCounter = new AtomicInteger(0);
     new ConcurrentLoopingThreads(running,
         i -> doOps(1, i, loopCounter),
         i -> doOps(2, i, loopCounter))
