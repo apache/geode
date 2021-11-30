@@ -356,7 +356,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @return members hosting bucket
    */
-  public Set<InternalDistributedMember> getAllMembers() {
+  public Set<InternalDistributedMember> getAllHostingMembers() {
     Set<InternalDistributedMember> recipients = new HashSet<>();
     Profile[] locProfiles = profiles; // grab current profiles
     for (Profile profile : locProfiles) {

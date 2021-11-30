@@ -22,7 +22,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -1191,9 +1190,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
    */
   @Test
   public void testDroppedEventsSignalizationToSecundaryQueueWhileSenderStopped() throws Exception {
-    Integer[] locatorPorts = createLNAndNYLocators();
-    Integer lnPort = locatorPorts[0];
-    Integer nyPort = locatorPorts[1];
+    int[] locatorPorts = createLNAndNYLocatorsReturnPrimitives();
+    int lnPort = locatorPorts[0];
+    int nyPort = locatorPorts[1];
 
     createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
 
@@ -1258,12 +1257,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-
-      assertEquals(
-          "Event in secondary queue should be 0 after they are dropped, but actual is "
-              + vm4SecondarySize
-              + ":" + vm5SecondarySize + ":" + vm6SecondarySize + ":" + vm7SecondarySize,
-          0, vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize);
+      assertThat(vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize)
+          .isEqualTo(0);
     });
 
   }

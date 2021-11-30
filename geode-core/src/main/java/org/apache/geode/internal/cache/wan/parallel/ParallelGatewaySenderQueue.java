@@ -1980,7 +1980,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         AbstractBucketRegionQueue brq =
             (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
         if (brq != null && brq.getBucketAdvisor() != null) {
-          Set<InternalDistributedMember> bucketMembers = brq.getBucketAdvisor().getAllMembers();
+          Set<InternalDistributedMember> bucketMembers =
+              brq.getBucketAdvisor().getAllHostingMembers();
           if (!bucketMembers.isEmpty()) {
             recipients.addAll(bucketMembers);
           } else {

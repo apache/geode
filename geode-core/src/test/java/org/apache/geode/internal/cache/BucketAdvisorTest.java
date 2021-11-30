@@ -230,7 +230,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllMembersReturnsNoMember() throws Exception {
+  public void testGetAllHostingMembersReturnsNoMember() throws Exception {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -246,11 +246,11 @@ public class BucketAdvisorTest {
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
 
     BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
-    assertThat(bucketAdvisor.getAllMembers().isEmpty()).isTrue();
+    assertThat(bucketAdvisor.getAllHostingMembers().isEmpty()).isTrue();
   }
 
   @Test
-  public void testGetAllMembersReturnsOneMember() throws Exception {
+  public void testGetAllHostingMembersReturnsOneMember() throws Exception {
     DistributionManager distributionManager = mock(DistributionManager.class);
     InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
 
@@ -275,6 +275,6 @@ public class BucketAdvisorTest {
     BucketAdvisor.BucketProfile bp = new BucketAdvisor.BucketProfile(memberId, 0, bucket);
 
     bucketAdvisor.putProfile(bp, true);
-    assertThat(bucketAdvisor.getAllMembers().size()).isEqualTo(1);
+    assertThat(bucketAdvisor.getAllHostingMembers().size()).isEqualTo(1);
   }
 }
