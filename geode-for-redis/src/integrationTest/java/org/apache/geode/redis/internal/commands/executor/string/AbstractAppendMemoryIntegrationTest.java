@@ -49,6 +49,7 @@ public abstract class AbstractAppendMemoryIntegrationTest implements RedisIntegr
     int listSize = 100_000;
     String key = "key";
 
+    System.gc();
     Long startingMemValue = getUsedMemory(jedis);
 
     jedis.set(key, "initial");
