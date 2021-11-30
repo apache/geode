@@ -28,7 +28,6 @@ import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -142,7 +141,6 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
     assertThat(Long.valueOf(getInfo(jedis).get(USED_MEMORY))).isGreaterThan(0);
   }
 
-  @Ignore("tracked by GEODE-9669") // currently we return 1.0
   @Test
   public void memFragmentation_shouldBeGreaterThanOne() {
     for (int i = 0; i < 10000; i++) {

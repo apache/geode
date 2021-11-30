@@ -31,7 +31,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -77,7 +76,7 @@ public class InfoExecutor implements CommandExecutor {
     } else if (Arrays.equals(bytes, CLIENTS)) {
       return getClientsSection(context);
     } else if (Arrays.equals(bytes, MEMORY)) {
-      return getMemorySection(context);
+      return getMemorySection();
     } else if (Arrays.equals(bytes, KEYSPACE)) {
       return getKeyspaceSection(context);
     } else if (Arrays.equals(bytes, DEFAULT) || Arrays.equals(bytes, ALL)) {
@@ -127,13 +126,36 @@ public class InfoExecutor implements CommandExecutor {
         "blocked_clients:0\r\n";
   }
 
-  private String getMemorySection(ExecutionHandlerContext context) {
-    PartitionedRegion pr = (PartitionedRegion) context.getRegionProvider().getDataRegion();
-    long usedMemory = pr.getDataStore().currentAllocatedMemory();
+  /**
+   * Redis' fragmentation ratio is calculated from process_rss / used_memory. Essentially this is
+   * the ratio of physical memory being used vs. the amount of virtual memory the process
+   * requires. So, effectively an indication of memory pressure. If this number goes below 1.0 it
+   * would indicate that the process has started to swap memory which is bad.
+   * <p/>
+   * In a similar sense, the calculation for fragmentation here is a ratio of the maximum amount
+   * of memory available to the JVM (Java heap) vs. the amount of memory used by the JVM. This
+   * ratio can only approach 1.0 and cannot go lower. However, the closer to 1.0, the greater the
+   * likelihood of incurring GC pauses. This is analogous to swapping and will have a very
+   * similar effect in that it will adversely impact performance.
+   * <p/>
+   * Used memory is derived from {@link Runtime} memory and is calculated as
+   * {@code totalMemory() - freeMemory()}.
+   */
+  private String getMemorySection() {
+    long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+    String fragmentationRatio;
+    if (usedMemory != 0) {
+      fragmentationRatio = String.format("%.2f",
+          Runtime.getRuntime().maxMemory() / (float) usedMemory);
+    } else {
+      fragmentationRatio = "1.0";
+    }
+
     return "# Memory\r\n" +
-        "maxmemory:" + pr.getLocalMaxMemory() * ONE_MEGABYTE + "\r\n" +
+        "maxmemory:" + Runtime.getRuntime().maxMemory() + "\r\n" +
         "used_memory:" + usedMemory + "\r\n" +
-        "mem_fragmentation_ratio:1.00\r\n";
+        "mem_fragmentation_ratio:" + fragmentationRatio + "\r\n";
   }
 
   private String getKeyspaceSection(ExecutionHandlerContext context) {
@@ -169,7 +191,7 @@ public class InfoExecutor implements CommandExecutor {
     final String SECTION_SEPARATOR = "\r\n";
     return getServerSection(context) + SECTION_SEPARATOR +
         getClientsSection(context) + SECTION_SEPARATOR +
-        getMemorySection(context) + SECTION_SEPARATOR +
+        getMemorySection() + SECTION_SEPARATOR +
         getPersistenceSection() + SECTION_SEPARATOR +
         getStatsSection(context) + SECTION_SEPARATOR +
         getKeyspaceSection(context) + SECTION_SEPARATOR +
