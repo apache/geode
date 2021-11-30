@@ -223,20 +223,22 @@ public class GfshRule extends ExternalResource {
     execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
   }
 
-  public static String startServerCommand(String name, int port, int connectedLocatorPort) {
+  public static String startServerCommand(String name, String hostname, int port,
+      int connectedLocatorPort) {
     String command = "start server --name=" + name
         + " --server-port=" + port
-        + " --locators=localhost[" + connectedLocatorPort + "]";
+        + " --locators=" + hostname + "[" + connectedLocatorPort + "]";
     return command;
   }
 
-  public static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
+  public static String startLocatorCommand(String name, String hostname, int port, int jmxPort,
+      int httpPort,
       int connectedLocatorPort) {
     String command = "start locator --name=" + name
         + " --port=" + port
         + " --http-service-port=" + httpPort;
     if (connectedLocatorPort > 0) {
-      command += " --locators=localhost[" + connectedLocatorPort + "]";
+      command += " --locators=" + hostname + "[" + connectedLocatorPort + "]";
     }
     command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
     return command;
