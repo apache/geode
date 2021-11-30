@@ -124,12 +124,17 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
   }
 
   public void flushAll() {
-    flushAll(getRedisPort(1));
+    flushAll(null, null);
   }
 
-  private void flushAll(int redisPort) {
+  public void flushAll(String username, String password) {
+    flushAll(getRedisPort(1), username, password);
+  }
+
+  private void flushAll(int redisPort, String username, String password) {
     ClusterNodes nodes;
     try (Jedis jedis = new Jedis(BIND_ADDRESS, redisPort, REDIS_CLIENT_TIMEOUT)) {
+      authenticate(jedis, username, password);
       nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes());
     }
 
@@ -138,8 +143,17 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
         continue;
       }
       try (Jedis jedis = new Jedis(node.ipAddress, (int) node.port, REDIS_CLIENT_TIMEOUT)) {
+        authenticate(jedis, username, password);
         jedis.flushAll();
       }
+    }
+  }
+
+  private void authenticate(Jedis jedis, String username, String password) {
+    if (username != null && password != null) {
+      jedis.auth(username, password);
+    } else if (password != null) {
+      jedis.auth(password);
     }
   }
 
