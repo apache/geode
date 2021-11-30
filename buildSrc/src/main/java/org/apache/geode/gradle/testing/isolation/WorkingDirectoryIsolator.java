@@ -71,7 +71,7 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
         .ifPresent(i -> updateGradleWorkerClasspathFile(command, i, newWorkingDirectory));
 
     upgradeRelativePaths(command);
-    log.warn("WorkingDirectoryIsolator updated command. New Working directory: {}, Command: {}", newWorkingDirectory, command);
+    log.debug("WorkingDirectoryIsolator updated command. New Working directory: {}, Command: {}", newWorkingDirectory, command);
   }
 
   /**
