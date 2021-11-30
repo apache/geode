@@ -165,11 +165,14 @@ public class IntegratedSecurityService implements SecurityService {
     // this makes sure it starts with a clean user object
     ThreadContext.remove();
 
-    Subject currentUser = getCurrentUser();
+    Subject currentUser;
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
     try {
       logger.debug("Logging in " + token.getPrincipal());
+      currentUser = getCurrentUser();
       currentUser.login(token);
+    } catch (UnavailableSecurityManagerException e) {
+      throw new CacheClosedException("Cache is closed.");
     } catch (ShiroException e) {
       logger.info("error logging in: " + token.getPrincipal());
       Throwable cause = e.getCause();
