@@ -211,11 +211,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   private PooledConnection forceCreateConnection(ServerLocation serverLocation)
       throws ServerRefusedConnectionException, ServerOperationException {
-    connectionAccounting.create();
+    PooledConnection connection = null;
     try {
-      return createPooledConnection(serverLocation);
+      connection = createPooledConnection(serverLocation);
+      return connection;
     } catch (GemFireSecurityException e) {
       throw new ServerOperationException(e);
+    } finally {
+      if (connection != null) {
+        connectionAccounting.create();
+      }
     }
   }
 
