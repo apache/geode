@@ -16,6 +16,7 @@
 
 package org.apache.geode.gradle.testing.isolation;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +39,9 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
   private static final AtomicInteger WORKER_ID = new AtomicInteger();
   private static final Pattern GRADLE_WORKER_CLASSPATH_FILE_PATTERN =
       Pattern.compile("^@.*gradle-worker-classpath.*txt$");
+
+  private static final Pattern RELATIVE_PARENT_DIRECTORY_PATTERN =
+      Pattern.compile("(?<![/\\\\])(\\.\\.[/\\\\])");
   private static final String PROPERTIES_FILE_NAME = "gemfire.properties";
 
   /**
@@ -71,6 +75,7 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
         .ifPresent(i -> updateGradleWorkerClasspathFile(command, i, newWorkingDirectory));
 
     upgradeRelativePaths(command);
+
     log.debug("WorkingDirectoryIsolator updated command. New Working directory: {}, Command: {}", newWorkingDirectory, command);
   }
 
@@ -78,11 +83,16 @@ public class WorkingDirectoryIsolator implements Consumer<ProcessBuilder> {
    * Replace all occurrences of "../" that are not proceeded by a / in the command with "../../"
    * to match the new working directory of the process. This fixes issues with java agent commands
    * like jacoco that pass relative paths, eg "-agentlib:../tmp/jacocoXXX=../jacoco/test.txt
-   * @param command the commmand line to upgrade. It will be modified in place.
+   * @param command the command line to upgrade. It will be modified in place.
    */
   private void upgradeRelativePaths(List<String> command) {
     for(int i =0 ; i < command.size(); i++) {
-      command.set(i, command.get(i).replaceAll( "(?<!/)\\.\\./", "../../"));
+      String element = command.get(i);
+      final Matcher matcher = RELATIVE_PARENT_DIRECTORY_PATTERN.matcher(element);
+      //TO be platform independent, we will capture the syntax used (../ or ..\) and
+      //simply duplicate that in the command line string to become (../../ or ..\..\)
+      element = RELATIVE_PARENT_DIRECTORY_PATTERN.matcher(element).replaceAll("$1$1");
+      command.set(i, element);
     }
   }
 
