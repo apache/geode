@@ -435,10 +435,24 @@ public class PartitionedRegionLoadModel {
 
   private void initOverRedundancyBuckets() {
     this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
+    Set<String> redundancyZones = new HashSet<>();
+
     for (BucketRollup b : this.buckets) {
-      if (b != null && b.getOnlineRedundancy() > this.requiredRedundancy) {
-        this.overRedundancyBuckets.add(b);
+      if (b != null) {
+        if (b.getOnlineRedundancy() > this.requiredRedundancy) {
+          this.overRedundancyBuckets.add(b);
+        } else {
+          for (Member member : b.getMembersHosting()) {
+            String redundancyZone = this.getRedundancyZone(member.getDistributedMember());
+            if (redundancyZones.contains(redundancyZone)) {
+              this.overRedundancyBuckets.add(b);
+              redundancyZones.add(redundancyZone);
+            }
+          }
+          redundancyZones.clear();
+        }
       }
+
     }
   }
 
@@ -469,6 +483,7 @@ public class PartitionedRegionLoadModel {
   }
 
   String getRedundancyZone(InternalDistributedMember memberID) {
+    assert (partitionedRegion != null);
     return partitionedRegion.getDistributionManager().getRedundancyZone(memberID);
   }
 
@@ -476,8 +491,9 @@ public class PartitionedRegionLoadModel {
    *
    * Look for a zone that has more than one member represented.
    * That is where we want to try to delete first.
-   * @param members
-   * @return
+   *
+   * @param members set of members that are hosting this bucket
+   * @return null or a string containing the zone to delete a member from
    */
   String getPreferredDeletionZone(Set<Member> members) {
 
@@ -512,6 +528,7 @@ public class PartitionedRegionLoadModel {
     }
 
     for (Member member : members) {
+
       // if this load is lower than then highest load, we prefer the deleting from high
       // load servers so move on. If this member is the bucket primary, we prefer not to move
       // primaries, so move on.
