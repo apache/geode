@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
-import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
 import java.io.DataInput;
@@ -68,7 +67,7 @@ public class RedisSet extends AbstractRedisData {
   public RedisSet() {}
 
   public RedisSet(int size) {
-    this.members = new RedisSet.MemberSet(size);
+    members = new RedisSet.MemberSet(size);
   }
 
   public Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
@@ -77,14 +76,14 @@ public class RedisSet extends AbstractRedisData {
 
   private Set<byte[]> calculateDiff(RegionProvider regionProvider, List<RedisKey> keys) {
     RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), false);
-    if (firstSet == NULL_REDIS_SET) {
+    if (firstSet.scard() == 0) {
       return Collections.emptySet();
     }
     members.addAll(firstSet.members);
 
     for (int i = 1; i < keys.size(); i++) {
       RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), false);
-      if (curSet == NULL_REDIS_SET) {
+      if (curSet.scard() == 0) {
         continue;
       }
 

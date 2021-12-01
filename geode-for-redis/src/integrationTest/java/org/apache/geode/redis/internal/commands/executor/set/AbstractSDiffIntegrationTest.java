@@ -180,19 +180,6 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     assertThat(copyResultSet.toArray()).containsExactlyInAnyOrder((Object[]) secondSet);
   }
 
-  // One array
-  // Empty filled
-  // Filled empty
-  // nonexistent filled
-  // filled nonexistent
-  // empty nonexistent
-  // nonexistent empty
-
-  // three empty
-  // three filled
-  // three nonexistent
-
-
   @Test
   public void testSDiffStore_withNonExistentKeys() {
     String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
