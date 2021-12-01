@@ -447,6 +447,8 @@ public class MessageDispatcher extends LoggingThread {
           } else {
             long elapsedTime = System.currentTimeMillis() - waitForReAuthenticationStartTime;
             if (elapsedTime > reAuthenticateWaitTime) {
+              // reset the timer here since we are no longer waiting for re-auth to happen anymore
+              waitForReAuthenticationStartTime = -1;
               synchronized (_stopDispatchingLock) {
                 logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
                     + "ms. Unregister this client proxy.");

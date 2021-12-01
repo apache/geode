@@ -18,6 +18,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -153,6 +154,7 @@ public class MessageDispatcherTest {
     // since we keep throwing the AuthenticationExpiredException, we will eventually call this
     verify(dispatcher).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
     verify(dispatcher, never()).dispatchResidualMessages();
+    assertThat(dispatcher.isWaitingForReAuthentication()).isFalse();
   }
 
   @Test
