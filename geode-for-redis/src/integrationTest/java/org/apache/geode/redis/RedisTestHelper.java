@@ -24,6 +24,9 @@ public class RedisTestHelper {
    * Convert the values returned by the INFO command into a basic param:value map.
    */
   public static Map<String, String> getInfo(Jedis jedis) {
+    // Since this info is often used to get memory numbers in various tests, we want those to be
+    // as accurate as possible.
+    System.gc();
     Map<String, String> results = new HashMap<>();
     String rawInfo = jedis.info();
 
