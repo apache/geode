@@ -374,13 +374,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void testSrem() {
-    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.srem(k, "member"));
+  public void testSdiff() {
+    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sdiff(k1, k2));
   }
 
   @Test
   public void testSmembers() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.smembers(k));
+  }
+
+  @Test
+  public void testSrem() {
+    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.srem(k, "member"));
   }
 
   /************* Hash related commands *************/
@@ -531,11 +536,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSscan() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
-  }
-
-  @Test
-  public void testSdiff() {
-    runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sdiff(k1, k2));
   }
 
   @Test
