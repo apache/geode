@@ -47,6 +47,7 @@ import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustom
 import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
@@ -64,6 +65,35 @@ public class RedisSet extends AbstractRedisData {
    * For deserialization only.
    */
   public RedisSet() {}
+
+  public RedisSet(int size) {
+    members = new RedisSet.MemberSet(size);
+  }
+
+  public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
+    return calculateDiff(regionProvider, keys);
+  }
+
+  private static Set<byte[]> calculateDiff(RegionProvider regionProvider, List<RedisKey> keys) {
+    RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), true);
+    if (firstSet.scard() == 0) {
+      return Collections.emptySet();
+    }
+    Set<byte[]> diff = new MemberSet(firstSet.members);
+
+    for (int i = 1; i < keys.size(); i++) {
+      RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), true);
+      if (curSet.scard() == 0) {
+        continue;
+      }
+
+      diff.removeAll(curSet.members);
+      if (diff.isEmpty()) {
+        return Collections.emptySet();
+      }
+    }
+    return diff;
+  }
 
   public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,
       BigInteger cursor) {

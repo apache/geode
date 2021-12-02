@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static java.util.Collections.emptySet;
+import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,12 @@ import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
+import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSet.MemberSet;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class SetOpExecutor implements CommandExecutor {
 
@@ -41,12 +44,33 @@ public abstract class SetOpExecutor implements CommandExecutor {
 
     List<RedisKey> commandElements = command.getProcessedCommandKeys();
     List<RedisKey> setKeys = commandElements.subList(setsStartIndex, commandElements.size());
-    if (isStorage()) {
-      RedisKey destination = command.getKey();
-      int storeCount = doStoreSetOp(command.getCommandType(), context, destination, setKeys);
-      return RedisResponse.integer(storeCount);
+    RegionProvider regionProvider = context.getRegionProvider();
+    try {
+      for (RedisKey k : setKeys) {
+        regionProvider.ensureKeyIsLocal(k);
+      }
+    } catch (RedisDataMovedException ex) {
+      return RedisResponse.error(ex.getMessage());
+    }
+
+    /*
+     * SDIFFSTORE, SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
+     * for their implementation.
+     * TODO: Once the above commands have been implemented remove the if else and
+     * refactor so it implements doSetOp
+     */
+    if (command.isOfType(RedisCommandType.SDIFF)) {
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+          () -> sdiff(regionProvider, setKeys));
+      return RedisResponse.array(resultSet, true);
     } else {
-      return doActualSetOperation(context, setKeys);
+      if (isStorage()) {
+        RedisKey destination = command.getKey();
+        int storeCount = doStoreSetOp(command.getCommandType(), context, destination, setKeys);
+        return RedisResponse.integer(storeCount);
+      } else {
+        return doActualSetOperation(context, setKeys);
+      }
     }
   }
 
