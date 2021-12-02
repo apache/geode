@@ -151,13 +151,11 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     jedis.sadd("{user1}secondset", values);
 
     final AtomicReference<Set<String>> sdiffResultReference = new AtomicReference<>();
-    final AtomicInteger j = new AtomicInteger(0);
     new ConcurrentLoopingThreads(1000,
         i -> jedis.srem("{user1}secondset", values),
-        i -> sdiffResultReference.set(jedis.sdiff("{user1}firstset", "{user1}secondset")),
-        i -> j.incrementAndGet())
+        i -> sdiffResultReference.set(jedis.sdiff("{user1}firstset", "{user1}secondset")))
             .runWithAction(() -> {
-              assertThat(sdiffResultReference).as("Kristen " + j.get()).satisfiesAnyOf(
+              assertThat(sdiffResultReference).satisfiesAnyOf(
                   sdiffResult -> assertThat(sdiffResult.get()).isEmpty(),
                   sdiffResult -> assertThat(sdiffResult.get())
                       .containsExactlyInAnyOrderElementsOf(valuesList));
