@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static java.util.Collections.emptySet;
+import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,10 +61,10 @@ public abstract class SetOpExecutor implements CommandExecutor {
      * refactor so it implements doSetOp
      */
 
+    // Make a static method then calculate diff add all create the resulting set
     if (command.isOfType(RedisCommandType.SDIFF)) {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
-          () -> new RedisSet(0)
-              .sdiff(regionProvider, setKeys));
+          () -> sdiff(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
     } else {
       if (isStorage()) {

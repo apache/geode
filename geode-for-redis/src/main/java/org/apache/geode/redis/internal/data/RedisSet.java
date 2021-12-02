@@ -70,29 +70,29 @@ public class RedisSet extends AbstractRedisData {
     members = new RedisSet.MemberSet(size);
   }
 
-  public Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
+  public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
     return calculateDiff(regionProvider, keys);
   }
 
-  private Set<byte[]> calculateDiff(RegionProvider regionProvider, List<RedisKey> keys) {
-    RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), false);
+  private static Set<byte[]> calculateDiff(RegionProvider regionProvider, List<RedisKey> keys) {
+    RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), true);
     if (firstSet.scard() == 0) {
       return Collections.emptySet();
     }
-    members.addAll(firstSet.members);
+    Set<byte[]> diff = new MemberSet(firstSet.members);
 
     for (int i = 1; i < keys.size(); i++) {
-      RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), false);
+      RedisSet curSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(i), true);
       if (curSet.scard() == 0) {
         continue;
       }
 
-      members.removeAll(curSet.members);
-      if (members.isEmpty()) {
+      diff.removeAll(curSet.members);
+      if (diff.isEmpty()) {
         return Collections.emptySet();
       }
     }
-    return members;
+    return diff;
   }
 
   public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,

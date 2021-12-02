@@ -15,6 +15,9 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,16 +38,15 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String setKey = "{user1}setkey";
+  private static final String nonExistentSetKey = "{user1}nonExistentSet";
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -61,53 +63,83 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
   @Test
   public void sdiff_returnsAllValuesInSet() {
     String[] values = createKeyValuesSet();
-    assertThat(jedis.sdiff("{user1}setkey")).containsExactlyInAnyOrder(values);
+    assertThat(jedis.sdiff(setKey)).containsExactlyInAnyOrder(values);
   }
 
   @Test
   public void sdiffWithNonExistentSet_returnsEmptySet() {
-    assertThat(jedis.sdiff("{user1}nonExistentSet")).isEmpty();
+    assertThat(jedis.sdiff(nonExistentSetKey)).isEmpty();
   }
 
   @Test
   public void sdiffWithMultipleNonExistentSet_returnsEmptySet() {
     assertThat(jedis.sdiff("{user1}nonExistentSet1", "{user1}nonExistentSet2")).isEmpty();
-    assertThat(jedis.smembers("{user1}nonExistentSet1").isEmpty());
-    assertThat(jedis.smembers("{user1}nonExistentSet2").isEmpty());
+  }
+
+  @Test
+  public void sdiffWithNonExistentSetAndSet_returnsAllValuesInSet() {
+    String[] values = createKeyValuesSet();
+    assertThat(jedis.sdiff(nonExistentSetKey, setKey)).isEmpty();
+    assertThat(jedis.smembers(nonExistentSetKey)).isEmpty();
+    assertThat(jedis.smembers(setKey)).containsExactlyInAnyOrder(values);
   }
 
   @Test
   public void sdiffWithSetAndNonExistentSet_returnsAllValuesInSet() {
     String[] values = createKeyValuesSet();
-    assertThat(jedis.sdiff("{user1}setkey", "{user1}nonExistentSet"))
+    assertThat(jedis.sdiff(setKey, nonExistentSetKey))
         .containsExactlyInAnyOrder(values);
-    assertThat(jedis.smembers("{user1}setkey")).containsExactlyInAnyOrder(values);
-    assertThat(jedis.smembers("{user1}nonExistentSet")).isEmpty();
+    assertThat(jedis.smembers(setKey)).containsExactlyInAnyOrder(values);
+    assertThat(jedis.smembers(nonExistentSetKey)).isEmpty();
   }
 
   @Test
-  public void sdiffWithMultipleSets() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    String[] secondSet = new String[] {"apple", "microsoft", "linux"};
-    String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("{user1}set1", firstSet);
-    jedis.sadd("{user1}set2", secondSet);
-    jedis.sadd("{user1}set3", thirdSet);
+  public void sdiffWithSetsWithDifferentValues_returnsFirstSetValues() {
+    String[] firstValues = createKeyValuesSet();
+    String[] secondValues = new String[] {"windows", "microsoft", "linux"};
+    jedis.sadd("{user1}setkey2", secondValues);
+
+    assertThat(jedis.sdiff(setKey, "{user1}setkey2")).containsExactlyInAnyOrder(firstValues);
+  }
+
+  @Test
+  public void sdiffWithSetsWithSomeSharedValues_returnsDiffOfSets() {
+    createKeyValuesSet();
+    String[] secondValues = new String[] {"apple", "bottoms", "boots", "fur", "peach"};
+    jedis.sadd("{user1}setkey2", secondValues);
 
     Set<String> result =
-        jedis.sdiff("{user1}set1", "{user1}set2", "{user1}set3", "{user1}doesNotExist");
-    String[] expected = new String[] {"pear", "plum", "orange"};
+        jedis.sdiff(setKey, "{user1}setkey2");
+    String[] expected = new String[] {"orange", "plum", "pear"};
     assertThat(result).containsExactlyInAnyOrder(expected);
+  }
 
-    Set<String> shouldNotChange = jedis.smembers("{user1}set1");
-    assertThat(shouldNotChange).containsExactlyInAnyOrder(firstSet);
+  @Test
+  public void sdiffWithSetsWithAllSharedValues_returnsEmptySet() {
+    String[] values = createKeyValuesSet();
+    jedis.sadd("{user1}setkey2", values);
 
-    Set<String> shouldBeEmpty =
-        jedis.sdiff("{user1}doesNotExist", "{user1}set1", "{user1}set2", "{user1}set3");
-    assertThat(shouldBeEmpty).isEmpty();
+    assertThat(jedis.sdiff(setKey, "{user1}setkey2")).isEmpty();
+  }
 
-    Set<String> copySet = jedis.sdiff("{user1}set1");
-    assertThat(copySet).containsExactlyInAnyOrder(firstSet);
+  @Test
+  public void sdiffWithMultipleSets_returnsDiffOfSets() {
+    String[] values = createKeyValuesSet();
+    String[] secondValues = new String[] {"apple", "bottoms", "boots", "fur", "peach"};
+    String[] thirdValues = new String[] {"queen", "opera", "boho", "orange"};
+
+    jedis.sadd("{user1}setkey2", secondValues);
+    jedis.sadd("{user1}setkey3", thirdValues);
+
+    String[] expected = new String[] {"pear", "plum"};
+    assertThat(jedis.sdiff(setKey, "{user1}setkey2", "{user1}setkey3"))
+        .containsExactlyInAnyOrder(expected);
+  }
+
+  @Test
+  public void sdiffWithDifferentyKeyType_returnsWrongTypeError() {
+    jedis.set("ding", "dong");
+    assertThatThrownBy(() -> jedis.sdiff("ding")).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
