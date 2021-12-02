@@ -54,7 +54,7 @@ public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQ
       return;
     }
 
-    final Map<TransactionId, Integer> incompleteTransactionIdsInBatch =
+    Map<TransactionId, Integer> incompleteTransactionIdsInBatch =
         getIncompleteTransactionsInBatch(batch);
     if (incompleteTransactionIdsInBatch.isEmpty()) {
       return;
@@ -62,27 +62,8 @@ public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQ
 
     int retries = 0;
     while (true) {
-      for (Iterator<Map.Entry<TransactionId, Integer>> iter =
-          incompleteTransactionIdsInBatch.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry<TransactionId, Integer> pendingTransaction = iter.next();
-        TransactionId transactionId = pendingTransaction.getKey();
-        int bucketId = pendingTransaction.getValue();
-        List<Object> events =
-            peekEventsWithTransactionId(partitionedRegion, bucketId, transactionId);
-        for (Object object : events) {
-          GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
-          batch.add(event);
-          peekedEvents.add(event);
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Peeking extra event: {}, bucketId: {}, isLastEventInTransaction: {}, batch size: {}",
-                event.getKey(), bucketId, event.isLastEventInTransaction(), batch.size());
-          }
-          if (event.isLastEventInTransaction()) {
-            iter.remove();
-          }
-        }
-      }
+      peekAndAddEventsToBatchToCompleteTransactions(
+          partitionedRegion, batch, incompleteTransactionIdsInBatch);
       if (incompleteTransactionIdsInBatch.size() == 0 ||
           retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
         break;
@@ -98,6 +79,44 @@ public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQ
       logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
+    }
+  }
+
+  private void peekAndAddEventsToBatchToCompleteTransactions(
+      @NotNull PartitionedRegion partitionedRegion, @NotNull List<GatewaySenderEventImpl> batch,
+      Map<TransactionId, Integer> incompleteTransactionIdsInBatch) {
+    for (Iterator<Map.Entry<TransactionId, Integer>> incompleteTransactionsIter =
+        incompleteTransactionIdsInBatch.entrySet().iterator(); incompleteTransactionsIter
+            .hasNext();) {
+      Map.Entry<TransactionId, Integer> pendingTransaction = incompleteTransactionsIter.next();
+      TransactionId transactionId = pendingTransaction.getKey();
+      int bucketId = pendingTransaction.getValue();
+
+      List<Object> events =
+          peekEventsWithTransactionId(partitionedRegion, bucketId, transactionId);
+
+      addEventsToBatch(batch, bucketId, events);
+
+      for (Object event : events) {
+        if (((GatewaySenderEventImpl) event).isLastEventInTransaction()) {
+          incompleteTransactionsIter.remove();
+        }
+      }
+    }
+  }
+
+  private void addEventsToBatch(
+      @NotNull List<GatewaySenderEventImpl> batch,
+      int bucketId, List<Object> events) {
+    for (Object object : events) {
+      GatewaySenderEventImpl event = (GatewaySenderEventImpl) object;
+      batch.add(event);
+      peekedEvents.add(event);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Peeking extra event: {}, bucketId: {}, isLastEventInTransaction: {}, batch size: {}",
+            event.getKey(), bucketId, event.isLastEventInTransaction(), batch.size());
+      }
     }
   }
 

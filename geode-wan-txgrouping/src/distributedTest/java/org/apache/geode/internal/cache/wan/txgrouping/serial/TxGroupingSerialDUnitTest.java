@@ -18,9 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import junitparams.Parameters;
 import org.junit.Test;
@@ -63,12 +61,6 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
       });
     }
 
-    final Map<Object, Object> keyValues = new HashMap<>();
-    int entries = 12;
-    for (int i = 0; i < entries; i++) {
-      keyValues.put(i, i + "_Value");
-    }
-
     // 4 transactions of 3 events each are sent so that the first batch
     // would initially contain the first 3 transactions complete and the first
     // event of the next transaction (10 entries).
@@ -79,10 +71,12 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     // events of the third transaction are added to the next batch which makes
     // that the 2 batches are sent. One with 10 events and another one
     // with 2 events.
+    final int transactions = 4;
+    final int eventsPerTransaction = 3;
+    final int entries = transactions * eventsPerTransaction;
     int expectedBatchesSent = groupTransactionEvents ? 1 : 2;
-    int eventsPerTransaction = 3;
-    londonServer2VM.invoke(() -> doPutsInsideTransactions(REGION_NAME, keyValues,
-        eventsPerTransaction));
+    londonServer2VM
+        .invoke(() -> doTxPuts(REGION_NAME, eventsPerTransaction, transactions));
 
     newYorkServerVM.invoke(() -> validateRegionSize(REGION_NAME, entries));
 
@@ -125,26 +119,16 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
 
     int clients = 2;
     int eventsPerTransaction = batchSize + 1;
-    int entriesPerInvocation = eventsPerTransaction * 200;
-
-    final List<Map<Object, Object>> data = new ArrayList<>(clients);
-    for (int clientId = 0; clientId < clients; clientId++) {
-      final Map<Object, Object> keyValues = new HashMap<>();
-      for (int i = entriesPerInvocation * clientId; i < entriesPerInvocation
-          * (clientId + 1); i++) {
-        keyValues.put(i, i + "_Value");
-      }
-      data.add(keyValues);
-    }
-
-    int entries = entriesPerInvocation * clients;
+    int transactions = 200;
+    int entries = eventsPerTransaction * transactions * clients;
+    int entriesPerInvocation = (entries) / clients;
 
     List<AsyncInvocation<Void>> putAsyncInvocations = new ArrayList<>(clients);
     for (int i = 0; i < clients; i++) {
       final int index = i;
       AsyncInvocation<Void> asyncInvocation =
-          londonServer1VM.invokeAsync(() -> doPutsInsideTransactions(REGION_NAME, data.get(index),
-              eventsPerTransaction));
+          londonServer1VM.invokeAsync(() -> doTxPuts(REGION_NAME,
+              eventsPerTransaction, transactions, index * entriesPerInvocation));
       putAsyncInvocations.add(asyncInvocation);
     }
 
@@ -183,23 +167,6 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
       });
     }
 
-    final Map<Object, Object> keyValues = new HashMap<>();
-    int entries = 24;
-    for (int i = 0; i < entries; i++) {
-      keyValues.put(i, i + "_Value");
-    }
-    int eventsPerTransaction = 3;
-    londonServer2VM.invoke(() -> doPutsInsideTransactions(REGION_NAME, keyValues,
-        eventsPerTransaction));
-
-    // wait for batches to be redistributed and then start the receiver
-    londonServer1VM.invoke(() -> await()
-        .untilAsserted(() -> assertThat(getSenderStats(newYorkName, -1).get(5)).isGreaterThan(0)));
-
-    newYorkServerVM.invoke(this::startReceiver);
-
-    newYorkServerVM.invoke(() -> validateRegionSize(REGION_NAME, entries));
-
     // 8 transactions of 3 events each are sent.
     // - With group-transaction-events
     // The first batch would initially contain the first 3 transactions complete
@@ -210,7 +177,22 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     // second batch which will contain 12 events too.
     // - Without group-transaction-events 3 batches are sent, 2 with 10 events
     // and one with 4.
+    final int transactions = 8;
+    final int eventsPerTransaction = 3;
+    final int entries = transactions * eventsPerTransaction;
     int expectedBatchesSent = groupTransactionEvents ? 2 : 3;
+
+    londonServer2VM
+        .invoke(() -> doTxPuts(REGION_NAME, eventsPerTransaction, transactions));
+
+    // wait for batches to be redistributed and then start the receiver
+    londonServer1VM.invoke(() -> await()
+        .untilAsserted(() -> assertThat(getSenderStats(newYorkName, -1).get(5)).isGreaterThan(0)));
+
+    newYorkServerVM.invoke(this::startReceiver);
+
+    newYorkServerVM.invoke(() -> validateRegionSize(REGION_NAME, entries));
+
 
     newYorkServerVM
         .invoke(() -> checkGatewayReceiverStats(expectedBatchesSent, entries, entries, true));
@@ -250,7 +232,8 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
             () -> doTxPutsWithRetryIfError(REGION_NAME, putsPerTransaction, transactions, 0));
     AsyncInvocation<Void> putsInvocation2 =
         londonServer4VM.invokeAsync(
-            () -> doTxPutsWithRetryIfError(REGION_NAME, putsPerTransaction, transactions, 1));
+            () -> doTxPutsWithRetryIfError(REGION_NAME, putsPerTransaction, transactions,
+                putsPerTransaction * transactions));
 
     newYorkServerVM.invoke(() -> await()
         .untilAsserted(() -> assertThat(getRegionSize(REGION_NAME)).isGreaterThan(40)));
@@ -284,17 +267,16 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
       boolean isBatchesRedistributed) {
     // Wait for sender queues to be empty
     List<List<Integer>> londonServersStats = new ArrayList(londonServersVM.length);
-    int i = 0;
     for (VM londonServer : londonServersVM) {
       londonServersStats.add(londonServer.invoke(() -> getSenderStats(newYorkName, 0)));
     }
 
-    int queueSize = londonServersStats.stream().map(x -> x.get(0)).reduce(0, (y, z) -> y + z);
+    int queueSize = londonServersStats.stream().map(x -> x.get(0)).reduce(0, Integer::sum);
     assertThat(queueSize).isEqualTo(0);
 
     // batches redistributed:
     int batchesRedistributed =
-        londonServersStats.stream().map(x -> x.get(5)).reduce(0, (y, z) -> y + z);
+        londonServersStats.stream().map(x -> x.get(5)).reduce(0, Integer::sum);
     if (isBatchesRedistributed) {
       assertThat(batchesRedistributed).isGreaterThan(0);
     } else {
@@ -344,23 +326,19 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
         + statistics.getUnprocessedEventsRemovedByPrimary())).isEqualTo(eventsReceived);
   }
 
-  private Boolean killPrimarySender(String senderId) {
-    IgnoredException ignoredException1 = IgnoredException.addIgnoredException("Could not connect");
-    IgnoredException ignoredException2 =
-        IgnoredException.addIgnoredException(CacheClosedException.class.getName());
-    IgnoredException ignoredException3 =
-        IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
-    try {
+  private boolean killPrimarySender(String senderId) {
+    try (IgnoredException ignoredException1 =
+        IgnoredException.addIgnoredException("Could not connect");
+        IgnoredException ignoredException2 =
+            IgnoredException.addIgnoredException(CacheClosedException.class.getName());
+        IgnoredException ignoredException3 =
+            IgnoredException.addIgnoredException(ForceReattemptException.class.getName())) {
       AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
       if (sender.isPrimary()) {
         cacheRule.getCache().close();
-        return Boolean.TRUE;
+        return true;
       }
-      return Boolean.FALSE;
-    } finally {
-      ignoredException1.remove();
-      ignoredException2.remove();
-      ignoredException3.remove();
+      return false;
     }
   }
 }

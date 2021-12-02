@@ -17,7 +17,9 @@ package org.apache.geode.internal.cache.wan.txgrouping;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import junitparams.Parameters;
@@ -29,8 +31,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
-import org.apache.geode.internal.cache.execute.data.Shipment;
-import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -62,46 +62,37 @@ public class TxGroupingPartitionedRegionDUnitTest extends TxGroupingBaseDUnitTes
     }
 
     int customers = 4;
-
     int transactionsPerCustomer = 1000;
-    final Map<Object, Object> keyValuesInTransactions = new HashMap<>();
-    for (int custId = 0; custId < customers; custId++) {
-      for (int i = 0; i < transactionsPerCustomer; i++) {
-        CustId custIdObject = new CustId(custId);
-        OrderId orderId = new OrderId(i, custIdObject);
-        ShipmentId shipmentId1 = new ShipmentId(i, orderId);
-        ShipmentId shipmentId2 = new ShipmentId(i + 1, orderId);
-        ShipmentId shipmentId3 = new ShipmentId(i + 2, orderId);
-        keyValuesInTransactions.put(orderId, new Order());
-        keyValuesInTransactions.put(shipmentId1, new Shipment());
-        keyValuesInTransactions.put(shipmentId2, new Shipment());
-        keyValuesInTransactions.put(shipmentId3, new Shipment());
-      }
-    }
-
     int ordersPerCustomerNotInTransactions = 1000;
 
     final Map<Object, Object> keyValuesNotInTransactions = new HashMap<>();
     for (int custId = 0; custId < customers; custId++) {
       for (int i = 0; i < ordersPerCustomerNotInTransactions; i++) {
         CustId custIdObject = new CustId(custId);
-        OrderId orderId = new OrderId(i + transactionsPerCustomer * customers, custIdObject);
+        OrderId orderId =
+            new OrderId(i + ordersPerCustomerNotInTransactions * customers, custIdObject);
         keyValuesNotInTransactions.put(orderId, new Order());
       }
     }
 
     // eventsPerTransaction is 1 (orders) + 3 (shipments)
     int eventsPerTransaction = 4;
-    AsyncInvocation<Void> putsInTransactionsInvocation =
-        londonServer1VM.invokeAsync(
-            () -> doOrderAndShipmentPutsInsideTransactions(keyValuesInTransactions,
-                eventsPerTransaction));
+    List<AsyncInvocation<Void>> putsInTransactionsInvocationList = new ArrayList<>(customers);
+    for (int i = 0; i < customers; i++) {
+      final int customerId = i;
+      putsInTransactionsInvocationList.add(
+          londonServer1VM.invokeAsync(
+              () -> doOrderAndShipmentPutsInsideTransactions(customerId, eventsPerTransaction,
+                  transactionsPerCustomer)));
+    }
 
     AsyncInvocation<Void> putsNotInTransactionsInvocation =
         londonServer2VM.invokeAsync(
             () -> putGivenKeyValues(orderRegionName, keyValuesNotInTransactions));
 
-    putsInTransactionsInvocation.await();
+    for (AsyncInvocation<Void> putsInTransactionInvocation : putsInTransactionsInvocationList) {
+      putsInTransactionInvocation.await();
+    }
     putsNotInTransactionsInvocation.await();
 
     int entries =

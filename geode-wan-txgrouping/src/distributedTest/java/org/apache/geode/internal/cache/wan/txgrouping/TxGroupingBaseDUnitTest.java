@@ -17,15 +17,12 @@ package org.apache.geode.internal.cache.wan.txgrouping;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +59,11 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.execute.data.Shipment;
+import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
@@ -193,7 +194,6 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected Properties createLocatorConfig(int systemId, int locatorPort, int remoteLocatorPort) {
     Properties config = new Properties();
-    config.setProperty(MCAST_PORT, "0");
     config.setProperty(DISTRIBUTED_SYSTEM_ID, String.valueOf(systemId));
     config.setProperty(LOCATORS, "localhost[" + locatorPort + ']');
     config.setProperty(REMOTE_LOCATORS, "localhost[" + remoteLocatorPort + ']');
@@ -259,7 +259,6 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected Properties createServerConfig(int locatorPort) {
     Properties config = new Properties();
-    config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "localhost[" + locatorPort + ']');
     return config;
   }
@@ -288,10 +287,8 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected void validateRegionSize(String regionName, final int regionSize) {
     final Region<Object, Object> r = cacheRule.getCache().getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
-    if (regionSize != r.keySet().size()) {
-      await().untilAsserted(() -> assertThat(r.keySet().size()).isEqualTo(regionSize));
-    }
+    assertThat(r).isNotNull();
+    await().untilAsserted(() -> assertThat(r.keySet().size()).isEqualTo(regionSize));
   }
 
   protected List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {
@@ -310,7 +307,7 @@ public class TxGroupingBaseDUnitTest implements Serializable {
       await()
           .untilAsserted(() -> assertThat(regionQueue.size()).isEqualTo(expectedQueueSize));
     }
-    ArrayList<Integer> stats = new ArrayList<>();
+    List<Integer> stats = new ArrayList<>();
     stats.add(statistics.getEventQueueSize());
     stats.add(statistics.getEventsReceived());
     stats.add(statistics.getEventsQueued());
@@ -340,26 +337,30 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     return sender;
   }
 
-  protected void doPutsInsideTransactions(String regionName, Map<Object, Object> keyValues,
-      int eventsPerTransaction) {
-    Region<Object, Object> r = cacheRule.getCache().getRegion(Region.SEPARATOR + regionName);
-    assertNotNull(r);
-    int eventInTransaction = 0;
-    CacheTransactionManager cacheTransactionManager =
-        cacheRule.getCache().getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
-      if (eventInTransaction == 0) {
-        cacheTransactionManager.begin();
-      }
-      r.put(key, keyValues.get(key));
-      if (++eventInTransaction == eventsPerTransaction) {
-        cacheTransactionManager.commit();
-        eventInTransaction = 0;
-      }
+  protected void doTxPuts(String regionName, final long putsPerTransaction,
+      final long transactions) {
+    doTxPuts(regionName, putsPerTransaction, transactions, 0);
+  }
+
+  protected void doTxPuts(String regionName, final long putsPerTransaction,
+      final long transactions, long initialKeyId) {
+    Region<Object, Object> region = cacheRule.getCache().getRegion(Region.SEPARATOR + regionName);
+    CacheTransactionManager mgr = cacheRule.getCache().getCacheTransactionManager();
+    for (int i = 0; i < transactions; i++) {
+      long keyId = initialKeyId + (i * putsPerTransaction);
+      doOneTxWithPuts(region, mgr, putsPerTransaction, keyId);
     }
-    if (eventInTransaction != 0) {
-      cacheTransactionManager.commit();
+  }
+
+  private void doOneTxWithPuts(Region<Object, Object> region, CacheTransactionManager mgr,
+      long putsPerTransaction, long initialKeyId) {
+    mgr.begin();
+    for (int j = 0; j < putsPerTransaction; j++) {
+      long key = initialKeyId + j;
+      String value = "Value_" + key;
+      region.put(key, value);
     }
+    mgr.commit();
   }
 
   protected void checkGatewayReceiverStats(int processBatches, int eventsReceived,
@@ -386,35 +387,42 @@ public class TxGroupingBaseDUnitTest implements Serializable {
   }
 
   protected void doTxPutsWithRetryIfError(String regionName, final long putsPerTransaction,
-      final long transactions, long offset) {
-    Region<Object, Object> r = cacheRule.getCache().getRegion(Region.SEPARATOR + regionName);
-    long keyOffset = offset * ((putsPerTransaction + (10 * transactions)) * 100);
-    long j;
+      final long transactions, long initialKeyId) {
+    Region<Object, Object> region = cacheRule.getCache().getRegion(Region.SEPARATOR + regionName);
     CacheTransactionManager mgr = cacheRule.getCache().getCacheTransactionManager();
     for (int i = 0; i < transactions; i++) {
-      boolean done = false;
-      do {
-        try {
-          mgr.begin();
-          for (j = 0; j < putsPerTransaction; j++) {
-            long key = keyOffset + ((j + (10L * i)) * 100);
-            String value = "Value_" + key;
-            r.put(key, value);
-          }
-          mgr.commit();
-          done = true;
-        } catch (TransactionException ignore) {
-        } catch (IllegalStateException ignore) {
-          try {
-            mgr.rollback();
-          } catch (Exception ignored) {
-          }
+      long keyId = initialKeyId + (i * putsPerTransaction);
+      doOneTxWithPutsWithRetryIfError(region, mgr, putsPerTransaction, keyId);
+    }
+  }
+
+  private void doOneTxWithPutsWithRetryIfError(Region<Object, Object> region,
+      CacheTransactionManager mgr, long putsPerTransaction, long initialKeyId) {
+    while (true) {
+      try {
+        mgr.begin();
+        for (int j = 0; j < putsPerTransaction; j++) {
+          long key = initialKeyId + j;
+          String value = "Value_" + key;
+          region.put(key, value);
         }
-      } while (!done);
+        mgr.commit();
+        return;
+      } catch (TransactionException ignore) {
+      } catch (IllegalStateException ignore) {
+        try {
+          mgr.rollback();
+        } catch (Exception ignored) {
+        }
+      }
     }
   }
 
   public void createCustomerOrderShipmentPartitionedRegion(String senderId) {
+    createCustomerOrderShipmentPartitionedRegion(senderId, 0);
+  }
+
+  public void createCustomerOrderShipmentPartitionedRegion(String senderId, int redundantCopies) {
     RegionFactory<Object, Object> fact =
         cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
     if (senderId != null) {
@@ -423,10 +431,12 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    paf.setRedundantCopies(redundantCopies);
     fact.setPartitionAttributes(paf.create());
     fact.create(customerRegionName);
 
     paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundantCopies);
     paf.setColocatedWith(customerRegionName)
         .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
@@ -437,6 +447,7 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     fact.create(orderRegionName);
 
     paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundantCopies);
     paf.setColocatedWith(orderRegionName)
         .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     fact = cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
@@ -447,33 +458,62 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     fact.create(shipmentRegionName);
   }
 
-  public void doOrderAndShipmentPutsInsideTransactions(Map<Object, Object> keyValues,
-      int eventsPerTransaction) {
-    Region<Object, Object> orderRegion = cacheRule.getCache().getRegion(orderRegionName);
-    Region<Object, Object> shipmentRegion = cacheRule.getCache().getRegion(shipmentRegionName);
-    assertNotNull(orderRegion);
-    assertNotNull(shipmentRegion);
-    int eventInTransaction = 0;
+  public void doOrderAndShipmentPutsInsideTransactions(int customerId, int eventsPerTransaction,
+      int transactions) {
+    doOrderAndShipmentPutsInsideTransactions(customerId, eventsPerTransaction, transactions, false);
+  }
+
+  public void doOrderAndShipmentPutsInsideTransactions(int customerId, int eventsPerTransaction,
+      int transactions, boolean retryIfError) {
     CacheTransactionManager cacheTransactionManager =
         cacheRule.getCache().getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
-      if (eventInTransaction == 0) {
-        cacheTransactionManager.begin();
-      }
-      Region<Object, Object> r;
-      if (key instanceof OrderId) {
-        r = orderRegion;
+    for (int i = 0; i < transactions; i++) {
+      int keyId = i * eventsPerTransaction;
+      if (retryIfError) {
+        doOneTxOrderAndShipmentPutsWithRetryIfError(cacheTransactionManager, keyId,
+            eventsPerTransaction, customerId);
       } else {
-        r = shipmentRegion;
-      }
-      r.put(key, keyValues.get(key));
-      if (++eventInTransaction == eventsPerTransaction) {
-        cacheTransactionManager.commit();
-        eventInTransaction = 0;
+        doOneTxOrderAndShipmentPuts(cacheTransactionManager, keyId, eventsPerTransaction,
+            customerId);
       }
     }
-    if (eventInTransaction != 0) {
-      cacheTransactionManager.commit();
+  }
+
+  private void doOneTxOrderAndShipmentPuts(
+      CacheTransactionManager cacheTransactionManager, int keyId, int eventsPerTransaction,
+      int customerId) {
+    cacheTransactionManager.begin();
+    doOneOrderAndShipmentPuts(keyId, eventsPerTransaction, customerId);
+    cacheTransactionManager.commit();
+  }
+
+  private void doOneTxOrderAndShipmentPutsWithRetryIfError(
+      CacheTransactionManager cacheTransactionManager, int keyId, int eventsPerTransaction,
+      int customerId) {
+    while (true) {
+      try {
+        cacheTransactionManager.begin();
+        doOneOrderAndShipmentPuts(keyId, eventsPerTransaction, customerId);
+        cacheTransactionManager.commit();
+        break;
+      } catch (TransactionException exception) {
+      } catch (IllegalStateException exception) {
+        try {
+          cacheTransactionManager.rollback();
+        } catch (Exception ignored) {
+        }
+      }
+    }
+  }
+
+  private void doOneOrderAndShipmentPuts(int keyId, int eventsPerTransaction, int customerId) {
+    Region<Object, Object> orderRegion = cacheRule.getCache().getRegion(orderRegionName);
+    Region<Object, Object> shipmentRegion = cacheRule.getCache().getRegion(shipmentRegionName);
+    OrderId orderId = new OrderId(keyId, new CustId(customerId));
+    orderRegion.put(orderId, new Order());
+    for (int i = 0; i < eventsPerTransaction - 1; i++) {
+      ShipmentId shipmentId = new ShipmentId(keyId + i, orderId);
+      shipmentRegion.put(shipmentId, new Shipment());
     }
   }
 
@@ -498,7 +538,7 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected void putGivenKeyValues(String regionName, Map<?, ?> keyValues) {
     Region<Object, Object> r = cacheRule.getCache().getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    assertThat(r).isNotNull();
     for (Object key : keyValues.keySet()) {
       r.put(key, keyValues.get(key));
     }
@@ -506,7 +546,7 @@ public class TxGroupingBaseDUnitTest implements Serializable {
 
   protected void checkConflatedStats(String senderId, final int eventsConflated) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(eventsConflated, statistics.getEventsNotQueuedConflated());
+    assertThat(statistics.getEventsNotQueuedConflated()).isEqualTo(eventsConflated);
   }
 
   protected GatewaySenderStats getGatewaySenderStats(String senderId) {
@@ -517,12 +557,9 @@ public class TxGroupingBaseDUnitTest implements Serializable {
   protected void validateGatewaySenderQueueAllBucketsDrained(final String senderId) {
     GatewaySender sender = getGatewaySender(senderId);
     final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
-    await().untilAsserted(() -> {
-      assertThat(abstractSender.getEventQueueSize()).isEqualTo(0);
-    });
-    await().untilAsserted(() -> {
-      assertThat(abstractSender.getSecondaryEventQueueSize()).isEqualTo(0);
-    });
+    await().untilAsserted(() -> assertThat(abstractSender.getEventQueueSize()).isEqualTo(0));
+    await()
+        .untilAsserted(() -> assertThat(abstractSender.getSecondaryEventQueueSize()).isEqualTo(0));
   }
 
   public static void setNumDispatcherThreadsForTheRun(int numThreads) {

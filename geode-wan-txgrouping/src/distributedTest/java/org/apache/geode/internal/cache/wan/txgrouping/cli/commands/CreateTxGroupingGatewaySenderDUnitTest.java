@@ -36,7 +36,7 @@ public class CreateTxGroupingGatewaySenderDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  MemberVM locator;
+  private MemberVM locator;
 
   @Before
   public void before() throws Exception {

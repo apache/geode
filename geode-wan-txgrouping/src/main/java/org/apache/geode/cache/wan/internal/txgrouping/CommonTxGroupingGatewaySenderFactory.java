@@ -23,8 +23,8 @@ import org.apache.geode.cache.wan.internal.GatewaySenderTypeFactory;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
 
-public abstract class CommonTxGroupingGatewaySenderFactory {
-  public static void validate(final @NotNull GatewaySenderTypeFactory factory,
+public interface CommonTxGroupingGatewaySenderFactory {
+  static void validate(final @NotNull GatewaySenderTypeFactory factory,
       final @NotNull MutableGatewaySenderAttributes attributes) {
     if (attributes.isBatchConflationEnabled()) {
       throw new GatewaySenderException(

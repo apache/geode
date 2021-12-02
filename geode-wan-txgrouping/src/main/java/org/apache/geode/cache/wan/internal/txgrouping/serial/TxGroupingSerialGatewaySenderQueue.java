@@ -80,28 +80,8 @@ public class TxGroupingSerialGatewaySenderQueue extends SerialGatewaySenderQueue
 
     int retries = 0;
     while (true) {
-      for (Iterator<TransactionId> iter = incompleteTransactionIdsInBatch.iterator(); iter
-          .hasNext();) {
-        TransactionId transactionId = iter.next();
-        List<KeyAndEventPair> keyAndEventPairs =
-            peekEventsWithTransactionId(transactionId, lastKey);
-        if (keyAndEventPairs.size() > 0
-            && ((GatewaySenderEventImpl) (keyAndEventPairs.get(keyAndEventPairs.size() - 1)).event)
-                .isLastEventInTransaction()) {
-          for (KeyAndEventPair object : keyAndEventPairs) {
-            GatewaySenderEventImpl event = (GatewaySenderEventImpl) object.event;
-            batch.add(event);
-            peekedIds.add(object.key);
-            extraPeekedIds.add(object.key);
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
-                  event.getKey(), event.isLastEventInTransaction(), batch.size());
-            }
-          }
-          iter.remove();
-        }
-      }
+      peekAndAddEventsToBatchToCompleteTransactions(batch, lastKey,
+          incompleteTransactionIdsInBatch);
       if (incompleteTransactionIdsInBatch.size() == 0 ||
           retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
         break;
@@ -117,6 +97,41 @@ public class TxGroupingSerialGatewaySenderQueue extends SerialGatewaySenderQueue
       logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
           incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
+    }
+  }
+
+  private void peekAndAddEventsToBatchToCompleteTransactions(List<AsyncEvent<?, ?>> batch,
+      long lastKey, Set<TransactionId> incompleteTransactionIdsInBatch) {
+    for (Iterator<TransactionId> incompleteTransactionsIter =
+        incompleteTransactionIdsInBatch.iterator(); incompleteTransactionsIter.hasNext();) {
+      TransactionId transactionId = incompleteTransactionsIter.next();
+      List<KeyAndEventPair> keyAndEventPairs =
+          peekEventsWithTransactionId(transactionId, lastKey);
+      if (lastEventInTransactionPresent(keyAndEventPairs)) {
+        addEventsToBatch(batch, keyAndEventPairs);
+        incompleteTransactionsIter.remove();
+      }
+    }
+  }
+
+  private boolean lastEventInTransactionPresent(List<KeyAndEventPair> keyAndEventPairs) {
+    return keyAndEventPairs.size() > 0
+        && ((GatewaySenderEventImpl) (keyAndEventPairs.get(keyAndEventPairs.size() - 1)).event)
+            .isLastEventInTransaction();
+  }
+
+  private void addEventsToBatch(List<AsyncEvent<?, ?>> batch,
+      List<KeyAndEventPair> keyAndEventPairs) {
+    for (KeyAndEventPair object : keyAndEventPairs) {
+      GatewaySenderEventImpl event = (GatewaySenderEventImpl) object.event;
+      batch.add(event);
+      peekedIds.add(object.key);
+      extraPeekedIds.add(object.key);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Peeking extra event: {}, isLastEventInTransaction: {}, batch size: {}",
+            event.getKey(), event.isLastEventInTransaction(), batch.size());
+      }
     }
   }
 

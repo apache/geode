@@ -2352,53 +2352,6 @@ public class WANTestBase extends DistributedTestCase {
     }
   }
 
-  public static void doOrderAndShipmentPutsInsideTransactions(Map keyValues,
-      int eventsPerTransaction) {
-    Region orderRegion = cache.getRegion(orderRegionName);
-    Region shipmentRegion = cache.getRegion(shipmentRegionName);
-    int eventInTransaction = 0;
-    CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
-      if (eventInTransaction == 0) {
-        cacheTransactionManager.begin();
-      }
-      Region r;
-      if (key instanceof OrderId) {
-        r = orderRegion;
-      } else {
-        r = shipmentRegion;
-      }
-      r.put(key, keyValues.get(key));
-      if (++eventInTransaction == eventsPerTransaction) {
-        cacheTransactionManager.commit();
-        eventInTransaction = 0;
-      }
-    }
-    if (eventInTransaction != 0) {
-      cacheTransactionManager.commit();
-    }
-  }
-
-  public static void doPutsInsideTransactions(String regionName, Map keyValues,
-      int eventsPerTransaction) {
-    Region<Object, Object> r = cache.getRegion(Region.SEPARATOR + regionName);
-    int eventInTransaction = 0;
-    CacheTransactionManager cacheTransactionManager = cache.getCacheTransactionManager();
-    for (Object key : keyValues.keySet()) {
-      if (eventInTransaction == 0) {
-        cacheTransactionManager.begin();
-      }
-      r.put(key, keyValues.get(key));
-      if (++eventInTransaction == eventsPerTransaction) {
-        cacheTransactionManager.commit();
-        eventInTransaction = 0;
-      }
-    }
-    if (eventInTransaction != 0) {
-      cacheTransactionManager.commit();
-    }
-  }
-
   public static void destroyRegion(String regionName) {
     destroyRegion(regionName, -1);
   }
