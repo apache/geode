@@ -63,7 +63,7 @@ gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Jar).each { jar ->
 
     def projectDependencies = []
-    def runtimeList = []
+    def runtimeList = new HashSet<String>()
     def allProjectDeps = []
 
     def confList = ['api', 'implementation', 'runtimeOnly']
@@ -74,10 +74,10 @@ gradle.taskGraph.whenReady({ graph ->
     // Iterate over runtime classpath dependencies and separate project dependencies from library
     // dependencies.
     allProjectDeps.each { dependency ->
-      if ( dependency instanceof ProjectDependency )  {
+      if ( dependency instanceof ProjectDependency ) {
         def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
         def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
-        if ( foundAttribute == null) {
+        if (foundAttribute == null) {
           projectDependencies.add(dependency)
         } else if ('platform'.equals(foundAttribute)) {
           projectDependencies.add(dependency)
@@ -102,6 +102,7 @@ gradle.taskGraph.whenReady({ graph ->
     }
 
     jar.doFirst {
+      runtimeList.addAll(manifest.attributes.get('Class-Path') ?: [])
       manifest {
         attributes.put("Manifest-Version", "1.0")
         attributes.put("Created-By", System.getProperty("user.name"))

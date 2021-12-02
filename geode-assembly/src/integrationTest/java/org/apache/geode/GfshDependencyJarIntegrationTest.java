@@ -20,13 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.TreeSet;
+import java.util.Arrays;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,58 +36,57 @@ import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 @Category(RestAPITest.class)
-public class AssemblyContentsIntegrationTest {
+public class GfshDependencyJarIntegrationTest {
 
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
 
-  private Collection<String> expectedAssemblyContent;
+  private List<String> expectedClasspathElements;
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Before
-  public void loadExpectedAssemblyContent() throws IOException {
-    String assemblyContent =
+  public void loadExpectedClassPath() throws IOException {
+    String dependencyClasspath =
         createTempFileFromResource(AssemblyContentsIntegrationTest.class,
-            "/assembly_content.txt").getAbsolutePath();
+            "/gfsh_dependency_classpath.txt").getAbsolutePath();
 
-    expectedAssemblyContent =
-        Files.lines(Paths.get(assemblyContent)).collect(Collectors.toCollection(TreeSet::new));
+    expectedClasspathElements =
+        Files.lines(Paths.get(dependencyClasspath)).collect(Collectors.toList());
   }
 
   @Test
-  public void verifyAssemblyContents() throws IOException {
-    Collection<String> currentAssemblyContent = getAssemblyContent();
-    Files.write(Paths.get("..", "assembly_content.txt"), currentAssemblyContent);
+  public void verifyManifestClassPath() throws IOException {
+    List<String> currentClasspathElements = getManifestClassPath();
+    Files.write(Paths.get("..", "gfsh_dependency_classpath.txt"), currentClasspathElements);
 
-    assertThat(currentAssemblyContent)
-        .as("The assembly contents have changed. Verify dependencies and "
-            + "copy geode-assembly/build/integrationTest/assembly_content.txt to "
-            + "geode-assembly/src/integrationTest/resources/assembly_content.txt")
-        .hasSameElementsAs(expectedAssemblyContent);
+    assertThat(getManifestClassPath())
+        .describedAs("The gfsh-dependencies.jar manifest classpath has changed. Verify "
+            + "dependencies and copy geode-assembly/build/integrationTest/gfsh_dependency_classpath.txt "
+            + "to geode-assembly/src/integrationTest/resources/gfsh_dependency_classpath.txt")
+        .containsExactlyInAnyOrderElementsOf(expectedClasspathElements);
   }
-
 
   /**
    * Find all of the jars bundled with the project. Key is the name of the jar, value is the path.
    */
-  private Collection<String> getAssemblyContent() {
+  private List<String> getManifestClassPath() throws IOException {
     File geodeHomeDirectory = new File(GEODE_HOME);
-    Path geodeHomePath = Paths.get(GEODE_HOME);
-
     assertThat(geodeHomeDirectory)
-        .as(
+        .describedAs(
             "Please set the GEODE_HOME environment variable to the product installation directory.")
         .isDirectory();
 
-    String versionRegex = "\\d+\\.\\d+\\.\\d+(-build\\.\\d+)?";
-    return FileUtils.listFiles(geodeHomeDirectory, null, true).stream()
-        .map(file -> geodeHomePath.relativize(Paths.get(file.getPath())).toString().replace('\\',
-            '/'))
-        .map(entry -> entry.contains("/geode-")
-            ? entry.replaceFirst(versionRegex, "0.0.0") : entry)
-        .map(entry -> entry.contains("Apache_Geode")
-            ? entry.replaceFirst(versionRegex, "0.0.0") : entry)
-        .collect(Collectors.toCollection(TreeSet::new));
+    JarFile geodeDependencies =
+        new JarFile(new File(geodeHomeDirectory, "lib/gfsh-dependencies.jar"));
+
+    Manifest geodeDependenciesManifest = geodeDependencies.getManifest();
+
+    String classpath = geodeDependenciesManifest.getMainAttributes().getValue("Class-Path");
+
+    return Arrays.stream(classpath.split(" "))
+        .map(entry -> entry.contains("geode")
+            ? entry.replaceFirst("\\d+\\.\\d+\\.\\d+(-build\\.\\d+)?", "0.0.0") : entry)
+        .collect(Collectors.toList());
   }
 }

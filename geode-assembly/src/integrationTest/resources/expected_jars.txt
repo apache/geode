@@ -22,10 +22,9 @@ commons-validator
 content-type
 error_prone_annotations
 failureaccess
-fastutil
 fastutil-core
 fastutil-extra
-findbugs-annotations
+fastutil
 geo
 gfsh-dependencies.jar
 guava
