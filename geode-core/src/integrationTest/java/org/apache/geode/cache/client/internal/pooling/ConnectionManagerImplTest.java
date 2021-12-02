@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
@@ -519,6 +520,19 @@ public class ConnectionManagerImplTest {
     assertThat(connectionManager.getConnectionCount()).isEqualTo(1);
     verify(connectionFactory, times(1)).createClientToServerConnection(Collections.EMPTY_SET);
 
+    connectionManager.close(false);
+  }
+
+  @Test
+  public void borrowConnectionOnSpecificServerDoesNotIncrementConnectionCountWhenUnableToCreateConnection() {
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    connectionManager = createDefaultConnectionManager();
+    connectionManager.start(backgroundProcessor);
+    assertThat(connectionManager.getConnectionCount()).isEqualTo(0);
+    assertThatThrownBy(() -> connectionManager.borrowConnection(serverLocation, timeout, false))
+        .isInstanceOf(ServerConnectivityException.class);
+    verify(connectionFactory, times(1)).createClientToServerConnection(serverLocation, false);
+    assertThat(connectionManager.getConnectionCount()).isEqualTo(0);
     connectionManager.close(false);
   }
 }
