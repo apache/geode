@@ -535,5 +535,4 @@ public class ConnectionManagerImplTest {
     assertThat(connectionManager.getConnectionCount()).isEqualTo(0);
     connectionManager.close(false);
   }
-
 }
