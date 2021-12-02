@@ -55,13 +55,10 @@ public abstract class SetOpExecutor implements CommandExecutor {
 
     /*
      * SDIFFSTORE, SINTER, SINTERSTORE, SUNION, SUNIONSTORE currently use the else part of the code
-     * for their
-     * implementation.
+     * for their implementation.
      * TODO: Once the above commands have been implemented remove the if else and
      * refactor so it implements doSetOp
      */
-
-    // Make a static method then calculate diff add all create the resulting set
     if (command.isOfType(RedisCommandType.SDIFF)) {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sdiff(regionProvider, setKeys));
