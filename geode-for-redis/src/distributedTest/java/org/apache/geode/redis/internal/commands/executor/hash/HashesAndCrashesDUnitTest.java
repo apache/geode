@@ -16,38 +16,38 @@
 
 package org.apache.geode.redis.internal.commands.executor.hash;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisException;
+import io.lettuce.core.RedisCommandTimeoutException;
+import io.lettuce.core.SocketOptions;
 import io.lettuce.core.cluster.ClusterClientOptions;
 import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.logging.log4j.Logger;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.control.RebalanceFactory;
-import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
+import org.apache.geode.test.dunit.rules.SerializableFunction;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Ignore("tracked by GEODE-9692")
 public class HashesAndCrashesDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
@@ -55,34 +55,53 @@ public class HashesAndCrashesDUnitTest {
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
-  private static MemberVM server3;
+  private static SerializableFunction<ServerStarterRule> serverOperator2;
+  private static SerializableFunction<ServerStarterRule> serverOperator3;
 
-  private static RedisAdvancedClusterCommands<String, String> commands;
-  private static RedisClusterClient clusterClient;
+  private RedisAdvancedClusterCommands<String, String> commands;
+  private RedisClusterClient clusterClient;
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   @BeforeClass
   public static void classSetup() throws Exception {
-    locator = clusterStartUp.startLocatorVM(0);
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    clusterStartUp.startRedisVM(1, locatorPort);
 
-    server1 = clusterStartUp.startRedisVM(1, locator.getPort());
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
+    int redisPort2 = AvailablePortHelper.getRandomAvailableTCPPort();
+    serverOperator2 = s -> s
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort2 + "")
+        .withConnectionToLocator(locatorPort);
+    clusterStartUp.startRedisVM(2, serverOperator2);
 
+    int redisPort3 = AvailablePortHelper.getRandomAvailableTCPPort();
+    serverOperator3 = s -> s
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort3 + "")
+        .withConnectionToLocator(locatorPort);
+    clusterStartUp.startRedisVM(3, serverOperator3);
+
+    clusterStartUp.enableDebugLogging(1);
+    clusterStartUp.enableDebugLogging(2);
+    clusterStartUp.enableDebugLogging(3);
+  }
+
+  @Before
+  public void before() {
     int redisPort1 = clusterStartUp.getRedisPort(1);
     clusterClient = RedisClusterClient.create("redis://localhost:" + redisPort1);
 
     ClusterTopologyRefreshOptions refreshOptions =
         ClusterTopologyRefreshOptions.builder()
             .enableAllAdaptiveRefreshTriggers()
+            .refreshTriggersReconnectAttempts(1)
+            .refreshPeriod(Duration.ofSeconds(30))
             .build();
 
     clusterClient.setOptions(ClusterClientOptions.builder()
+        .socketOptions(SocketOptions.builder()
+            .connectTimeout(Duration.ofSeconds(30)).build())
         .topologyRefreshOptions(refreshOptions)
         .validateClusterNodeMembership(false)
         .build());
@@ -90,13 +109,9 @@ public class HashesAndCrashesDUnitTest {
     commands = clusterClient.connect().sync();
   }
 
-  @AfterClass
-  public static void cleanup() {
-    try {
-      clusterClient.shutdown();
-    } catch (Exception ignored) {
-      // https://github.com/lettuce-io/lettuce-core/issues/1800
-    }
+  @After
+  public void cleanup() {
+    clusterClient.shutdown();
   }
 
   @Test
@@ -120,10 +135,7 @@ public class HashesAndCrashesDUnitTest {
   }
 
   private void modifyDataWhileCrashingVMs(DataType dataType) throws Exception {
-    AtomicBoolean running1 = new AtomicBoolean(true);
-    AtomicBoolean running2 = new AtomicBoolean(true);
-    AtomicBoolean running3 = new AtomicBoolean(true);
-    AtomicBoolean running4 = new AtomicBoolean(false);
+    AtomicBoolean running = new AtomicBoolean(true);
 
     Runnable task1 = null;
     Runnable task2 = null;
@@ -131,22 +143,22 @@ public class HashesAndCrashesDUnitTest {
     Runnable task4 = null;
     switch (dataType) {
       case HSET:
-        task1 = () -> hsetPerformAndVerify(0, 20000, running1);
-        task2 = () -> hsetPerformAndVerify(1, 20000, running2);
-        task3 = () -> hsetPerformAndVerify(3, 20000, running3);
-        task4 = () -> hsetPerformAndVerify(4, 1000, running4);
+        task1 = () -> hsetPerformAndVerify(0, 10000, running);
+        task2 = () -> hsetPerformAndVerify(1, 10000, running);
+        task3 = () -> hsetPerformAndVerify(2, 10000, running);
+        task4 = () -> hsetPerformAndVerify(3, 10000, running);
         break;
       case SADD:
-        task1 = () -> saddPerformAndVerify(0, 20000, running1);
-        task2 = () -> saddPerformAndVerify(1, 20000, running2);
-        task3 = () -> saddPerformAndVerify(3, 20000, running3);
-        task4 = () -> saddPerformAndVerify(4, 1000, running4);
+        task1 = () -> saddPerformAndVerify(0, 10000, running);
+        task2 = () -> saddPerformAndVerify(1, 10000, running);
+        task3 = () -> saddPerformAndVerify(2, 10000, running);
+        task4 = () -> saddPerformAndVerify(3, 10000, running);
         break;
       case SET:
-        task1 = () -> setPerformAndVerify(0, 20000, running1);
-        task2 = () -> setPerformAndVerify(1, 20000, running2);
-        task3 = () -> setPerformAndVerify(3, 20000, running3);
-        task4 = () -> setPerformAndVerify(4, 1000, running4);
+        task1 = () -> setPerformAndVerify(0, 10000, running);
+        task2 = () -> setPerformAndVerify(1, 10000, running);
+        task3 = () -> setPerformAndVerify(2, 10000, running);
+        task4 = () -> setPerformAndVerify(3, 10000, running);
         break;
     }
 
@@ -155,124 +167,124 @@ public class HashesAndCrashesDUnitTest {
     Future<Void> future3 = executor.runAsync(task3);
     Future<Void> future4 = executor.runAsync(task4);
 
-    future4.get();
-    clusterStartUp.crashVM(2);
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    rebalanceAllRegions(server2);
+    // Wait for commands to start executing
+    Thread.sleep(2000);
 
-    clusterStartUp.crashVM(3);
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
-    rebalanceAllRegions(server3);
+    cycleVM(2, serverOperator2);
+    cycleVM(3, serverOperator3);
+    cycleVM(2, serverOperator2);
+    cycleVM(3, serverOperator3);
 
-    clusterStartUp.crashVM(2);
-    server2 = clusterStartUp.startRedisVM(2, locator.getPort());
-    rebalanceAllRegions(server2);
-
-    clusterStartUp.crashVM(3);
-    server3 = clusterStartUp.startRedisVM(3, locator.getPort());
-    rebalanceAllRegions(server3);
-
-    running1.set(false);
-    running2.set(false);
-    running3.set(false);
+    running.set(false);
 
     future1.get();
     future2.get();
     future3.get();
+    future4.get();
+  }
+
+  private void cycleVM(int vmId, SerializableFunction<ServerStarterRule> operator)
+      throws Exception {
+    clusterStartUp.crashVM(vmId);
+    clusterStartUp.startRedisVM(vmId, operator);
+    clusterStartUp.enableDebugLogging(vmId);
+    clusterStartUp.rebalanceAllRegions();
+    Thread.sleep(5000);
   }
 
   private void hsetPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "hset-key-" + index;
+    String baseKey = "hset-key-" + index + "-";
     int iterationCount = 0;
+    int totalKeys = 20;
 
-    while (iterationCount < minimumIterations || isRunning.get()) {
-      String fieldName = "field-" + iterationCount;
-      try {
-        commands.hset(key, fieldName, "value-" + iterationCount);
+    try {
+      while (iterationCount < minimumIterations || isRunning.get()) {
+        String key = baseKey + (iterationCount % totalKeys);
+        String field = "field-" + iterationCount;
+        String value = "value-" + iterationCount;
+        executeUntilSuccess(() -> commands.hset(key, field, value),
+            String.format("HSET %s %s %s", key, field, value));
         iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
-        }
       }
-    }
 
-    for (int i = 0; i < iterationCount; i++) {
-      String field = "field-" + i;
-      String value = "value-" + i;
-      assertThat(commands.hget(key, field)).isEqualTo(value);
+      for (int i = 0; i < iterationCount; i++) {
+        String key = baseKey + (i % totalKeys);
+        String field = "field-" + i;
+        String value = "value-" + i;
+        assertThat(commands.hget(key, field)).isEqualTo(value);
+      }
+    } finally {
+      isRunning.set(false);
+      logger.info("--->>> HSET test ran {} iterations", iterationCount);
     }
-
-    logger.info("--->>> HSET test ran {} iterations", iterationCount);
   }
 
   private void saddPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
-    String key = "sadd-key-" + index;
+    String baseKey = "sadd-key-" + index + "-";
     int iterationCount = 0;
+    int totalKeys = 20;
 
-    while (iterationCount < minimumIterations || isRunning.get()) {
-      String member = "member-" + index + "-" + iterationCount;
-      try {
-        commands.sadd(key, member);
+    try {
+      while (iterationCount < minimumIterations || isRunning.get()) {
+        String key = baseKey + (iterationCount % totalKeys);
+        String member = "member-" + index + "-" + iterationCount;
+        executeUntilSuccess(() -> commands.sadd(key, member),
+            String.format("SADD %s %s", key, member));
         iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
-          throw ex;
+      }
+
+      List<String> missingMembers = new ArrayList<>();
+      for (int i = 0; i < iterationCount; i++) {
+        String key = baseKey + (i % totalKeys);
+        String member = "member-" + index + "-" + i;
+        if (!commands.sismember(key, member)) {
+          missingMembers.add(member);
         }
       }
+      assertThat(missingMembers).isEmpty();
+    } finally {
+      isRunning.set(false);
+      logger.info("--->>> SADD test ran {} iterations", iterationCount);
     }
-
-    List<String> missingMembers = new ArrayList<>();
-    for (int i = 0; i < iterationCount; i++) {
-      String member = "member-" + index + "-" + i;
-      if (!commands.sismember(key, member)) {
-        missingMembers.add(member);
-      }
-    }
-    assertThat(missingMembers).isEmpty();
-
-    logger.info("--->>> SADD test ran {} iterations, retrying {} times", iterationCount);
   }
 
   private void setPerformAndVerify(int index, int minimumIterations, AtomicBoolean isRunning) {
     int iterationCount = 0;
 
-    while (iterationCount < minimumIterations || isRunning.get()) {
-      String key = "set-key-" + index + "-" + iterationCount;
-      try {
-        commands.set(key, key);
+    try {
+      while (iterationCount < minimumIterations || isRunning.get()) {
+        String key = "set-key-" + index + "-" + iterationCount;
+        executeUntilSuccess(() -> commands.set(key, key), String.format("SET %s %s", key, key));
         iterationCount += 1;
-      } catch (RedisCommandExecutionException ignore) {
-      } catch (RedisException ex) {
-        if (!ex.getMessage().contains("Connection reset by peer")) {
+      }
+
+      for (int i = 0; i < iterationCount; i++) {
+        String key = "set-key-" + index + "-" + i;
+        assertThat(commands.get(key)).isEqualTo(key);
+      }
+    } finally {
+      isRunning.set(false);
+      logger.info("--->>> SET test ran {} iterations", iterationCount);
+    }
+  }
+
+  private void executeUntilSuccess(Runnable command, String text) {
+    while (true) {
+      try {
+        command.run();
+        return;
+      } catch (RedisCommandExecutionException | RedisCommandTimeoutException ex) {
+        logger.info("DEBUG = will retry {} - {}", text, ex.getMessage());
+      } catch (Exception ex) {
+        if (ex.getMessage().contains("Connection reset by peer")
+            || ex.getMessage().contains("Connection closed")) {
+          logger.info("DEBUG = will retry {} - {}", text, ex.getMessage());
+        } else {
+          logger.info("DEBUG - exception", ex);
           throw ex;
         }
       }
     }
-
-    for (int i = 0; i < iterationCount; i++) {
-      String key = "set-key-" + index + "-" + i;
-      String value = commands.get(key);
-      assertThat(value).isEqualTo(key);
-    }
-
-    logger.info("--->>> SET test ran {} iterations", iterationCount);
   }
 
-  private static void rebalanceAllRegions(MemberVM vm) {
-    vm.invoke(() -> {
-      ResourceManager manager =
-          Objects.requireNonNull(ClusterStartupRule.getCache()).getResourceManager();
-
-      RebalanceFactory factory = manager.createRebalanceFactory();
-
-      try {
-        RebalanceResults result = factory.start().getResults();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
 }
