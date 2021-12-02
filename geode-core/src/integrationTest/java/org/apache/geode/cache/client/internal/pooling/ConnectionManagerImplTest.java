@@ -32,13 +32,13 @@ import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.geode.cache.client.ServerConnectivityException;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.ConnectionFactory;
 import org.apache.geode.cache.client.internal.Endpoint;
