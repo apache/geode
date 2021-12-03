@@ -12,21 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.memcached;
+package org.apache.geode.gfsh.internal.management;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.util.Collection;
+
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class, SanctionedSerializablesTest.class})
-public class MemcachedSanctionedSerializablesServiceIntegrationTest
+public class GfshSanctionedSerializablesServiceIntegrationTest
     extends SanctionedSerializablesServiceIntegrationTestBase {
 
-  private final SanctionedSerializablesService service =
-      new MemcachedSanctionedSerializablesService();
+  private final SanctionedSerializablesService service = new GfshSanctionedSerializablesService();
 
   @Override
   protected SanctionedSerializablesService getService() {
@@ -36,5 +42,15 @@ public class MemcachedSanctionedSerializablesServiceIntegrationTest
   @Override
   protected ServiceResourceExpectation getServiceResourceExpectation() {
     return ServiceResourceExpectation.NON_EMPTY;
+  }
+
+  @Test
+  public void acceptListContainsCommandProcessingException() throws IOException {
+    SanctionedSerializablesService service = getService();
+
+    Collection<String> serializables = service.getSerializationAcceptlist();
+
+    assertThat(serializables)
+        .contains(CommandProcessingException.class.getName());
   }
 }

@@ -12,24 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.memcached;
+package org.apache.geode.redis.internal;
 
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.redis.internal.services.RedisSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class, SanctionedSerializablesTest.class})
-public class MemcachedSanctionedSerializablesServiceIntegrationTest
+public class RedisSanctionedSerializablesServiceIntegrationTest
     extends SanctionedSerializablesServiceIntegrationTestBase {
 
-  private final SanctionedSerializablesService service =
-      new MemcachedSanctionedSerializablesService();
+  private final SanctionedSerializablesService service = new RedisSanctionedSerializablesService();
 
   @Override
-  protected SanctionedSerializablesService getService() {
+  public SanctionedSerializablesService getService() {
     return service;
   }
 

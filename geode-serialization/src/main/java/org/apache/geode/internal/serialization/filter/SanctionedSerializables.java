@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.emptyList;
 
@@ -20,20 +20,33 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class SanctionedSerializables {
+
+  private static final Logger logger = LogService.getLogger();
+
+  private SanctionedSerializables() {
+    // do not instantiate
+  }
 
   /**
    * Loads all SanctionedSerializablesServices on the classpath.
    */
-  public static Collection<SanctionedSerializablesService> loadSanctionedSerializablesServices() {
+  public static Set<SanctionedSerializablesService> loadSanctionedSerializablesServices() {
     ServiceLoader<SanctionedSerializablesService> loader =
         ServiceLoader.load(SanctionedSerializablesService.class);
-    Collection<SanctionedSerializablesService> services = new ArrayList<>();
+    Set<SanctionedSerializablesService> services = new HashSet<>();
     for (SanctionedSerializablesService service : loader) {
       services.add(service);
     }
@@ -61,5 +74,23 @@ public class SanctionedSerializables {
       }
     }
     return result;
+  }
+
+  public static Set<String> loadSanctionedClassNames(
+      Iterable<SanctionedSerializablesService> services) {
+    Set<String> sanctionedClasses = new HashSet<>(650);
+    for (SanctionedSerializablesService service : services) {
+      try {
+        Collection<String> classNames = service.getSerializationAcceptlist();
+        logger.info("loaded {} sanctioned serializables from {}", classNames.size(),
+            service.getClass().getSimpleName());
+        sanctionedClasses.addAll(classNames);
+      } catch (IOException e) {
+        throw new UncheckedIOException(
+            "Unable to initialize serialization filter for " + service,
+            e);
+      }
+    }
+    return sanctionedClasses;
   }
 }
