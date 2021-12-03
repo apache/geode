@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.lang;
+package org.apache.geode.internal.lang.utils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,20 +22,20 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-
 
 /**
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and
  * functionality of the ClassUtils class.
  * <p/>
  *
- * @see org.apache.geode.internal.lang.ClassUtils
+ * @see ClassUtils
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-public class ClassUtilsJUnitTest {
+public class ClassUtilsTest {
 
   @Test
   public void testForNameWithExistingClass() {

@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.shell;
 
 import static java.lang.System.lineSeparator;
 import static org.apache.geode.internal.util.ProductVersionUtil.getDistributionVersion;
-import static org.apache.geode.internal.util.ProductVersionUtil.getFullVersion;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,7 +49,7 @@ import org.springframework.shell.event.ShellStatus.Status;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.SystemDescription;
-import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.utils.ClassUtils;
 import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
 import org.apache.geode.internal.serialization.KnownVersion;
