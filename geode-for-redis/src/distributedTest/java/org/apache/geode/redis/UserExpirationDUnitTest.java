@@ -47,7 +47,7 @@ public class UserExpirationDUnitTest {
   private static int redisPort;
 
   @BeforeClass
-  public static void setup() throws Exception {
+  public static void setup() {
     MemberVM locator = cluster.startLocatorVM(0, x -> x
         .withSecurityManager(ExpiringSecurityManager.class));
 

@@ -40,12 +40,11 @@ public class ExpiringSecurityManager extends SimpleSecurityManager {
   @Override
   public boolean authorize(Object principal, ResourcePermission permission) {
     String user = (String) principal;
-    boolean authorized = super.authorize(principal, permission) && !expiredUsers.contains(user);
     if (expiredUsers.remove(user)) {
       throw new AuthenticationExpiredException("User has expired.");
     }
 
-    return authorized;
+    return super.authorize(principal, permission);
   }
 
   public void addExpiredUser(String user) {
