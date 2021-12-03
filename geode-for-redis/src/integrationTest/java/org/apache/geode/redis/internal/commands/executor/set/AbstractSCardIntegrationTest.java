@@ -79,7 +79,7 @@ public abstract class AbstractSCardIntegrationTest implements RedisIntegrationTe
 
 
   @Test
-  public void scardConcurrentSAddSCard_sameKeyPerClient() {
+  public void scardWithConcurrentSAdd_returnsCorrectValue() {
     String[] valuesInitial = new String[] {"one", "two", "three"};
     String[] valuesToAdd = new String[] {"pear", "apple", "plum", "orange", "peach"};
     jedis.sadd(key, valuesInitial);
@@ -94,7 +94,6 @@ public abstract class AbstractSCardIntegrationTest implements RedisIntegrationTe
                   scardResult -> assertThat(scardResult.get())
                       .isEqualTo(valuesInitial.length + valuesToAdd.length));
               jedis.srem(key, valuesToAdd);
-              jedis.sadd(key, valuesToAdd);
             });
   }
 
