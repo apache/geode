@@ -64,6 +64,7 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
@@ -196,6 +197,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       logger
           .warn("Closing Redis client connection because the server doing this operation departed: "
               + rootCause.getMessage());
+      channelInactive(ctx);
+      return null;
+    } else if (rootCause instanceof AuthenticationExpiredException) {
+      logger.info("Closing connection for expired user: {} - {}", subject.getPrincipal(),
+          ctx.channel().remoteAddress());
       channelInactive(ctx);
       return null;
     } else {
