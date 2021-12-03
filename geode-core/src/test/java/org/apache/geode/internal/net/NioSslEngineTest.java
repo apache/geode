@@ -212,7 +212,8 @@ public class NioSslEngineTest {
       try (final ByteBufferSharing outputSharing2 = spyNioSslEngine.wrap(appData)) {
         ByteBuffer wrappedBuffer = outputSharing2.getBuffer();
 
-        verify(spyBufferPool, times(1)).expandWriteBufferIfNeeded(any(BufferPoolImpl.BufferType.class),
+        verify(spyBufferPool, times(1)).expandWriteBufferIfNeeded(
+            any(BufferPoolImpl.BufferType.class),
             any(ByteBuffer.class), any(Integer.class));
         appData.flip();
         assertThat(wrappedBuffer).isEqualTo(appData);

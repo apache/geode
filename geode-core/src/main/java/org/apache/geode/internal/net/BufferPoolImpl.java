@@ -202,7 +202,7 @@ public class BufferPoolImpl implements BufferPool {
    */
   @Override
   public ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
-                                             int desiredCapacity) {
+      int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       if (existing.position() > 0) {
         existing.compact();
@@ -228,7 +228,7 @@ public class BufferPoolImpl implements BufferPool {
    */
   @Override
   public ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
-                                              int desiredCapacity) {
+      int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       return existing;
     }

@@ -15,9 +15,6 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.lang.SystemPropertyHelper.BYTE_BUFFER_POOL_STRATEGY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -344,8 +341,8 @@ public class P2PMessagingConcurrencyDUnitTest {
      */
     props.setProperty("conserve-sockets", String.valueOf(conserveSockets));
 
-//    getProductStringProperty(BYTE_BUFFER_POOL_STRATEGY).map( poolType ->
-//      props.setProperty(GEODE_PREFIX + BYTE_BUFFER_POOL_STRATEGY, poolType));
+    // getProductStringProperty(BYTE_BUFFER_POOL_STRATEGY).map( poolType ->
+    // props.setProperty(GEODE_PREFIX + BYTE_BUFFER_POOL_STRATEGY, poolType));
 
     return props;
   }

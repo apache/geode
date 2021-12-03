@@ -27,6 +27,7 @@ public class BufferPoolNoOp implements BufferPool {
   public BufferPoolNoOp() {
     System.out.println("BGB: using no-op buffer pool");
   }
+
   @Override
   public ByteBuffer acquireDirectSenderBuffer(final int size) {
     return acquireDirectBuffer(TRACKED_SENDER, size);
@@ -59,7 +60,7 @@ public class BufferPoolNoOp implements BufferPool {
 
   @Override
   public ByteBuffer expandReadBufferIfNeeded(final BufferType type, final ByteBuffer existing,
-                                             final int desiredCapacity) {
+      final int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       if (existing.position() > 0) {
         existing.compact();
@@ -82,7 +83,7 @@ public class BufferPoolNoOp implements BufferPool {
 
   @Override
   public ByteBuffer expandWriteBufferIfNeeded(final BufferType type, final ByteBuffer existing,
-                                              final int desiredCapacity) {
+      final int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       return existing;
     }
@@ -101,7 +102,6 @@ public class BufferPoolNoOp implements BufferPool {
 
   @Override
   public ByteBuffer acquireDirectBuffer(final BufferType _ignored, final int capacity) {
-    System.out.println("BGB: acquire direct " + capacity);
     // type is unimportant for our purposes since we aren't pooling or keeping stats
     return ByteBuffer.allocateDirect(capacity);
   }
@@ -118,9 +118,8 @@ public class BufferPoolNoOp implements BufferPool {
   }
 
   private ByteBuffer acquireNonDirectBuffer(BufferType _ignored, int capacity) {
-    System.out.println("BGB: acquire non-direct " + capacity);
     // type is unimportant for our purposes since we aren't pooling or keeping stats
     return ByteBuffer.allocate(capacity);
   }
 
-  }
+}

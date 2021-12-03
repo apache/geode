@@ -25,8 +25,10 @@ import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public interface BufferPool {
-  @VisibleForTesting int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
-  @VisibleForTesting int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+  @VisibleForTesting
+  int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
+  @VisibleForTesting
+  int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
@@ -46,10 +48,10 @@ public interface BufferPool {
   void releaseReceiveBuffer(ByteBuffer bb);
 
   ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
-                                      int desiredCapacity);
+      int desiredCapacity);
 
   ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
-                                       int desiredCapacity);
+      int desiredCapacity);
 
   ByteBuffer acquireDirectBuffer(BufferType type, int capacity);
 

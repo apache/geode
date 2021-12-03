@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal.direct;
 
-import static org.apache.geode.internal.lang.SystemPropertyHelper.BYTE_BUFFER_POOL_STRATEGY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -53,7 +51,6 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.BufferPool;
-import org.apache.geode.internal.net.BufferPoolImpl;
 import org.apache.geode.internal.net.BufferPoolNoOp;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
 import org.apache.geode.internal.tcp.ConnectExceptions;
@@ -122,12 +119,14 @@ public class DirectChannel {
     this.dm = dm;
     this.stats = dm.getStats();
 
-    final String poolType = getProductStringProperty(BYTE_BUFFER_POOL_STRATEGY).orElse("pool");
-    if ("none".equalsIgnoreCase(poolType)) {
-      this.bufferPool = new BufferPoolNoOp();
-    } else {
-      this.bufferPool = new BufferPoolImpl(stats);
-    }
+    // TODO: once this is tested enable it instead of unconditionally constructing the no-op pool
+    // final String poolType = getProductStringProperty(BYTE_BUFFER_POOL_STRATEGY).orElse("pool");
+    // if ("none".equalsIgnoreCase(poolType)) {
+    // this.bufferPool = new BufferPoolNoOp();
+    // } else {
+    // this.bufferPool = new BufferPoolImpl(stats);
+    // }
+    this.bufferPool = new BufferPoolNoOp();
 
     DistributionConfig dc = dm.getConfig();
     this.address = initAddress(dc);
