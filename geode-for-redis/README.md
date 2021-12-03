@@ -198,6 +198,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - RENAMENX
 - SADD  
 - SDIFF
+- SISMEMBER
 - SET  
 - SETEX
 - SETNX  
