@@ -43,9 +43,9 @@ public class ByteBufferVendorTest {
 
   @Before
   public void before() {
-    poolMock = mock(BufferPool.class);
+    poolMock = mock(BufferPoolImpl.class);
     sharingVendor =
-        new ByteBufferVendor(mock(ByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(mock(ByteBuffer.class), BufferPoolImpl.BufferType.TRACKED_SENDER,
             poolMock);
     clientHasOpenedResource = new CountDownLatch(1);
     clientMayComplete = new CountDownLatch(1);

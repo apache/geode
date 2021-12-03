@@ -50,10 +50,10 @@ public class ByteBufferConcurrencyTest {
   @Test
   public void concurrentDestructAndOpenCloseShouldReturnToPoolOnce(final ParallelExecutor executor)
       throws Exception {
-    final BufferPool poolMock = mock(BufferPool.class);
+    final BufferPool poolMock = mock(BufferPoolImpl.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(someBuffer, BufferPoolImpl.BufferType.TRACKED_SENDER,
             poolMock);
 
     final RunnableWithException useBuffer = () -> {
@@ -92,7 +92,7 @@ public class ByteBufferConcurrencyTest {
   public void concurrentDestructAndOpenShouldNotAllowUseOfReturnedBuffer(
       final ParallelExecutor executor)
       throws Exception {
-    final BufferPool poolMock = mock(BufferPool.class);
+    final BufferPool poolMock = mock(BufferPoolImpl.class);
     final AtomicBoolean returned = new AtomicBoolean(false);
     doAnswer(arguments -> {
       returned.set(true);
@@ -101,7 +101,7 @@ public class ByteBufferConcurrencyTest {
 
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(someBuffer, BufferPoolImpl.BufferType.TRACKED_SENDER,
             poolMock);
 
     final RunnableWithException accessBufferAndVerify = () -> {
@@ -135,10 +135,10 @@ public class ByteBufferConcurrencyTest {
   @Test
   public void concurrentAccessToSharingShouldBeExclusive(final ParallelExecutor executor)
       throws Exception {
-    final BufferPool poolMock = mock(BufferPool.class);
+    final BufferPool poolMock = mock(BufferPoolImpl.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(someBuffer, BufferPoolImpl.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);
@@ -164,10 +164,10 @@ public class ByteBufferConcurrencyTest {
   public void concurrentAccessToSharingShouldBeExclusiveWithExtraCloses(
       final ParallelExecutor executor)
       throws Exception {
-    final BufferPool poolMock = mock(BufferPool.class);
+    final BufferPool poolMock = mock(BufferPoolImpl.class);
     final ByteBuffer someBuffer = ByteBuffer.allocate(1);
     final ByteBufferVendor vendor =
-        new ByteBufferVendor(someBuffer, BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferVendor(someBuffer, BufferPoolImpl.BufferType.TRACKED_SENDER,
             poolMock);
 
     final AtomicBoolean inUse = new AtomicBoolean(false);

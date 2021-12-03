@@ -32,7 +32,7 @@ public class BufferPoolTest {
 
   @Before
   public void setup() {
-    bufferPool = new BufferPool(mock(DMStats.class));
+    bufferPool = new BufferPoolImpl(mock(DMStats.class));
   }
 
   @Test
@@ -58,7 +58,7 @@ public class BufferPoolTest {
   private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
     buffer.position(buffer.capacity());
     ByteBuffer newBuffer =
-        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
+        bufferPool.expandWriteBufferIfNeeded(BufferPoolImpl.BufferType.UNTRACKED, buffer, 500);
     assertEquals(buffer.position(), newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     newBuffer.flip();
@@ -73,7 +73,7 @@ public class BufferPoolTest {
     buffer.position(0);
     buffer.limit(256);
     ByteBuffer newBuffer =
-        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
+        bufferPool.expandReadBufferIfNeeded(BufferPoolImpl.BufferType.UNTRACKED, buffer, 500);
     assertEquals(0, newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     for (int i = 0; i < 256; i++) {
@@ -91,7 +91,7 @@ public class BufferPoolTest {
     buffer.position(7);
     buffer.limit(16384);
     ByteBuffer newBuffer =
-        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+        bufferPool.expandReadBufferIfNeeded(BufferPoolImpl.BufferType.UNTRACKED, buffer,
             40899);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should be ready to read the same amount of data
@@ -106,7 +106,7 @@ public class BufferPoolTest {
     buffer.position(16384);
     buffer.limit(buffer.capacity());
     ByteBuffer newBuffer =
-        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+        bufferPool.expandWriteBufferIfNeeded(BufferPoolImpl.BufferType.UNTRACKED, buffer,
             40899);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should have the same amount of data as the old one

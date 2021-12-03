@@ -46,7 +46,7 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.BufferPoolImpl;
 import org.apache.geode.internal.net.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -77,7 +77,7 @@ public class TCPConduitTest {
   public void closedConduitDoesNotThrowNPEWhenAskedForBufferPool() {
     directChannel.getDM(); // Mockito demands that this mock be used in this test
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -89,7 +89,7 @@ public class TCPConduitTest {
   public void getConnectionThrowsAlertingIOException_ifCaughtIOException_whileAlerting()
       throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -113,7 +113,7 @@ public class TCPConduitTest {
   @Test
   public void getConnectionRethrows_ifCaughtIOException_whileNotAlerting() throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -138,7 +138,7 @@ public class TCPConduitTest {
   @Test
   public void getConnectionRethrows_ifCaughtIOException_whenMemberDoesNotExist() throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -159,7 +159,7 @@ public class TCPConduitTest {
   @Test
   public void getConnectionRethrows_ifCaughtIOException_whenMemberIsShunned() throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -183,7 +183,7 @@ public class TCPConduitTest {
   public void getConnectionThrowsDistributedSystemDisconnectedException_ifCaughtIOException_whenShutdownIsInProgress()
       throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
@@ -209,7 +209,7 @@ public class TCPConduitTest {
   public void getConnectionThrowsDistributedSystemDisconnectedException_ifCaughtIOException_whenShutdownIsInProgress_andCancelIsInProgress()
       throws Exception {
     TCPConduit tcpConduit =
-        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPool.class),
+        new TCPConduit(membership, 0, localHost, false, directChannel, mock(BufferPoolImpl.class),
             new Properties(),
             TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);

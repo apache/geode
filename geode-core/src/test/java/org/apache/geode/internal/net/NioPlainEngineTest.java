@@ -42,7 +42,7 @@ public class NioPlainEngineTest {
   @Before
   public void setUp() throws Exception {
     mockStats = mock(DMStats.class);
-    bufferPool = new BufferPool(mockStats);
+    bufferPool = new BufferPoolImpl(mockStats);
     nioEngine = new NioPlainEngine(bufferPool);
   }
 
@@ -62,7 +62,7 @@ public class NioPlainEngineTest {
     nioEngine.lastReadPosition = 10;
     int requestedCapacity = 210;
     ByteBuffer result = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
-        BufferPool.BufferType.TRACKED_RECEIVER);
+        BufferPoolImpl.BufferType.TRACKED_RECEIVER);
     verify(mockStats, times(2)).incReceiverBufferSize(any(Long.class), any(Boolean.class));
     assertThat(result.capacity()).isGreaterThanOrEqualTo(requestedCapacity);
     assertThat(result).isGreaterThanOrEqualTo(wrappedBuffer);
@@ -86,7 +86,7 @@ public class NioPlainEngineTest {
     nioEngine.lastReadPosition = consumedDataPresentInBuffer + unconsumedDataPresentInBuffer;
     ByteBuffer result =
         wrappedBuffer = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
-            BufferPool.BufferType.UNTRACKED);
+            BufferPoolImpl.BufferType.UNTRACKED);
     assertThat(result.capacity()).isEqualTo(requestedCapacity + unconsumedDataPresentInBuffer);
     assertThat(result).isSameAs(wrappedBuffer);
     // make sure that data was transferred to the new buffer

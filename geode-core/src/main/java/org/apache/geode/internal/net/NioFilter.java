@@ -51,7 +51,7 @@ public interface NioFilter {
    * invoked before readAtLeast. A new buffer may be returned by this method.
    */
   ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      BufferPool.BufferType bufferType);
+      BufferPoolImpl.BufferType bufferType);
 
   /**
    * read at least the indicated amount of bytes from the given socket. The buffer position will be

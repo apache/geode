@@ -47,7 +47,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
-import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.BufferPoolImpl;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -85,7 +85,7 @@ public class ConnectionTest {
     ThreadsMonitoring threadMonitoring = mock(ThreadsMonitoring.class);
     AbstractExecutor abstractExecutor = mock(AbstractExecutor.class);
 
-    when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
+    when(connectionTable.getBufferPool()).thenReturn(new BufferPoolImpl(dmStats));
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
     when(connectionTable.getDM()).thenReturn(distributionManager);
     when(connectionTable.getSocketCloser()).thenReturn(socketCloser);
@@ -114,7 +114,7 @@ public class ConnectionTest {
     TCPConduit tcpConduit = mock(TCPConduit.class);
 
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
-    when(connectionTable.getBufferPool()).thenReturn(mock(BufferPool.class));
+    when(connectionTable.getBufferPool()).thenReturn(mock(BufferPoolImpl.class));
     when(distributionConfig.getMemberTimeout()).thenReturn(100);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 12345));
 
@@ -136,7 +136,7 @@ public class ConnectionTest {
     SocketCloser socketCloser = mock(SocketCloser.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
 
-    when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
+    when(connectionTable.getBufferPool()).thenReturn(new BufferPoolImpl(dmStats));
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
     when(connectionTable.getDM()).thenReturn(distributionManager);
     when(connectionTable.getSocketCloser()).thenReturn(socketCloser);

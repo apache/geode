@@ -25,7 +25,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.net.BufferPoolImpl;
 import org.apache.geode.internal.net.ByteBufferSharing;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.serialization.KnownVersion;
@@ -126,7 +126,7 @@ public class MsgReader {
 
   private ByteBufferSharing readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
-        BufferPool.BufferType.TRACKED_RECEIVER);
+        BufferPoolImpl.BufferType.TRACKED_RECEIVER);
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData);
   }
 

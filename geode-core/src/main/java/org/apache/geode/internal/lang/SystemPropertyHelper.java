@@ -114,6 +114,11 @@ public class SystemPropertyHelper {
   public static final String RE_AUTHENTICATE_WAIT_TIME = "reauthenticate.wait.time";
 
   /**
+   * Either "pool" or "none". Defaults to "pool".
+   */
+  public static final String BYTE_BUFFER_POOL_STRATEGY = "byte.buffer.pool.strategy";
+
+  /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *

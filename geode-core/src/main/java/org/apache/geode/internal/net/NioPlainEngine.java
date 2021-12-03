@@ -57,7 +57,7 @@ public class NioPlainEngine implements NioFilter {
 
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      BufferPool.BufferType bufferType) {
+      BufferPoolImpl.BufferType bufferType) {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {

@@ -228,7 +228,7 @@ public class SSLSocketIntegrationTest {
     NioSslEngine engine =
         clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
             clusterSocketCreator.createSSLEngine("localhost", 1234, true), 0,
-            ByteBuffer.allocate(65535), new BufferPool(mock(DMStats.class)));
+            ByteBuffer.allocate(65535), new BufferPoolImpl(mock(DMStats.class)));
     clientChannel.configureBlocking(true);
 
     // transmit expected string from Client to Server
@@ -280,7 +280,7 @@ public class SSLSocketIntegrationTest {
             sc.handshakeSSLSocketChannel(socket.getChannel(), sslEngine,
                 timeoutMillis,
                 ByteBuffer.allocate(65535),
-                new BufferPool(mock(DMStats.class)));
+                new BufferPoolImpl(mock(DMStats.class)));
         final List<SNIServerName> serverNames = sslEngine.getSSLParameters().getServerNames();
         if (serverNames != null && serverNames.stream()
             .mapToInt(SNIServerName::getType)
