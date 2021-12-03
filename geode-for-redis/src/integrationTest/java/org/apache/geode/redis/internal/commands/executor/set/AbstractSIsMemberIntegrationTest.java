@@ -21,8 +21,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +28,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrationTest {
@@ -94,29 +91,12 @@ public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrati
 
 
   @Test
-  public void sismemberAfterSadd_returnsTruee() {
+  public void sismemberAfterSadd_returnsTrue() {
     String newMember = "chicken";
     jedis.sadd(setKey, setMembers);
     assertThat(jedis.sismember(setKey, newMember)).isFalse();
     jedis.sadd(setKey, newMember);
     assertThat(jedis.sismember(setKey, newMember)).isTrue();
-  }
-
-  @Test
-  public void sismemberWithConcurrentSAdd_returnsCorrectValue() {
-    String newMember = "snake";
-    jedis.sadd(setKey, setMembers);
-
-    final AtomicBoolean sismemberReference = new AtomicBoolean();
-    new ConcurrentLoopingThreads(1000,
-        i -> jedis.sadd(setKey, newMember),
-        i -> sismemberReference.set(jedis.sismember(setKey, newMember)))
-            .runWithAction(() -> {
-              assertThat(sismemberReference).satisfiesAnyOf(
-                  sismemberResult -> assertThat(sismemberResult.get()).isTrue(),
-                  sismemberResult -> assertThat(sismemberResult.get()).isFalse());
-              jedis.srem(setKey, newMember);
-            });
   }
 
   @Test
