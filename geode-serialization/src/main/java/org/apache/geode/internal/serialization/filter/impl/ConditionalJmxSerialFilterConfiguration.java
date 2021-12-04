@@ -12,15 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter.impl;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.filter.FilterConfiguration;
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+public class ConditionalJmxSerialFilterConfiguration implements FilterConfiguration {
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration filterConfiguration);
+  private final String propertyName;
+  private final String filterPattern;
+
+  public ConditionalJmxSerialFilterConfiguration(String propertyName, String filterPattern) {
+    this.propertyName = propertyName;
+    this.filterPattern = filterPattern;
+  }
+
+  @Override
+  public boolean configure() {
+    return new SystemPropertyConfiguration(propertyName, filterPattern).configure();
+  }
 }

@@ -17,7 +17,6 @@ package org.apache.geode.management;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -36,6 +35,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 public class LocatorManagerConfiguresJmxSerialFilterAcceptanceTest {
 
   private static final String NAME = "the-locator";
+  private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private Path workingDir;
   private int locatorPort;
@@ -50,7 +50,6 @@ public class LocatorManagerConfiguresJmxSerialFilterAcceptanceTest {
   @Before
   public void setUpOutputFiles() {
     TemporaryFolder temporaryFolder = gfshRule.getTemporaryFolder();
-
     workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
     locatorLogFile = workingDir.resolve(NAME + ".log");
   }
@@ -58,7 +57,6 @@ public class LocatorManagerConfiguresJmxSerialFilterAcceptanceTest {
   @Before
   public void setUpRandomPorts() {
     int[] ports = getRandomAvailableTCPPorts(2);
-
     locatorPort = ports[0];
     jmxPort = ports[1];
   }

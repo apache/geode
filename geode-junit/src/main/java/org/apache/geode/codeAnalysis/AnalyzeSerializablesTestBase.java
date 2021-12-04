@@ -52,11 +52,11 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.KnownVersion;
+import org.apache.geode.internal.serialization.filter.DistributedSerializableObjectConfig;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
@@ -333,7 +333,8 @@ public abstract class AnalyzeSerializablesTestBase
     properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
     properties.setProperty(SERIALIZABLE_OBJECT_FILTER, "!*");
 
-    InternalDataSerializer.initializeSerializationFilter(new DistributionConfigImpl(properties));
+    InternalDataSerializer.initializeSerializationFilter(
+        new DistributedSerializableObjectConfig(properties));
   }
 
   @Override

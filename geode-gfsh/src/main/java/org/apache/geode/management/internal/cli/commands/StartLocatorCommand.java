@@ -476,6 +476,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       commandLine
           .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
     }
+
     commandLine.add(LocatorLauncher.class.getName());
     commandLine.add(LocatorLauncher.Command.START.getName());
 

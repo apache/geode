@@ -35,10 +35,10 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.filter.FilterConfiguration;
 
 public class ManagementAgentIntegrationTest {
 
-  // private ManagementAgent managementAgent = spy(ManagementAgent.class);
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -46,14 +46,14 @@ public class ManagementAgentIntegrationTest {
   public void testSetMBeanServer() throws IOException {
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     InternalCache internalCache = mock(InternalCache.class);
-    JmxRmiSerialFilter serialFilter = mock(JmxRmiSerialFilter.class);
+    FilterConfiguration filterConfiguration = mock(FilterConfiguration.class);
     SecurityService securityService = mock(SecurityService.class);
     when(internalCache.getSecurityService()).thenReturn(securityService);
     when(securityService.isIntegratedSecurity()).thenReturn(false);
     File tempFile = temporaryFolder.newFile("testFile");
     when(distributionConfig.getJmxManagerAccessFile()).thenReturn(tempFile.getCanonicalPath());
     ManagementAgent managementAgent =
-        new ManagementAgent(distributionConfig, internalCache, serialFilter);
+        new ManagementAgent(distributionConfig, internalCache, filterConfiguration);
     MBeanServer mBeanServer = mock(MBeanServer.class);
     JMXConnectorServer jmxConnectorServerWithMBeanServer = new JMXConnectorServer(mBeanServer) {
       @Override

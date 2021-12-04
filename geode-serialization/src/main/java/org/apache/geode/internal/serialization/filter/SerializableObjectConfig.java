@@ -12,15 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.filter.FilterConfiguration;
+public interface SerializableObjectConfig {
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+  default String getFilterPatternIfEnabled() {
+    return getValidateSerializableObjects() ? getSerializableObjectFilter() : null;
+  }
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration filterConfiguration);
+  boolean getValidateSerializableObjects();
+
+  void setValidateSerializableObjects(boolean value);
+
+  String getSerializableObjectFilter();
 }

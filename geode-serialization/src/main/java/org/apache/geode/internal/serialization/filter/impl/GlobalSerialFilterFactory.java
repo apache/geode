@@ -12,15 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter.impl;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.filter.FilterConfiguration;
+import java.util.Collection;
 
 @FunctionalInterface
-interface ManagementAgentFactory {
+interface GlobalSerialFilterFactory {
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration filterConfiguration);
+  GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses);
 }

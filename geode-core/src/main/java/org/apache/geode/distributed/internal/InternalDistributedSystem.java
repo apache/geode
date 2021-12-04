@@ -99,6 +99,7 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.serialization.filter.DistributedSerializableObjectConfig;
 import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.StatisticsConfig;
@@ -714,7 +715,8 @@ public class InternalDistributedSystem extends DistributedSystem
         locatorDMTypeForced = true;
       }
 
-      InternalDataSerializer.initializeSerializationFilter(config);
+      InternalDataSerializer.initializeSerializationFilter(
+          new DistributedSerializableObjectConfig(config.toProperties()));
 
       // Initialize the Diffie-Hellman and public/private keys
       try {

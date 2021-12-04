@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -36,11 +35,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.serialization.filter.OpenMBeanFilterPattern;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
 public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
 
   private static final String NAME = "server";
+  private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private File workingDirectory;
   private int jmxPort;
@@ -53,9 +54,9 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+    expectedSerialFilter = new OpenMBeanFilterPattern().pattern();
     workingDirectory = temporaryFolder.newFolder(NAME);
     jmxPort = getRandomAvailableTCPPort();
-    expectedSerialFilter = new JmxRmiOpenTypesSerialFilter().createSerialFilterPattern();
   }
 
   @After

@@ -12,15 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter.impl;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.filter.FilterConfiguration;
+import static java.util.Objects.requireNonNull;
 
-@FunctionalInterface
-interface ManagementAgentFactory {
+public enum ApiPackage {
 
-  ManagementAgent create(DistributionConfig config, InternalCache cache,
-      FilterConfiguration filterConfiguration);
+  JAVA_IO("java.io."),
+  SUN_MISC("sun.misc.");
+
+  private final String prefix;
+
+  ApiPackage(String prefix) {
+    this.prefix = prefix;
+  }
+
+  public String getPrefix() {
+    return prefix;
+  }
+
+  public String qualify(String className) {
+    return prefix + requireNonNull(className, "className is required");
+  }
 }
