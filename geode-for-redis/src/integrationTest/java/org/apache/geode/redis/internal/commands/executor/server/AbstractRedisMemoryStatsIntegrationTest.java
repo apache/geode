@@ -16,9 +16,6 @@ package org.apache.geode.redis.internal.commands.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,24 +67,13 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
-    Map<String, String> addedData = makeHashMap(100_000, "field", "value");
-
     long initialUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
-
-    jedis.hset(EXISTING_HASH_KEY, addedData);
+    for (int i = 0; i < 500_000; i++) {
+      jedis.set("key-" + i, "some kinda long value that just wastes a bunch of memory - " + i);
+    }
 
     long finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
     assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
   }
 
-
-  // ------------------- Helper Methods ----------------------------- //
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
-    Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
-    }
-    return map;
-  }
 }
