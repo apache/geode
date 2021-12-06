@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -68,12 +69,23 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
   @Test
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
     long initialUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
-    for (int i = 0; i < 500_000; i++) {
+    long finalUsedMemory = 0;
+
+    for (int i = 0; i < 1_000_000; i++) {
       jedis.set("key-" + i, "some kinda long value that just wastes a bunch of memory - " + i);
+
+      // Check every 50,000 entries to see if we've increased in memory.
+      if (i % 50_000 == 0) {
+        finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
+        if (finalUsedMemory > initialUsedMemory) {
+          return;
+        }
+      }
     }
 
-    long finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
-    assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
+    fail(String.format(
+        "Memory did not increase. Expected final size to be greater than initial size - %d > %d",
+        finalUsedMemory, initialUsedMemory));
   }
 
 }
