@@ -200,10 +200,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       channelInactive(ctx);
       return null;
     } else if (rootCause instanceof AuthenticationExpiredException) {
-      logger.info("Closing connection for expired user: {} - {}", subject.getPrincipal(),
-          ctx.channel().remoteAddress());
-      channelInactive(ctx);
-      return null;
+      return RedisResponse.error("Authentication expired: " + rootCause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), rootCause);

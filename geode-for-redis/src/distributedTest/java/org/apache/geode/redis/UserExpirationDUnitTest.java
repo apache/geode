@@ -17,7 +17,7 @@ package org.apache.geode.redis;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.lettuce.core.cluster.RedisClusterClient;
 import io.lettuce.core.cluster.api.sync.RedisClusterCommands;
@@ -76,16 +76,16 @@ public class UserExpirationDUnitTest {
   }
 
   @Test
-  public void jedisRetriesExpiredConnections() {
+  public void jedisReceivesAuthenticationExpiredError() {
     jedis.set("foo", "bar");
 
     expireUser(USER);
 
-    assertThat(jedis.get("foo")).isEqualTo("bar");
+    assertThatThrownBy(() -> jedis.get("foo")).hasMessageContaining("User has expired");
   }
 
   @Test
-  public void lettuceRetriesExpiredConnections() {
+  public void lettuceReceivesAuthenticationExpiredError() {
     RedisClusterClient client = RedisClusterClient.create(
         String.format("redis://%s:%s@localhost:%d", USER, USER, redisPort));
     RedisClusterCommands<String, String> commands = client.connect().sync();
@@ -94,7 +94,7 @@ public class UserExpirationDUnitTest {
 
     expireUser(USER);
 
-    assertThat(commands.get("foo")).isEqualTo("bar");
+    assertThatThrownBy(() -> commands.get("foo")).hasMessageContaining("User has expired");
   }
 
   private static void expireUser(String user) {
