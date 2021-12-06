@@ -51,6 +51,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedSystem;
@@ -1114,80 +1115,85 @@ public class ServerConnection implements Runnable {
   }
 
   public byte[] setCredentials(Message message, long existingUniqueId) {
+    // need to get connection id from secure part of message, before that need to insure
+    // encryption of id
+    // need to check here, whether it matches with serverConnection id or not
+    // need to decrypt bytes if its in DH mode
+    // need to get properties of credentials(need to remove extra stuff if something is there from
+    // client)
+    // need to generate unique-id for client
+    // need to send back in response with encryption
+    if (!AcceptorImpl.isAuthenticationRequired() && message.isSecureMode()) {
+      /*
+       * This means that client and server VMs have different security settings. The server does
+       * not have any security settings specified while client has.
+       *
+       * Here, should we just ignore this and send the dummy security part (connectionId, userId)
+       * in the response (in this case, client needs to know that it is not expected to read any
+       * security part in any of the server response messages) or just throw an exception
+       * indicating bad configuration?
+       */
+      // This is a CREDENTIALS_NORMAL case.;
+      return new byte[0];
+    }
+    if (!message.isSecureMode()) {
+      throw new AuthenticationFailedException("Authentication failed");
+    }
+    return getUniqueIdBytes(message, existingUniqueId);
+  }
+
+  @VisibleForTesting
+  byte[] getUniqueIdBytes(Message message, long existingUniqueId) {
     try {
-      // need to get connection id from secure part of message, before that need to insure
-      // encryption of id
-      // need to check here, whether it matches with serverConnection id or not
-      // need to decrypt bytes if its in DH mode
-      // need to get properties of credentials(need to remove extra stuff if something is there from
-      // client)
-      // need to generate unique-id for client
-      // need to send back in response with encryption
-      if (!AcceptorImpl.isAuthenticationRequired() && message.isSecureMode()) {
-        /*
-         * This means that client and server VMs have different security settings. The server does
-         * not have any security settings specified while client has.
-         *
-         * Here, should we just ignore this and send the dummy security part (connectionId, userId)
-         * in the response (in this case, client needs to know that it is not expected to read any
-         * security part in any of the server response messages) or just throw an exception
-         * indicating bad configuration?
-         */
-        // This is a CREDENTIALS_NORMAL case.;
-        return new byte[0];
-      }
-      if (!message.isSecureMode()) {
-        throw new AuthenticationFailedException("Authentication failed");
-      }
-
-      byte[] secureBytes = message.getSecureBytes();
-
-      secureBytes = handshake.getEncryptor().decryptBytes(secureBytes);
-
-      // need to decrypt it first then get connectionid
-      AuthIds aIds = new AuthIds(secureBytes);
-
-      long connId = aIds.getConnectionId();
-
-      if (connId != connectionId) {
-        throw new AuthenticationFailedException("Authentication failed");
-      }
-
-      byte[] credBytes = message.getPart(0).getSerializedForm();
-
-      credBytes = handshake.getEncryptor().decryptBytes(credBytes);
-
-      Properties credentials;
-      try (ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes)) {
-        credentials = DataSerializer.readProperties(dinp);
-      }
-
-      // When here, security is enforced on server, if login returns a subject, then it's the newly
-      // integrated security, otherwise, do it the old way.
-      long uniqueId;
-
-      DistributedSystem system = getDistributedSystem();
-      String methodName = system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-
-      Object principal = Handshake.verifyCredentials(methodName, credentials,
-          system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(),
-          (InternalLogWriter) system.getSecurityLogWriter(), proxyId.getDistributedMember(),
-          securityService);
-      if (principal instanceof Subject) {
-        uniqueId = putSubject((Subject) principal, existingUniqueId);
-      } else {
-        // this sets principal in map as well....
-        uniqueId = getUniqueId((Principal) principal);
-      }
-
-      // create secure part which will be send in response
-      return encryptId(uniqueId);
-    } catch (AuthenticationFailedException | AuthenticationRequiredException
+      // create secure part which will be sent in response
+      return encryptId(getUniqueId(message, existingUniqueId));
+    } catch (AuthenticationFailedException | AuthenticationRequiredException | CacheClosedException
         | AuthenticationExpiredException exception) {
       throw exception;
     } catch (Exception exception) {
       throw new AuthenticationFailedException("REPLY_REFUSED", exception);
     }
+  }
+
+  @VisibleForTesting
+  long getUniqueId(Message message, long existingUniqueId) throws Exception {
+    byte[] secureBytes = message.getSecureBytes();
+    secureBytes = handshake.getEncryptor().decryptBytes(secureBytes);
+
+    // need to decrypt it first then get connectionid
+    AuthIds aIds = new AuthIds(secureBytes);
+
+    long connId = aIds.getConnectionId();
+
+    if (connId != connectionId) {
+      throw new AuthenticationFailedException("Authentication failed");
+    }
+
+    byte[] credBytes = message.getPart(0).getSerializedForm();
+    credBytes = handshake.getEncryptor().decryptBytes(credBytes);
+
+    Properties credentials;
+    try (ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes)) {
+      credentials = DataSerializer.readProperties(dinp);
+    }
+
+    // When here, security is enforced on server, if login returns a subject, then it's the newly
+    // integrated security, otherwise, do it the old way.
+    long uniqueId;
+    DistributedSystem system = getDistributedSystem();
+    String methodName = system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+
+    Object principal = Handshake.verifyCredentials(methodName, credentials,
+        system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(),
+        (InternalLogWriter) system.getSecurityLogWriter(), proxyId.getDistributedMember(),
+        securityService);
+    if (principal instanceof Subject) {
+      uniqueId = putSubject((Subject) principal, existingUniqueId);
+    } else {
+      // this sets principal in map as well....
+      uniqueId = getUniqueId((Principal) principal);
+    }
+    return uniqueId;
   }
 
   @VisibleForTesting

@@ -43,6 +43,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -55,6 +56,7 @@ import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -238,5 +240,20 @@ public class ServerConnectionTest {
     when(proxy.getSubject()).thenReturn(subject);
     connection.putSubject(subject, 123L);
     verify(proxy).setSubject(any());
+  }
+
+  @Test
+  public void messageNonSecureModeShouldThrowAuthenticationFailedException() {
+    when(requestMessage.isSecureMode()).thenReturn(false);
+    assertThatThrownBy(() -> serverConnection.setCredentials(requestMessage, -1))
+        .isInstanceOf(AuthenticationFailedException.class);
+  }
+
+  @Test
+  public void getUniqueIdBytesShouldThrowCacheClosedException() throws Exception {
+    ServerConnection spy = spy(serverConnection);
+    doThrow(new CacheClosedException()).when(spy).getUniqueId(requestMessage, -1);
+    assertThatThrownBy(() -> spy.getUniqueIdBytes(requestMessage, -1))
+        .isInstanceOf(CacheClosedException.class);
   }
 }

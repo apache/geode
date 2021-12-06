@@ -28,7 +28,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
@@ -477,12 +479,21 @@ public abstract class Handshake {
       Properties securityProperties, InternalLogWriter logWriter,
       InternalLogWriter securityLogWriter, DistributedMember member,
       SecurityService securityService)
-      throws AuthenticationRequiredException, AuthenticationFailedException {
+      throws AuthenticationRequiredException, AuthenticationFailedException, CacheClosedException {
 
     if (!AcceptorImpl.isAuthenticationRequired()) {
       return null;
     }
+    return authenticate(authenticatorMethod, credentials, securityProperties, logWriter,
+        securityLogWriter,
+        member, securityService);
+  }
 
+  @VisibleForTesting
+  static Object authenticate(String authenticatorMethod, Properties credentials,
+      Properties securityProperties, InternalLogWriter logWriter,
+      InternalLogWriter securityLogWriter, DistributedMember member,
+      SecurityService securityService) {
     Authenticator auth = null;
     try {
       if (securityService.isIntegratedSecurity()) {
@@ -493,7 +504,8 @@ public abstract class Handshake {
         auth.init(securityProperties, logWriter, securityLogWriter);
         return auth.authenticate(credentials, member);
       }
-    } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
+    } catch (AuthenticationFailedException | AuthenticationExpiredException
+        | CacheClosedException ex) {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(ex.getMessage(), ex);
