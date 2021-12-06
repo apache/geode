@@ -17,15 +17,30 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.Properties;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class HandshakeTest {
+
+  private SecurityService securityService;
+
+  @Before
+  public void before() throws Exception {
+    securityService = mock(SecurityService.class);
+  }
 
   @Test
   public void authRequiredHasCredentials() throws Exception {
@@ -49,4 +64,13 @@ public class HandshakeTest {
     Handshake.throwIfMissingRequiredCredentials(false, false);
   }
 
+  @Test
+  public void verifyCredentialsShouldThrowCacheClosedException() {
+    Properties properties = new Properties();
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new CacheClosedException()).when(securityService).login(properties);
+    assertThatThrownBy(
+        () -> Handshake.authenticate(null, properties, null, null, null, null, securityService))
+            .isInstanceOf(CacheClosedException.class);
+  }
 }

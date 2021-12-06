@@ -43,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -266,6 +267,14 @@ public class ServerConnectionTest {
     when(requestMessage.isSecureMode()).thenReturn(false);
     assertThatThrownBy(() -> serverConnection.setCredentials(requestMessage, -1))
         .isInstanceOf(AuthenticationFailedException.class);
+  }
+
+  @Test
+  public void getUniqueIdBytesShouldThrowCacheClosedException() throws Exception {
+    ServerConnection spy = spy(serverConnection);
+    doThrow(new CacheClosedException()).when(spy).getUniqueId(requestMessage, -1);
+    assertThatThrownBy(() -> spy.getUniqueIdBytes(requestMessage, -1))
+        .isInstanceOf(CacheClosedException.class);
   }
 
   @Test

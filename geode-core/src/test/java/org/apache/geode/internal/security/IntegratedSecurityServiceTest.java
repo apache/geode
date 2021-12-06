@@ -231,4 +231,13 @@ public class IntegratedSecurityServiceTest {
         .isInstanceOf(CacheClosedException.class)
         .hasMessageContaining("Cache is closed");
   }
+
+  @Test
+  public void loginShouldThrowCacheClosedExceptionIfSecurityManagerUnavailable() {
+    IntegratedSecurityService spy = spy(securityService);
+    doThrow(new UnavailableSecurityManagerException("test")).when(spy).getCurrentUser();
+    assertThatThrownBy(() -> spy.login(new Properties()))
+        .isInstanceOf(CacheClosedException.class)
+        .hasMessageContaining("Cache is closed");
+  }
 }
