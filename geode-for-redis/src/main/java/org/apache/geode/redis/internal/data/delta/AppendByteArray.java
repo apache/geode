@@ -16,20 +16,29 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
+
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class TimestampDeltaInfo implements DeltaInfo {
-  private final long timestamp;
+public class AppendByteArray implements DeltaInfo {
+  private final byte[] byteArray;
 
-  public TimestampDeltaInfo(long value) {
-    timestamp = value;
+  public AppendByteArray(byte[] value) {
+    byteArray = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.TIMESTAMP, out);
-    DataSerializer.writeLong(timestamp, out);
+    DataSerializer.writeEnum(APPEND_BYTE_ARRAY, out);
+    DataSerializer.writeByteArray(byteArray, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    redisData.applyAppendByteArrayDelta(readByteArray(in));
   }
 }

@@ -63,7 +63,7 @@ import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetLexRangeOptions;
 import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetRankRangeOptions;
 import org.apache.geode.redis.internal.commands.executor.sortedset.ZAddOptions;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
@@ -194,7 +194,7 @@ public class RedisSortedSetTest {
     long removed = sortedSet.zrem(region, key, membersToRemove);
 
     assertThat(removed).isEqualTo(2);
-    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemoveByteArrays.class));
   }
 
   @Test
@@ -583,7 +583,8 @@ public class RedisSortedSetTest {
     List<byte[]> result = sortedSet.zpopmin(region, key, count);
     assertThat(result).containsExactly("member1".getBytes(), "1".getBytes());
 
-    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    ArgumentCaptor<RemoveByteArrays> argumentCaptor = ArgumentCaptor.forClass(
+        RemoveByteArrays.class);
     verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getRemoves()).containsExactly("member1".getBytes());
     assertThat(rangeSortedSet.getSortedSetSize()).isEqualTo(originalSize - count);
@@ -601,7 +602,8 @@ public class RedisSortedSetTest {
     assertThat(result).containsExactlyInAnyOrder("member1".getBytes(), "1".getBytes(),
         "member2".getBytes(), "1.1".getBytes(), "member3".getBytes(), "1.2".getBytes());
 
-    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    ArgumentCaptor<RemoveByteArrays> argumentCaptor = ArgumentCaptor.forClass(
+        RemoveByteArrays.class);
     verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getRemoves()).containsExactlyInAnyOrder(
         "member1".getBytes(), "member2".getBytes(), "member3".getBytes());
@@ -617,7 +619,7 @@ public class RedisSortedSetTest {
     List<byte[]> result = sortedSet.zpopmin(region, key, 1);
     assertThat(result).containsExactly(member1.getBytes(), score1.getBytes());
 
-    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemoveByteArrays.class));
     verify(region).remove(key);
   }
 
@@ -647,7 +649,8 @@ public class RedisSortedSetTest {
     List<byte[]> result = sortedSet.zpopmax(region, key, count);
     assertThat(result).containsExactly("member12".getBytes(), "2.1".getBytes());
 
-    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    ArgumentCaptor<RemoveByteArrays> argumentCaptor = ArgumentCaptor.forClass(
+        RemoveByteArrays.class);
     verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getRemoves()).containsExactly("member12".getBytes());
     assertThat(rangeSortedSet.getSortedSetSize()).isEqualTo(originalSize - count);
@@ -665,7 +668,8 @@ public class RedisSortedSetTest {
     assertThat(result).containsExactlyInAnyOrder("member10".getBytes(), "1.9".getBytes(),
         "member11".getBytes(), "2".getBytes(), "member12".getBytes(), "2.1".getBytes());
 
-    ArgumentCaptor<RemsDeltaInfo> argumentCaptor = ArgumentCaptor.forClass(RemsDeltaInfo.class);
+    ArgumentCaptor<RemoveByteArrays> argumentCaptor = ArgumentCaptor.forClass(
+        RemoveByteArrays.class);
     verify(sortedSet).storeChanges(eq(region), eq(key), argumentCaptor.capture());
     assertThat(argumentCaptor.getValue().getRemoves()).containsExactlyInAnyOrder(
         "member10".getBytes(), "member11".getBytes(), "member12".getBytes());
@@ -681,7 +685,7 @@ public class RedisSortedSetTest {
     List<byte[]> result = sortedSet.zpopmax(region, key, 1);
     assertThat(result).containsExactly(member1.getBytes(), score1.getBytes());
 
-    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemsDeltaInfo.class));
+    verify(sortedSet).storeChanges(eq(region), eq(key), any(RemoveByteArrays.class));
     verify(region).remove(key);
   }
 

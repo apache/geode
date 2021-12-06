@@ -45,8 +45,8 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.data.delta.HAddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
@@ -114,19 +114,19 @@ public class RedisHash extends AbstractRedisData {
   }
 
   @Override
-  protected void applyHaddDelta(byte[] keyBytes, byte[] valueBytes) {
+  public void applyAddByteArrayPairDelta(byte[] keyBytes, byte[] valueBytes) {
     hashPut(keyBytes, valueBytes);
   }
 
   @Override
-  protected void applyRemoveDelta(byte[] bytes) {
+  public void applyRemoveByteArrayDelta(byte[] bytes) {
     hashRemove(bytes);
   }
 
   public int hset(Region<RedisKey, RedisData> region, RedisKey key,
       List<byte[]> fieldsToSet, boolean nx) {
     int fieldsAdded = 0;
-    HAddsDeltaInfo deltaInfo = null;
+    AddByteArrayPairs deltaInfo = null;
     Iterator<byte[]> iterator = fieldsToSet.iterator();
     while (iterator.hasNext()) {
       byte[] field = iterator.next();
@@ -143,10 +143,9 @@ public class RedisHash extends AbstractRedisData {
 
       if (addedOrUpdated) {
         if (deltaInfo == null) {
-          deltaInfo = new HAddsDeltaInfo(fieldsToSet.size());
+          deltaInfo = new AddByteArrayPairs(fieldsToSet.size());
         }
-        deltaInfo.add(field);
-        deltaInfo.add(value);
+        deltaInfo.add(field, value);
       }
 
       if (newField) {
@@ -160,11 +159,11 @@ public class RedisHash extends AbstractRedisData {
 
   public int hdel(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> fieldsToRemove) {
     int fieldsRemoved = 0;
-    RemsDeltaInfo deltaInfo = null;
+    RemoveByteArrays deltaInfo = null;
     for (byte[] fieldToRemove : fieldsToRemove) {
       if (hashRemove(fieldToRemove) != null) {
         if (deltaInfo == null) {
-          deltaInfo = new RemsDeltaInfo();
+          deltaInfo = new RemoveByteArrays();
         }
         deltaInfo.add(fieldToRemove);
         fieldsRemoved++;
@@ -262,7 +261,7 @@ public class RedisHash extends AbstractRedisData {
     if (oldValue == null) {
       byte[] newValue = Coder.longToBytes(increment);
       hashPut(field, newValue);
-      storeChanges(region, key, new HAddsDeltaInfo(field, newValue));
+      storeChanges(region, key, new AddByteArrayPairs(field, newValue));
       return newValue;
     }
 
@@ -281,7 +280,7 @@ public class RedisHash extends AbstractRedisData {
 
     byte[] modifiedValue = Coder.longToBytes(value);
     hashPut(field, modifiedValue);
-    storeChanges(region, key, new HAddsDeltaInfo(field, modifiedValue));
+    storeChanges(region, key, new AddByteArrayPairs(field, modifiedValue));
     return modifiedValue;
   }
 
@@ -291,7 +290,7 @@ public class RedisHash extends AbstractRedisData {
     if (oldValue == null) {
       byte[] newValue = Coder.bigDecimalToBytes(increment);
       hashPut(field, newValue);
-      storeChanges(region, key, new HAddsDeltaInfo(field, newValue));
+      storeChanges(region, key, new AddByteArrayPairs(field, newValue));
       return increment.stripTrailingZeros();
     }
 
@@ -311,7 +310,7 @@ public class RedisHash extends AbstractRedisData {
 
     byte[] modifiedValue = Coder.bigDecimalToBytes(value);
     hashPut(field, modifiedValue);
-    storeChanges(region, key, new HAddsDeltaInfo(field, modifiedValue));
+    storeChanges(region, key, new AddByteArrayPairs(field, modifiedValue));
     return value.stripTrailingZeros();
   }
 

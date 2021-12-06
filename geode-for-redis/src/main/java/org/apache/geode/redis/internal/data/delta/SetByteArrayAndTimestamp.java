@@ -15,24 +15,38 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.DataSerializer.readPrimitiveLong;
+
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
 /**
- * This delta info simply replaces a RedisData's current
- * byte array with another one.
+ * This delta info is used by RedisString set ops to set the bytes
+ * and the timestamp.
  */
-public class ReplaceBytesDeltaInfo implements DeltaInfo {
-  private final byte[] replaceBytes;
+public class SetByteArrayAndTimestamp implements DeltaInfo {
+  private final byte[] byteArray;
+  private final long timestamp;
 
-  public ReplaceBytesDeltaInfo(byte[] value) {
-    replaceBytes = value;
+  public SetByteArrayAndTimestamp(byte[] bytes, long timestamp) {
+    byteArray = bytes;
+    this.timestamp = timestamp;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.REPLACE_BYTES, out);
-    DataSerializer.writeByteArray(replaceBytes, out);
+    DataSerializer.writeEnum(DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP, out);
+    DataSerializer.writeByteArray(byteArray, out);
+    DataSerializer.writePrimitiveLong(timestamp, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    byte[] byteArray = readByteArray(in);
+    long timestamp = readPrimitiveLong(in);
+    redisData.applySetByteArrayAndTimestampDelta(byteArray, timestamp);
   }
 }

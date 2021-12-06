@@ -11,41 +11,34 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.HADDS;
+import static org.apache.geode.DataSerializer.readPrimitiveLong;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_TIMESTAMP;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class HAddsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+public class SetTimestamp implements DeltaInfo {
+  private final long timestamp;
 
-  public HAddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>(size);
-  }
-
-  public HAddsDeltaInfo(byte[] fieldName, byte[] fieldValue) {
-    this(2);
-    add(fieldName);
-    add(fieldValue);
-  }
-
-  public void add(byte[] delta) {
-    deltas.add(delta);
+  public SetTimestamp(long value) {
+    timestamp = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(HADDS, out);
-    InternalDataSerializer.writeArrayLength(deltas.size(), out);
-    for (byte[] bytes : deltas) {
-      DataSerializer.writeByteArray(bytes, out);
-    }
+    DataSerializer.writeEnum(SET_TIMESTAMP, out);
+    DataSerializer.writePrimitiveLong(timestamp, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    redisData.applySetTimestampDelta(readPrimitiveLong(in));
   }
 }

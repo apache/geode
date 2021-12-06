@@ -11,41 +11,37 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.ZADDS;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class ZAddsDeltaInfo implements DeltaInfo {
-  private final List<byte[]> deltas;
-  private final double[] scores;
+/**
+ * This delta info simply sets a RedisData's current
+ * byte array overwriting any existing one.
+ */
+public class SetByteArray implements DeltaInfo {
+  private final byte[] byteArray;
 
-  public ZAddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>(size);
-    this.scores = new double[size];
-  }
-
-  public void add(byte[] delta, double score) {
-    this.scores[deltas.size()] = score;
-    this.deltas.add(delta);
+  public SetByteArray(byte[] value) {
+    byteArray = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(ZADDS, out);
-    InternalDataSerializer.writeArrayLength(deltas.size(), out);
-    for (int i = 0; i < deltas.size(); i++) {
-      DataSerializer.writeByteArray(deltas.get(i), out);
-      DataSerializer.writePrimitiveDouble(scores[i], out);
-    }
+    DataSerializer.writeEnum(SET_BYTE_ARRAY, out);
+    DataSerializer.writeByteArray(byteArray, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    redisData.applySetByteArrayDelta(readByteArray(in));
   }
 }

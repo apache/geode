@@ -11,30 +11,46 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_RANGE;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class SetRangeDeltaInfo implements DeltaInfo {
-  private final int offset;
-  private final byte[] bytes;
+public class AddByteArrays implements DeltaInfo {
+  private final List<byte[]> byteArrays;
 
-  public SetRangeDeltaInfo(int offset, byte[] bytes) {
-    this.offset = offset;
-    this.bytes = bytes;
+  public AddByteArrays(List<byte[]> deltas) {
+    this.byteArrays = deltas;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(SET_RANGE, out);
-    InternalDataSerializer.writeArrayLength(offset, out);
-    DataSerializer.writeByteArray(bytes, out);
+    DataSerializer.writeEnum(ADD_BYTE_ARRAYS, out);
+    InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
+    for (byte[] bytes : byteArrays) {
+      DataSerializer.writeByteArray(bytes, out);
+    }
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    synchronized (redisData) {
+      int size = readArrayLength(in);
+      while (size > 0) {
+        redisData.applyAddByteArrayDelta(readByteArray(in));
+        size--;
+      }
+    }
   }
 }

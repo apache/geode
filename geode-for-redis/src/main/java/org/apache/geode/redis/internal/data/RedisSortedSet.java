@@ -56,8 +56,8 @@ import org.apache.geode.redis.internal.commands.executor.sortedset.ZAggregator;
 import org.apache.geode.redis.internal.commands.executor.sortedset.ZKeyWeight;
 import org.apache.geode.redis.internal.data.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.ZAddsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -95,12 +95,12 @@ public class RedisSortedSet extends AbstractRedisData {
   public RedisSortedSet() {}
 
   @Override
-  protected void applyRemoveDelta(byte[] bytes) {
+  public void applyRemoveByteArrayDelta(byte[] bytes) {
     memberRemove(bytes);
   }
 
   @Override
-  protected void applyZaddDelta(byte[] bytes, double score) {
+  public void applyAddByteArrayDoublePairDelta(byte[] bytes, double score) {
     memberAdd(bytes, score);
   }
 
@@ -201,7 +201,7 @@ public class RedisSortedSet extends AbstractRedisData {
       return zaddIncr(region, key, membersToAdd.get(0), scoresToAdd[0], options);
     }
 
-    ZAddsDeltaInfo deltaInfo = null;
+    AddByteArrayDoublePairs deltaInfo = null;
     int initialSize = scoreSet.size();
     int changesCount = 0;
 
@@ -222,7 +222,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
       if (!addResult.equals(MemberAddResult.NO_OP)) {
         if (deltaInfo == null) {
-          deltaInfo = new ZAddsDeltaInfo(membersToAdd.size());
+          deltaInfo = new AddByteArrayDoublePairs(membersToAdd.size());
         }
         deltaInfo.add(member, score);
       }
@@ -266,7 +266,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     if (!(memberAdd(member, score) == MemberAddResult.NO_OP)) {
-      ZAddsDeltaInfo deltaInfo = new ZAddsDeltaInfo(1);
+      AddByteArrayDoublePairs deltaInfo = new AddByteArrayDoublePairs(1);
       deltaInfo.add(member, score);
       storeChanges(region, key, deltaInfo);
     }
@@ -387,11 +387,11 @@ public class RedisSortedSet extends AbstractRedisData {
 
   public long zrem(Region<RedisKey, RedisData> region, RedisKey key, List<byte[]> membersToRemove) {
     int membersRemoved = 0;
-    RemsDeltaInfo deltaInfo = null;
+    RemoveByteArrays deltaInfo = null;
     for (byte[] memberToRemove : membersToRemove) {
       if (memberRemove(memberToRemove)) {
         if (deltaInfo == null) {
-          deltaInfo = new RemsDeltaInfo();
+          deltaInfo = new RemoveByteArrays();
         }
         deltaInfo.add(memberToRemove);
         membersRemoved++;
@@ -518,7 +518,7 @@ public class RedisSortedSet extends AbstractRedisData {
     }
 
     List<byte[]> result = new ArrayList<>();
-    RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
+    RemoveByteArrays deltaInfo = new RemoveByteArrays();
     while (scoresIterator.hasNext()) {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();
@@ -542,7 +542,7 @@ public class RedisSortedSet extends AbstractRedisData {
 
     int entriesRemoved = 0;
 
-    RemsDeltaInfo deltaInfo = new RemsDeltaInfo();
+    RemoveByteArrays deltaInfo = new RemoveByteArrays();
     while (scoresIterator.hasNext()) {
       AbstractOrderedSetEntry entry = scoresIterator.next();
       scoresIterator.remove();

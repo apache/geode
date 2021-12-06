@@ -16,8 +16,11 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVES;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,32 +29,43 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class RemsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+public class RemoveByteArrays implements DeltaInfo {
+  private final List<byte[]> byteArrays;
 
-  public RemsDeltaInfo() {
-    this.deltas = new ArrayList<>();
+  public RemoveByteArrays() {
+    this.byteArrays = new ArrayList<>();
   }
 
-  public RemsDeltaInfo(List<byte[]> deltas) {
-    this.deltas = new ArrayList<>(deltas);
+  public RemoveByteArrays(List<byte[]> deltas) {
+    this.byteArrays = deltas;
   }
 
   public void add(byte[] delta) {
-    deltas.add(delta);
+    byteArrays.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMOVES, out);
-    InternalDataSerializer.writeArrayLength(deltas.size(), out);
-    for (byte[] bytes : deltas) {
+    DataSerializer.writeEnum(REMOVE_BYTE_ARRAYS, out);
+    InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
+    for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);
+    }
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    synchronized (redisData) {
+      int size = readArrayLength(in);
+      while (size > 0) {
+        redisData.applyRemoveByteArrayDelta(readByteArray(in));
+        size--;
+      }
     }
   }
 
   @VisibleForTesting
   public List<byte[]> getRemoves() {
-    return deltas;
+    return byteArrays;
   }
 }

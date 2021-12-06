@@ -16,14 +16,17 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static org.apache.geode.DataSerializer.readByteArray;
 import static org.apache.geode.DataSerializer.readEnum;
-import static org.apache.geode.DataSerializer.readPrimitiveByte;
-import static org.apache.geode.DataSerializer.readPrimitiveDouble;
-import static org.apache.geode.DataSerializer.readPrimitiveInt;
-import static org.apache.geode.DataSerializer.readPrimitiveLong;
-import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_AT_OFFSET;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
@@ -45,9 +48,18 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
+import org.apache.geode.redis.internal.data.delta.AddByteArrays;
+import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
-import org.apache.geode.redis.internal.data.delta.TimestampDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
+import org.apache.geode.redis.internal.data.delta.SetByteArray;
+import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
+import org.apache.geode.redis.internal.data.delta.SetTimestamp;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class AbstractRedisData implements RedisData {
@@ -69,7 +81,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
     expirationTimestamp = value;
-    storeChanges(region, key, new TimestampDeltaInfo(value));
+    storeChanges(region, key, new SetTimestamp(value));
   }
 
   public void setExpirationTimestampNoDelta(long value) {
@@ -201,127 +213,77 @@ public abstract class AbstractRedisData implements RedisData {
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     DeltaType deltaType = readEnum(DeltaType.class, in);
     switch (deltaType) {
-      case TIMESTAMP:
-        expirationTimestamp = readPrimitiveLong(in);
+      case SET_TIMESTAMP:
+        SetTimestamp.deserializeFrom(in, this);
         break;
-      case ADDS:
-        fromAddsDelta(in);
+      case ADD_BYTE_ARRAYS:
+        AddByteArrays.deserializeFrom(in, this);
         break;
-      case REMOVES:
-        fromRemovesDelta(in);
+      case REMOVE_BYTE_ARRAYS:
+        RemoveByteArrays.deserializeFrom(in, this);
         break;
-      case APPEND:
-        fromAppendDelta(in);
+      case APPEND_BYTE_ARRAY:
+        AppendByteArray.deserializeFrom(in, this);
         break;
-      case HADDS:
-        fromHaddsDelta(in);
+      case ADD_BYTE_ARRAY_PAIRS:
+        AddByteArrayPairs.deserializeFrom(in, this);
         break;
-      case ZADDS:
-        fromZaddsDelta(in);
+      case ADD_BYTE_ARRAY_DOUBLE_PAIRS:
+        AddByteArrayDoublePairs.deserializeFrom(in, this);
         break;
-      case REPLACE_BYTES:
-        applyReplaceBytesDelta(readByteArray(in));
+      case SET_BYTE_ARRAY:
+        SetByteArray.deserializeFrom(in, this);
         break;
-      case REPLACE_BYTES_AND_TIMESTAMP:
-        fromReplaceBytesAndTimestampDelta(in);
+      case SET_BYTE_ARRAY_AND_TIMESTAMP:
+        SetByteArrayAndTimestamp.deserializeFrom(in, this);
         break;
-      case SET_RANGE:
-        fromSetRangeDelta(in);
+      case REPLACE_BYTE_ARRAY_AT_OFFSET:
+        ReplaceByteArrayAtOffset.deserializeFrom(in, this);
         break;
-      case SET_BIT:
-        applySetBitDelta(readArrayLength(in), readPrimitiveByte(in));
+      case REPLACE_BYTE_AT_OFFSET:
+        ReplaceByteAtOffset.deserializeFrom(in, this);
         break;
     }
   }
 
-  private void fromSetRangeDelta(DataInput in) throws IOException {
-    int offset = readArrayLength(in);
-    byte[] bytes = readByteArray(in);
-    applySetRangeDelta(offset, bytes);
+  public void applySetTimestampDelta(long timestamp) {
+    expirationTimestamp = timestamp;
   }
 
-  private void fromReplaceBytesAndTimestampDelta(DataInput in) throws IOException {
-    byte[] bytes = readByteArray(in);
-    long timestamp = readPrimitiveLong(in);
-    applyReplaceBytesAndTimestampDelta(bytes, timestamp);
+  public void applyAddByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS);
   }
 
-  private synchronized void fromZaddsDelta(DataInput in) throws IOException {
-    int size = readArrayLength(in);
-    while (size > 0) {
-      byte[] member = readByteArray(in);
-      double score = readPrimitiveDouble(in);
-      applyZaddDelta(member, score);
-      size--;
-    }
+  public void applyRemoveByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + REMOVE_BYTE_ARRAYS);
   }
 
-  private synchronized void fromHaddsDelta(DataInput in) throws IOException {
-    int size = readArrayLength(in);
-    while (size > 0) {
-      byte[] key = readByteArray(in);
-      byte[] value = readByteArray(in);
-      applyHaddDelta(key, value);
-      size -= 2;
-    }
+  public void applyAddByteArrayDoublePairDelta(byte[] bytes, double score) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAY_DOUBLE_PAIRS);
   }
 
-  private void fromAppendDelta(DataInput in) throws IOException {
-    int sequence = readPrimitiveInt(in);
-    byte[] byteArray = readByteArray(in);
-    applyAppendDelta(sequence, byteArray);
+  public void applyAddByteArrayPairDelta(byte[] keyBytes, byte[] valueBytes) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAY_PAIRS);
   }
 
-  private synchronized void fromRemovesDelta(DataInput in) throws IOException {
-    int size = readArrayLength(in);
-    while (size > 0) {
-      applyRemoveDelta(readByteArray(in));
-      size--;
-    }
+  public void applySetByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + SET_BYTE_ARRAY);
   }
 
-  private synchronized void fromAddsDelta(DataInput in) throws IOException {
-    int size = readArrayLength(in);
-    while (size > 0) {
-      applyAddDelta(readByteArray(in));
-      size--;
-    }
+  public void applySetByteArrayAndTimestampDelta(byte[] bytes, long timestamp) {
+    throw new IllegalStateException("unexpected " + SET_BYTE_ARRAY_AND_TIMESTAMP);
   }
 
-  protected void applyAddDelta(byte[] bytes) {
-    throw new IllegalStateException("unexpected ADDS DeltaInfo");
+  public void applyAppendByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + APPEND_BYTE_ARRAY);
   }
 
-  protected void applyRemoveDelta(byte[] bytes) {
-    throw new IllegalStateException("unexpected REMOVES DeltaInfo");
+  public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] bytes) {
+    throw new IllegalStateException("unexpected " + REPLACE_BYTE_ARRAY_AT_OFFSET);
   }
 
-  protected void applyZaddDelta(byte[] bytes, double score) {
-    throw new IllegalStateException("unexpected ZADDS DeltaInfo");
-  }
-
-  protected void applyHaddDelta(byte[] keyBytes, byte[] valueBytes) {
-    throw new IllegalStateException("unexpected HADDS DeltaInfo");
-  }
-
-  protected void applyReplaceBytesDelta(byte[] bytes) {
-    throw new IllegalStateException("unexpected REPLACE_BYTES DeltaInfo");
-  }
-
-  protected void applyReplaceBytesAndTimestampDelta(byte[] bytes, long timestamp) {
-    throw new IllegalStateException("unexpected REPLACE_BYTES_AND_TIMESTAMP DeltaInfo");
-  }
-
-  protected void applyAppendDelta(int sequence, byte[] bytes) {
-    throw new IllegalStateException("unexpected APPEND DeltaInfo");
-  }
-
-  protected void applySetRangeDelta(int offset, byte[] bytes) {
-    throw new IllegalStateException("unexpected SET_RANGE DeltaInfo");
-  }
-
-  protected void applySetBitDelta(int offset, byte bits) {
-    throw new IllegalStateException("unexpected SET_BIT DeltaInfo");
+  public void applyReplaceByteAtOffsetDelta(int offset, byte bits) {
+    throw new IllegalStateException("unexpected " + REPLACE_BYTE_AT_OFFSET);
   }
 
   @Override

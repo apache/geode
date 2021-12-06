@@ -168,7 +168,7 @@ public class RedisStringTest {
         .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
     RedisString stringOne = new RedisString(baseBytes);
 
-    stringOne.incrbyfloat(region, null, new BigDecimal(3.0));
+    stringOne.incrbyfloat(region, null, new BigDecimal("3.0"));
 
     verify(region).put(any(), any());
     assertThat(stringOne.hasDelta()).isFalse();
@@ -243,7 +243,7 @@ public class RedisStringTest {
         .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
     RedisString stringOne = new RedisString(baseBytes);
 
-    stringOne.incrbyfloat(region, null, new BigDecimal(3.0));
+    stringOne.incrbyfloat(region, null, new BigDecimal("3.0"));
 
     verify(region).put(any(), any());
     assertThat(stringOne.hasDelta()).isFalse();
