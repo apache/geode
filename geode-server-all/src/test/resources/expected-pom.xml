@@ -98,16 +98,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-memcached</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-old-client-support</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
       <artifactId>geode-rebalancer</artifactId>
       <scope>compile</scope>
     </dependency>
@@ -118,18 +108,33 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-tcp-server</artifactId>
-      <scope>compile</scope>
+      <artifactId>geode-memcached</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-unsafe</artifactId>
-      <scope>compile</scope>
+      <artifactId>geode-old-client-support</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-wan</artifactId>
-      <scope>compile</scope>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-tcp-server</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-unsafe</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-http-service</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.iq80.snappy</groupId>
@@ -139,11 +144,6 @@
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-http-service</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

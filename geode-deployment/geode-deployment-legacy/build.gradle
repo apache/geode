@@ -23,15 +23,23 @@ apply from: "${project.projectDir}/../../gradle/warnings.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
 
-  implementation(project(':geode-core'))
-  implementation(project(':geode-common'))
-  implementation('io.swagger:swagger-annotations')
 
+  compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-common'))
   compileOnly(project(':geode-logging'))
   compileOnly('com.fasterxml.jackson.core:jackson-databind')
+  compileOnly('io.swagger:swagger-annotations')
 
+
+  testCompileOnly('io.swagger:swagger-annotations')
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-common'))
   testImplementation(project(':geode-junit'))
 
+
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-common'))
   integrationTestImplementation(project(':geode-junit'))
 }

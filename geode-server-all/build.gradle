@@ -23,9 +23,16 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/publish-java.gradle"
 apply from: "${rootDir}/${scriptDir}/japicmp.gradle"
 
+configurations {
+  constrainedByBom
+  api.extendsFrom(constrainedByBom)
+  serverNonOptional.extendsFrom(constrainedByBom)
+  runtimeOnly.extendsFrom(serverNonOptional)
+}
 
 dependencies {
-  api(enforcedPlatform(project(':boms:geode-all-bom')))
+  constrainedByBom(enforcedPlatform(project(':boms:geode-all-bom')))
+
   api(project(':geode-common'))
   api(project(':geode-connectors'))
   api(project(':geode-core'))
@@ -36,18 +43,19 @@ dependencies {
   api(project(':geode-logging'))
   api(project(':geode-management'))
   api(project(':geode-lucene'))
-  api(project(':geode-memcached'))
-  api(project(':geode-old-client-support'))
   api(project(':geode-rebalancer'))
   api(project(':geode-serialization'))
-  api(project(':geode-tcp-server'))
-  api(project(':geode-unsafe'))
-  api(project(':geode-wan'))
+  runtimeOnly(project(':geode-memcached'))
+  runtimeOnly(project(':geode-old-client-support'))
+  runtimeOnly(project(':geode-wan'))
+  runtimeOnly(project(':geode-tcp-server'))
+  runtimeOnly(project(':geode-unsafe'))
 
 
-  runtimeOnly('org.iq80.snappy:snappy')
-  runtimeOnly('io.swagger:swagger-annotations')
-  runtimeOnly(project(':geode-http-service'))
+  // These were ext.optional in geode-core
+  serverNonOptional(project(':geode-http-service'))
+  serverNonOptional('org.iq80.snappy:snappy')
+  serverNonOptional('io.swagger:swagger-annotations')
 
 
   integrationTestImplementation(project(':geode-junit'))

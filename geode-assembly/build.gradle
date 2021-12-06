@@ -66,7 +66,6 @@ configurations {
 
   javadocOnly {
     setDescription('Projects that must be included in the JavaDocs.')
-    extendsFrom geodeDependenciesJar
   }
 }
 
@@ -154,11 +153,12 @@ dependencies {
     transitive false
   }
 
-  javadocOnly project(':extensions:geode-modules')
-  javadocOnly project(':extensions:geode-modules-session')
-  javadocOnly project(':extensions:geode-modules-tomcat7')
-  javadocOnly project(':extensions:geode-modules-tomcat9')
-  javadocOnly project(':extensions:geode-modules-tomcat8')
+  javadocOnly(project(':geode-server-all'))
+  javadocOnly(project(':extensions:geode-modules'))
+  javadocOnly(project(':extensions:geode-modules-session'))
+  javadocOnly(project(':extensions:geode-modules-tomcat7'))
+  javadocOnly(project(':extensions:geode-modules-tomcat9'))
+  javadocOnly(project(':extensions:geode-modules-tomcat8'))
 
   testImplementation(project(':geode-core'))
   testImplementation(project(':geode-gfsh'))
@@ -328,9 +328,12 @@ def getDependencyProjectsFor(String configurationName) {
       (it as Project).configurations.api.dependencies.collect {
         projs += it.dependencyProject
       }
+      (it as Project).configurations.runtimeOnly.dependencies.collect {
+        projs += it.dependencyProject
+      }
     }
     projs
-  }.flatten()
+  }.flatten().unique()
   return rval
 }
 

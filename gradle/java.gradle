@@ -58,58 +58,93 @@ gradle.taskGraph.whenReady({ graph ->
   }
 })
 
+Collection<String> getConfigurationNamesFor(Project proj, String configName) {
+  def configList = new HashSet<String>()
+  def configFromName = proj.configurations.getByName(configName)
+  configList.addAll(configFromName.extendsFrom.collectMany {
+    getConfigurationNamesFor(proj, it.name).flatten().unique()
+  })
+  configList.add(configName)
+  return configList
+}
+
+Collection<Configuration> getConfigurationsFor(Project proj, String configName) {
+  def configNames = getConfigurationNamesFor(proj, configName)
+  return configNames.collect { proj.configurations.getByName(it) }
+}
+
 // apply default manifest
 gradle.taskGraph.whenReady({ graph ->
   tasks.withType(Jar).each { jar ->
 
     def projectDependencies = []
-    def runtimeList = new HashSet<String>()
+    def runtimeSet = new HashSet<String>()
     def allProjectDeps = []
 
-    def confList = ['api', 'implementation', 'runtimeOnly']
-    confList.each { conf ->
+    def runtimeConfigNameList = getConfigurationNamesFor(project, 'runtimeClasspath')
+    runtimeConfigNameList.each { conf ->
       allProjectDeps.addAll(project.configurations.getByName(conf).getDependencies())
     }
 
-    // Iterate over runtime classpath dependencies and separate project dependencies from library
-    // dependencies.
-    allProjectDeps.each { dependency ->
-      if ( dependency instanceof ProjectDependency ) {
-        def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
-        def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
-        if (foundAttribute == null) {
-          projectDependencies.add(dependency)
-        } else if ('platform'.equals(foundAttribute)) {
-          projectDependencies.add(dependency)
-        }
-      } else {
-        project.configurations.runtimeClasspath.files(dependency).each { depJar ->
-          runtimeList.add(depJar.name)
+    jar.doFirst {
+      // Iterate over runtime classpath dependencies and separate project dependencies from library
+      // dependencies.
+      allProjectDeps.each { dependency ->
+        if ( dependency instanceof ProjectDependency ) {
+          def platformAttribute = Attribute.of("org.gradle.category", org.gradle.api.attributes.Category.class)
+          def foundAttribute = dependency.attributes.getAttribute(platformAttribute)
+          if (foundAttribute == null) {
+            projectDependencies.add(dependency)
+          } else if ('platform'.equals(foundAttribute)) {
+            projectDependencies.add(dependency)
+          }
+        } else {
+          project.configurations.runtimeClasspath.files(dependency).each { depJar ->
+            runtimeSet.add(depJar.name)
+          }
         }
       }
-    }
 
-    // Iterate over project (parent) dependencies and remove its runtime library dependencies from
-    // the current project's runtime library dependencies.
-    // Also removes all parent project's runtime project dependencies from the current project.
-    // This returns a unique set of parent project and library dependencies that are not found
-    // within it's parent's project dependencies.
-    projectDependencies.clone().each { ProjectDependency projectDependency ->
-      Project geodeProject = projectDependency.getDependencyProject()
-      def collect = geodeProject.configurations.runtimeClasspath.collect { it.name }
-      runtimeList.removeAll(collect)
-//      projectDependencies.removeAll(collect.collect {it-".jar"})
-    }
+      // Iterate over project (parent) dependencies and remove its runtime library dependencies from
+      // the current project's runtime library dependencies.
+      // Also removes all parent project's runtime project dependencies from the current project.
+      // This returns a unique set of parent project and library dependencies that are not found
+      // within it's parent's project dependencies.
+      def upstreamDeps = []
+      projectDependencies.clone().each { ProjectDependency projectDependency ->
+        Project geodeProject = projectDependency.getDependencyProject()
 
-    jar.doFirst {
-      runtimeList.addAll(manifest.attributes.get('Class-Path') ?: [])
+        Map depMap = new HashMap<Object,Object>()
+        def runtimeConfigList = getConfigurationsFor(geodeProject, 'runtimeClasspath')
+        runtimeConfigList.each { eachConfig ->
+          depMap.putAll(geodeProject.configurations.getByName(eachConfig.name).dependencies.collectEntries {eachDep ->
+            [eachDep.name, eachDep]
+          }.findAll { !(it.value?.hasProperty('optional') && it.value.optional)})
+        }
+
+        def incoming = geodeProject.configurations.runtimeClasspath.getIncoming()
+        def resolutionResult = incoming.getResolutionResult()
+        def components = resolutionResult.allComponents
+
+        upstreamDeps.addAll(components.findAll {componentResult ->
+          depMap.containsKey(componentResult.moduleVersion.id.name)
+        }.collect {it.moduleVersion.id.name + '-' + it.moduleVersion.version + '.jar'})
+      }
+      runtimeSet.removeAll(upstreamDeps)
+
+      def upstreamClasspath = manifest.attributes.get('Class-Path')
+      if (upstreamClasspath) {
+        runtimeSet.addAll(upstreamClasspath.split(' '))
+      }
+//      runtimeSet.removeAll(upstreamDeps)
+
       manifest {
         attributes.put("Manifest-Version", "1.0")
         attributes.put("Created-By", System.getProperty("user.name"))
         attributes.put("Title", rootProject.name)
         attributes.put("Version", archiveVersion)
         attributes.put("Organization", productOrg)
-        attributes.put("Class-Path", runtimeList.join(' '))
+        attributes.put("Class-Path", runtimeSet.join(' '))
         attributes.put("Dependent-Modules", projectDependencies.collect({ "${it.name}-${it.version}" }).join(' '))
         attributes.put("Module-Name", project.name)
       }
