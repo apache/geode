@@ -296,7 +296,7 @@ public class AutoConnectionSourceImplJUnitTest {
       ArrayList<ServerLocation> locators = new ArrayList<>();
       locators.add(new ServerLocation(InetAddress.getLocalHost().getHostName(), secondPort));
       handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
-      Thread.sleep(1500);
+      await().until(() -> !source.getOnlineLocators().isEmpty());
       try {
         issueStopRequest(port);
       } catch (ConnectException ignore) {
