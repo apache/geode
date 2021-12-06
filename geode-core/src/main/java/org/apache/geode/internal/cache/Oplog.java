@@ -7663,16 +7663,13 @@ public class Oplog implements CompactableOplog, Flushable {
     final AtomicReference<ConcurrentMap<Long, DiskRegionInfo>> regionMap =
         new AtomicReference<>(new ConcurrentHashMap<>());
 
-    public synchronized void close() {
+    public void close() {
       regionMap.set(null);
     }
 
-    public synchronized ConcurrentMap<Long, DiskRegionInfo> get() {
-      if (regionMap.get() == null) {
-        return new ConcurrentHashMap<>();
-      }
-      return regionMap.get();
+    public ConcurrentMap<Long, DiskRegionInfo> get() {
+      ConcurrentMap<Long, DiskRegionInfo> regionConcurrentMap = regionMap.get();
+      return regionConcurrentMap != null ? regionConcurrentMap : new ConcurrentHashMap<>();
     }
   }
-
 }
