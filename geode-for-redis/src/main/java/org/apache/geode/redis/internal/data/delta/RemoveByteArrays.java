@@ -55,12 +55,10 @@ public class RemoveByteArrays implements DeltaInfo {
   }
 
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    synchronized (redisData) {
-      int size = readArrayLength(in);
-      while (size > 0) {
-        redisData.applyRemoveByteArrayDelta(readByteArray(in));
-        size--;
-      }
+    int size = readArrayLength(in);
+    while (size > 0) {
+      redisData.applyRemoveByteArrayDelta(readByteArray(in));
+      size--;
     }
   }
 

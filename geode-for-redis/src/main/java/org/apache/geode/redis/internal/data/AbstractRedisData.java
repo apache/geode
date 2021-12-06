@@ -36,8 +36,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryExistsException;
@@ -47,7 +45,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
@@ -66,7 +63,6 @@ public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
       new BucketRegion.PrimaryMoveReadLockAcquired();
 
-  private static final Logger logger = LogService.getLogger();
   public static final long NO_EXPIRATION = -1L;
 
   /**
@@ -217,19 +213,27 @@ public abstract class AbstractRedisData implements RedisData {
         SetTimestamp.deserializeFrom(in, this);
         break;
       case ADD_BYTE_ARRAYS:
-        AddByteArrays.deserializeFrom(in, this);
+        synchronized (this) {
+          AddByteArrays.deserializeFrom(in, this);
+        }
         break;
       case REMOVE_BYTE_ARRAYS:
-        RemoveByteArrays.deserializeFrom(in, this);
+        synchronized (this) {
+          RemoveByteArrays.deserializeFrom(in, this);
+        }
         break;
       case APPEND_BYTE_ARRAY:
         AppendByteArray.deserializeFrom(in, this);
         break;
       case ADD_BYTE_ARRAY_PAIRS:
-        AddByteArrayPairs.deserializeFrom(in, this);
+        synchronized (this) {
+          AddByteArrayPairs.deserializeFrom(in, this);
+        }
         break;
       case ADD_BYTE_ARRAY_DOUBLE_PAIRS:
-        AddByteArrayDoublePairs.deserializeFrom(in, this);
+        synchronized (this) {
+          AddByteArrayDoublePairs.deserializeFrom(in, this);
+        }
         break;
       case SET_BYTE_ARRAY:
         SetByteArray.deserializeFrom(in, this);

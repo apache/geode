@@ -55,15 +55,12 @@ public class AddByteArrayDoublePairs implements DeltaInfo {
   }
 
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    synchronized (redisData) {
-      int size = readArrayLength(in);
-      while (size > 0) {
-        byte[] byteArray = readByteArray(in);
-        double doubleValue = readPrimitiveDouble(in);
-        redisData.applyAddByteArrayDoublePairDelta(byteArray, doubleValue);
-        size--;
-      }
+    int size = readArrayLength(in);
+    while (size > 0) {
+      byte[] byteArray = readByteArray(in);
+      double doubleValue = readPrimitiveDouble(in);
+      redisData.applyAddByteArrayDoublePairDelta(byteArray, doubleValue);
+      size--;
     }
-
   }
 }
