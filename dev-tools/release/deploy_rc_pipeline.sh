@@ -380,7 +380,7 @@ jobs:
             - -ecx
             - |
               apt update -q
-              apt install -qq -y --no-install-recommends unzip git gpg wget
+              apt install -qq -y --no-install-recommends unzip git gpg gpg-agent wget
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
@@ -452,7 +452,7 @@ jobs:
             - -ecx
             - |
               apt update -q
-              apt install -qq -y --no-install-recommends git gpg
+              apt install -qq -y --no-install-recommends git gpg gpg-agent
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
