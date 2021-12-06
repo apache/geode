@@ -262,4 +262,18 @@ public class ServerConnectionTest {
     assertThatThrownBy(() -> spy.getUniqueIdBytes(requestMessage, -1))
         .isInstanceOf(CacheClosedException.class);
   }
+
+  @Test
+  public void doNormalMessageShouldNotProcessMessageWhenTerminated() {
+    ServerConnection spy = spy(serverConnection);
+    ServerConnectionCollection serverConnections = mock(ServerConnectionCollection.class);
+    spy.setServerConnectionCollection(serverConnections);
+    when(serverConnections.incrementConnectionsProcessing()).thenReturn(true);
+
+    doReturn(true).when(spy).isTerminated();
+
+    spy.doNormalMessage();
+    assertThat(spy.getProcessMessages()).isFalse();
+    verify(spy, never()).resumeThreadMonitoring();
+  }
 }

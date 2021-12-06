@@ -349,6 +349,12 @@ public class ServerConnection implements Runnable {
     return executeFunctionOnLocalNodeOnly.get();
   }
 
+  @VisibleForTesting
+  void setServerConnectionCollection(
+      ServerConnectionCollection serverConnectionCollection) {
+    this.serverConnectionCollection = serverConnectionCollection;
+  }
+
   private boolean verifyClientConnection() {
     synchronized (handshakeMonitor) {
       if (handshake == null) {
@@ -816,6 +822,12 @@ public class ServerConnection implements Runnable {
       return;
     }
 
+    if (isTerminated()) {
+      // Client is being terminated, don't try to process message.
+      processMessages = false;
+      return;
+    }
+
     ThreadState threadState = null;
     resumeThreadMonitoring();
     try {
@@ -930,7 +942,8 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private void resumeThreadMonitoring() {
+  @VisibleForTesting
+  void resumeThreadMonitoring() {
     if (threadMonitorExecutor != null) {
       threadMonitorExecutor.resumeMonitoring();
     }
@@ -966,6 +979,7 @@ public class ServerConnection implements Runnable {
       }
       terminated = true;
     }
+
     setNotProcessingMessage();
     boolean clientDeparted = false;
     boolean cleanupStats = false;
