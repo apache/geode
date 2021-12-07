@@ -159,7 +159,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
   @Test
   public void opsPerformedOverLastSecond_ShouldUpdate_givenOperationsOccurring() {
-    int NUMBER_SECONDS_TO_RUN = 5;
+    int NUMBER_SECONDS_TO_RUN = 10;
     AtomicInteger numberOfCommandsExecuted = new AtomicInteger();
 
     await().during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN)).until(() -> {
@@ -170,8 +170,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
     double reportedCommandsPerLastSecond =
         Double.parseDouble(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND));
 
-    // + 1 for INFO we just executed.
-    long expected = (numberOfCommandsExecuted.get() + 1) / NUMBER_SECONDS_TO_RUN;
+    long expected = numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN;
 
     assertThat(reportedCommandsPerLastSecond)
         .isCloseTo(expected, Percentage.withPercentage(10));
