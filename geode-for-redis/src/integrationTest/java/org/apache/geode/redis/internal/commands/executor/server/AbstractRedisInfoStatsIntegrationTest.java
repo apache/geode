@@ -21,7 +21,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import org.assertj.core.data.Offset;
@@ -202,31 +201,29 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   public void networkKiloBytesReadOverLastSecond_shouldBeCloseToBytesReadOverLastSecond() {
 
     double REASONABLE_SOUNDING_OFFSET = .8;
-    int NUMBER_SECONDS_TO_RUN = 2;
+    int NUMBER_SECONDS_TO_RUN = 5;
     String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
     int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
     AtomicInteger totalBytesSent = new AtomicInteger();
-    AtomicReference<Double> actual_kbs = new AtomicReference<>((double) 0);
 
     await().during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN)).until(() -> {
       jedis.set("key", "value");
       totalBytesSent.addAndGet(BYTES_SENT_PER_COMMAND);
-      actual_kbs.set(Double.valueOf(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)));
       return true;
     });
+    double actual_kbs = Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND));
+    double expected_kbs = ((double) totalBytesSent.get() / NUMBER_SECONDS_TO_RUN) / 1000;
 
-    double expectedBytesReceived = totalBytesSent.get() / NUMBER_SECONDS_TO_RUN;
-    double expected_kbs = expectedBytesReceived / 1000;
-
-    assertThat(actual_kbs.get()).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
+    assertThat(actual_kbs).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
 
     // if time passes w/o operations
-    await()
-        .during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
+    await().during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
         .until(() -> true);
 
-    assertThat(Double.valueOf(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND))).isEqualTo(0);
-
+    // Kb/s should eventually drop to 0 or at least very close since just executing the info
+    // command may result in the value increasing.
+    assertThat(Double.valueOf(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)))
+        .isCloseTo(0.0, Offset.offset(0.1));
   }
 
   // ------------------- Clients Section -------------------------- //
