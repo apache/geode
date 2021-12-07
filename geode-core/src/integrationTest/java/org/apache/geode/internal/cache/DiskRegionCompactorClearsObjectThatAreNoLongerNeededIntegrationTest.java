@@ -208,6 +208,187 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
         () -> assertThat(areAllUnnecessaryObjectClearedForOnlyDrfOplog(diskStore)).isTrue());
   }
 
+  /**
+   * Verifies that the region is recovered from Oplog's (including .drf only oplog's) when region is
+   * closed and then recreated again in order to trigger recovery.
+   * This test case covers the following scenario:
+   *
+   * 1. Create several Oplog files (.crf, .drf and .krf) by executing put operations
+   * 2. Execute destroy operation for every fifth entry, and each time add new entry. This will
+   * result with few additional Oplog files. Compaction threshold will not be reached.
+   * 3. Destroy all operations created in step 2. This will trigger compaction of files that
+   * were created in step 2. Compaction will delete only .crf and .krf files, but will not
+   * delete .drf files because they contain destroy operations for events located in
+   * .crf files crated in step 1. Check that unnecessary objects are cleared for the
+   * Oplog that represents orphaned .drf file (no accompanying .crf and .krf file)
+   * 4. At this step there will be Oplog objects from step 1. that will contain all files (.crf,
+   * .drf and .krf), and Oplog objects from step 2. that will contain only .drf files.
+   * In order to test recovery, close the cache and then recreate it again.
+   * 5. Check that region is recovered correctly. Check that only events that have never been
+   * destroyed are recovered from Oplog files.
+   **/
+  @Test
+  public void testCompactorRegionMapDeletedForOnlyDrfOplogAfterCompactionAndRecoveryAfterRegionClose()
+      throws InterruptedException {
+
+    final int ENTRY_RANGE_1 = 300;
+    final int ENTRY_RANGE_2 = 600;
+
+    createDiskStore(30, 10000);
+    Region<Object, Object> region = createRegion();
+    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+
+    // Create several oplog files (.crf and .drf) by executing put operations in defined range
+    for (int i = 0; i < ENTRY_RANGE_1; i++) {
+      region.put(i, new byte[100]);
+    }
+    await().untilAsserted(() -> assertThat(getCurrentNumberOfOplogs(diskStore)).isEqualTo(5));
+
+    // Destroy every fifth entry from previous range and each time put new entry in new range.
+    // This will create additional oplog files (.crf and .drf), but compaction will not be triggered
+    // as threshold will not be reached. Oplog files (.drf) created in this step will contain
+    // destroys for events that are located in .crf files from previous range.
+    TombstoneService tombstoneService = ((InternalCache) cache).getTombstoneService();
+    int key = 0;
+    while (key < ENTRY_RANGE_1) {
+      region.destroy(key);
+      // It is necessary to force tombstone expiration, otherwise event won't be stored in .drf file
+      // and total live count won't be decreased
+      await().untilAsserted(
+          () -> assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue());
+      region.put(key + ENTRY_RANGE_1, new byte[300]);
+      key = key + 5;
+    }
+    await().untilAsserted(() -> assertThat(getCurrentNumberOfOplogs(diskStore)).isEqualTo(7));
+
+    // Destroy all events created in previous step in order to trigger automatic compaction.
+    // This will trigger compaction for the files that were created in previous step.
+    // Compaction will delete .crf and .krf file, but will leave .drf file because it contains
+    // destroy operation for the events that are located in some older .crf files.
+    key = ENTRY_RANGE_1;
+    while (key < ENTRY_RANGE_2) {
+      region.destroy(key);
+      assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue();
+      key = key + 5;
+    }
+
+    // wait for all Oplog's to be compacted
+    await().untilAsserted(() -> assertThat(isOplogToBeCompactedAvailable(diskStore)).isFalse());
+
+    // close the region and then recreate it to trigger recovery from oplog files
+    region.close();
+    region = createRegion();
+
+    // every fifth element is destroyed from range ENTRY_RANGE_1, so it is expected to have
+    // ENTRY_RANGE_1 - (ENTRY_RANGE_1/5) of elements, also just in case check that every
+    // fifth get operation return null
+    int objectCount = 0;
+    for (int i = 0; i < ENTRY_RANGE_1; i++) {
+      Object object = region.get(i);
+      if (i % 5 == 0) {
+        assertThat(object).isNull();
+      }
+      if (object != null) {
+        objectCount++;
+      }
+    }
+    assertThat(objectCount).isEqualTo(ENTRY_RANGE_1 - (ENTRY_RANGE_1 / 5));
+
+    // check that unnecessary data is cleared from Oplog's
+    await().untilAsserted(
+        () -> assertThat(areAllUnnecessaryObjectClearedForOnlyDrfOplog(diskStore)).isTrue());
+  }
+
+  /**
+   * Verifies that the region is recovered from Oplog's (including .drf only oplog's) when cache is
+   * closed and then recreated again in order to trigger recovery.
+   * This test case covers the following scenario:
+   *
+   * 1. Create several Oplog files (.crf, .drf and .krf) by executing put operations
+   * 2. Execute destroy operation for every fifth entry, and each time add new entry. This will
+   * result with few additional Oplog files. Compaction threshold will not be reached.
+   * 3. Destroy all operations created in step 2. This will trigger compaction of files that
+   * were created in step 2. Compaction will delete only .crf and .krf files, but will not
+   * delete .drf files because they contain destroy operations for events located in
+   * .crf files created in step 1.
+   * 4. At this step there will be Oplog objects from step 1. that will contain all files (.crf,
+   * .drf and .krf), and Oplog objects from step 2. that will contain only .drf files.
+   * In order to test recovery, close the cache and then recreate it again.
+   * 5. Check that region is recovered correctly. Check that only events that have never been
+   * destroyed are recovered from Oplog files.
+   **/
+  @Test
+  public void testCompactorRegionMapDeletedForOnlyDrfOplogAfterCompactionAndRecoveryAfterCacheClosed()
+      throws InterruptedException {
+
+    final int ENTRY_RANGE_1 = 300;
+    final int ENTRY_RANGE_2 = 600;
+
+    createDiskStore(30, 10000);
+    Region<Object, Object> region = createRegion();
+    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+
+    // Create several oplog files (.crf and .drf) by executing put operations in defined range
+    for (int i = 0; i < ENTRY_RANGE_1; i++) {
+      region.put(i, new byte[100]);
+    }
+    await().untilAsserted(() -> assertThat(getCurrentNumberOfOplogs(diskStore)).isEqualTo(5));
+
+    // Destroy every fifth entry from previous range and each time put new entry in new range.
+    // This will create additional oplog files (.crf and .drf), but compaction will not be triggered
+    // as threshold will not be reached. Oplog files (.drf) created in this step will contain
+    // destroys for events that are located in .crf files from previous range.
+    TombstoneService tombstoneService = ((InternalCache) cache).getTombstoneService();
+    int key = 0;
+    while (key < ENTRY_RANGE_1) {
+      region.destroy(key);
+      // It is necessary to force tombstone expiration, otherwise event won't be stored in .drf file
+      // and total live count won't be decreased
+      await().untilAsserted(
+          () -> assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue());
+      region.put(key + ENTRY_RANGE_1, new byte[300]);
+      key = key + 5;
+    }
+    await().untilAsserted(() -> assertThat(getCurrentNumberOfOplogs(diskStore)).isEqualTo(7));
+
+    // Destroy all events created in previous step in order to trigger automatic compaction.
+    // This will trigger compaction for the files that were created in previous step.
+    // Compaction will delete .crf and .krf file, but will leave .drf file because it contains
+    // destroy operation for the events that are located in some older .crf files.
+    key = ENTRY_RANGE_1;
+    while (key < ENTRY_RANGE_2) {
+      region.destroy(key);
+      assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue();
+      key = key + 5;
+    }
+
+    // wait for all Oplog's to be compacted
+    await().untilAsserted(() -> assertThat(isOplogToBeCompactedAvailable(diskStore)).isFalse());
+
+    // close the cache and then recreate it again to trigger recovery from oplog files
+    cache.close();
+    cache = new CacheFactory(config).create();
+    createDiskStore(30, 10000);
+    region = createRegion();
+
+    // every fifth element is destroyed from range ENTRY_RANGE_1, so it is expected to have
+    // ENTRY_RANGE_1 - (ENTRY_RANGE_1/5) of elements, also just in case check that every
+    // fifth get operation return null
+    int objectCount = 0;
+    for (int i = 0; i < ENTRY_RANGE_1; i++) {
+      Object object = region.get(i);
+      if (i % 5 == 0) {
+        assertThat(object).isNull();
+      }
+      if (object != null) {
+        objectCount++;
+      }
+    }
+    assertThat(objectCount).isEqualTo(ENTRY_RANGE_1 - (ENTRY_RANGE_1 / 5));
+
+    await().untilAsserted(
+        () -> assertThat(areAllUnnecessaryObjectClearedForOnlyDrfOplog(diskStore)).isTrue());
+  }
 
   boolean areAllUnnecessaryObjectClearedForOnlyDrfOplog(DiskStoreImpl diskStore) {
     boolean isClear = true;
@@ -236,6 +417,15 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
     regionFactory.setDiskStoreName(diskStoreName);
     regionFactory.setDiskSynchronous(true);
     return regionFactory.create(regionName);
+  }
+
+  Region<Object, Object> createRegion2() {
+    RegionFactory<Object, Object> regionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+    regionFactory.setDiskStoreName(diskStoreName);
+    regionFactory.setDiskSynchronous(true);
+    return regionFactory.create("newRegion");
   }
 
   boolean isOplogToBeCompactedAvailable(DiskStoreImpl ds) {
