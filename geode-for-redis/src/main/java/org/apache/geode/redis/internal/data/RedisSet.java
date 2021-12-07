@@ -44,9 +44,8 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
-import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.DeltaInfo;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.AddByteArrays;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
@@ -157,7 +156,7 @@ public class RedisSet extends AbstractRedisData {
       }
     }
     if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemsDeltaInfo(popped));
+      storeChanges(region, key, new RemoveByteArrays(popped));
     }
     return popped;
   }
@@ -216,16 +215,13 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @Override
-  protected void applyDelta(DeltaInfo deltaInfo) {
-    if (deltaInfo instanceof AddsDeltaInfo) {
-      for (byte[] deltaMember : ((AddsDeltaInfo) deltaInfo).getAdds()) {
-        membersAdd(deltaMember);
-      }
-    } else {
-      for (byte[] deltaMember : ((RemsDeltaInfo) deltaInfo).getRemoves()) {
-        membersRemove(deltaMember);
-      }
-    }
+  public void applyAddByteArrayDelta(byte[] bytes) {
+    membersAdd(bytes);
+  }
+
+  @Override
+  public void applyRemoveByteArrayDelta(byte[] bytes) {
+    membersRemove(bytes);
   }
 
   /**
@@ -280,7 +276,7 @@ public class RedisSet extends AbstractRedisData {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      storeChanges(region, key, new AddsDeltaInfo(membersToAdd));
+      storeChanges(region, key, new AddByteArrays(membersToAdd));
     }
     return membersAdded;
   }
@@ -296,7 +292,7 @@ public class RedisSet extends AbstractRedisData {
     membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
     int membersRemoved = membersToRemove.size();
     if (membersRemoved != 0) {
-      storeChanges(region, key, new RemsDeltaInfo(membersToRemove));
+      storeChanges(region, key, new RemoveByteArrays(membersToRemove));
     }
     return membersRemoved;
   }

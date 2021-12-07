@@ -15,10 +15,12 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NONE;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -89,6 +91,9 @@ public class BitOpExecutor implements CommandExecutor {
     AND, OR, XOR
   }
 
+  @Immutable
+  private static final SetOptions bitOpSetOptions = new SetOptions(NONE, 0, true);
+
   private static int doBitOp(RegionProvider regionProvider, String operation, RedisKey key,
       int selfIndex,
       List<byte[]> sourceValues) {
@@ -123,7 +128,7 @@ public class BitOpExecutor implements CommandExecutor {
     if (newValue.length == 0) {
       regionProvider.getDataRegion().remove(key);
     } else {
-      SetExecutor.setRedisString(regionProvider, key, newValue);
+      SetExecutor.setRedisString(regionProvider, key, newValue, bitOpSetOptions);
     }
     return newValue.length;
   }

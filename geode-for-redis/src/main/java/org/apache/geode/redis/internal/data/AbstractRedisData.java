@@ -16,7 +16,17 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.DataSerializer.readEnum;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_AT_OFFSET;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 
 import java.io.ByteArrayOutputStream;
@@ -24,10 +34,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Objects;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -38,21 +45,24 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.redis.internal.data.delta.AddsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.AppendDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
+import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
+import org.apache.geode.redis.internal.data.delta.AddByteArrays;
+import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
-import org.apache.geode.redis.internal.data.delta.RemsDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.TimestampDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.ZAddsDeltaInfo;
+import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
+import org.apache.geode.redis.internal.data.delta.SetByteArray;
+import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
+import org.apache.geode.redis.internal.data.delta.SetTimestamp;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class AbstractRedisData implements RedisData {
   private static final BucketRegion.PrimaryMoveReadLockAcquired primaryMoveReadLockAcquired =
       new BucketRegion.PrimaryMoveReadLockAcquired();
 
-  private static final Logger logger = LogService.getLogger();
   public static final long NO_EXPIRATION = -1L;
 
   /**
@@ -67,7 +77,7 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
     expirationTimestamp = value;
-    storeChanges(region, key, new TimestampDeltaInfo(value));
+    storeChanges(region, key, new SetTimestamp(value));
   }
 
   public void setExpirationTimestampNoDelta(long value) {
@@ -197,32 +207,87 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    DeltaType deltaType = DataSerializer.readEnum(DeltaType.class, in);
+    DeltaType deltaType = readEnum(DeltaType.class, in);
     switch (deltaType) {
-      case TIMESTAMP:
-        expirationTimestamp = DataSerializer.readLong(in);
+      case SET_TIMESTAMP:
+        SetTimestamp.deserializeFrom(in, this);
         break;
-      case ADDS:
-        applyDelta(new AddsDeltaInfo(readArrayList(in)));
-        break;
-      case REMS:
-        applyDelta(new RemsDeltaInfo(readArrayList(in)));
-        break;
-      case APPEND:
-        int sequence = DataSerializer.readPrimitiveInt(in);
-        byte[] byteArray = DataSerializer.readByteArray(in);
-        applyDelta(new AppendDeltaInfo(byteArray, sequence));
-        break;
-      case ZADDS:
-        int numMembers = DataSerializer.readPrimitiveInt(in);
-        ZAddsDeltaInfo delta = new ZAddsDeltaInfo(numMembers);
-        for (int i = 0; i < numMembers; i++) {
-          byte[] member = DataSerializer.readByteArray(in);
-          double score = DataSerializer.readPrimitiveDouble(in);
-          delta.add(member, score);
+      case ADD_BYTE_ARRAYS:
+        synchronized (this) {
+          AddByteArrays.deserializeFrom(in, this);
         }
-        applyDelta(delta);
+        break;
+      case REMOVE_BYTE_ARRAYS:
+        synchronized (this) {
+          RemoveByteArrays.deserializeFrom(in, this);
+        }
+        break;
+      case APPEND_BYTE_ARRAY:
+        AppendByteArray.deserializeFrom(in, this);
+        break;
+      case ADD_BYTE_ARRAY_PAIRS:
+        synchronized (this) {
+          AddByteArrayPairs.deserializeFrom(in, this);
+        }
+        break;
+      case ADD_BYTE_ARRAY_DOUBLE_PAIRS:
+        synchronized (this) {
+          AddByteArrayDoublePairs.deserializeFrom(in, this);
+        }
+        break;
+      case SET_BYTE_ARRAY:
+        SetByteArray.deserializeFrom(in, this);
+        break;
+      case SET_BYTE_ARRAY_AND_TIMESTAMP:
+        SetByteArrayAndTimestamp.deserializeFrom(in, this);
+        break;
+      case REPLACE_BYTE_ARRAY_AT_OFFSET:
+        ReplaceByteArrayAtOffset.deserializeFrom(in, this);
+        break;
+      case REPLACE_BYTE_AT_OFFSET:
+        ReplaceByteAtOffset.deserializeFrom(in, this);
+        break;
     }
+  }
+
+  public void applySetTimestampDelta(long timestamp) {
+    expirationTimestamp = timestamp;
+  }
+
+  public void applyAddByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS);
+  }
+
+  public void applyRemoveByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + REMOVE_BYTE_ARRAYS);
+  }
+
+  public void applyAddByteArrayDoublePairDelta(byte[] bytes, double score) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAY_DOUBLE_PAIRS);
+  }
+
+  public void applyAddByteArrayPairDelta(byte[] keyBytes, byte[] valueBytes) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAY_PAIRS);
+  }
+
+  public void applySetByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + SET_BYTE_ARRAY);
+  }
+
+  public void applySetByteArrayAndTimestampDelta(byte[] bytes, long timestamp) {
+    throw new IllegalStateException("unexpected " + SET_BYTE_ARRAY_AND_TIMESTAMP);
+  }
+
+  public void applyAppendByteArrayDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + APPEND_BYTE_ARRAY);
+  }
+
+  public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] bytes) {
+    throw new IllegalStateException("unexpected " + REPLACE_BYTE_ARRAY_AT_OFFSET);
+  }
+
+  public void applyReplaceByteAtOffsetDelta(int offset, byte bits) {
+    throw new IllegalStateException("unexpected " + REPLACE_BYTE_AT_OFFSET);
   }
 
   @Override
@@ -245,14 +310,6 @@ public abstract class AbstractRedisData implements RedisData {
     return restore(data);
   }
 
-  private <T> ArrayList<T> readArrayList(DataInput in) throws IOException {
-    try {
-      return DataSerializer.readArrayList(in);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   protected void storeChanges(Region<RedisKey, RedisData> region, RedisKey key,
       DeltaInfo deltaInfo) {
     if (deltaInfo != null) {
@@ -268,8 +325,6 @@ public abstract class AbstractRedisData implements RedisData {
       }
     }
   }
-
-  protected abstract void applyDelta(DeltaInfo deltaInfo);
 
   protected abstract boolean removeFromRegion();
 

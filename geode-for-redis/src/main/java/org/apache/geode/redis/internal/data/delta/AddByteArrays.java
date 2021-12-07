@@ -16,36 +16,39 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.ADDS;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class AddsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+public class AddByteArrays implements DeltaInfo {
+  private final List<byte[]> byteArrays;
 
-  public AddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>(size);
-  }
-
-  public AddsDeltaInfo(List<byte[]> deltas) {
-    this.deltas = new ArrayList<>(deltas);
-  }
-
-  public void add(byte[] delta) {
-    deltas.add(delta);
+  public AddByteArrays(List<byte[]> deltas) {
+    this.byteArrays = deltas;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(ADDS, out);
-    DataSerializer.writeArrayList(deltas, out);
+    DataSerializer.writeEnum(ADD_BYTE_ARRAYS, out);
+    InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
+    for (byte[] bytes : byteArrays) {
+      DataSerializer.writeByteArray(bytes, out);
+    }
   }
 
-  public List<byte[]> getAdds() {
-    return deltas;
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    int size = readArrayLength(in);
+    while (size > 0) {
+      redisData.applyAddByteArrayDelta(readByteArray(in));
+      size--;
+    }
   }
 }
