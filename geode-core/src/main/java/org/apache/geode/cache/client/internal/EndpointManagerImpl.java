@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
+  private static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   private volatile Map<ServerLocationAndMemberId, Endpoint> endpointMap = Collections.emptyMap();
   private final Map<ServerLocationAndMemberId, ConnectionStats> statMap = new HashMap<>();
@@ -110,8 +113,10 @@ public class EndpointManagerImpl implements EndpointManager {
       }
       poolStats.setServerCount(endpointMap.size());
     }
+
     if (removedEndpoint) {
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
+      ServerLocation location = endpoint.getLocation();
       if (pool != null && pool.getMultiuserAuthentication()) {
         int size = 0;
         ArrayList<ProxyCache> proxyCaches = pool.getProxyCacheList();
@@ -119,7 +124,7 @@ public class EndpointManagerImpl implements EndpointManager {
           for (ProxyCache proxyCache : proxyCaches) {
             try {
               Long userId =
-                  proxyCache.getUserAttributes().getServerToId().remove(endpoint.getLocation());
+                  proxyCache.getUserAttributes().getServerToId().remove(location);
               if (userId != null) {
                 ++size;
               }
@@ -128,24 +133,24 @@ public class EndpointManagerImpl implements EndpointManager {
               // expected.
             }
           }
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "EndpointManagerImpl.removeEndpoint() Removed server {} from {} user's ProxyCache",
-                endpoint.getLocation(), size);
-          }
+          secureLogger.debug(
+              "EndpointManagerImpl.removeEndpoint() Removed server {} from {} user's ProxyCache",
+              location, size);
         }
         UserAttributes ua = UserAttributes.userAttributes.get();
         if (ua != null) {
-          Long userId = ua.getServerToId().remove(endpoint.getLocation());
-          if (userId != null && logger.isDebugEnabled()) {
-            logger.debug(
+          Long userId = ua.getServerToId().remove(location);
+          if (userId != null) {
+            secureLogger.debug(
                 "EndpointManagerImpl.removeEndpoint() Removed server {} from thread local variable",
-                endpoint.getLocation());
+                location);
           }
         }
       } else if (pool != null && !pool.getMultiuserAuthentication()) {
-        endpoint.getLocation().setUserId(-1);
+        secureLogger.debug("set the userId of {} to -1", location);
+        location.setUserId(-1);
       }
+
       if (crashed) {
         listener.endpointCrashed(endpoint);
       } else {
