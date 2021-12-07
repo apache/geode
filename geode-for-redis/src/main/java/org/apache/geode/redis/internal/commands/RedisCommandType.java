@@ -240,6 +240,7 @@ public enum RedisCommandType {
   /************* Sets *****************/
 
   SADD(new SAddExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  SCARD(new SCardExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
   SDIFF(new SDiffExecutor(), SUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SMEMBERS(new SMembersExecutor(), SUPPORTED,
@@ -341,7 +342,6 @@ public enum RedisCommandType {
 
   /**************** Sets *****************/
 
-  SCARD(new SCardExecutor(), UNSUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
   SDIFFSTORE(new SDiffStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
   SINTER(new SInterExecutor(), UNSUPPORTED,

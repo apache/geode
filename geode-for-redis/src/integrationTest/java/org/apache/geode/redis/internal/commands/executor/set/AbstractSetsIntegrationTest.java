@@ -15,18 +15,12 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
@@ -61,26 +55,6 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   @Test
   public void saddErrors_givenTooFewArguments() {
     assertAtLeastNArgs(jedis, Protocol.Command.SADD, 2);
-  }
-
-  @Test
-  public void scardErrors_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.SCARD, 1);
-  }
-
-  @Test
-  public void testSAddSCard() {
-    int elements = 10;
-    String key = generator.generate('x');
-    String[] members = generateStrings(elements, 'x');
-
-    Long response = jedis.sadd(key, members);
-    assertThat(response).isEqualTo(members.length);
-
-    Long response2 = jedis.sadd(key, members);
-    assertThat(response2).isEqualTo(0L);
-
-    assertThat(jedis.scard(key)).isEqualTo(members.length);
   }
 
   @Test
@@ -122,66 +96,6 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
     Set<byte[]> result = jedis.smembers("key".getBytes());
 
     assertThat(result).containsExactly(blob);
-  }
-
-  @Test
-  public void testConcurrentSAddSCard_sameKeyPerClient()
-      throws InterruptedException, ExecutionException {
-    int elements = 1000;
-
-    String key = generator.generate('x');
-    String[] members1 = generateStrings(elements, 'y');
-    String[] members2 = generateStrings(elements, 'z');
-
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfSAdds(key, members1, jedis);
-    Callable<Integer> callable2 = () -> doABunchOfSAdds(key, members2, jedis);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
-
-    assertThat(future1.get()).isEqualTo(members1.length);
-    assertThat(future2.get()).isEqualTo(members2.length);
-
-    assertThat(jedis.scard(key)).isEqualTo(members1.length + members2.length);
-
-    pool.shutdown();
-  }
-
-  @Test
-  public void testConcurrentSAddSCard_differentKeyPerClient()
-      throws InterruptedException, ExecutionException {
-    int elements = 1000;
-    String key1 = generator.generate('x');
-    String key2 = generator.generate('y');
-
-    String[] strings = generateStrings(elements, 'y');
-
-    ExecutorService pool = Executors.newFixedThreadPool(2);
-    Callable<Integer> callable1 = () -> doABunchOfSAdds(key1, strings, jedis);
-    Callable<Integer> callable2 = () -> doABunchOfSAdds(key2, strings, jedis);
-    Future<Integer> future1 = pool.submit(callable1);
-    Future<Integer> future2 = pool.submit(callable2);
-
-    assertThat(future1.get()).isEqualTo(strings.length);
-    assertThat(future2.get()).isEqualTo(strings.length);
-
-    assertThat(jedis.scard(key1)).isEqualTo(strings.length);
-    assertThat(jedis.scard(key2)).isEqualTo(strings.length);
-
-    pool.shutdown();
-  }
-
-  private int doABunchOfSAdds(String key, String[] strings, JedisCluster jedis) {
-    int successes = 0;
-
-    for (int i = 0; i < strings.length; i++) {
-      Long reply = jedis.sadd(key, strings[i]);
-      if (reply == 1L) {
-        successes++;
-        Thread.yield();
-      }
-    }
-    return successes;
   }
 
   @Test
