@@ -64,6 +64,7 @@ import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
 import org.apache.geode.redis.internal.statistics.RedisStats;
+import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
@@ -198,6 +199,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
               + rootCause.getMessage());
       channelInactive(ctx);
       return null;
+    } else if (rootCause instanceof AuthenticationExpiredException) {
+      return RedisResponse.error("Authentication expired: " + rootCause.getMessage());
     } else {
       if (logger.isErrorEnabled()) {
         logger.error("GeodeRedisServer-Unexpected error handler for {}", ctx.channel(), rootCause);
