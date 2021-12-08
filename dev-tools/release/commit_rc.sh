@@ -138,7 +138,8 @@ echo "============================================================"
 cd ${GEODE}/../..
 echo "1. In a separate terminal window, ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
 echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc until all green"
-echo "3. Send the following email to announce the RC:"
+echo "3. If you haven't already, add a ${VERSION} section to https://cwiki.apache.org/confluence/display/GEODE/Release+Notes"
+echo "4. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"
 ${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN}
