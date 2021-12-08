@@ -114,6 +114,82 @@ public class RedisStringTest {
   }
 
   @Test
+  public void setStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'0', '1'};
+    final byte[] bytesToSet = {'2', '3'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.set(region, null, bytesToSet, null);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void incrStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.incr(region, null);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void incrbyStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.incrby(region, null, 3);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void incrbyfloatStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.incrbyfloat(region, null, new BigDecimal("3.0"));
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void setbitStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'0', '1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(new byte[] {'0', '1'}, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.setbit(region, null, 1, 0, (byte) 6);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
   public void confirmSerializationIsStable() throws IOException, ClassNotFoundException {
     RedisString stringOne = new RedisString(new byte[] {0, 1, 2, 3});
     int expirationTimestamp = 1000;
@@ -126,6 +202,51 @@ public class RedisStringTest {
     assertThat(stringTwo.getExpirationTimestamp())
         .isEqualTo(stringOne.getExpirationTimestamp())
         .isEqualTo(expirationTimestamp);
+  }
+
+  @Test
+  public void decrStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.decr(region, null);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void decrbyStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.decrby(region, null, 3);
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void decrbyfloatStoresStableDelta() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final byte[] baseBytes = {'1'};
+
+    when(region.put(any(), any()))
+        .thenAnswer(invocation -> validateDeltaSerialization(baseBytes, invocation));
+    RedisString stringOne = new RedisString(baseBytes);
+
+    stringOne.incrbyfloat(region, null, new BigDecimal("3.0"));
+
+    verify(region).put(any(), any());
+    assertThat(stringOne.hasDelta()).isFalse();
   }
 
   @Test

@@ -16,36 +16,29 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REMS;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class RemsDeltaInfo implements DeltaInfo {
-  private final ArrayList<byte[]> deltas;
+public class AppendByteArray implements DeltaInfo {
+  private final byte[] byteArray;
 
-  public RemsDeltaInfo() {
-    this.deltas = new ArrayList<>();
-  }
-
-  public RemsDeltaInfo(List<byte[]> deltas) {
-    this.deltas = new ArrayList<>(deltas);
-  }
-
-  public void add(byte[] delta) {
-    deltas.add(delta);
+  public AppendByteArray(byte[] value) {
+    byteArray = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMS, out);
-    DataSerializer.writeArrayList(deltas, out);
+    DataSerializer.writeEnum(APPEND_BYTE_ARRAY, out);
+    DataSerializer.writeByteArray(byteArray, out);
   }
 
-  public List<byte[]> getRemoves() {
-    return deltas;
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    redisData.applyAppendByteArrayDelta(readByteArray(in));
   }
 }

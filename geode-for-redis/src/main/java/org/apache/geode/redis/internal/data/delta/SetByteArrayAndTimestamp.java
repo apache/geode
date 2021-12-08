@@ -11,25 +11,42 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.DataSerializer.readPrimitiveLong;
+
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class TimestampDeltaInfo implements DeltaInfo {
+/**
+ * This delta info is used by RedisString set ops to set the bytes
+ * and the timestamp.
+ */
+public class SetByteArrayAndTimestamp implements DeltaInfo {
+  private final byte[] byteArray;
   private final long timestamp;
 
-  public TimestampDeltaInfo(long value) {
-    timestamp = value;
+  public SetByteArrayAndTimestamp(byte[] bytes, long timestamp) {
+    byteArray = bytes;
+    this.timestamp = timestamp;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.TIMESTAMP, out);
-    DataSerializer.writeLong(timestamp, out);
+    DataSerializer.writeEnum(DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP, out);
+    DataSerializer.writeByteArray(byteArray, out);
+    DataSerializer.writePrimitiveLong(timestamp, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    byte[] byteArray = readByteArray(in);
+    long timestamp = readPrimitiveLong(in);
+    redisData.applySetByteArrayAndTimestampDelta(byteArray, timestamp);
   }
 }

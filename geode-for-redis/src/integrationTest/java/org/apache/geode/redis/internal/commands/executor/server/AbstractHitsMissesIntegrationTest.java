@@ -374,8 +374,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testScard() {
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.scard(k));
+  }
+
+  @Test
   public void testSdiff() {
     runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sdiff(k1, k2));
+  }
+
+  @Test
+  public void testSismember() {
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
   }
 
   @Test
@@ -519,18 +529,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void testSismember() {
-    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
-  }
-
-  @Test
   public void testSrandmember() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.srandmember(k));
-  }
-
-  @Test
-  public void testScard() {
-    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.scard(k));
   }
 
   @Test

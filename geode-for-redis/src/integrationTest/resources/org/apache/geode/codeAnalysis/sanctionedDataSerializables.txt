@@ -23,8 +23,8 @@ toData,15
 fromData,86
 
 org/apache/geode/redis/internal/data/RedisString,2
-toData,23
-fromData,23
+toData,15
+fromData,15
 
 org/apache/geode/redis/internal/pubsub/Publisher$PublishRequest,2
 fromData,55

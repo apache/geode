@@ -11,48 +11,38 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.redis.internal.data.delta.DeltaType.ZADDS;
+import static org.apache.geode.DataSerializer.readPrimitiveByte;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_AT_OFFSET;
 
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class ZAddsDeltaInfo implements DeltaInfo {
-  private final List<byte[]> deltas;
-  private final double[] scores;
+public class ReplaceByteAtOffset implements DeltaInfo {
+  private final int offset;
+  private final byte byteValue;
 
-  public ZAddsDeltaInfo(int size) {
-    this.deltas = new ArrayList<>(size);
-    this.scores = new double[size];
-  }
-
-  public void add(byte[] delta, double score) {
-    this.scores[deltas.size()] = score;
-    this.deltas.add(delta);
+  public ReplaceByteAtOffset(int offset, byte bits) {
+    this.offset = offset;
+    this.byteValue = bits;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(ZADDS, out);
-    DataSerializer.writePrimitiveInt(deltas.size(), out);
-    for (int i = 0; i < deltas.size(); i++) {
-      DataSerializer.writeByteArray(deltas.get(i), out);
-      DataSerializer.writePrimitiveDouble(scores[i], out);
-    }
+    DataSerializer.writeEnum(REPLACE_BYTE_AT_OFFSET, out);
+    InternalDataSerializer.writeArrayLength(offset, out);
+    DataSerializer.writePrimitiveByte(byteValue, out);
   }
 
-  public List<byte[]> getZAddMembers() {
-    return deltas;
-  }
-
-  public double[] getZAddScores() {
-    return scores;
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    redisData.applyReplaceByteAtOffsetDelta(readArrayLength(in), readPrimitiveByte(in));
   }
 }

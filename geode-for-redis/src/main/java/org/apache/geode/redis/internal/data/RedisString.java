@@ -24,17 +24,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.commands.executor.string.SetOptions;
-import org.apache.geode.redis.internal.data.delta.AppendDeltaInfo;
-import org.apache.geode.redis.internal.data.delta.DeltaInfo;
+import org.apache.geode.redis.internal.data.delta.AppendByteArray;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
+import org.apache.geode.redis.internal.data.delta.SetByteArray;
+import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
@@ -43,7 +46,6 @@ public class RedisString extends AbstractRedisData {
   // An array containing the number of set bits for each value from 0x00 to 0xff
   private static final byte[] bitCountTable = getBitCountTable();
 
-  private int appendSequence;
   private byte[] value;
 
   public RedisString(byte[] value) {
@@ -57,14 +59,28 @@ public class RedisString extends AbstractRedisData {
     return value;
   }
 
+  @VisibleForTesting
   public void set(byte[] value) {
     this.value = value;
   }
 
+  public void set(Region<RedisKey, RedisData> region, RedisKey key, byte[] newValue,
+      SetOptions options) {
+    value = newValue;
+    handleSetExpiration(options);
+    if (options != null && options.inTransaction()) {
+      // In a tx, delta requires cloning-enabled which is very expensive.
+      // So just do a put instead of storeChanges which uses delta.
+      region.put(key, this);
+    } else {
+      storeChanges(region, key,
+          new SetByteArrayAndTimestamp(newValue, getExpirationTimestamp()));
+    }
+  }
+
   public int append(Region<RedisKey, RedisData> region, RedisKey key, byte[] appendValue) {
     valueAppend(appendValue);
-    appendSequence++;
-    storeChanges(region, key, new AppendDeltaInfo(appendValue, appendSequence));
+    storeChanges(region, key, new AppendByteArray(appendValue));
     return value.length;
   }
 
@@ -76,8 +92,7 @@ public class RedisString extends AbstractRedisData {
     }
     longValue++;
     value = Coder.longToBytes(longValue);
-    // numeric strings are short so no need to use delta
-    region.put(key, this);
+    storeChanges(region, key, new SetByteArray(value));
     return value;
   }
 
@@ -89,8 +104,7 @@ public class RedisString extends AbstractRedisData {
     }
     longValue += increment;
     value = Coder.longToBytes(longValue);
-    // numeric strings are short so no need to use delta
-    region.put(key, this);
+    storeChanges(region, key, new SetByteArray(value));
     return value;
   }
 
@@ -100,9 +114,7 @@ public class RedisString extends AbstractRedisData {
     BigDecimal bigDecimalValue = parseValueAsBigDecimal();
     bigDecimalValue = bigDecimalValue.add(increment);
     value = Coder.bigDecimalToBytes(bigDecimalValue);
-
-    // numeric strings are short so no need to use delta
-    region.put(key, this);
+    storeChanges(region, key, new SetByteArray(value));
     return bigDecimalValue;
   }
 
@@ -113,8 +125,7 @@ public class RedisString extends AbstractRedisData {
     }
     longValue -= decrement;
     value = Coder.longToBytes(longValue);
-    // numeric strings are short so no need to use delta
-    region.put(key, this);
+    storeChanges(region, key, new SetByteArray(value));
     return value;
   }
 
@@ -126,8 +137,7 @@ public class RedisString extends AbstractRedisData {
     }
     longValue--;
     value = Coder.longToBytes(longValue);
-    // numeric strings are short so no need to use delta
-    region.put(key, this);
+    storeChanges(region, key, new SetByteArray(value));
     return value;
   }
 
@@ -169,21 +179,28 @@ public class RedisString extends AbstractRedisData {
 
   public int setrange(Region<RedisKey, RedisData> region, RedisKey key, int offset,
       byte[] valueToAdd) {
-    if (valueToAdd.length == 0) {
-      return value.length;
+    if (valueToAdd.length > 0) {
+      applyReplaceByteArrayAtOffsetDelta(offset, valueToAdd);
+      storeChanges(region, key, new ReplaceByteArrayAtOffset(offset, valueToAdd));
     }
+    return value.length;
+  }
+
+  @Override
+  public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] valueToAdd) {
     int totalLength = offset + valueToAdd.length;
-    byte[] bytes = value;
-    if (totalLength < bytes.length) {
-      System.arraycopy(valueToAdd, 0, bytes, offset, valueToAdd.length);
+    if (totalLength < value.length) {
+      System.arraycopy(valueToAdd, 0, value, offset, valueToAdd.length);
     } else {
-      byte[] newBytes = Arrays.copyOf(bytes, totalLength);
+      byte[] newBytes = Arrays.copyOf(value, totalLength);
       System.arraycopy(valueToAdd, 0, newBytes, offset, valueToAdd.length);
       value = newBytes;
     }
-    // TODO add delta support
-    region.put(key, this);
-    return value.length;
+  }
+
+  @Override
+  public void applyReplaceByteAtOffsetDelta(int offset, byte bits) {
+    applyReplaceByteArrayAtOffsetDelta(offset, new byte[] {bits});
   }
 
   private int getBoundedStartIndex(long index, int size) {
@@ -315,26 +332,30 @@ public class RedisString extends AbstractRedisData {
 
   public int setbit(Region<RedisKey, RedisData> region, RedisKey key,
       int bitValue, int byteIndex, byte bitIndex) {
+    final int bitIndexMask = 0x80 >> bitIndex;
     int returnBit;
-    byte[] bytes = value;
-    if (byteIndex < bytes.length) {
-      returnBit = (bytes[byteIndex] & (0x80 >> bitIndex)) >> (7 - bitIndex);
+    byte newByte;
+    if (byteIndex < value.length) {
+      final byte oldByte = value[byteIndex];
+      returnBit = (oldByte & bitIndexMask) >> (7 - bitIndex);
+      if (bitValue == 1) {
+        newByte = (byte) (oldByte | bitIndexMask);
+      } else {
+        newByte = (byte) (oldByte & ~bitIndexMask);
+      }
     } else {
       returnBit = 0;
-    }
-
-    if (byteIndex < bytes.length) {
-      bytes[byteIndex] = bitValue == 1 ? (byte) (bytes[byteIndex] | (0x80 >> bitIndex))
-          : (byte) (bytes[byteIndex] & ~(0x80 >> bitIndex));
-    } else {
       byte[] newBytes = new byte[byteIndex + 1];
-      System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-      newBytes[byteIndex] = bitValue == 1 ? (byte) (newBytes[byteIndex] | (0x80 >> bitIndex))
-          : (byte) (newBytes[byteIndex] & ~(0x80 >> bitIndex));
+      System.arraycopy(value, 0, newBytes, 0, value.length);
       value = newBytes;
+      if (bitValue == 1) {
+        newByte = (byte) bitIndexMask;
+      } else {
+        newByte = 0;
+      }
     }
-    // TODO: add delta support
-    region.put(key, this);
+    value[byteIndex] = newByte;
+    storeChanges(region, key, new ReplaceByteAtOffset(byteIndex, newByte));
     return returnBit;
   }
 
@@ -347,7 +368,6 @@ public class RedisString extends AbstractRedisData {
   @Override
   public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writePrimitiveInt(appendSequence, out);
     DataSerializer.writeByteArray(value, out);
   }
 
@@ -355,7 +375,6 @@ public class RedisString extends AbstractRedisData {
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    appendSequence = DataSerializer.readPrimitiveInt(in);
     value = DataSerializer.readByteArray(in);
 
   }
@@ -366,23 +385,22 @@ public class RedisString extends AbstractRedisData {
   }
 
   @Override
-  protected void applyDelta(DeltaInfo deltaInfo) {
-    AppendDeltaInfo appendDeltaInfo = (AppendDeltaInfo) deltaInfo;
-    byte[] appendBytes = appendDeltaInfo.getBytes();
+  public void applySetByteArrayDelta(byte[] bytes) {
+    value = bytes;
+  }
 
+  @Override
+  public void applySetByteArrayAndTimestampDelta(byte[] bytes, long timestamp) {
+    value = bytes;
+    setExpirationTimestampNoDelta(timestamp);
+  }
+
+  @Override
+  public void applyAppendByteArrayDelta(byte[] appendBytes) {
     if (value == null) {
       value = appendBytes;
-      appendSequence = appendDeltaInfo.getSequence();
     } else {
-      if (appendDeltaInfo.getSequence() == appendSequence + 1) {
-        valueAppend(appendBytes);
-        appendSequence = appendDeltaInfo.getSequence();
-      } else if (appendDeltaInfo.getSequence() != appendSequence) {
-        // Exceptional case should never happen
-        throw new RuntimeException(
-            "APPEND sequence mismatch - delta sequence number: "
-                + appendDeltaInfo.getSequence() + " current sequence number: " + appendSequence);
-      }
+      valueAppend(appendBytes);
     }
   }
 
@@ -395,9 +413,7 @@ public class RedisString extends AbstractRedisData {
     // No need to copy "value" since we are locked and will be calling set which replaces
     // "value" with a new instance.
     byte[] result = value;
-    set(newValue);
-    persistNoDelta();
-    region.put(key, this);
+    set(region, key, newValue, null);
     return result;
   }
 
@@ -423,7 +439,9 @@ public class RedisString extends AbstractRedisData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), value);
+    int result = super.hashCode();
+    result = 31 * result + Arrays.hashCode(value);
+    return result;
   }
 
   public byte[] getValue() {
@@ -458,11 +476,6 @@ public class RedisString extends AbstractRedisData {
     System.arraycopy(value, 0, combined, 0, initialLength);
     System.arraycopy(bytes, 0, combined, initialLength, additionalLength);
     value = combined;
-  }
-
-  @SuppressWarnings("unused")
-  protected void valueSet(byte[] bytes) {
-    value = bytes;
   }
 
   @Override

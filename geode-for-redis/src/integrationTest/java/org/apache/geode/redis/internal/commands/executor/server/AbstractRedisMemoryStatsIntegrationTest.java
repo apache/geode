@@ -15,9 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,24 +68,24 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void usedMemory_shouldIncrease_givenAdditionalValuesAdded() {
-    Map<String, String> addedData = makeHashMap(100_000, "field", "value");
-
     long initialUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
+    long finalUsedMemory = 0;
 
-    jedis.hset(EXISTING_HASH_KEY, addedData);
+    for (int i = 0; i < 1_000_000; i++) {
+      jedis.set("key-" + i, "some kinda long value that just wastes a bunch of memory - " + i);
 
-    long finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
-    assertThat(finalUsedMemory).isGreaterThan(initialUsedMemory);
-  }
-
-
-  // ------------------- Helper Methods ----------------------------- //
-  private Map<String, String> makeHashMap(int hashSize, String baseFieldName,
-      String baseValueName) {
-    Map<String, String> map = new HashMap<>();
-    for (int i = 0; i < hashSize; i++) {
-      map.put(baseFieldName + i, baseValueName + i);
+      // Check every 50,000 entries to see if we've increased in memory.
+      if (i % 50_000 == 0) {
+        finalUsedMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(USED_MEMORY));
+        if (finalUsedMemory > initialUsedMemory) {
+          return;
+        }
+      }
     }
-    return map;
+
+    fail(String.format(
+        "Memory did not increase. Expected final size to be greater than initial size - %d > %d",
+        finalUsedMemory, initialUsedMemory));
   }
+
 }

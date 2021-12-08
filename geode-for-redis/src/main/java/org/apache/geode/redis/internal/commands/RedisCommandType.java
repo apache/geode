@@ -240,8 +240,10 @@ public enum RedisCommandType {
   /************* Sets *****************/
 
   SADD(new SAddExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  SCARD(new SCardExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
   SDIFF(new SDiffExecutor(), SUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
+  SISMEMBER(new SIsMemberExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
   SMEMBERS(new SMembersExecutor(), SUPPORTED,
       new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
   SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
@@ -341,14 +343,12 @@ public enum RedisCommandType {
 
   /**************** Sets *****************/
 
-  SCARD(new SCardExecutor(), UNSUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
   SDIFFSTORE(new SDiffStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
   SINTER(new SInterExecutor(), UNSUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
   SINTERSTORE(new SInterStoreExecutor(), UNSUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
-  SISMEMBER(new SIsMemberExecutor(), UNSUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
   SMOVE(new SMoveExecutor(), UNSUPPORTED, new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
   SPOP(new SPopExecutor(), UNSUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),

@@ -15,10 +15,11 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashSet;
-import java.util.Set;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,19 +28,16 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
-import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final ThreePhraseGenerator generator = new ThreePhraseGenerator();
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String setKey = "{user1}setkey";
+  private static final String[] setMembers = {"one", "two", "three", "four", "five"};
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -49,42 +47,64 @@ public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrati
   }
 
   @Test
-  public void errors_givenWrongNumberOfArguments() {
+  public void sismemberWrongNumberOfArguments_returnsError() {
     assertExactNumberOfArgs(jedis, Protocol.Command.SISMEMBER, 2);
   }
 
   @Test
-  public void testSMembersSIsMember() {
-    int elements = 10;
-    String key = generator.generate('x');
-    String[] strings = generateStrings(elements, 'y');
-    jedis.sadd(key, strings);
+  public void sismemberValidKeyValidMember_returnTrue() {
+    jedis.sadd(setKey, setMembers);
 
-    for (String entry : strings) {
-      assertThat(jedis.sismember(key, entry)).isTrue();
+    for (String member : setMembers) {
+      assertThat(jedis.sismember(setKey, member)).isTrue();
     }
   }
 
   @Test
-  public void testSIsMemberWithNonexistentKey_returnsFalse() {
+  public void sismemberValidKeyNonExistingMember_returnFalse() {
+    jedis.sadd(setKey, setMembers);
+    assertThat(jedis.sismember(setKey, "nonExistentMember")).isFalse();
+  }
+
+  @Test
+  public void sismemberNonExistingKeyNonExistingMember_returnFalse() {
     assertThat(jedis.sismember("nonExistentKey", "nonExistentMember")).isFalse();
   }
 
   @Test
-  public void testSIsMemberWithNonexistentMember_returnsFalse() {
-    String key = "key";
+  public void sismemberMemberInAnotherSet_returnFalse() {
+    String member = "elephant";
+    jedis.sadd("diffSet", member);
+    jedis.sadd(setKey, setMembers);
 
-    jedis.sadd("key", "member1", "member2");
-    assertThat(jedis.sismember(key, "nonExistentMember")).isFalse();
+    assertThat(jedis.sismember(setKey, member)).isFalse();
   }
 
-  private String[] generateStrings(int elements, char uniqueElement) {
-    Set<String> strings = new HashSet<>();
-    for (int i = 0; i < elements; i++) {
-      String elem = generator.generate(uniqueElement);
-      strings.add(elem);
+  @Test
+  public void sismemberNonExistingKeyAndMemberInAnotherSet_returnFalse() {
+    jedis.sadd(setKey, setMembers);
+
+    for (String member : setMembers) {
+      assertThat(jedis.sismember("nonExistentKey", member)).isFalse();
     }
-    return strings.toArray(new String[strings.size()]);
   }
 
+
+  @Test
+  public void sismemberAfterSadd_returnsTrue() {
+    String newMember = "chicken";
+    jedis.sadd(setKey, setMembers);
+    assertThat(jedis.sismember(setKey, newMember)).isFalse();
+    jedis.sadd(setKey, newMember);
+    assertThat(jedis.sismember(setKey, newMember)).isTrue();
+  }
+
+  @Test
+  public void scardWithWrongKeyType_returnsWrongTypeError() {
+    String keyString = "keys";
+    String valueString = "alicia";
+    jedis.set(keyString, valueString);
+    assertThatThrownBy(() -> jedis.sismember(keyString, valueString))
+        .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
 }
