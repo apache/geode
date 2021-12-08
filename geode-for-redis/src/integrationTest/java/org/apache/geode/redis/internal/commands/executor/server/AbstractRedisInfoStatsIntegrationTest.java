@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.assertj.core.data.Offset;
-import org.assertj.core.data.Percentage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -172,8 +171,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
     long expected = numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN;
 
-    assertThat(reportedCommandsPerLastSecond)
-        .isCloseTo(expected, Percentage.withPercentage(10));
+    assertThat(reportedCommandsPerLastSecond).isCloseTo(expected, Offset.offset(4.0));
 
     // if time passes w/o operations
     await().during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS).until(() -> true);
