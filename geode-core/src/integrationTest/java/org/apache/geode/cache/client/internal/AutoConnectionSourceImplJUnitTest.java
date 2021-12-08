@@ -264,6 +264,14 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   @Test
+  public void findServerWithEmptyLocatorListThrowsNoAvailableLocatorsException() {
+    source = new AutoConnectionSourceImpl(new ArrayList<>(), "", 60 * 1000, SocketFactory.DEFAULT);
+    source.start(pool);
+    assertThatThrownBy(() -> source.findServer(null))
+        .isInstanceOf(NoAvailableLocatorsException.class);
+  }
+
+  @Test
   public void testDiscoverServers() throws Exception {
     startFakeLocator();
     ServerLocation serverLocation = new ServerLocation("localhost", 4423);

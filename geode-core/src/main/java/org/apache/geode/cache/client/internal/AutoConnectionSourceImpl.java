@@ -252,11 +252,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   private ServerLocationResponse queryLocators(ServerLocationRequest request) {
-    Iterator<HostAndPort> controllerItr = locators.get().iterator();
     ServerLocationResponse response = null;
-
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
+
+    Iterator<HostAndPort> controllerItr = locators.get().iterator();
+    while (controllerItr.hasNext()) {
       HostAndPort hostAddress = controllerItr.next();
       if (isDebugEnabled) {
         logger.debug("Sending query to locator {}: {}", hostAddress, request);
@@ -271,7 +271,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
           break;
         }
       }
-    } while (controllerItr.hasNext());
+    }
 
     return response;
   }
