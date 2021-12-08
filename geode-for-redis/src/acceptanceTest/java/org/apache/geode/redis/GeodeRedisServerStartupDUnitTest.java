@@ -112,6 +112,7 @@ public class GeodeRedisServerStartupDUnitTest {
 
     addIgnoredException("Could not start server compatible with Redis");
     try (Socket interferingSocket = new Socket()) {
+      interferingSocket.setReuseAddress(true);
       interferingSocket.bind(new InetSocketAddress("localhost", port));
       assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
           .withProperty(GEODE_FOR_REDIS_PORT, "" + port)
