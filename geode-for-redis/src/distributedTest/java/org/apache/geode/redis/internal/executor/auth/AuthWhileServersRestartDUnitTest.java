@@ -50,7 +50,6 @@ public class AuthWhileServersRestartDUnitTest {
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static MemberVM server1;
   private static int redisServerPort;
   private static SerializableFunction<ServerStarterRule> operatorForVM3;
   private static final String KEY = "key";
@@ -66,7 +65,7 @@ public class AuthWhileServersRestartDUnitTest {
         .withCredential("cluster", "cluster")
         .withConnectionToLocator(locatorPort);
 
-    server1 = clusterStartUp.startRedisVM(1, serverOperator);
+    clusterStartUp.startRedisVM(1, serverOperator);
     clusterStartUp.startRedisVM(2, serverOperator);
 
     int server3Port = AvailablePortHelper.getRandomAvailableTCPPort();
