@@ -384,6 +384,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSismember() {
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
+  }
+
+  @Test
   public void testSmembers() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.smembers(k));
   }
@@ -521,11 +526,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSpop() {
     runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
-  }
-
-  @Test
-  public void testSismember() {
-    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
   }
 
   @Test
