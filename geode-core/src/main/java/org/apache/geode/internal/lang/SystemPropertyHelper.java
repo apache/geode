@@ -22,11 +22,6 @@ package org.apache.geode.internal.lang;
  */
 public class SystemPropertyHelper {
 
-  @SuppressWarnings("unused")
-  public static final String GEODE_PREFIX = SystemProperty.GEODE_PREFIX;
-  public static final String GEMFIRE_PREFIX = SystemProperty.GEMFIRE_PREFIX;
-  public static final String DEFAULT_PREFIX = SystemProperty.DEFAULT_PREFIX;
-
   /**
    * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
    * see {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.

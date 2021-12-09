@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +34,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
@@ -67,11 +67,11 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
   public void setUpAll() {
     vm0 = getVM(0);
 
-    System.setProperty(DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
+    System.setProperty(SystemProperty.DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
     createReplicateRegions();
 
     vm0.invoke(() -> {
-      System.setProperty(DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
+      System.setProperty(SystemProperty.DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
       createReplicateRegions();
     });
 

@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
@@ -44,6 +43,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -191,7 +191,7 @@ public class QueryWithRangeIndexDUnitTest implements Serializable {
 
   private static void startServer(File workingDirectory, int serverPort,
       String locators) {
-    System.setProperty(GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
+    System.setProperty(SystemProperty.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE", "10000");
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setDeletePidFileOnStop(Boolean.TRUE)
         .setMemberName(serverName)

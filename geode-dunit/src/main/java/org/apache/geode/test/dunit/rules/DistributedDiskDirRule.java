@@ -18,7 +18,6 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.internal.lang.SystemProperty.getProductStringProperty;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 
@@ -32,6 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.VMEventListener;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
@@ -119,7 +119,8 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
    */
   public File getDiskDirFor(VM vm) {
     return new File(
-        vm.invoke(() -> System.getProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY)));
+        vm.invoke(
+            () -> System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY)));
   }
 
   @Override
@@ -177,7 +178,8 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
       Files.createDirectory(diskDir.toPath());
     }
 
-    System.setProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, diskDir.getAbsolutePath());
+    System.setProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY,
+        diskDir.getAbsolutePath());
   }
 
   private void doAfter() {
@@ -186,9 +188,10 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
           + getCurrentVMNum() + ". Rule does not support VM.bounce().");
     }
     if (data.originalValue() == null) {
-      System.clearProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
+      System.clearProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
     } else {
-      System.setProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, data.originalValue());
+      System.setProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY,
+          data.originalValue());
     }
   }
 
