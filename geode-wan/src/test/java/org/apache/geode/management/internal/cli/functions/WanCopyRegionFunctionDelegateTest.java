@@ -354,6 +354,26 @@ public class WanCopyRegionFunctionDelegateTest {
   }
 
   @Test
+  public void wanCopyRegion_doNotCopyEntryWhenDestroyedEntry()
+      throws BatchException70, InterruptedException {
+    // arrange
+    function = new WanCopyRegionFunctionDelegate(clockMock, threadSleeperMock,
+        new WanCopyRegionFunctionDelegate.EventCreatorImpl(), 0);
+    Set<Region.Entry<Object, Object>> entries = new HashSet<>();
+    entries.add(uncheckedCast(mock(DestroyedEntry.class)));
+    when(regionMock.entrySet()).thenReturn(uncheckedCast(entries));
+
+    // act
+    CliFunctionResult result =
+        function.wanCopyRegion(internalCacheMock, "member1", regionMock, gatewaySenderMock, 1, 10);
+
+    // assert
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Entries copied: 0");
+  }
+
+  @Test
   public void wanCopyRegion_verifyErrorWhenConnectionDestroyedTwice()
       throws BatchException70, InterruptedException {
     // arrange
