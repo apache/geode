@@ -318,6 +318,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   testCompile(project(':geode-concurrency-test'))
+  testImplementation(project(':geode-serialization'))
   testCompile('org.apache.bcel:bcel')
   testCompile('org.mockito:mockito-core')
   testCompile('com.pholser:junit-quickcheck-core')
@@ -348,6 +349,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-concurrency-test'))
+  integrationTestImplementation(project(':geode-serialization'))
   integrationTestCompile('org.apache.bcel:bcel')
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
