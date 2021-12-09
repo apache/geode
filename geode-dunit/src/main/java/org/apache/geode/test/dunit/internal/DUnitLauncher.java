@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -57,7 +58,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
@@ -205,7 +205,7 @@ public class DUnitLauncher {
     deleteDunitSuspectFiles();
 
     // create an RMI registry and add an object to share our tests config
-    int namingPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int namingPort = getRandomAvailableTCPPort();
     Registry registry = LocateRegistry.createRegistry(namingPort);
     System.setProperty(RMI_PORT_PARAM, "" + namingPort);
 
@@ -301,8 +301,11 @@ public class DUnitLauncher {
 
   private static int startLocator(Registry registry) throws IOException, NotBoundException {
     RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + LOCATOR_VM_NUM);
+
+    int port = getRandomAvailableTCPPort();
     final File locatorLogFile =
-        LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File("");
+        LOCATOR_LOG_TO_DISK ? new File("locator-" + port + ".log") : new File("");
+
     MethodInvokerResult result = remote.executeMethodOnObject(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
@@ -322,9 +325,8 @@ public class DUnitLauncher {
         p.setProperty(DISABLE_AUTO_RECONNECT, "true");
 
         try {
-          Locator.startLocatorAndDS(0, locatorLogFile, p);
-          InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
-          locatorPort = internalLocator.getPort();
+          Locator.startLocatorAndDS(port, locatorLogFile, p);
+          locatorPort = port;
         } finally {
           System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }

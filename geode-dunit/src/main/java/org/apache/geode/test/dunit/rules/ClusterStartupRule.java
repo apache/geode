@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.closeAndCheckForSuspects;
@@ -207,12 +208,19 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public MemberVM startLocatorVM(int index, String version) {
-    return startLocatorVM(index, 0, version, x -> x);
+    int port = getRandomAvailableTCPPort();
+    return startLocatorVM(index, port, version, x -> x);
   }
 
   public MemberVM startLocatorVM(int index,
       SerializableFunction<LocatorStarterRule> ruleOperator) {
-    return startLocatorVM(index, 0, VersionManager.CURRENT_VERSION, ruleOperator);
+    int port = getRandomAvailableTCPPort();
+    // Use compose() to put our action at the front of the operator. That way, if the ruleOperator
+    // also sets a port, that action will override ours, and the locator will use the port specified
+    // by ruleOperator.
+    SerializableFunction<LocatorStarterRule> ruleOperatorWithPort =
+        ruleOperator.compose(x -> x.withPort(port));
+    return startLocatorVM(index, 0, VersionManager.CURRENT_VERSION, ruleOperatorWithPort);
   }
 
   public MemberVM startLocatorVM(int index, int port, String version,
