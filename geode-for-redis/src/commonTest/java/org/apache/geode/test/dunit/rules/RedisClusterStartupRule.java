@@ -30,6 +30,8 @@ import org.apache.logging.log4j.core.config.Configurator;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.RebalanceFactory;
+import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
@@ -249,6 +251,21 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
           return key;
         }
         i++;
+      }
+    });
+  }
+
+  /**
+   * Rebalance all regions for the cluster. This implicitly uses VM1.
+   */
+  public void rebalanceAllRegions() {
+    getMember(1).invoke("Running rebalance", () -> {
+      ResourceManager manager = ClusterStartupRule.getCache().getResourceManager();
+      RebalanceFactory factory = manager.createRebalanceFactory();
+      try {
+        factory.start().getResults();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
     });
   }

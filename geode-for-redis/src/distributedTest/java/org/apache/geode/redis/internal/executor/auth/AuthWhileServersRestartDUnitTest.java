@@ -85,6 +85,9 @@ public class AuthWhileServersRestartDUnitTest {
 
   @After
   public void after() {
+    // Make sure that no buckets are moving before calling flushAll, otherwise we might get
+    // a MOVED exception.
+    clusterStartUp.rebalanceAllRegions();
     clusterStartUp.flushAll("data", "data");
   }
 
