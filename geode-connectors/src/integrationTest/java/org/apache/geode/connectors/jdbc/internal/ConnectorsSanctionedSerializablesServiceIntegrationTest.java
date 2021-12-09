@@ -14,14 +14,27 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.net.URL;
+import org.junit.experimental.categories.Category;
 
+import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-public class ConnectorsSanctionedSerializablesService implements SanctionedSerializablesService {
+@Category({SerializationTest.class, SanctionedSerializablesTest.class})
+public class ConnectorsSanctionedSerializablesServiceIntegrationTest
+    extends SanctionedSerializablesServiceIntegrationTestBase {
+
+  private final SanctionedSerializablesService service =
+      new ConnectorsSanctionedSerializablesService();
 
   @Override
-  public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-connectors-serializables.txt");
+  protected SanctionedSerializablesService getService() {
+    return service;
+  }
+
+  @Override
+  protected ServiceResourceExpectation getServiceResourceExpectation() {
+    return ServiceResourceExpectation.NON_EMPTY;
   }
 }

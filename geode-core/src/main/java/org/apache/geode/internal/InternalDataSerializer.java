@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.serialization.SanctionedSerializables.loadSanctionedSerializablesServices;
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -118,11 +118,11 @@ import org.apache.geode.internal.serialization.DscodeHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;

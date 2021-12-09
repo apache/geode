@@ -12,16 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.test.junit.categories;
 
-import java.net.URL;
-
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
-
-public class ConnectorsSanctionedSerializablesService implements SanctionedSerializablesService {
-
-  @Override
-  public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-connectors-serializables.txt");
-  }
+/**
+ * A test category for SanctionedSerializables.
+ */
+public interface SanctionedSerializablesTest extends SerializationTest {
 }

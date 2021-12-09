@@ -14,7 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.geode.internal.serialization.SanctionedSerializables.loadSanctionedSerializablesServices;
+import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public abstract class SanctionedSerializablesServiceIntegrationTestBase {
 
