@@ -12,16 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal;
+package org.apache.geode.gfsh.internal.management;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
-public class RedisSanctionedSerializablesService implements SanctionedSerializablesService {
+public class GfshSanctionedSerializablesService implements SanctionedSerializablesService {
 
   @Override
   public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-redis-serializables.txt");
+    return getClass().getResource("sanctioned-geode-gfsh-serializables.txt");
   }
 }

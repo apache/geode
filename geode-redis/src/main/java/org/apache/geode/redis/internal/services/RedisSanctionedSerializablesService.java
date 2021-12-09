@@ -12,16 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan;
+package org.apache.geode.redis.internal.services;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
-public class WANSanctionedSerializablesService implements SanctionedSerializablesService {
+public class RedisSanctionedSerializablesService implements SanctionedSerializablesService {
 
   @Override
   public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-wan-serializables.txt");
+    return getClass().getResource("sanctioned-geode-redis-serializables.txt");
   }
 }

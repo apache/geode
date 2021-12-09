@@ -12,22 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.cache.wan.internal;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 
-@FunctionalInterface
-public interface SanctionedSerializablesService {
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
-  URL getSanctionedSerializablesURL();
+public class WANSanctionedSerializablesService implements SanctionedSerializablesService {
 
-  default Class<?> getInterface() {
-    return getClass();
-  }
-
-  default Collection<String> getSerializationAcceptlist() throws IOException {
-    return SanctionedSerializables.loadClassNames(getSanctionedSerializablesURL());
+  @Override
+  public URL getSanctionedSerializablesURL() {
+    return getClass().getResource("sanctioned-geode-wan-serializables.txt");
   }
 }
