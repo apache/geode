@@ -23,25 +23,25 @@ benchmarks:
   - title: 'base'
     flag: ''
     options: '--tests=org.apache.geode.benchmark.tests.*'
-    max_in_flight: 5
-    timeout: 24h
+    max_in_flight: 3
+    timeout: 20h
   - title: 'with-ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=org.apache.geode.benchmark.tests.*GetBenchmark --tests=org.apache.geode.benchmark.tests.*PutBenchmark'
-    max_in_flight: 2
-    timeout: 8h
+    max_in_flight: 1
+    timeout: 5h
   - title: 'with-security-manager'
     flag: '-PwithSecurityManager'
     options: '--tests=org.apache.geode.benchmark.tests.Partitioned*'
-    max_in_flight: 3
-    timeout: 12h
+    max_in_flight: 2
+    timeout: 10h
   - title: 'radish'
     baseline_branch: 'geode-for-redis-benchmark-baseline'
     baseline_version: ''
     flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
     options: '--tests=org.apache.geode.benchmark.redis.tests.*'
-    max_in_flight: 5
-    timeout: 8h
+    max_in_flight: 2
+    timeout: 10h
 
 build_test:
   ARTIFACT_SLUG: build
@@ -126,9 +126,9 @@ tests:
   CPUS: '96'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
-  EXECUTE_TEST_TIMEOUT: 3h30m
+  EXECUTE_TEST_TIMEOUT: 4h
   GRADLE_TASK: distributedTest
-  MAX_IN_FLIGHT: 6
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '250'
@@ -150,7 +150,7 @@ tests:
   CPUS: '96'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '48'
-  EXECUTE_TEST_TIMEOUT: 150m
+  EXECUTE_TEST_TIMEOUT: 3h
   GRADLE_TASK: upgradeTest
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
@@ -187,9 +187,9 @@ tests:
   CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 6h
+  EXECUTE_TEST_TIMEOUT: 4h
   GRADLE_TASK: :geode-assembly:acceptanceTest
-  MAX_IN_FLIGHT: 3
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -202,7 +202,7 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: distributedTest
   GRADLE_TASK_OPTIONS: -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
-  MAX_IN_FLIGHT: 5
+  MAX_IN_FLIGHT: 3
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -212,7 +212,7 @@ tests:
   CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 6h
+  EXECUTE_TEST_TIMEOUT: 4h
   GRADLE_TASK: integrationTest
   GRADLE_TASK_OPTIONS: -x geode-core:integrationTest
   MAX_IN_FLIGHT: 2
@@ -225,9 +225,9 @@ tests:
   CPUS: '6'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 6h
+  EXECUTE_TEST_TIMEOUT: 7h
   GRADLE_TASK: geode-core:integrationTest
-  MAX_IN_FLIGHT: 6
+  MAX_IN_FLIGHT: 3
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -237,7 +237,7 @@ tests:
   CPUS: '10'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 6h
+  EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: test
   MAX_IN_FLIGHT: 1
   ONLY_JDK: 11
@@ -250,7 +250,7 @@ tests:
   CPUS: '4'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 1h
+  EXECUTE_TEST_TIMEOUT: 15m
   GRADLE_TASK: japicmp
   MAX_IN_FLIGHT: 1
   ONLY_JDK: 11
