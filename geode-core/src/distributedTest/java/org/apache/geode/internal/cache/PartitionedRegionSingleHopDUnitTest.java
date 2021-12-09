@@ -22,6 +22,7 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
@@ -84,7 +85,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.util.TypedFunctionService;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
@@ -1088,8 +1088,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
   private String createPool(long pingInterval, boolean prSingleHopEnabled,
       boolean subscriptionEnabled, boolean useServerPool, int... ports) {
-    System.setProperty(SystemProperty.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
-        "true");
+    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
     String poolName = PARTITIONED_REGION_NAME;
     try {
       PoolFactory poolFactory = PoolManager.createFactory()
@@ -1115,7 +1114,7 @@ public class PartitionedRegionSingleHopDUnitTest implements Serializable {
 
       poolFactory.create(poolName);
     } finally {
-      System.clearProperty(SystemProperty.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
+      System.clearProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
 
     return poolName;

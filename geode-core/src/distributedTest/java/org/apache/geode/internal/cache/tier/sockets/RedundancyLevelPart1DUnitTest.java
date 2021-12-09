@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.VM.getController;
@@ -55,7 +56,6 @@ import org.apache.geode.internal.cache.ClientServerObserverAdapter;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -132,8 +132,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
     server2 = hostname + port2;
     server3 = hostname + port3;
 
-    System.setProperty(SystemProperty.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
-        "true");
+    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
   }
 
   @After

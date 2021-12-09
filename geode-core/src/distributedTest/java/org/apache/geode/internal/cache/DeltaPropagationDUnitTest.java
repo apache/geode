@@ -29,6 +29,7 @@ import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CO
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.INTERNAL_FACTORY_PROPERTY;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.VM.getController;
@@ -95,7 +96,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.Inte
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientUserAuths;
 import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -1417,8 +1417,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     }
 
     private void doCreate() throws IOException {
-      System.setProperty(SystemProperty.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
-          "true");
+      System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
 
       Properties clientProperties = getDistributedSystemProperties();
       clientProperties.setProperty(LOCATORS, "");

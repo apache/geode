@@ -16,6 +16,7 @@ package org.apache.geode.internal.logging;
 
 import static java.lang.Integer.getInteger;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -37,7 +38,6 @@ import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
@@ -214,7 +214,7 @@ public class CoreLoggingExecutors {
   }
 
   private static int getIdleThreadTimeoutMillis() {
-    return getInteger(SystemProperty.GEMFIRE_PREFIX + IDLE_THREAD_TIMEOUT_MILLIS_PROPERTY,
+    return getInteger(GEMFIRE_PREFIX + IDLE_THREAD_TIMEOUT_MILLIS_PROPERTY,
         DEFAULT_IDLE_THREAD_TIMEOUT_MILLIS);
   }
 

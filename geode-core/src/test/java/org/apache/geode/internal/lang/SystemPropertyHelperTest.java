@@ -14,12 +14,16 @@
  */
 package org.apache.geode.internal.lang;
 
+import static org.apache.geode.internal.lang.SystemProperty.DEFAULT_PREFIX;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.lang.SystemProperty.getProductBooleanProperty;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.restoreSetOperationTransactionBehavior;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-
 
 public class SystemPropertyHelperTest {
 
@@ -31,99 +35,84 @@ public class SystemPropertyHelperTest {
 
   @Test
   public void testRestoreSetOperationTransactionBehaviorDefaultToFalse() {
-    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isFalse();
+    assertThat(restoreSetOperationTransactionBehavior()).isFalse();
   }
 
   @Test
-  public void testRestoreSetOperationTransactionBehaviorSystemProperty() {
+  public void testRestoreSetOperationTransactionBehaviorGemfireSystemProperty() {
     String gemfirePrefixProperty = "gemfire." + restoreSetOperationTransactionBehavior;
     System.setProperty(gemfirePrefixProperty, "true");
-    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isTrue();
-    System.clearProperty(gemfirePrefixProperty);
+    assertThat(restoreSetOperationTransactionBehavior()).isTrue();
+  }
 
+  @Test
+  public void testRestoreSetOperationTransactionBehaviorGeodeSystemProperty() {
     String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
     System.setProperty(geodePrefixProperty, "true");
-    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isTrue();
-    System.clearProperty(geodePrefixProperty);
+    assertThat(restoreSetOperationTransactionBehavior()).isTrue();
   }
 
   @Test
   public void testRestoreSetOperationTransactionBehaviorGeodePreference() {
     String gemfirePrefixProperty = "gemfire." + restoreSetOperationTransactionBehavior;
     String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
+
     System.setProperty(geodePrefixProperty, "false");
     System.setProperty(gemfirePrefixProperty, "true");
-    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isFalse();
-    System.clearProperty(geodePrefixProperty);
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(restoreSetOperationTransactionBehavior()).isFalse();
   }
 
   @Test
   public void getBooleanPropertyReturnsEnableRetryOnPdxSerializationException() {
     String testProperty = "enableQueryRetryOnPdxSerializationException";
     String gemfirePrefixProperty = "gemfire." + testProperty;
+
     System.setProperty(gemfirePrefixProperty, "true");
-    assertThat(SystemProperty.getProductBooleanProperty(testProperty).get()).isTrue();
+    assertThat(getProductBooleanProperty(testProperty).get()).isTrue();
+
     System.clearProperty(gemfirePrefixProperty);
-    assertThat(SystemProperty.getProductBooleanProperty(testProperty).orElse(false))
-        .isFalse();
+    assertThat(getProductBooleanProperty(testProperty).orElse(false)).isFalse();
   }
 
   @Test
-  public void getBooleanPropertyParallelDiskStoreRecovery() {
+  public void getBooleanPropertyParallelDiskStoreRecovery_default() {
     // default
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).isPresent())
-            .isFalse();
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).orElse(true))
-            .isTrue();
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).isPresent()).isFalse();
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).orElse(true)).isTrue();
+  }
 
+  @Test
+  public void getBooleanPropertyParallelDiskStoreRecovery_withoutPrefix() {
     // without geode or gemfire prefix
-    System.setProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "true");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).isPresent())
-            .isFalse();
+    System.setProperty(PARALLEL_DISK_STORE_RECOVERY, "true");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).isPresent()).isFalse();
+  }
 
+  @Test
+  public void getBooleanPropertyParallelDiskStoreRecovery_withGeodePrefix() {
     // with geode prefix
-    System.setProperty(
-        SystemProperty.DEFAULT_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "true");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
-            .isTrue();
-    System.setProperty(
-        SystemProperty.DEFAULT_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "false");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
-            .isFalse();
+    System.setProperty(DEFAULT_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "true");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).get()).isTrue();
+    System.setProperty(DEFAULT_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "false");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).get()).isFalse();
+  }
 
+  @Test
+  public void getBooleanPropertyParallelDiskStoreRecovery_withGemFirePrefix() {
     // with gemfire prefix
-    System.clearProperty(
-        SystemProperty.DEFAULT_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
-    System.setProperty(
-        SystemProperty.GEMFIRE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "true");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
-            .isTrue();
-    System.setProperty(
-        SystemProperty.GEMFIRE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "false");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
-            .isFalse();
+    System.clearProperty(DEFAULT_PREFIX + PARALLEL_DISK_STORE_RECOVERY);
+    System.setProperty(GEMFIRE_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "true");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).get()).isTrue();
+    System.setProperty(GEMFIRE_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "false");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).get()).isFalse();
+  }
 
+  @Test
+  public void getBooleanPropertyParallelDiskStoreRecovery_withBothPrefixes() {
     // with geode and gemfire prefix
-    System.setProperty(
-        SystemProperty.DEFAULT_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "true");
-    System.setProperty(
-        SystemProperty.GEMFIRE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY, "false");
-    assertThat(SystemProperty
-        .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY).get())
-            .isTrue();
-
-    System.clearProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
-    System.clearProperty(
-        SystemProperty.DEFAULT_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
-    System.clearProperty(
-        SystemProperty.GEMFIRE_PREFIX + SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
+    System.setProperty(DEFAULT_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "true");
+    System.setProperty(GEMFIRE_PREFIX + PARALLEL_DISK_STORE_RECOVERY, "false");
+    assertThat(getProductBooleanProperty(PARALLEL_DISK_STORE_RECOVERY).get()).isTrue();
   }
 }
