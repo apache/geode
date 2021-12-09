@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public class SystemProperty {
 
-  public static final String GEODE_PREFIX = "geode.";
+  private static final String GEODE_PREFIX = "geode.";
   public static final String GEMFIRE_PREFIX = "gemfire.";
   public static final String DEFAULT_PREFIX = GEODE_PREFIX;
 
@@ -99,7 +99,7 @@ public class SystemProperty {
     return property != null ? Optional.of(property) : Optional.empty();
   }
 
-  private static String getProperty(String name) {
+  public static String getProperty(String name) {
     String property = getGeodeProperty(name);
     return property != null ? property : getGemfireProperty(name);
   }

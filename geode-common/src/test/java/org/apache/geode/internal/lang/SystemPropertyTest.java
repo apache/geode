@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.lang;
 
+import static org.apache.geode.internal.lang.SystemProperty.getProductBooleanProperty;
+import static org.apache.geode.internal.lang.SystemProperty.getProductIntegerProperty;
+import static org.apache.geode.internal.lang.SystemProperty.getProductLongProperty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
@@ -32,9 +35,8 @@ public class SystemPropertyTest {
     String geodePrefixProperty = "geode." + testProperty;
     System.setProperty(geodePrefixProperty, "1");
     System.setProperty(gemfirePrefixProperty, "0");
-    assertThat(SystemProperty.getProductIntegerProperty(testProperty).get()).isEqualTo(1);
-    System.clearProperty(geodePrefixProperty);
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(getProductIntegerProperty(testProperty).get()).isEqualTo(1);
   }
 
   @Test
@@ -42,14 +44,15 @@ public class SystemPropertyTest {
     String testProperty = "testIntegerProperty";
     String gemfirePrefixProperty = "gemfire." + testProperty;
     System.setProperty(gemfirePrefixProperty, "1");
-    assertThat(SystemProperty.getProductIntegerProperty(testProperty).get()).isEqualTo(1);
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(getProductIntegerProperty(testProperty).get()).isEqualTo(1);
   }
 
   @Test
   public void getIntegerPropertyWithDefaultValue() {
     String testProperty = "testIntegerProperty";
-    assertThat(SystemProperty.getProductIntegerProperty(testProperty, 1000)).isEqualTo(1000);
+
+    assertThat(getProductIntegerProperty(testProperty, 1000)).isEqualTo(1000);
   }
 
   @Test
@@ -57,26 +60,29 @@ public class SystemPropertyTest {
     String testProperty = "testLongProperty";
     String gemfirePrefixProperty = "gemfire." + testProperty;
     System.setProperty(gemfirePrefixProperty, "1");
-    assertThat(SystemProperty.getProductLongProperty(testProperty).get()).isEqualTo(1);
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(getProductLongProperty(testProperty).get()).isEqualTo(1);
   }
 
   @Test
   public void getLongPropertyWithDefaultValue() {
     String testProperty = "testIntegerProperty";
-    assertThat(SystemProperty.getProductLongProperty(testProperty, 1000)).isEqualTo(1000);
+
+    assertThat(getProductLongProperty(testProperty, 1000)).isEqualTo(1000);
   }
 
   @Test
   public void getIntegerPropertyReturnsEmptyOptionalIfPropertiesMissing() {
     String testProperty = "notSetProperty";
-    assertThat(SystemProperty.getProductIntegerProperty(testProperty).isPresent()).isFalse();
+
+    assertThat(getProductIntegerProperty(testProperty).isPresent()).isFalse();
   }
 
   @Test
   public void getBooleanPropertyReturnsEmptyOptionalIfProperiesMissing() {
     String testProperty = "notSetProperty";
-    assertThat(SystemProperty.getProductBooleanProperty(testProperty).isPresent()).isFalse();
+
+    assertThat(getProductBooleanProperty(testProperty).isPresent()).isFalse();
   }
 
   @Test
@@ -86,9 +92,8 @@ public class SystemPropertyTest {
     String geodePrefixProperty = "geode." + testProperty;
     System.setProperty(geodePrefixProperty, "true");
     System.setProperty(gemfirePrefixProperty, "false");
-    assertThat(SystemProperty.getProductBooleanProperty(testProperty).get()).isTrue();
-    System.clearProperty(geodePrefixProperty);
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(getProductBooleanProperty(testProperty).get()).isTrue();
   }
 
   @Test
@@ -96,7 +101,7 @@ public class SystemPropertyTest {
     String testProperty = "testBooleanProperty";
     String gemfirePrefixProperty = "gemfire." + testProperty;
     System.setProperty(gemfirePrefixProperty, "true");
-    assertThat(SystemProperty.getProductBooleanProperty(testProperty).get()).isTrue();
-    System.clearProperty(gemfirePrefixProperty);
+
+    assertThat(getProductBooleanProperty(testProperty).get()).isTrue();
   }
 }
