@@ -1186,13 +1186,12 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
   }
 
   /**
-   * Put entries in region after gateway sander is stopped. Count number of PQRM messages sent.
+   * Put entries in region after gateway sender is stopped. Count number of PQRM messages sent.
    */
   @Test
-  public void testDroppedEventsSignalizationToSecundaryQueueWhileSenderStopped() throws Exception {
-    int[] locatorPorts = createLNAndNYLocatorsReturnPrimitives();
-    int lnPort = locatorPorts[0];
-    int nyPort = locatorPorts[1];
+  public void testDroppedEventsSignalizationToSecondaryQueueWhileSenderStopped() {
+    int lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    int nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
 
@@ -1206,7 +1205,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     stopSenders();
 
-    waitForSenderNonRunning();
+    waitForAllSendersNotRunning();
 
     vm4.invoke(() -> {
       DistributionMessageObserver.setInstance(new CountSentPQRMObserver());
@@ -1588,7 +1587,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> waitForSenderRunningState("ln"));
   }
 
-  private void waitForSenderNonRunning() {
+  private void waitForAllSendersNotRunning() {
     vm4.invoke(() -> waitForSenderNonRunningState("ln"));
     vm5.invoke(() -> waitForSenderNonRunningState("ln"));
     vm6.invoke(() -> waitForSenderNonRunningState("ln"));

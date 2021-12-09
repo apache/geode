@@ -1189,14 +1189,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
       Object key) {
-    final HashMap<String, Map<Integer, List>> temp = new HashMap<>();
-    Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
-    temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
-    addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
+
     Set<InternalDistributedMember> recipients =
         removalThread.getAllRecipientsForEvent(sender.getCache(), prQ.getFullPath(), bucketId);
 
     if (!recipients.isEmpty()) {
+      final HashMap<String, Map<Integer, List>> temp = new HashMap<String, Map<Integer, List>>();
+      Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
+      temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+      addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
       ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
       pqrm.setRecipients(recipients);
       sender.getCache().getInternalDistributedSystem().getDistributionManager().putOutgoing(pqrm);
@@ -1970,7 +1971,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     private Set<InternalDistributedMember> getAllRecipientsForEvent(InternalCache cache,
         String partitionedRegionName, int bucketId) {
-      Set recipients = new ObjectOpenHashSet();
+      Set<InternalDistributedMember> recipients = new ObjectOpenHashSet<>();
       PartitionedRegion partitionedRegion =
           (PartitionedRegion) cache.getRegion(partitionedRegionName);
       if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {

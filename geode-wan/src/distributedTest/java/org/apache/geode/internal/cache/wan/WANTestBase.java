@@ -3694,12 +3694,6 @@ public class WANTestBase extends DistributedTestCase {
     return new Integer[] {lnPort, nyPort};
   }
 
-  protected int[] createLNAndNYLocatorsReturnPrimitives() {
-    int lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
-    int nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
-    return new int[] {lnPort, nyPort};
-  }
-
   protected void validateRegionSizes(String regionName, int expectedRegionSize, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> validateRegionSize(regionName, expectedRegionSize));
