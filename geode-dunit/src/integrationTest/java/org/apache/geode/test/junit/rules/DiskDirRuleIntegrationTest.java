@@ -16,7 +16,7 @@ package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -74,7 +74,7 @@ public class DiskDirRuleIntegrationTest {
 
   @Test
   public void setsDefaultDiskDirsSystemProperty() {
-    String propertyValue = System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
+    String propertyValue = System.getProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
 
     assertThat(propertyValue).isEqualTo(diskDirRule.getDiskDir().getAbsolutePath());
   }

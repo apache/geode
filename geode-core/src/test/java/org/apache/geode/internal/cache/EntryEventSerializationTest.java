@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,7 +50,7 @@ public class EntryEventSerializationTest {
 
   @Before
   public void setUp() {
-    System.setProperty(GEODE_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
+    System.setProperty(DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
 
     region = mock(InternalRegion.class);
     event = mock(InternalEntryEvent.class);

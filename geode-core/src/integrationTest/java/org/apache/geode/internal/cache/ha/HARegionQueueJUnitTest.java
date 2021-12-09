@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -1350,7 +1350,7 @@ public class HARegionQueueJUnitTest {
    */
   @Test
   public void testExpiryUsingSystemProperty() throws Exception {
-    System.setProperty(GEODE_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY, "1");
+    System.setProperty(DEFAULT_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY, "1");
 
     HARegionQueueAttributes haa = new HARegionQueueAttributes();
     HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName(), haa);

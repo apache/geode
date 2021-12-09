@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.control;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -217,7 +217,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
       if (!temporaryDirectory.exists()) {
         Files.createDirectory(temporaryDirectory.toPath());
       }
-      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
+      System.setProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, path);
     });
 
     clusterStartupRule.startServerVM(index, s -> s.withProperty("cache-xml-file",

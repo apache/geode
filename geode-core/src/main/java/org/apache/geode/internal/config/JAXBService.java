@@ -42,6 +42,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.internal.classloader.ClassPathLoader;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 
@@ -94,7 +95,8 @@ public class JAXBService {
 
   static Set<String> getPackagesToScan() {
     Set<String> packages = new HashSet<>();
-    String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
+    String sysProperty =
+        SystemProperty.getProductStringProperty(SystemPropertyHelper.PACKAGES_TO_SCAN).get();
     if (sysProperty != null) {
       packages = Arrays.stream(sysProperty.split(",")).collect(Collectors.toSet());
     } else {

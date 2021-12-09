@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -132,7 +133,7 @@ public class QueryOp {
           // connection to the same server and retried the query to it, that it would also
           // workaround this issue and it would not have the limitations of needing multiple servers
           // and would not depend on the retry-attempts configuration.
-          boolean enableQueryRetryOnPdxSerializationException = SystemPropertyHelper
+          boolean enableQueryRetryOnPdxSerializationException = SystemProperty
               .getProductBooleanProperty(
                   SystemPropertyHelper.ENABLE_QUERY_RETRY_ON_PDX_SERIALIZATION_EXCEPTION)
               .orElse(false);

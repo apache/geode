@@ -18,7 +18,7 @@ import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionP
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper.setIsSlowStart;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -129,7 +129,7 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
   }
 
   private int createServerCache() throws IOException {
-    System.setProperty(GEODE_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY, String.valueOf(1));
+    System.setProperty(DEFAULT_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY, String.valueOf(1));
     System.setProperty("slowStartTimeForTesting", String.valueOf(DISPATCHER_SLOWSTART_TIME));
 
     AttributesFactory factory = new AttributesFactory();

@@ -15,8 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -113,9 +113,9 @@ public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerT
   @Test
 
   public void testCopyOnReadWithBridgeServer() {
-    System.setProperty(GEODE_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
+    System.setProperty(DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true");
     Invoke.invokeInEveryVM(
-        () -> System.setProperty(GEODE_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true"));
+        () -> System.setProperty(DEFAULT_PREFIX + EARLY_ENTRY_EVENT_SERIALIZATION, "true"));
 
     createBridgeServer(server, rName, ports[0]);
     // Put an instance of SerializationCounter to assert copy-on-read behavior

@@ -33,6 +33,9 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
   // test
+  testImplementation('com.github.stefanbirkner:system-rules') {
+    exclude module: 'junit-dep'
+  }
   testImplementation('junit:junit')
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
   testImplementation('org.assertj:assertj-core')

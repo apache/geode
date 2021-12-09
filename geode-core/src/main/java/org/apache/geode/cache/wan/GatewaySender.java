@@ -17,6 +17,7 @@ package org.apache.geode.cache.wan;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -181,7 +182,7 @@ public interface GatewaySender {
    * gateway sender queue when group-transaction-events is true.
    */
   int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
-      SystemPropertyHelper.getProductIntegerProperty(
+      SystemProperty.getProductIntegerProperty(
           SystemPropertyHelper.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS).orElse(1);
 
   /**

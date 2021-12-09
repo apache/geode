@@ -16,9 +16,9 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.internal.lang.SystemProperty.getProductStringProperty;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_PREFIX;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -73,7 +73,7 @@ public class DiskDirRule extends DescribedExternalResource {
    * Returns the current default disk dirs value.
    */
   public File getDiskDir() {
-    return new File(System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
+    return new File(System.getProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
   }
 
   @Override
@@ -85,15 +85,15 @@ public class DiskDirRule extends DescribedExternalResource {
 
     File diskDir = temporaryFolder.newFolder(getDiskDirName(description.getClassName()));
 
-    System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, diskDir.getAbsolutePath());
+    System.setProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, diskDir.getAbsolutePath());
   }
 
   @Override
   protected void after(Description description) {
     if (originalValue == null) {
-      System.clearProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
+      System.clearProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
     } else {
-      System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, originalValue);
+      System.setProperty(DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, originalValue);
     }
   }
 
