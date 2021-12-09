@@ -18,7 +18,8 @@ import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeArchives;
+import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
@@ -26,23 +27,22 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.internal.serialization..",
+@AnalyzeClasses(
+    packages = "org.apache.geode.internal.serialization..",
     cacheMode = CacheMode.PER_CLASS,
-    importOptions = {ImportOption.DoNotIncludeArchives.class, ImportOption.DoNotIncludeTests.class})
-public class SerializationDependenciesJUnitTest {
+    importOptions = {DoNotIncludeArchives.class, DoNotIncludeTests.class})
+public class SerializationDependenciesTest {
 
   @ArchTest
-  public static final ArchRule serializationDoesntDependOnCoreProvisional = classes()
+  public static final ArchRule serializationDoesNotDependOnCore = classes()
       .that()
       .resideInAPackage("org.apache.geode.internal.serialization..")
-
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.internal.serialization..")
               .or(not(resideInAPackage("org.apache.geode..")))
-              .or(resideInAPackage("org.apache.geode.test.."))
-              .or(resideInAPackage("org.apache.geode.annotations..")));
-
+              .or(resideInAPackage("org.apache.geode.annotations.."))
+              .or(resideInAPackage("org.apache.geode.logging.."))
+              .or(resideInAPackage("org.apache.geode.test..")));
 }
