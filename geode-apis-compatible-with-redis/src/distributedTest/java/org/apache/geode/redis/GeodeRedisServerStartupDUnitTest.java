@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.ServerSocket;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -95,7 +95,7 @@ public class GeodeRedisServerStartupDUnitTest {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     addIgnoredException("Could not start server compatible with Redis");
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("localhost", port));
       assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
           .withProperty(REDIS_PORT, "" + port)

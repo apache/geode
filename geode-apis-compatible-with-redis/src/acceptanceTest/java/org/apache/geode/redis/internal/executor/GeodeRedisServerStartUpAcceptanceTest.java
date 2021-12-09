@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.ServerSocket;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "--compatible-with-redis-port", String.valueOf(port));
     GfshExecution execution;
 
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("localhost", port));
       execution = GfshScript.of(startServerCommand)
           .expectFailure()
@@ -69,7 +69,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "--compatible-with-redis-port", String.valueOf(port));
     GfshExecution execution;
 
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("0.0.0.0", port));
       execution = GfshScript.of(startServerCommand)
           .expectFailure()
