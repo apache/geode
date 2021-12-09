@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.WANSanctionedSerializablesService;
+import org.apache.geode.cache.wan.internal.WANSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
