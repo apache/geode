@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -67,6 +68,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     implements Serializable {
   private static final int VM_COUNT = 6;
 
+  private final int locatorPort = getRandomAvailableTCPPort();
   private String hostName;
   private String uniqueName;
   private String regionName;
@@ -76,7 +78,6 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private VM server4;
   private VM locator;
   private VM client;
-  private int locatorPort;
   private File locatorLog;
   private Host host;
   private File server1Log;
@@ -160,7 +161,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   }
 
   private void setupPartiallyRolledVersion() throws Exception {
-    locatorPort = locator.invoke(() -> startLocator());
+    locator.invoke(() -> startLocator());
     server1.invoke(() -> createCacheServer(server1Log));
     server2.invoke(() -> createCacheServer(server2Log));
     server3.invoke(() -> createCacheServer(server3Log));
@@ -174,11 +175,10 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     server2 = rollServerToCurrent(server2, server2Log);
   }
 
-  private int startLocator() throws IOException {
+  private void startLocator() throws IOException {
     Properties config = createLocatorConfig();
     InetAddress bindAddress = InetAddress.getByName(hostName);
-    Locator locator = Locator.startLocatorAndDS(locatorPort, locatorLog, bindAddress, config);
-    return locator.getPort();
+    Locator.startLocatorAndDS(locatorPort, locatorLog, bindAddress, config);
   }
 
   private Properties createLocatorConfig() {
