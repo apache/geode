@@ -18,10 +18,8 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -43,7 +41,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,6 +54,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -85,14 +83,13 @@ import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
-@SuppressWarnings("deprecation")
 @Category(ClientServerTest.class)
 public class AutoConnectionSourceImplJUnitTest {
 
   private Cache cache;
   private int port;
   private FakeHandler handler;
-  private FakePool pool = new FakePool();
+  private final FakePool pool = new FakePool();
   private AutoConnectionSourceImpl source;
   private TcpServer server;
   private ScheduledExecutorService background;
@@ -107,9 +104,9 @@ public class AutoConnectionSourceImplJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
 
-    DistributedSystem ds = DistributedSystem.connect(props);
-    cache = CacheFactory.create(ds);
-    poolStats = new PoolStats(ds, "pool");
+    cache = new CacheFactory(props).create();
+    DistributedSystem distributedSystem = cache.getDistributedSystem();
+    poolStats = new PoolStats(distributedSystem, "pool");
     port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     handler = new FakeHandler();
@@ -119,13 +116,10 @@ public class AutoConnectionSourceImplJUnitTest {
 
     background = Executors.newSingleThreadScheduledExecutor();
 
-    List<InetSocketAddress> locators = new ArrayList<>();
-    InetAddress ia = InetAddress.getLocalHost();
-    InetSocketAddress isa = new InetSocketAddress(ia, port);
-    locators.add(isa);
-    List<HostAndPort> la = new ArrayList<>();
-    la.add(new HostAndPort(ia.getHostName(), port));
-    source = new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
+    InetAddress inetAddress = InetAddress.getLocalHost();
+    List<HostAndPort> hostAndPortList = new ArrayList<>();
+    hostAndPortList.add(new HostAndPort(inetAddress.getHostName(), port));
+    source = new AutoConnectionSourceImpl(hostAndPortList, "", 60 * 1000, SocketFactory.DEFAULT);
     source.start(pool);
   }
 
@@ -175,40 +169,31 @@ public class AutoConnectionSourceImplJUnitTest {
   @Test
   public void testAddBadLocator() {
     int port = 11011;
-    List<InetSocketAddress> locators = new ArrayList<>();
-    InetSocketAddress floc1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
-    locators.add(floc1);
-    locators.add(floc2);
-    List<HostAndPort> la = new ArrayList<>();
-    la.add(new HostAndPort(floc1.getHostName(), floc1.getPort()));
-    la.add(new HostAndPort(floc2.getHostName(), floc2.getPort()));
-    AutoConnectionSourceImpl src =
-        new AutoConnectionSourceImpl(la, "", 60 * 1000, SocketFactory.DEFAULT);
+    InetSocketAddress fakeLocalHost1 = new InetSocketAddress("fakeLocalHost1", port);
+    InetSocketAddress fakeLocalHost2 = new InetSocketAddress("fakeLocalHost2", port);
+    List<HostAndPort> hostAndPortList = new ArrayList<>();
+    hostAndPortList.add(new HostAndPort(fakeLocalHost1.getHostName(), fakeLocalHost1.getPort()));
+    hostAndPortList.add(new HostAndPort(fakeLocalHost2.getHostName(), fakeLocalHost2.getPort()));
+    AutoConnectionSourceImpl autoConnectionSource =
+        new AutoConnectionSourceImpl(hostAndPortList, "", 60 * 1000, SocketFactory.DEFAULT);
 
+    InetSocketAddress badLocator1 = new InetSocketAddress("fakeLocalHost1", port);
+    InetSocketAddress badLocator2 = new InetSocketAddress("fakeLocalHost3", port);
 
-    InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress b2 = new InetSocketAddress("fakeLocalHost3", port);
+    Set<HostAndPort> badLocators = new HashSet<>();
+    badLocators.add(new HostAndPort(badLocator1.getHostName(), badLocator1.getPort()));
+    badLocators.add(new HostAndPort(badLocator2.getHostName(), badLocator2.getPort()));
 
-    Set<HostAndPort> bla = new HashSet<>();
-    bla.add(new HostAndPort(b1.getHostName(), b1.getPort()));
-    bla.add(new HostAndPort(b2.getHostName(), b2.getPort()));
+    autoConnectionSource.addbadLocators(hostAndPortList, badLocators);
 
-
-    src.addbadLocators(la, bla);
-
-    System.out.println("new locatores " + la);
-    Assert.assertEquals(3, la.size());
+    System.out.println("new locatores " + hostAndPortList);
+    assertThat(hostAndPortList).hasSize(3);
   }
 
   @Test
   public void testNoRespondingLocators() {
-    try {
-      source.findServer(null);
-      fail("Should have gotten a NoAvailableLocatorsException");
-    } catch (NoAvailableLocatorsException expected) {
-      // do nothing
-    }
+    assertThatThrownBy(() -> source.findServer(null))
+        .isInstanceOf(NoAvailableLocatorsException.class);
   }
 
   @Test
@@ -216,14 +201,10 @@ public class AutoConnectionSourceImplJUnitTest {
     TcpClient mockConnection = mock(TcpClient.class);
     when(mockConnection.requestToServer(isA(HostAndPort.class), any(Object.class),
         isA(Integer.class), isA(Boolean.class))).thenThrow(new ToDataException("testing"));
-    try {
-      source.queryOneLocatorUsingConnection(new HostAndPort("locator[1234]", 1234), mock(
-          ServerLocationRequest.class), mockConnection);
-      verify(mockConnection).requestToServer(isA(HostAndPort.class),
-          isA(ServerLocationRequest.class), isA(Integer.class), isA(Boolean.class));
-    } catch (NoAvailableLocatorsException expected) {
-      // do nothing
-    }
+    source.queryOneLocatorUsingConnection(new HostAndPort("locator[1234]", 1234), mock(
+        ServerLocationRequest.class), mockConnection);
+    verify(mockConnection).requestToServer(isA(HostAndPort.class),
+        isA(ServerLocationRequest.class), isA(Integer.class), isA(Boolean.class));
   }
 
   @Test
@@ -256,7 +237,9 @@ public class AutoConnectionSourceImplJUnitTest {
       }
     });
 
-    assertNotNull(listenerEvents[0].getMember().getHost());
+    assertThat(listenerEvents[0].getMember().getHost())
+        .as("Host was null for " + listenerEvents[0].getMember())
+        .isNotNull();
 
     InetAddress addr = InetAddress.getLocalHost();
     location = new ServerLocation(addr.getHostAddress(), 0);
@@ -269,27 +252,35 @@ public class AutoConnectionSourceImplJUnitTest {
       }
     });
 
-    assertEquals(addr.getCanonicalHostName(), listenerEvents[0].getMember().getHost());
+    assertThat(listenerEvents[0].getMember().getHost()).isEqualTo(addr.getCanonicalHostName());
   }
 
   @Test
   public void testNoServers() throws Exception {
     startFakeLocator();
     handler.nextConnectionResponse = new ClientConnectionResponse(null);
-    assertNull(source.findServer(null));
+    assertThatThrownBy(() -> source.findServer(null))
+        .isInstanceOf(NoAvailableServersException.class);
+  }
+
+  @Test
+  public void findServerWithEmptyLocatorListThrowsNoAvailableLocatorsException() {
+    source = new AutoConnectionSourceImpl(new ArrayList<>(), "", 60 * 1000, SocketFactory.DEFAULT);
+    source.start(pool);
+    assertThatThrownBy(() -> source.findServer(null))
+        .isInstanceOf(NoAvailableLocatorsException.class);
   }
 
   @Test
   public void testDiscoverServers() throws Exception {
     startFakeLocator();
-    ServerLocation loc1 = new ServerLocation("localhost", 4423);
-    handler.nextConnectionResponse = new ClientConnectionResponse(loc1);
-    assertEquals(loc1, source.findServer(null));
+    ServerLocation serverLocation = new ServerLocation("localhost", 4423);
+    handler.nextConnectionResponse = new ClientConnectionResponse(serverLocation);
+    assertThat(source.findServer(null)).isEqualTo(serverLocation);
   }
 
   /**
    * This tests that discovery works even after one of two locators was shut down
-   *
    */
   @Test
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {
@@ -313,7 +304,7 @@ public class AutoConnectionSourceImplJUnitTest {
       ArrayList<ServerLocation> locators = new ArrayList<>();
       locators.add(new ServerLocation(InetAddress.getLocalHost().getHostName(), secondPort));
       handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
-      Thread.sleep(500);
+      await().until(() -> !source.getOnlineLocators().isEmpty());
       try {
         issueStopRequest(port);
       } catch (ConnectException ignore) {
@@ -323,7 +314,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
       ServerLocation server1 = new ServerLocation("localhost", 10);
       handler.nextConnectionResponse = new ClientConnectionResponse(server1);
-      assertEquals(server1, source.findServer(null));
+      assertThat(source.findServer(null)).isEqualTo(server1);
     } finally {
       try {
         issueStopRequest(secondPort);
@@ -363,14 +354,14 @@ public class AutoConnectionSourceImplJUnitTest {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
         String.valueOf(updateLocatorInterval));
     source.start(pool);
-    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+    assertThat(source.getLocatorUpdateInterval()).isEqualTo(updateLocatorInterval);
   }
 
   @Test
   public void testDefaultLocatorUpdateInterval() {
     long updateLocatorInterval = pool.getPingInterval();
     source.start(pool);
-    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+    assertThat(source.getLocatorUpdateInterval()).isEqualTo(updateLocatorInterval);
   }
 
   @Test
@@ -379,11 +370,10 @@ public class AutoConnectionSourceImplJUnitTest {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
         String.valueOf(updateLocatorInterval));
     source.start(pool);
-    assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+    assertThat(source.getLocatorUpdateInterval()).isEqualTo(updateLocatorInterval);
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
-
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
         "Tcp Server", new ProtocolCheckerImpl(),
         DistributionStats::getStatTime,
