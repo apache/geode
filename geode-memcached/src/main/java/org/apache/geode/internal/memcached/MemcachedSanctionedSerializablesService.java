@@ -16,7 +16,7 @@ package org.apache.geode.internal.memcached;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public class MemcachedSanctionedSerializablesService implements SanctionedSerializablesService {
 

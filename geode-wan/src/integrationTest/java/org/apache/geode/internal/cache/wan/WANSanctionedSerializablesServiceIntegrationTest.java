@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -34,6 +34,6 @@ public class WANSanctionedSerializablesServiceIntegrationTest
 
   @Override
   protected ServiceResourceExpectation getServiceResourceExpectation() {
-    return ServiceResourceExpectation.EMPTY;
+    return ServiceResourceExpectation.NON_EMPTY;
   }
 }
