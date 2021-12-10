@@ -103,11 +103,19 @@ public class RedisSet extends AbstractRedisData {
 
   private static int setOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
       Set<byte[]> diff) {
+    RedisSet destinationSet = regionProvider.getTypedRedisData(REDIS_SET, destinationKey, false);
+
     if (diff.isEmpty()) {
-      regionProvider.getDataRegion().remove(destinationKey);
-    } else {
-      regionProvider.getLocalDataRegion().put(destinationKey, new RedisSet(diff));
+      if (!destinationSet.exists()) {
+        regionProvider.getDataRegion().remove(destinationKey);
+      }
+      return 0;
     }
+
+    destinationSet.members.clear();
+    destinationSet.persistNoDelta();
+    destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
+        new AddByteArrays((List<byte[]>) diff));
     return diff.size();
   }
 
