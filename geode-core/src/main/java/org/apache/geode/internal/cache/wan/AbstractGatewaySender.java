@@ -1088,13 +1088,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       }
 
       // If this gateway is not running, return
-      if (!isRunning()) {
-        if (this.isPrimary()) {
-          recordDroppedEvent(clonedEvent);
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
+      if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
         return;
       }
 
