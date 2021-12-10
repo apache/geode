@@ -1302,7 +1302,6 @@ public class Oplog implements CompactableOplog, Flushable {
     // while a krf is being created can not close a region
     lockCompactor();
     try {
-      addUnrecoveredRegion(dr.getId());
       DiskRegionInfo dri = getDRI(dr);
       if (dri != null) {
         long clearCount = dri.clear(null);
@@ -1313,6 +1312,7 @@ public class Oplog implements CompactableOplog, Flushable {
         }
         regionMap.remove(dr.getId(), dri);
       }
+      addUnrecoveredRegion(dr.getId());
     } finally {
       unlockCompactor();
     }

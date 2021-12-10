@@ -475,7 +475,8 @@ public abstract class OffHeapRegionBase {
           fail("identity of offHeapStore changed when cache was recreated");
         }
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
-        assertTrue(ma.getUsedMemory() > 0);
+        await()
+            .untilAsserted(() -> assertTrue(ma.getUsedMemory() > 0));
         assertEquals(4, r.size());
         assertEquals(data, r.get("key1"));
         assertEquals(Integer.valueOf(1234567890), r.get("key2"));
