@@ -1114,19 +1114,23 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           }
         }
         if (this.enqueuedAllTempQueueEvents) {
-          this.getLifeCycleLock().readLock().lock();
+          try {
+            while (!getLifeCycleLock().readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
+              if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
+                return;
+              }
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+          }
+
         }
       }
       try {
         // If this gateway is not running, return
         // The sender may have stopped, after we have checked the status in the beginning.
-        if (!isRunning()) {
-          if (isDebugEnabled) {
-            logger.debug("Returning back without putting into the gateway sender queue:" + event);
-          }
-          if (this.eventProcessor != null) {
-            this.eventProcessor.registerEventDroppedInPrimaryQueue(event);
-          }
+        if (!getIsRunningAndDropEventIfNotRunning(event, isDebugEnabled, clonedEvent)) {
           return;
         }
 
@@ -1169,6 +1173,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.release(); // fix for bug 48035
       }
     }
+  }
+
+  private boolean getIsRunningAndDropEventIfNotRunning(EntryEventImpl event, boolean isDebugEnabled,
+      EntryEventImpl clonedEvent) {
+    if (isRunning()) {
+      return true;
+    }
+    if (isPrimary()) {
+      recordDroppedEvent(clonedEvent);
+    }
+    if (isDebugEnabled) {
+      logger.debug("Returning back without putting into the gateway sender queue:" + event);
+    }
+    return false;
   }
 
   private void recordDroppedEvent(EntryEventImpl event) {
