@@ -12,13 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization.filter;
 
-import java.io.ObjectInputStream;
+/**
+ * Creates appropriate {@code ObjectInputFilterApi} instance for the current JVM.
+ */
+@FunctionalInterface
+public interface ObjectInputFilterApiFactory {
 
-public class EmptyInputStreamFilter implements InputStreamFilter {
-  @Override
-  public void setFilterOn(ObjectInputStream ois) {
-    // Do nothing, this is the case where we don't filter.
-  }
+  ObjectInputFilterApi createObjectInputFilterApi();
 }

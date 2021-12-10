@@ -12,8 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
+import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -21,33 +23,40 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 
-import org.apache.commons.lang3.JavaVersion;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
+public class ServerLauncherSerializableObjectFilterIntegrationTest {
 
   private static final String NAME = "server";
 
   private File workingDirectory;
   private int jmxPort;
-  private String expectedSerialFilter;
 
   @Rule
   public CloseableReference<ServerLauncher> server = new CloseableReference<>();
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -55,21 +64,15 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
   public void setUp() throws Exception {
     workingDirectory = temporaryFolder.newFolder(NAME);
     jmxPort = getRandomAvailableTCPPort();
-    expectedSerialFilter = new JmxRmiOpenTypesSerialFilter().createSerialFilterPattern();
-  }
-
-  @After
-  public void tearDown() {
-    System.clearProperty(PROPERTY_NAME);
   }
 
   @Test
-  public void startingServerWithJmxManager_configuresSerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
+  public void doesNotConfigureValidateSerializableObjects_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -80,19 +83,20 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(expectedSerialFilter);
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(isValidateSerializableObjectsConfigured())
+        .as(VALIDATE_SERIALIZABLE_OBJECTS)
+        .isFalse();
   }
 
   @Test
-  public void startingServerWithJmxManager_changesEmptySerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
-
-    System.setProperty(PROPERTY_NAME, "");
+  public void doesNotConfigureValidateSerializableObjects_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -103,20 +107,20 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(expectedSerialFilter);
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(isValidateSerializableObjectsConfigured())
+        .as(VALIDATE_SERIALIZABLE_OBJECTS)
+        .isFalse();
   }
 
   @Test
-  public void startingServerWithJmxManager_skipsNonEmptySerialFilter_atLeastJava9() {
-    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
-
-    String existingSerialFilter = "!*";
-    System.setProperty(PROPERTY_NAME, existingSerialFilter);
+  public void doesNotConfigureSerializableObjectFilter_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -127,17 +131,20 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(existingSerialFilter);
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo("!*");
   }
 
   @Test
-  public void startingServerWithJmxManager_skipsSerialFilter_atMostJava8() {
-    assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
+  public void doesNotConfigureSerializableObjectFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -148,19 +155,20 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isNull();
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo("!*");
   }
 
   @Test
-  public void startingServerWithJmxManager_skipsEmptySerialFilter_atMostJava8() {
-    assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
-
-    System.setProperty(PROPERTY_NAME, "");
+  public void usesDefaultSerializableObjectFilter_onJava9orGreater() {
+    assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -171,20 +179,20 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo("");
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getDistributionConfig().getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo(DEFAULT_SERIALIZABLE_OBJECT_FILTER);
   }
 
   @Test
-  public void startingServerWithJmxManager_skipsNonEmptySerialFilter_atMostJava8() {
-    assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
-
-    String existingSerialFilter = "!*";
-    System.setProperty(PROPERTY_NAME, existingSerialFilter);
+  public void usesDefaultSerializableObjectFilter_onJava8() {
+    assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     server.set(new ServerLauncher.Builder()
-        .setMemberName(NAME)
         .setDisableDefaultServer(true)
+        .setMemberName(NAME)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
         .set(HTTP_SERVICE_PORT, "0")
         .set(JMX_MANAGER, "true")
@@ -195,7 +203,32 @@ public class ServerManagerConfiguresJmxSerialFilterIntegrationTest {
         .get()
         .start();
 
-    String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(existingSerialFilter);
+    assertThat(isJmxManagerStarted())
+        .isTrue();
+    assertThat(getDistributionConfig().getSerializableObjectFilter())
+        .as(SERIALIZABLE_OBJECT_FILTER)
+        .isEqualTo(DEFAULT_SERIALIZABLE_OBJECT_FILTER);
+  }
+
+  private DistributionConfig getDistributionConfig() {
+    InternalCache cache = (InternalCache) server.get().getCache();
+    return cache.getInternalDistributedSystem().getConfig();
+  }
+
+  private SystemManagementService getSystemManagementService() {
+    Cache cache = server.get().getCache();
+    return (SystemManagementService) ManagementService.getManagementService(cache);
+  }
+
+  private boolean isValidateSerializableObjectsConfigured() {
+    return getDistributionConfig().getValidateSerializableObjects();
+  }
+
+  private boolean isJmxManagerStarted() {
+    return getSystemManagementService().isManager();
+  }
+
+  private String getSerializableObjectFilter() {
+    return getDistributionConfig().getSerializableObjectFilter();
   }
 }

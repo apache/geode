@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
@@ -22,48 +22,45 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 
 import org.apache.commons.lang3.JavaVersion;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public class LocatorManagerConfiguresJmxSerialFilterIntegrationTest {
+public class LocatorLauncherSerializableObjectFilterIntegrationTest {
 
   private static final String NAME = "locator";
+  private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private File workingDirectory;
   private int locatorPort;
   private int jmxPort;
-  private String expectedSerialFilter;
+  private String openMBeanFilterPattern;
 
   @Rule
   public CloseableReference<LocatorLauncher> locator = new CloseableReference<>();
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
+    openMBeanFilterPattern = new OpenMBeanFilterPattern().pattern();
     workingDirectory = temporaryFolder.newFolder(NAME);
     int[] ports = getRandomAvailableTCPPorts(2);
     locatorPort = ports[0];
     jmxPort = ports[1];
-    expectedSerialFilter = new JmxRmiOpenTypesSerialFilter().createSerialFilterPattern();
-  }
-
-  @After
-  public void tearDown() {
-    System.clearProperty(PROPERTY_NAME);
   }
 
   @Test
@@ -84,7 +81,7 @@ public class LocatorManagerConfiguresJmxSerialFilterIntegrationTest {
         .start();
 
     String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(expectedSerialFilter);
+    assertThat(serialFilter).isEqualTo(openMBeanFilterPattern);
   }
 
   @Test
@@ -107,7 +104,7 @@ public class LocatorManagerConfiguresJmxSerialFilterIntegrationTest {
         .start();
 
     String serialFilter = System.getProperty(PROPERTY_NAME);
-    assertThat(serialFilter).isEqualTo(expectedSerialFilter);
+    assertThat(serialFilter).isEqualTo(openMBeanFilterPattern);
   }
 
   @Test

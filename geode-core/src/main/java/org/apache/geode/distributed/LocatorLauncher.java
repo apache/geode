@@ -88,6 +88,8 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.filter.ConditionalGlobalSerialFilterConfigurationFactory;
+import org.apache.geode.internal.serialization.filter.DistributedSerializableObjectConfig;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
@@ -714,6 +716,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
+      boolean serializationFilterConfigured =
+          new ConditionalGlobalSerialFilterConfigurationFactory()
+              .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
+              .configure();
+
       try {
         this.process =
             new FileControllableProcess(this.controlHandler, new File(getWorkingDirectory()),
@@ -729,6 +736,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
               bindAddress, true, getDistributedSystemProperties(),
               getHostnameForClients(),
               Paths.get(workingDirectory));
+
+          if (serializationFilterConfigured) {
+            locator.getCache().getInternalDistributedSystem().getConfig()
+                .setValidateSerializableObjects(true);
+            if (serializationFilterConfigured) {
+              log.info("Global serial filter is now configured.");
+            }
+          }
+
         } finally {
           ProcessLauncherContext.remove();
         }

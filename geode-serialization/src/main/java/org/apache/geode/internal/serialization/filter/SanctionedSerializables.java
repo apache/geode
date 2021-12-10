@@ -32,13 +32,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * Loads {@code SanctionedSerializablesService}s and sanctioned class data.
+ */
 public class SanctionedSerializables {
 
   private static final Logger logger = LogService.getLogger();
-
-  private SanctionedSerializables() {
-    // do not instantiate
-  }
 
   /**
    * Loads all SanctionedSerializablesServices on the classpath.
@@ -92,5 +91,9 @@ public class SanctionedSerializables {
       }
     }
     return sanctionedClasses;
+  }
+
+  private SanctionedSerializables() {
+    // do not instantiate
   }
 }

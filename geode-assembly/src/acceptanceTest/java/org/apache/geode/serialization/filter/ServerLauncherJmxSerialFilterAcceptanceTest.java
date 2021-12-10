@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management;
+package org.apache.geode.serialization.filter;
 
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.management.internal.JmxRmiOpenTypesSerialFilter.PROPERTY_NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
@@ -33,14 +32,14 @@ import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class LocatorManagerConfiguresJmxSerialFilterAcceptanceTest {
+public class ServerLauncherJmxSerialFilterAcceptanceTest {
 
-  private static final String NAME = "the-locator";
+  private static final String NAME = "the-server";
+  private static final String PROPERTY_NAME = "jmx.remote.rmi.server.serial.filter.pattern";
 
   private Path workingDir;
-  private int locatorPort;
   private int jmxPort;
-  private Path locatorLogFile;
+  private Path serverLogFile;
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
@@ -50,64 +49,60 @@ public class LocatorManagerConfiguresJmxSerialFilterAcceptanceTest {
   @Before
   public void setUpOutputFiles() {
     TemporaryFolder temporaryFolder = gfshRule.getTemporaryFolder();
-
     workingDir = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    locatorLogFile = workingDir.resolve(NAME + ".log");
+    serverLogFile = workingDir.resolve(NAME + ".log");
   }
 
   @Before
   public void setUpRandomPorts() {
-    int[] ports = getRandomAvailableTCPPorts(2);
-
-    locatorPort = ports[0];
-    jmxPort = ports[1];
+    jmxPort = getRandomAvailableTCPPort();
   }
 
   @Test
-  public void startingLocatorWithJmxManager_configuresSerialFilter_atLeastJava9() {
+  public void startingServerWithJmxManager_configuresSerialFilter_atLeastJava9() {
     assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_9)).isTrue();
 
-    String startLocatorCommand = String.join(" ",
-        "start locator",
+    String startServerCommand = String.join(" ",
+        "start server",
         "--name=" + NAME,
         "--dir=" + workingDir,
-        "--port=" + locatorPort,
+        "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
         "--J=-Dgemfire.jmx-manager=true",
         "--J=-Dgemfire.jmx-manager-port=" + jmxPort,
         "--J=-Dgemfire.jmx-manager-start=true");
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile())
-          .as(locatorLogFile.toFile().getAbsolutePath())
+      LogFileAssert.assertThat(serverLogFile.toFile())
+          .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
           .contains("System property " + PROPERTY_NAME + " is now configured with");
     });
   }
 
   @Test
-  public void startingLocatorWithJmxManager_configuresSerialFilter_atMostJava8() {
+  public void startingServerWithJmxManager_configuresSerialFilter_atMostJava8() {
     assumeThat(isJavaVersionAtMost(JavaVersion.JAVA_1_8)).isTrue();
 
-    String startLocatorCommand = String.join(" ",
-        "start locator",
+    String startServerCommand = String.join(" ",
+        "start server",
         "--name=" + NAME,
         "--dir=" + workingDir,
-        "--port=" + locatorPort,
+        "--disable-default-server",
         "--J=-Dgemfire.enable-cluster-configuration=false",
         "--J=-Dgemfire.http-service-port=0",
         "--J=-Dgemfire.jmx-manager=true",
         "--J=-Dgemfire.jmx-manager-port=" + jmxPort,
         "--J=-Dgemfire.jmx-manager-start=true");
 
-    gfshRule.execute(startLocatorCommand);
+    gfshRule.execute(startServerCommand);
 
     await().untilAsserted(() -> {
-      LogFileAssert.assertThat(locatorLogFile.toFile())
-          .as(locatorLogFile.toFile().getAbsolutePath())
+      LogFileAssert.assertThat(serverLogFile.toFile())
+          .as(serverLogFile.toFile().getAbsolutePath())
           .exists()
           .doesNotContain("System property " + PROPERTY_NAME + " is now configured with");
     });

@@ -18,9 +18,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 
+/**
+ * Service interface to define a module's sanctioned serializables.
+ */
 @FunctionalInterface
 public interface SanctionedSerializablesService {
 
+  /**
+   * Returns a URL for the resource defining a module's collection of sanctioned serializable
+   * classes.
+   */
   URL getSanctionedSerializablesURL();
 
   default Class<?> getInterface() {

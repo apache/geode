@@ -12,10 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.serialization.filter;
 
 @FunctionalInterface
-public interface JmxRmiSerialFilter {
+interface GlobalSerialFilterConfigurationFactory {
 
-  void configureSerialFilter();
+  FilterConfiguration create(SerializableObjectConfig serializableObjectConfig);
 }
