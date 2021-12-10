@@ -33,9 +33,7 @@ def thisProjectScoped = project
   }
 }
 
-
-
-rootProject.tasks.named('classes').configure {
+thisProjectScoped.tasks.named('assemble').configure {
   // This is a semi-lazy hook so that our test sources are compiled most of the time.
   dependsOn(
     [

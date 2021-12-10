@@ -474,11 +474,13 @@ tasks.register('docs', Javadoc) {
   include 'org/apache/geode/**/'
 
   doLast {
-    parent.subprojects.each { project ->
+    rootProject.subprojects.each { project ->
       copy {
-        from project.sourceSets.main.resources.srcDirs
-        into docsDir
+        if (project.hasProperty('sourceSets')) {
+          from project.sourceSets.main.resources.srcDirs
+        }
         include 'javadoc-images/*'
+        into docsDir
       }
     }
   }
