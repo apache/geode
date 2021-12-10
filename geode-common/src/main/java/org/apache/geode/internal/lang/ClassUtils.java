@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.lang;
+package org.apache.geode.internal.lang.utils;
 
 import org.apache.geode.annotations.Immutable;
 
