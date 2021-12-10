@@ -1031,11 +1031,11 @@ lib/jline-2.12.jar
 lib/jna-5.9.0.jar
 lib/jna-platform-5.9.0.jar
 lib/jopt-simple-5.0.4.jar
-lib/log4j-api-2.14.1.jar
-lib/log4j-core-2.14.1.jar
-lib/log4j-jcl-2.14.1.jar
-lib/log4j-jul-2.14.1.jar
-lib/log4j-slf4j-impl-2.14.1.jar
+lib/log4j-api-2.15.0.jar
+lib/log4j-core-2.15.0.jar
+lib/log4j-jcl-2.15.0.jar
+lib/log4j-jul-2.15.0.jar
+lib/log4j-slf4j-impl-2.15.0.jar
 lib/lucene-analyzers-common-6.6.6.jar
 lib/lucene-analyzers-phonetic-6.6.6.jar
 lib/lucene-core-6.6.6.jar
