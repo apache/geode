@@ -89,7 +89,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -123,6 +122,7 @@ import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -411,24 +411,24 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Initializes the optional serialization "accept list" if the user has requested it in the
    * DistributionConfig
    *
-   * @param distributionConfig the DistributedSystem configuration
+   * @param serializableConfig the DistributedSystem configuration
    */
-  public static void initializeSerializationFilter(DistributionConfig distributionConfig) {
-    initializeSerializationFilter(distributionConfig, loadSanctionedSerializablesServices());
+  public static void initializeSerializationFilter(SerializableObjectConfig serializableConfig) {
+    initializeSerializationFilter(serializableConfig, loadSanctionedSerializablesServices());
   }
 
   /**
    * Initializes the optional serialization "accept list" if the user has requested it in the
    * DistributionConfig
    *
-   * @param distributionConfig the DistributedSystem configuration
+   * @param serializableConfig the DistributedSystem configuration
    * @param services SanctionedSerializablesService that might have classes to acceptlist
    */
   @VisibleForTesting
-  public static void initializeSerializationFilter(DistributionConfig distributionConfig,
+  public static void initializeSerializationFilter(SerializableObjectConfig serializableConfig,
       Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
-    if (distributionConfig.getValidateSerializableObjects()) {
+    if (serializableConfig.getValidateSerializableObjects()) {
       if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
           && !ClassUtils.isClassAvailable("java.io.ObjectInputFilter")) {
         throw new GemFireConfigException(
@@ -436,7 +436,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
       serializationFilter =
           new ObjectInputStreamFilterWrapper(SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN
-              + distributionConfig.getSerializableObjectFilter() + ";!*", services);
+              + serializableConfig.getSerializableObjectFilter() + ";!*", services);
     } else {
       clearSerializationFilter();
     }
