@@ -17,7 +17,7 @@ package org.apache.geode.rest.internal.web.util;
 
 import org.springframework.util.StringUtils;
 
-import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.lang.utils.ClassUtils;
 
 /**
  * The NumberUtils class is a utility class for working with numbers.
