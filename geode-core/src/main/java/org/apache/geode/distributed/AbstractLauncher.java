@@ -18,9 +18,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.lang.ClassUtils.forName;
 import static org.apache.geode.internal.lang.StringUtils.defaultString;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
+import static org.apache.geode.internal.lang.utils.ClassUtils.forName;
 
 import java.io.File;
 import java.io.FileReader;
