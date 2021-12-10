@@ -130,6 +130,7 @@ gradle.taskGraph.whenReady({ graph ->
           depMap.containsKey(componentResult.moduleVersion.id.name)
         }.collect {it.moduleVersion.id.name + '-' + it.moduleVersion.version + '.jar'})
       }
+      // TODO: can we put our projects on the ClassPath line still?
       runtimeSet.removeAll(upstreamDeps)
 
       def upstreamClasspath = manifest.attributes.get('Class-Path')
