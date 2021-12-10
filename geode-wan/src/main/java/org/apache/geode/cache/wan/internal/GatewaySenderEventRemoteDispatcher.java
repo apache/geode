@@ -736,6 +736,11 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
               logger.debug("{}: Received null ack from remote site.", processor.getSender());
             }
             processor.handleException();
+
+            // Check if canceled before sleeping
+            if (checkCancelled()) {
+              break;
+            }
             try { // This wait is before trying to getting new connection to
                   // receive ack. Without this there will be continuous call to
                   // getConnection
@@ -750,7 +755,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
           logger.fatal(
               "Stopping the processor because the following exception occurred while processing a batch:",
               e);
+        } else {
+          return;
         }
+
         sender.getLifeCycleLock().writeLock().lock();
         try {
           processor.stopProcessing();
