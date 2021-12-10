@@ -8399,12 +8399,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Check if its instance of Index, in that the case throw index exists exception.
     if (ind instanceof Index) {
-      if (remotelyOriginated) {
-        return (Index) ind;
-      }
-
-      throw new IndexNameConflictException(
-          String.format("Index named ' %s ' already exists.", indexName));
+      return (Index) ind;
     }
 
     FutureTask<Index> oldIndexFutureTask = (FutureTask<Index>) ind;
@@ -8456,16 +8451,7 @@ public class PartitionedRegion extends LocalRegion
       } else {
         // Some other thread is trying to create the same index.
         // Wait for index to be initialized from other thread.
-        index = oldIndexFutureTask.get();
-        // The Index is successfully created, throw appropriate error message from this thread.
-
-        if (remotelyOriginated) {
-          return index;
-        }
-
-        throw new IndexNameConflictException(
-            String.format("Index named ' %s ' already exists.",
-                indexName));
+        return oldIndexFutureTask.get();
       }
     } catch (InterruptedException ignore) {
       interrupted = true;

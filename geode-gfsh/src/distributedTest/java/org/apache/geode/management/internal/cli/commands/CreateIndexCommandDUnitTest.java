@@ -210,4 +210,34 @@ public class CreateIndexCommandDUnitTest {
     commandAssert.hasInfoSection().hasOutput()
         .contains("Region regionB does not exist in some of the groups.");
   }
+
+  @Test
+  public void indexCreationOnPartitionedRegionUpdateClusterConfig() {
+    int serversNo = 8;
+    MemberVM serversArray[] = new MemberVM[serversNo];
+
+    int initialIndex = 1;
+    for (int index = 2; index < serversArray.length; index++) {
+      serversArray[index] =
+          cluster.startServerVM(initialIndex + index, locator.getPort());
+    }
+
+    gfsh.executeAndAssertThat("create region --name=regionC --type=PARTITION")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create index --name=index1 --expression=id --region=regionC")
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(8)
+        .hasRow(0)
+        .contains("OK", "Index successfully created");
+
+    gfsh.executeAndAssertThat("export cluster-configuration")
+        .statusIsSuccess()
+        .hasInfoSection()
+        .hasOutput()
+        .contains(
+            "index name=\"index1\" expression=\"id\" from-clause=\"/regionC\" key-index=\"false\" type=\"range\"");
+  }
 }
