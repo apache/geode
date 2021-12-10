@@ -250,7 +250,8 @@ public class ZRemRangeByScoreDUnitTest {
       }
       throw e;
     }
-    assertThat(removed).isEqualTo(map.size());
+    assertThat(removed).as("Map for key " + KEY + ", removed is " + removed + " but map is size " + map.size() + ", retries is " + retries).isEqualTo(map.size());
+
     return true;
   }
 }
