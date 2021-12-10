@@ -757,21 +757,7 @@ public class GMSJoinLeaveJUnitTest {
         E = mockMembers[3];
 
     prepareAndInstallView(C, createMemberList(A, B, C, D));
-
-    // have the Messenger acknowledge all membership view messages so no-one is kicked out for
-    // failure to respond
-    when(messenger.send(isA(InstallViewMessage.class), isA(GMSMembershipView.class)))
-        .thenAnswer((request) -> {
-          InstallViewMessage<MemberIdentifier> installViewMessage = request.getArgument(0);
-          for (MemberIdentifier recipient : installViewMessage.getRecipients()) {
-            ViewAckMessage viewAckMessage =
-                new ViewAckMessage(gmsJoinLeaveMemberId, installViewMessage.getView().getViewId(),
-                    installViewMessage.isPreparing());
-            viewAckMessage.setSender(recipient);
-            gmsJoinLeave.processViewAckMessage(viewAckMessage);
-          }
-          return null;
-        });
+    messengerAckAllInstallViewMessages();
 
     E.setVmViewId(2);
 
@@ -788,6 +774,23 @@ public class GMSJoinLeaveJUnitTest {
     // E should have joined and retained its view ID of 2
     await().until(() -> gmsJoinLeave.getView().contains(E));
     assertEquals(2, E.getVmViewId());
+  }
+
+  private void messengerAckAllInstallViewMessages() {
+    // have the Messenger acknowledge all membership view messages so no-one is kicked out for
+    // failure to respond
+    when(messenger.send(isA(InstallViewMessage.class), isA(GMSMembershipView.class)))
+        .thenAnswer((request) -> {
+          InstallViewMessage<MemberIdentifier> installViewMessage = request.getArgument(0);
+          for (MemberIdentifier recipient : installViewMessage.getRecipients()) {
+            ViewAckMessage viewAckMessage =
+                new ViewAckMessage(gmsJoinLeaveMemberId, installViewMessage.getView().getViewId(),
+                    installViewMessage.isPreparing());
+            viewAckMessage.setSender(recipient);
+            gmsJoinLeave.processViewAckMessage(viewAckMessage);
+          }
+          return null;
+        });
   }
 
   @Test
@@ -899,6 +902,65 @@ public class GMSJoinLeaveJUnitTest {
 
     verify(manager).forceDisconnect(isA(String.class));
     verify(manager).quorumLost(crashes, newView);
+  }
+
+  /*
+   * When network partition detection is in play, in a view containing just two equal-weight
+   * members, when the coordinator (during new view generation) notices the other member is
+   * removed (failed), the coordinator should force-disconnect (itself).
+   *
+   * Failure to force-disconnect in this situation can result in split-brain if the other member
+   * is still functioning on the other side of a long-lived network partition. In that case,
+   * if the coordinator doesn't shut down, then the coordinator will continue producing views,
+   * and the other member will eventually become a coordinator and start producing its own views
+   * concurrently.
+   */
+  @Test
+  public void twoLocatorPartitionDoesntSplitBrain() throws Exception {
+
+    // Begin setting up preconditions...
+    initMocks(true);
+
+    // We'll have a two-member view. We'll test from the perspective of the coordinator,
+    // so gmsJoinLeave/gmsJoinLeaveMemberId refers to the coordinator. And we'll use one
+    // of the mock members to be the other (non-coordinator) member.
+    final MemberIdentifier nonCoordinator = mockMembers[0];
+
+    // Make the members have equal weight, as would be the case for two locators. This is
+    // a very common situation during cluster startup. It's also possible during crash and
+    // scaling scenarios.
+    gmsJoinLeaveMemberId.setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
+    nonCoordinator.setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
+
+    becomeCoordinatorForTest(gmsJoinLeave);
+    await().until(() -> gmsJoinLeave.isCoordinator());
+
+    messengerAckAllInstallViewMessages();
+
+    gmsJoinLeave.processJoinRequestMessage(
+        new JoinRequestMessage(gmsJoinLeaveMemberId, nonCoordinator, null, 1, 1));
+    await().until(() -> gmsJoinLeave.currentView.contains(nonCoordinator));
+
+    // Coordinator receives a RemoveMemberMessage about the other member
+    final Set<MemberIdentifier> crashes = Collections.singleton(nonCoordinator);
+    final List<MemberIdentifier> members = Collections.singletonList(gmsJoinLeaveMemberId);
+
+    final GMSMembershipView prePartitionView = gmsJoinLeave.getView();
+
+    final GMSMembershipView partitionView =
+        new GMSMembershipView(
+            gmsJoinLeaveMemberId,
+            gmsJoinLeave.getView().getViewId() + 1,
+            members,
+            Collections.emptySet(),
+            crashes);
+
+    // This method (and methods it calls), is what we're testing here:
+    gmsJoinLeave.getViewCreator().prepareAndSendView(
+        partitionView, Collections.emptyList(), Collections.emptySet(), crashes);
+
+    verify(manager).forceDisconnect(isA(String.class));
+    verify(manager).quorumLost(crashes, prePartitionView);
   }
 
   @Test

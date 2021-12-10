@@ -1520,7 +1520,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
       newView.correctWrongVersionIn(localAddress);
 
-      if (isJoined && isNetworkPartition(newView, true)) {
+      if (isJoined && isMajorityLost(newView)) {
         if (quorumRequired) {
           Set<ID> crashes = newView.getActualCrashedMembers(currentView);
           forceDisconnect(String.format(
@@ -1644,21 +1644,43 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   /**
-   * check to see if the new view shows a drop of 51% or more
+   * True iff the weight of "crashed" members in the new view is
+   * greater-than-or-equal-to half of the weight of all members in
+   * the old (current) view.
+   *
+   * For this discussion "crashed" members are members for which the
+   * coordinator has received a RemoveMemberRequest message. These
+   * are members that the failure detector has deemed failed.
+   * Keep in mind the failure detector is imperfect (it's not always
+   * right). We may have merely lost contact with a "failed" member,
+   * but that doesn't mean it can't still be running
+   * (on the other side of a network partition).
+   *
+   * Callers use a true result from this method to cause the
+   * coordinator (this member) to force-disconnect rather than
+   * continue with the view change.
+   *
+   * If you think about a general N-way network partition for N=2,
+   * 3...M where M is the number of members in the current view,
+   * requiring any coordinator producing a new view, to ensure
+   * that weight of possibly-but-not-certainly-crashed members in
+   * the new view to be less than half the weight of members in the
+   * old view, ensures that the view change never results in a split-
+   * brain.
    */
-  private boolean isNetworkPartition(GMSMembershipView<ID> newView, boolean logWeights) {
+  private boolean isMajorityLost(GMSMembershipView<ID> newView) {
     if (currentView == null) {
       return false;
     }
     int oldWeight = currentView.memberWeight();
     int failedWeight = newView.getCrashedMemberWeight(currentView);
-    if (failedWeight > 0 && logWeights) {
+    if (failedWeight > 0) {
       if (logger.isInfoEnabled() && newView.getCreator().equals(localAddress)) { // view-creator
                                                                                  // logs this
         newView.logCrashedMemberWeights(currentView, logger);
       }
-      int failurePoint = (int) (Math.round(51.0 * oldWeight) / 100.0);
-      if (failedWeight > failurePoint && quorumLostView != newView) {
+      final double failurePoint = oldWeight / 2.0;
+      if (failedWeight >= failurePoint && quorumLostView != newView) {
         quorumLostView = newView;
         logger.warn("total weight lost in this view change is {} of {}.  Quorum has been lost!",
             failedWeight, oldWeight);
@@ -2580,7 +2602,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           return;
         }
 
-        if (quorumRequired && isNetworkPartition(newView, true)) {
+        if (quorumRequired && isMajorityLost(newView)) {
           sendNetworkPartitionMessage(newView);
           Thread.sleep(BROADCAST_MESSAGE_SLEEP_TIME);
 
