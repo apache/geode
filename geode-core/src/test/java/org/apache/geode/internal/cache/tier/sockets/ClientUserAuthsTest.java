@@ -20,7 +20,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -42,8 +41,9 @@ public class ClientUserAuthsTest {
     subject2 = mock(Subject.class);
     when(subject1.getPrincipal()).thenReturn("user1");
     when(subject2.getPrincipal()).thenReturn("user2");
-    auth = spy(new ClientUserAuths(0));
-    doReturn(123L).when(auth).getNextID();
+    SubjectIdGenerator subjectIdGenerator = mock(SubjectIdGenerator.class);
+    when(subjectIdGenerator.generateId()).thenReturn(123L);
+    auth = spy(new ClientUserAuths(subjectIdGenerator));
   }
 
   @Test

@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -57,10 +56,7 @@ public class ClientUserAuths {
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Long> cqNameVsUniqueId = new ConcurrentHashMap<>();
 
-  private final int m_seed;
-
-  private Random uniqueIdGenerator;
-  private long m_firstId;
+  private final SubjectIdGenerator idGenerator;
 
   public Long putUserAuth(UserAuthAttributes userAuthAttr) {
     final Long newId = getNextID();
@@ -97,21 +93,17 @@ public class ClientUserAuths {
     return newId;
   }
 
-  public ClientUserAuths(int clientProxyHashcode) {
-    m_seed = clientProxyHashcode;
-    uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
-    m_firstId = uniqueIdGenerator.nextLong();
+  public ClientUserAuths(SubjectIdGenerator idGenerator) {
+    this.idGenerator = idGenerator;
   }
 
   synchronized long getNextID() {
-    final long uniqueId = uniqueIdGenerator.nextLong();
-    if (uniqueId == m_firstId) {
-      uniqueIdGenerator = new Random(m_seed + System.currentTimeMillis());
-      m_firstId = uniqueIdGenerator.nextLong();
+    final long uniqueId = idGenerator.generateId();
+    if (uniqueId == -1) {
       // now every user need to reauthenticate as we are short of Ids..
       // though possibility of this is rare.
       uniqueIdVsUserAuth.clear();
-      return m_firstId;
+      return idGenerator.generateId();
     }
     return uniqueId;
   }

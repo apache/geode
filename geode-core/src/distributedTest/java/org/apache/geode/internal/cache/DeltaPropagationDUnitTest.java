@@ -48,10 +48,12 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.After;
@@ -96,6 +98,8 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.Inte
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientUserAuths;
 import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
+import org.apache.geode.internal.cache.tier.sockets.RandomSubjectIdGenerator;
+import org.apache.geode.internal.cache.tier.sockets.SubjectIdGenerator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
@@ -1614,7 +1618,13 @@ public class DeltaPropagationDUnitTest implements Serializable {
           statisticsClock,
           notifier.getCache().getInternalDistributedSystem().getStatisticsManager(),
           DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new,
-          new ClientUserAuths(proxyId.hashCode()));
+          new ClientUserAuths(subjectIdGeneratorFor(proxyId)));
+    }
+
+    private static SubjectIdGenerator subjectIdGeneratorFor(ClientProxyMembershipID proxyId) {
+      int proxyIdHashCode = proxyId.hashCode();
+      Consumer<Random> initializer = r -> r.setSeed(proxyIdHashCode + System.currentTimeMillis());
+      return new RandomSubjectIdGenerator(new Random(), initializer);
     }
   }
 
