@@ -90,7 +90,7 @@ public class RegionConfigRealizer
   private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
     RegionFactory factory = cache.createRegionFactory();
 
-    factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
+    factory.setDataPolicy(DataPolicy.valueOf(regionAttributes.getDataPolicy().name()));
 
     if (regionAttributes.getScope() != null) {
       factory.setScope(Scope.fromString(regionAttributes.getScope().name()));

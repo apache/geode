@@ -19,7 +19,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.QueueManager;
@@ -171,7 +175,7 @@ public interface CqService {
   void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key, Object value,
       byte[] delta, QueueManager qManager, EventID eventId);
 
-  void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
+  void processEvents(CacheEvent<?, ?> event, Profile localProfile, Profile[] profiles,
       FilterRoutingInfo frInfo) throws CqException;
 
   UserAttributes getUserAttributes(String cqName);
@@ -220,9 +224,11 @@ public interface CqService {
    * @param emptyRegionsMap map of empty regions.
    * @throws IllegalStateException if this is called at client side.
    */
-  ServerCQ executeCq(String cqName, String queryString, int cqState,
-      ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+  ServerCQ executeCq(@NotNull String cqName, @NotNull String queryString, int cqState,
+      @NotNull ClientProxyMembershipID clientProxyId,
+      @Nullable CacheClientNotifier ccn, boolean isDurable,
+      boolean manageEmptyRegions, @Nullable DataPolicy regionDataPolicy,
+      @NotNull Map<String, Integer> emptyRegionsMap)
       throws CqException, RegionNotFoundException, CqClosedException;
 
   /**

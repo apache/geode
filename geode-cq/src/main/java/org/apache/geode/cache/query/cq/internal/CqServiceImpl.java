@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.StatisticsFactory;
@@ -34,6 +36,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionEvent;
@@ -262,9 +265,14 @@ public class CqServiceImpl implements CqService {
    * @throws IllegalStateException if this is called at client side.
    */
   @Override
-  public synchronized ServerCQ executeCq(String cqName, String queryString, int cqState,
-      ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
-      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+  public synchronized ServerCQ executeCq(final @NotNull String cqName,
+      final @NotNull String queryString, final int cqState,
+      final @NotNull ClientProxyMembershipID clientProxyId,
+      final @Nullable CacheClientNotifier ccn,
+      final boolean isDurable,
+      final boolean manageEmptyRegions,
+      @Nullable DataPolicy regionDataPolicy,
+      final @NotNull Map<String, Integer> emptyRegionsMap)
       throws CqException, RegionNotFoundException, CqClosedException {
     if (!isServer()) {
       throw new IllegalStateException(
@@ -272,8 +280,8 @@ public class CqServiceImpl implements CqService {
               cqName));
     }
 
-    String serverCqName = constructServerCqName(cqName, clientProxyId);
-    ServerCQImpl cQuery;
+    final String serverCqName = constructServerCqName(cqName, clientProxyId);
+    final ServerCQImpl cQuery;
 
     // If this CQ is not yet registered in Server, register CQ.
     if (!isCqExists(serverCqName)) {
@@ -282,12 +290,12 @@ public class CqServiceImpl implements CqService {
 
       try {
         cQuery.registerCq(clientProxyId, ccn, cqState);
-        if (manageEmptyRegions) { // new in 6.1
-          if (emptyRegionsMap != null && emptyRegionsMap.containsKey(cQuery.getBaseRegionName())) {
-            regionDataPolicy = 0;
+        if (manageEmptyRegions) {
+          if (emptyRegionsMap.containsKey(cQuery.getBaseRegionName())) {
+            regionDataPolicy = DataPolicy.EMPTY;
           }
 
-          CacheClientProxy proxy = getCacheClientProxy(clientProxyId, ccn);
+          final CacheClientProxy proxy = getCacheClientProxy(clientProxyId, ccn);
           ccn.updateMapOfEmptyRegions(
               proxy.getRegionsWithEmptyDataPolicy(),
               cQuery.getBaseRegionName(), regionDataPolicy);
@@ -303,10 +311,10 @@ public class CqServiceImpl implements CqService {
       resumeCQ(cqState, cQuery);
     }
 
-
     if (logger.isDebugEnabled()) {
       logger.debug("Successfully created CQ on the server. CqName : {}", cQuery.getName());
     }
+
     return cQuery;
   }
 
@@ -1182,7 +1190,7 @@ public class CqServiceImpl implements CqService {
   }
 
   @Override
-  public void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
+  public void processEvents(CacheEvent<?, ?> event, Profile localProfile, Profile[] profiles,
       FilterRoutingInfo frInfo) throws CqException {
     // Is this a region event or an entry event
     if (event instanceof RegionEvent) {

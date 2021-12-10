@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
@@ -250,7 +251,7 @@ public class PutOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       throw new UnsupportedOperationException(
           "processResponse should not be invoked in PutOp.  Use processResponse(Message, Connection)");
     }
@@ -268,7 +269,8 @@ public class PutOp {
      * @since GemFire 6.1
      */
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(final @NotNull Message msg, final @NotNull Connection con)
+        throws Exception {
       processAck(msg, con);
       if (prSingleHopEnabled) {
         Part part = msg.getPart(0);

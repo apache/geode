@@ -14,28 +14,28 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
- * Pre-defined interest list types supported by the system
- *
- * @version $Revision: 13166 $
- * @since GemFire 2.0.2
+ * Pre-defined interest list types supported by the system.
+ * Partial duplicate of {@link org.apache.geode.cache.operations.InterestType}.
  */
-public class InterestType {
+public enum InterestType {
 
   /** For registering interest in a specific key or list of keys */
-  public static final int KEY = 0;
+  KEY,
 
   /** For registering interest in all keys matching a regular expression */
-  public static final int REGULAR_EXPRESSION = 1;
+  REGULAR_EXPRESSION,
 
   /** For registering interest in all key/value pairs that satisfy a provided filtering class */
-  public static final int FILTER_CLASS = 2;
+  FILTER_CLASS,
 
   /** For registering interest in all key/value pairs that satisfy an OQL query */
-  public static final int OQL_QUERY = 3;
+  OQL_QUERY,
 
   /** For registering CQs */
-  public static final int CQ = 4;
+  CQ;
 
   /**
    * Convert an interest type to a printable string
@@ -43,7 +43,7 @@ public class InterestType {
    * @param kind the type to convert
    * @return a printable string
    */
-  public static String getString(int kind) {
+  public static String getString(final @NotNull InterestType kind) {
     switch (kind) {
       case KEY:
         return "KEY";
@@ -56,7 +56,11 @@ public class InterestType {
       case CQ:
         return "CQ";
       default:
-        return "Invalid(" + Integer.toString(kind) + ")";
+        return "Invalid(" + kind + ")";
     }
+  }
+
+  public static @NotNull InterestType valueOf(final int ordinal) {
+    return values()[ordinal];
   }
 }

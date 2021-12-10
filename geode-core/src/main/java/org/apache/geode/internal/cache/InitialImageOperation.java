@@ -40,6 +40,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
@@ -50,6 +51,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
@@ -3747,7 +3749,7 @@ public class InitialImageOperation {
               // found.
               cqService.executeCq(e.getKey(), cq.getQueryString(),
                   ((CqStateImpl) cq.getState()).getState(), proxy.getProxyID(), ccn, cq.isDurable(),
-                  true, -1, emptyRegionMap);
+                  true, null, emptyRegionMap);
             } catch (Exception ex) {
               logger.info("Failed to register CQ during HARegion GII. CQ: {} {}", e.getKey(),
                   ex.getMessage(), ex);
@@ -3854,7 +3856,8 @@ public class InitialImageOperation {
      */
     private void registerInterestKeys(Map<String, ?> regionKeys, boolean allKey, LocalRegion region,
         CacheClientNotifier ccn, CacheClientProxy proxy, boolean isDurable,
-        boolean updatesAsInvalidates, int interestType, Set<String> regionsWithInterest)
+        boolean updatesAsInvalidates, final @NotNull InterestType interestType,
+        Set<String> regionsWithInterest)
         throws IOException {
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -3874,16 +3877,17 @@ public class InitialImageOperation {
             regionsWithInterest.add(regionName);
             if (allKey) {
               ccn.registerClientInterest(regionName, e.getValue(), proxy.getProxyID(), interestType,
-                  isDurable, updatesAsInvalidates, manageEmptyRegions, 0, false);
+                  isDurable, updatesAsInvalidates, manageEmptyRegions, DataPolicy.EMPTY, false);
             } else if (InterestType.REGULAR_EXPRESSION == interestType) {
               for (final Object o : asSet(e.getValue())) {
                 ccn.registerClientInterest(regionName, o, proxy.getProxyID(),
-                    interestType, isDurable, updatesAsInvalidates, manageEmptyRegions, 0, false);
+                    interestType, isDurable, updatesAsInvalidates, manageEmptyRegions,
+                    DataPolicy.EMPTY, false);
               }
             } else {
               ccn.registerClientInterest(regionName, new ArrayList<>(asSet(e.getValue())),
                   proxy.getProxyID(), isDurable, updatesAsInvalidates, manageEmptyRegions,
-                  interestType, false);
+                  DataPolicy.EMPTY, false);
             }
           }
         }

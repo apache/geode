@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -198,40 +200,37 @@ public abstract class AbstractOp implements Op {
    * @return the result of the operation or <code>null</code> if the operation has no result.
    * @throws Exception if the execute failed
    */
-  protected Object attemptReadResponse(Connection cnx) throws Exception {
-    Message msg = createResponseMessage();
-    if (msg != null) {
-      msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
-          cnx.getCommBuffer(), cnx.getStats());
-      if (msg instanceof ChunkedMessage) {
-        try {
-          return processResponse(msg, cnx);
-        } finally {
-          msg.unsetComms();
-          processSecureBytes(cnx, msg);
-        }
-      } else {
-        try {
-          msg.receive();
-        } finally {
-          msg.unsetComms();
-          processSecureBytes(cnx, msg);
-        }
+  protected Object attemptReadResponse(final @NotNull Connection cnx) throws Exception {
+    final Message msg = createResponseMessage();
+    msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
+        cnx.getCommBuffer(), cnx.getStats());
+    if (msg instanceof ChunkedMessage) {
+      try {
         return processResponse(msg, cnx);
+      } finally {
+        msg.unsetComms();
+        processSecureBytes(cnx, msg);
       }
     } else {
-      return null;
+      try {
+        msg.receive();
+      } finally {
+        msg.unsetComms();
+        processSecureBytes(cnx, msg);
+      }
+      return processResponse(msg, cnx);
     }
   }
 
   /**
    * By default just create a normal one part msg. Subclasses can override this.
    */
-  protected Message createResponseMessage() {
+  protected @NotNull Message createResponseMessage() {
     return new Message(1, KnownVersion.CURRENT);
   }
 
-  protected Object processResponse(Message m, Connection con) throws Exception {
+  protected @Nullable Object processResponse(final @NotNull Message m,
+      final @NotNull Connection con) throws Exception {
     return processResponse(m);
   }
 
@@ -242,7 +241,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected abstract Object processResponse(Message msg) throws Exception;
+  protected abstract @Nullable Object processResponse(final @NotNull Message msg) throws Exception;
 
   /**
    * Return true of <code>messageType</code> indicates the operation had an error on the server.

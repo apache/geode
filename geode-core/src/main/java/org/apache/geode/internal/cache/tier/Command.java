@@ -14,13 +14,16 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
 public interface Command {
-  void execute(Message clientMessage, ServerConnection serverConnection,
-      SecurityService securityService);
+  void execute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService);
 
   int RESPONDED = 1;
 

@@ -19,6 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 
 import java.util.Properties;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -205,7 +207,8 @@ public class AuthenticateUserOp {
 
 
     @Override
-    protected Object processResponse(Message msg, Connection connection) throws Exception {
+    protected Object processResponse(final @NotNull Message msg,
+        final @NotNull Connection connection) throws Exception {
       byte[] bytes;
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
@@ -275,7 +278,7 @@ public class AuthenticateUserOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       return null;
     }
 

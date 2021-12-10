@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -94,7 +96,7 @@ public class RegisterDataSerializersOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       processAck(msg, "registerDataSerializers");
       return null;
     }

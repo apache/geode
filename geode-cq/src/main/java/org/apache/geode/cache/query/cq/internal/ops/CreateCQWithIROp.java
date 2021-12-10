@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.query.cq.internal.ops;
 
+import org.jetbrains.annotations.NotNull;
+
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.ExecutablePool;
@@ -38,11 +41,12 @@ public class CreateCQWithIROp {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public static SelectResults execute(ExecutablePool pool, String cqName, String queryStr,
-      int cqState, boolean isDurable, byte regionDataPolicy) {
+  public static SelectResults<?> execute(final @NotNull ExecutablePool pool,
+      final @NotNull String cqName, final @NotNull String queryStr,
+      final int cqState, final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op =
         new CreateCQWithIROpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
-    return (SelectResults) pool.executeOnQueuesAndReturnPrimaryResult(op);
+    return (SelectResults<?>) pool.executeOnQueuesAndReturnPrimaryResult(op);
   }
 
   private CreateCQWithIROp() {
@@ -56,8 +60,9 @@ public class CreateCQWithIROp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public CreateCQWithIROpImpl(String cqName, String queryStr, int cqState, boolean isDurable,
-        byte regionDataPolicy) {
+    public CreateCQWithIROpImpl(final @NotNull String cqName, final @NotNull String queryStr,
+        final int cqState, final boolean isDurable,
+        final @NotNull DataPolicy regionDataPolicy) {
       super(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, 5);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
@@ -66,7 +71,7 @@ public class CreateCQWithIROp {
         byte durableByte = (byte) (isDurable ? 0x01 : 0x00);
         getMessage().addBytesPart(new byte[] {durableByte});
       }
-      getMessage().addBytesPart(new byte[] {regionDataPolicy});
+      getMessage().addBytesPart(new byte[] {(byte) regionDataPolicy.ordinal()});
     }
 
     @Override

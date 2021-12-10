@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -178,32 +179,29 @@ public class GatewaySenderBatchOp {
      * @throws Exception if the execute failed
      */
     @Override
-    protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
-      if (msg != null) {
-        msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
-            ((ConnectionImpl) cnx).getCommBufferForAsyncRead(), cnx.getStats());
-        if (msg instanceof ChunkedMessage) {
-          try {
-            return processResponse(msg, cnx);
-          } finally {
-            msg.unsetComms();
-            // TODO (ashetkar) Handle the case when we fail to read the
-            // connection id.
-            processSecureBytes(cnx, msg);
-          }
-        }
-
+    protected Object attemptReadResponse(@NotNull Connection cnx) throws Exception {
+      final Message msg = createResponseMessage();
+      msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
+          ((ConnectionImpl) cnx).getCommBufferForAsyncRead(), cnx.getStats());
+      if (msg instanceof ChunkedMessage) {
         try {
-          msg.receive();
+          return processResponse(msg, cnx);
         } finally {
           msg.unsetComms();
+          // TODO (ashetkar) Handle the case when we fail to read the
+          // connection id.
           processSecureBytes(cnx, msg);
         }
-        return processResponse(msg, cnx);
       }
 
-      return null;
+      try {
+        msg.receive();
+      } finally {
+        msg.unsetComms();
+        processSecureBytes(cnx, msg);
+      }
+      return processResponse(msg, cnx);
+
     }
 
 
@@ -228,7 +226,7 @@ public class GatewaySenderBatchOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       GatewayAck ack = null;
       try {
         // Read the header which describes the type of message following

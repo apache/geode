@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache.query.cq.internal.ops;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
@@ -44,8 +47,9 @@ public class CreateCQOp {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public static Object execute(ExecutablePool pool, String cqName, String queryStr, int cqState,
-      boolean isDurable, byte regionDataPolicy) {
+  public static Object execute(final @NotNull ExecutablePool pool, final @NotNull String cqName,
+      final @NotNull String queryStr, final int cqState,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
     return pool.executeOnQueuesAndReturnPrimaryResult(op);
   }
@@ -62,8 +66,10 @@ public class CreateCQOp {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public static Object executeOn(ExecutablePool pool, Connection conn, String cqName,
-      String queryStr, int cqState, boolean isDurable, byte regionDataPolicy) {
+  public static Object executeOn(final @NotNull ExecutablePool pool, final @NotNull Connection conn,
+      final @NotNull String cqName,
+      final @NotNull String queryStr, final int cqState, final boolean isDurable,
+      final @NotNull DataPolicy regionDataPolicy) {
     AbstractOp op = new CreateCQOpImpl(cqName, queryStr, cqState, isDurable, regionDataPolicy);
     return pool.executeOn(conn, op);
   }
@@ -80,8 +86,9 @@ public class CreateCQOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public CreateCQOpImpl(String cqName, String queryStr, int cqState, boolean isDurable,
-        byte regionDataPolicy) {
+    public CreateCQOpImpl(final @NotNull String cqName, final @NotNull String queryStr,
+        final int cqState, final boolean isDurable,
+        final @NotNull DataPolicy regionDataPolicy) {
       super(MessageType.EXECUTECQ_MSG_TYPE, 5);
       getMessage().addStringPart(cqName);
       getMessage().addStringPart(queryStr);
@@ -90,16 +97,16 @@ public class CreateCQOp {
         byte durableByte = (byte) (isDurable ? 0x01 : 0x00);
         getMessage().addBytesPart(new byte[] {durableByte});
       }
-      getMessage().addBytesPart(new byte[] {regionDataPolicy});
+      getMessage().addBytesPart(new byte[] {(byte) regionDataPolicy.ordinal()});
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new ChunkedMessage(1, KnownVersion.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message m) throws Exception {
+    protected Object processResponse(final @NotNull Message m) throws Exception {
       ChunkedMessage msg = (ChunkedMessage) m;
       msg.readHeader();
       int msgType = msg.getMessageType();
@@ -116,7 +123,7 @@ public class CreateCQOp {
           // Dan Smith- a hack, but I don't want to change the protocol right
           // now. We need to throw a security exception so that the exception
           // will be propagated up properly. Ideally, this exception would be
-          // contained in the message..
+          // contained in the message.
           String errorMessage = part.getString();
           if (errorMessage.contains("Not authorized")) {
             throw new NotAuthorizedException(errorMessage);

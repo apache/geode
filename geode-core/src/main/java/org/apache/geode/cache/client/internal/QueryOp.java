@@ -17,6 +17,8 @@ package org.apache.geode.cache.client.internal;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.SelectResults;
@@ -101,12 +103,12 @@ public class QueryOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new ChunkedMessage(2, KnownVersion.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       final SelectResults[] resultRef = new SelectResults[1];
       final Exception[] exceptionRef = new Exception[1];
       ChunkHandler ch = cm -> {

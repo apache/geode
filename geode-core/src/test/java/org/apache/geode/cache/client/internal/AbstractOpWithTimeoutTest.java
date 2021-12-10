@@ -39,7 +39,7 @@ public class AbstractOpWithTimeoutTest {
     protected void attemptSend(Connection cnx) {}
 
     @Override
-    protected Object attemptReadResponse(Connection cnx) {
+    protected Object attemptReadResponse(@org.jetbrains.annotations.NotNull Connection cnx) {
       return null;
     }
   }

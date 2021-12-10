@@ -246,7 +246,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     long start = stats.startFunctionExecution(false);
     try {
       validateExecution(function, null);
-      srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult, false);
+      srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(start, false);
@@ -265,7 +265,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     try {
       validateExecution(null, null);
       srp.executeFunctionNoAck(region.getFullPath(), functionId, this, hasResult, isHA,
-          optimizeForWrite, false);
+          optimizeForWrite);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(start, false);

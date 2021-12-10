@@ -1447,8 +1447,8 @@ fromData,62
 toData,39
 
 org/apache/geode/internal/cache/partitioned/FetchKeysMessage,2
-fromData,48
-toData,48
+fromData,51
+toData,51
 
 org/apache/geode/internal/cache/partitioned/FetchKeysMessage$FetchKeysReplyMessage,2
 fromData,55
@@ -1714,8 +1714,8 @@ fromData,82
 toData,99
 
 org/apache/geode/internal/cache/tier/sockets/ClientInterestMessageImpl,2
-fromData,84
-toData,81
+fromData,87
+toData,84
 
 org/apache/geode/internal/cache/tier/sockets/ClientMarkerMessageImpl,2
 fromData,12

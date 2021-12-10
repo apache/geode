@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
@@ -38,6 +37,7 @@ import org.apache.geode.cache.operations.RegisterInterestOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -91,8 +91,9 @@ public class RegisterInterest61Test {
     registerInterest61 = new RegisterInterest61();
     MockitoAnnotations.openMocks(this);
 
-    when(authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any()))
-        .thenReturn(registerInterestOperationContext);
+    when(authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), any(InterestType.class),
+        any()))
+            .thenReturn(registerInterestOperationContext);
 
     when(cache.getRegion(isA(String.class))).thenReturn(uncheckedCast(mock(LocalRegion.class)));
     when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -169,7 +170,8 @@ public class RegisterInterest61Test {
     registerInterest61.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
+    verify(authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY),
+        any(InterestType.class), any());
     verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
@@ -179,12 +181,13 @@ public class RegisterInterest61Test {
     when(securityService.isIntegratedSecurity()).thenReturn(false);
 
     doThrow(new NotAuthorizedException("")).when(authzRequest)
-        .registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
+        .registerInterestAuthorize(eq(REGION_NAME), eq(KEY), any(InterestType.class), any());
 
     registerInterest61.cmdExecute(message, serverConnection, securityService,
         0);
 
-    verify(authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
+    verify(authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY),
+        any(InterestType.class), any());
 
     ArgumentCaptor<NotAuthorizedException> argument =
         ArgumentCaptor.forClass(NotAuthorizedException.class);

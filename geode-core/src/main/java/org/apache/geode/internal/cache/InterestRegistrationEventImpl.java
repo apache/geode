@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
@@ -41,7 +43,7 @@ public class InterestRegistrationEventImpl implements InterestRegistrationEvent,
   /**
    * The Set of keys being registered or unregistered
    */
-  private Set keysOfInterest;
+  private Set<?> keysOfInterest;
 
   /**
    * The type of interest
@@ -73,84 +75,81 @@ public class InterestRegistrationEventImpl implements InterestRegistrationEvent,
    *
    * @param regionName The name of the region to which this interest event belongs
    */
-
-  public InterestRegistrationEventImpl(CacheClientProxy clientSession, String regionName,
-      Set keysOfInterest, int interestType, boolean isRegister) {
-    this.cache = clientSession.getCache();
+  public InterestRegistrationEventImpl(final @NotNull CacheClientProxy clientSession,
+      final @NotNull String regionName, final @NotNull Set<?> keysOfInterest,
+      final @NotNull InterestType interestType, final boolean isRegister) {
+    cache = clientSession.getCache();
     this.clientSession = clientSession;
     this.regionName = regionName;
     this.keysOfInterest = keysOfInterest;
-    this.interestType = interestType;
+    this.interestType = interestType.ordinal();
     this.isRegister = isRegister;
   }
 
-
   @Override
   public ClientSession getClientSession() {
-    return this.clientSession;
+    return clientSession;
   }
 
   @Override
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   @Override
-  public Region getRegion() {
-    return this.cache.getRegion(this.regionName);
+  public Region<?, ?> getRegion() {
+    return cache.getRegion(regionName);
   }
 
   @Override
-  public Set getKeysOfInterest() {
-    return this.keysOfInterest;
+  public Set<?> getKeysOfInterest() {
+    return keysOfInterest;
   }
 
   @Override
   public int getInterestType() {
-    return this.interestType;
+    return interestType;
   }
 
   @Override
   public boolean isRegister() {
-    return this.isRegister;
+    return isRegister;
   }
 
   @Override
   public boolean isKey() {
-    return this.interestType == InterestType.KEY;
+    return interestType == InterestType.KEY.ordinal();
   }
 
   @Override
   public boolean isRegularExpression() {
-    return this.interestType == InterestType.REGULAR_EXPRESSION;
+    return interestType == InterestType.REGULAR_EXPRESSION.ordinal();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     // The proxy isn't being serialized right now, but if it needs to be
     // then the proxyId would probably be the best way to do it.
-    DataSerializer.writeString(this.regionName, out);
-    DataSerializer.writeHashSet((HashSet) this.keysOfInterest, out);
-    DataSerializer.writePrimitiveInt(this.interestType, out);
-    DataSerializer.writePrimitiveBoolean(this.isRegister, out);
+    DataSerializer.writeString(regionName, out);
+    DataSerializer.writeHashSet((HashSet<?>) keysOfInterest, out);
+    DataSerializer.writePrimitiveInt(interestType, out);
+    DataSerializer.writePrimitiveBoolean(isRegister, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.keysOfInterest = DataSerializer.readHashSet(in);
-    this.interestType = DataSerializer.readPrimitiveInt(in);
-    this.isRegister = DataSerializer.readPrimitiveBoolean(in);
+    regionName = DataSerializer.readString(in);
+    keysOfInterest = DataSerializer.readHashSet(in);
+    interestType = DataSerializer.readPrimitiveInt(in);
+    isRegister = DataSerializer.readPrimitiveBoolean(in);
   }
 
-  @Override // GemStoneAddition
+  @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("InterestRegistrationEvent [").append("isRegister=").append(this.isRegister)
-        .append("clientSession=").append(this.clientSession).append("; isRegister=")
-        .append("; regionName=").append(this.regionName).append("; keysOfInterest=")
-        .append(this.keysOfInterest).append("; interestType=")
-        .append(InterestType.getString(this.interestType)).append("]");
-    return buffer.toString();
+    return "InterestRegistrationEvent [" + "isRegister=" + isRegister
+        + "clientSession=" + clientSession + "; isRegister="
+        + "; regionName=" + regionName + "; keysOfInterest="
+        + keysOfInterest + "; interestType="
+        + InterestType.getString(InterestType.valueOf(interestType)) + "]";
   }
 }

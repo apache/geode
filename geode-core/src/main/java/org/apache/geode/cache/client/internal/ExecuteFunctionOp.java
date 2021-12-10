@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -311,7 +312,7 @@ public class ExecuteFunctionOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       ChunkedMessage executeFunctionResponseMsg = (ChunkedMessage) msg;
       try {
         // Read the header which describes the type of message following
@@ -425,7 +426,7 @@ public class ExecuteFunctionOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected @NotNull Message createResponseMessage() {
       return new ChunkedMessage(1, KnownVersion.CURRENT);
     }
   }

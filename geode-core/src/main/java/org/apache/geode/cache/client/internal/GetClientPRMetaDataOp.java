@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -79,7 +80,7 @@ public class GetClientPRMetaDataOp {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       switch (msg.getMessageType()) {
         case MessageType.GET_CLIENT_PR_METADATA_ERROR:
           String errorMsg = msg.getPart(0).getString();

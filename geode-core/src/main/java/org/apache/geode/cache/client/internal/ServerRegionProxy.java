@@ -16,6 +16,7 @@
 package org.apache.geode.cache.client.internal;
 
 import static java.util.Collections.emptySet;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -57,7 +59,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.7
  */
-@SuppressWarnings("deprecation")
 public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAccess {
   private static final Logger logger = LogService.getLogger();
 
@@ -71,7 +72,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param r the region
    * @throws IllegalStateException if the region does not have a pool
    */
-  public ServerRegionProxy(Region r) {
+  public ServerRegionProxy(Region<?, ?> r) {
     super(calcPool(r));
     assert r instanceof LocalRegion;
     region = (LocalRegion) r;
@@ -88,7 +89,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     this.regionName = regionName;
   }
 
-  private static InternalPool calcPool(Region r) {
+  private static InternalPool calcPool(Region<?, ?> r) {
     String poolName = r.getAttributes().getPoolName();
     if (poolName == null || "".equals(poolName)) {
       throw new IllegalStateException(
@@ -314,7 +315,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#keySet()
    */
   @Override
-  public Set keySet() {
+  public Set<?> keySet() {
     recordTXOperation(ServerRegionOperation.KEY_SET, null);
     return KeySetOp.execute(pool, regionName);
   }
@@ -329,8 +330,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public List registerInterest(final Object key, final int interestType,
-      final InterestResultPolicy policy, final boolean isDurable, final byte regionDataPolicy) {
+  public <K> List<List<K>> registerInterest(@NotNull final K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     return registerInterest(key, interestType, policy, isDurable, false, regionDataPolicy);
   }
 
@@ -345,24 +347,26 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public List registerInterest(final Object key, final int interestType,
-      final InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  public <K> List<List<K>> registerInterest(final @NotNull K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
       logger.warn(
           "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
-      return registerInterestList((List) key, policy, isDurable, receiveUpdatesAsInvalidates,
+      return registerInterestList(uncheckedCast(key), policy, isDurable,
+          receiveUpdatesAsInvalidates,
           regionDataPolicy);
     } else {
       final RegisterInterestTracker rit = pool.getRITracker();
-      List result;
       boolean finished = false;
       try {
         // register with the tracker early
         rit.addSingleInterest(region, key, interestType, policy, isDurable,
             receiveUpdatesAsInvalidates);
-        result = RegisterInterestOp.execute(pool, regionName, key, interestType, policy,
-            isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
+        final List<List<K>> result =
+            RegisterInterestOp.execute(pool, regionName, key, interestType, policy,
+                isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
         //////// TEST PURPOSE ONLY ///////////
         if (PoolImpl.AFTER_REGISTER_CALLBACK_FLAG) {
           ClientServerObserver bo = ClientServerObserverHolder.getInstance();
@@ -383,7 +387,8 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   /**
    * Support for server-side interest registration
    */
-  public void addSingleInterest(Object key, int interestType, InterestResultPolicy pol,
+  public void addSingleInterest(Object key, final @NotNull InterestType interestType,
+      InterestResultPolicy pol,
       boolean isDurable, boolean receiveUpdatesAsInvalidates) {
     RegisterInterestTracker rit = pool.getRITracker();
     boolean finished = false;
@@ -399,8 +404,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     }
   }
 
-  public void addListInterest(List keys, InterestResultPolicy pol, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates) {
+  public <K> void addListInterest(final @NotNull List<K> keys,
+      final @NotNull InterestResultPolicy pol, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates) {
     RegisterInterestTracker rit = pool.getRITracker();
     boolean finished = false;
     try {
@@ -416,14 +422,15 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   /**
    * Support for server-side interest registration
    */
-  public void removeSingleInterest(Object key, int interestType, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates) {
+  public void removeSingleInterest(final @NotNull Object key,
+      final @NotNull InterestType interestType, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates) {
     pool.getRITracker().removeSingleInterest(region, key, interestType, isDurable,
         receiveUpdatesAsInvalidates);
   }
 
-  public void removeListInterest(List keys, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates) {
+  public <K> void removeListInterest(final @NotNull List<K> keys, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates) {
     pool.getRITracker().removeInterestList(region, keys, isDurable,
         receiveUpdatesAsInvalidates);
   }
@@ -441,8 +448,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public List registerInterestOn(ServerLocation sl, final Object key, final int interestType,
-      final InterestResultPolicy policy, final boolean isDurable, final byte regionDataPolicy) {
+  public <K> List<K> registerInterestOn(final @NotNull ServerLocation sl, final @NotNull K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
     return registerInterestOn(sl, key, interestType, policy, isDurable, false, regionDataPolicy);
   }
 
@@ -460,11 +468,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  private List registerInterestOn(ServerLocation sl, final Object key, final int interestType,
-      final InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  private <K> List<K> registerInterestOn(final @NotNull ServerLocation sl, final @NotNull K key,
+      final @NotNull InterestType interestType, final @NotNull InterestResultPolicy policy,
+      final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates, final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
-      return RegisterInterestListOp.executeOn(sl, pool, regionName, (List) key, policy,
+      return RegisterInterestListOp.executeOn(sl, pool, regionName, uncheckedCast(key), policy,
           isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
     } else {
       return RegisterInterestOp.executeOn(sl, pool, regionName, key, interestType, policy,
@@ -486,11 +495,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  List registerInterestOn(Connection conn, final Object key, final int interestType,
-      final InterestResultPolicy policy, final boolean isDurable,
-      final boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  <K> List<K> registerInterestOn(final @NotNull Connection conn, final @NotNull K key,
+      final @NotNull InterestType interestType, final InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     if (interestType == InterestType.KEY && key instanceof List) {
-      return RegisterInterestListOp.executeOn(conn, pool, regionName, (List) key, policy,
+      return RegisterInterestListOp.executeOn(conn, pool, regionName, uncheckedCast(key), policy,
           isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
     } else {
       return RegisterInterestOp.executeOn(conn, pool, regionName, key, interestType,
@@ -509,10 +519,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param regionDataPolicy the data policy ordinal of the region
    * @return list of keys
    */
-  public List registerInterestList(List keys, InterestResultPolicy policy, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates, final byte regionDataPolicy) {
+  public <K> List<K> registerInterestList(final @NotNull List<K> keys,
+      final @NotNull InterestResultPolicy policy,
+      final boolean isDurable, final boolean receiveUpdatesAsInvalidates,
+      final @NotNull DataPolicy regionDataPolicy) {
     final RegisterInterestTracker rit = pool.getRITracker();
-    List result;
+    List<K> result;
     boolean finished = false;
     try {
       // register with the tracker early
@@ -542,10 +554,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param isClosing true if this unregister is done by a close
    * @param keepAlive true if this unregister should not undo a durable registration
    */
-  public void unregisterInterest(Object key, int interestType, boolean isClosing,
+  public void unregisterInterest(Object key, final @NotNull InterestType interestType,
+      boolean isClosing,
       boolean keepAlive) {
     if (interestType == InterestType.KEY && key instanceof List) {
-      unregisterInterestList((List) key, isClosing, keepAlive);
+      unregisterInterestList(uncheckedCast(key), isClosing, keepAlive);
     } else {
       RegisterInterestTracker rit = pool.getRITracker();
       boolean removed = rit.removeSingleInterest(region, key, interestType, false, false)
@@ -566,7 +579,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @param isClosing true if this unregister is done by a close
    * @param keepAlive true if this unregister should not undo a durable registration
    */
-  public void unregisterInterestList(List keys, boolean isClosing, boolean keepAlive) {
+  public <K> void unregisterInterestList(List<K> keys, boolean isClosing, boolean keepAlive) {
     RegisterInterestTracker rit = pool.getRITracker();
     boolean removed = rit.removeInterestList(region, keys, false, true)
         || rit.removeInterestList(region, keys, false, false)
@@ -577,7 +590,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     }
   }
 
-  public List getInterestList(int interestType) {
+  public <K> List<K> getInterestList(final @NotNull InterestType interestType) {
     return pool.getRITracker().getInterestList(regionName, interestType);
   }
 
@@ -587,7 +600,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     recordTXOperation(ServerRegionOperation.PUT_ALL, null, map, eventId);
     int txID = TXManagerImpl.getCurrentTXUniqueId();
     if (pool.getPRSingleHopEnabled() && (txID == TXManagerImpl.NOTX)) {
-      return PutAllOp.execute(pool, region, map, eventId, skipCallbacks,
+      return PutAllOp.execute(pool, uncheckedCast(region), map, eventId, skipCallbacks,
           pool.getRetryAttempts(), callbackArg);
     } else {
       return PutAllOp.execute(pool, region, map, eventId, skipCallbacks, false,
@@ -610,7 +623,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   @Override
-  public VersionedObjectList getAll(List keys, Object callback) {
+  public VersionedObjectList getAll(List<Object> keys, Object callback) {
     recordTXOperation(ServerRegionOperation.GET_ALL, null, keys);
     int txID = TXManagerImpl.getCurrentTXUniqueId();
     VersionedObjectList result;
@@ -653,13 +666,13 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   @Override
-  public Region getRegion() {
+  public Region<?, ?> getRegion() {
     return region;
   }
 
-  public void executeFunction(Function function,
+  public void executeFunction(Function<?> function,
       ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
+      ResultCollector<?, ?> resultCollector,
       byte hasResult, final int timeoutMs) {
 
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 1, function,
@@ -747,7 +760,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   public void executeFunction(String functionId,
       ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
+      ResultCollector<?, ?> resultCollector,
       byte hasResult, boolean isHA, boolean optimizeForWrite,
       final int timeoutMs) {
 
@@ -830,8 +843,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
 
-  public void executeFunctionNoAck(String rgnName, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, byte hasResult, boolean replaying) {
+  public void executeFunctionNoAck(String rgnName, Function<?> function,
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      byte hasResult) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 3, function,
         serverRegionExecutor, hasResult);
     ExecuteRegionFunctionNoAckOp.execute(pool, rgnName, function, serverRegionExecutor,
@@ -839,8 +853,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   public void executeFunctionNoAck(String rgnName, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor, byte hasResult, boolean isHA,
-      boolean optimizeForWrite, boolean replaying) {
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      byte hasResult, boolean isHA,
+      boolean optimizeForWrite) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 4, functionId,
         serverRegionExecutor, hasResult);
     ExecuteRegionFunctionNoAckOp.execute(pool, rgnName, functionId, serverRegionExecutor,
@@ -848,9 +863,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   @Override
-  public Entry getEntry(Object key) {
+  public Entry<?, ?> getEntry(Object key) {
     recordTXOperation(ServerRegionOperation.GET_ENTRY, key);
-    return (Entry) GetEntryOp.execute(pool, region, key);
+    return (Entry<?, ?>) GetEntryOp.execute(pool, region, key);
   }
 
 

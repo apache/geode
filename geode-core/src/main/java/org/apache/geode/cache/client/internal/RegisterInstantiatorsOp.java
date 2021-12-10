@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.Instantiator;
 import org.apache.geode.SerializationException;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
@@ -125,7 +127,7 @@ public class RegisterInstantiatorsOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       processAck(msg, "registerInstantiators");
       return null;
     }

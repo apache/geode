@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.DistributedMember;
@@ -46,8 +48,9 @@ public class Ping extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start) throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("{}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),
@@ -121,7 +124,8 @@ public class Ping extends BaseCommand {
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
+  protected void writeReply(final @NotNull Message origMsg,
+      final @NotNull ServerConnection serverConnection) throws IOException {
     Message replyMsg = serverConnection.getReplyMessage();
     serverConnection.getCache().getCancelCriterion().checkCancelInProgress(null);
     replyMsg.setMessageType(MessageType.REPLY);

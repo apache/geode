@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -48,7 +50,7 @@ public class GetEntryOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       EntrySnapshot snap = (EntrySnapshot) processObjResponse(msg, "getEntry");
       if (snap != null) {
         snap.setRegion(region);

@@ -48,6 +48,8 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
@@ -56,6 +58,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestRegistrationEvent;
 import org.apache.geode.cache.InterestRegistrationListener;
@@ -99,6 +102,7 @@ import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1065,12 +1069,18 @@ public class CacheClientNotifier {
    * @param isDurable whether the registration persists when client goes away
    * @param sendUpdatesAsInvalidates client wants invalidation messages
    * @param manageEmptyRegions whether to book keep empty region information
-   * @param regionDataPolicy (0=empty)
+   * @param regionDataPolicy region data policy
    */
-  public void registerClientInterest(String regionName, Object keyOfInterest,
-      ClientProxyMembershipID membershipID, int interestType, boolean isDurable,
-      boolean sendUpdatesAsInvalidates, boolean manageEmptyRegions, int regionDataPolicy,
-      boolean flushState) throws IOException, RegionDestroyedException {
+  public void registerClientInterest(final @NotNull String regionName,
+      final @NotNull Object keyOfInterest,
+      final @NotNull ClientProxyMembershipID membershipID,
+      final @NotNull InterestType interestType,
+      final boolean isDurable,
+      final boolean sendUpdatesAsInvalidates,
+      final boolean manageEmptyRegions,
+      final @NotNull DataPolicy regionDataPolicy,
+      final boolean flushState)
+      throws IOException, RegionDestroyedException {
 
     CacheClientProxy proxy = getClientProxy(membershipID, true);
 
@@ -1110,10 +1120,11 @@ public class CacheClientNotifier {
    * @param regionDataPolicy (0==empty)
    * @since GemFire 6.1
    */
-  public void updateMapOfEmptyRegions(Map<String, Integer> regionsWithEmptyDataPolicy,
-      String regionName,
-      int regionDataPolicy) {
-    if (regionDataPolicy == 0) {
+  public void updateMapOfEmptyRegions(
+      final @NotNull Map<String, Integer> regionsWithEmptyDataPolicy,
+      final @NotNull String regionName,
+      final @Nullable DataPolicy regionDataPolicy) {
+    if (regionDataPolicy == DataPolicy.EMPTY) {
       if (!regionsWithEmptyDataPolicy.containsKey(regionName)) {
         regionsWithEmptyDataPolicy.put(regionName, 0);
       }
@@ -1129,7 +1140,8 @@ public class CacheClientNotifier {
    * @param membershipID The {@code ClientProxyMembershipID} of the client no longer interested
    *        in this {@code Region} and key
    */
-  public void unregisterClientInterest(String regionName, Object keyOfInterest, int interestType,
+  public void unregisterClientInterest(String regionName, Object keyOfInterest,
+      final @NotNull InterestType interestType,
       boolean isClosing, ClientProxyMembershipID membershipID, boolean keepalive) {
     if (logger.isDebugEnabled()) {
       logger.debug(
@@ -1151,9 +1163,14 @@ public class CacheClientNotifier {
    * @param membershipID The {@code ClientProxyMembershipID} of the client no longer interested
    *        in this {@code Region} and key
    */
-  public void registerClientInterest(String regionName, List<?> keysOfInterest,
-      ClientProxyMembershipID membershipID, boolean isDurable, boolean sendUpdatesAsInvalidates,
-      boolean manageEmptyRegions, int regionDataPolicy, boolean flushState)
+  public void registerClientInterest(final @NotNull String regionName,
+      final @NotNull List<?> keysOfInterest,
+      final @NotNull ClientProxyMembershipID membershipID,
+      final boolean isDurable,
+      final boolean sendUpdatesAsInvalidates,
+      final boolean manageEmptyRegions,
+      final @NotNull DataPolicy regionDataPolicy,
+      final boolean flushState)
       throws IOException, RegionDestroyedException {
     CacheClientProxy proxy = getClientProxy(membershipID, true);
 
