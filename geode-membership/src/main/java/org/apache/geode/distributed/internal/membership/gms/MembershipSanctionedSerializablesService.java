@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 
 public class MembershipSanctionedSerializablesService implements SanctionedSerializablesService {
 

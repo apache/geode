@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.ServerSocket;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-public class GeodeRedisServerStartUpAcceptanceTest {
+public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -47,7 +47,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "--geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
 
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("localhost", port));
       execution = GfshScript.of(startServerCommand)
           .expectFailure()
@@ -69,7 +69,7 @@ public class GeodeRedisServerStartUpAcceptanceTest {
         "--geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
 
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("0.0.0.0", port));
       execution = GfshScript.of(startServerCommand)
           .expectFailure()

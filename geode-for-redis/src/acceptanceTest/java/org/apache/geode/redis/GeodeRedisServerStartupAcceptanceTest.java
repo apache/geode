@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.ServerSocket;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -45,7 +45,7 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class GeodeRedisServerStartupDUnitTest {
+public class GeodeRedisServerStartupAcceptanceTest {
 
   @Rule
   public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
@@ -111,8 +111,9 @@ public class GeodeRedisServerStartupDUnitTest {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     addIgnoredException("Could not start server compatible with Redis");
-    try (Socket interferingSocket = new Socket()) {
+    try (ServerSocket interferingSocket = new ServerSocket()) {
       interferingSocket.bind(new InetSocketAddress("localhost", port));
+
       assertThatThrownBy(() -> cluster.startServerVM(0, s -> s
           .withProperty(GEODE_FOR_REDIS_PORT, "" + port)
           .withProperty(GEODE_FOR_REDIS_BIND_ADDRESS, "localhost")

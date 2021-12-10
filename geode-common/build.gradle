@@ -34,9 +34,10 @@ dependencies {
 
   // test
   testImplementation('junit:junit')
-  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+  testImplementation('org.apache.commons:commons-lang3')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
+  testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
 
 
   // jmhTest

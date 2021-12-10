@@ -119,6 +119,10 @@ public abstract class AbstractOp implements Op {
 
       if (UserAttributes.userAttributes.get() == null) { // single user mode
         userId = cnx.getServer().getUserId();
+        if (userId == -1) {
+          throw new ServerConnectivityException(
+              "Invalid userId. Connection error while authenticating user");
+        }
       } else { // multi user mode
         Long id = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());
         if (id == null) {

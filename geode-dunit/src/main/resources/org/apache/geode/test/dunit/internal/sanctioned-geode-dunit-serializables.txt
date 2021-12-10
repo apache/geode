@@ -138,7 +138,7 @@ org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,false,RootRegionN
 org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase$1,false,this$0:org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,val$exceptionStringToIgnore:java/lang/String
 org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase$2,false,this$0:org/apache/geode/test/dunit/cache/internal/JUnit4CacheTestCase,val$exceptionStringToIgnore:java/lang/String
 org/apache/geode/test/dunit/internal/DUnitHost,true,-8034165624503666383
-org/apache/geode/test/dunit/internal/DUnitLauncher$1,false,val$locatorLogFile:java/io/File
+org/apache/geode/test/dunit/internal/DUnitLauncher$1,false,val$locatorLogFile:java/io/File,val$port:int
 org/apache/geode/test/dunit/internal/IdentifiableCallable,false,delegate:org/apache/geode/test/dunit/SerializableCallableIF,id:long,name:java/lang/String
 org/apache/geode/test/dunit/internal/IdentifiableRunnable,false,delegate:org/apache/geode/test/dunit/SerializableRunnableIF,id:long,name:java/lang/String
 org/apache/geode/test/dunit/internal/InternalBlackboardImpl,false,gates:java/util/Map,mailboxes:java/util/Map
