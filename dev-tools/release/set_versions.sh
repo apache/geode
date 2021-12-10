@@ -186,7 +186,7 @@ sed -e "s/^versionNumber = .*/versionNumber = ${VERSION}/" \
 
 rm gradle.properties.bak
 set -x
-git add .
+git add gradle.properties
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}"
