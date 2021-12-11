@@ -547,7 +547,7 @@ echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-t
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
 [ -n "$LATER" ] && caveat=" (UNLESS they are still unreleased on a later patch branch)"
 echo "5. Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
-echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub).  Release Description:"
+echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub ).  Release Description:"
 [ "${PATCH}" -ne 0 ] && echo "     This patch release includes a few bug fixes." || echo "     This release includes a significant number of bug fixes and improvements."
 echo "     "
 echo "     sha256 for apache-geode-${VERSION}.tgz is $(awk '{print} $1' < ${GEODE}/geode-assembly/build/distributions/apache-geode-${VERSION}.tgz.sha256)"
