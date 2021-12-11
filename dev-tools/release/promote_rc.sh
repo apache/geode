@@ -494,9 +494,11 @@ if [ -z "$LATER" ] ; then
     rm infrastructure/scripts/aws/run_against_baseline.sh.bak
     set -x
     git add infrastructure/scripts/aws/run_against_baseline.sh
-    git diff --staged --color | cat
-    git commit -m "update default benchmark baseline on $branch"
-    git push
+    if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+      git diff --staged --color | cat
+      git commit -m "update default benchmark baseline on $branch"
+      git push
+    fi
     set +x
   done
 fi
