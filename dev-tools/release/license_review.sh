@@ -132,6 +132,7 @@ function listJarsInWar() {
 }
 
 function extractLicense() {
+  [ "$SKIP_LICENSES" != "true" ] || return 0
   war=$1
   rm -Rf tmpl
   mkdir tmpl
