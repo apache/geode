@@ -107,7 +107,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /** Return true if the expiration unit is seconds; false if milliseconds */
   public boolean isExpiryUnitSeconds() {
     boolean isSeconds = true;
-    if (getLocalRegion() != null && getLocalRegion().EXPIRY_UNITS_MS) {
+    if (getLocalRegion() != null && getLocalRegion().isExpiryUnitsMilliseconds()) {
       isSeconds = false;
     }
     return isSeconds;
