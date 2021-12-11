@@ -378,6 +378,12 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
 
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=ln").statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy region --name=parentRegion").statusIsSuccess();
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
