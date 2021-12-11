@@ -76,11 +76,12 @@ GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_NATIVE_DEVELOP=$WORKSPACE/geode-native-develop
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
+GEODE_BENCHMARKS_DEVELOP=$WORKSPACE/geode-benchmarks-develop
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$GEODE_BENCHMARKS_DEVELOP" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -481,16 +482,18 @@ if [ -z "$LATER" ] ; then
     echo "Updating default benchmark baseline on $branch"
     echo "============================================================"
     set -x
-    cd ${GEODE_BENCHMARKS}
+    [ "develop" = "$branch" ] && BENCH=${GEODE_BENCHMARKS_DEVELOP} || BENCH=${GEODE_BENCHMARKS}
+    [ "develop" = "$branch" ] && BASEL=${VERSION} || BASEL=${VERSION_MM}.0
+    cd ${BENCH}
     git checkout $branch
     git pull
     set +x
     #DEFAULT_BASELINE_VERSION=1.14.0
-    sed -e "s/^DEFAULT_BASELINE_VERSION=.*/DEFAULT_BASELINE_VERSION=${VERSION}/" \
+    sed -e "s/^DEFAULT_BASELINE_VERSION=.*/DEFAULT_BASELINE_VERSION=${BASEL}/" \
       -i.bak infrastructure/scripts/aws/run_against_baseline.sh
     rm infrastructure/scripts/aws/run_against_baseline.sh.bak
     set -x
-    git add settings.gradle
+    git add infrastructure/scripts/aws/run_against_baseline.sh
     git diff --staged --color | cat
     git commit -m "update default benchmark baseline on $branch"
     git push

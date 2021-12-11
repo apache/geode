@@ -165,6 +165,7 @@ git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/g
 git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-native.git
 git clone --single-branch --branch develop git@github.com:apache/geode-native.git geode-native-develop
 git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
+git clone --single-branch --branch develop git@github.com:apache/geode-benchmarks.git geode-benchmarks-develop
 git clone --single-branch --branch master git@github.com:Homebrew/homebrew-core.git
 
 svn checkout https://dist.apache.org/repos/dist --depth empty
