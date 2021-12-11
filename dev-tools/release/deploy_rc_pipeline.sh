@@ -362,7 +362,7 @@ jobs:
         - get: upthewaterspout-tests
         - get: geode-examples
       - task: validate
-        timeout: 1h
+        timeout: 2h
         config:
           image_resource:
             type: docker-image
