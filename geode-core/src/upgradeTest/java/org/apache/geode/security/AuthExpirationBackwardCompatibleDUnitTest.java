@@ -65,6 +65,7 @@ import org.apache.geode.test.version.VersionManager;
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
   private static String test_start_version = "1.14.0";
+  private static String feature_start_version = "1.15.0";
   private static RegionService user0Service;
   private static RegionService user1Service;
 
@@ -260,7 +261,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void cqOlderClientWillNotReAuthenticateAutomatically() throws Exception {
     // this test should only test the older client
-    if (TestVersion.compare(clientVersion, test_start_version) > 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) >= 0) {
       return;
     }
 
@@ -368,7 +369,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void cqOlderClientWithClientInteractionWillDeliverEventEventually() throws Exception {
     // this test should only test the older client
-    if (TestVersion.compare(clientVersion, test_start_version) > 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) >= 0) {
       return;
     }
     startClientWithCQ();
@@ -533,7 +534,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     // for old client, server close the proxy, client have reconnect mechanism which
     // also triggers re-auth, clients re-register interest, but with InterestResultPolicy.NONE
     // there would be message loss
-    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) < 0) {
       clientVM.invoke(() -> {
         Region<Object, Object> clientRegion =
             ClusterStartupRule.getClientCache().getRegion("region");
