@@ -39,7 +39,6 @@ import org.junit.Test;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SerializationException;
-import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedReference;
@@ -83,48 +82,71 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
     asList(server1, server2).forEach(vm -> vm.invoke(() -> {
       server.get().getCache()
           .createRegionFactory(REPLICATE)
-          .addCacheListener(new CacheListenerAdapter<Object, Object>() {
-            @Override
-            public void afterCreate(EntryEvent<Object, Object> event) {
-              // cache listener afterCreate causes all creates to deserialize the value which causes
-              // the tests to pass if serialization filter is configured
-              assertThat(event.getNewValue()).isNotNull();
-            }
-          })
           .create("region");
     }));
-
   }
 
   @Test
-  public void stringIsAllowed() {
+  public void regionPutAndGet_forStringKeyAndValue_isAllowedToDeserialize() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
       region.put("key", "value");
     });
-  }
 
-  @Test
-  public void primitiveIsAllowed() {
-    server1.invoke(() -> {
+    server2.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
-      region.put(1, 1);
+
+      int size = region.size();
+      assertThat(size).isOne();
+
+      Object value = region.get("key");
+      assertThat(value).isEqualTo("value");
     });
   }
 
   @Test
-  public void nonSerializableThrowsNotSerializableException() {
+  public void regionPutAndGet_forPrimitiveKeyAndValue_isAllowedToDeserialize() {
+    server1.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+      region.put(1, 1);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      int size = region.size();
+      assertThat(size).isOne();
+
+      Object value = region.get(1);
+      assertThat(value).isEqualTo(1);
+    });
+  }
+
+  @Test
+  public void regionPut_forNonSerializableKeyAndValue_throwsInternalGemFireException_wrappingNotSerializableException() {
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
       Throwable thrown = catchThrowable(() -> {
         region.put(new Object(), new Object());
       });
-      assertThat(thrown).hasCauseExactlyInstanceOf(NotSerializableException.class);
+      assertThat(thrown)
+          .isInstanceOf(InternalGemFireException.class)
+          .hasCauseExactlyInstanceOf(NotSerializableException.class);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      int size = region.size();
+      assertThat(size).isZero();
+
+      Object value = region.get(new Object());
+      assertThat(value).isNull();
     });
   }
 
   @Test
-  public void nonAllowedIsNotPropagatedToOtherServer() {
+  public void regionGet_forAllowedKeyWithNonAllowedValue_throwsSerializationException_wrappingInvalidClassException() {
     addIgnoredException(InvalidClassException.class);
     addIgnoredException(SerializationException.class);
 
@@ -135,6 +157,10 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
 
     server2.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
+
+      int size = region.size();
+      assertThat(size).isOne();
+
       Throwable thrown = catchThrowable(() -> {
         region.get("key");
       });
@@ -145,16 +171,25 @@ public class ValidateSerializableObjectsDistributedTest implements Serializable 
   }
 
   @Test
-  public void nonAllowedDoesNotThrow() {
+  public void regionPut_forNonAllowedKeyWithAllowedValue_throwsInternalGemFireException_wrappingIOException_wrappingInvalidClassException() {
     addIgnoredException(InvalidClassException.class);
     addIgnoredException(IOException.class);
 
     server1.invoke(() -> {
       Region<Object, Object> region = server.get().getCache().getRegion("region");
       Throwable thrown = catchThrowable(() -> {
-        region.put(new SerializableClass(), new SerializableClass());
+        region.put(new SerializableClass(), "value");
       });
-      assertThat(thrown).isInstanceOf(InternalGemFireException.class);
+      assertThat(thrown)
+          .isInstanceOf(InternalGemFireException.class)
+          .hasCauseInstanceOf(IOException.class)
+          .hasRootCauseInstanceOf(InvalidClassException.class);
+    });
+
+    server2.invoke(() -> {
+      Region<Object, Object> region = server.get().getCache().getRegion("region");
+      int size = region.size();
+      assertThat(size).isZero();
     });
   }
 
