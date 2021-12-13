@@ -23,6 +23,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRA
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY;
@@ -35,6 +36,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -53,6 +55,7 @@ import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
 import org.apache.geode.redis.internal.data.delta.SetByteArray;
 import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
@@ -241,6 +244,9 @@ public abstract class AbstractRedisData implements RedisData {
       case SET_BYTE_ARRAY_AND_TIMESTAMP:
         SetByteArrayAndTimestamp.deserializeFrom(in, this);
         break;
+      case REPLACE_BYTE_ARRAYS:
+        ReplaceByteArrays.deserializeFrom(in, this);
+        break;
       case REPLACE_BYTE_ARRAY_AT_OFFSET:
         ReplaceByteArrayAtOffset.deserializeFrom(in, this);
         break;
@@ -280,6 +286,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyAppendByteArrayDelta(byte[] bytes) {
     throw new IllegalStateException("unexpected " + APPEND_BYTE_ARRAY);
+  }
+
+  public void applyReplaceByteArraysDelta(Set<byte[]> bytes) {
+    throw new IllegalStateException("unexpected " + REPLACE_BYTE_ARRAYS);
   }
 
   public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] bytes) {

@@ -46,6 +46,7 @@ import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSet;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
@@ -103,19 +104,28 @@ public class RedisSet extends AbstractRedisData {
 
   private static int setOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
       Set<byte[]> diff) {
-    RedisSet destinationSet = regionProvider.getTypedRedisData(REDIS_SET, destinationKey, false);
+    if(regionProvider.getRedisData(destinationKey).getType() != REDIS_SET) {
+      regionProvider.getDataRegion().remove(destinationKey);
+    }
 
-    if (diff.isEmpty()) {
-      if (!destinationSet.exists()) {
+    boolean destinationKeyExists = regionProvider.getRedisData(destinationKey).exists();
+    if(diff.isEmpty()) {
+      if (destinationKeyExists) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
       return 0;
     }
 
-    destinationSet.members.clear();
-    destinationSet.persistNoDelta();
-    destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
-        new AddByteArrays((List<byte[]>) diff));
+    if(destinationKeyExists) {
+      RedisSet destinationSet = regionProvider.getTypedRedisData(REDIS_SET, destinationKey, false);
+
+      destinationSet.members.clear();
+      destinationSet.members.addAll(diff);
+      destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey, new ReplaceByteArrays(diff));
+    } else {
+      regionProvider.getDataRegion().put(destinationKey, new RedisSet(diff));
+    }
+
     return diff.size();
   }
 
@@ -247,6 +257,11 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public void applyRemoveByteArrayDelta(byte[] bytes) {
     membersRemove(bytes);
+  }
+
+  @Override
+  public void applyReplaceByteArraysDelta(Set<byte[]> bytes) {
+    members = new MemberSet(bytes);
   }
 
   /**
