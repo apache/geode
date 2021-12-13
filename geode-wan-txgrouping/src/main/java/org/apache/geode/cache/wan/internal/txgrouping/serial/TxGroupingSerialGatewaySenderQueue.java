@@ -27,9 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -198,37 +196,17 @@ public class TxGroupingSerialGatewaySenderQueue extends SerialGatewaySenderQueue
   }
 
   @Override
-  public synchronized void remove() throws CacheException {
-    if (peekedIds.isEmpty()) {
-      return;
-    }
-    boolean wasEmpty = lastDispatchedKey == lastDestroyedKey;
-    Long key = peekedIds.remove();
+  protected void preProcessRemovedKey(Long key) {
     boolean isExtraPeekedId = extraPeekedIds.contains(key);
     if (!isExtraPeekedId) {
-      updateHeadKey(key);
-      lastDispatchedKey = key;
+      super.preProcessRemovedKey(key);
     } else {
       extraPeekedIdsRemovedButPreviousIdNotRemoved.add(key);
     }
-    removeIndex(key);
-    // Remove the entry at that key with a callback arg signifying it is
-    // a WAN queue so that AbstractRegionEntry.destroy can get the value
-    // even if it has been evicted to disk. In the normal case, the
-    // AbstractRegionEntry.destroy only gets the value in the VM.
-    try {
-      this.region.localDestroy(key, WAN_QUEUE_TOKEN);
-      this.stats.decQueueSize();
-    } catch (EntryNotFoundException ok) {
-      // this is acceptable because the conflation can remove entries
-      // out from underneath us.
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
-            this, key);
-      }
-    }
+  }
 
+  @Override
+  protected void postProcessRemovedKey() {
     // For those extraPeekedIds removed that are consecutive to lastDispatchedKey:
     // - Update lastDispatchedKey with them so that they are removed
     // by the batch removal thread.
@@ -238,20 +216,7 @@ public class TxGroupingSerialGatewaySenderQueue extends SerialGatewaySenderQueue
     while (extraPeekedIdsRemovedButPreviousIdNotRemoved.contains(tmpKey = inc(tmpKey))) {
       extraPeekedIdsRemovedButPreviousIdNotRemoved.remove(tmpKey);
       extraPeekedIds.remove(tmpKey);
-      updateHeadKey(tmpKey);
-      lastDispatchedKey = tmpKey;
-    }
-
-    if (wasEmpty) {
-      synchronized (this) {
-        notifyAll();
-      }
-    }
-
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
-          this, key, this.lastDispatchedKey, this.lastDestroyedKey);
+      super.preProcessRemovedKey(tmpKey);
     }
   }
 

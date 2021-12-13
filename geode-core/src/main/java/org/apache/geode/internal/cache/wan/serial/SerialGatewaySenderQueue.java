@@ -284,10 +284,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (peekedIds.isEmpty()) {
       return;
     }
-    boolean wasEmpty = lastDispatchedKey == lastDestroyedKey;
-    Long key = peekedIds.remove();
-    updateHeadKey(key);
-    lastDispatchedKey = key;
+    final boolean wasEmpty = lastDispatchedKey == lastDestroyedKey;
+    final Long key = peekedIds.remove();
+
+    preProcessRemovedKey(key);
 
     removeIndex(key);
     // Remove the entry at that key with a callback arg signifying it is
@@ -307,6 +307,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
 
+    postProcessRemovedKey();
+
     if (wasEmpty) {
       synchronized (this) {
         notifyAll();
@@ -319,6 +321,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           this, key, lastDispatchedKey, lastDestroyedKey);
     }
   }
+
+  protected void preProcessRemovedKey(final Long key) {
+    updateHeadKey(key);
+    lastDispatchedKey = key;
+  }
+
+  protected void postProcessRemovedKey() {}
+
 
   /**
    * This method removes batchSize entries from the queue. It will only remove entries that were
