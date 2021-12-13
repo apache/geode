@@ -150,14 +150,14 @@ public class NativeRedisClusterTestRule extends ExternalResource {
   private List<ClusterNode> waitForRedisNodes(int port, int wantedPrimaries) {
     List<ClusterNode> nodes = null;
     int primaryCount = 0;
-    int replicakount = 0;
+    int replicaCount = 0;
 
     try (Jedis jedis = new Jedis(BIND_ADDRESS, port, REDIS_CLIENT_TIMEOUT)) {
       for (int i = 0; i < 60; i++) {
         nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
         primaryCount = nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum();
-        replicakount = nodes.stream().mapToInt(x -> x.primary ? 0 : 1).sum();
-        if (primaryCount == wantedPrimaries && replicakount == wantedPrimaries) {
+        replicaCount = nodes.stream().mapToInt(x -> x.primary ? 0 : 1).sum();
+        if (primaryCount == wantedPrimaries && replicaCount == wantedPrimaries) {
           return nodes;
         }
 
@@ -174,7 +174,7 @@ public class NativeRedisClusterTestRule extends ExternalResource {
         .as("Incorrect primary node count")
         .isEqualTo(wantedPrimaries);
 
-    assertThat(replicakount)
+    assertThat(replicaCount)
         .as("Incorrect replica node count")
         .isEqualTo(wantedPrimaries);
 
