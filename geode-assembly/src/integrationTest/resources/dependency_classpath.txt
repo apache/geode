@@ -25,8 +25,8 @@ geode-unsafe-0.0.0.jar
 HikariCP-3.4.1.jar
 commons-lang3-3.9.jar
 jaxb-api-2.3.1.jar
-log4j-jcl-2.15.0.jar
-log4j-api-2.15.0.jar
+log4j-jcl-2.16.0.jar
+log4j-api-2.16.0.jar
 spring-shell-1.2.0.RELEASE.jar
 rmiio-2.1.2.jar
 jaxb-impl-2.3.2.jar
@@ -78,9 +78,9 @@ jetty-http-9.4.39.v20210325.jar
 jetty-io-9.4.39.v20210325.jar
 jetty-util-ajax-9.4.39.v20210325.jar
 jetty-util-9.4.39.v20210325.jar
-log4j-slf4j-impl-2.15.0.jar
-log4j-core-2.15.0.jar
-log4j-jul-2.15.0.jar
+log4j-slf4j-impl-2.16.0.jar
+log4j-core-2.16.0.jar
+log4j-jul-2.16.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
 lucene-analyzers-common-6.6.6.jar
 lucene-queryparser-6.6.6.jar

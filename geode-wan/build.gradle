@@ -32,7 +32,7 @@ dependencies {
   implementation(project(':geode-tcp-server'))
   compile(project(':geode-core'))
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.15.0')
+  compileOnly('org.apache.logging.log4j:log4j-api:2.16.0')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
