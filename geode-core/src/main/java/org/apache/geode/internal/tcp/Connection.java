@@ -2910,7 +2910,11 @@ public class Connection implements Runnable {
     inputBuffer.limit(inputBuffer.capacity());
   }
 
-  private boolean readHandshakeForReceiver(final DataInput dis) {
+  /**
+   * Returns true if handshake was read successfully, false otherwise.
+   */
+  @VisibleForTesting
+  boolean readHandshakeForReceiver(final DataInput dis) {
     try {
       checkHandshakeInitialByte(dis);
       checkHandshakeVersion(dis);
@@ -2960,24 +2964,15 @@ public class Connection implements Runnable {
       final boolean isSecure = authInit != null && !authInit.isEmpty();
 
       if (isSecure) {
-        if (owner.getConduit().waitForMembershipCheck(remoteMember)) {
-          sendOKHandshakeReply();
-          notifyHandshakeWaiter(true);
-        } else {
-          // check if we need notifyHandshakeWaiter() call.
+        if (!owner.getConduit().waitForMembershipCheck(remoteMember)) {
           notifyHandshakeWaiter(false);
-          logger.warn("{} timed out during a membership check.",
-              p2pReaderName());
+          logger.warn("{} timed out during a membership check.", p2pReaderName());
+          requestClose("timed out during a membership check");
           return true;
         }
-      } else {
-        sendOKHandshakeReply();
-        try {
-          notifyHandshakeWaiter(true);
-        } catch (Exception e) {
-          logger.fatal("Uncaught exception from listener", e);
-        }
       }
+      sendOKHandshakeReply();
+      notifyHandshakeWaiter(true);
       finishedConnecting = true;
     } catch (IOException ex) {
       final String err = "Failed sending handshake reply";
@@ -3047,7 +3042,8 @@ public class Connection implements Runnable {
     return false;
   }
 
-  private void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
+  @VisibleForTesting
+  void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
     if (messageType == NORMAL_MSG_TYPE) {
       owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       try (ByteBufferInputStream bbis =
