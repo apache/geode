@@ -60,6 +60,10 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
+  public RedisSet(int expectedSize) {
+    members = new MemberSet(expectedSize);
+  }
+
   /**
    * For deserialization only.
    */
@@ -261,7 +265,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  boolean membersRemove(byte[] memberToRemove) {
+  synchronized boolean membersRemove(byte[] memberToRemove) {
     return members.remove(memberToRemove);
   }
 

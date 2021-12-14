@@ -30,13 +30,17 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
@@ -47,8 +51,13 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RedisSetTest {
+
+  @ClassRule
+  public static final ExecutorServiceRule executor = new ExecutorServiceRule();
+
   private final ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
   @Test
@@ -307,7 +316,68 @@ public class RedisSetTest {
     doAddsAndAssertSize(set, membersToAdd);
   }
 
+  @Test
+  public void testConcurrencyWhenAddingMembers() throws Exception {
+    int expectedSize = 1000;
+    // Make sure the initial size is smaller than the expected size.
+    RedisSet set = new RedisSet(1);
+
+    AtomicBoolean running = new AtomicBoolean(true);
+    Future<Void> future1 = executor.submit(() -> iterateOverSet(set, running));
+    Future<Void> future2 = executor.submit(() -> addToSet(set, expectedSize));
+
+    future2.get();
+    running.set(false);
+    future1.get();
+
+    assertThat(set.scard()).isEqualTo(expectedSize);
+  }
+
+  @Test
+  public void testConcurrencyWhenRemovingMembers() throws Exception {
+    int numOfInitialMembers = 1000;
+    RedisSet set = new RedisSet(numOfInitialMembers);
+    for (int i = 0; i < numOfInitialMembers; ++i) {
+      set.membersAdd(Coder.intToBytes(i));
+    }
+
+    AtomicBoolean running = new AtomicBoolean(true);
+    Future<Void> future1 = executor.submit(() -> iterateOverSet(set, running));
+    Future<Void> future2 = executor.submit(() -> deleteFromSet(set));
+
+    future2.get();
+    running.set(false);
+    future1.get();
+
+    assertThat(set.scard()).isEqualTo(0);
+  }
+
+
   /******* helper methods *******/
+
+  private void addToSet(RedisSet set, int count) {
+    for (int i = 0; i < count; i++) {
+      assertThat(set.membersAdd(Coder.intToBytes(i))).isTrue();
+    }
+  }
+
+  private void deleteFromSet(RedisSet set) {
+    int size = set.scard();
+    for (int i = 0; i < size; i++) {
+      Collection<byte[]> removals = set.srandmember(1);
+      byte[] candidate = removals.iterator().next();
+      assertThat(set.membersRemove(candidate))
+          .as("Did not find " + Coder.bytesToLong(candidate)).isTrue();
+    }
+  }
+
+  private void iterateOverSet(RedisSet set, AtomicBoolean running) throws Exception {
+    while (running.get()) {
+      HeapDataOutputStream out = new HeapDataOutputStream(100);
+      set.toData(out, null);
+    }
+  }
+
   private RedisSet createRedisSetOfSpecifiedSize(int setSize) {
     List<byte[]> arrayList = new ArrayList<>();
     for (int i = 0; i < setSize; i++) {
