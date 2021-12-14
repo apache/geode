@@ -97,8 +97,11 @@ public class ClientUserAuths {
     this.idGenerator = idGenerator;
   }
 
-  synchronized long getNextID() {
-    final long uniqueId = idGenerator.generateId();
+  private synchronized long getNextID() {
+    long uniqueId = idGenerator.generateId();
+    if (uniqueId == 0) {
+      uniqueId = idGenerator.generateId();
+    }
     if (uniqueId == -1) {
       // now every user need to reauthenticate as we are short of Ids..
       // though possibility of this is rare.
