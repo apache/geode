@@ -36,7 +36,7 @@ public class GatewaySenderFactoryImplTest {
   @Test
   public void getGatewaySenderTypeFactoryWithIsParallelTrueReturnsAParallelGatewaySenderTypeFactory() {
     final GatewaySenderAttributes attributes = mock(GatewaySenderAttributes.class);
-    when(attributes.isParallel()).thenReturn(true);
+    when(attributes.getType()).thenReturn("ParallelGatewaySender");
     assertThat(GatewaySenderFactoryImpl.getGatewaySenderTypeFactory(attributes)).isInstanceOf(
         ParallelGatewaySenderTypeFactory.class);
   }
@@ -44,7 +44,7 @@ public class GatewaySenderFactoryImplTest {
   @Test
   public void getGatewaySenderTypeFactoryWithIsParallelFalseReturnsASerialGatewaySenderTypeFactory() {
     final GatewaySenderAttributes attributes = mock(GatewaySenderAttributes.class);
-    when(attributes.isParallel()).thenReturn(false);
+    when(attributes.getType()).thenReturn("SerialGatewaySender");
     assertThat(GatewaySenderFactoryImpl.getGatewaySenderTypeFactory(attributes)).isInstanceOf(
         SerialGatewaySenderTypeFactory.class);
   }

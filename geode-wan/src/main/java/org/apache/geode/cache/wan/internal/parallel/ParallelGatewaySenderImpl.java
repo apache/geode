@@ -44,6 +44,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
+  public static final String TYPE = "ParallelGatewaySender";
+
   private static final Logger logger = LogService.getLogger();
 
   public ParallelGatewaySenderImpl(InternalCache cache, StatisticsClock statisticsClock,
@@ -145,6 +147,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  @Override
+  public String getType() {
+    return ParallelGatewaySenderImpl.TYPE;
   }
 
   @Override

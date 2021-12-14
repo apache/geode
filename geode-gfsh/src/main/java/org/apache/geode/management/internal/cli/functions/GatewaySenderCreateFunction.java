@@ -82,9 +82,15 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
       GatewaySenderFunctionArgs gatewaySenderCreateArgs) {
     GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
 
-    Boolean isParallel = gatewaySenderCreateArgs.isParallel();
-    if (isParallel != null) {
-      gateway.setParallel(isParallel);
+    String type = gatewaySenderCreateArgs.getType();
+    if (type != null) {
+      gateway.setType(gatewaySenderCreateArgs.getType());
+      gateway.setParallel(gatewaySenderCreateArgs.getType().contains("Parallel"));
+    } else {
+      Boolean isParallel = gatewaySenderCreateArgs.isParallel();
+      if (isParallel != null) {
+        gateway.setParallel(isParallel);
+      }
     }
 
     Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();

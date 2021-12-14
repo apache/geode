@@ -53,6 +53,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySender;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -203,14 +204,13 @@ public class TxGroupingBaseDUnitTest implements Serializable {
   }
 
   protected void startServerWithSender(int systemId, int locatorPort, int remoteSystemId,
-      String remoteName, boolean isParallel, boolean groupTransactionEvents, int batchSize)
+      String remoteName, String type, int batchSize)
       throws IOException {
-    startServerWithSender(systemId, locatorPort, remoteSystemId, remoteName, isParallel,
-        groupTransactionEvents, batchSize, 0);
+    startServerWithSender(systemId, locatorPort, remoteSystemId, remoteName, type, batchSize, 0);
   }
 
   protected void startServerWithSender(int systemId, int locatorPort, int remoteSystemId,
-      String remoteName, boolean isParallel, boolean groupTransactionEvents, int batchSize,
+      String remoteName, String type, int batchSize,
       int dispatcherThreads) throws IOException {
     cacheRule.createCache(createServerConfig(locatorPort));
 
@@ -218,13 +218,15 @@ public class TxGroupingBaseDUnitTest implements Serializable {
     File[] dirs = new File[] {temporaryFolder.newFolder(uniqueName)};
 
     GatewaySenderFactory senderFactory = createGatewaySenderFactory(dirs, uniqueName);
-    senderFactory.setParallel(isParallel);
-    senderFactory.setGroupTransactionEvents(groupTransactionEvents);
+    senderFactory.setType(type);
     senderFactory.setBatchSize(batchSize);
     if (dispatcherThreads > 0) {
       senderFactory.setDispatcherThreads(dispatcherThreads);
     }
     GatewaySender sender = senderFactory.create(remoteName, remoteSystemId);
+    if (sender instanceof TxGroupingGatewaySender) {
+      ((TxGroupingGatewaySender) sender).setRetriesToGetTransactionEventsFromQueue(1000);
+    }
     sender.start();
   }
 

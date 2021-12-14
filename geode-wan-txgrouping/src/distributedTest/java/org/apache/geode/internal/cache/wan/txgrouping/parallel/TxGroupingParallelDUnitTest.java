@@ -33,6 +33,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.txgrouping.parallel.TxGroupingParallelGatewaySenderImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
@@ -49,9 +51,9 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({TxGroupingParallelGatewaySenderImpl.TYPE, ParallelGatewaySenderImpl.TYPE})
   public void testPRParallelPropagationWithVsWithoutGroupTransactionEvents(
-      boolean groupTransactionEvents) {
+      String type) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
       createCustomerOrderShipmentPartitionedRegion(null);
@@ -59,8 +61,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
 
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, true,
-            groupTransactionEvents,
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, type,
             10);
         createCustomerOrderShipmentPartitionedRegion(newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
@@ -90,7 +91,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
 
     List<Integer> senderStatsLondonServers = getSenderStats(newYorkName, 0, londonServersVM);
 
-    int expectedBatchesSent = groupTransactionEvents ? 1 : 2;
+    int expectedBatchesSent = type.equals(TxGroupingParallelGatewaySenderImpl.TYPE) ? 1 : 2;
     // queue size:
     assertThat(senderStatsLondonServers.get(0)).isEqualTo(0);
     // eventsReceived:
@@ -121,7 +122,8 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int batchSize = 10;
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, true, true,
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName,
+            TxGroupingParallelGatewaySenderImpl.TYPE,
             batchSize);
         createCustomerOrderShipmentPartitionedRegion(newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
@@ -192,7 +194,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int dispatcherThreads = 2;
     londonServer1VM.invoke("create London server " + londonServer1VM.getId(), () -> {
       startServerWithSender(londonServer1VM.getId(), londonLocatorPort, newYorkId, newYorkName,
-          true, true, 10, dispatcherThreads);
+          TxGroupingParallelGatewaySenderImpl.TYPE, 10, dispatcherThreads);
       createPartitionedRegion(REGION_NAME, newYorkName);
       GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
       await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -242,12 +244,12 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({TxGroupingParallelGatewaySenderImpl.TYPE, ParallelGatewaySenderImpl.TYPE})
   public void testPRParallelPropagationWithVsWithoutGroupTransactionEventsWithBatchRedistribution(
-      boolean groupTransactionEvents) {
+      String type) {
     londonServer1VM.invoke("create London server " + londonServer1VM.getId(), () -> {
       startServerWithSender(londonServer1VM.getId(), londonLocatorPort, newYorkId, newYorkName,
-          true, groupTransactionEvents, 10);
+          type, 10);
       createCustomerOrderShipmentPartitionedRegion(newYorkName);
       GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
       await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -271,7 +273,7 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int transactions = 6;
     int eventsPerTransaction = 4;
     int expectedBatchesSent;
-    if (groupTransactionEvents) {
+    if (type.endsWith(TxGroupingParallelGatewaySenderImpl.TYPE)) {
       expectedBatchesSent = 2;
     } else {
       expectedBatchesSent = 3;
@@ -321,7 +323,8 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     int redundantCopies = 3;
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, true, true,
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName,
+            TxGroupingParallelGatewaySenderImpl.TYPE,
             batchSize, redundantCopies);
         createCustomerOrderShipmentPartitionedRegion(newYorkName, redundantCopies);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);

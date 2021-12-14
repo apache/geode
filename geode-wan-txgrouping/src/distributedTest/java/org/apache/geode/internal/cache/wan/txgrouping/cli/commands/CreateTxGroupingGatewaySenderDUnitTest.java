@@ -50,7 +50,7 @@ public class CreateTxGroupingGatewaySenderDUnitTest {
     addIgnoredException("could not get remote locator");
 
     String createCommandString =
-        "create gateway-sender --id=sender1 --remote-distributed-system-id=1 --parallel --group-transaction-events=true";
+        "create gateway-sender --id=sender1 --remote-distributed-system-id=1 --type=TxGroupingParallelGatewaySender";
 
     // Check command status and output
     CommandResultAssert createCommand =
@@ -73,7 +73,7 @@ public class CreateTxGroupingGatewaySenderDUnitTest {
     listCommand
         .hasTableSection()
         .hasColumn("Type")
-        .containsExactly("Parallel");
+        .containsExactly("TxGroupingParallelGatewaySender");
   }
 
   @Test
@@ -81,7 +81,7 @@ public class CreateTxGroupingGatewaySenderDUnitTest {
     addIgnoredException("could not get remote locator");
 
     String createCommandString =
-        "create gateway-sender --id=sender1 --remote-distributed-system-id=1 --dispatcher-threads=1 --group-transaction-events=true";
+        "create gateway-sender --id=sender1 --remote-distributed-system-id=1 --dispatcher-threads=1 --type=TxGroupingSerialGatewaySender";
 
     // Check command status and output
     CommandResultAssert createCommand =
@@ -104,6 +104,6 @@ public class CreateTxGroupingGatewaySenderDUnitTest {
     listCommand
         .hasTableSection()
         .hasColumn("Type")
-        .containsExactly("Serial");
+        .containsExactly("TxGroupingSerialGatewaySender");
   }
 }

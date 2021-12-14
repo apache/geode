@@ -48,6 +48,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
+  public static final String TYPE = "SerialGatewaySender";
+
   private static final Logger logger = LogService.getLogger();
 
   public SerialGatewaySenderImpl(InternalCache cache, StatisticsClock statisticsClock,
@@ -195,6 +197,11 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
     eventProcessor = null;
+  }
+
+  @Override
+  public String getType() {
+    return TYPE;
   }
 
   @Override

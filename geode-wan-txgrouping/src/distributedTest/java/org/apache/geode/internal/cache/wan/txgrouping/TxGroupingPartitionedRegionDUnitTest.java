@@ -40,9 +40,9 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingPartitionedRegionDUnitTest extends TxGroupingBaseDUnitTest {
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({"TxGroupParallelGatewaySender", "TxGroupSerialGatewaySender"})
   public void testPartitionedRegionPropagationWithGroupTransactionEventsAndMixOfEventsInAndNotInTransactions(
-      boolean isParallel)
+      String type)
       throws Exception {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort, true);
@@ -52,9 +52,8 @@ public class TxGroupingPartitionedRegionDUnitTest extends TxGroupingBaseDUnitTes
     int batchSize = 10;
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, isParallel,
-            true,
-            batchSize, isParallel ? 2 : 1);
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, type,
+            batchSize, type.contains("Parallel") ? 2 : 1);
         createCustomerOrderShipmentPartitionedRegion(newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());

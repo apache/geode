@@ -66,8 +66,6 @@ public interface GatewaySenderAttributes {
 
   boolean mustGroupTransactionEvents();
 
-  int getRetriesToGetTransactionEventsFromQueue();
-
   boolean isForInternalUse();
 
   String getId();
@@ -91,4 +89,6 @@ public interface GatewaySenderAttributes {
   boolean isForwardExpirationDestroy();
 
   boolean getEnforceThreadsConnectSameReceiver();
+
+  String getType();
 }

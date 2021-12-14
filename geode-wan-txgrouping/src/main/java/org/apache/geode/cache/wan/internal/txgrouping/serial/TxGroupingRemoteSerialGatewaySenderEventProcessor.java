@@ -18,10 +18,7 @@ package org.apache.geode.cache.wan.internal.txgrouping.serial;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.wan.internal.serial.RemoteSerialGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -34,10 +31,11 @@ public class TxGroupingRemoteSerialGatewaySenderEventProcessor extends
     super(sender, id, threadsMonitoring, cleanQueues);
   }
 
-  @Override
-  protected @NotNull RegionQueue createRegionQueue(
-      final @NotNull AbstractGatewaySender sender, final @NotNull String regionName,
-      final @NotNull CacheListener<Long, AsyncEvent<?, ?>> listener, final boolean cleanQueues) {
-    return new TxGroupingSerialGatewaySenderQueue(sender, regionName, listener, cleanQueues);
-  }
+  // @Override
+  // protected @NotNull RegionQueue createRegionQueue(
+  // final @NotNull AbstractGatewaySender sender, final @NotNull String regionName,
+  // final @NotNull CacheListener<?, ?> listener, final boolean cleanQueues) {
+  // return new TxGroupingSerialGatewaySenderQueue((TxGroupingSerialGatewaySenderImpl) sender,
+  // regionName, listener, cleanQueues);
+  // }
 }

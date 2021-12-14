@@ -76,15 +76,19 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
+      @SuppressWarnings("deprecation") @CliOption(
+          key = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS__HELP) boolean groupTransactionEvents,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
+      @SuppressWarnings("deprecation") @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
           specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
+
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__TYPE,
+          help = CliStrings.CREATE_GATEWAYSENDER__TYPE__HELP) String type,
 
       // Users must avoid this feature, it might cause data loss and other issues during startup.
       @SuppressWarnings("deprecation") @CliOption(
@@ -146,7 +150,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER__HELP) Boolean enforceThreadsConnectSameReceiver) {
 
     CacheConfig.GatewaySender configuration =
-        buildConfiguration(id, remoteDistributedSystemId, parallel, manualStart,
+        buildConfiguration(id, remoteDistributedSystemId, parallel, type, manualStart,
             socketBufferSize, socketReadTimeout, enableBatchConflation, batchSize,
             batchTimeInterval, enablePersistence, diskStoreName, diskSynchronous, maxQueueMemory,
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
@@ -220,6 +224,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
   private CacheConfig.GatewaySender buildConfiguration(String id, Integer remoteDSId,
       Boolean parallel,
+      String type,
       Boolean manualStart,
       Integer socketBufferSize,
       Integer socketReadTimeout,
@@ -241,6 +246,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     sender.setId(id);
     sender.setRemoteDistributedSystemId(int2string(remoteDSId));
     sender.setParallel(parallel);
+    sender.setType(type);
     sender.setManualStart(manualStart);
     sender.setSocketBufferSize(int2string(socketBufferSize));
     sender.setSocketReadTimeout(int2string(socketReadTimeout));

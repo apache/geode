@@ -25,14 +25,13 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MutableGatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class ParallelGatewaySenderTypeFactory implements GatewaySenderTypeFactory {
 
   @Override
   public @NotNull String getType() {
-    return "ParallelGatewaySender";
+    return ParallelGatewaySenderImpl.TYPE;
   }
 
   @Override

@@ -12,22 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewaySenderFactory;
+package org.apache.geode.cache.wan.internal.txgrouping;
 
-public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
+public interface TxGroupingGatewaySender {
+  void setRetriesToGetTransactionEventsFromQueue(int retries);
 
-  GatewaySenderFactory setForInternalUse(boolean b);
+  int getRetriesToGetTransactionEventsFromQueue();
 
-  GatewaySenderFactory addAsyncEventListener(AsyncEventListener listener);
+  void setTransactionEventsFromQueueWaitMs(int millisecs);
 
-  GatewaySenderFactory setBucketSorted(boolean bucketSorted);
-
-  void configureGatewaySender(GatewaySender senderCreation);
-
-  GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback myLocatorCallback);
+  int getTransactionEventsFromQueueWaitMs();
 }

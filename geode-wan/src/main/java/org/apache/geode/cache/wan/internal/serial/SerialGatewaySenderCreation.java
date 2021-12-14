@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.xmlcache;
+package org.apache.geode.cache.wan.internal.serial;
 
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
@@ -40,7 +40,7 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
 
   @Override
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
-      List<Integer> remoteDSIds) {}
+      List<Integer> remoteDSIds, boolean isLastEventInTransaction) {}
 
   @Override
   public void start() {}
@@ -54,6 +54,11 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
   @Override
   public void rebalance() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getType() {
+    return SerialGatewaySenderImpl.TYPE;
   }
 
   @Override

@@ -49,6 +49,8 @@ public interface GatewaySenderFactory {
    */
   GatewaySenderFactory setGroupTransactionEvents(boolean groupTransactionEvents);
 
+  GatewaySenderFactory setType(String type);
+
   /**
    * Adds a <code>GatewayEventFilter</code>
    *

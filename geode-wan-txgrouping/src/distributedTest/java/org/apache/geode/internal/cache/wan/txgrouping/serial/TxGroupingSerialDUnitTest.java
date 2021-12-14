@@ -29,6 +29,8 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -43,9 +45,9 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
   @Test
-  @Parameters({"true", "false"})
+  @Parameters({TxGroupingSerialGatewaySenderImpl.TYPE, SerialGatewaySenderImpl.TYPE})
   public void testReplicatedSerialPropagationWithVsWithoutGroupTransactionEvents(
-      boolean groupTransactionEvents) {
+      String type) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort);
       createReplicatedRegion(REGION_NAME, null);
@@ -53,8 +55,8 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
 
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            groupTransactionEvents, 10, 1);
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, type, 10,
+            1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -74,7 +76,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     final int transactions = 4;
     final int eventsPerTransaction = 3;
     final int entries = transactions * eventsPerTransaction;
-    int expectedBatchesSent = groupTransactionEvents ? 1 : 2;
+    int expectedBatchesSent = type.equals(TxGroupingSerialGatewaySenderImpl.TYPE) ? 1 : 2;
     londonServer2VM
         .invoke(() -> doTxPuts(REGION_NAME, eventsPerTransaction, transactions));
 
@@ -104,12 +106,11 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort, !isBatchRedistributed);
       createReplicatedRegion(REGION_NAME, null);
     });
-
     int batchSize = 10;
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            true,
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName,
+            TxGroupingSerialGatewaySenderImpl.TYPE,
             batchSize, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
@@ -149,9 +150,10 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
   }
 
   @Test
-  @Parameters({"true", "false"})
+
+  @Parameters({TxGroupingSerialGatewaySenderImpl.TYPE, SerialGatewaySenderImpl.TYPE})
   public void testReplicatedSerialPropagationWithVsWithoutGroupTransactionEventsWithBatchRedistribution(
-      boolean groupTransactionEvents) {
+      String type) {
     newYorkServerVM.invoke("create New York server", () -> {
       startServerWithReceiver(newYorkLocatorPort, newYorkReceiverPort, false);
       createReplicatedRegion(REGION_NAME, null);
@@ -159,8 +161,8 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
 
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            groupTransactionEvents, 10, 1);
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, type, 10,
+            1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
@@ -180,7 +182,7 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     final int transactions = 8;
     final int eventsPerTransaction = 3;
     final int entries = transactions * eventsPerTransaction;
-    int expectedBatchesSent = groupTransactionEvents ? 2 : 3;
+    int expectedBatchesSent = type.equals(TxGroupingSerialGatewaySenderImpl.TYPE) ? 2 : 3;
 
     londonServer2VM
         .invoke(() -> doTxPuts(REGION_NAME, eventsPerTransaction, transactions));
@@ -217,8 +219,8 @@ public class TxGroupingSerialDUnitTest extends TxGroupingBaseDUnitTest {
     int batchSize = 9;
     for (VM server : londonServersVM) {
       server.invoke("create London server " + server.getId(), () -> {
-        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName, false,
-            true, batchSize, 1);
+        startServerWithSender(server.getId(), londonLocatorPort, newYorkId, newYorkName,
+            TxGroupingSerialGatewaySenderImpl.TYPE, batchSize, 1);
         createReplicatedRegion(REGION_NAME, newYorkName);
         GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
         await().untilAsserted(() -> assertThat(isRunning(sender)).isTrue());

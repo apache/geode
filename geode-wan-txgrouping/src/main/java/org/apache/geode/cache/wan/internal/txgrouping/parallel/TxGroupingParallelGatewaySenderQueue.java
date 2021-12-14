@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.wan.internal.txgrouping.parallel;
 
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
+import static org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySenderProperties.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +65,8 @@ public class TxGroupingParallelGatewaySenderQueue extends ParallelGatewaySenderQ
       peekAndAddEventsToBatchToCompleteTransactions(
           partitionedRegion, batch, incompleteTransactionIdsInBatch);
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
+          retries >= ((TxGroupingParallelGatewaySenderImpl) sender)
+              .getRetriesToGetTransactionEventsFromQueue()) {
         break;
       }
       retries++;

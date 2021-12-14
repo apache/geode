@@ -2588,6 +2588,7 @@ public class CacheConfig {
    *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="remote-distributed-system-id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="parallel" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+   *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
    *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
    *       &lt;attribute name="socket-read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -2628,6 +2629,8 @@ public class CacheConfig {
     protected String remoteDistributedSystemId;
     @XmlAttribute(name = "parallel")
     protected Boolean parallel;
+    @XmlAttribute(name = "type")
+    protected String type;
     @XmlAttribute(name = "manual-start")
     protected Boolean manualStart;
     @XmlAttribute(name = "socket-buffer-size")
@@ -2818,6 +2821,29 @@ public class CacheConfig {
      */
     public void setParallel(Boolean value) {
       parallel = value;
+    }
+
+    /**
+     * Gets the value of the parallel property.
+     *
+     * possible object is
+     * {@link String }
+     *
+     */
+
+    public String getType() {
+      return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     *
+     * allowed object is
+     * {@link String }
+     *
+     */
+    public void setType(String value) {
+      this.type = value;
     }
 
     /**

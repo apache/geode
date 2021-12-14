@@ -15,17 +15,26 @@
 
 package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySender;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySenderProperties;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
-public class TxGroupingSerialGatewaySenderImpl extends SerialGatewaySenderImpl {
+public class TxGroupingSerialGatewaySenderImpl extends SerialGatewaySenderImpl
+    implements TxGroupingGatewaySender {
+
+  public static final String TYPE = "TxGroupingSerialGatewaySender";
+
+  private final TxGroupingGatewaySenderProperties properties =
+      new TxGroupingGatewaySenderProperties();
 
   public TxGroupingSerialGatewaySenderImpl(final @NotNull InternalCache cache,
       final @NotNull StatisticsClock clock,
@@ -50,4 +59,33 @@ public class TxGroupingSerialGatewaySenderImpl extends SerialGatewaySenderImpl {
     }
   }
 
+  @Override
+  public String getType() {
+    return TYPE;
+  }
+
+  @Override
+  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
+    properties.setRetriesToGetTransactionEventsFromQueue(retries);
+  }
+
+  @Override
+  public int getRetriesToGetTransactionEventsFromQueue() {
+    return properties.getRetriesToGetTransactionEventsFromQueue();
+  }
+
+  @Override
+  public void setTransactionEventsFromQueueWaitMs(int millisecs) {
+    properties.setTransactionEventsFromQueueWaitMs(millisecs);
+  }
+
+  @Override
+  public int getTransactionEventsFromQueueWaitMs() {
+    return properties.getTransactionEventsFromQueueWaitMs();
+  }
+
+  @Override
+  public boolean isParallel() {
+    return false;
+  }
 }

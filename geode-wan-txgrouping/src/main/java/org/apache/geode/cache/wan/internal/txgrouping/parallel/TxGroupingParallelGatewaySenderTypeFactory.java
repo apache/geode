@@ -30,7 +30,7 @@ public class TxGroupingParallelGatewaySenderTypeFactory extends ParallelGatewayS
 
   @Override
   public @NotNull String getType() {
-    return "TxGroupingParallelGatewaySender";
+    return TxGroupingParallelGatewaySenderImpl.TYPE;
   }
 
   @Override

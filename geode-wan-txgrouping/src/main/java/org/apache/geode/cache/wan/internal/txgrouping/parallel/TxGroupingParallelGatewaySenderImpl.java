@@ -20,12 +20,20 @@ import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache.wan.internal.parallel.RemoteConcurrentParallelGatewaySenderEventProcessor;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySender;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySenderProperties;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
-public class TxGroupingParallelGatewaySenderImpl extends ParallelGatewaySenderImpl {
+public class TxGroupingParallelGatewaySenderImpl extends ParallelGatewaySenderImpl
+    implements TxGroupingGatewaySender {
+
+  public static final String TYPE = "TxGroupingParallelGatewaySender";
+
+  private final TxGroupingGatewaySenderProperties properties =
+      new TxGroupingGatewaySenderProperties();
 
   public TxGroupingParallelGatewaySenderImpl(final @NotNull InternalCache cache,
       final @NotNull StatisticsClock clock,
@@ -43,5 +51,35 @@ public class TxGroupingParallelGatewaySenderImpl extends ParallelGatewaySenderIm
       final @Nullable ThreadsMonitoring threadsMonitoring, final boolean cleanQueues) {
     return new TxGroupingRemoteConcurrentParallelGatewaySenderEventProcessor(this,
         threadsMonitoring, cleanQueues);
+  }
+
+  @Override
+  public String getType() {
+    return TYPE;
+  }
+
+  @Override
+  public int getRetriesToGetTransactionEventsFromQueue() {
+    return properties.getRetriesToGetTransactionEventsFromQueue();
+  }
+
+  @Override
+  public void setTransactionEventsFromQueueWaitMs(int millisecs) {
+    properties.setTransactionEventsFromQueueWaitMs(millisecs);
+  }
+
+  @Override
+  public int getTransactionEventsFromQueueWaitMs() {
+    return properties.getTransactionEventsFromQueueWaitMs();
+  }
+
+  @Override
+  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
+    properties.setRetriesToGetTransactionEventsFromQueue(retries);
+  }
+
+  @Override
+  public boolean isParallel() {
+    return true;
   }
 }

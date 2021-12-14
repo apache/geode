@@ -40,7 +40,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -56,7 +55,6 @@ public class TxGroupingSerialGatewaySenderQueueJUnitTest {
 
   private AbstractGatewaySender sender;
   Region region;
-  InternalRegionFactory regionFactory;
 
   @Before
   public void setup() {
@@ -73,7 +71,7 @@ public class TxGroupingSerialGatewaySenderQueueJUnitTest {
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
 
-    sender = mock(AbstractGatewaySender.class);
+    sender = mock(TxGroupingSerialGatewaySenderImpl.class);
 
     when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
     when(sender.getCache()).thenReturn(cache);

@@ -81,8 +81,7 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
 
   private boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
-  private int retriesToGetTransactionEventsFromQueue =
-      GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_RETRIES;
+  private String type = GatewaySender.DEFAULT_TYPE;
 
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
@@ -178,8 +177,9 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
     groupTransactionEvents = groupTransEvents;
   }
 
-  public void setRetriesToGetTransactionEventsFromQueue(int retries) {
-    retriesToGetTransactionEventsFromQueue = retries;
+  public void setType(String type) {
+    this.type = type;
+    isParallel = type.equals("Parallel") ? true : false;
   }
 
   public void setForInternalUse(boolean forInternalUse) {
@@ -289,11 +289,6 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
   }
 
   @Override
-  public int getRetriesToGetTransactionEventsFromQueue() {
-    return retriesToGetTransactionEventsFromQueue;
-  }
-
-  @Override
   public boolean isForInternalUse() {
     return isForInternalUse;
   }
@@ -358,6 +353,11 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
   @Override
   public boolean getEnforceThreadsConnectSameReceiver() {
     return enforceThreadsConnectSameReceiver;
+  }
+
+  @Override
+  public String getType() {
+    return type;
   }
 
 }

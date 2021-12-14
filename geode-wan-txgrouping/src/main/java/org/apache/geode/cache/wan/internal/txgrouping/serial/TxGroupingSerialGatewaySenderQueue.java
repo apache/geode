@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
-import static org.apache.geode.cache.wan.GatewaySender.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +28,8 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySender;
+import org.apache.geode.cache.wan.internal.txgrouping.TxGroupingGatewaySenderProperties;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
@@ -81,19 +81,22 @@ public class TxGroupingSerialGatewaySenderQueue extends SerialGatewaySenderQueue
       peekAndAddEventsToBatchToCompleteTransactions(batch, lastKey,
           incompleteTransactionIdsInBatch);
       if (incompleteTransactionIdsInBatch.size() == 0 ||
-          retries >= sender.getRetriesToGetTransactionEventsFromQueue()) {
+          retries >= ((TxGroupingGatewaySender) sender)
+              .getRetriesToGetTransactionEventsFromQueue()) {
         break;
       }
       retries++;
       try {
-        Thread.sleep(GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+        Thread.sleep(
+            TxGroupingGatewaySenderProperties.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
     }
     if (incompleteTransactionIdsInBatch.size() > 0) {
       logger.warn("Not able to retrieve all events for transactions: {} after {} retries of {}ms",
-          incompleteTransactionIdsInBatch, retries, GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
+          incompleteTransactionIdsInBatch, retries,
+          TxGroupingGatewaySenderProperties.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS);
       stats.incBatchesWithIncompleteTransactions();
     }
   }

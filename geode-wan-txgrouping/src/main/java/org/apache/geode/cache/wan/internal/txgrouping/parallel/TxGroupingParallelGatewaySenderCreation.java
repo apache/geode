@@ -17,9 +17,9 @@ package org.apache.geode.cache.wan.internal.txgrouping.parallel;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 
 public class TxGroupingParallelGatewaySenderCreation extends ParallelGatewaySenderCreation {
 
@@ -31,6 +31,11 @@ public class TxGroupingParallelGatewaySenderCreation extends ParallelGatewaySend
   @Override
   public boolean mustGroupTransactionEvents() {
     return false;
+  }
+
+  @Override
+  public String getType() {
+    return TxGroupingParallelGatewaySenderImpl.TYPE;
   }
 
 }

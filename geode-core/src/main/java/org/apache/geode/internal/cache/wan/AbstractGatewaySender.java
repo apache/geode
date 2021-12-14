@@ -126,8 +126,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected boolean isParallel;
 
-  protected int retriesToGetTransactionEventsFromQueue;
-
   protected boolean isForInternalUse;
 
   protected boolean isDiskSynchronous;
@@ -255,7 +253,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     alertThreshold = attrs.getAlertThreshold();
     copyDeprecatedAttributes(attrs);
     isParallel = attrs.isParallel();
-    retriesToGetTransactionEventsFromQueue = attrs.getRetriesToGetTransactionEventsFromQueue();
     isForInternalUse = attrs.isForInternalUse();
     diskStoreName = attrs.getDiskStoreName();
     remoteDSId = attrs.getRemoteDSId();
@@ -559,19 +556,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return isParallel;
   }
 
+  @Deprecated
   @Override
   public boolean mustGroupTransactionEvents() {
     return false;
-  }
-
-  /**
-   * Returns retriesToGetTransactionEventsFromQueue int property for this GatewaySender.
-   *
-   * @return retriesToGetTransactionEventsFromQueue int property for this GatewaySender
-   *
-   */
-  public int getRetriesToGetTransactionEventsFromQueue() {
-    return retriesToGetTransactionEventsFromQueue;
   }
 
   public boolean isForInternalUse() {
@@ -1006,11 +994,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           && isForwardExpirationDestroy();
     }
     return true;
-  }
-
-  public void distribute(EnumListenerEvent operation, EntryEventImpl event,
-      List<Integer> allRemoteDSIds) {
-    distribute(operation, event, allRemoteDSIds, false);
   }
 
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,

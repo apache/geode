@@ -80,8 +80,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   }
 
   @Override
-  public GatewaySenderFactory setRetriesToGetTransactionEventsFromQueue(int retries) {
-    attrs.setRetriesToGetTransactionEventsFromQueue(retries);
+  public GatewaySenderFactory setType(String type) {
+    attrs.setType(type);
     return this;
   }
 
@@ -231,19 +231,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   static @NotNull GatewaySenderTypeFactory getGatewaySenderTypeFactory(
       final @NotNull GatewaySenderAttributes attributes) {
-    if (attributes.isParallel()) {
-      if (attributes.mustGroupTransactionEvents()) {
-        return findGatewaySenderTypeFactory("TxGroupingParallelGatewaySender");
-      } else {
-        return findGatewaySenderTypeFactory("ParallelGatewaySender");
-      }
-    } else {
-      if (attributes.mustGroupTransactionEvents()) {
-        return findGatewaySenderTypeFactory("TxGroupingSerialGatewaySender");
-      } else {
-        return findGatewaySenderTypeFactory("SerialGatewaySender");
-      }
-    }
+    return (findGatewaySenderTypeFactory(attributes.getType()));
   }
 
   private static @NotNull GatewaySenderTypeFactory findGatewaySenderTypeFactory(

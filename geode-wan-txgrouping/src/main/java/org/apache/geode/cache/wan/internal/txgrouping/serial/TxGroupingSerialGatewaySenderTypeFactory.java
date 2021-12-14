@@ -32,7 +32,7 @@ public class TxGroupingSerialGatewaySenderTypeFactory extends SerialGatewaySende
 
   @Override
   public @NotNull String getType() {
-    return "TxGroupingSerialGatewaySender";
+    return TxGroupingSerialGatewaySenderImpl.TYPE;
   }
 
   @Override

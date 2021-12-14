@@ -17,9 +17,9 @@ package org.apache.geode.cache.wan.internal.txgrouping.serial;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderCreation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 
 public class TxGroupingSerialGatewaySenderCreation extends SerialGatewaySenderCreation {
 
@@ -31,6 +31,11 @@ public class TxGroupingSerialGatewaySenderCreation extends SerialGatewaySenderCr
   @Override
   public boolean mustGroupTransactionEvents() {
     return true;
+  }
+
+  @Override
+  public String getType() {
+    return TxGroupingSerialGatewaySenderImpl.TYPE;
   }
 
 }
