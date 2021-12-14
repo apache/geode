@@ -566,6 +566,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         if (prQ == null)
           return;
+
+        if (!sender.isShadowRegionCreated()) {
+          sender.setShadowRegionCreated();
+        }
+
         // TODO This should not be set on the PR but on the GatewaySender
         prQ.enableConflation(sender.isBatchConflationEnabled());
         if (isAccessor)
@@ -583,6 +588,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
       } else {
+
+        if (!sender.isShadowRegionCreated()) {
+          sender.setShadowRegionCreated();
+        }
         if (isAccessor)
           return; // return from here if accessor node
         // in case shadowPR exists already (can be possible when sender is

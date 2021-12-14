@@ -240,6 +240,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   private final StatisticsClock statisticsClock;
 
+  private boolean shadowRegionCreated = false;
+
   protected AbstractGatewaySender() {
     statisticsClock = disabledClock();
   }
@@ -1495,6 +1497,14 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       throw new UnsupportedOperationException(
           "waitUntilFlushed is not currently supported for serial gateway senders");
     }
+  }
+
+  public void setShadowRegionCreated() {
+    this.shadowRegionCreated = true;
+  }
+
+  public boolean isShadowRegionCreated() {
+    return this.shadowRegionCreated;
   }
 
   /**
