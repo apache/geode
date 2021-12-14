@@ -69,10 +69,6 @@ public class RedisSet extends AbstractRedisData {
    */
   public RedisSet() {}
 
-  public RedisSet(int size) {
-    members = new RedisSet.MemberSet(size);
-  }
-
   public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
     return calculateDiff(regionProvider, keys);
   }
