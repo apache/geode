@@ -1327,19 +1327,8 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> {
       // This should work now
-      try {
-        createReplicateRegion(regionName, getDiskDirs(getVMId()));
-        updateEntry("A", "C");
-      } catch (CacheClosedException cacheClosedException) {
-        if (cacheClosedException.getCause() instanceof ConflictingPersistentDataException) {
-          // Disk store exception handler thread spawned by previous createReplicateRegion
-          // could close the cache at the same time when current createReplicateRegion is running
-          createReplicateRegion(regionName, getDiskDirs(getVMId()));
-          updateEntry("A", "C");
-        } else {
-          throw cacheClosedException;
-        }
-      }
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      updateEntry("A", "C");
     });
 
     // Now make sure vm1 gets a conflict
