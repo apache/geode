@@ -14,41 +14,36 @@
  */
 package org.apache.geode.redis.internal.data.delta;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.redis.internal.data.AbstractRedisData;
+import static org.apache.geode.internal.InternalDataSerializer.readSet;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
-import static org.apache.geode.DataSerializer.readByteArray;
-import static org.apache.geode.DataSerializer.readHashSet;
-import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
-import static org.apache.geode.internal.InternalDataSerializer.readSet;
-import static org.apache.geode.internal.InternalDataSerializer.writeSet;
-import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class ReplaceByteArrays implements DeltaInfo{
-    private final Set<byte[]> byteArrays;
+public class ReplaceByteArrays implements DeltaInfo {
+  private final Set<byte[]> byteArrays;
 
-    public ReplaceByteArrays(Set<byte[]> deltas) {
-        this.byteArrays = deltas;
+  public ReplaceByteArrays(Set<byte[]> deltas) {
+    this.byteArrays = deltas;
+  }
+
+  public void serializeTo(DataOutput out) throws IOException {
+    DataSerializer.writeEnum(REPLACE_BYTE_ARRAYS, out);
+    InternalDataSerializer.writeSet(byteArrays, out);
+  }
+
+  public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
+    try {
+      redisData.applyReplaceByteArraysDelta(uncheckedCast(readSet(in)));
+    } catch (ClassNotFoundException ignore) {
+      // This should be impossible since we should always be able to find byte array class
     }
-
-    public void serializeTo(DataOutput out) throws IOException {
-        DataSerializer.writeEnum(REPLACE_BYTE_ARRAYS, out);
-        InternalDataSerializer.writeSet(byteArrays, out);
-    }
-
-    public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-        try {
-            redisData.applyReplaceByteArraysDelta(uncheckedCast(readSet(in)));
-        } catch (ClassNotFoundException ignore) {
-            // This should be impossible since we should always be able to find byte array class
-        }
-    }
+  }
 }

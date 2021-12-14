@@ -104,24 +104,25 @@ public class RedisSet extends AbstractRedisData {
 
   private static int setOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
       Set<byte[]> diff) {
-    if(regionProvider.getRedisData(destinationKey).getType() != REDIS_SET) {
+    if (regionProvider.getRedisData(destinationKey).getType() != REDIS_SET) {
       regionProvider.getDataRegion().remove(destinationKey);
     }
 
     boolean destinationKeyExists = regionProvider.getRedisData(destinationKey).exists();
-    if(diff.isEmpty()) {
+    if (diff.isEmpty()) {
       if (destinationKeyExists) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
       return 0;
     }
 
-    if(destinationKeyExists) {
+    if (destinationKeyExists) {
       RedisSet destinationSet = regionProvider.getTypedRedisData(REDIS_SET, destinationKey, false);
 
       destinationSet.members.clear();
       destinationSet.members.addAll(diff);
-      destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey, new ReplaceByteArrays(diff));
+      destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
+          new ReplaceByteArrays(diff));
     } else {
       regionProvider.getDataRegion().put(destinationKey, new RedisSet(diff));
     }
