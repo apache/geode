@@ -594,6 +594,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
       } else {
+
+        if (!sender.isShadowRegionCreated()) {
+          sender.setShadowRegionCreated();
+        }
+
         if (isAccessor) {
           return; // return from here if accessor node
         }
