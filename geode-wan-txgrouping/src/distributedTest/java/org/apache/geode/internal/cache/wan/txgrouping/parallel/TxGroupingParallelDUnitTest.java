@@ -361,13 +361,15 @@ public class TxGroupingParallelDUnitTest extends TxGroupingBaseDUnitTest {
     assertThat(londonServerStats.get(0)).isEqualTo(0);
 
     // eventsReceived
-    // We may see two retried events (as transactions are made of 2 events) on all members due to
+    // We may see 4 retried events (as transactions are made of 4 events) on all members due to
     // the kill
-    assertThat(londonServerStats.get(1)).isLessThanOrEqualTo((entries + 2) * redundantCopies);
+    assertThat(londonServerStats.get(1))
+        .isLessThanOrEqualTo((entries + putsPerTransaction) * redundantCopies);
     assertThat(londonServerStats.get(1)).isGreaterThanOrEqualTo(entries * redundantCopies);
 
     // queuedEvents
-    assertThat(londonServerStats.get(2)).isLessThanOrEqualTo((entries + 2) * redundantCopies);
+    assertThat(londonServerStats.get(2))
+        .isLessThanOrEqualTo((entries + putsPerTransaction) * redundantCopies);
     assertThat(londonServerStats.get(2)).isGreaterThanOrEqualTo(entries * redundantCopies);
 
     // batches redistributed

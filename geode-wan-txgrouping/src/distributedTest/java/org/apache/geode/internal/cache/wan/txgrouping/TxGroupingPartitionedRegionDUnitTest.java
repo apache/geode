@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class TxGroupingPartitionedRegionDUnitTest extends TxGroupingBaseDUnitTest {
   @Test
-  @Parameters({"TxGroupParallelGatewaySender", "TxGroupSerialGatewaySender"})
+  @Parameters({"TxGroupingParallelGatewaySender", "TxGroupingSerialGatewaySender"})
   public void testPartitionedRegionPropagationWithGroupTransactionEventsAndMixOfEventsInAndNotInTransactions(
       String type)
       throws Exception {

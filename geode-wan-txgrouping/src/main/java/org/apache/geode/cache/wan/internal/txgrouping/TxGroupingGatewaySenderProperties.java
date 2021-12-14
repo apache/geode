@@ -17,7 +17,7 @@ package org.apache.geode.cache.wan.internal.txgrouping;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class TxGroupingGatewaySenderProperties implements TxGroupingGatewaySender {
@@ -52,7 +52,7 @@ public class TxGroupingGatewaySenderProperties implements TxGroupingGatewaySende
    * gateway sender queue when group-transaction-events is true.
    */
   public static final int GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS =
-      SystemPropertyHelper.getProductIntegerProperty(
+      SystemProperty.getProductIntegerProperty(
           GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS_PROPERTY).orElse(1);
 
   private AtomicInteger retriesToGetTransactionEventsFromQueue =

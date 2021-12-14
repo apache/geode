@@ -153,8 +153,6 @@ public interface GatewaySender {
   int CONNECTION_RETRY_INTERVAL = Integer
       .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "gateway-connection-retry-interval", 1000);
 
-  String DEFAULT_TYPE = "SerialGatewaySender";
-
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
    *

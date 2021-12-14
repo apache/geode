@@ -84,8 +84,8 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
 
     String type = gatewaySenderCreateArgs.getType();
     if (type != null) {
-      gateway.setType(gatewaySenderCreateArgs.getType());
-      gateway.setParallel(gatewaySenderCreateArgs.getType().contains("Parallel"));
+      gateway.setType(type);
+      gateway.setParallel(type.contains("Parallel"));
     } else {
       Boolean isParallel = gatewaySenderCreateArgs.isParallel();
       if (isParallel != null) {

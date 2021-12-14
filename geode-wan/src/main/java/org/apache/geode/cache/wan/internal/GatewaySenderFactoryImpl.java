@@ -31,6 +31,8 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
+import org.apache.geode.cache.wan.internal.serial.SerialGatewaySenderImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -220,6 +222,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
   public @NotNull GatewaySender create(final @NotNull String id, final int remoteDSId) {
     attrs.setId(id);
     attrs.setRemoteDs(remoteDSId);
+    if (attrs.getType() == null) {
+      if (attrs.isParallel()) {
+        attrs.setType(ParallelGatewaySenderImpl.TYPE);
+      } else {
+        attrs.setType(SerialGatewaySenderImpl.TYPE);
+      }
+    }
 
     validate(cache, attrs);
 

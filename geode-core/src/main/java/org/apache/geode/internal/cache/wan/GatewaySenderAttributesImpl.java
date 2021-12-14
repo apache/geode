@@ -81,7 +81,7 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
 
   private boolean groupTransactionEvents = GatewaySender.DEFAULT_MUST_GROUP_TRANSACTION_EVENTS;
 
-  private String type = GatewaySender.DEFAULT_TYPE;
+  private String type;
 
   private boolean isForInternalUse = GatewaySender.DEFAULT_IS_FOR_INTERNAL_USE;
 
@@ -179,7 +179,7 @@ public class GatewaySenderAttributesImpl implements MutableGatewaySenderAttribut
 
   public void setType(String type) {
     this.type = type;
-    isParallel = type.equals("Parallel") ? true : false;
+    isParallel = type.contains("Parallel") ? true : false;
   }
 
   public void setForInternalUse(boolean forInternalUse) {

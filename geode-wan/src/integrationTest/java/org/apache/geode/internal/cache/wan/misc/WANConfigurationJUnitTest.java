@@ -41,6 +41,7 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache30.MyGatewayEventFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
@@ -69,7 +70,7 @@ public class WANConfigurationJUnitTest {
       cache = new CacheFactory().set(MCAST_PORT, "0").create();
 
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-      fact.setParallel(true);
+      fact.setType(ParallelGatewaySenderImpl.TYPE);
       GatewaySender sender1 = fact.create("NYSender", 2);
       sender1.start();
       fail("Expected IllegalStateException but not thrown");

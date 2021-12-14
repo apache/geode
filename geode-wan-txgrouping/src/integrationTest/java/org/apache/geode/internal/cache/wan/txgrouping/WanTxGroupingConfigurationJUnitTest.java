@@ -30,6 +30,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
+import org.apache.geode.cache.wan.internal.txgrouping.serial.TxGroupingSerialGatewaySenderImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 
 public class WanTxGroupingConfigurationJUnitTest {
@@ -63,9 +64,8 @@ public class WanTxGroupingConfigurationJUnitTest {
   public void test_create_SerialGatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_DispatcherThreads_is_greaterThanOne() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    fact.setParallel(false);
     fact.setDispatcherThreads(2);
-    fact.setGroupTransactionEvents(true);
+    fact.setType(TxGroupingSerialGatewaySenderImpl.TYPE);
     assertThatThrownBy(() -> fact.create("NYSender", 2))
         .isInstanceOf(GatewaySenderException.class)
         .hasMessageContaining(
@@ -77,7 +77,7 @@ public class WanTxGroupingConfigurationJUnitTest {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setBatchConflationEnabled(true);
-    fact.setGroupTransactionEvents(true);
+    fact.setType(TxGroupingSerialGatewaySenderImpl.TYPE);
     assertThatThrownBy(() -> fact.create("NYSender", 2))
         .isInstanceOf(GatewaySenderException.class)
         .hasMessageContaining(
