@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.annotations.GuardedBy;
@@ -97,12 +98,41 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long ttl = getTTLAttributes().getTimeout();
     long tilt = 0;
     if (ttl > 0) {
-      if (getLocalRegion() != null && !getLocalRegion().EXPIRY_UNITS_MS) {
-        ttl *= 1000;
-      }
+      ttl = normalizeToMillis(ttl);
       tilt = getLastModifiedTime() + ttl;
     }
     return tilt;
+  }
+
+  /** Return true if the expiration unit is seconds; false if milliseconds */
+  public boolean isExpiryUnitSeconds() {
+    boolean isSeconds = true;
+    if (getLocalRegion() != null && getLocalRegion().isExpiryUnitsMilliseconds()) {
+      isSeconds = false;
+    }
+    return isSeconds;
+  }
+
+  /**
+   * Return the given timestamp as milliseconds.
+   * If the given secondsOrMillis is already millis then no conversion is needed.
+   */
+  public long normalizeToMillis(long secondsOrMillis) {
+    if (isExpiryUnitSeconds()) {
+      return TimeUnit.SECONDS.toMillis(secondsOrMillis);
+    }
+    return secondsOrMillis;
+  }
+
+  private static final long HALF_A_SECOND_IN_MILLIS = TimeUnit.SECONDS.toMillis(1) / 2;
+
+  public boolean hasExpired(long now, long expireTime) {
+    if (isExpiryUnitSeconds()) {
+      // Units are seconds but the internal timestamps are milliseconds.
+      // To prevent a needless reschedule, bump now by half a second.
+      now += HALF_A_SECOND_IN_MILLIS;
+    }
+    return now >= expireTime;
   }
 
   /** Return the absolute time when idle expiration occurs, or 0 if not used */
@@ -117,9 +147,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   protected long getIdleTimeoutInMillis() {
     long idle = getIdleAttributes().getTimeout();
     if (idle > 0) {
-      if (getLocalRegion() != null && !getLocalRegion().EXPIRY_UNITS_MS) {
-        idle *= 1000;
-      }
+      idle = normalizeToMillis(idle);
     }
     return idle;
   }
@@ -144,13 +172,13 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long expTime = getExpirationTime();
     if (expTime > 0L) {
       long now = getNow();
-      if (now >= expTime) {
+      if (hasExpired(now, expTime)) {
         if (isIdleExpiredOnOthers()) {
           return true;
         } else {
           // our last access time was reset so recheck
           expTime = getExpirationTime();
-          if (expTime > 0L && now >= expTime) {
+          if (expTime > 0L && hasExpired(now, expTime)) {
             return true;
           }
         }

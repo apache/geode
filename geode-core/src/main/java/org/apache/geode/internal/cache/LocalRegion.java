@@ -352,13 +352,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
 
   /**
-   * Used by unit tests to set expiry to milliseconds instead of the default seconds. Used in
-   * ExpiryTask.
+   * Used by unit tests to set expiry to milliseconds instead of the default seconds.
    *
    * @since GemFire 5.0
    */
+  private final boolean EXPIRY_UNITS_MS;
+
   @VisibleForTesting
-  final boolean EXPIRY_UNITS_MS;
+  boolean isExpiryUnitsMilliseconds() {
+    return EXPIRY_UNITS_MS;
+  }
 
   private final EntryEventFactory entryEventFactory;
   private final RegionMapConstructor regionMapConstructor;
