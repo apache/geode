@@ -92,7 +92,6 @@ public class PartitionedRegionLoadModel {
   };
 
   private static final long MEGABYTES = 1024 * 1024;
-
   /**
    * A member to represent inconsistent data. For example, if two members think they are the primary
    * for a bucket, we will set the primary to invalid, so it won't be a candidate for rebalancing.
@@ -433,26 +432,61 @@ public class PartitionedRegionLoadModel {
     }
   }
 
+
+  /**
+   *
+   * Original functionality if bucket's redundancy is greater than what is necessary
+   * add it to the over redundancy bucket list, so it can be cleared
+   *
+   * Newly added functionality is to make this so that we don't have a bucket
+   * in the same redundancy zone twice if zones are in use.
+   *
+   */
   private void initOverRedundancyBuckets() {
     this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
-    Set<String> redundancyZones = new HashSet<>();
+    Set<String> redundancyZonesFound = new HashSet<>();
 
+    // For every bucket
     for (BucketRollup b : this.buckets) {
       if (b != null) {
+        // check to see if the existing redundancy is greater than required
         if (b.getOnlineRedundancy() > this.requiredRedundancy) {
+          // if so, add the bucket to the over redundancy list
           this.overRedundancyBuckets.add(b);
+
+
         } else {
+          // otherwise, for each member that is hosting the bucket
           for (Member member : b.getMembersHosting()) {
+
+            // get the redundancy zone of the member
             String redundancyZone = this.getRedundancyZone(member.getDistributedMember());
-            if (redundancyZones.contains(redundancyZone)) {
+
+            // if the redundancy zone is not already in the list
+            if (redundancyZonesFound.contains(redundancyZone)) {
+
+              boolean val = false;
+              val = true;
+              logger
+                  .info(
+                      "MLH initOverRedundancyBuckets found a redundant zone ({}) member ({}) in the list ",
+                      redundancyZone, member.toString(), new Exception("stack dump"));
+              if (val) {
+                assert (false);
+              }
+              // add the bucket to the over redundancy list because we have more than one member
+              // with this bucket in the same zone. something we don't prefer with multiple zones
               this.overRedundancyBuckets.add(b);
-              redundancyZones.add(redundancyZone);
+              // add the redundancy zone to the list of redundancy zones
+            } else {
+              redundancyZonesFound.add(redundancyZone);
             }
           }
-          redundancyZones.clear();
+          // once we have finished processing all the members, clear the list
+          // because we are moving on to the next bucket
+          redundancyZonesFound.clear();
         }
       }
-
     }
   }
 
@@ -496,17 +530,23 @@ public class PartitionedRegionLoadModel {
    * @return null or a string containing the zone to delete a member from
    */
   String getPreferredDeletionZone(Set<Member> members) {
-
     Map<String, Integer> distributionMap = new HashMap<>();
+    // for each member
     for (Member member : members) {
+      // get the redundancy zone
       String zoneName = getRedundancyZone(member.getMemberId());
+      // See if the zoneName is in the list
       Integer count = distributionMap.get(zoneName);
       if (count == null) {
+        // if not add it.
         distributionMap.put(zoneName, 1);
       } else {
+        // else return the zone name
         return zoneName;
       }
     }
+    // return nothing if this is the first member
+    // because there is no preferred deletion zone yet.
     return null;
 
   }
@@ -520,13 +560,17 @@ public class PartitionedRegionLoadModel {
     float mostLoaded = Float.MIN_VALUE;
     Move bestMove = null;
     Set<Member> members = bucket.getMembersHosting();
+    // Check to see if we have a preferred redundancy zone to delete from for this bucket.
+    // We prefer deleting copies in the same redundancy zone
     String zone = getPreferredDeletionZone(members);
 
-    // Prefer deleting copies in the same redundancy zone
+    // if we have a preferred redundancy zone to delete from
     if (zone != null) {
+      // remove members that are not in that zone
       members.removeIf(member -> !getRedundancyZone(member.getMemberId()).equals(zone));
     }
 
+    // for each member
     for (Member member : members) {
 
       // if this load is lower than then highest load, we prefer the deleting from high

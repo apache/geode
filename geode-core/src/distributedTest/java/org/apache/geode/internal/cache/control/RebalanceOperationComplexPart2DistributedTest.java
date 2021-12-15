@@ -113,24 +113,26 @@ public class RebalanceOperationComplexPart2DistributedTest
     cleanOutServerDirectories();
   }
 
+
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
    * copies of a buckets and doesn't allow cross redundancy zone deletes.
    *
    */
-
   @Test
   public void testRecoveryWithRevokedServerAfterRebalance() throws Exception {
-
+    VM server2;
+    // we will need to setup 4 servers two in each redundancy zone
     SERVER_ZONE_MAP = new HashMap<Integer, String>() {
       {
-        put(1, ZONE_A);
-        put(2, ZONE_A);
-        put(3, ZONE_B);
-        put(4, ZONE_B);
+        put(1, ZONE_A); // will be taken down and brought back up
+        put(2, ZONE_A); // will be left up to do rebalances
+        put(3, ZONE_B); // will be taken down and left down
+        put(4, ZONE_B); // will be left up
       }
     };
 
+    // make sure everything is clean and ready to go.
     cleanOutServerDirectories();
 
     // Startup the servers
@@ -138,34 +140,47 @@ public class RebalanceOperationComplexPart2DistributedTest
       startServerInRedundancyZone(entry.getKey(), entry.getValue());
     }
 
+    server2 = clusterStartupRule.getVM(2);
+
     // Put data in the server regions
     clientPopulateServers();
 
-    // Rebalance Server VM will initiate all of the rebalances in this test
-    VM rebalanceServerVM = clusterStartupRule.getVM(2);
-
     // Baseline rebalance with everything up
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
-
+    // Stop server 3
     clusterStartupRule.stop(3, false);
-    rebalanceServerVM.invoke(() -> revokeKnownMissingMembers(1));
 
-    // Take the serverToBeShutdownAndRestarted offline
+    // Revoke server 3's disk store
+    server2.invoke(() -> revokeKnownMissingMembers(1));
+
+    // Take server 1 offline
     clusterStartupRule.stop(1, false);
 
     // Rebalance so that now all the buckets are on server 2.
     // Zone b servers should not be touched.
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
 
-    // Restart the serverToBeShutdownAndRestarted
+    // print the bucket count on server 2 for debug. Should be 113
+    // assertThat(getBucketCount(2)).isEqualTo(113);
+
+    // print the bucket count on server 4 for debug. Should be 113
+    // assertThat(getBucketCount(4)).isEqualTo(113);
+
+    // Restart the server 1
     startServerInRedundancyZone(1, SERVER_ZONE_MAP.get(1));
-
-    rebalanceServerVM = clusterStartupRule.getVM(2);
 
     // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there
     // are no cross redundancy zone bucket deletions.
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // print the bucket count on server 4 for debug. Should be 113 because server 3 is still down
+    assertThat(getBucketCount(4)).isEqualTo(113);
+
+    assertThat(getBucketCount(1)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
+
+    assertThat(getBucketCount(2)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
+
 
     // Verify that all bucket counts add up to what they should
     int zoneABucketCount = getZoneBucketCount(REGION_NAME, ZONE_A);
@@ -173,8 +188,14 @@ public class RebalanceOperationComplexPart2DistributedTest
   }
 
 
+  /**
+   * Test that we correctly use the redundancy-zone property to determine where to place redundant
+   * copies of a buckets and doesn't allow cross redundancy zone deletes. This does not use a
+   * rebalance once the servers are down.
+   *
+   */
   @Test
-  public void testRecoveryWithRevokedServer() throws Exception {
+  public void testRecoveryWithRevokedServerWithNoRebalanceWhileServersDown() throws Exception {
 
     SERVER_ZONE_MAP = new HashMap<Integer, String>() {
       {
@@ -195,29 +216,105 @@ public class RebalanceOperationComplexPart2DistributedTest
     // Put data in the server regions
     clientPopulateServers();
 
-    // Rebalance Server VM will initiate all of the rebalances in this test
-    VM rebalanceServerVM = clusterStartupRule.getVM(2);
+    // Rebalance Server VM will initiate the rebalances in this test
+    VM server2 = clusterStartupRule.getVM(2);
 
     // Baseline rebalance with everything up
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // Stop server 3 and revoke its persistent datastore
     clusterStartupRule.stop(3, true);
+    server2.invoke(() -> revokeKnownMissingMembers(1));
 
-    rebalanceServerVM.invoke(() -> revokeKnownMissingMembers(1));
-
-    // Take the serverToBeShutdownAndRestarted offline
+    // Take the server 1 offline
     clusterStartupRule.stop(1, false);
 
-    // Restart the serverToBeShutdownAndRestarted
+    // Restart the server 1
     startServerInRedundancyZone(1, SERVER_ZONE_MAP.get(1));
+
+    // Note: no rebalance above during shutting down and restarting for servers
 
     // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there
     // are no cross redundancy zone bucket deletions.
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // print the bucket count on server 4 for debug. Should be 113 because server 3 is still down
+    assertThat(getBucketCount(4)).isEqualTo(113);
+
+    assertThat(getBucketCount(1)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
+
+    assertThat(getBucketCount(2)).isGreaterThanOrEqualTo(56).isLessThanOrEqualTo(57);
 
     // Verify that all bucket counts add up to what they should
     int zoneABucketCount = getZoneBucketCount(REGION_NAME, ZONE_A);
     assertThat(zoneABucketCount).isEqualTo(EXPECTED_BUCKET_COUNT);
   }
+
+
+  /**
+   * This test tests the case that we don't accidentally leave extra copies in a
+   * redundancy zone after a server recovers.
+   *
+   */
+  @Test
+  public void testThreeZonesHaveTwoCopiesAfterRebalance() throws Exception {
+    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
+      {
+        put(1, ZONE_A);
+        put(2, ZONE_B);
+        put(3, ZONE_C);
+      }
+    };
+
+    cleanOutServerDirectories();
+
+    // Startup the servers
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
+    }
+
+    // Put data in the server regions
+    clientPopulateServers();
+
+    // Rebalance Server VM will initiate the rebalances in this test
+    VM server2 = clusterStartupRule.getVM(2);
+
+    // Baseline rebalance with everything up
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // Take the server 1 offline
+    clusterStartupRule.stop(1, false);
+
+    // Rebalance so that now all the buckets are on the other two servers.
+    // Zone b servers should not be touched.
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // Restart server 1
+    startServerInRedundancyZone(1, SERVER_ZONE_MAP.get(1));
+
+    // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there are
+    // no cross redundancy zone bucket deletions.
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    int zoneABucketCount = getZoneBucketCount(REGION_NAME, ZONE_A);
+    int zoneBBucketCount = getZoneBucketCount(REGION_NAME, ZONE_B);
+    int zoneCBucketCount = getZoneBucketCount(REGION_NAME, ZONE_C);
+    assertThat(zoneABucketCount + zoneBBucketCount + zoneCBucketCount)
+        .isEqualTo(2 * EXPECTED_BUCKET_COUNT);
+  }
+
+
+  private int getBucketCount(int server) {
+    return clusterStartupRule.getVM(server).invoke(() -> {
+      PartitionedRegion region =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      int count = region.getLocalBucketsListTestOnly().size();
+      logger.info("MLH Bucket count on server " + server + " for zone B is "
+          + count);
+      return count;
+    });
+  }
+
 
   protected void cleanOutServerDirectory(int server) {
     VM.getVM(server).invoke(() -> {
@@ -240,53 +337,6 @@ public class RebalanceOperationComplexPart2DistributedTest
       cleanOutServerDirectory(entry.getKey());
     }
   }
-
-
-  @Test
-  public void testThreeZonesHaveTwoCopiesAfterRebalance() throws Exception {
-    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
-      {
-        put(1, ZONE_A);
-        put(2, ZONE_B);
-        put(3, ZONE_C);
-      }
-    };
-    cleanOutServerDirectories();
-    // Startup the servers
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      startServerInRedundancyZone(entry.getKey(), entry.getValue());
-    }
-
-    // Put data in the server regions
-    clientPopulateServers();
-
-    // Rebalance Server VM will initiate all of the rebalances in this test
-    VM rebalanceServerVM = clusterStartupRule.getVM(2);
-
-    // Baseline rebalance with everything up
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
-
-    // Take the serverToBeShutdownAndRestarted offline
-    clusterStartupRule.stop(1, false);
-
-    // Rebalance so that now all the buckets are on the other two servers.
-    // Zone b servers should not be touched.
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
-
-    // Restart the serverToBeShutdownAndRestarted
-    startServerInRedundancyZone(1, SERVER_ZONE_MAP.get(1));
-
-    // Do another rebalance to make sure all the buckets are distributed evenly(ish) and there are
-    // no cross redundancy zone bucket deletions.
-    rebalanceServerVM.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
-
-    int zoneABucketCount = getZoneBucketCount(REGION_NAME, ZONE_A);
-    int zoneBBucketCount = getZoneBucketCount(REGION_NAME, ZONE_B);
-    int zoneCBucketCount = getZoneBucketCount(REGION_NAME, ZONE_C);
-    assertThat(zoneABucketCount + zoneBBucketCount + zoneCBucketCount)
-        .isEqualTo(2 * EXPECTED_BUCKET_COUNT);
-  }
-
 
   private void revokeKnownMissingMembers(final int numExpectedMissing)
       throws AdminException, InterruptedException {

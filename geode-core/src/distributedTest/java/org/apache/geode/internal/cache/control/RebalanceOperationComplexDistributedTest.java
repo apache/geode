@@ -126,7 +126,7 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer,
       int serverToBeShutdownAndRestarted) {
 
-    // Rebalance Server VM will initiate all of the rebalances in this test
+    // Rebalance Server VM will initiate the rebalances in this test
     VM rebalanceServerVM = clusterStartupRule.getVM(rebalanceServer);
 
     // Baseline rebalance with everything up
