@@ -74,7 +74,8 @@ public class ClusterNodes {
     List<Pair<Long, Long>> slots = new ArrayList<>();
     if (primary) {
       // Sometimes we see a 'primary' without slots which seems to imply it hasn't yet transitioned
-      // to being a 'replica'.
+      // to being a 'replica'. Nevertheless, still keep the state as primary. Eventually the
+      // higher layers will call into here again until everything is stabilized.
       if (parts.length > 8) {
         for (int i = 8; i < parts.length; i++) {
           String[] startEnd = parts[i].split("-");
@@ -87,8 +88,6 @@ public class ClusterNodes {
           }
           slots.add(Pair.of(slotStart, slotEnd));
         }
-      } else {
-        primary = false;
       }
     }
 

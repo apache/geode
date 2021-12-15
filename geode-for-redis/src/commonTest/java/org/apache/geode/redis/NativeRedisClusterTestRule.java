@@ -15,10 +15,11 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import org.apache.geode.redis.internal.proxy.RedisProxy;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
-public class NativeRedisClusterTestRule extends ExternalResource implements Serializable {
+public class NativeRedisClusterTestRule extends ExternalResource {
 
   private static final Logger logger = LogService.getLogger();
   private static final String REDIS_COMPOSE_YML = "/redis-cluster-compose.yml";
@@ -83,9 +84,13 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
 
         redisCluster.start();
 
-        int port = redisCluster.getServicePort("redis-node-0", REDIS_PORT);
-
-        waitForPrimaries(port, 3);
+        List<ClusterNode> nodes = null;
+        for (int i = 0; i < NODE_COUNT; i++) {
+          int port = redisCluster.getServicePort("redis-node-" + i, REDIS_PORT);
+          nodes = waitForRedisNodes(port, 3);
+        }
+        assert nodes != null;
+        nodes.forEach(logger::info);
 
         // Used when translating internal redis host:port to the external host:port which is
         // ultimately what command results will return.
@@ -127,16 +132,33 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     return delegate.apply(containerStatement, description);
   }
 
-  private void waitForPrimaries(int port, int wantedPrimaries) {
+  public void dumpContainerLogs() {
+    dumpContainerLogs("redis-cluster-init_1");
+    for (int i = 0; i < NODE_COUNT; i++) {
+      dumpContainerLogs("redis-node-" + i + "_1");
+    }
+  }
+
+  private void dumpContainerLogs(String node) {
+    System.out.println("=================== Container: " + node + " =====================");
+    System.out.println(redisCluster.getContainerByServiceName(node).get().getLogs());
+  }
+
+  /**
+   * This method assumes that there is a replica for every primary.
+   */
+  private List<ClusterNode> waitForRedisNodes(int port, int wantedPrimaries) {
     List<ClusterNode> nodes = null;
     int primaryCount = 0;
+    int replicaCount = 0;
 
-    try (Jedis jedis = new Jedis("localhost", port)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port, REDIS_CLIENT_TIMEOUT)) {
       for (int i = 0; i < 60; i++) {
         nodes = ClusterNodes.parseClusterNodes(jedis.clusterNodes()).getNodes();
         primaryCount = nodes.stream().mapToInt(x -> x.primary ? 1 : 0).sum();
-        if (primaryCount == wantedPrimaries) {
-          break;
+        replicaCount = nodes.stream().mapToInt(x -> x.primary ? 0 : 1).sum();
+        if (primaryCount == wantedPrimaries && replicaCount == wantedPrimaries) {
+          return nodes;
         }
 
         try {
@@ -151,6 +173,12 @@ public class NativeRedisClusterTestRule extends ExternalResource implements Seri
     assertThat(primaryCount)
         .as("Incorrect primary node count")
         .isEqualTo(wantedPrimaries);
+
+    assertThat(replicaCount)
+        .as("Incorrect replica node count")
+        .isEqualTo(wantedPrimaries);
+
+    return null;
   }
 
   public void flushAll() {
