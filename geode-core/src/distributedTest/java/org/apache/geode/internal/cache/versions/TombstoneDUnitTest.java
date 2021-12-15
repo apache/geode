@@ -241,12 +241,12 @@ public class TombstoneDUnitTest implements Serializable {
       // Send tombstone gc message to vm1.
       for (int i = 0; i < count; i++) {
         region.destroy("K" + i);
-        await().untilAsserted(() -> assertThat(
-            tombstoneSweeper.getOldestTombstoneTime()
-                + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT - System.currentTimeMillis())
-                    .isGreaterThan(0));
-        performGC(1);
       }
+      await().untilAsserted(() -> assertThat(
+          tombstoneSweeper.getOldestTombstoneTime()
+              + TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT - System.currentTimeMillis())
+                  .isGreaterThan(0));
+      performGC(count);
 
       assertThat(tombstoneSweeper.getOldestTombstoneTime()).isEqualTo(0);
     });
