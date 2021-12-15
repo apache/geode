@@ -270,6 +270,11 @@ public class Member implements Comparable<Member> {
       return false;
     }
     Member o = (Member) other;
+
+    if ((this.memberId == null) || (o.memberId == null)) {
+      return false;
+    }
+
     return this.memberId.equals(o.memberId);
   }
 

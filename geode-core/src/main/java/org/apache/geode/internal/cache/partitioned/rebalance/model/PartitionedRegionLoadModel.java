@@ -47,20 +47,20 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * the best members to create buckets on or move buckets or primaries too. All of the actual work of
  * creating a copy, moving a primary, etc. Is performed by the BucketOperator that is passed to the
  * constructor.
- *
+ * <p>
  * To use, create a model and populate it using the addMember method. addMember takes a region
  * argument, to indicate which region the data is for. All of the regions added to a single model
  * are assumed to be colocated, and the model adds together the load from each of the individual
  * regions to balance all of the regions together.
- *
+ * <p>
  * Rebalancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
  * BucketOperator you provide to the contructor perform the actual create or move.
- *
+ * <p>
  * While creating redundant copies our moving buckets, this model tries to minimize the standard
  * deviation in the weighted loads for the members. The weighted load for the member is the sum of
  * the load for all of the buckets on the member divided by that members weight.
- *
+ * <p>
  * This model is not threadsafe.
  *
  * @since GemFire 6.0
@@ -114,7 +114,7 @@ public class PartitionedRegionLoadModel {
   /**
    * The list of buckets that have low redundancy
    */
-  private SortedSet<BucketRollup> lowRedundancyBuckets = null;
+  private final SortedSet<BucketRollup> lowRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
   private SortedSet<BucketRollup> overRedundancyBuckets = null;
   private final Collection<Move> attemptedPrimaryMoves = new HashSet<>();
   private final Collection<Move> attemptedBucketMoves = new HashSet<>();
@@ -361,11 +361,11 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Trigger the creation of a redundant bucket, potentially asynchronously.
-   *
+   * <p>
    * This method will find the best node to create a redundant bucket and invoke the bucket operator
    * to create a bucket on that node. Because the bucket operator is asynchronous, the bucket may
-   * not be created immediately, but the model will be updated regardless. Invoke
-   * {@link #waitForOperations()} to wait for those operations to actually complete
+   * not be created immediately, but the model will be updated regardless. Invoke {@link
+   * #waitForOperations()} to wait for those operations to actually complete
    *
    * @param bucket the bucket for which a redundant copy should be made
    * @param targetMember the member on which a redundant copy of a bucket should be made
@@ -424,7 +424,6 @@ public class PartitionedRegionLoadModel {
   }
 
   private void initLowRedundancyBuckets() {
-    this.lowRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
     for (BucketRollup b : this.buckets) {
       if (b != null && b.getRedundancy() >= 0 && b.getRedundancy() < this.requiredRedundancy) {
         this.lowRedundancyBuckets.add(b);
@@ -434,13 +433,11 @@ public class PartitionedRegionLoadModel {
 
 
   /**
-   *
-   * Original functionality if bucket's redundancy is greater than what is necessary
-   * add it to the over redundancy bucket list, so it can be cleared
-   *
-   * Newly added functionality is to make this so that we don't have a bucket
-   * in the same redundancy zone twice if zones are in use.
-   *
+   * Original functionality if bucket's redundancy is greater than what is necessary add it to the
+   * over redundancy bucket list, so it can be cleared
+   * <p>
+   * Newly added functionality is to make this so that we don't have a bucket in the same redundancy
+   * zone twice if zones are in use.
    */
   private void initOverRedundancyBuckets() {
     this.overRedundancyBuckets = new TreeSet<>(REDUNDANCY_COMPARATOR);
@@ -453,35 +450,30 @@ public class PartitionedRegionLoadModel {
         if (b.getOnlineRedundancy() > this.requiredRedundancy) {
           // if so, add the bucket to the over redundancy list
           this.overRedundancyBuckets.add(b);
-
-
         } else {
           // otherwise, for each member that is hosting the bucket
           for (Member member : b.getMembersHosting()) {
 
             // get the redundancy zone of the member
             String redundancyZone = this.getRedundancyZone(member.getDistributedMember());
+            if (redundancyZone != null) {
+              // if the redundancy zone is not already in the list
+              if (redundancyZonesFound.contains(redundancyZone)) {
+                logger.info("MLH initOverRedundancyBuckets overredundancy!");
 
-            // if the redundancy zone is not already in the list
-            if (redundancyZonesFound.contains(redundancyZone)) {
-
-              boolean val = false;
-              val = true;
-              logger
-                  .info(
-                      "MLH initOverRedundancyBuckets found a redundant zone ({}) member ({}) in the list ",
-                      redundancyZone, member.toString(), new Exception("stack dump"));
-              if (val) {
-                assert (false);
+                // add the bucket to the over redundancy list because we have more than one member
+                // with this bucket in the same zone. something we don't prefer with multiple zones
+                this.overRedundancyBuckets.add(b);
+                if (b.getOnlineRedundancy() - 1 < b.getRedundancy()) {
+                  this.lowRedundancyBuckets.add(b);
+                }
+                // add the redundancy zone to the list of redundancy zones
+              } else {
+                redundancyZonesFound.add(redundancyZone);
               }
-              // add the bucket to the over redundancy list because we have more than one member
-              // with this bucket in the same zone. something we don't prefer with multiple zones
-              this.overRedundancyBuckets.add(b);
-              // add the redundancy zone to the list of redundancy zones
-            } else {
-              redundancyZonesFound.add(redundancyZone);
             }
           }
+
           // once we have finished processing all the members, clear the list
           // because we are moving on to the next bucket
           redundancyZonesFound.clear();
@@ -522,33 +514,33 @@ public class PartitionedRegionLoadModel {
   }
 
   /**
-   *
-   * Look for a zone that has more than one member represented.
-   * That is where we want to try to delete first.
+   * Look for a zone that has more than one member represented. That is where we want to try to
+   * delete first.
    *
    * @param members set of members that are hosting this bucket
    * @return null or a string containing the zone to delete a member from
    */
-  String getPreferredDeletionZone(Set<Member> members) {
-    Map<String, Integer> distributionMap = new HashMap<>();
+  Set<String> getPreferredDeletionZone(Set<Member> members) {
+    Set<String> distributionSet = new HashSet<>();
+    Set<String> zonesToDeleteFrom = new HashSet<>();
+
     // for each member
     for (Member member : members) {
       // get the redundancy zone
       String zoneName = getRedundancyZone(member.getMemberId());
       // See if the zoneName is in the list
-      Integer count = distributionMap.get(zoneName);
-      if (count == null) {
-        // if not add it.
-        distributionMap.put(zoneName, 1);
+
+      if (distributionSet.contains(zoneName)) {
+        // We have two members so that means it is preferred
+        zonesToDeleteFrom.add(zoneName);
       } else {
-        // else return the zone name
-        return zoneName;
+        // first occurrence of the zone name in the set
+        distributionSet.add(zoneName);
       }
     }
     // return nothing if this is the first member
     // because there is no preferred deletion zone yet.
-    return null;
-
+    return zonesToDeleteFrom;
   }
 
   /**
@@ -562,13 +554,7 @@ public class PartitionedRegionLoadModel {
     Set<Member> members = bucket.getMembersHosting();
     // Check to see if we have a preferred redundancy zone to delete from for this bucket.
     // We prefer deleting copies in the same redundancy zone
-    String zone = getPreferredDeletionZone(members);
-
-    // if we have a preferred redundancy zone to delete from
-    if (zone != null) {
-      // remove members that are not in that zone
-      members.removeIf(member -> !getRedundancyZone(member.getMemberId()).equals(zone));
-    }
+    Set<String> zones = getPreferredDeletionZone(members);
 
     // for each member
     for (Member member : members) {
@@ -579,6 +565,17 @@ public class PartitionedRegionLoadModel {
       float newLoad = (member.getTotalLoad() - bucket.getLoad()) / member.getWeight();
       if (newLoad <= mostLoaded || member.equals(bucket.getPrimary())) {
         continue;
+      }
+
+      // if we have a preferred redundancy zone to delete from
+      if (!zones.isEmpty()) {
+
+        // remove members that are not in that zone
+        if (!zones.contains(getRedundancyZone(member.getMemberId()))) {
+          // logger.error("MLH we left bucket {} on member {} ", bucket.getId(), member);
+          continue;
+        }
+        // logger.error("MLH we deleted bucket {} from member {} ", bucket.getId(), member);
       }
 
       // if the attemptedBucketRemovesList contains this move, then we don't need to add it

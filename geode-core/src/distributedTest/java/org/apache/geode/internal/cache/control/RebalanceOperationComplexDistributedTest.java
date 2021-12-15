@@ -69,21 +69,14 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
 
   public static final String ZONE_A = "zoneA";
   public static final String ZONE_B = "zoneB";
+  private static final String ZONE_C = "zoneC";
+
   public int locatorPort;
   public static final AtomicInteger runID = new AtomicInteger(0);
   public String workingDir;
 
   // 6 servers distributed evenly across 2 zones
-  public static final Map<Integer, String> SERVER_ZONE_MAP = new HashMap<Integer, String>() {
-    {
-      put(1, ZONE_A);
-      put(2, ZONE_A);
-      put(3, ZONE_A);
-      put(4, ZONE_B);
-      put(5, ZONE_B);
-      put(6, ZONE_B);
-    }
-  };
+  public static Map<Integer, String> SERVER_ZONE_MAP;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
@@ -97,16 +90,6 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     workingDir = clusterStartupRule.getWorkingDirRoot().getAbsolutePath();
 
     runID.incrementAndGet();
-    cleanOutServerDirectories();
-
-    // Startup the servers
-    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      startServerInRedundancyZone(entry.getKey(), entry.getValue());
-    }
-
-    // Put data in the server regions
-    clientPopulateServers();
-
   }
 
   @After
@@ -124,7 +107,27 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
   @Test
   @Parameters({"1,2", "1,4", "4,1", "5,6"})
   public void testEnforceZoneWithSixServersAndTwoZones(int rebalanceServer,
-      int serverToBeShutdownAndRestarted) {
+      int serverToBeShutdownAndRestarted) throws Exception {
+    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
+      {
+        put(1, ZONE_A);
+        put(2, ZONE_A);
+        put(3, ZONE_A);
+        put(4, ZONE_B);
+        put(5, ZONE_B);
+        put(6, ZONE_B);
+      }
+    };
+
+    cleanOutServerDirectories();
+
+    // Startup the servers
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
+    }
+
+    // Put data in the server regions
+    clientPopulateServers();
 
     // Rebalance Server VM will initiate the rebalances in this test
     VM rebalanceServerVM = clusterStartupRule.getVM(rebalanceServer);
@@ -151,6 +154,76 @@ public class RebalanceOperationComplexDistributedTest implements Serializable {
     compareZoneBucketCounts(COLOCATED_REGION_NAME);
     compareZoneBucketCounts(REGION_NAME);
   }
+
+
+  /**
+   * This test tests the case that we don't accidentally leave extra copies in a
+   * redundancy zone after a server recovers.
+   *
+   */
+  @Test
+  public void testThreeZonesHaveTwoCopiesAfterRebalance() throws Exception {
+    SERVER_ZONE_MAP = new HashMap<Integer, String>() {
+      {
+        put(1, ZONE_A);
+        put(2, ZONE_B);
+        put(3, ZONE_C);
+      }
+    };
+
+    cleanOutServerDirectories();
+
+    // Startup the servers
+    for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
+      startServerInRedundancyZone(entry.getKey(), entry.getValue());
+    }
+
+    // Put data in the server regions
+    clientPopulateServers();
+
+    // Rebalance Server VM will initiate the rebalances in this test
+    VM server2 = clusterStartupRule.getVM(2);
+
+    // Baseline rebalance with everything up
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // Take the server 1 offline
+    clusterStartupRule.stop(1, false);
+
+    // Rebalance so that now all the buckets are on the other two servers.
+    // Zone b servers should not be touched.
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    // Restart server 1
+    startServerInRedundancyZone(1, SERVER_ZONE_MAP.get(1));
+    // Rebalance so that now all the buckets are on the other two servers.
+    // Zone b servers should not be touched.
+
+    server2.invoke(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+
+    int zoneABucketCount = getBucketCount(1);
+    int zoneBBucketCount = getBucketCount(2);
+    int zoneCBucketCount = getBucketCount(3);
+    assertThat(zoneABucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
+    assertThat(zoneBBucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
+    assertThat(zoneCBucketCount).isGreaterThanOrEqualTo(75).isLessThanOrEqualTo(76);
+
+    assertThat(zoneABucketCount + zoneBBucketCount + zoneCBucketCount)
+        .isEqualTo(2 * EXPECTED_BUCKET_COUNT);
+  }
+
+
+  private int getBucketCount(int server) {
+    return clusterStartupRule.getVM(server).invoke(() -> {
+      PartitionedRegion region =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      int count = region.getLocalBucketsListTestOnly().size();
+      logger.info("MLH Bucket count on server " + server + " for zone B is "
+          + count);
+      return count;
+    });
+  }
+
 
   private void stopServersAndDeleteDirectories() {
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
