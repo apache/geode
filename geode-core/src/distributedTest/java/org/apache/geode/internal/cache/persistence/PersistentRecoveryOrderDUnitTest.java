@@ -1320,16 +1320,13 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
         assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+        InternalDistributedSystem.getAnyInstance().getCache().close();
       }
     });
 
     vm1.invoke(() -> getCache().close());
 
     vm0.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(
-              InternalDistributedSystem.getAnyInstance().getCancelCriterion().cancelInProgress())
-                  .isNull());
       // This should work now
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
       updateEntry("A", "C");
