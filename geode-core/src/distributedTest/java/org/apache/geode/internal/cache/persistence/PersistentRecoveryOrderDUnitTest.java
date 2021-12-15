@@ -1326,6 +1326,10 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
     vm1.invoke(() -> getCache().close());
 
     vm0.invoke(() -> {
+      await().untilAsserted(
+          () -> assertThat(
+              InternalDistributedSystem.getAnyInstance().getCancelCriterion().cancelInProgress())
+                  .isNull());
       // This should work now
       createReplicateRegion(regionName, getDiskDirs(getVMId()));
       updateEntry("A", "C");
