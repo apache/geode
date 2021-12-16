@@ -101,9 +101,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
             isOffHeap()));
 
     AsyncInvocation a1 =
-        vm6.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 1000, "DA"));
+        vm6.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 2000, "DA"));
     AsyncInvocation a2 =
-        vm7.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 1000, "DA"));
+        vm7.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 2000, "DA"));
 
     a1.await();
     a2.await();
