@@ -16,6 +16,7 @@
       "zone": "us-central1-f",
       "image_family": "{{user `pipeline_prefix`}}linux-geode-builder",
       "image_name": "{{user `hashed_pipeline_prefix`}}gb-{{timestamp}}",
+      "disk_size": "100",
       "tags": ["packer"],
       "labels": {
         "time-to-live": "{{user `packer_ttl`}}",
