@@ -16,7 +16,10 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.data.AbstractRedisData.NO_EXPIRATION;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisSet.setOpStoreResult;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +54,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RedisSetTest {
@@ -159,12 +163,50 @@ public class RedisSetTest {
   }
 
   @Test
+  public void sdiffstore_stores_delta_that_is_stable() {
+    RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+
+    RedisSet setDest = createRedisSet(1, 2);
+
+    when(regionProvider.getTypedRedisDataElseRemove(REDIS_SET, null, false)).thenReturn(setDest);
+    when(regionProvider.getDataRegion()).thenReturn(dataRegion);
+    when(dataRegion.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    RedisSet.MemberSet set = new RedisSet.MemberSet();
+    set.add(new byte[] {3});
+    setOpStoreResult(regionProvider, null, set);
+
+    verify(dataRegion).put(any(), any());
+    assertThat(setDest.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void sdiffstore_sets_expiration_time_to_zero() {
+    RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+
+    RedisSet setDest = createRedisSet(1, 2);
+    setDest.setExpirationTimestamp(dataRegion, null, 100);
+
+    when(regionProvider.getTypedRedisDataElseRemove(REDIS_SET, null, false)).thenReturn(setDest);
+    when(regionProvider.getDataRegion()).thenReturn(dataRegion);
+    when(dataRegion.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    RedisSet.MemberSet set = new RedisSet.MemberSet();
+    set.add(new byte[] {3});
+    setOpStoreResult(regionProvider, null, set);
+
+    assertThat(setDest.getExpirationTimestamp()).isEqualTo(NO_EXPIRATION);
+    assertThat(setDest.hasDelta()).isFalse();
+  }
+
+  @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
-
     set1.setExpirationTimestamp(region, null, 999);
 
     verify(region).put(any(), any());

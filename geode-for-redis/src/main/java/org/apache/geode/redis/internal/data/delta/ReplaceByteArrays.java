@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.internal.InternalDataSerializer.readSet;
+import static org.apache.geode.DataSerializer.readByteArray;
+import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
-import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,14 +36,20 @@ public class ReplaceByteArrays implements DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(REPLACE_BYTE_ARRAYS, out);
-    InternalDataSerializer.writeSet(byteArrays, out);
+    InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
+    for (byte[] bytes : byteArrays) {
+      DataSerializer.writeByteArray(bytes, out);
+    }
   }
 
+  // Create a member set as you read it in
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    try {
-      redisData.applyReplaceByteArraysDelta(uncheckedCast(readSet(in)));
-    } catch (ClassNotFoundException ignore) {
-      // This should be impossible since we should always be able to find byte array class
+    redisData.applyReplaceByteArraysDelta();
+
+    int size = readArrayLength(in);
+    while (size > 0) {
+      redisData.applyAddByteArrayDelta(readByteArray(in));
+      size--;
     }
   }
 }

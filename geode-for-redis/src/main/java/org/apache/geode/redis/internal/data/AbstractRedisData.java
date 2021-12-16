@@ -36,7 +36,6 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
@@ -245,7 +244,9 @@ public abstract class AbstractRedisData implements RedisData {
         SetByteArrayAndTimestamp.deserializeFrom(in, this);
         break;
       case REPLACE_BYTE_ARRAYS:
-        ReplaceByteArrays.deserializeFrom(in, this);
+        synchronized (this) {
+          ReplaceByteArrays.deserializeFrom(in, this);
+        }
         break;
       case REPLACE_BYTE_ARRAY_AT_OFFSET:
         ReplaceByteArrayAtOffset.deserializeFrom(in, this);
@@ -288,7 +289,7 @@ public abstract class AbstractRedisData implements RedisData {
     throw new IllegalStateException("unexpected " + APPEND_BYTE_ARRAY);
   }
 
-  public void applyReplaceByteArraysDelta(Set<byte[]> bytes) {
+  public void applyReplaceByteArraysDelta() {
     throw new IllegalStateException("unexpected " + REPLACE_BYTE_ARRAYS);
   }
 
