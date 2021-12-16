@@ -33,9 +33,9 @@ export JAVA_HOME=${JAVA_TEST_PATH}
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-unsupported-commands=true \
   --name=server1 \
-  --geode-for-redis-port=6380 \
-  --geode-for-redis-bind-address=127.0.0.1 \
-  --geode-for-redis-username=foobar \
+  --J=-Dgemfire.geode-for-redis-port=6380 \
+  --J=-Dgemfire.geode-for-redis-bind-address=127.0.0.1 \
+  --J=-Dgemfire.geode-for-redis-username=foobar \
   --server-port=0 \
   --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager \
   --J=-Dgemfire.jmx-manager=true \
@@ -58,8 +58,8 @@ failCount=0
   --J=-Denable-unsupported-commands=true \
   --name=server2 \
   --server-port=0 \
-  --geode-for-redis-port=6379 \
-  --geode-for-redis-bind-address=127.0.0.1 \
+  --J=-Dgemfire.geode-for-redis-port=6379 \
+  --J=-Dgemfire.geode-for-redis-bind-address=127.0.0.1 \
   --J=-Dgemfire.jmx-manager=true \
   --J=-Dgemfire.jmx-manager-start=true \
   --J=-Dgemfire.jmx-manager-port=1099

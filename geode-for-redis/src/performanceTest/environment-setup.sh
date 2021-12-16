@@ -101,8 +101,8 @@ if [ ${SERVER_TYPE} == "geode" ]; then
           --log-level=none
           --locators=localhost[10334]
           --server-port=0
-          --geode-for-redis-port=6379
-          --geode-for-redis-bind-address=127.0.0.1"
+          --J=-Dgemfire.geode-for-redis-port=6379
+          --J=-Dgemfire.geode-for-redis-bind-address=127.0.0.1"
 else
   if [ ${SERVER_NOT_FOUND} -eq 1 ]; then
     echo "No server compatible with Redis detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"

@@ -34,11 +34,12 @@ Once the locator has started, start at least one server with a command of the fo
 gfsh> start server \
   --name=<serverName> \
   --locators=localhost[<locatorPort>] \
-  --geode-for-redis-port=<geodeForRedisPort> \
-  --geode-for-redis-bind-address=<geodeForRedisBindAddress>
+  --J=-Dgemfire.geode-for-redis-enabled=true \
+  --J=-Dgemfire.geode-for-redis-port=<geodeForRedisPort> \
+  --J=-Dgemfire.geode-for-redis-bind-address=<geodeForRedisBindAddress>
 ```
 
-If any of the options `geode-for-redis-bind-address`, `geode-for-redis-username`, or `geode-for-redis-port` are included, a Geode server with Geode for Redis will be started.
+If the option `geode-for-redis-enabled` is set to `true`, a Geode server with Geode for Redis will be started.
 
 - Replace `<serverName>` with the name of your server.
 
@@ -105,9 +106,10 @@ The following gfsh command will configure a `SimpleSecurityManager`:
 gfsh> start server \
   --name=<serverName> \
   --locators=<locatorPort> \
-  --geode-for-redis-port=<geodeForRedisPort> \
-  --geode-for-redis-bind-address=<geodeForRedisBindAddress> \
-  --geode-for-redis-username=<geodeForRedisUsername> \
+  --J=-Dgemfire.geode-for-redis-enabled=true \
+  --J=-Dgemfire.geode-for-redis-port=<geodeForRedisPort> \
+  --J=-Dgemfire.geode-for-redis-bind-address=<geodeForRedisBindAddress> \
+  --J=-Dgemfire.geode-for-redis-username=<geodeForRedisUsername> \
   --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager
 ```
 

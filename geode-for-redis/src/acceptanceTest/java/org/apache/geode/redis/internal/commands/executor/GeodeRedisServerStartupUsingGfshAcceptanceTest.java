@@ -43,8 +43,8 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-and-address-server",
-        "--geode-for-redis-bind-address", "localhost",
-        "--geode-for-redis-port", String.valueOf(port));
+        "--J=-Dgemfire.geode-for-redis-bind-address", "localhost",
+        "--J=-Dgemfire.geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
 
     try (ServerSocket interferingSocket = new ServerSocket()) {
@@ -66,7 +66,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-all-addresses-server",
-        "--geode-for-redis-port", String.valueOf(port));
+        "--J=-Dgemfire.geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
 
     try (ServerSocket interferingSocket = new ServerSocket()) {
@@ -86,7 +86,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "invalid-bind-server",
-        "--geode-for-redis-bind-address", "1.1.1.1");
+        "--J=-Dgemfire.geode-for-redis-bind-address", "1.1.1.1");
     GfshExecution execution;
 
     execution = GfshScript.of(startServerCommand)
