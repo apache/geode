@@ -64,8 +64,8 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
-  private static String test_start_version = "1.14.0";
-  private static String feature_start_version = "1.15.0";
+  private static final String test_start_version = "1.14.0";
+  private static final String feature_start_version = "1.15.0";
   private static RegionService user0Service;
   private static RegionService user1Service;
 
@@ -269,11 +269,8 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     Region<Object, Object> region = server.getCache().getRegion("/region");
     region.put("1", "value1");
-    clientVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(CQLISTENER0.getKeys())
-              .containsExactly("1"));
-    });
+    clientVM.invoke(() -> await().untilAsserted(() -> assertThat(CQLISTENER0.getKeys())
+        .containsExactly("1")));
 
     // expire the current user
     ExpirableSecurityManager securityManager = getSecurityManager();
@@ -449,12 +446,22 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
       cq.stop();
     });
 
+    getSecurityManager().addExpiredUser("user2");
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user3");
+      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
+      CqQuery cq = queryService.getCq("CQ1");
+      cq.close();
+    });
+
     Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();
     Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
-    assertThat(unAuthorizedOps.keySet()).containsExactly("user1");
+    assertThat(unAuthorizedOps.keySet()).containsExactly("user1", "user2");
     assertThat(unAuthorizedOps.get("user1")).containsExactly("CLUSTER:MANAGE:QUERY");
-    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2");
+    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2", "user3");
     assertThat(authorizedOps.get("user2")).containsExactly("CLUSTER:MANAGE:QUERY");
+    assertThat(authorizedOps.get("user3")).containsExactly("DATA:READ:region");
   }
 
   @Test
@@ -478,9 +485,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     // refresh user before we expire user1, otherwise we might still be using expired
     // users in some client operations
-    clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("user2");
-    });
+    clientVM.invoke(() -> UpdatableUserAuthInitialize.setUser("user2"));
 
     getSecurityManager().addExpiredUser("user1");
     region.put("2", "value2");
@@ -595,10 +600,8 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     region.put("2", "value2");
 
     // client will get both keys
-    clientVM.invoke(() -> {
-      await().untilAsserted(
-          () -> assertThat(myListener.keys).containsExactly("1", "2"));
-    });
+    clientVM.invoke(
+        () -> await().untilAsserted(() -> assertThat(myListener.keys).containsExactly("1", "2")));
 
     // user1 should not be used to put key2 to the region in any cases
     assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
