@@ -19,29 +19,41 @@ package org.apache.geode.security;
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.collectSecurityManagers;
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExecuteCQ;
 import static org.apache.geode.cache.query.dunit.SecurityTestUtils.getSecurityManager;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.fail;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.concurrent.FileBasedCountDownLatch;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -308,6 +320,118 @@ public class AuthExpirationMultiServerDUnitTest {
     // connections
     assertThat(unAuthorizedOps.get("user1")).isNotEmpty();
   }
+
+  private static KeyValueCacheListener myListener;
+
+  /**
+   * this test uses one client to do put operation on a single key 50 times and make sure
+   * another durable client will receive all 50 update events and put the correct value in its
+   * local cache even when its credentials expire multiple times.
+   * The test also make sure the durable client did not receive extra marker (no extra marker is put
+   * on the queue by the server)
+   */
+  @Test
+  public void registeredInterest_durableClient_receives_all_events() throws Exception {
+    int locatorPort = locator.getPort();
+    ClientVM clientVM = cluster.startClientVM(3,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withProperty(DURABLE_CLIENT_ID, "123456")
+            .withProperty(LOG_LEVEL, "debug")
+            .withProperty(LOG_FILE, new File("client.log").getAbsolutePath())
+            .withCacheSetup(
+                a -> a.setPoolSubscriptionRedundancy(1).setPoolSubscriptionEnabled(true))
+            .withLocatorConnection(locatorPort));
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user1");
+      myListener = new KeyValueCacheListener();
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      Region<Object, Object> clientRegion =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+              .addCacheListener(myListener)
+              .create(PARTITION_REGION);
+      clientRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS, true);
+      clientCache.readyForEvents();
+      UpdatableUserAuthInitialize.setUser("User2");
+      // wait for time longer than server's max time to wait to re-authenticate
+      UpdatableUserAuthInitialize.setWaitTime(6000);
+    });
+
+    expireUserOnAllVms("user1");
+
+    // create another client to do puts
+    ClientVM putClient = cluster.startClientVM(4,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(false)
+            .withLocatorConnection(locatorPort));
+    AsyncInvocation putAsync = putClient.invokeAsync(() -> {
+      UpdatableUserAuthInitialize.setUser("putter");
+      Region<Object, Object> proxyRegion =
+          ClusterStartupRule.clientCacheRule.createProxyRegion(PARTITION_REGION);
+      IntStream.range(0, 50).forEach(i -> proxyRegion.put("key", i));
+    });
+
+    clientVM.invoke(() -> {
+      // expire the user one more time
+      UpdatableUserAuthInitialize.setUser("User3");
+    });
+    expireUserOnAllVms("user2");
+
+    putAsync.await();
+
+    // make sure the client still gets all the events
+    clientVM.invoke(() -> {
+      Region clientRegion = ClusterStartupRule.getClientCache().getRegion(PARTITION_REGION);
+      await().untilAsserted(() -> assertThat(myListener.lastValue).isEqualTo(49));
+      assertThat(myListener.updateEventCount).isGreaterThanOrEqualTo(49);
+      assertThat(clientRegion.getEntry("key").getValue()).isEqualTo(49);
+    });
+
+    // in the end, make sure the durable client didn't get the extra marker message
+    File[] clientLogFiles =
+        clientVM.getWorkingDir().listFiles(file -> file.toString().endsWith(".log"));
+    for (File logFile : clientLogFiles) {
+      Scanner scanner = new Scanner(logFile);
+      while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        assertThat(line).describedAs("File: %s, Line: %s", logFile.getAbsolutePath(), line)
+            .doesNotContain("extra marker received");
+      }
+    }
+  }
+
+  public static class KeyValueCacheListener extends CacheListenerAdapter<Object, Object> {
+    private static Logger logger = LogService.getLogger();
+    public Integer lastValue;
+    public int updateEventCount;
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      Integer value = (Integer) event.getNewValue();
+      if (lastValue != null) {
+        assertThat(value - lastValue).isIn(0, 1);
+      }
+      lastValue = value;
+      updateEventCount++;
+      logger.info("Jinmei: got update event with key = {}", value);
+    }
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      Integer value = (Integer) event.getNewValue();
+      if (lastValue != null) {
+        assertThat(value - lastValue).isIn(0, 1);
+      }
+      lastValue = value;
+      logger.info("Jinmei: got create event with key = {}", value);
+    }
+
+    public void afterRegionLive(RegionEvent event) {
+      Operation operation = event.getOperation();
+      logger.info("Jinmei: got event {}", operation.toString());
+    }
+  }
+
 
   @Test
   public void peerStillCommunicateWhenCredentialExpired() throws Exception {

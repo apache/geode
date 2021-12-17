@@ -524,26 +524,28 @@ public class CacheClientNotifier {
    */
   public void makePrimary(ClientProxyMembershipID proxyId, boolean isClientReady) {
     CacheClientProxy proxy = getClientProxy(proxyId);
-    if (proxy != null) {
-      proxy.setPrimary(true);
-
-      /*
-       * If the client represented by this proxy has: - already processed the marker message
-       * (meaning the client is failing over to this server as its primary) <or> - is not durable
-       * (meaning the marker message is being processed automatically
-       *
-       * Then, start or resume the dispatcher. Otherwise, let the clientReady message start the
-       * dispatcher. See CacheClientProxy.startOrResumeMessageDispatcher if
-       * (!proxy._messageDispatcher.isAlive()) {
-       */
-      if (isClientReady || !proxy.isDurable()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier: Notifying proxy to start dispatcher for: {}", proxy);
-        }
-        proxy.startOrResumeMessageDispatcher(false);
-      }
-    } else {
+    if (proxy == null) {
       throw new InternalGemFireError("No cache client proxy on this node for proxyId " + proxyId);
+    }
+    proxy.setPrimary(true);
+
+    /*
+     * If the client represented by this proxy has: - already processed the marker message
+     * (meaning the client is failing over to this server as its primary) <or> - is not durable
+     * (meaning the marker message is being processed automatically
+     *
+     * Then, start or resume the dispatcher. Otherwise, let the clientReady message start the
+     * dispatcher. See CacheClientProxy.startOrResumeMessageDispatcher if
+     * (!proxy._messageDispatcher.isAlive()) {
+     */
+    if (!proxy.isDurable()) {
+      logger.debug("CacheClientNotifier: Notifying non-durable proxy to start dispatcher for: {}",
+          proxy);
+      proxy.startOrResumeMessageDispatcher(false);
+    } else if (isClientReady) {
+      logger.debug("CacheClientNotifier: Notifying durable proxy to start dispatcher for: {}",
+          proxy);
+      proxy.startOrResumeMessageDispatcher(true);
     }
   }
 
