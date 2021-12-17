@@ -516,11 +516,12 @@ public class CacheClientNotifier {
        * dispatcher. See CacheClientProxy.startOrResumeMessageDispatcher if
        * (!proxy._messageDispatcher.isAlive()) {
        */
-      if (isClientReady || !proxy.isDurable()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier: Notifying proxy to start dispatcher for: {}", proxy);
-        }
+      if(!proxy.isDurable()) {
+        logger.debug("CacheClientNotifier: Notifying non-durable proxy to start dispatcher for: {}", proxy);
         proxy.startOrResumeMessageDispatcher(false);
+      } else if (isClientReady) {
+        logger.debug("CacheClientNotifier: Notifying durable proxy to start dispatcher for: {}", proxy);
+        proxy.startOrResumeMessageDispatcher(true);
       }
     } else {
       throw new InternalGemFireError("No cache client proxy on this node for proxyId " + proxyId);
