@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
+import org.apache.geode.redis.internal.data.RedisSet;
 
 public class ReplaceByteArrays implements DeltaInfo {
   private final Set<byte[]> byteArrays;
@@ -44,12 +45,13 @@ public class ReplaceByteArrays implements DeltaInfo {
 
   // Create a member set as you read it in
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    redisData.applyReplaceByteArraysDelta();
-
     int size = readArrayLength(in);
+    RedisSet.MemberSet members = new RedisSet.MemberSet(size);
     while (size > 0) {
-      redisData.applyAddByteArrayDelta(readByteArray(in));
+      members.add(readByteArray(in));
       size--;
     }
+
+    redisData.applyReplaceByteArraysDelta(members);
   }
 }

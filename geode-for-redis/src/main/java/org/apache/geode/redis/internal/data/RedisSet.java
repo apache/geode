@@ -61,6 +61,10 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
+  public RedisSet(MemberSet members) {
+    this.members = members;
+  }
+
   public RedisSet(int expectedSize) {
     members = new MemberSet(expectedSize);
   }
@@ -121,7 +125,6 @@ public class RedisSet extends AbstractRedisData {
 
     if (destinationSet != null) {
       destinationSet.persistNoDelta();
-      destinationSet.members.clear();
       destinationSet.members = diff;
       destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
           new ReplaceByteArrays(diff));
@@ -263,9 +266,9 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @Override
-  public void applyReplaceByteArraysDelta() {
+  public void applyReplaceByteArraysDelta(MemberSet members) {
     persistNoDelta();
-    members.clear();
+    this.members = members;
   }
 
   /**
