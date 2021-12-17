@@ -143,6 +143,41 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
   }
 
   /**
+   * Verifies that the unnecessary memory is cleared when operational log (.crf adn .drf) is
+   * compacted. This test case covers the following scenario:
+   *
+   * 1. Create several Oplog files (.crf, .drf and .krf) by executing put operations
+   * 2. Execute destroy operation for every fifth entry from previous step, and each time add and
+   * destroy new entry. This will result with Oplogs that have 0 live entries at the moment when
+   * they are rolled out. These Oplogs will be closed early since compaction doesn't have to be
+   * done for them. When Oplog is closed early the .crf files will be deleted, but .drf files will
+   * not because they contain deletes.
+   * 4. Check that unnecessary objects are cleared for theOplog that represents orphaned .drf
+   * file (no accompanying .crf and .krf file)
+   **/
+  @Test
+  public void testCompactorRegionMapDeletedForOnlyDrfOplogAfterCompactionNotDoneDueToLiveCountZero()
+      throws InterruptedException {
+
+    createDiskStore(5, 10000);
+    Region<Object, Object> region = createRegion();
+    DiskStoreImpl diskStore = ((LocalRegion) region).getDiskStore();
+
+    // Create several oplog files (.crf and .drf) by executing put operations in defined range
+    executePutsInRange0_299(region);
+    await().untilAsserted(() -> assertThat(getCurrentNumberOfOplogs(diskStore)).isEqualTo(5));
+
+    // Do multiple put and destroy operations to hit the scenario in which there are 0
+    // live entries are in Oplog just before compaction is triggered.
+    destroyEveryFifthElementInRange0_299AndEachTimePutAndDestroyInRange300_599(region);
+
+    await().untilAsserted(() -> assertThat(isOplogToBeCompactedAvailable(diskStore)).isFalse());
+
+    await().untilAsserted(
+        () -> assertThat(areAllUnnecessaryObjectClearedForOnlyDrfOplog(diskStore)).isTrue());
+  }
+
+  /**
    * Verifies that the unnecessary memory is cleared when operational log (.crf and .drf) is
    * compacted.This is special scenario were creation of .krf file is cancelled by ongoing
    * compaction. This usually happens when new oplog is rolled out and previous oplog is
@@ -322,6 +357,21 @@ public class DiskRegionCompactorClearsObjectThatAreNoLongerNeededIntegrationTest
   void executePutsInRange0_299(Region<Object, Object> region) {
     for (int i = 0; i < ENTRY_RANGE_0_299; i++) {
       region.put(i, new byte[100]);
+    }
+  }
+
+  void destroyEveryFifthElementInRange0_299AndEachTimePutAndDestroyInRange300_599(
+      Region<Object, Object> region)
+      throws InterruptedException {
+    TombstoneService tombstoneService = ((InternalCache) cache).getTombstoneService();
+    for (int i = ENTRY_RANGE_0_299; i < ENTRY_RANGE_300_599; i++) {
+      region.put(i, new byte[300]);
+      region.destroy(i);
+      assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue();
+      if (i % 5 == 0) {
+        region.destroy(i - ENTRY_RANGE_0_299);
+        assertThat(tombstoneService.forceBatchExpirationForTests(1)).isTrue();
+      }
     }
   }
 

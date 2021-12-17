@@ -5719,6 +5719,7 @@ public class Oplog implements CompactableOplog, Flushable {
       cancelKrf();
       close();
       deleteFiles(getHasDeletes());
+      regionMap.close();
     } finally {
       unlockCompactor();
     }
@@ -5947,8 +5948,6 @@ public class Oplog implements CompactableOplog, Flushable {
     if (!compactFailed) {
       // all data has been copied forward to new oplog so no live entries remain
       getTotalLiveCount().set(0);
-      // No need for regionMap as there are no more live entries and .crf will be deleted
-      regionMap.close();
       // Need to still remove the oplog even if it had nothing to compact.
       handleNoLiveValues();
     }
