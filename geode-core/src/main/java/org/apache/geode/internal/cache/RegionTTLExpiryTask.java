@@ -40,9 +40,7 @@ class RegionTTLExpiryTask extends RegionExpiryTask {
         if (timeout == 0) {
           return 0L;
         }
-        if (!getLocalRegion().EXPIRY_UNITS_MS) {
-          timeout *= 1000;
-        }
+        timeout = (int) normalizeToMillis(timeout);
         // Sometimes region expiration depends on lastModifiedTime which in turn
         // depends on entry modification time. To make it consistent always use
         // cache time here.

@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.io.EOFException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 
@@ -65,7 +67,7 @@ public class CloseConnectionOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       // CloseConnectionOp doesn't return anything - we wait for a response
       // so that we know that the server has processed the request before
       // we return from execute()

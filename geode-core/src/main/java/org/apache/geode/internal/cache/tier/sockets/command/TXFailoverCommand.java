@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -54,8 +56,9 @@ public class TXFailoverCommand extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);

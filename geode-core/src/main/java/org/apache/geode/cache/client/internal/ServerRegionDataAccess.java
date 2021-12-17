@@ -108,14 +108,14 @@ public interface ServerRegionDataAccess {
   /**
    * Does a region keySet on a server
    */
-  Set keySet();
+  Set<?> keySet();
 
   VersionedObjectList putAll(Map<Object, Object> map, EventID eventId, boolean skipCallbacks,
       Object callbackArg);
 
   VersionedObjectList removeAll(Collection<Object> keys, EventID eventId, Object callbackArg);
 
-  VersionedObjectList getAll(List keys, Object callback);
+  VersionedObjectList getAll(List<Object> keys, Object callback);
 
   int size();
 
@@ -124,7 +124,7 @@ public interface ServerRegionDataAccess {
    *
    * @return an {@link EntrySnapshot} for the given key
    */
-  Entry getEntry(Object key);
+  Entry<?, ?> getEntry(Object key);
 
   /**
    * returns the name of the region to which this interface provides access
@@ -134,7 +134,7 @@ public interface ServerRegionDataAccess {
   /**
    * returns the region to which this interface provides access. This may be null in an admin system
    */
-  Region getRegion();
+  Region<?, ?> getRegion();
 
 
 }

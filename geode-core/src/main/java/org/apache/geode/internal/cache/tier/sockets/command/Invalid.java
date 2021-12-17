@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -36,11 +38,12 @@ public class Invalid extends BaseCommand {
   private Invalid() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start) throws IOException {
     logger.error("{}: INVALID message type with tx: {} from {}",
         new Object[] {serverConnection.getName(),
-            Integer.valueOf(clientMessage.getTransactionId()),
+            clientMessage.getTransactionId(),
             serverConnection.getSocketString()});
     writeErrorResponse(clientMessage, MessageType.INVALID, serverConnection);
 

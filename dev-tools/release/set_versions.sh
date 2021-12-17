@@ -70,6 +70,7 @@ set -x
 [ -n "${WORKSPACE}" ] || WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
+GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 set +x
 
 
@@ -98,6 +99,7 @@ if [ "${CLEAN}" != "false" ] ; then
   set -x
   git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode.git
   git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-examples.git
+  git clone --single-branch --branch support/${VERSION_MM} git@github.com:apache/geode-benchmarks.git
   set +x
 fi
 
@@ -161,6 +163,30 @@ sed -e "s/^version = .*/version = ${VERSION}${BUILDSUFFIX}/" \
 rm gradle.properties.bak
 set -x
 git add .
+if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+  git diff --staged --color | cat
+  git commit -m "Bumping version to ${VERSION}"
+  [ "$NOPUSH" = "true" ] || git push -u origin
+fi
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Setting geode-benchmarks version"
+echo "============================================================"
+set -x
+cd ${GEODE_BENCHMARKS}
+git pull
+set +x
+
+#versionNumber = 1.14.0
+sed -e "s/^versionNumber = .*/versionNumber = ${VERSION}/" \
+    -i.bak gradle.properties
+
+rm gradle.properties.bak
+set -x
+git add gradle.properties
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
   git commit -m "Bumping version to ${VERSION}"

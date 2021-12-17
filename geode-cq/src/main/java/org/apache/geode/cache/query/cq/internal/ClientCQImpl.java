@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
@@ -567,11 +568,10 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
   @Override
   public void createOn(Connection conn, boolean isDurable) {
-    byte regionDataPolicyOrdinal = getCqBaseRegion() == null ? (byte) 0
-        : getCqBaseRegion().getAttributes().getDataPolicy().ordinal;
+    final DataPolicy regionDataPolicy = getCqBaseRegion() == null ? DataPolicy.EMPTY
+        : getCqBaseRegion().getAttributes().getDataPolicy();
 
     int state = this.cqState.getState();
-    this.cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable,
-        regionDataPolicyOrdinal);
+    this.cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable, regionDataPolicy);
   }
 }

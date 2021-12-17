@@ -327,7 +327,7 @@ public class EntryExpiryTask extends ExpiryTask {
         if (expTime == 0L) {
           return;
         }
-        if (getNow() >= expTime) {
+        if (hasExpired(getNow(), expTime)) {
           if (logger.isTraceEnabled()) {
             // NOTE: original finer message used this.toString() twice
             logger.trace(

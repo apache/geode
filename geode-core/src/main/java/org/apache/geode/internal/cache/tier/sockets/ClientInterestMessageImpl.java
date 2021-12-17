@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -74,7 +76,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   /**
    * This <code>ClientMessage</code>'s interest type (key or regex)
    */
-  private int interestType;
+  private InterestType interestType;
 
   /**
    * This <code>ClientMessage</code>'s interest result policy (none, key, key-value)
@@ -104,7 +106,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
    * @param action The action (add or remove interest)
    */
   public ClientInterestMessageImpl(EventID eventId, String regionName, Object keyOfInterest,
-      int interestType, byte interestResultPolicy, boolean isDurable,
+      final @NotNull InterestType interestType, byte interestResultPolicy, boolean isDurable,
       boolean sendUpdatesAsInvalidates, byte action) {
     this.eventId = eventId;
     this.regionName = regionName;
@@ -158,7 +160,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     message.addStringOrObjPart(keyOfInterest);
 
     // Add the interest type
-    message.addObjPart(interestType);
+    message.addObjPart(interestType.ordinal());
 
     // Add the interest result policy (if register interest)
     if (isRegister()) {
@@ -203,7 +205,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     context.getSerializer().writeObject(keyOfInterest, out);
     DataSerializer.writePrimitiveBoolean(isDurable, out);
     DataSerializer.writePrimitiveBoolean(forUpdatesAsInvalidates, out);
-    DataSerializer.writePrimitiveInt(interestType, out);
+    DataSerializer.writePrimitiveInt(interestType.ordinal(), out);
     DataSerializer.writePrimitiveByte(interestResultPolicy, out);
     DataSerializer.writePrimitiveByte(action, out);
   }
@@ -216,7 +218,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     keyOfInterest = context.getDeserializer().readObject(in);
     isDurable = DataSerializer.readPrimitiveBoolean(in);
     forUpdatesAsInvalidates = DataSerializer.readPrimitiveBoolean(in);
-    interestType = DataSerializer.readPrimitiveInt(in);
+    interestType = InterestType.valueOf(DataSerializer.readPrimitiveInt(in));
     interestResultPolicy = DataSerializer.readPrimitiveByte(in);
     action = DataSerializer.readPrimitiveByte(in);
   }
@@ -234,7 +236,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     return keyOfInterest;
   }
 
-  public int getInterestType() {
+  public @NotNull InterestType getInterestType() {
     return interestType;
   }
 

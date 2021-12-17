@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -60,8 +62,10 @@ public class RemoveAll extends BaseCommand {
   protected RemoveAll() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long startp) throws IOException, InterruptedException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long startp)
+      throws IOException, InterruptedException {
     long start = startp; // copy this since we need to modify it
 
     final CacheServerStats stats = serverConnection.getCacheServerStats();
@@ -255,7 +259,8 @@ public class RemoveAll extends BaseCommand {
   }
 
   @Override
-  protected void writeReply(Message origMsg, ServerConnection serverConnection) throws IOException {
+  protected void writeReply(@NotNull Message origMsg, @NotNull ServerConnection serverConnection)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 

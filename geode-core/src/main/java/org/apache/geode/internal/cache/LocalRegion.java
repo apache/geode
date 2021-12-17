@@ -58,6 +58,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -351,13 +352,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
 
   /**
-   * Used by unit tests to set expiry to milliseconds instead of the default seconds. Used in
-   * ExpiryTask.
+   * Used by unit tests to set expiry to milliseconds instead of the default seconds.
    *
    * @since GemFire 5.0
    */
+  private final boolean EXPIRY_UNITS_MS;
+
   @VisibleForTesting
-  final boolean EXPIRY_UNITS_MS;
+  boolean isExpiryUnitsMilliseconds() {
+    return EXPIRY_UNITS_MS;
+  }
 
   private final EntryEventFactory entryEventFactory;
   private final RegionMapConstructor regionMapConstructor;
@@ -3725,9 +3729,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   // TODO: this is distressingly similar to code in the client.internal package
-  private void processSingleInterest(Object key, int interestType,
-      InterestResultPolicy interestResultPolicy, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates) {
+  private void processSingleInterest(final @NotNull Object key,
+      final @NotNull InterestType interestType,
+      final @NotNull InterestResultPolicy interestResultPolicy, final boolean isDurable,
+      final boolean receiveUpdatesAsInvalidates) {
     final ServerRegionProxy proxy = getServerProxy();
     if (proxy == null) {
       throw new UnsupportedOperationException(
@@ -3773,16 +3778,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         bo.beforeInterestRegistration();
       } // Test Code Ends
 
-      final byte regionDataPolicy = getAttributes().getDataPolicy().ordinal;
-      List serverKeys;
+      final DataPolicy regionDataPolicy = getAttributes().getDataPolicy();
+      List<List<Object>> serverKeys;
 
       switch (interestType) {
-        case InterestType.FILTER_CLASS:
+        case FILTER_CLASS:
           serverKeys = proxy.registerInterest(key, interestType, interestResultPolicy, isDurable,
               receiveUpdatesAsInvalidates, regionDataPolicy);
           break;
 
-        case InterestType.KEY:
+        case KEY:
           if (key instanceof String && key.equals("ALL_KEYS")) {
             logger.warn(
                 "Usage of registerInterest('ALL_KEYS') has been deprecated.  Please use registerInterestForAllKeys()");
@@ -3792,8 +3797,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             if (key instanceof List) {
               logger.warn(
                   "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
-              serverKeys = proxy.registerInterestList((List) key, interestResultPolicy, isDurable,
-                  receiveUpdatesAsInvalidates, regionDataPolicy);
+              serverKeys =
+                  proxy.registerInterestList(uncheckedCast(key), interestResultPolicy, isDurable,
+                      receiveUpdatesAsInvalidates, regionDataPolicy);
             } else {
               serverKeys = proxy.registerInterest(key, InterestType.KEY, interestResultPolicy,
                   isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
@@ -3801,16 +3807,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
           break;
 
-        case InterestType.OQL_QUERY:
+        case OQL_QUERY:
           serverKeys = proxy.registerInterest(key, InterestType.OQL_QUERY, interestResultPolicy,
               isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
           break;
 
-        case InterestType.REGULAR_EXPRESSION: {
+        case REGULAR_EXPRESSION: {
           String regex = (String) key;
           // compile regex throws java.util.regex.PatternSyntaxException if invalid
           // we do this before sending to the server because it's more efficient
           // and the client is not receiving exception messages properly
+          // noinspection ResultOfMethodCallIgnored
           Pattern.compile(regex);
           serverKeys = proxy.registerInterest(regex, InterestType.REGULAR_EXPRESSION,
               interestResultPolicy, isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
@@ -3830,25 +3837,25 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (!finishedRefresh) {
           // unregister before throwing the exception caused by the refresh
           switch (interestType) {
-            case InterestType.FILTER_CLASS:
+            case FILTER_CLASS:
               proxy.unregisterInterest(key, interestType, false, false);
               break;
 
-            case InterestType.KEY:
+            case KEY:
               if (key instanceof String && key.equals("ALL_KEYS")) {
                 proxy.unregisterInterest(".*", InterestType.REGULAR_EXPRESSION, false, false);
               } else if (key instanceof List) {
-                proxy.unregisterInterestList((List) key, false, false);
+                proxy.unregisterInterestList(uncheckedCast(key), false, false);
               } else {
                 proxy.unregisterInterest(key, InterestType.KEY, false, false);
               }
               break;
 
-            case InterestType.OQL_QUERY:
+            case OQL_QUERY:
               proxy.unregisterInterest(key, InterestType.OQL_QUERY, false, false);
               break;
 
-            case InterestType.REGULAR_EXPRESSION: {
+            case REGULAR_EXPRESSION: {
               proxy.unregisterInterest(key, InterestType.REGULAR_EXPRESSION, false, false);
               break;
 
@@ -3960,7 +3967,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param allowTombstones whether to return destroyed entries
    * @return a set of the keys matching the given criterion
    */
-  public Set getKeysWithInterest(int interestType, Object interestArg, boolean allowTombstones) {
+  public Set getKeysWithInterest(final @NotNull InterestType interestType, Object interestArg,
+      boolean allowTombstones) {
     Set ret;
     if (interestType == InterestType.REGULAR_EXPRESSION) {
       if (interestArg == null || ".*".equals(interestArg)) {
@@ -4377,13 +4385,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param interestType the interest type from {@link InterestType}
    * @param interestResultPolicy the policy from {@link InterestResultPolicy}
    */
-  public void clearKeysOfInterest(Object key, int interestType,
-      InterestResultPolicy interestResultPolicy) {
+  public void clearKeysOfInterest(final @NotNull Object key,
+      final @NotNull InterestType interestType,
+      final @NotNull InterestResultPolicy interestResultPolicy) {
     switch (interestType) {
-      case InterestType.FILTER_CLASS:
+      case FILTER_CLASS:
         clearViaFilterClass((String) key);
         break;
-      case InterestType.KEY:
+      case KEY:
         if (key instanceof String && key.equals("ALL_KEYS")) {
           clearViaRegEx(".*");
         } else if (key instanceof List) {
@@ -4392,10 +4401,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           localDestroyNoCallbacks(key);
         }
         break;
-      case InterestType.OQL_QUERY:
+      case OQL_QUERY:
         clearViaQuery((String) key);
         break;
-      case InterestType.REGULAR_EXPRESSION:
+      case REGULAR_EXPRESSION:
         clearViaRegEx((String) key);
         break;
       default:

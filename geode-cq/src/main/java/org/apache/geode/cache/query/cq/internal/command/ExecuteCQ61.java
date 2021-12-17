@@ -14,11 +14,16 @@
  */
 package org.apache.geode.cache.query.cq.internal.command;
 
+import static java.util.Collections.emptyMap;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+
 import java.io.IOException;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.operations.ExecuteCQOperationContext;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.Query;
@@ -64,8 +69,10 @@ public class ExecuteCQ61 extends BaseCQCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
+      throws IOException, InterruptedException {
     Acceptor acceptor = serverConnection.getAcceptor();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
@@ -85,6 +92,8 @@ public class ExecuteCQ61 extends BaseCQCommand {
     // region data policy
     Part regionDataPolicyPart = clientMessage.getPart(clientMessage.getNumberOfParts() - 1);
     byte[] regionDataPolicyPartBytes = regionDataPolicyPart.getSerializedForm();
+    final DataPolicy regionDataPolicy = DataPolicy.fromOrdinal(regionDataPolicyPartBytes[0]);
+
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received {} request from {} CqName: {} queryString: {}",
           serverConnection.getName(), MessageType.getString(clientMessage.getMessageType()),
@@ -108,7 +117,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     DefaultQueryService qService;
     CqServiceImpl cqServiceForExec;
     Query query;
-    Set cqRegionNames;
+    Set<String> cqRegionNames;
     ExecuteCQOperationContext executeCQContext = null;
     ServerCQImpl cqQuery;
 
@@ -126,7 +135,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
         if (!cqQueryString.equals(newCqQueryString)) {
           query = qService.newQuery(newCqQueryString);
           cqQueryString = newCqQueryString;
-          cqRegionNames = executeCQContext.getRegionNames();
+          cqRegionNames = uncheckedCast(executeCQContext.getRegionNames());
           if (cqRegionNames == null) {
             cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
           }
@@ -149,7 +158,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
       // registering cq auth before as possibility that you may get event
       serverConnection.setCq(cqName, isDurable);
       cqQuery = (ServerCQImpl) cqServiceForExec.executeCq(cqName, cqQueryString, cqState, id, ccn,
-          isDurable, true, regionDataPolicyPartBytes[0], null);
+          isDurable, true, regionDataPolicy, emptyMap());
     } catch (CqException cqe) {
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, "", clientMessage.getTransactionId(), cqe,
           serverConnection);
@@ -161,11 +170,8 @@ public class ExecuteCQ61 extends BaseCQCommand {
       return;
     }
 
-    boolean sendResults = false;
-
-    if (clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE) {
-      sendResults = true;
-    }
+    final boolean sendResults =
+        clientMessage.getMessageType() == MessageType.EXECUTECQ_WITH_IR_MSG_TYPE;
 
     // Execute the query only if it is execute with initial results or
     // if it is a non PR query with execute query and maintain keys flags set
@@ -174,10 +180,6 @@ public class ExecuteCQ61 extends BaseCQCommand {
         && !cqQuery.isPR()) {
       // Execute the query and send the result-set to client.
       try {
-        if (query == null) {
-          query = qService.newQuery(cqQueryString);
-          cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
-        }
         ((DefaultQuery) query).setIsCqQuery(true);
         successQuery =
             processQuery(clientMessage, query, cqQueryString, cqRegionNames,

@@ -34,6 +34,8 @@ dependencies {
   implementation('org.apache.commons:commons-lang3')
 
   compileOnly('org.apache.logging.log4j:log4j-api')
+  compileOnly('org.jetbrains:annotations')
+
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.assertj:assertj-core')

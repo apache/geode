@@ -76,11 +76,12 @@ GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 GEODE_NATIVE_DEVELOP=$WORKSPACE/geode-native-develop
 GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
+GEODE_BENCHMARKS_DEVELOP=$WORKSPACE/geode-benchmarks-develop
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_NATIVE_DEVELOP" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$GEODE_BENCHMARKS_DEVELOP" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -474,6 +475,35 @@ git push
 set +x
 
 
+if [ -z "$LATER" ] ; then
+  for branch in develop support/$VERSION_MM ; do
+    echo ""
+    echo "============================================================"
+    echo "Updating default benchmark baseline on $branch"
+    echo "============================================================"
+    set -x
+    [ "develop" = "$branch" ] && BENCH=${GEODE_BENCHMARKS_DEVELOP} || BENCH=${GEODE_BENCHMARKS}
+    [ "develop" = "$branch" ] && BASEL=${VERSION} || BASEL=${VERSION_MM}.0
+    cd ${BENCH}
+    git checkout $branch
+    git pull
+    set +x
+    #DEFAULT_BASELINE_VERSION=1.14.0
+    sed -e "s/^DEFAULT_BASELINE_VERSION=.*/DEFAULT_BASELINE_VERSION=${BASEL}/" \
+      -i.bak infrastructure/scripts/aws/run_against_baseline.sh
+    rm infrastructure/scripts/aws/run_against_baseline.sh.bak
+    set -x
+    git add infrastructure/scripts/aws/run_against_baseline.sh
+    if [ $(git diff --staged | wc -l) -gt 0 ] ; then
+      git diff --staged --color | cat
+      git commit -m "update default benchmark baseline on $branch"
+      git push
+    fi
+    set +x
+  done
+fi
+
+
 echo ""
 echo "============================================================"
 echo "Removing old versions from mirrors"
@@ -504,6 +534,9 @@ echo ""
 echo "============================================================"
 echo 'Done promoting release artifacts!'
 echo "============================================================"
+MAJOR="${VERSION_MM%.*}"
+MINOR="${VERSION_MM#*.}"
+PATCH="${VERSION##*.}"
 cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
@@ -512,20 +545,28 @@ echo "3. Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-t
 [ -n "$LATER" ] || echo "3b.Go to https://github.com/${GITHUB_USER}/geode-native/pull/new/update-to-geode-${VERSION} and create the pull request"
 [ -n "$LATER" ] && tag=":${VERSION}" || tag=""
 echo "4. Validate docker image: docker run -it apachegeode/geode${tag}"
-echo "5. Bulk-transition JIRA issues fixed in this release to Closed"
-echo "5b.Publish to GitHub (see https://cwiki.apache.org/confluence/display/GEODE/Releasing+Apache+Geode#ReleasingApacheGeode-PublishtoGitHub)"
+[ -n "$LATER" ] && caveat=" (UNLESS they are still unreleased on a later patch branch)"
+echo "5. Bulk-transition JIRA issues fixed in this release to Closed${caveat}"
+echo "5b.Publish to GitHub ( https://github.com/apache/geode/tags then Create Release from the 2nd ... menu )."
+echo "   Upload apache-geode-${VERSION}.tgz from: open ${GEODE}/geode-assembly/build/distributions/"
+echo "   Release Title: Apache Geode ${VERSION}"
+echo "   Release Description:"
+[ "${PATCH}" -ne 0 ] && echo "This patch release includes a few bug fixes." || echo "     This release includes a significant number of bug fixes and improvements."
+echo ""
+echo "sha256 for apache-geode-${VERSION}.tgz is $(awk '{print $1}' < ${GEODE}/geode-assembly/build/distributions/apache-geode-${VERSION}.tgz.sha256)"
+echo ""
+echo "See full release notes at https://cwiki.apache.org/confluence/display/GEODE/Release+Notes#ReleaseNotes-${VERSION}"
+echo ""
 echo "6. Wait overnight for apache mirror sites and mavencentral to sync"
 [ -n "$LATER" ] || echo "7. Confirm that your homebrew PR passed its PR checks and was merged to master"
 echo "8. Check that ${VERSION} documentation has been published to https://geode.apache.org/docs/"
 [ -z "$DID_REMOVE" ] || DID_REMOVE=" and ${DID_REMOVE} info has been removed"
 echo "9. Check that ${VERSION} download info has been published to https://geode.apache.org/releases/${DID_REMOVE}"
-MAJOR="${VERSION_MM%.*}"
-MINOR="${VERSION_MM#*.}"
-PATCH="${VERSION##*.}"
 [ "${PATCH}" -ne 0 ] || echo "10. If 3rd-party dependencies haven't been bumped in awhile, ask on the dev list for a volunteer (details in dev-tools/dependencies/README.md)"
 [ "${PATCH}" -ne 0 ] || [ "${MINOR}" -lt 15 ] || echo "11. In accordance with Geode's N-2 support policy, the time has come to ${0%/*}/end_of_support.sh -v ${MAJOR}.$((MINOR - 3))"
 [ "${PATCH}" -ne 0 ] || [ -n "$LATER" ] || echo "12. Log in to https://hub.docker.com/repository/docker/apachegeode/geode and update the latest Dockerfile linktext and url to ${VERSION_MM}"
-echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bumps to those branches of geode and geode-native."
+[ -n "$LATER" ] || andnative=", geode-benchmarks, and geode-native"
+echo "If there are any support branches between ${VERSION_MM} and develop, manually cherry-pick '${VERSION}' bump from develop to those branches of geode${andnative}."
 echo "Bump support pipeline to ${VERSION_MM}.$(( PATCH + 1 )) by plussing BumpPatch in https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-main?group=Semver%20Management"
 echo "Run ${0%/*}/set_versions.sh -v ${VERSION_MM}.$(( PATCH + 1 )) -s"
 [ "${PATCH}" -ne 0 ] || echo "Run cd ${GEODE} && geode-management/src/test/script/update-management-wiki.sh"

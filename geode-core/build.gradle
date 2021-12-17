@@ -343,6 +343,8 @@ dependencies {
   testImplementation('org.springframework:spring-web')
   testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
+  testCompileOnly('org.jetbrains:annotations')
+
   testRuntimeOnly('commons-collections:commons-collections')
   testRuntimeOnly('commons-configuration:commons-configuration')
   testRuntimeOnly('commons-io:commons-io')

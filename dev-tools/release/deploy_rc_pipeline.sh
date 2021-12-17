@@ -108,12 +108,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               java -version
@@ -144,12 +143,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
@@ -182,12 +180,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > bin.tgz
@@ -219,9 +216,8 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip
               cd geode-examples
@@ -248,12 +244,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
+              FULL_VERSION=$(cd geode-examples && git fetch && git describe --tags | sed -e 's#^rel/v##' -e 's#-.*##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               if [ "${FULL_VERSION}" = "${VERSION}" ] ; then
                 GRADLE_ARGS=""
@@ -280,31 +275,28 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: bellsoft/liberica-openjdk-debian
-              tag: 8
+              repository: adoptopenjdk/openjdk8
+              tag: slim
           inputs:
             - name: geode-native
           platform: linux
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
               tar xzf geode-bin.tgz
-              # needed to get cmake >= 3.12
-              echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
-              echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+              #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
+              echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
+              chmod +x /opt/java/openjdk/bin/javah
               cd geode-native
               mkdir build
               cd build
@@ -327,8 +319,8 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: bellsoft/liberica-openjdk-debian
-              tag: 8
+              repository: adoptopenjdk/openjdk8
+              tag: slim
           inputs:
             - name: geode-native
             - name: geode
@@ -336,24 +328,21 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               # build geode from source
               cd geode
               ./gradlew build -x test -x javadoc -x rat -x pmdMain
               cd ..
-              # needed to get cmake >= 3.12
-              echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
-              echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
-              echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+              #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
+              echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
+              chmod +x /opt/java/openjdk/bin/javah
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native-${VERSION}-src
@@ -373,7 +362,7 @@ jobs:
         - get: upthewaterspout-tests
         - get: geode-examples
       - task: validate
-        timeout: 1h
+        timeout: 2h
         config:
           image_resource:
             type: docker-image
@@ -388,12 +377,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
-              apt install -qq -y --no-install-recommends unzip git gpg wget
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              apt install -qq -y --no-install-recommends unzip git gpg gpg-agent wget
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests
@@ -421,12 +409,11 @@ jobs:
           run:
             path: /bin/sh
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
               apt install -qq -y --no-install-recommends unzip git keychain
-              FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-benchmarks && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
@@ -462,12 +449,11 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -ex
               apt update -q
-              apt install -qq -y --no-install-recommends git gpg
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              apt install -qq -y --no-install-recommends git gpg gpg-agent
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
@@ -512,11 +498,11 @@ jobs:
                 tar xzf $file "${tld}/LICENSE"
                 head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src 10000000 30000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION} 100000000 150000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src 50000 2000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src 2000000 4000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src 50000 500000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src          16000000  20000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}             120000000 135000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src   840000    900000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src    2400000   3200000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src  85000    115000
               curl -L -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
@@ -555,12 +541,11 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -e
               apt update -q
               apt install -qq -y --no-install-recommends git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
               BINARY_EXTENSIONS="jar|war|class|exe|dll|o|so|obj|bin|out|pyc"
@@ -607,13 +592,38 @@ jobs:
           run:
             path: /bin/bash
             args:
-            - -ec
+            - -ecx
             - |
-              set -e
               apt update -q
               apt install -qq -y --no-install-recommends unzip git
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               ./geode-develop/dev-tools/release/license_review.sh -v $FULL_VERSION
+  - name: all-passed
+    serial: true
+    public: true
+    plan:
+      - in_parallel:
+        - get: geode
+          trigger: true
+          passed:
+            - verify-license
+            - upthewaterspout
+            - run-gfsh-from-tgz
+            - verify-no-binaries
+            - build-geode-from-tag
+            - build-geode-from-src-tgz
+            - verify-expected-files-and-keys
+        - get: geode-examples
+          passed:
+            - run-geode-examples-jdk11
+            - run-geode-examples-from-src-tgz-jdk8
+        - get: geode-native
+          passed:
+            - build-geode-native-from-tag
+            - build-geode-native-from-src-tgz
+        - get: geode-benchmarks
+          passed:
+            - benchmarks-test
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-support-${VERSION_MM//./-}-rc -c $PIPEYML

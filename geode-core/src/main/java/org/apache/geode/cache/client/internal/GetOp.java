@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoaderException;
@@ -135,12 +136,13 @@ public class GetOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       throw new UnsupportedOperationException(); // version tag processing requires the connection
     }
 
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(final @NotNull Message msg, final @NotNull Connection con)
+        throws Exception {
       Object object = processObjResponse(msg, "get");
       if (msg.getNumberOfParts() > 1) {
         int partIdx = 1;

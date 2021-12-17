@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -260,7 +261,8 @@ public class FilterProfile implements DataSerializableFixedID {
    * @param updatesAsInvalidates whether the client just wants invalidations
    * @return a set of the keys that were registered, which may be null
    */
-  public Set registerClientInterest(Object inputClientID, Object interest, int typeOfInterest,
+  public Set registerClientInterest(Object inputClientID, Object interest,
+      final @NotNull InterestType typeOfInterest,
       boolean updatesAsInvalidates) {
     Set keysRegistered = new HashSet();
     operationType opType = null;
@@ -268,13 +270,13 @@ public class FilterProfile implements DataSerializableFixedID {
     Long clientID = getClientIDForMaps(inputClientID);
     synchronized (this.interestListLock) {
       switch (typeOfInterest) {
-        case InterestType.KEY:
+        case KEY:
           opType = operationType.REGISTER_KEY;
           Map<Object, Set> koi =
               updatesAsInvalidates ? getKeysOfInterestInv() : getKeysOfInterest();
           registerKeyInMap(interest, keysRegistered, clientID, koi);
           break;
-        case InterestType.REGULAR_EXPRESSION:
+        case REGULAR_EXPRESSION:
           opType = operationType.REGISTER_PATTERN;
           if (((String) interest).equals(".*")) {
             Set akc = updatesAsInvalidates ? getAllKeyClientsInv() : getAllKeyClients();
@@ -287,7 +289,7 @@ public class FilterProfile implements DataSerializableFixedID {
             registerPatternInMap(interest, keysRegistered, clientID, pats);
           }
           break;
-        case InterestType.FILTER_CLASS: {
+        case FILTER_CLASS: {
           opType = operationType.REGISTER_FILTER;
           Map<Object, Map> filts =
               updatesAsInvalidates ? getFiltersOfInterestInv() : getFiltersOfInterest();
@@ -362,7 +364,8 @@ public class FilterProfile implements DataSerializableFixedID {
    * @param interestType the type of uninterest
    * @return the keys unregistered, which may be null
    */
-  public Set unregisterClientInterest(Object inputClientID, Object interest, int interestType) {
+  public Set unregisterClientInterest(Object inputClientID, Object interest,
+      final @NotNull InterestType interestType) {
     Long clientID;
     if (inputClientID instanceof Long) {
       clientID = (Long) inputClientID;
@@ -382,17 +385,17 @@ public class FilterProfile implements DataSerializableFixedID {
     operationType opType = null;
     synchronized (this.interestListLock) {
       switch (interestType) {
-        case InterestType.KEY: {
+        case KEY: {
           opType = operationType.UNREGISTER_KEY;
           unregisterClientKeys(inputClientID, interest, clientID, keysUnregistered);
           break;
         }
-        case InterestType.REGULAR_EXPRESSION: {
+        case REGULAR_EXPRESSION: {
           opType = operationType.UNREGISTER_PATTERN;
           unregisterClientPattern(interest, clientID, keysUnregistered);
           break;
         }
-        case InterestType.FILTER_CLASS: {
+        case FILTER_CLASS: {
           opType = operationType.UNREGISTER_FILTER;
           unregisterClientFilterClass(interest, clientID);
           break;

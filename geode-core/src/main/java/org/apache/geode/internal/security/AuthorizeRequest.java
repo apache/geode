@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -411,10 +413,11 @@ public class AuthorizeRequest {
   }
 
   public RegisterInterestOperationContext registerInterestAuthorize(String regionName, Object key,
-      int interestType, InterestResultPolicy policy) throws NotAuthorizedException {
+      final @NotNull org.apache.geode.internal.cache.tier.InterestType interestType,
+      InterestResultPolicy policy) throws NotAuthorizedException {
 
     RegisterInterestOperationContext registerInterestContext = new RegisterInterestOperationContext(
-        key, InterestType.fromOrdinal((byte) interestType), policy);
+        key, InterestType.fromOrdinal((byte) interestType.ordinal()), policy);
     if (!this.authzCallback.authorizeOperation(regionName, registerInterestContext)) {
       String errStr =
           String.format("Not authorized to perform REGISTER_INTEREST operation for region %s",
@@ -462,11 +465,13 @@ public class AuthorizeRequest {
   }
 
   public UnregisterInterestOperationContext unregisterInterestAuthorize(String regionName,
-      Object key, int interestType) throws NotAuthorizedException {
+      Object key, final @NotNull org.apache.geode.internal.cache.tier.InterestType interestType)
+      throws NotAuthorizedException {
 
     UnregisterInterestOperationContext unregisterInterestContext;
     unregisterInterestContext =
-        new UnregisterInterestOperationContext(key, InterestType.fromOrdinal((byte) interestType));
+        new UnregisterInterestOperationContext(key,
+            InterestType.fromOrdinal((byte) interestType.ordinal()));
     if (!this.authzCallback.authorizeOperation(regionName, unregisterInterestContext)) {
       String errStr =
           String.format("Not authorized to perform UNREGISTER_INTEREST operation for region %s",

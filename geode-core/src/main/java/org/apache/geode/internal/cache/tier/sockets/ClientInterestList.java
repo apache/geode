@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.InterestRegistrationEvent;
@@ -40,7 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 class ClientInterestList {
   private static final Logger logger = LogService.getLogger();
 
-  final CacheClientProxy ccp;
+  final CacheClientProxy cacheClientProxy;
 
   final Object id;
 
@@ -52,28 +55,30 @@ class ClientInterestList {
   /**
    * Regions that this client is interested in
    */
-  protected final Set<String> regions = new HashSet<String>();
+  protected final Set<String> regions = new HashSet<>();
 
   /**
    * Constructor.
    */
-  protected ClientInterestList(CacheClientProxy ccp, Object interestID) {
-    this.ccp = ccp;
-    this.id = interestID;
-    // this.id = getNextId();
+  protected ClientInterestList(final @NotNull CacheClientProxy cacheClientProxy,
+      final @NotNull Object id) {
+    this.cacheClientProxy = cacheClientProxy;
+    this.id = id;
   }
 
   /**
    * Registers interest in the input region name and key
    */
-  protected void registerClientInterest(String regionName, Object keyOfInterest, int interestType,
-      boolean sendUpdatesAsInvalidates) {
+  protected void registerClientInterest(final @NotNull String regionName,
+      final @NotNull Object keyOfInterest, final @NotNull InterestType interestType,
+      final boolean sendUpdatesAsInvalidates) {
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: registerClientInterest region={} key={}", ccp, regionName, keyOfInterest);
+      logger.debug("{}: registerClientInterest region={} key={}", cacheClientProxy, regionName,
+          keyOfInterest);
     }
-    Set keysRegistered = null;
-    synchronized (this.interestListLock) {
-      LocalRegion r = (LocalRegion) this.ccp._cache.getRegion(regionName, true);
+    final Set<?> keysRegistered;
+    synchronized (interestListLock) {
+      LocalRegion r = (LocalRegion) cacheClientProxy._cache.getRegion(regionName, true);
       if (r == null) {
         throw new RegionDestroyedException("Region could not be found for interest registration",
             regionName);
@@ -97,7 +102,7 @@ class ClientInterestList {
 
   protected FilterProfile getProfile(String regionName) {
     try {
-      return this.ccp._cache.getFilterProfile(regionName);
+      return cacheClientProxy._cache.getFilterProfile(regionName);
     } catch (CancelException e) {
       return null;
     }
@@ -110,21 +115,21 @@ class ClientInterestList {
    * @param keyOfInterest The key in which to unregister interest
    */
   protected void unregisterClientInterest(String regionName, Object keyOfInterest,
-      int interestType) {
+      final @NotNull InterestType interestType) {
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: unregisterClientInterest region={} key={}", ccp, regionName,
+      logger.debug("{}: unregisterClientInterest region={} key={}", cacheClientProxy, regionName,
           keyOfInterest);
     }
     FilterProfile p = getProfile(regionName);
-    Set keysUnregistered = null;
-    synchronized (this.interestListLock) {
+    Set<?> keysUnregistered = null;
+    synchronized (interestListLock) {
       if (p != null) {
         keysUnregistered = p.unregisterClientInterest(id, keyOfInterest, interestType);
         if (!p.hasInterestFor(id)) {
-          this.regions.remove(regionName);
+          regions.remove(regionName);
         }
       } else {
-        this.regions.remove(regionName);
+        regions.remove(regionName);
       }
     }
     if (keysUnregistered != null && !keysUnregistered.isEmpty()) {
@@ -138,15 +143,16 @@ class ClientInterestList {
    * @param regionName The fully-qualified name of the region in which to register interest
    * @param keysOfInterest The list of keys in which to register interest
    */
-  protected void registerClientInterestList(String regionName, List keysOfInterest,
-      boolean sendUpdatesAsInvalidates) {
-    FilterProfile p = getProfile(regionName);
+  protected void registerClientInterestList(final @NotNull String regionName,
+      final @NotNull List<?> keysOfInterest,
+      final boolean sendUpdatesAsInvalidates) {
+    final FilterProfile p = getProfile(regionName);
     if (p == null) {
       throw new RegionDestroyedException("Region not found during client interest registration",
           regionName);
     }
-    Set keysRegistered = null;
-    synchronized (this.interestListLock) {
+    final Set<?> keysRegistered;
+    synchronized (interestListLock) {
       keysRegistered = p.registerClientInterestList(id, keysOfInterest, sendUpdatesAsInvalidates);
       regions.add(regionName);
     }
@@ -162,10 +168,11 @@ class ClientInterestList {
    * @param regionName The fully-qualified name of the region in which to unregister interest
    * @param keysOfInterest The list of keys in which to unregister interest
    */
-  protected void unregisterClientInterestList(String regionName, List keysOfInterest) {
-    FilterProfile p = getProfile(regionName);
-    Set keysUnregistered = null;
-    synchronized (this.interestListLock) {
+  protected void unregisterClientInterestList(final @NotNull String regionName,
+      final @NotNull List<?> keysOfInterest) {
+    final FilterProfile p = getProfile(regionName);
+    Set<?> keysUnregistered = null;
+    synchronized (interestListLock) {
       if (p != null) {
         keysUnregistered = p.unregisterClientInterestList(id, keysOfInterest);
         if (!p.hasInterestFor(id)) {
@@ -176,7 +183,7 @@ class ClientInterestList {
       }
     }
     // Perform actions if any keys were unregistered
-    if (!keysUnregistered.isEmpty()) {
+    if (!isEmpty(keysUnregistered)) {
       handleInterestEvent(regionName, keysUnregistered, InterestType.KEY, false);
     }
   }
@@ -191,9 +198,9 @@ class ClientInterestList {
   }
 
   protected void clearClientInterestList() {
-    boolean isClosed = ccp.getCache().isClosed();
+    boolean isClosed = cacheClientProxy.getCache().isClosed();
 
-    synchronized (this.interestListLock) {
+    synchronized (interestListLock) {
       for (String regionName : regions) {
         FilterProfile p = getProfile(regionName);
         if (p == null) {
@@ -201,12 +208,10 @@ class ClientInterestList {
         }
         if (!isClosed) {
           if (p.hasAllKeysInterestFor(id)) {
-            Set allKeys = new HashSet();
-            allKeys.add(".*");
-            allKeys = Collections.unmodifiableSet(allKeys);
+            final Set<String> allKeys = Collections.singleton(".*");
             handleInterestEvent(regionName, allKeys, InterestType.REGULAR_EXPRESSION, false);
           }
-          Set keysOfInterest = p.getKeysOfInterestFor(id);
+          Set<?> keysOfInterest = p.getKeysOfInterestFor(id);
           if (keysOfInterest != null && keysOfInterest.size() > 0) {
             handleInterestEvent(regionName, keysOfInterest, InterestType.KEY, false);
           }
@@ -223,7 +228,8 @@ class ClientInterestList {
   }
 
 
-  private void handleInterestEvent(String regionName, Set keysOfInterest, int interestType,
+  private void handleInterestEvent(@NotNull String regionName, @NotNull Set<?> keysOfInterest,
+      final @NotNull InterestType interestType,
       boolean isRegister) {
     // Notify the region about this register interest event if:
     // - the application has requested it
@@ -231,9 +237,9 @@ class ClientInterestList {
     // may occur)
     // - it is a key interest type (regex is currently not supported)
     InterestRegistrationEvent event = null;
-    if (CacheClientProxy.NOTIFY_REGION_ON_INTEREST && this.ccp.isPrimary()
+    if (CacheClientProxy.NOTIFY_REGION_ON_INTEREST && cacheClientProxy.isPrimary()
         && interestType == InterestType.KEY) {
-      event = new InterestRegistrationEventImpl(this.ccp, regionName, keysOfInterest,
+      event = new InterestRegistrationEventImpl(cacheClientProxy, regionName, keysOfInterest,
           interestType, isRegister);
       try {
         notifyRegionOfInterest(event);
@@ -244,7 +250,7 @@ class ClientInterestList {
     // Invoke interest registration listeners
     if (containsInterestRegistrationListeners()) {
       if (event == null) {
-        event = new InterestRegistrationEventImpl(this.ccp, regionName, keysOfInterest,
+        event = new InterestRegistrationEventImpl(cacheClientProxy, regionName, keysOfInterest,
             interestType, isRegister);
       }
       notifyInterestRegistrationListeners(event);
@@ -252,14 +258,14 @@ class ClientInterestList {
   }
 
   private void notifyRegionOfInterest(InterestRegistrationEvent event) {
-    this.ccp.getCacheClientNotifier().handleInterestEvent(event);
+    cacheClientProxy.getCacheClientNotifier().handleInterestEvent(event);
   }
 
   private void notifyInterestRegistrationListeners(InterestRegistrationEvent event) {
-    this.ccp.getCacheClientNotifier().notifyInterestRegistrationListeners(event);
+    cacheClientProxy.getCacheClientNotifier().notifyInterestRegistrationListeners(event);
   }
 
   private boolean containsInterestRegistrationListeners() {
-    return this.ccp.getCacheClientNotifier().containsInterestRegistrationListeners();
+    return cacheClientProxy.getCacheClientNotifier().containsInterestRegistrationListeners();
   }
 }

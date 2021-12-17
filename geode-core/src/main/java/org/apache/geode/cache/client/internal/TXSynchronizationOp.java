@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
@@ -99,7 +101,7 @@ public class TXSynchronizationOp {
      * cache.tier.sockets.Message)
      */
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       if (this.type == CompletionType.BEFORE_COMPLETION) {
         try {
           processAck(msg, type.toString());

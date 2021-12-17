@@ -16,7 +16,7 @@ package org.apache.geode.internal;
 
 import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.internal.DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME;
-import static org.apache.geode.internal.lang.ClassUtils.isClassAvailable;
+import static org.apache.geode.internal.lang.utils.ClassUtils.isClassAvailable;
 import static org.apache.geode.internal.serialization.KnownVersion.CURRENT;
 import static org.junit.Assume.assumeTrue;
 

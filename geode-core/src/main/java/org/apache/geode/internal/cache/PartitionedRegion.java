@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
@@ -8185,7 +8186,8 @@ public class PartitionedRegion extends LocalRegion
    *
    * @param allowTombstones whether to return destroyed entries
    */
-  private void _getKeysWithInterest(int interestType, Object interestArg, boolean allowTombstones,
+  private void _getKeysWithInterest(final @NotNull InterestType interestType, Object interestArg,
+      boolean allowTombstones,
       SetCollector collector) throws IOException {
     // this could be parallelized by building up a list of buckets for each
     // vm and sending out the requests for keys in parallel. That might dump

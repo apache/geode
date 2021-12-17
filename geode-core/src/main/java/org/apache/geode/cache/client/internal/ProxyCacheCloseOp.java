@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.Properties;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -73,7 +75,7 @@ public class ProxyCacheCloseOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(final @NotNull Message msg) throws Exception {
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {

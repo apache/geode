@@ -18,6 +18,8 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 
 import java.io.IOException;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Region;
@@ -43,8 +45,9 @@ public class CreateRegion extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start) throws IOException {
     Part regionNamePart = null;
     String regionName = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);

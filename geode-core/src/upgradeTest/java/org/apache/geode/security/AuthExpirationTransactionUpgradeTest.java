@@ -47,6 +47,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 @Category({SecurityTest.class})
@@ -55,6 +56,7 @@ import org.apache.geode.test.version.VersionManager;
 public class AuthExpirationTransactionUpgradeTest {
   // only test versions greater than or equal to 1.14.0
   private static final String test_start_version = "1.14.0";
+  private static String feature_start_version = "1.15.0";
 
   @Parameterized.Parameter
   public String clientVersion;
@@ -126,7 +128,6 @@ public class AuthExpirationTransactionUpgradeTest {
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
-    String start_version = test_start_version;
     String client_version = clientVersion;
 
     clientVM.invoke(() -> {
@@ -136,7 +137,7 @@ public class AuthExpirationTransactionUpgradeTest {
       assertThat(txManager.getTXState()).isNotNull();
       assertThat(txManager.getTXState().isInProgress()).isTrue();
       assertThat(txManager.getTransactionId()).isEqualTo(txId);
-      if (client_version.equals(start_version)) {
+      if (TestVersion.compare(client_version, feature_start_version) < 0) {
         IntStream.range(3, 6)
             .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num)).isInstanceOf(
                 ServerOperationException.class)
@@ -170,7 +171,6 @@ public class AuthExpirationTransactionUpgradeTest {
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
-    String start_version = test_start_version;
     String client_version = clientVersion;
 
     clientVM.invoke(() -> {
@@ -180,7 +180,7 @@ public class AuthExpirationTransactionUpgradeTest {
       assertThat(txManager.getTXState()).isNotNull();
       assertThat(txManager.getTXState().isInProgress()).isTrue();
       assertThat(txManager.getTransactionId()).isEqualTo(txId);
-      if (client_version.equals(start_version)) {
+      if (TestVersion.compare(client_version, feature_start_version) < 0) {
         IntStream.range(3, 6)
             .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num)).isInstanceOf(
                 ServerOperationException.class)

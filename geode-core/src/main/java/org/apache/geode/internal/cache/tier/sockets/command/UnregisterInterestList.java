@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
@@ -46,8 +48,9 @@ public class UnregisterInterestList extends BaseCommand {
   private UnregisterInterestList() {}
 
   @Override
-  public void cmdExecute(Message clientMessage, ServerConnection serverConnection,
-      SecurityService securityService, long start)
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     Part regionNamePart, keyPart, numberOfKeysPart;
     String regionName;

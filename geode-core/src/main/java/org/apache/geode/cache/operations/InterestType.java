@@ -18,7 +18,7 @@ package org.apache.geode.cache.operations;
 import org.apache.geode.annotations.Immutable;
 
 /**
- * Enumeration for various interest types supported by GemFire.
+ * Enumeration for various interest types.
  *
  * @since GemFire 5.5
  */
@@ -77,21 +77,21 @@ public final class InterestType {
    * Returns true if this is a key interest type.
    */
   public boolean isKey() {
-    return (this.interestType == TP_KEY);
+    return (interestType == TP_KEY);
   }
 
   /**
    * Returns true if this is a key list interest type.
    */
   public boolean isList() {
-    return (this.interestType == TP_LIST);
+    return (interestType == TP_LIST);
   }
 
   /**
    * Returns true if this is a regular expression interest type.
    */
   public boolean isRegularExpression() {
-    return (this.interestType == TP_REGEX);
+    return (interestType == TP_REGEX);
   }
 
   /**
@@ -107,7 +107,7 @@ public final class InterestType {
    * @return the ordinal of this interest type.
    */
   public byte toOrdinal() {
-    return this.ordinal;
+    return ordinal;
   }
 
   /**
@@ -115,9 +115,9 @@ public final class InterestType {
    *
    * @return the name of this interest type.
    */
-  @Override // GemStoneAddition
+  @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
 }

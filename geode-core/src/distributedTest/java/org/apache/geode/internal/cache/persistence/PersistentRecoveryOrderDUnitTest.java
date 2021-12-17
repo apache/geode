@@ -1320,6 +1320,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
           createReplicateRegion(regionName, getDiskDirs(getVMId()));
         });
         assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+        InternalDistributedSystem.getAnyInstance().getCache().close();
       }
     });
 

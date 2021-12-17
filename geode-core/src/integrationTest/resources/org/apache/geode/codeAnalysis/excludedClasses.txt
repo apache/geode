@@ -104,3 +104,4 @@ org/apache/geode/cache/query/internal/xml/ElementType$2
 org/apache/geode/cache/query/internal/xml/ElementType$3
 org/apache/geode/internal/net/ByteBufferVendor$OpenAttemptTimedOut
 org/apache/geode/internal/cache/wan/GatewaySenderEventImpl$TransactionMetadataDisposition
+org/apache/geode/internal/cache/tier/InterestType

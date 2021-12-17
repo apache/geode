@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
@@ -1077,7 +1078,8 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void notifySecondariesAndClient(String regionName, Object keyOfInterest,
-      InterestResultPolicy policy, boolean isDurable, boolean receiveValues, int interestType) {
+      InterestResultPolicy policy, boolean isDurable, boolean receiveValues,
+      final @NotNull InterestType interestType) {
     // Create a client interest message for the keyOfInterest
     ClientInterestMessageImpl message = new ClientInterestMessageImpl(
         new EventID(_cache.getDistributedSystem()), regionName, keyOfInterest, interestType,
@@ -1187,7 +1189,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private void notifySecondariesAndClient(String regionName, Object keyOfInterest,
-      boolean isDurable, boolean receiveValues, int interestType) {
+      boolean isDurable, boolean receiveValues, final @NotNull InterestType interestType) {
     // Notify all secondary proxies of a change in interest
     ClientInterestMessageImpl message = new ClientInterestMessageImpl(
         new EventID(_cache.getDistributedSystem()), regionName, keyOfInterest, interestType,
@@ -1228,7 +1230,8 @@ public class CacheClientProxy implements ClientSession {
    * @param regionName The fully-qualified name of the region in which to register interest
    * @param keyOfInterest The key in which to register interest
    */
-  protected void registerClientInterest(String regionName, Object keyOfInterest, int interestType,
+  protected void registerClientInterest(String regionName, Object keyOfInterest,
+      final @NotNull InterestType interestType,
       boolean isDurable, boolean sendUpdatesAsInvalidates, boolean flushState) {
     ClientInterestList cil =
         cils[RegisterInterestTracker.getInterestLookupIndex(isDurable, false)];
@@ -1291,7 +1294,8 @@ public class CacheClientProxy implements ClientSession {
    * @param keyOfInterest The key in which to unregister interest
    * @param isClosing Whether the caller is closing
    */
-  protected void unregisterClientInterest(String regionName, Object keyOfInterest, int interestType,
+  protected void unregisterClientInterest(String regionName, Object keyOfInterest,
+      final @NotNull InterestType interestType,
       boolean isClosing) {
     // only unregister durable interest if isClosing and !keepalive
     if (!isClosing /* explicit unregister */
@@ -1350,7 +1354,7 @@ public class CacheClientProxy implements ClientSession {
   /** sent by the cache client notifier when there is an interest registration change */
   protected void processInterestMessage(ClientInterestMessageImpl message) {
     // Register or unregister interest depending on the interest type
-    int interestType = message.getInterestType();
+    final @NotNull InterestType interestType = message.getInterestType();
     String regionName = message.getRegionName();
     Object key = message.getKeyOfInterest();
     if (message.isRegister()) {

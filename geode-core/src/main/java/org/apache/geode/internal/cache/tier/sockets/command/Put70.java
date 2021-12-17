@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
@@ -58,8 +60,9 @@ public class Put70 extends BaseCommand {
   private Put70() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long p_start)
+  public void cmdExecute(final @NotNull Message clientMessage,
+      final @NotNull ServerConnection serverConnection,
+      final @NotNull SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
     final CacheServerStats stats = serverConnection.getCacheServerStats();

@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client.internal;
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +34,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -91,10 +93,10 @@ public class QueueManagerImpl implements QueueManager {
   private final ClientProxyMembershipID proxyId;
   protected final InternalPool pool;
   private final QueueStateImpl state;
-  private boolean printPrimaryNotFoundError;
-  private boolean printRedundancyNotSatisfiedError;
-  private boolean printRecoveringPrimary;
-  private boolean printRecoveringRedundant;
+  private boolean printPrimaryNotFoundError = true;
+  private boolean printRedundancyNotSatisfiedError = true;
+  private boolean printRecoveringPrimary = true;
+  private boolean printRecoveringRedundant = true;
   private final ServerDenyList denyList;
   // Lock which guards updates to queueConnections.
   // Also threads calling getAllConnections will wait on this
@@ -112,33 +114,28 @@ public class QueueManagerImpl implements QueueManager {
   private volatile boolean shuttingDown;
 
   public QueueManagerImpl(InternalPool pool, EndpointManager endpointManager,
-      ConnectionSource source, ConnectionFactory factory, int queueRedundancyLevel,
+      ConnectionSource source, ConnectionFactory factory, int redundancyLevel,
       long redundancyRetryInterval,
       @SuppressWarnings("deprecation") InternalLogWriter securityLogger,
       ClientProxyMembershipID proxyId) {
-    this.printPrimaryNotFoundError = true;
-    this.printRedundancyNotSatisfiedError = true;
-    this.printRecoveringRedundant = true;
-    this.printRecoveringPrimary = true;
     this.pool = pool;
     this.endpointManager = endpointManager;
     this.source = source;
     this.factory = factory;
-    this.redundancyLevel = queueRedundancyLevel;
+    this.redundancyLevel = redundancyLevel;
     this.securityLogger = securityLogger;
     this.proxyId = proxyId;
     this.redundancyRetryInterval = redundancyRetryInterval;
     denyList = new ServerDenyList(redundancyRetryInterval);
 
-
-    this.endpointListener = new EndpointManager.EndpointListenerAdapter() {
+    endpointListener = new EndpointManager.EndpointListenerAdapter() {
       @Override
       public void endpointCrashed(Endpoint endpoint) {
         QueueManagerImpl.this.endpointCrashed(endpoint);
       }
     };
 
-    this.state = new QueueStateImpl(this);
+    state = new QueueStateImpl(this);
   }
 
   @Override
@@ -284,8 +281,8 @@ public class QueueManagerImpl implements QueueManager {
       // Use a separate timer for queue management tasks
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
-      final String name = "queueTimer-" + this.pool.getName();
-      this.recoveryThread = LoggingExecutors.newScheduledThreadPool(1, name, false);
+      final String name = "queueTimer-" + pool.getName();
+      recoveryThread = LoggingExecutors.newScheduledThreadPool(1, name, false);
 
       getState().start(background, getPool().getSubscriptionAckInterval());
 
@@ -299,7 +296,7 @@ public class QueueManagerImpl implements QueueManager {
       DenyListListener denyListListener = new DenyListListenerAdapter() {
         @Override
         public void serverRemoved(ServerLocation location) {
-          QueueManagerImpl.this.scheduleRedundancySatisfierIfNeeded(0);
+          scheduleRedundancySatisfierIfNeeded(0);
         }
       };
 
@@ -315,7 +312,7 @@ public class QueueManagerImpl implements QueueManager {
   @Override
   public void readyForEvents(InternalDistributedSystem system) {
     synchronized (lock) {
-      this.sentClientReady = true;
+      sentClientReady = true;
     }
 
     QueueConnectionImpl primary = null;
@@ -665,7 +662,7 @@ public class QueueManagerImpl implements QueueManager {
           throw e;
         } catch (Exception e) {
           if (isDebugEnabled) {
-            logger.debug("SubscriptionManager - Error connecting to server: ()", server, e);
+            logger.debug("SubscriptionManager - Error connecting to server: {}", server, e);
           }
         }
         if (connection == null) {
@@ -727,7 +724,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private QueueConnectionImpl promoteBackupToPrimary(List backups) {
+  private QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
       QueueConnectionImpl lastConnection = (QueueConnectionImpl) backups.get(i);
@@ -745,7 +742,7 @@ public class QueueManagerImpl implements QueueManager {
       bo.beforePrimaryIdentificationFromBackup();
     }
     try {
-      boolean haveSentClientReady = this.sentClientReady;
+      boolean haveSentClientReady = sentClientReady;
       if (haveSentClientReady) {
         cnx.sendClientReady();
       }
@@ -872,7 +869,7 @@ public class QueueManagerImpl implements QueueManager {
 
     QueueConnectionImpl newPrimary = null;
     while (newPrimary == null && pool.getPoolOrCacheCancelInProgress() == null) {
-      List backups = queueConnections.getBackups();
+      List<Connection> backups = queueConnections.getBackups();
       newPrimary = promoteBackupToPrimary(backups);
       // Hitesh now lets say that server crashed
       if (newPrimary == null) {
@@ -1046,7 +1043,7 @@ public class QueueManagerImpl implements QueueManager {
 
         redundancySatisfierTask = new RedundancySatisfierTask();
         try {
-          ScheduledFuture future =
+          ScheduledFuture<?> future =
               recoveryThread.schedule(redundancySatisfierTask, delay, TimeUnit.MILLISECONDS);
           redundancySatisfierTask.setFuture(future);
         } catch (RejectedExecutionException e) {
@@ -1091,12 +1088,13 @@ public class QueueManagerImpl implements QueueManager {
 
   @Override
   public QueueState getState() {
-    return this.state;
+    return state;
   }
 
-  private void recoverSingleList(int interestType, Connection recoveredConnection,
+  private void recoverSingleList(final @NotNull InterestType interestType,
+      Connection recoveredConnection,
       boolean isDurable, boolean receiveValues, boolean isFirstNewConnection) {
-    for (RegionInterestEntry e : this.getPool().getRITracker()
+    for (RegionInterestEntry e : getPool().getRITracker()
         .getRegionToInterestsMap(interestType, isDurable, !receiveValues)
         .values()) {
       // restore a region
@@ -1128,7 +1126,7 @@ public class QueueManagerImpl implements QueueManager {
 
   // TODO this is distressingly similar to LocalRegion#processSingleInterest
   private void recoverSingleRegion(LocalRegion r, Map<Object, InterestResultPolicy> keys,
-      int interestType,
+      final @NotNull InterestType interestType,
       Connection recoveredConnection, boolean isDurable, boolean receiveValues,
       boolean isFirstNewConnection) {
 
@@ -1169,8 +1167,10 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private void recoverSingleKey(LocalRegion r, Object keys, InterestResultPolicy policy,
-      int interestType, Connection recoveredConnection, boolean isDurable, boolean receiveValues,
+  private void recoverSingleKey(LocalRegion r, final @NotNull Object keys,
+      InterestResultPolicy policy,
+      final @NotNull InterestType interestType, Connection recoveredConnection, boolean isDurable,
+      boolean receiveValues,
       boolean isFirstNewConnection) {
     r.startRegisterInterest();
     try {
@@ -1185,10 +1185,10 @@ public class QueueManagerImpl implements QueueManager {
         }
       }
       // Register interest, get new values back
-      List serverKeys;
+      List<Object> serverKeys;
       if (policy != InterestResultPolicy.KEYS_VALUES) {
         serverKeys = r.getServerProxy().registerInterestOn(recoveredConnection, keys, interestType,
-            policy, isDurable, !receiveValues, r.getAttributes().getDataPolicy().ordinal);
+            policy, isDurable, !receiveValues, r.getAttributes().getDataPolicy());
         // Restore keys based on server's response
         if (isFirstNewConnection) {
           // only if this recoveredEP becomes primaryEndpoint
@@ -1203,11 +1203,11 @@ public class QueueManagerImpl implements QueueManager {
           // need to use policy NONE or KEYS.
           r.getServerProxy().registerInterestOn(recoveredConnection, keys,
               interestType, InterestResultPolicy.NONE, isDurable, !receiveValues,
-              r.getAttributes().getDataPolicy().ordinal);
+              r.getAttributes().getDataPolicy());
         } else {
           serverKeys =
               r.getServerProxy().registerInterestOn(recoveredConnection, keys, interestType, policy,
-                  isDurable, !receiveValues, r.getAttributes().getDataPolicy().ordinal);
+                  isDurable, !receiveValues, r.getAttributes().getDataPolicy());
           r.refreshEntriesFromServerKeys(recoveredConnection, serverKeys, policy);
         }
       }
@@ -1310,10 +1310,10 @@ public class QueueManagerImpl implements QueueManager {
       if (primary != null) {
         allConnectionsTmp.put(primary.getEndpoint(), primary);
       }
-      this.connectionMap = Collections.unmodifiableMap(allConnectionsTmp);
+      connectionMap = Collections.unmodifiableMap(allConnectionsTmp);
       this.backups = Collections.unmodifiableList(new ArrayList<>(backups));
       pool.getStats().setSubscriptionCount(connectionMap.size());
-      this.primaryDiscoveryException = discoveryException;
+      primaryDiscoveryException = discoveryException;
       this.failedPrimary = failedPrimary;
     }
 
@@ -1416,9 +1416,9 @@ public class QueueManagerImpl implements QueueManager {
    */
   protected class RedundancySatisfierTask extends PoolTask {
     private boolean isCancelled;
-    private ScheduledFuture future;
+    private ScheduledFuture<?> future;
 
-    public void setFuture(ScheduledFuture future) {
+    public void setFuture(ScheduledFuture<?> future) {
       this.future = future;
     }
 

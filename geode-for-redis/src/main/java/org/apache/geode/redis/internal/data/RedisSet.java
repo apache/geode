@@ -60,14 +60,14 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
+  public RedisSet(int expectedSize) {
+    members = new MemberSet(expectedSize);
+  }
+
   /**
    * For deserialization only.
    */
   public RedisSet() {}
-
-  public RedisSet(int size) {
-    members = new RedisSet.MemberSet(size);
-  }
 
   public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
     return calculateDiff(regionProvider, keys);
@@ -261,7 +261,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  boolean membersRemove(byte[] memberToRemove) {
+  synchronized boolean membersRemove(byte[] memberToRemove) {
     return members.remove(memberToRemove);
   }
 

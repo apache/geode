@@ -16,6 +16,9 @@ package org.apache.geode.cache.query.cq.internal.ops;
 
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.ServerProxy;
@@ -54,10 +57,8 @@ public class ServerCQProxyImpl extends ServerProxy {
    */
   public Object create(ClientCQ cq) {
     pool.getRITracker().addCq(cq, cq.isDurable());
-    byte regionDataPolicyOrdinal = cq.getCqBaseRegion() == null ? (byte) 0
-        : cq.getCqBaseRegion().getAttributes().getDataPolicy().ordinal;
-    return CreateCQOp.execute(this.pool, cq.getName(), cq.getQueryString(), CqStateImpl.RUNNING,
-        cq.isDurable(), regionDataPolicyOrdinal);
+    return CreateCQOp.execute(pool, cq.getName(), cq.getQueryString(), CqStateImpl.RUNNING,
+        cq.isDurable(), getDataPolicy(cq));
   }
 
   /**
@@ -70,10 +71,11 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public void createOn(String cqName, Connection conn, String queryStr, int cqState,
-      boolean isDurable, byte regionDataPolicy) {
+  public void createOn(final @NotNull String cqName, final @NotNull Connection conn,
+      final @NotNull String queryStr, final int cqState,
+      final boolean isDurable, final @NotNull DataPolicy regionDataPolicy) {
 
-    CreateCQOp.executeOn(this.pool, conn, cqName, queryStr, cqState, isDurable, regionDataPolicy);
+    CreateCQOp.executeOn(pool, conn, cqName, queryStr, cqState, isDurable, regionDataPolicy);
   }
 
   /**
@@ -81,12 +83,15 @@ public class ServerCQProxyImpl extends ServerProxy {
    *
    * @param cq the CQ to create on the server
    */
-  public SelectResults createWithIR(ClientCQ cq) {
+  public SelectResults<?> createWithIR(ClientCQ cq) {
     pool.getRITracker().addCq(cq, cq.isDurable());
-    byte regionDataPolicyOrdinal = cq.getCqBaseRegion() == null ? (byte) 0
-        : cq.getCqBaseRegion().getAttributes().getDataPolicy().ordinal;
-    return CreateCQWithIROp.execute(this.pool, cq.getName(), cq.getQueryString(),
-        CqStateImpl.RUNNING, cq.isDurable(), regionDataPolicyOrdinal);
+    return CreateCQWithIROp.execute(pool, cq.getName(), cq.getQueryString(),
+        CqStateImpl.RUNNING, cq.isDurable(), getDataPolicy(cq));
+  }
+
+  private DataPolicy getDataPolicy(final ClientCQ cq) {
+    return cq.getCqBaseRegion() == null ? DataPolicy.EMPTY
+        : cq.getCqBaseRegion().getAttributes().getDataPolicy();
   }
 
   /**
@@ -96,7 +101,7 @@ public class ServerCQProxyImpl extends ServerProxy {
    */
   public void stop(ClientCQ cq) {
     pool.getRITracker().removeCq(cq);
-    StopCQOp.execute(this.pool, cq.getName());
+    StopCQOp.execute(pool, cq.getName());
   }
 
   /**
@@ -106,7 +111,7 @@ public class ServerCQProxyImpl extends ServerProxy {
    */
   public void close(ClientCQ cq) {
     pool.getRITracker().removeCq(cq);
-    CloseCQOp.execute(this.pool, cq.getName());
+    CloseCQOp.execute(pool, cq.getName());
   }
 
   public List<String> getAllDurableCqsFromServer() {
