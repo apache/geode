@@ -123,7 +123,7 @@ public class ProxyCache implements RegionService {
     if (cache.getRegion(path) == null) {
       return null;
     } else {
-      if (!cache.getRegion(path).getAttributes().getDataPolicy().isEmpty()) {
+      if (cache.getRegion(path).getAttributes().getDataPolicy().withStorage()) {
         throw new IllegalStateException(
             "Region's data-policy must be EMPTY when multiuser-authentication is true");
       }

@@ -40,7 +40,6 @@ public class DistributionAdvisorTest {
   private VersionSource lostVersionID;
   private PersistentMemberID persistentMemberID;
   private final long delay = 100;
-  private DataPolicy dataPolicy;
 
   @Before
   public void setup() {
@@ -50,11 +49,10 @@ public class DistributionAdvisorTest {
     profile = mock(CacheDistributionAdvisor.CacheProfile.class);
     lostVersionID = mock(VersionSource.class);
     persistentMemberID = mock(PersistentMemberID.class);
-    dataPolicy = mock(DataPolicy.class);
 
     when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
     when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
-    when(distributedRegion.getDataPolicy()).thenReturn(dataPolicy);
+    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
     when(distributedRegion.isInitializedWithWait()).thenReturn(true);
   }
@@ -68,7 +66,6 @@ public class DistributionAdvisorTest {
 
   @Test
   public void regionSyncScheduledForLostMember() {
-    when(dataPolicy.withPersistence()).thenReturn(false);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 
     distributionAdvisor.syncForCrashedMember(member, profile);
@@ -82,7 +79,7 @@ public class DistributionAdvisorTest {
     when(distributionAdvisor.getPersistentID((CacheDistributionAdvisor.CacheProfile) profile))
         .thenReturn(persistentMemberID);
     when(persistentMemberID.getVersionMember()).thenReturn(lostVersionID);
-    when(dataPolicy.withPersistence()).thenReturn(true);
+    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 
     distributionAdvisor.syncForCrashedMember(member, profile);
@@ -93,7 +90,7 @@ public class DistributionAdvisorTest {
 
   @Test
   public void regionSyncNotInvokedIfLostMemberIsAnEmptyAccessorOfPersistentReplicateRegion() {
-    when(dataPolicy.withPersistence()).thenReturn(true);
+    when(distributedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
     when(distributedRegion.getPersistentID()).thenReturn(null);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 

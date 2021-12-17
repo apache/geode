@@ -102,7 +102,7 @@ public class GetRegionsFunctionTest {
 
   private Cache cacheWithOneRootRegion(String regionName) {
     Cache cache = mock(Cache.class);
-    when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(regionAttributes.getScope()).thenReturn(mock(Scope.class));
     when(region.getFullPath()).thenReturn(SEPARATOR + regionName);
     when(region.subregions(anyBoolean())).thenReturn(Collections.emptySet());

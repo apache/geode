@@ -373,7 +373,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
                 poolName));
       }
       cp.attach();
-      if (cp.getMultiuserAuthentication() && !getDataPolicy().isEmpty()) {
+      if (cp.getMultiuserAuthentication() && getDataPolicy().withStorage()) {
         throw new IllegalStateException(
             "Region must have empty data-policy " + "when multiuser-authentication is true.");
       }
@@ -662,8 +662,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public MirrorType getMirrorType() {
-    if (getDataPolicy().isNormal() || getDataPolicy().isPreloaded()
-        || getDataPolicy().isEmpty() || getDataPolicy().withPartitioning()) {
+    if (getDataPolicy() == DataPolicy.NORMAL || getDataPolicy().withPreloaded()
+        || getDataPolicy() == DataPolicy.EMPTY || getDataPolicy().withPartitioning()) {
       return MirrorType.NONE;
     } else if (getDataPolicy().withReplication()) {
       return MirrorType.KEYS_VALUES;
@@ -1615,7 +1615,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean isProxy() {
-    return getDataPolicy().isEmpty();
+    return !getDataPolicy().withStorage();
   }
 
   /**

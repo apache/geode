@@ -426,7 +426,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           nonPersistent.add(profile.getDistributedMember());
         }
         memberProfiles.put(profile.getDistributedMember(), profile);
-      } else if (profile.dataPolicy.isPreloaded()) {
+      } else if (profile.dataPolicy.withPreloaded()) {
         preloaded.add(profile.getDistributedMember());
         memberProfiles.put(profile.getDistributedMember(), profile);
       } else if (profile.dataPolicy.withStorage()) {
@@ -582,14 +582,14 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       int s = 0;
       if (dataPolicy.withReplication()) {
         s |= REPLICATE_MASK;
-        if (dataPolicy.isPersistentReplicate()) {
+        if (dataPolicy.withPersistence()) {
           s |= PERSISTENT_MASK;
         }
       } else {
-        if (dataPolicy.isEmpty()) {
+        if (dataPolicy == DataPolicy.EMPTY) {
           s |= PROXY_MASK;
         }
-        if (dataPolicy.isPreloaded()) {
+        if (dataPolicy.withPreloaded()) {
           s |= PRELOADED_MASK;
         }
       }
@@ -1054,7 +1054,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     return adviseFilter(profile -> {
       assert profile instanceof CacheProfile;
       CacheProfile cp = (CacheProfile) profile;
-      return cp.dataPolicy.isEmpty();
+      return cp.dataPolicy == DataPolicy.EMPTY;
     });
   }
 

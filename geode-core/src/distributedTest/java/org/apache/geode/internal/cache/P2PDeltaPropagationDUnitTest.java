@@ -461,7 +461,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     }
 
     Region region = cache.createRegion(REGION_NAME, factory.create());
-    if (!policy.isReplicate()) {
+    if (!(policy == DataPolicy.REPLICATE)) {
       region.create("KEY", "KEY");
     }
     if (port != null) {

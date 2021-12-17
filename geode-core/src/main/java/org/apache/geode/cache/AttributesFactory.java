@@ -1700,8 +1700,8 @@ public class AttributesFactory<K, V> {
 
     @Override
     public MirrorType getMirrorType() {
-      if (dataPolicy.isNormal() || dataPolicy.isPreloaded() || dataPolicy.isEmpty()
-          || dataPolicy.withPartitioning()) {
+      if (dataPolicy == DataPolicy.NORMAL || dataPolicy.withPreloaded()
+          || dataPolicy == DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
         return MirrorType.NONE;
       } else if (dataPolicy.withReplication()) {
         return MirrorType.KEYS_VALUES;

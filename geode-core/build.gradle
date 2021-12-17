@@ -348,6 +348,7 @@ dependencies {
   testRuntimeOnly('commons-io:commons-io')
   testRuntimeOnly('commons-validator:commons-validator')
   testRuntimeOnly('com.pholser:junit-quickcheck-generators')
+  testRuntimeOnly('org.apache.logging.log4j:log4j-core')
 
   // Needed for JDK8, not JDK11, after nebula.facet v7.0.9
   integrationTestImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))

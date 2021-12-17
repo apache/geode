@@ -1265,7 +1265,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
 
           // Plan D: if this is a PRELOADED region, fetch from another PRELOADED
-          if (getDataPolicy().isPreloaded()) {
+          if (getDataPolicy().withPreloaded()) {
             GIIStatus ret_preload =
                 iiop.getFromOne(advice.preloaded, false, advice, recoverFromDisk, recovered_rvv);
             if (GIIStatus.didGII(ret_preload)) {

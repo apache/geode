@@ -9,5 +9,7 @@
   "Method org.apache.geode.cache.query.IndexStatistics.getReadLockCountLong()": "Added new methods.",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFragments()": "Added new stat",
   "Method org.apache.geode.management.MemberMXBean.getOffHeapFreedChunks()": "Added new stat",
-  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat"
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat",
+  "Class org.apache.geode.cache.DataPolicy": "Enum changes will not actually affect any usage.",
+  "Class org.apache.geode.cache.InterestPolicy": "Enum changes will not actually affect any usage."
 }

@@ -75,7 +75,7 @@ public class DistributedAckOverflowRegionCCEOffHeapDUnitTest
   protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
     RegionAttributes<K, V> ra = super.getRegionAttributes(type);
     AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
-    if (!ra.getDataPolicy().isEmpty()) {
+    if (ra.getDataPolicy().withStorage()) {
       factory.setOffHeap(true);
     }
     return factory.create();

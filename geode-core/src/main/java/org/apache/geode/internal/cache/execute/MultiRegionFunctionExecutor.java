@@ -298,7 +298,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           nodes.addAll(prMembers);
         }
       } else if (region instanceof DistributedRegion) {
-        if (dp.isEmpty() || dp.isNormal()) {
+        if (dp == DataPolicy.EMPTY || dp == DataPolicy.NORMAL) {
           // Add local members
           DistributedRegion dr = (DistributedRegion) region;
           Set<InternalDistributedMember> replicates =

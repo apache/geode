@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.execute;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
@@ -163,7 +164,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           String.format("Function named %s is not registered to FunctionService",
               functionName));
     }
-    if (region.getAttributes().getDataPolicy().isNormal()) {
+    if (region.getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
@@ -186,7 +187,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "For Functions with isHA true, hasResult must also be true.");
     }
-    if (region.getAttributes().getDataPolicy().isNormal()) {
+    if (region.getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
