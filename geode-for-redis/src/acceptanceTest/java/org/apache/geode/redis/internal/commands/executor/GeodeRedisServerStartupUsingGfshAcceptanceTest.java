@@ -43,6 +43,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-and-address-server",
+        "--J=-Dgemfire.geode-for-redis-enabled", "true",
         "--J=-Dgemfire.geode-for-redis-bind-address", "localhost",
         "--J=-Dgemfire.geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
@@ -66,6 +67,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-all-addresses-server",
+        "--J=-Dgemfire.geode-for-redis-enabled", "true",
         "--J=-Dgemfire.geode-for-redis-port", String.valueOf(port));
     GfshExecution execution;
 
@@ -86,6 +88,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "invalid-bind-server",
+        "--J=-Dgemfire.geode-for-redis-enabled", "true",
         "--J=-Dgemfire.geode-for-redis-bind-address", "1.1.1.1");
     GfshExecution execution;
 
