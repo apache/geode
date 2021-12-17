@@ -20,6 +20,7 @@ import static org.apache.geode.internal.serialization.StaticSerialization.getVer
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -75,12 +76,8 @@ public class EventSequenceNumberHolder implements DataSerializable {
     this.versionTag = versionTag;
     this.limit = limit;
     if (key != null && limit > 0) {
-      keySequenceIdMap = new LinkedHashMap<Object, Long>() {
-        protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
-          return size() > limit;
-        }
-      };
-      keySequenceIdMap.put(key, id);
+      keySequenceIdMap = new LinkedHashMap<Object, Long>();
+      put(key, id);
     }
   }
 
@@ -133,18 +130,14 @@ public class EventSequenceNumberHolder implements DataSerializable {
       if (size < 0)
         return;
 
-      keySequenceIdMap = new LinkedHashMap<Object, Long>(size) {
-        protected boolean removeEldestEntry(Map.Entry<Object, Long> eldest) {
-          return size() > limit;
-        }
-      };
+      keySequenceIdMap = new LinkedHashMap<Object, Long>();
 
       Object key;
       Long value;
       for (int i = 0; i < size; i++) {
         key = DataSerializer.readObject(in);
         value = DataSerializer.readObject(in);
-        this.keySequenceIdMap.put(key, value);
+        put(key, value);
       }
     }
   }
@@ -189,4 +182,20 @@ public class EventSequenceNumberHolder implements DataSerializable {
   public Map<Object, Long> getKeySequenceId() {
     return keySequenceIdMap;
   }
+
+  public void put(Object key, long id) {
+    if (keySequenceIdMap == null) {
+      return;
+    }
+    if (limit == 0) {
+      return;
+    }
+    if (keySequenceIdMap.size() == limit) {
+      Iterator<Map.Entry<Object, Long>> iterator = keySequenceIdMap.entrySet().iterator();
+      Map.Entry<Object, Long> firstEntry = iterator.next();
+      keySequenceIdMap.remove(firstEntry.getKey());
+    }
+    keySequenceIdMap.put(key, id);
+  }
+
 }
