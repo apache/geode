@@ -157,9 +157,8 @@ public class Fakes {
   public static Region region(String name, Cache cache) {
     Region region = mock(Region.class);
     RegionAttributes attributes = mock(RegionAttributes.class);
-    DataPolicy policy = mock(DataPolicy.class);
     when(region.getAttributes()).thenReturn(attributes);
-    when(attributes.getDataPolicy()).thenReturn(policy);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
     when(region.getName()).thenReturn(name);

@@ -3736,7 +3736,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     boolean expectData =
         isController || postSnapshotRegion.getAttributes().getMirrorType().isMirrored()
-            || postSnapshotRegion.getAttributes().getDataPolicy().isPreloaded();
+            || postSnapshotRegion.getAttributes().getDataPolicy().withPreloaded();
 
     assertEquals(expectData ? MAX_KEYS : 0, postSnapshotRegion.keySet().size());
     // gets the data either locally or by netSearch

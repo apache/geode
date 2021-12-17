@@ -72,6 +72,12 @@ public class StaticFieldsMustBeImmutable extends AbstractJavaRule {
   private boolean isMutable(ASTVariableDeclaratorId variable) {
     VariableNameDeclaration nameDeclaration = variable.getNameDeclaration();
     return !(nameDeclaration.isPrimitiveType()
+        || isAnEnum(variable)
         || immutableTypes.contains(nameDeclaration.getTypeImage()));
+  }
+
+  private boolean isAnEnum(final ASTVariableDeclaratorId variable) {
+    final Class<?> type = variable.getType();
+    return null != type && type.isEnum();
   }
 }

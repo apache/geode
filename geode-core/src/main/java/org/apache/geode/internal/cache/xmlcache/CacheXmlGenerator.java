@@ -1942,19 +1942,19 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           || ((RegionAttributesCreation) attrs).hasDataPolicy())) {
         String dpString;
         DataPolicy dp = attrs.getDataPolicy();
-        if (dp.isEmpty()) {
+        if (dp == DataPolicy.EMPTY) {
           dpString = EMPTY_DP;
-        } else if (dp.isNormal()) {
+        } else if (dp == DataPolicy.NORMAL) {
           dpString = NORMAL_DP;
-        } else if (dp.isPreloaded()) {
+        } else if (dp.withPreloaded()) {
           dpString = PRELOADED_DP;
-        } else if (dp.isReplicate()) {
+        } else if (dp == DataPolicy.REPLICATE) {
           dpString = REPLICATE_DP;
         } else if (dp == DataPolicy.PERSISTENT_REPLICATE) {
           dpString = PERSISTENT_REPLICATE_DP;
         } else if (dp == DataPolicy.PERSISTENT_PARTITION) {
           dpString = PERSISTENT_PARTITION_DP;
-        } else if (dp.isPartition()) {
+        } else if (dp == DataPolicy.PARTITION) {
           if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
             dpString = PARTITION_DP;
           } else {

@@ -114,8 +114,6 @@ class Put70Test {
   @Mock
   private EventIDHolder clientEvent;
   @Mock
-  private DataPolicy dataPolicy;
-  @Mock
   private RegionAdvisor regionAdvisor;
   @Mock
   private PartitionedRegion partitionedRegion;
@@ -183,8 +181,6 @@ class Put70Test {
     when(valuePart.isObject()).thenReturn(true);
 
     when(localRegion.getAttributes()).thenReturn(attributes);
-    when(attributes.getDataPolicy()).thenReturn(dataPolicy);
-
     when(partitionedRegion.getAttributes()).thenReturn(attributes);
   }
 
@@ -300,6 +296,7 @@ class Put70Test {
   @Test
   void shouldSetPossibleDuplicateReturnsTrueIfRecoveredVersionTagForRetriedOperation() {
     Put70 spy = Mockito.spy(put70);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
     doReturn(true).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
 
@@ -328,14 +325,14 @@ class Put70Test {
 
   @Test
   void isRegionWithPersistenceReturnsTrueIfDataPolicyWithPersistence() {
-    when(dataPolicy.withPersistence()).thenReturn(true);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_REPLICATE);
 
     assertThat(put70.isRegionWithPersistence(localRegion)).isTrue();
   }
 
   @Test
   void isRegionWithPersistenceReturnsTrueIfIsAccessorAndHavingPersistentMembers() {
-    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(partitionedRegion.isDataStore()).thenReturn(false);
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     HashMap<InternalDistributedMember, PersistentMemberID> persistentMembers = new HashMap<>();
@@ -347,7 +344,7 @@ class Put70Test {
 
   @Test
   void isRegionWithPersistenceReturnsFalseIfIsAccessorAndHavingNoPersistentMembers() {
-    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(partitionedRegion.isDataStore()).thenReturn(false);
     when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
     when(regionAdvisor.advisePersistentMembers()).thenReturn(Collections.emptyMap());
@@ -357,7 +354,7 @@ class Put70Test {
 
   @Test
   void isRegionWithPersistenceReturnsFalseIfIsNotAccessor() {
-    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(partitionedRegion.isDataStore()).thenReturn(true);
 
     assertThat(put70.isRegionWithPersistence(partitionedRegion)).isFalse();

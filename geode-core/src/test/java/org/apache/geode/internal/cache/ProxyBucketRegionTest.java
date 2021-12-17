@@ -53,7 +53,6 @@ public class ProxyBucketRegionTest {
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
     InternalCache cache = mock(InternalCache.class);
     InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-    DataPolicy dp = mock(DataPolicy.class);
     RegionAttributes ra = mock(RegionAttributes.class);
     DiskStoreImpl ds = mock(DiskStoreImpl.class);
     DiskInitFile dif = mock(DiskInitFile.class);
@@ -71,8 +70,7 @@ public class ProxyBucketRegionTest {
     when(cache.getInternalDistributedSystem()).thenReturn(ids);
 
     when(ids.getDistributionManager()).thenReturn(dm);
-    when(partitionedRegion.getDataPolicy()).thenReturn(dp);
-    when(dp.withPersistence()).thenReturn(true);
+    when(partitionedRegion.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     when(cache.getInternalDistributedSystem()).thenReturn(ids);
     when(partitionedRegion.getAttributes()).thenReturn(ra);
     when(ra.getEvictionAttributes()).thenReturn(null);

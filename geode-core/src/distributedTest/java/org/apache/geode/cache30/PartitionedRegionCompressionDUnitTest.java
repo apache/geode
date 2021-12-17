@@ -54,7 +54,7 @@ public class PartitionedRegionCompressionDUnitTest extends PartitionedRegionDUni
       return ra;
     }
     AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
-    if (!ra.getDataPolicy().isEmpty()) {
+    if (ra.getDataPolicy().withStorage()) {
       factory.setCompressor(compressor);
     }
     return factory.create();

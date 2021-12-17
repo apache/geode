@@ -26,6 +26,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
@@ -42,6 +43,7 @@ public class HARegionTest {
 
   @Before
   public void setup() {
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(attributes.getEvictionAttributes()).thenReturn(evictionAttributes);
     when(attributes.getLoadFactor()).thenReturn(0.75f);
     when(attributes.getConcurrencyLevel()).thenReturn(16);

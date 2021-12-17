@@ -361,8 +361,8 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   @Override
   public MirrorType getMirrorType() {
     // checkReadiness();
-    if (dataPolicy.isNormal() || dataPolicy.isPreloaded() || dataPolicy.isEmpty()
-        || dataPolicy.withPartitioning()) {
+    if (dataPolicy == DataPolicy.NORMAL || dataPolicy.withPreloaded()
+        || dataPolicy == DataPolicy.EMPTY || dataPolicy.withPartitioning()) {
       return MirrorType.NONE;
     } else if (dataPolicy.withReplication()) {
       return MirrorType.KEYS_VALUES;

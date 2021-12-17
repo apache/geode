@@ -67,7 +67,6 @@ public class BucketRegionTest {
   private PartitionedRegion partitionedRegion;
   private InternalCache cache;
   private InternalRegionArguments internalRegionArgs;
-  private DataPolicy dataPolicy;
   private EntryEventImpl event;
   private BucketAdvisor bucketAdvisor;
   private Operation operation;
@@ -85,7 +84,6 @@ public class BucketRegionTest {
     partitionedRegion = mock(PartitionedRegion.class);
     cache = Fakes.cache();
     internalRegionArgs = mock(InternalRegionArguments.class);
-    dataPolicy = mock(DataPolicy.class);
     event = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
     EvictionAttributesImpl evictionAttributes = mock(EvictionAttributesImpl.class);
     ExpirationAttributes expirationAttributes = mock(ExpirationAttributes.class);
@@ -100,7 +98,7 @@ public class BucketRegionTest {
     when(regionAttributes.getRegionIdleTimeout()).thenReturn(expirationAttributes);
     when(regionAttributes.getEntryTimeToLive()).thenReturn(expirationAttributes);
     when(regionAttributes.getEntryIdleTimeout()).thenReturn(expirationAttributes);
-    when(regionAttributes.getDataPolicy()).thenReturn(dataPolicy);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(regionAttributes.getDiskStoreName()).thenReturn("store");
     when(regionAttributes.getConcurrencyLevel()).thenReturn(16);
     when(regionAttributes.getLoadFactor()).thenReturn(0.75f);
@@ -115,7 +113,6 @@ public class BucketRegionTest {
     when(evictionAttributes.getAlgorithm()).thenReturn(EvictionAlgorithm.NONE);
     when(membershipAttributes.getLossAction()).thenReturn(mock(LossAction.class));
     when(scope.isDistributedAck()).thenReturn(true);
-    when(dataPolicy.withReplication()).thenReturn(true);
     when(bucketAdvisor.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(event.getOperation()).thenReturn(operation);
     when(operation.isDistributed()).thenReturn(true);

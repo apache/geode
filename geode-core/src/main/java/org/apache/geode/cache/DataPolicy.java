@@ -13,15 +13,7 @@
  * the License.
  */
 
-
 package org.apache.geode.cache;
-
-import static java.lang.String.format;
-
-import java.io.ObjectStreamException;
-
-import org.apache.geode.annotations.Immutable;
-
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will
@@ -46,38 +38,25 @@ import org.apache.geode.annotations.Immutable;
  * persistence applies to both local scope and distributed scope.
  * </ol>
  *
- *
- *
  * @see AttributesFactory#setDataPolicy
  * @see RegionAttributes#getDataPolicy
  *
  * @since GemFire 5.0
  */
-@Immutable
-public class DataPolicy implements java.io.Serializable {
-  private static final long serialVersionUID = 2095573273889467233L;
-
-  @Immutable
-  private static final DataPolicy[] VALUES = new DataPolicy[11];
-
-  @Immutable
-  private static final String[] NAMES = new String[VALUES.length];
-
+public enum DataPolicy {
   /**
    * Data is never stored in local memory. The region will always be empty locally. It can be used
    * to for zero footprint producers that only want to distribute their data to others and for zero
    * footprint consumers that only want to see events.
    */
-  @Immutable
-  public static final DataPolicy EMPTY = new DataPolicy(0, "EMPTY");
+  EMPTY,
 
   /**
    * Allows the contents in this cache to differ from other caches.
    * <p>
    * Data that this region is interested in is stored in local memory.
    */
-  @Immutable
-  public static final DataPolicy NORMAL = new DataPolicy(1, "NORMAL");
+  NORMAL,
 
   /**
    * The region will be initialized with the data from other caches and accepts any new entries
@@ -87,30 +66,25 @@ public class DataPolicy implements java.io.Serializable {
    * <p>
    * Data that this region is interested in is stored in local memory.
    */
-  @Immutable
-  public static final DataPolicy REPLICATE = new DataPolicy(2, "REPLICATE");
+  REPLICATE,
 
   /**
    * In addition to <code>REPLICATE</code> also causes data to be stored to disk. The region
    * initialization may use the data stored on disk.
    */
-  @Immutable
-  public static final DataPolicy PERSISTENT_REPLICATE = new DataPolicy(3, "PERSISTENT_REPLICATE");
-
+  PERSISTENT_REPLICATE,
 
   /**
    * Data in this region may be spread across a number of processes. This is further configured with
    * {@link PartitionAttributes partitioning attributes}
    */
-  @Immutable
-  public static final DataPolicy PARTITION = new DataPolicy(4, "PARTITION");
+  PARTITION,
 
   /**
    * In addition to <code>NORMAL</code>, contents inside of this cache are (partially) initialized
    * with data from other caches, if available.
    */
-  @Immutable
-  public static final DataPolicy PRELOADED = new DataPolicy(5, "PRELOADED");
+  PRELOADED,
 
   /**
    * In addition to <code>PARTITION</code> also causes data to be stored to disk. The region
@@ -118,18 +92,14 @@ public class DataPolicy implements java.io.Serializable {
    *
    * @since GemFire 6.5
    */
-  @Immutable
-  public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
+  PERSISTENT_PARTITION;
+
+  private static final long serialVersionUID = 2095573273889467233L;
 
   /**
    * The data policy used by default; it is {@link #NORMAL}.
    */
-  @Immutable
   public static final DataPolicy DEFAULT = NORMAL;
-
-
-  /** The name of this mirror type. */
-  private final transient String name;
 
   /**
    * Used as ordinal to represent this DataPolicy
@@ -139,55 +109,8 @@ public class DataPolicy implements java.io.Serializable {
   @Deprecated
   public final byte ordinal;
 
-  private Object readResolve() throws ObjectStreamException {
-    return VALUES[ordinal]; // Canonicalize
-  }
-
-
-  /** Creates a new instance of DataPolicy. */
-  private DataPolicy(final int ordinal, final String name) {
-    if (ordinal >= VALUES.length) {
-      throw new IllegalArgumentException(
-          format("Only %s DataPolicies may be defined", VALUES.length + 1));
-    }
-    if (VALUES[ordinal] != null) {
-      throw new IllegalArgumentException(
-          format("Ordinal %s is already defined by %s", ordinal, VALUES[ordinal]));
-    }
-    this.name = name;
-    this.ordinal = (byte) (ordinal & 0xff);
-    VALUES[this.ordinal] = this;
-    NAMES[this.ordinal] = name;
-  }
-
-  /**
-   * @return ordinal value.
-   */
-  public int ordinal() {
-    return ordinal;
-  }
-
-  /**
-   * Get enum value by name.
-   *
-   * @param name of enum value.
-   * @return enum by name.
-   * @throws IllegalArgumentException if the specified enum type has no constant with the specified
-   *         name.
-   * @throws NullPointerException if name is null.
-   */
-  public static DataPolicy valueOf(final String name) throws IllegalArgumentException {
-    if (null == name) {
-      throw new NullPointerException();
-    }
-
-    for (int i = 0; i < NAMES.length; i++) {
-      if (NAMES[i].equals(name)) {
-        return VALUES[i];
-      }
-    }
-
-    throw new IllegalArgumentException(name);
+  DataPolicy() {
+    ordinal = (byte) super.ordinal();
   }
 
   /**
@@ -197,9 +120,8 @@ public class DataPolicy implements java.io.Serializable {
    * @return the DataPolicy represented by specified ordinal
    */
   public static DataPolicy fromOrdinal(byte ordinal) {
-    return VALUES[ordinal];
+    return values()[ordinal];
   }
-
 
   /**
    * Return true if regions with this policy store data locally.
@@ -281,7 +203,7 @@ public class DataPolicy implements java.io.Serializable {
    * Return true if this policy is {@link #NORMAL}.
    *
    * @return true if this policy is {@link #NORMAL}.
-   * @deprecated from version 6.5 forward please use an identity comparison instead of this method
+   * @deprecated from version 6.5 forward please use an identity comparison with {@link #NORMAL}
    */
   @Deprecated
   public boolean isNormal() {
@@ -292,7 +214,7 @@ public class DataPolicy implements java.io.Serializable {
    * Return true if this policy is {@link #PRELOADED}.
    *
    * @return true if this policy is {@link #PRELOADED}
-   * @deprecated from version 6.5 forward please use withPreloaded()
+   * @deprecated from version 6.5 forward please use {@link #withPreloaded()}
    */
   @Deprecated
   public boolean isPreloaded() {
@@ -303,7 +225,7 @@ public class DataPolicy implements java.io.Serializable {
    * Return true if this policy is the default.
    *
    * @return true if this policy is the default.
-   * @deprecated from version 6.5 forward please use an identity comparison instead of this method
+   * @deprecated from version 6.5 forward please use an identity comparison with {@link #DEFAULT}
    */
   @Deprecated
   public boolean isDefault() {
@@ -344,16 +266,6 @@ public class DataPolicy implements java.io.Serializable {
   }
 
   /**
-   * Returns a string representation for this data policy.
-   *
-   * @return the name of this data policy.
-   */
-  @Override
-  public String toString() {
-    return name;
-  }
-
-  /**
    * @param s a String representation of a DataPolicy
    * @return a DataPolicy
    * @deprecated use {@link #valueOf(String)}
@@ -366,4 +278,5 @@ public class DataPolicy implements java.io.Serializable {
       return null;
     }
   }
+
 }

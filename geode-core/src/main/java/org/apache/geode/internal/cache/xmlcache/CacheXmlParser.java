@@ -1497,7 +1497,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
     RegionAttributesCreation rattrs = peekRegionAttributesContext(PARTITION_ATTRIBUTES);
     // change the 5.0 default data policy (EMPTY) to the current default
-    if (rattrs.hasDataPolicy() && rattrs.getDataPolicy().isEmpty()
+    if (rattrs.hasDataPolicy() && rattrs.getDataPolicy() == DataPolicy.EMPTY
         && (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) == 0)) {
       rattrs.setDataPolicy(PartitionedRegionHelper.DEFAULT_DATA_POLICY);
     }

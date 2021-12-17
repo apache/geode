@@ -655,7 +655,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     serverRegionProxy =
         getPoolName() != null ? serverRegionProxyConstructor.create(this) : null;
     imageState = new UnsharedImageState(getPoolName() != null,
-        getDataPolicy().withReplication() || getDataPolicy().isPreloaded(),
+        getDataPolicy().withReplication() || getDataPolicy().withPreloaded(),
         getAttributes().getDataPolicy().withPersistence(), stopper);
 
     // prevent internal regions from participating in a TX
@@ -2170,7 +2170,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void writeToDisk() {
     if (diskRegion == null) {
       DataPolicy dp = getDataPolicy();
-      if (dp.isEmpty()) {
+      if (dp == DataPolicy.EMPTY) {
         throw new IllegalStateException(
             String.format("Cannot write a region with data-policy %s to disk.",
                 dp));

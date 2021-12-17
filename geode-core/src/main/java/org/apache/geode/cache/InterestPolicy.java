@@ -13,29 +13,17 @@
  * the License.
  */
 
-
 package org.apache.geode.cache;
-
-import java.io.ObjectStreamException;
-
-import org.apache.geode.annotations.Immutable;
 
 /**
  * Enumerated type for region subscription interest policy. The interest policy specifies what data
- * a subscriber is interested in having in it's region.
- *
- *
+ * a subscriber is interested in having in its region.
  *
  * @see SubscriptionAttributes
  *
  * @since GemFire 5.0
  */
-@Immutable
-public class InterestPolicy implements java.io.Serializable {
-  private static final long serialVersionUID = 1567179436331385968L;
-
-  @Immutable
-  private static final InterestPolicy[] VALUES = new InterestPolicy[2];
+public enum InterestPolicy {
 
   /**
    * This subscriber is interested in all data. More specifically operations done in this cache and
@@ -57,8 +45,7 @@ public class InterestPolicy implements java.io.Serializable {
    * listener in a VM using this policy will receive notification of all changes to the partitioned
    * region.
    */
-  @Immutable
-  public static final InterestPolicy ALL = new InterestPolicy("ALL", 0);
+  ALL,
 
   /**
    * This subscriber is interested in data that is already in its cache. More specifically
@@ -78,32 +65,26 @@ public class InterestPolicy implements java.io.Serializable {
    * be notified in the VM holding the affected data. That is, listeners are only notified if the
    * affected* key-value pair is in the same process as the listener.
    */
-  @Immutable
-  public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT", 1);
+  CACHE_CONTENT;
+
+  private static final long serialVersionUID = 1567179436331385968L;
 
   /**
    * The interest policy used by default; it is {@link #CACHE_CONTENT}.
    */
-  @Immutable
   public static final InterestPolicy DEFAULT = CACHE_CONTENT;
 
-
-  /** The name of this mirror type. */
-  private final transient String name;
-
-  /** used as ordinal to represent this InterestPolicy */
+  /**
+   * Used as ordinal to represent this InterestPolicy.
+   *
+   * @deprecated use {@link #ordinal()}
+   */
+  @Deprecated
   public final byte ordinal;
 
-  private Object readResolve() throws ObjectStreamException {
-    return VALUES[ordinal]; // Canonicalize
-  }
-
-
   /** Creates a new instance of InterestPolicy. */
-  private InterestPolicy(String name, int ordinal) {
-    this.name = name;
-    this.ordinal = (byte) ordinal;
-    VALUES[this.ordinal] = this;
+  InterestPolicy() {
+    ordinal = (byte) ordinal();
   }
 
   /**
@@ -113,9 +94,8 @@ public class InterestPolicy implements java.io.Serializable {
    * @return the InterestPolicy represented by specified ordinal
    */
   public static InterestPolicy fromOrdinal(byte ordinal) {
-    return VALUES[ordinal];
+    return values()[ordinal];
   }
-
 
   /**
    * Return true if this policy is {@link #ALL}.
@@ -144,13 +124,4 @@ public class InterestPolicy implements java.io.Serializable {
     return this == DEFAULT;
   }
 
-  /**
-   * Returns a string representation for this interest policy.
-   *
-   * @return the name of this interest policy.
-   */
-  @Override
-  public String toString() {
-    return name;
-  }
 }
