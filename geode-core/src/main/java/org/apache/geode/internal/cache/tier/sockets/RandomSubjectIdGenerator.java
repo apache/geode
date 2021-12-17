@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.function.Consumer;
 
 /**
- * Generates a sequence of subject IDs based on a given Random.
+ * Generates sequences of unique subject IDs based on a {@code Random} and an initializer function.
  *
  * <p>
  * <strong>Initialization and uniqueness.</strong> The generator initializes the {@code Random}
@@ -49,6 +49,12 @@ public class RandomSubjectIdGenerator implements SubjectIdGenerator {
   private long firstGeneratedId;
   private boolean mustInitialize = true;
 
+  /**
+   * Constructs an ID generator that uses {@code random} to generate IDs and {@code
+   * randomInitializer} to set the state of the {@code random}. A initializer should attempt to
+   * leave {@code random} in a state distinct from that produced by any other invocation of the
+   * initializer.
+   */
   public RandomSubjectIdGenerator(Random random, Consumer<Random> randomInitializer) {
     this.random = random;
     initializer = randomInitializer;
