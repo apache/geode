@@ -41,6 +41,9 @@ github:
           - concourse-ci/build
           - concourse-ci/unit-test-openjdk11
           - concourse-ci/unit-test-openjdk8
+          - "LGTM analysis: Java"
+          - "LGTM analysis: Python"
+          - "LGTM analysis: JavaScript"
 
       required_pull_request_reviews:
         dismiss_stale_reviews: false
