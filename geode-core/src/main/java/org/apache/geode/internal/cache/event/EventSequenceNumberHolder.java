@@ -20,15 +20,18 @@ import static org.apache.geode.internal.serialization.StaticSerialization.getVer
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -60,7 +63,14 @@ public class EventSequenceNumberHolder implements DataSerializable {
    */
   private VersionTag versionTag;
 
-  private final Map<Object, Long> keySequenceIdMap = new HashMap<Object, Long>();
+  /**
+   * Sets LIMIT to size of key sequence-number map.
+   */
+  @MutableForTesting
+  public static int LIMIT =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "KeySequenceID.LIMIT", 0);
+
+  private final Map<Object, Long> keySequenceIdMap = new LinkedHashMap<>();
 
   // for debugging
   // transient Exception context;
@@ -73,7 +83,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
   EventSequenceNumberHolder(long id, VersionTag versionTag, Object key) {
     this.lastSequenceNumber = id;
     this.versionTag = versionTag;
-    if (key != null) {
+    if (key != null && LIMIT > 0) {
       keySequenceIdMap.put(key, id);
     }
   }
@@ -125,7 +135,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
       for (int i = 0; i < size; i++) {
         key = DataSerializer.readObject(in);
         value = DataSerializer.readObject(in);
-        this.keySequenceIdMap.put(key, value);
+        put(key, value);
       }
     }
   }
@@ -164,4 +174,17 @@ public class EventSequenceNumberHolder implements DataSerializable {
   public Map<Object, Long> getKeySequenceId() {
     return keySequenceIdMap;
   }
+
+  public void put(Object key, long id) {
+    if (LIMIT == 0) {
+      return;
+    }
+    if (keySequenceIdMap.size() == LIMIT) {
+      Iterator<Map.Entry<Object, Long>> iterator = keySequenceIdMap.entrySet().iterator();
+      Map.Entry<Object, Long> firstEntry = iterator.next();
+      keySequenceIdMap.remove(firstEntry.getKey());
+    }
+    keySequenceIdMap.put(key, id);
+  }
+
 }

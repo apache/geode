@@ -52,6 +52,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -311,7 +312,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return server.getPort();
+    EventSequenceNumberHolder.LIMIT = 100;
+    return new Integer(server.getPort());
   }
 
   protected RegionAttributes createCacheServerAttributes() {
