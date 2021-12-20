@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -209,8 +209,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String host, Integer port1, Integer port2, String rLevel,
       Boolean addListener) throws Exception {
-    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
-        "true");
+    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
