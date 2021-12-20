@@ -269,8 +269,11 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     Region<Object, Object> region = server.getCache().getRegion("/region");
     region.put("1", "value1");
-    clientVM.invoke(() -> await().untilAsserted(() -> assertThat(CQLISTENER0.getKeys())
-        .containsExactly("1")));
+    clientVM.invoke(() -> {
+      await().untilAsserted(
+          () -> assertThat(CQLISTENER0.getKeys())
+              .containsExactly("1"));
+    });
 
     // expire the current user
     ExpirableSecurityManager securityManager = getSecurityManager();
@@ -600,8 +603,10 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     region.put("2", "value2");
 
     // client will get both keys
-    clientVM.invoke(
-        () -> await().untilAsserted(() -> assertThat(myListener.keys).containsExactly("1", "2")));
+    clientVM.invoke( () -> {
+      await().untilAsserted(
+          () -> assertThat(myListener.keys).containsExactly("1", "2"));
+    });
 
     // user1 should not be used to put key2 to the region in any cases
     assertThat(getSecurityManager().getAuthorizedOps().get("user1"))
