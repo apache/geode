@@ -16,8 +16,8 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.internal.lang.SystemProperty.getProductStringProperty;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
 
 import java.io.File;
 import java.util.Optional;
