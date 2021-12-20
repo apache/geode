@@ -51,7 +51,7 @@ import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.HARegionQueueAttributes;
 import org.apache.geode.internal.cache.ha.HARegionQueueStats;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
@@ -601,7 +601,7 @@ public class MessageDispatcher extends LoggingThread {
   @NotNull
   @VisibleForTesting
   protected Long getSystemProperty(String key, long defaultValue) {
-    return SystemPropertyHelper.getProductLongProperty(key, defaultValue);
+    return SystemProperty.getProductLongProperty(key, defaultValue);
   }
 
   @NotNull

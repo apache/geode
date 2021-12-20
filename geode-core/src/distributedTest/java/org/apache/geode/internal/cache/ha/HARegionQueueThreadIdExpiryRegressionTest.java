@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.THREAD_ID_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -39,6 +38,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
@@ -110,8 +110,10 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   }
 
   private int createCacheServer() throws IOException {
-    System.setProperty(GEODE_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY, EXPIRY_TIME_SECONDS);
-    System.setProperty(GEODE_PREFIX + THREAD_ID_EXPIRY_TIME_PROPERTY, EXPIRY_TIME_SECONDS);
+    System.setProperty(SystemProperty.DEFAULT_PREFIX + HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY,
+        EXPIRY_TIME_SECONDS);
+    System.setProperty(SystemProperty.DEFAULT_PREFIX + THREAD_ID_EXPIRY_TIME_PROPERTY,
+        EXPIRY_TIME_SECONDS);
 
     cacheRule.createCache();
     cacheRule.getCache().setMessageSyncInterval(MESSAGE_SYNC_INTERVAL_SECONDS);
