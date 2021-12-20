@@ -14,11 +14,11 @@
  */
 package org.apache.geode.logging.internal;
 
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs.ONLY_WHEN_USING_DEFAULT_CONFIG;
 import static org.apache.geode.logging.internal.spi.LogLevelUpdateScope.GEODE_LOGGERS;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigListener;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
@@ -52,13 +52,13 @@ public class Configuration implements LogConfigListener {
    * System property that may be used to override which {@code LogLevelUpdateOccurs} to use.
    */
   public static final String LOG_LEVEL_UPDATE_OCCURS_PROPERTY =
-      GEODE_PREFIX + "LOG_LEVEL_UPDATE_OCCURS";
+      SystemProperty.DEFAULT_PREFIX + "LOG_LEVEL_UPDATE_OCCURS";
 
   /**
    * System property that may be used to override which {@code LogLevelUpdateScope} to use.
    */
   static final String LOG_LEVEL_UPDATE_SCOPE_PROPERTY =
-      GEODE_PREFIX + "LOG_LEVEL_UPDATE_SCOPE";
+      SystemProperty.DEFAULT_PREFIX + "LOG_LEVEL_UPDATE_SCOPE";
 
   private final LogLevelUpdateOccurs logLevelUpdateOccurs;
   private final LogLevelUpdateScope logLevelUpdateScope;
