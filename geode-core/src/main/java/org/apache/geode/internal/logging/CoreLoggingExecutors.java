@@ -16,7 +16,7 @@ package org.apache.geode.internal.logging;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.lang.SystemProperty.GEMFIRE_PREFIX;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
