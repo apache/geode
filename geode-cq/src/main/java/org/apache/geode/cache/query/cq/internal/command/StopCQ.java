@@ -126,7 +126,6 @@ public class StopCQ extends BaseCQCommand {
           String.format("Exception while stopping CQ named %s :", cqName);
       sendCqResponse(MessageType.CQ_EXCEPTION_TYPE, err, clientMessage.getTransactionId(), e,
           serverConnection);
-      writeChunkedException(clientMessage, e, serverConnection);
       return;
     }
 

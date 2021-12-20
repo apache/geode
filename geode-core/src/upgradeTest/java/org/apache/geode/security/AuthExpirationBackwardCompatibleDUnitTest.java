@@ -488,7 +488,9 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     // refresh user before we expire user1, otherwise we might still be using expired
     // users in some client operations
-    clientVM.invoke(() -> UpdatableUserAuthInitialize.setUser("user2"));
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user2");
+    });
 
     getSecurityManager().addExpiredUser("user1");
     region.put("2", "value2");
