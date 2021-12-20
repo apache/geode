@@ -17,8 +17,11 @@
 package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.singletonList;
+import static org.apache.geode.redis.internal.data.AbstractRedisData.NO_EXPIRATION;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.OrderedSetEntry.ORDERED_SET_ENTRY_OVERHEAD;
 import static org.apache.geode.redis.internal.data.RedisSortedSet.REDIS_SORTED_SET_OVERHEAD;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.sortedSetOpStoreResult;
 import static org.apache.geode.redis.internal.netty.Coder.stringToBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.GREATEST_MEMBER_NAME;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.LEAST_MEMBER_NAME;
@@ -65,6 +68,7 @@ import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetRank
 import org.apache.geode.redis.internal.commands.executor.sortedset.ZAddOptions;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.netty.Coder;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
@@ -151,6 +155,58 @@ public class RedisSortedSetTest {
 
     verify(region).put(any(), any());
     assertThat(sortedSet1.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void zstoreoperations_stores_delta_that_is_stable() {
+    RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+
+    RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
+    when(regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, null, false))
+        .thenReturn(sortedSet1);
+    when(regionProvider.getDataRegion()).thenReturn(dataRegion);
+    when(dataRegion.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    // Setting up for store operation
+    RedisSortedSet.MemberMap members = new RedisSortedSet.MemberMap(1);
+    RedisSortedSet.ScoreSet scores = new RedisSortedSet.ScoreSet();
+    byte[] member = new byte[] {4};
+    RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, 5);
+    members.put(member, entry);
+    scores.add(entry);
+
+    sortedSetOpStoreResult(regionProvider, null, members, scores);
+
+    verify(dataRegion).put(any(), any());
+    assertThat(sortedSet1.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void zstoreoperations_sets_expiration_time_to_zero() {
+    RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+
+    RedisSortedSet setDest = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
+    setDest.setExpirationTimestamp(dataRegion, null, 100);
+
+    when(regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, null, false))
+        .thenReturn(setDest);
+    when(regionProvider.getDataRegion()).thenReturn(dataRegion);
+    when(dataRegion.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    // Setting up for store operation
+    RedisSortedSet.MemberMap members = new RedisSortedSet.MemberMap(1);
+    RedisSortedSet.ScoreSet scores = new RedisSortedSet.ScoreSet();
+    byte[] member = new byte[] {4};
+    RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(member, 5);
+    members.put(member, entry);
+    scores.add(entry);
+
+    sortedSetOpStoreResult(regionProvider, null, members, scores);
+
+    assertThat(setDest.getExpirationTimestamp()).isEqualTo(NO_EXPIRATION);
+    assertThat(setDest.hasDelta()).isFalse();
   }
 
   private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {

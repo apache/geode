@@ -58,6 +58,7 @@ import org.apache.geode.redis.internal.data.collections.OrderStatisticsTree;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayDoublePairs;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -66,7 +67,7 @@ public class RedisSortedSet extends AbstractRedisData {
   private static final Logger logger = LogService.getLogger();
 
   private MemberMap members;
-  private final ScoreSet scoreSet = new ScoreSet();
+  private ScoreSet scoreSet = new ScoreSet();
 
   @Override
   public int getSizeInBytes() {
@@ -81,6 +82,11 @@ public class RedisSortedSet extends AbstractRedisData {
       byte[] member = members.get(i);
       memberAdd(member, score);
     }
+  }
+
+  RedisSortedSet(MemberMap members, ScoreSet scoreSet) {
+    this.members = members;
+    this.scoreSet = scoreSet;
   }
 
   public RedisSortedSet(int size) {
@@ -102,6 +108,13 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public void applyAddByteArrayDoublePairDelta(byte[] bytes, double score) {
     memberAdd(bytes, score);
+  }
+
+  @Override
+  public void applyReplaceByteArrayDoublePairDelta(MemberMap members, ScoreSet scoreSet) {
+    persistNoDelta();
+    this.members = members;
+    this.scoreSet = scoreSet;
   }
 
   /**
@@ -274,7 +287,8 @@ public class RedisSortedSet extends AbstractRedisData {
     return Coder.doubleToBytes(score);
   }
 
-  public long zinterstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+  public static long zinterstore(RegionProvider regionProvider, RedisKey key,
+      List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
     List<RedisSortedSet> sets = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight keyWeight : keyWeights) {
@@ -282,8 +296,7 @@ public class RedisSortedSet extends AbstractRedisData {
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
 
       if (set == NULL_REDIS_SORTED_SET) {
-        regionProvider.getLocalDataRegion().remove(key);
-        return 0;
+        return sortedSetOpStoreResult(regionProvider, key, null, null);
       } else {
         sets.add(set);
       }
@@ -295,6 +308,9 @@ public class RedisSortedSet extends AbstractRedisData {
         smallestSet = set;
       }
     }
+
+    MemberMap interMembers = new MemberMap(smallestSet.getSortedSetSize());
+    ScoreSet interScores = new ScoreSet();
 
     for (byte[] member : smallestSet.members.keySet()) {
       boolean addToSet = true;
@@ -323,18 +339,47 @@ public class RedisSortedSet extends AbstractRedisData {
           }
         }
       }
+
       if (addToSet) {
-        memberAdd(member, newScore);
+        OrderedSetEntry entry = interMembers.get(member);
+        if (entry == null) {
+          entry = new OrderedSetEntry(member, newScore);
+          interMembers.put(member, entry);
+          interScores.add(entry);
+        } else if (entry.getScore() != newScore) {
+          interScores.remove(entry);
+          entry.updateScore(newScore);
+          interScores.add(entry);
+        }
       }
     }
 
-    if (removeFromRegion()) {
-      regionProvider.getDataRegion().remove(key);
-    } else {
-      regionProvider.getLocalDataRegion().put(key, this);
+    return sortedSetOpStoreResult(regionProvider, key, interMembers, interScores);
+  }
+
+  static long sortedSetOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
+      MemberMap interMembers, ScoreSet interScores) {
+    RedisSortedSet destinationSet =
+        regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, destinationKey, false);
+
+    if (interMembers == null || interScores.isEmpty()) {
+      if (destinationSet != null) {
+        regionProvider.getDataRegion().remove(destinationKey);
+      }
+      return 0;
     }
 
-    return getSortedSetSize();
+    if (destinationSet != null) {
+      destinationSet.persistNoDelta();
+      destinationSet.members = interMembers;
+      destinationSet.scoreSet = interScores;
+      destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
+          new ReplaceByteArrayDoublePairs(interMembers));
+    } else {
+      regionProvider.getDataRegion().put(destinationKey,
+          new RedisSortedSet(interMembers, interScores));
+    }
+    return interMembers.size();
   }
 
   public long zlexcount(SortedSetLexRangeOptions lexOptions) {
@@ -463,18 +508,24 @@ public class RedisSortedSet extends AbstractRedisData {
     return null;
   }
 
-  public long zunionstore(RegionProvider regionProvider, RedisKey key, List<ZKeyWeight> keyWeights,
+  public static long zunionstore(RegionProvider regionProvider, RedisKey key,
+      List<ZKeyWeight> keyWeights,
       ZAggregator aggregator) {
+    MemberMap unionMembers = null;
+    ScoreSet unionScores = null;
     for (ZKeyWeight keyWeight : keyWeights) {
       RedisSortedSet set =
           regionProvider.getTypedRedisData(REDIS_SORTED_SET, keyWeight.getKey(), false);
       if (set == NULL_REDIS_SORTED_SET) {
         continue;
+      } else if (unionMembers == null) {
+        unionMembers = new MemberMap((int) set.zcard());
+        unionScores = new ScoreSet();
       }
       double weight = keyWeight.getWeight();
 
       for (AbstractOrderedSetEntry entry : set.members.values()) {
-        OrderedSetEntry existingValue = members.get(entry.getMember());
+        OrderedSetEntry existingValue = unionMembers.get(entry.getMember());
         if (existingValue == null) {
           double score;
           // Redis math and Java math are different when handling infinity. Specifically:
@@ -492,23 +543,19 @@ public class RedisSortedSet extends AbstractRedisData {
               score = newScore;
             }
           }
-          members.put(entry.getMember(), new OrderedSetEntry(entry.getMember(), score));
+          OrderedSetEntry newUnion = new OrderedSetEntry(entry.getMember(), score);
+          unionMembers.put(entry.getMember(), newUnion);
+          unionScores.add(newUnion);
           continue;
         }
 
+        unionScores.remove(existingValue);
         existingValue.updateScore(aggregator.getFunction().apply(existingValue.getScore(),
             entry.getScore() * weight));
+        unionScores.add(existingValue);
       }
     }
-
-    if (removeFromRegion()) {
-      regionProvider.getDataRegion().remove(key);
-    } else {
-      scoreSet.addAll(members.values());
-      regionProvider.getLocalDataRegion().put(key, this);
-    }
-
-    return getSortedSetSize();
+    return sortedSetOpStoreResult(regionProvider, key, unionMembers, unionScores);
   }
 
   private List<byte[]> zpop(Iterator<AbstractOrderedSetEntry> scoresIterator,

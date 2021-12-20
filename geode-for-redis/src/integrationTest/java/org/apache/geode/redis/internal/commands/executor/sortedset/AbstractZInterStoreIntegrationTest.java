@@ -220,6 +220,20 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
+  public void shouldOverwriteDestinationKey_givenDestinationExists() {
+    Set<Tuple> expectedResults = new LinkedHashSet<>();
+    expectedResults.add(new Tuple("key1Member", 1.0));
+
+    jedis.zadd(NEW_SET, 1.0, "newSetMember1");
+    jedis.zadd(NEW_SET, 2.0, "newSetMember2");
+    jedis.zadd(KEY1, 1.0, "key1Member");
+
+    assertThat(jedis.zinterstore(NEW_SET, KEY1)).isEqualTo(1L);
+    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0L, 1L);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
+  }
+
+  @Test
   public void shouldStoreIntersection_givenWeightOfOne_andOneRedisSortedSet() {
     Map<String, Double> scores = buildMapOfMembersAndScores();
     Set<Tuple> expectedResults = convertToTuples(scores, (ignore, value) -> value);

@@ -15,13 +15,13 @@
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE;
+import static org.apache.geode.redis.internal.data.RedisSortedSet.zunionstore;
 
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -34,8 +34,7 @@ public class ZUnionStoreExecutor extends ZStoreExecutor {
     List<RedisKey> keysToLock = getKeysToLock(regionProvider, key, keyWeights);
 
     return context.lockedExecute(key, keysToLock,
-        () -> new RedisSortedSet(0))
-        .zunionstore(regionProvider, key, keyWeights, aggregator);
+        () -> zunionstore(regionProvider, key, keyWeights, aggregator));
   }
 
   @Override
