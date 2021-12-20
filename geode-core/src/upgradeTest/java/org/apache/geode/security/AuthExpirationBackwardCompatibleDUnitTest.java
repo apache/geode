@@ -603,7 +603,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     region.put("2", "value2");
 
     // client will get both keys
-    clientVM.invoke( () -> {
+    clientVM.invoke(() -> {
       await().untilAsserted(
           () -> assertThat(myListener.keys).containsExactly("1", "2"));
     });
