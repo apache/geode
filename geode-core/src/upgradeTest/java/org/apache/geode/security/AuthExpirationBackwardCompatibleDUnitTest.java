@@ -422,7 +422,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   }
 
   @Test
-  public void stopCQ() throws Exception {
+  public void stopAndCloseCQ() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
