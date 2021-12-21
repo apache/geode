@@ -425,7 +425,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   }
 
   @Test
-  public void stopAndCloseCQ() throws Exception {
+  public void stopCQ() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0, clientVersion,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -449,10 +449,34 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
       cq.stop();
     });
 
-    getSecurityManager().addExpiredUser("user2");
+    Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();
+    Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
+    assertThat(unAuthorizedOps.keySet()).containsExactly("user1");
+    assertThat(unAuthorizedOps.get("user1")).containsExactly("CLUSTER:MANAGE:QUERY");
+    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2");
+    assertThat(authorizedOps.get("user2")).containsExactly("CLUSTER:MANAGE:QUERY");
+  }
+
+  @Test
+  public void closeCQ() throws Exception {
+    int serverPort = server.getPort();
+    clientVM = cluster.startClientVM(0, clientVersion,
+        c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
 
     clientVM.invoke(() -> {
-      UpdatableUserAuthInitialize.setUser("user3");
+      UpdatableUserAuthInitialize.setUser("user1");
+      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
+      CqQuery cq =
+          queryService.newCq("CQ1", "select * from /region", new CqAttributesFactory().create());
+      cq.execute();
+    });
+
+    getSecurityManager().addExpiredUser("user1");
+
+    clientVM.invoke(() -> {
+      UpdatableUserAuthInitialize.setUser("user2");
       QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
       CqQuery cq = queryService.getCq("CQ1");
       cq.close();
@@ -460,11 +484,10 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();
     Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
-    assertThat(unAuthorizedOps.keySet()).containsExactly("user1", "user2");
-    assertThat(unAuthorizedOps.get("user1")).containsExactly("CLUSTER:MANAGE:QUERY");
-    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2", "user3");
-    assertThat(authorizedOps.get("user2")).containsExactly("CLUSTER:MANAGE:QUERY");
-    assertThat(authorizedOps.get("user3")).containsExactly("DATA:READ:region");
+    assertThat(unAuthorizedOps.keySet()).containsExactly("user1");
+    assertThat(unAuthorizedOps.get("user1")).containsExactly("DATA:READ:region");
+    assertThat(authorizedOps.keySet()).containsExactly("user1", "user2");
+    assertThat(authorizedOps.get("user2")).containsExactly("DATA:READ:region");
   }
 
   @Test
