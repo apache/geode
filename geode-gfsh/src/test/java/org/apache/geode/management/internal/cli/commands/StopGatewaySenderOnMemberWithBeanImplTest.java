@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommandDelegateParallelImpl.StopGatewaySenderOnMember;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -66,7 +65,8 @@ public class StopGatewaySenderOnMemberWithBeanImplTest {
     GatewaySenderMXBean gatewaySenderMXBean = gatewaySenderMXBean(isLocalMember, false);
     when(gatewaySenderMXBean.isRunning()).thenReturn(false);
 
-    StopGatewaySenderOnMember stopperWithBean = new StopGatewaySenderOnMemberWithBeanImpl();
+    StopGatewaySenderCommand.StopGatewaySenderOnMember stopperWithBean =
+        new StopGatewaySenderOnMemberWithBeanImpl();
 
     List<String> result = stopperWithBean.executeStopGatewaySenderOnMember(senderId, cache,
         managementService, distributedMember);
@@ -80,7 +80,8 @@ public class StopGatewaySenderOnMemberWithBeanImplTest {
       boolean isLocalMember) {
     gatewaySenderMXBean(isLocalMember, true);
 
-    StopGatewaySenderOnMember stopperWithBean = new StopGatewaySenderOnMemberWithBeanImpl();
+    StopGatewaySenderCommand.StopGatewaySenderOnMember stopperWithBean =
+        new StopGatewaySenderOnMemberWithBeanImpl();
 
     List<String> result = stopperWithBean.executeStopGatewaySenderOnMember(senderId, cache,
         managementService, distributedMember);
@@ -95,7 +96,8 @@ public class StopGatewaySenderOnMemberWithBeanImplTest {
     GatewaySenderMXBean gatewaySenderMXBean = gatewaySenderMXBean(isLocalMember, false);
     when(gatewaySenderMXBean.isRunning()).thenReturn(true);
 
-    StopGatewaySenderOnMember stopperWithBean = new StopGatewaySenderOnMemberWithBeanImpl();
+    StopGatewaySenderCommand.StopGatewaySenderOnMember stopperWithBean =
+        new StopGatewaySenderOnMemberWithBeanImpl();
 
     List<String> result = stopperWithBean.executeStopGatewaySenderOnMember(senderId, cache,
         managementService, distributedMember);

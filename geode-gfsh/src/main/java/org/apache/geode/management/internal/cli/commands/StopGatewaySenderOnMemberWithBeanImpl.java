@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.StopGatewaySenderCommandDelegateParallelImpl.StopGatewaySenderOnMember;
-
 import java.util.ArrayList;
 
 import javax.management.ObjectName;
@@ -27,7 +25,8 @@ import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
-class StopGatewaySenderOnMemberWithBeanImpl implements StopGatewaySenderOnMember {
+class StopGatewaySenderOnMemberWithBeanImpl
+    implements StopGatewaySenderCommand.StopGatewaySenderOnMember {
 
   public ArrayList<String> executeStopGatewaySenderOnMember(String id, Cache cache,
       SystemManagementService managementService, DistributedMember member) {
