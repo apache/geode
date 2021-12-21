@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,7 +62,7 @@ public class StopGatewaySenderCommandTest {
       mock(BiFunction.class);
   private ExecutorService executorService;
   private SystemManagementService managementService;
-  private Supplier<StopGatewaySenderCommand.StopGatewaySenderOnMember> stopperOnMemberFactory;
+  private StopGatewaySenderCommand.StopGatewaySenderOnMember stopperOnMember;
 
   @SuppressWarnings("unchecked")
   @Before
@@ -75,9 +74,7 @@ public class StopGatewaySenderCommandTest {
 
     executorService = mock(ExecutorService.class);
     managementService = mock(SystemManagementService.class);
-    stopperOnMemberFactory = mock(Supplier.class);
-    doReturn(mock(StopGatewaySenderCommand.StopGatewaySenderOnMember.class))
-        .when(stopperOnMemberFactory).get();
+    stopperOnMember = mock(StopGatewaySenderCommand.StopGatewaySenderOnMember.class);
     when(findMembers.apply(any(), any())).thenReturn(members);
   }
 
@@ -97,7 +94,7 @@ public class StopGatewaySenderCommandTest {
     Set<DistributedMember> emptySet = new HashSet<>();
     when(findMembers.apply(any(), any())).thenReturn(emptySet);
     StopGatewaySenderCommand command =
-        new StopGatewaySenderCommand(executorService, stopperOnMemberFactory,
+        new StopGatewaySenderCommand(executorService, stopperOnMember,
             managementService, findMembers);
 
     // act and assert
@@ -122,7 +119,7 @@ public class StopGatewaySenderCommandTest {
 
     // act
     StopGatewaySenderCommand command = new StopGatewaySenderCommand(executorService,
-        stopperOnMemberFactory, managementService, findMembers);
+        stopperOnMember, managementService, findMembers);
     ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
 
     // assert
@@ -153,7 +150,7 @@ public class StopGatewaySenderCommandTest {
 
     // act
     StopGatewaySenderCommand command =
-        new StopGatewaySenderCommand(executorService, stopperOnMemberFactory,
+        new StopGatewaySenderCommand(executorService, stopperOnMember,
             managementService, findMembers);
     ResultModel result = command.executeStopGatewaySender(senderId, cache, members);
 

@@ -26,11 +26,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -47,22 +47,23 @@ public class StopGatewaySenderCommand extends GfshCommand {
   private final ExecutorService executorService;
   private SystemManagementService managementService;
   private BiFunction<String[], String[], Set<DistributedMember>> findMembers;
-  private final Supplier<StopGatewaySenderOnMember> stopperOnMemberFactory;
+  private final StopGatewaySenderOnMember stopperOnMember;
 
   @SuppressWarnings("unused") // invoked by spring shell
   public StopGatewaySenderCommand() {
     this(newCachedThreadPool("Stop Sender Command Thread ", true),
-        StopGatewaySenderOnMemberWithBeanImpl::new, null, null);
+        new StopGatewaySenderOnMemberWithBeanImpl(), null, null);
     findMembers = this::findMembers;
   }
 
+  @VisibleForTesting
   StopGatewaySenderCommand(
       ExecutorService executorService,
-      Supplier<StopGatewaySenderOnMember> stopperOnMemberFactory,
+      StopGatewaySenderOnMember stopperOnMember,
       SystemManagementService managementService,
       BiFunction<String[], String[], Set<DistributedMember>> findMembers) {
     this.executorService = executorService;
-    this.stopperOnMemberFactory = stopperOnMemberFactory;
+    this.stopperOnMember = stopperOnMember;
     this.managementService = managementService;
     this.findMembers = findMembers;
   }
@@ -101,7 +102,7 @@ public class StopGatewaySenderCommand extends GfshCommand {
       managementService = getManagementService();
     }
     for (final DistributedMember member : dsMembersList) {
-      callables.add(() -> stopperOnMemberFactory.get()
+      callables.add(() -> stopperOnMember
           .executeStopGatewaySenderOnMember(id,
               cache, managementService, member));
     }
